@@ -11,5 +11,8 @@
     "url": "https://dimensia.github.com/tyranidjs"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^2.4.1"
+  }
 }
