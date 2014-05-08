@@ -1,0 +1,15 @@
+{
+  "name": "tyranid",
+  "version": "0.0.1",
+  "description": "MongoDB ODM Library",
+  "main": "tyranid.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://dimensia.github.com/tyranidjs"
+  },
+  "author": "",
+  "license": "ISC"
+}
