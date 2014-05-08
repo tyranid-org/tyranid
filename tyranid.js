@@ -1,5 +1,5 @@
 
-var lodash = require( 'lodash' );
+var _ = require( 'lodash' );
 
 /*
    /. server inherits client objects
@@ -57,15 +57,14 @@ function classify( proto, staticMethods ) {
   return _.extend( constructor, staticMethods );
 }
 
-var Collection = classify(
-  function( def ) {
+var Collection = classify({
+  constructor: function( def ) {
     this.def = def;
-  },
-  {
   }
-);
+}, {
+});
 
-module.export = {
+module.exports = {
 
   Collection: Collection
 
