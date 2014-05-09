@@ -13,6 +13,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^2.4.1"
+    "lodash": "^2.4.1",
+    "mongodb": "^1.4.3",
+    "async": "^0.8.0"
+  },
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha": "^1.18.2"
   }
 }
