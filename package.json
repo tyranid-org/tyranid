@@ -1,6 +1,6 @@
 {
   "name": "tyranid",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "MongoDB ODM Library",
   "main": "tyranid.js",
   "scripts": {
