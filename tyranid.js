@@ -53,9 +53,10 @@ var _     = require( 'lodash' ),
 
 */
 
-var collections = [],
-    typesByName = {},
-    config      = {};
+var collections     = [],
+    collectionsById = {},
+    typesByName     = {},
+    config          = {};
 
 
 // Schema
@@ -126,12 +127,16 @@ Type.prototype.toClient = function(field, value) {
 };
 
 
-// Instance
+// Document
 // ========
 
-var instancePrototype = {
+var documentPrototype = {
   $save: function() {
     console.log('save called for type ' + this.$name);
+  },
+
+  $uid: function() {
+    return this.idToUid(this._id);
   }
 };
 
@@ -141,28 +146,41 @@ var instancePrototype = {
 
 function Collection(def) {
 
+  var colId = def.id;
+  if (!colId) {
+    throw new Error('The "id" for the collection was not specified.');
+  }
+
+  if (colId.length !== 3) {
+    throw new Error('The collection "id" should be three characters long.');
+  }
+
+  if (collectionsById[colId]) {
+    throw new Error('The collection "id" is already in use by ' + collectionsById[colId].name + '.');
+  }
+
   //
   // instances of Collection are functions so that you can go "var User = ...; var user = new User();"
   //
   // i.e.  instances of Collection are collections
-  //       instances of instances of Collection are collection instances
+  //       instances of instances of Collection are documents (collection instances)
   //
 
-  var ip = {};
-  _.assign(ip, instancePrototype);
+  var dp = {};
+  _.assign(dp, documentPrototype);
+
+  dp.constructor = CollectionInstance;
+  dp.__proto__ = CollectionInstance.prototype;
+  dp.$name = def.name;
 
   var CollectionInstance = function() {
-    this.__proto__ = ip;
-    console.log('instance of ' + def.name + ' created');
+    this.__proto__ = dp;
   }
-
-  ip.constructor = CollectionInstance;
-  ip.__proto__ = CollectionInstance.prototype;
-  ip.$name = def.name;
 
   CollectionInstance.constructor = Collection;
   CollectionInstance.__proto__ = Collection.prototype;
   CollectionInstance.def = def;
+  CollectionInstance.id = colId;
 
   validateType(CollectionInstance);
 
@@ -179,8 +197,14 @@ function Collection(def) {
 
   collections.push(CollectionInstance);
 
+  collectionsById[def.id] = collection;
+
   return CollectionInstance;
 }
+
+Collection.prototype.idToUid = function(id) {
+  return this.id + id;
+};
 
 //Collection.prototype = Object.create( null );
 
