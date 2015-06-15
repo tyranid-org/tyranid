@@ -4,36 +4,35 @@ var _     = require( 'lodash' ),
 
 /*
 
-   /. collection class vs. record class
+   TODO:
 
-   /. server inherits client objects
+   * server inherits client objects
 
-   /. validation (server vs. client)
+   * validation (server vs. client)
 
-   /. authorized methods + filtering attributes to the client
+   * authorized methods + filtering attributes to the client
 
-   /. offline support
+   * offline support
 
-   /. store cache on client
+   * store cache on client
 
-   /. tids ?
-   
-      f23<mongo id (24 chars) >
+   * link ownership
 
-      <letter + 2 alphanum><mongo id>
+   * how do we share code between server and client from the same source .js file ?
 
+   * database integrity analysis (find orphans, bad links, etc.)
 
-   ?. how do we share code between server and client from the same source .js file ?
-
+   * pre-calc aggregation
 
 
   Collection Schema BNF: 
 
   <field def>: {
-    type:  <string, a field type>,
+    is:    <string, a field type>,
     as:    <string, a label>,
-    desc:  <string, a description>,
-    link:  <string, a collection name ... type is implied for this>
+    help:  <string, end-user notes>,
+    notes: <string, developer notes>,
+    link:  <string, a collection name ... is is implied for this>
     ...
   }
 
@@ -47,6 +46,7 @@ var _     = require( 'lodash' ),
 
   <schema>: {
     name:  <string>,
+    id:    <3-character alphanum beginning with a non-hex alphanum character>,
     db:    <mongodb database>, // optional, if not present will default to config.db
     fields: <field object>
   }
@@ -94,8 +94,8 @@ function validateType(type) {
 
 
 
-// Types
-// =====
+// Type
+// ====
 
 function Type(def) {
   this.def = def;
@@ -132,11 +132,12 @@ Type.prototype.toClient = function(field, value) {
 
 var documentPrototype = {
   $save: function() {
-    console.log('save called for type ' + this.$name);
+    // the mongo driver only saves properties on the object directly, prototype values will not be recorded
+    return this.$model.db.save(this);
   },
 
   $uid: function() {
-    return this.idToUid(this._id);
+    return this.$model.idToUid(this._id);
   }
 };
 
@@ -169,7 +170,7 @@ function Collection(def) {
   var dp = {};
   _.assign(dp, documentPrototype);
 
-  dp.constructor = CollectionInstance;
+  dp.constructor = dp.$model = CollectionInstance;
   dp.__proto__ = CollectionInstance.prototype;
   dp.$name = def.name;
 
@@ -202,11 +203,23 @@ function Collection(def) {
   return CollectionInstance;
 }
 
+//Collection.prototype = Object.create( null );
+
 Collection.prototype.idToUid = function(id) {
   return this.id + id;
 };
 
-//Collection.prototype = Object.create( null );
+/**
+ * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
+ */
+Collection.prototype.find = function() {
+  var collection = this,
+      db         = collection.db;
+
+  return db.find.apply(db, arguments).then(function(documents) {
+    return _.map(documents, function(doc) { return new collection.constructor(doc); });
+  });
+};
 
 Collection.prototype.fieldsBy = function( comparable ) {
   var results = [];
@@ -220,7 +233,7 @@ Collection.prototype.fieldsBy = function( comparable ) {
 
     } else if ( _.isObject( val ) ) {
 
-      if ( val.type ) {
+      if ( val.is ) {
         if ( cb( val ) )
           results.push( path );
       } else {
@@ -287,11 +300,11 @@ Collection.prototype.fromClient = function(pojo) {
     var field = fields[k];
 
     if (field) {
-      if (!field.type ) {
-        throw new Error('collection missing type, missing from schema?');
+      if (!field.is ) {
+        throw new Error('collection missing type ("is"), missing from schema?');
       }
 
-      obj[k] = field.type.fromClient(field, v);
+      obj[k] = field.is.fromClient(field, v);
     }
   });
 
@@ -310,7 +323,7 @@ Collection.prototype.toClient = function(pojo) {
     var field = fields[k];
 
     if (field) {
-      var v = field.type.toClient(field, v);
+      var v = field.is.toClient(field, v);
 
       if (v !== undefined) {
         obj[k] = v;
@@ -330,7 +343,7 @@ Collection.prototype.validateValues = function() {
   }
 
   if (!_.isArray(rows)) {
-    throw 'Expected values for collection ' + def.name + ' to be an array';
+    throw new Error('Expected values for collection ' + def.name + ' to be an array');
   }
 
   var ri,
@@ -344,7 +357,7 @@ Collection.prototype.validateValues = function() {
 
     for (ri=0; ri<rlen; ri++) {
       if (!_.isArray(rows[ri])) {
-        throw 'Expected value on row ' + ri + ' to be an array for collection ' + def.name;
+        throw new Error('Expected value on row ' + ri + ' to be an array for collection ' + def.name);
       }
     }
 
@@ -357,11 +370,11 @@ Collection.prototype.validateValues = function() {
       var name = header[hi];
 
       if (!_.isString(name)) {
-        throw 'Expected value ' + hi + ' in the values header for collection ' + def.name + ' to be a string';
+        throw new Error('Expected value ' + hi + ' in the values header for collection ' + def.name + ' to be a string');
       }
 
       if (!def.fields[name]) {
-        throw 'Field ' + name + ' does not exist on collection ' + def.name;
+        throw new Error('Field ' + name + ' does not exist on collection ' + def.name);
       }
     }
 
@@ -370,7 +383,7 @@ Collection.prototype.validateValues = function() {
           nrow = {};
 
       if (orow.length !== hlen && orow.length !== hlen+1) {
-        throw 'Incorrect number of values on row ' + ri + ' in collection ' + def.name;
+        throw new Error('Incorrect number of values on row ' + ri + ' in collection ' + def.name);
       }
 
       for (hi=0; hi<hlen; hi++) {
@@ -383,7 +396,7 @@ Collection.prototype.validateValues = function() {
 
         _.each(extraVals, function(v, n) {
           if (!def.fields[n]) {
-            throw 'Field ' + n + ' does not exist on collection ' + def.name + ' on row ' + ri;
+            throw new Error('Field ' + n + ' does not exist on collection ' + def.name + ' on row ' + ri);
           }
 
           nrow[n] = v;
@@ -400,7 +413,7 @@ Collection.prototype.validateValues = function() {
 
     for (ri=0; ri<rlen; ri++) {
       if (!_.isObject(rows[ri])) {
-        throw 'Expected value on row ' + ri + ' to be an object for collection ' + def.name;
+        throw new Error('Expected value on row ' + ri + ' to be an object for collection ' + def.name);
       }
     }
   }
@@ -420,14 +433,14 @@ Collection.prototype.validateSchema = function() {
         throw validator.err('Invalid field definition, expected an object, got: ' + field);
       }
 
-      if (field.type) {
-        var type = typesByName[field.type];
+      if (field.is) {
+        var type = typesByName[field.is];
 
         if (!type) {
-          throw validator.err(path, 'Unknown type ' + field.type);
+          throw validator.err(path, 'Unknown type ' + field.is);
         }
 
-        field.type = type;
+        field.is = type;
 
         type.validate(validator, path, field);
 
@@ -442,7 +455,7 @@ Collection.prototype.validateSchema = function() {
           throw validator.err(path, 'Links must link to a collection, instead linked to ' + field.link);
         }
 
-        field.type = typesByName.link;
+        field.is = typesByName.link;
         field.link = type;
 
       } else {
@@ -459,7 +472,14 @@ Collection.prototype.validateSchema = function() {
         throw validator.err(path, '"fields" should be an object, got: ' + val);
       }
 
-      _.each(val, function(field, name) { return validator.field(path + '.' + name, field) });
+      _.each(val, function(field, name) {
+        if (_.isString(field)) {
+          val[name] = field = { is: field };
+        }
+
+        return validator.field(path + '.' + name, field)
+      });
+
     }
   };
 
@@ -469,6 +489,7 @@ Collection.prototype.validateSchema = function() {
 };
 
 var Tyranid = {
+  Type: Type,
 
   config: function( opts ) {
     config = opts;
@@ -501,6 +522,10 @@ var Tyranid = {
     );
   }
 };
+
+
+// Built-in Types
+// ==============
 
 new Type({
   name: 'link',
