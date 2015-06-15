@@ -1,19 +1,30 @@
 
-var gulp       = require( 'gulp' ),
-    jshint     = require( 'gulp-jshint' );
+var gulp       = require('gulp'),
+    jshint     = require('gulp-jshint'),
+    mocha      = require('gulp-mocha');
 
-gulp.task( 'jshint', function() {
+gulp.task('jshint', function() {
   gulp
-    .src([ 'server.js', 'app/**/*.js', 'public/**/*.js', '!public/bundle.js' ] )
-    .pipe( jshint( '.jshintrc' ) )
-    .pipe( jshint.reporter( 'default' ) );
+    .src(['tyranid.js', 'test/**/*.js'])
+    .pipe(jshint('.jshintrc'))
+    .pipe(jshint.reporter('default'));
 });
 
-gulp.task( 'watch', function() {
-  var server = livereload();
-
-  gulp.watch( [ '../mdn/**/*.js', 'server.js', 'app/**/*.js', 'public/**/*.js', '!public/bundle.js' ], [ 'jshint' ] );
+gulp.task('watch', function() {
+  gulp.watch(['tyranid.js', 'test/**/*.js'], ['jshint']);
 });
 
-gulp.task( 'default', [ 'jshint' ] );
+gulp.task('test', function(cb) {
+  gulp.src('test/**/*.js', {
+    read: false
+  })
+  .pipe(mocha({
+    reporter: 'spec'
+  }))
+  .on('end', function() {
+    cb(null);
+  });
+});
+
+gulp.task('default', ['jshint']);
 

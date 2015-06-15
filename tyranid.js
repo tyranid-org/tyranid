@@ -1,6 +1,5 @@
 
-var _     = require( 'lodash' ),
-    async = require( 'async' );
+var _ = require( 'lodash' );
 
 /*
 
@@ -108,7 +107,7 @@ Type.prototype.validate = function(validator, path, field) {
   if (v) {
     v(validator, path, field);
   }
-}
+};
 
 Type.prototype.fromClient = function(field, value) {
   var a = this.def.fromClient;
@@ -170,13 +169,13 @@ function Collection(def) {
   var dp = {};
   _.assign(dp, documentPrototype);
 
+  var CollectionInstance = function() {
+    this.__proto__ = dp;
+  };
+
   dp.constructor = dp.$model = CollectionInstance;
   dp.__proto__ = CollectionInstance.prototype;
   dp.$name = def.name;
-
-  var CollectionInstance = function() {
-    this.__proto__ = dp;
-  }
 
   CollectionInstance.constructor = Collection;
   CollectionInstance.__proto__ = Collection.prototype;
@@ -198,7 +197,7 @@ function Collection(def) {
 
   collections.push(CollectionInstance);
 
-  collectionsById[def.id] = collection;
+  collectionsById[def.id] = CollectionInstance;
 
   return CollectionInstance;
 }
@@ -248,43 +247,35 @@ Collection.prototype.fieldsBy = function( comparable ) {
   return results;
 };
 
-Collection.prototype.valuesFor = function( fields, callback ) {
+Collection.prototype.valuesFor = function(fields) {
+  var col = this;
 
-  var fieldsObj = { _id: 0 };
-  _.each( fields, function( field ) {
-    fieldsObj[ field ] = 1;
-  });
-
-  this.db.find( {}, fieldsObj, function( err, curs ) {
-    if ( err ) {
-      callback( err );
-      return;
-    }
+  return new Promise(function(resolve, reject) {
+    var fieldsObj = { _id: 0 };
+    _.each(fields, function(field) {
+      fieldsObj[field] = 1;
+    });
 
     var values = [];
+    col.db.find({}, fieldsObj).forEach(function(err, doc) {
+      if (err) {
+        reject(err);
+        return;
+      }
 
-    function extractValues( val ) {
-      if ( _.isObject( val ) )
-        _.each( val, extractValues );
-      else
-        values.push( val );
-    }
-
-    function next() {
-      curs.nextObject( function( err, doc ) {
-        if ( err ) {
-          callback( err );
-          return;
-        } else if ( !doc ) {
-          callback( null, _.uniq( values ) );
-        } else {
-          extractValues( doc );
-          next();
+      if (doc) {
+        function extractValues(val) {
+          if (_.isObject(val) )
+            _.each(val, extractValues);
+          else
+            values.push(val);
         }
-      });
-    }
 
-    next();
+        extractValues(doc);
+      } else {
+        resolve(_.uniq(values));
+      }
+    });
   });
 };
 
@@ -323,7 +314,7 @@ Collection.prototype.toClient = function(pojo) {
     var field = fields[k];
 
     if (field) {
-      var v = field.is.toClient(field, v);
+      v = field.is.toClient(field, v);
 
       if (v !== undefined) {
         obj[k] = v;
@@ -428,13 +419,13 @@ Collection.prototype.validateSchema = function() {
     },
 
     field: function(path, field) {
-
       if (!_.isObject(field)) {
         throw validator.err('Invalid field definition, expected an object, got: ' + field);
       }
 
+      var type;
       if (field.is) {
-        var type = typesByName[field.is];
+        type = typesByName[field.is];
 
         if (!type) {
           throw validator.err(path, 'Unknown type ' + field.is);
@@ -445,7 +436,7 @@ Collection.prototype.validateSchema = function() {
         type.validate(validator, path, field);
 
       } else if (field.link) {
-        var type = typesByName[field.link];
+        type = typesByName[field.link];
 
         if (!type) {
           throw validator.err(path, 'Unknown type ' + field.link);
@@ -477,7 +468,7 @@ Collection.prototype.validateSchema = function() {
           val[name] = field = { is: field };
         }
 
-        return validator.field(path + '.' + name, field)
+        return validator.field(path + '.' + name, field);
       });
 
     }
@@ -491,11 +482,13 @@ Collection.prototype.validateSchema = function() {
 var Tyranid = {
   Type: Type,
 
-  config: function( opts ) {
+  config: function(opts) {
     config = opts;
 
-    if ( !opts.db )
-      throw new Error( 'Missing "db" in config.' );
+    if (!opts.db)
+      throw new Error('Missing "db" in config.');
+
+    this.db = opts.db;
   },
 
   validate: function( ) {
@@ -508,18 +501,15 @@ var Tyranid = {
 
   collections: collections,
 
-  valuesBy: function( comparable, callback ) {
+  valuesBy: function(comparable) {
 
-    async.series(
-      _.map( all, function( coll ) {
-        return function( cb ) {
-          coll.valuesFor( coll.fieldsBy( comparable ), cb );
-        };
-      }),
-      function(err, arrs) {
-        callback( err, _.union.apply( null, arrs ) );
-      }
-    );
+    return Promise.all(
+      _.map(Tyranid.collections, function(coll) {
+        return coll.valuesFor(coll.fieldsBy(comparable));
+      })
+    ).then(function(arrs) {
+      return _.union.apply(null, arrs);
+    });
   }
 };
 

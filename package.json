@@ -15,10 +15,14 @@
   "dependencies": {
     "lodash": "^2.4.1",
     "mongodb": "^1.4.3",
-    "async": "^0.8.0"
+    "promised-mongo": "git://github.com/gordonmleigh/promised-mongo.git#v0.11.5"
   },
   "devDependencies": {
-    "chai": "^1.9.1",
-    "mocha": "^1.18.2"
+    "chai": "^3.0.0",
+    "chai-as-promised": "^5.1.0",
+    "es6-promise": "^2.3.0",
+    "gulp-jshint": "^1.11.0",
+    "gulp-mocha": "^2.1.1",
+    "mocha": "^2.2.5"
   }
 }

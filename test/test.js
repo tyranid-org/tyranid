@@ -1,126 +1,142 @@
 
-var tyr     = require( '../tyranid' ),
-    chai    = require( 'chai' ),
-    mongodb = require( 'mongodb' ),
-    async   = require( 'async' ),
-    expect  = chai.expect;
+require('es6-promise');
+
+var tyr            = require('../tyranid'),
+    chai           = require('chai'),
+    chaiAsPromised = require('chai-as-promised'),
+
+    pmongo         = require('promised-mongo'),
+
+    expect         = chai.expect;
+
+chai.use(chaiAsPromised);
+chai.should();
 
 describe( 'tyranid', function() {
   var db = null;
-  before( function( done ) {
-    mongodb.MongoClient.connect( 'mongodb://localhost:27017/tyranid_test', function( err, tdb ) {
-      db = tdb;
-      tyr.config({
-        db: db 
-      });
-      done( err, db );
+  before(function(done) {
+    db = pmongo('mongodb://localhost:27017/tyranid_test');
+    tyr.config({
+      db: db 
     });
+    done(null, db);
+  });
+
+  after(function() {
+    tyr.db.close();
+    process.exit(0);
   });
 
   describe( 'schema validation', function() {
     it( 'should error if no name is provided', function() {
-      expect( function() {
+      expect(function() {
         new tyr.Collection({
+          id: 't00',
           fields: {}
-        })
+        });
       }).to.throw();
     });
 
     it( 'should throw if the name is not a string', function() {
-      expect( function() {
+      expect(function() {
         new tyr.Collection({
+          id: 't00',
           name: 3,
           fields: {}
-        })
+        });
       }).to.throw();
     });
 
     it( 'should accept a present but empty fields array', function() {
-      expect( function() {
+      expect(function() {
         new tyr.Collection({
+          id: 't00',
           name: 'test',
           fields: {
           }
-        })
+        });
       }).to.not.throw();
     });
 
     it( 'should throw if arrays do not contain a single value', function() {
-      expect( function() {
+      expect(function() {
         new tyr.Collection({
+          id: 't00',
           name: 'test',
           fields: {
             emptyArray: []
           }
-        })
+        });
       }).to.throw();
     });
 
     it( 'should throw if a field is missing a definition', function() {
-      expect( function() {
+      expect(function() {
         new tyr.Collection({
-          name: 'test',
+          id: 't01',
+          name: 'test1',
           fields: {
             cat: 3
           }
-        })
-      }).to.throw( /missing field definition/i );
+        });
+        tyr.validate();
+      }).to.throw( /Invalid field definition/i );
 
-      expect( function() {
+      expect(function() {
         new tyr.Collection({
-          name: 'test',
+          id: 't02',
+          name: 'test2',
           fields: {
             cat: [
               3
             ]
           }
-        })
-      }).to.throw( /missing field definition/i );
+        });
+        tyr.validate();
+      }).to.throw( /Invalid field definition/i );
     });
   });
 
   describe( 'with model', function() {
     var Person;
-    before( function( done ) {
+    before(function(done) {
       Person = new tyr.Collection({
+        id: 't03',
         name: 'person',
         fields: {
           name: {
-            first: { type: 'string', as: 'First Name' },
-            last:  { type: 'string', as: 'Last Name'  }
+            first: { is: 'string', as: 'First Name' },
+            last:  { is: 'string', as: 'Last Name'  }
           },
 
-          birthDate: { type: 'date' },
+          birthDate: { is: 'date' },
 
           siblings: [
             {
-              name: { type: 'string' }
+              name: { is: 'string' }
             }
           ],
 
-          title: { type: 'string' }
+          title: { is: 'string' }
         }
       });
 
-      async.series([
-        function( cb ) {
-          Person.db.drop( cb );
-        },
-        function( cb ) {
-          Person.db.insert([
-            { _id: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
-            { _id: 2, name: { first: 'John', last: 'Doe' } },
-            { _id: 3, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe' } ] }
-          ], cb );
-        }
-      ], done );
+      Person.db.drop().then(function() {
+        Person.db.insert([
+          { _id: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
+          { _id: 2, name: { first: 'John', last: 'Doe' } },
+          { _id: 3, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe' } ] }
+        ]).then(function() {
+          done();
+        });
+      });
     });
 
     describe( 'schema methods', function() {
 
       it( 'should support fieldsBy()', function() {
         expect(
-          Person.fieldsBy({ type: 'string' })
+          Person.fieldsBy({ is: 'string' })
         ).to.eql(
           [ 'name.first', 'name.last', 'siblings.name', 'title' ]
         );
@@ -128,40 +144,31 @@ describe( 'tyranid', function() {
 
       it( 'should support fieldsBy()', function() {
         expect(
-          Person.fieldsBy({ type: 'string' })
+          Person.fieldsBy({ is: 'string' })
         ).to.eql(
           [ 'name.first', 'name.last', 'siblings.name', 'title' ]
         );
       });
     });
 
-    describe( 'collection methods', function() {
+    describe('collection methods', function() {
 
-      it( 'should support valuesFor()', function( done ) {
-        Person.valuesFor( Person.fieldsBy({ type: 'string' }), function( err, values ) {
-          expect(
-            values.sort()
-          ).to.eql(
-            [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
-          );
-
-          done( err );
-        });
+      it( 'should support valuesFor()', function() {
+        Person.valuesFor(Person.fieldsBy({ is: 'string' })).then(function(values) {
+          return values.sort();
+        }).should.eventually.eql(
+          [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
+        );
       });
 
-      it( 'should support Tyranid.valuesBy()', function( done ) {
-        tyr.valuesBy( { type: 'string' }, function( err, values ) {
-          expect(
-            values.sort()
-          ).to.eql(
-            [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
-          );
-
-          done( err );
-        });
+      it( 'should support Tyranid.valuesBy()', function() {
+        return tyr.valuesBy({ is: 'string' }).then(function(values) {
+          return values.sort();
+        }).should.eventually.eql(
+          [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
+        );
       });
     });
   });
 });
-
 
