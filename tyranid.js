@@ -169,8 +169,12 @@ function Collection(def) {
   var dp = {};
   _.assign(dp, documentPrototype);
 
-  var CollectionInstance = function() {
+  var CollectionInstance = function(data) {
     this.__proto__ = dp;
+
+    if (data) {
+      _.assign(this, data);
+    }
   };
 
   dp.constructor = dp.$model = CollectionInstance;
@@ -220,30 +224,90 @@ Collection.prototype.find = function() {
   });
 };
 
-Collection.prototype.fieldsBy = function( comparable ) {
+/**
+ * @opts: options ... options are:
+ *   @fields: string | array<string>;   a property name or an array of property names
+ *
+ *   TODO: @only: array<string>;        list of fields in linked-to collections to query
+ *
+ * @documents: array<document>;       an array of documents
+ *
+ * If documents is not provided, this function will return a curried version of this function that takes a single array
+ * of documents.  This allows populate to be fed into a promise chain.
+ */
+Collection.prototype.populate = function(opts, documents) {
+  var col = this,
+      fields = opts.fields;
+
+  if (!_.isArray(fields)) {
+    fields = [ fields ];
+  }
+
+  function populator(documents) {
+    var insByColId = {};
+
+    fields.forEach(function(fieldName) {
+      // TODO:  parse field name into a path
+      var def = col.def.fields[fieldName],
+          link = def.link;
+
+      if (!link) {
+        throw new Error('Cannot populate ' +  col.name + '.' + fieldName + ' -- it is not a link');
+      }
+
+      var linkId = link.id,
+          ins = insByColId[linkId];
+      if (!ins) {
+        insByColId[linkId] = ins = [];
+      }
+
+      documents.forEach(function(doc) {
+        var id = doc[fieldName];
+        ins[id] = 1;
+      });
+    });
+
+    return Promise.all(
+      _.map(insByColId, function(ins, colId) {
+        var linkCol = collectionsById[colId];
+
+        return linkCol.find({ _id: { $in: _.uniq(ins) }}).then(function(linkDocs) {
+          // TODO:  iterate through the documents and fill in the missing documents from linkDocs
+        });
+      })
+    );
+  }
+
+  return documents ? populator(documents) : populator;
+};
+
+Collection.prototype.fieldsBy = function(comparable) {
   var results = [];
 
-  var cb = _.createCallback( comparable );
+  var cb = _.callback(comparable);
 
-  function fieldsBy( path, val ) {
+  function fieldsBy(path, val) {
 
-    if ( _.isArray( val ) ) {
-      fieldsBy( path, val[ 0 ] );
+    if (val.is) {
+      if (val.is.def.name === 'object') {
+        return fieldsBy(path, val.fields);
 
-    } else if ( _.isObject( val ) ) {
+      } else if (val.is.def.name === 'array') {
+        return fieldsBy(path, val.of);
 
-      if ( val.is ) {
-        if ( cb( val ) )
-          results.push( path );
-      } else {
-        _.each( val, function( field, name ) {
-          fieldsBy( pathAdd( path, name ), field );
-        });
+      } else if (val.is.def){
+        if (cb(val.is.def)) {
+          results.push(path);
+        }
       }
+    } else {
+      _.each( val, function(field, name) {
+        fieldsBy(pathAdd(path, name), field);
+      });
     }
   }
 
-  fieldsBy( '', this.def.fields );
+  fieldsBy('', this.def.fields);
   return results;
 };
 
@@ -325,8 +389,91 @@ Collection.prototype.toClient = function(pojo) {
   return obj;
 };
 
+Collection.prototype.validateSchema = function() {
+  var col = this,
+      def = col.def;
+
+  var validator = {
+    err: function err(path, msg) {
+      return new Error('Tyranid Schema Error| ' + def.name + (path ? path : '') + ': ' + msg);
+    },
+
+    field: function(path, field) {
+      if (!_.isObject(field)) {
+        throw validator.err('Invalid field definition, expected an object, got: ' + field);
+      }
+
+      if (field.label) {
+        col.labelField = path.substring(1);
+      }
+
+      var type;
+      if (field.is) {
+        type = typesByName[field.is];
+
+        if (!type) {
+          throw validator.err(path, 'Unknown type ' + field.is);
+        }
+
+        field.is = type;
+
+        type.validate(validator, path, field);
+
+        if (type.def.name === 'object' && field.fields) {
+          validator.fields(path, field.fields);
+        }
+
+      } else if (field.link) {
+        type = typesByName[field.link];
+
+        if (!type) {
+          throw validator.err(path, 'Unknown type ' + field.link);
+        }
+
+        if (!(type instanceof Collection)) {
+          throw validator.err(path, 'Links must link to a collection, instead linked to ' + field.link);
+        }
+
+        field.is = typesByName.link;
+        field.link = type;
+
+      } else {
+        throw validator.err('Unknown field definition at ' + path);
+      }
+    },
+
+    fields: function(path, val) {
+      if (!val) {
+        throw validator.err(path, 'Missing "fields"');
+      }
+
+      if (!_.isObject(val)) {
+        throw validator.err(path, '"fields" should be an object, got: ' + val);
+      }
+
+      _.each(val, function(field, name) {
+        if (_.isString(field)) {
+          val[name] = field = { is: field };
+        }
+
+        return validator.field(path + '.' + name, field);
+      });
+
+    }
+  };
+
+  validator.fields('', col.def.fields);
+
+  if (col.def.enum && !col.labelField) {
+    throw new Error('Some string field must have the label property set if the collection is an enumeration.');
+  }
+
+  this.validateValues();
+};
+
 Collection.prototype.validateValues = function() {
-  var def = this.def,
+  var col  = this,
+      def  = col.def,
       rows = def.values;
 
   if (!rows) {
@@ -393,8 +540,19 @@ Collection.prototype.validateValues = function() {
           nrow[n] = v;
         });
       }
-      
-      newValues.push(nrow);
+     
+      var v = new col(nrow);
+      if (col.def.enum) {
+        var name = v[col.labelField];
+
+        if (!name) {
+          throw new Error('Static document missing label field: ' + col.labelField);
+        }
+
+        col[_.snakeCase(name).toUpperCase()] = v;
+      }
+
+      newValues.push(v);
     }
 
     def.values = newValues;
@@ -408,75 +566,6 @@ Collection.prototype.validateValues = function() {
       }
     }
   }
-};
-
-Collection.prototype.validateSchema = function() {
-  var def = this.def;
-
-  var validator = {
-    err: function err(path, msg) {
-      return new Error('Tyranid Schema Error| ' + def.name + (path ? path : '') + ': ' + msg);
-    },
-
-    field: function(path, field) {
-      if (!_.isObject(field)) {
-        throw validator.err('Invalid field definition, expected an object, got: ' + field);
-      }
-
-      var type;
-      if (field.is) {
-        type = typesByName[field.is];
-
-        if (!type) {
-          throw validator.err(path, 'Unknown type ' + field.is);
-        }
-
-        field.is = type;
-
-        type.validate(validator, path, field);
-
-      } else if (field.link) {
-        type = typesByName[field.link];
-
-        if (!type) {
-          throw validator.err(path, 'Unknown type ' + field.link);
-        }
-
-        if (!(type instanceof Collection)) {
-          throw validator.err(path, 'Links must link to a collection, instead linked to ' + field.link);
-        }
-
-        field.is = typesByName.link;
-        field.link = type;
-
-      } else {
-        throw validator.err('Unknown field definition');
-      }
-    },
-
-    fields: function(path, val) {
-      if (!val) {
-        throw validator.err(path, 'Missing "fields"');
-      }
-
-      if (!_.isObject(val)) {
-        throw validator.err(path, '"fields" should be an object, got: ' + val);
-      }
-
-      _.each(val, function(field, name) {
-        if (_.isString(field)) {
-          val[name] = field = { is: field };
-        }
-
-        return validator.field(path + '.' + name, field);
-      });
-
-    }
-  };
-
-  validator.fields('', this.def.fields);
-
-  this.validateValues();
 };
 
 var Tyranid = {
@@ -504,12 +593,23 @@ var Tyranid = {
   valuesBy: function(comparable) {
 
     return Promise.all(
-      _.map(Tyranid.collections, function(coll) {
-        return coll.valuesFor(coll.fieldsBy(comparable));
+      _.map(Tyranid.collections, function(c) {
+        var fields = c.fieldsBy(comparable);
+        return c.valuesFor(c.fieldsBy(comparable));
       })
     ).then(function(arrs) {
       return _.union.apply(null, arrs);
     });
+  },
+
+  /**
+   * Mostly just used by tests.
+   */
+  reset: function() {
+    collections.length = 0;
+    for (var id in collectionsById) {
+      delete collectionsById[id];
+    }
   }
 };
 
@@ -570,6 +670,7 @@ new Type({
 new Type({ name: 'email' });
 new Type({ name: 'password', client: false });
 new Type({ name: 'image' });
+new Type({ name: 'date' });
 
 module.exports = Tyranid;
 

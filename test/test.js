@@ -24,7 +24,9 @@ describe( 'tyranid', function() {
 
   after(function() {
     tyr.db.close();
-    process.exit(0);
+    setTimeout(function() {
+      process.exit(0);
+    }, 500);
   });
 
   describe( 'schema validation', function() {
@@ -72,6 +74,7 @@ describe( 'tyranid', function() {
 
     it( 'should throw if a field is missing a definition', function() {
       expect(function() {
+        tyr.reset();
         new tyr.Collection({
           id: 't01',
           name: 'test1',
@@ -83,6 +86,7 @@ describe( 'tyranid', function() {
       }).to.throw( /Invalid field definition/i );
 
       expect(function() {
+        tyr.reset();
         new tyr.Collection({
           id: 't02',
           name: 'test2',
@@ -93,33 +97,62 @@ describe( 'tyranid', function() {
           }
         });
         tyr.validate();
-      }).to.throw( /Invalid field definition/i );
+      }).to.throw( /Unknown field definition/i );
     });
   });
 
   describe( 'with model', function() {
-    var Person;
+    var Person, Job;
     before(function(done) {
+      tyr.reset();
+
+      Job = new tyr.Collection({
+        id: 'j00',
+        name: 'job',
+        enum: true,
+        fields: {
+          _id:     { is: 'integer' },
+          name:    { is: 'string', label: true },
+          manager: { is: 'boolean' }
+        },
+        values: [
+          [ '_id', 'name',              'manager' ],
+
+          [    1,  'Software Engineer', false     ],
+          [    2,  'Software Lead',     true      ],
+          [    3,  'Designer',          false     ]
+        ]
+      });
+
       Person = new tyr.Collection({
         id: 't03',
         name: 'person',
         fields: {
           name: {
-            first: { is: 'string', as: 'First Name' },
-            last:  { is: 'string', as: 'Last Name'  }
+            is: 'object',
+            fields: {
+              first: { is: 'string', as: 'First Name' },
+              last:  { is: 'string', as: 'Last Name'  }
+            }
           },
 
           birthDate: { is: 'date' },
 
-          siblings: [
-            {
-              name: { is: 'string' }
+          siblings: {
+            is: 'array',
+            of: {
+              is: 'object',
+              fields: {
+                name: { is: 'string' }
+              }
             }
-          ],
+          },
 
           title: { is: 'string' }
         }
       });
+
+      tyr.validate();
 
       Person.db.drop().then(function() {
         Person.db.insert([
@@ -136,7 +169,7 @@ describe( 'tyranid', function() {
 
       it( 'should support fieldsBy()', function() {
         expect(
-          Person.fieldsBy({ is: 'string' })
+          Person.fieldsBy({ name: 'string' })
         ).to.eql(
           [ 'name.first', 'name.last', 'siblings.name', 'title' ]
         );
@@ -144,7 +177,7 @@ describe( 'tyranid', function() {
 
       it( 'should support fieldsBy()', function() {
         expect(
-          Person.fieldsBy({ is: 'string' })
+          Person.fieldsBy({ name: 'string' })
         ).to.eql(
           [ 'name.first', 'name.last', 'siblings.name', 'title' ]
         );
@@ -154,7 +187,7 @@ describe( 'tyranid', function() {
     describe('collection methods', function() {
 
       it( 'should support valuesFor()', function() {
-        Person.valuesFor(Person.fieldsBy({ is: 'string' })).then(function(values) {
+        Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {
           return values.sort();
         }).should.eventually.eql(
           [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
@@ -162,11 +195,22 @@ describe( 'tyranid', function() {
       });
 
       it( 'should support Tyranid.valuesBy()', function() {
-        return tyr.valuesBy({ is: 'string' }).then(function(values) {
+        return tyr.valuesBy({ name: 'string' }).then(function(values) {
           return values.sort();
         }).should.eventually.eql(
           [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
         );
+      });
+    });
+
+    describe('static data', function() {
+
+      it( 'should contain instances of the enumeration class', function() {
+        expect(Job.def.values.length).to.eql(3);
+      });
+
+      it( 'should contain upper-undescore static names when a label is present', function() {
+        expect(Job.SOFTWARE_LEAD._id).to.be.eql(2);
       });
     });
   });
