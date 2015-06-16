@@ -72,9 +72,23 @@ describe( 'tyranid', function() {
       }).to.throw();
     });
 
-    it( 'should throw if a field is missing a definition', function() {
+    it( 'should support self-referential links', function() {
+      tyr.reset();
       expect(function() {
-        tyr.reset();
+        new tyr.Collection({
+          id: 't00',
+          name: 'test',
+          fields: {
+            _id:     { is: 'mongoid' },
+            self:    { link: 'test' }
+          }
+        });
+      }).to.not.throw();
+    });
+
+    it( 'should throw if a field is missing a definition', function() {
+      tyr.reset();
+      expect(function() {
         new tyr.Collection({
           id: 't01',
           name: 'test1',
@@ -85,8 +99,8 @@ describe( 'tyranid', function() {
         tyr.validate();
       }).to.throw( /Invalid field definition/i );
 
+      tyr.reset();
       expect(function() {
-        tyr.reset();
         new tyr.Collection({
           id: 't02',
           name: 'test2',
@@ -123,6 +137,10 @@ describe( 'tyranid', function() {
           [    3,  'Designer',          false     ]
         ]
       });
+
+      Job.prototype.isSoftware = function() {
+        return this.name.substring(0, 8) === 'Software';
+      };
 
       Person = new tyr.Collection({
         id: 't03',
@@ -184,7 +202,38 @@ describe( 'tyranid', function() {
       });
     });
 
-    describe('collection methods', function() {
+    describe('finding', function() {
+      it('should find unwrapped objects', function() {
+        return Person.db.find({'name.first': 'An'}).then(function(docs) {
+          expect(docs.length).to.be.eql(1);
+        });
+      });
+
+      it('should find wrapped objects', function() {
+        return Person.find({'name.first': 'An'}).then(function(docs) {
+          expect(docs.length).to.be.eql(1);
+          expect(docs[0]).to.be.an.instanceof(Person);
+        });
+      });
+    });
+
+    describe('saving', function() {
+      after(function() {
+        return Person.db.remove({'name.first': 'Elizabeth', 'name.last': 'Smith' });
+      });
+
+      it('should save objects', function() {
+        var elizabeth = new Person({ name: { first: 'Elizabeth', last: 'Smith' }, title: 'Software Engineer' });
+
+        return elizabeth.$save().then(function() {
+          Person.db.find({ 'name.first': 'Elizabeth', 'name.last': 'Smith' }).then(function(person) {
+            expect(person.name.first).to.eql('Elizabeth 2');
+          });
+        });
+      });
+    });
+
+    describe('values', function() {
 
       it( 'should support valuesFor()', function() {
         Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {
@@ -211,6 +260,11 @@ describe( 'tyranid', function() {
 
       it( 'should contain upper-undescore static names when a label is present', function() {
         expect(Job.SOFTWARE_LEAD._id).to.be.eql(2);
+      });
+
+      it( 'should support static data methods', function() {
+        expect(Job.SOFTWARE_LEAD.isSoftware()).to.be.eql(true);
+        expect(Job.DESIGNER.isSoftware()).to.be.eql(false);
       });
     });
   });

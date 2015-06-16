@@ -132,6 +132,7 @@ Type.prototype.toClient = function(field, value) {
 var documentPrototype = {
   $save: function() {
     // the mongo driver only saves properties on the object directly, prototype values will not be recorded
+
     return this.$model.db.save(this);
   },
 
@@ -139,6 +140,7 @@ var documentPrototype = {
     return this.$model.idToUid(this._id);
   }
 };
+
 
 
 // Collection
@@ -203,6 +205,16 @@ function Collection(def) {
 
   collectionsById[def.id] = CollectionInstance;
 
+  for (var key in dp) {
+    if (key.substring(0,1) === '$') {
+      Object.defineProperty(dp, key, {
+        enumerable:   false,
+        writeable:    false,
+        configurable: false
+      });
+    }
+  }
+
   return CollectionInstance;
 }
 
@@ -220,7 +232,7 @@ Collection.prototype.find = function() {
       db         = collection.db;
 
   return db.find.apply(db, arguments).then(function(documents) {
-    return _.map(documents, function(doc) { return new collection.constructor(doc); });
+    return _.map(documents, function(doc) { return new collection(doc); });
   });
 };
 
@@ -328,7 +340,7 @@ Collection.prototype.valuesFor = function(fields) {
       }
 
       if (doc) {
-        function extractValues(val) {
+        var extractValues = function(val) {
           if (_.isObject(val) )
             _.each(val, extractValues);
           else
@@ -502,10 +514,11 @@ Collection.prototype.validateValues = function() {
     var header = rows[0],
         hi,
         hlen = header.length,
-        newValues = [];
+        newValues = [],
+        name;
 
     for (hi=0; hi<hlen; hi++) {
-      var name = header[hi];
+      name = header[hi];
 
       if (!_.isString(name)) {
         throw new Error('Expected value ' + hi + ' in the values header for collection ' + def.name + ' to be a string');
@@ -518,14 +531,15 @@ Collection.prototype.validateValues = function() {
 
     for (ri=1; ri<rlen; ri++) {
       var orow = rows[ri],
-          nrow = {};
+          nrow = {},
+          v;
 
       if (orow.length !== hlen && orow.length !== hlen+1) {
         throw new Error('Incorrect number of values on row ' + ri + ' in collection ' + def.name);
       }
 
       for (hi=0; hi<hlen; hi++) {
-        var v = orow[hi];
+        v = orow[hi];
         nrow[header[hi]] = v;
       }
 
@@ -541,9 +555,9 @@ Collection.prototype.validateValues = function() {
         });
       }
      
-      var v = new col(nrow);
+      v = new col(nrow);
       if (col.def.enum) {
-        var name = v[col.labelField];
+        name = v[col.labelField];
 
         if (!name) {
           throw new Error('Static document missing label field: ' + col.labelField);
@@ -594,7 +608,6 @@ var Tyranid = {
 
     return Promise.all(
       _.map(Tyranid.collections, function(c) {
-        var fields = c.fieldsBy(comparable);
         return c.valuesFor(c.fieldsBy(comparable));
       })
     ).then(function(arrs) {
@@ -609,6 +622,12 @@ var Tyranid = {
     collections.length = 0;
     for (var id in collectionsById) {
       delete collectionsById[id];
+    }
+    for (var name in typesByName) {
+      var type = typesByName[name];
+      if (type instanceof Collection) {
+        delete typesByName[name];
+      }
     }
   }
 };
