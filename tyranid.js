@@ -655,6 +655,7 @@ new Type({
 new Type({ name: 'boolean' });
 new Type({ name: 'integer' });
 new Type({ name: 'string' });
+new Type({ name: 'double' });
 
 new Type({
   name: 'array',
