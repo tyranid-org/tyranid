@@ -427,6 +427,10 @@ Collection.prototype.validateSchema = function() {
           throw validator.err(path, 'Unknown type ' + field.is);
         }
 
+        if (type instanceof Collection) {
+          throw validator.err(path, 'Trying to "is" a collection -- ' + field.is + ', either make it a "link" or a metadata snippet');
+        }
+
         field.is = type;
 
         type.validate(validator, path, field);
@@ -594,7 +598,7 @@ var Tyranid = {
     this.db = opts.db;
   },
 
-  validate: function( ) {
+  validate: function() {
     collections.forEach(function(col) {
       col.validateSchema();
     });
