@@ -508,6 +508,8 @@ function toClient(col, data) {
       // TODO:  we can figure out the type of k using metadata to make this work for the case when
       //        we have an array of pojos instead of instances
       obj[k] = toClient(null, v);
+    } else if (v instanceof ObjectId) {
+      obj[k] = v.toString();
     } else {
       // TODO:  right now we're sending down everything we don't have metadata for ...
       //        for example, populated values ... we probably need a more comprehensive solution here, not sure
