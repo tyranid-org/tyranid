@@ -523,7 +523,7 @@ function toClient(col, data) {
  * This creates a new POJO out of a record instance.  Values are copied by reference (not deep-cloned!).
  */
 Collection.prototype.toClient = function(data) {
-  return toClient(this, pojo);
+  return toClient(this, data);
 };
 
 Collection.prototype.validateSchema = function() {
