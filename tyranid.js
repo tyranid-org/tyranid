@@ -194,6 +194,10 @@ var documentPrototype = {
     return this.$model.toClient(this);
   },
 
+  $populate: function(opts) {
+    return this.$model.populate(opts, this);
+  },
+
   $uid: function() {
     return this.$model.idToUid(this._id);
   }
@@ -339,6 +343,9 @@ Collection.prototype.populate = function(opts, documents) {
   var names = fields.map(function(field) { return new Name(col, field); });
 
   function populator(documents) {
+    var isArray = documents && _.isArray(documents);
+    documents = isArray ? documents : [documents];
+
     var insByColId = {};
 
     names.forEach(function(name) {
@@ -383,7 +390,7 @@ Collection.prototype.populate = function(opts, documents) {
         });
       })
     ).then(function() {
-      return documents;
+      return isArray ? documents : documents[0];
     });
   }
 
