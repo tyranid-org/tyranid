@@ -300,9 +300,9 @@ describe( 'tyranid', function() {
       function verifyPeople(people) {
         expect(people.length).to.eql(3);
         expect(people[0]).to.be.an.instanceof(Person);
-        expect(people[0].organization).to.be.an.instanceof(Organization);
-        expect(people[0].organization.name).to.be.eql('Acme Unlimited');
-        expect(people[2].organization.name).to.be.eql('123 Construction');
+        expect(people[0].organization$).to.be.an.instanceof(Organization);
+        expect(people[0].organization$.name).to.be.eql('Acme Unlimited');
+        expect(people[2].organization$.name).to.be.eql('123 Construction');
       }
 
       it( 'should work curried', function() {
