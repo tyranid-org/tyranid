@@ -429,6 +429,13 @@ Collection.prototype.valuesFor = function(fields) {
 Collection.prototype.fromClient = function(pojo) {
   var fields = this.def.fields;
 
+  if (_.isArray(pojo)) {
+    var col = this;
+    return pojo.map(function(doc) {
+      return col.fromClient(doc);
+    });
+  }
+
   var obj = {}; // TODO:  create a new instance of this record-class?
 
   _.each(pojo, function(v, k) {
