@@ -257,7 +257,7 @@ Collection.prototype.idToUid = function(id) {
 };
 
 Collection.prototype.byId = function(id) {
-  return this.findOne({ _id: id });
+  return this.findOne({ _id: (typeof id === 'string') ? ObjectId(id) : id });
 };
 
 
