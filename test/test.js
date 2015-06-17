@@ -116,8 +116,8 @@ describe( 'tyranid', function() {
   });
 
   describe( 'with model', function() {
-    var Person, Job;
-    before(function(done) {
+    var Job, Organization, Person;
+    before(function() {
       tyr.reset();
 
       Job = new tyr.Collection({
@@ -142,10 +142,20 @@ describe( 'tyranid', function() {
         return this.name.substring(0, 8) === 'Software';
       };
 
+      Organization = new tyr.Collection({
+        id: 't04',
+        name: 'organization',
+        fields: {
+          name: { is: 'string' }
+        }
+      });
+
       Person = new tyr.Collection({
         id: 't03',
         name: 'person',
         fields: {
+          _id: { is: 'integer' },
+
           name: {
             is: 'object',
             fields: {
@@ -166,21 +176,28 @@ describe( 'tyranid', function() {
             }
           },
 
-          title: { is: 'string' }
-        }
+          title: { is: 'string' },
+          organization: { link: 'organization' }
+        },
       });
 
       tyr.validate();
 
-      Person.db.drop().then(function() {
-        Person.db.insert([
-          { _id: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
-          { _id: 2, name: { first: 'John', last: 'Doe' } },
-          { _id: 3, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe' } ] }
-        ]).then(function() {
-          done();
-        });
-      });
+      return Promise.all([
+        Organization.db.drop().then(function() {
+          return Organization.db.insert([
+            { _id: 1, name: 'Acme Unlimited' },
+            { _id: 2, name: '123 Construction' }
+          ]);
+        }),
+        Person.db.drop().then(function() {
+          return Person.db.insert([
+            { _id: 1, organization: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
+            { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' } },
+            { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe' } ] }
+          ]);
+        })
+      ]);
     });
 
     describe( 'schema methods', function() {
@@ -215,6 +232,19 @@ describe( 'tyranid', function() {
           expect(docs[0]).to.be.an.instanceof(Person);
         });
       });
+
+      it('should findOne()', function() {
+        return Person.findOne({'name.first': 'An'}).then(function(doc) {
+          expect(doc).to.be.an.instanceof(Person);
+        });
+      });
+
+      it('should byId()', function() {
+        return Person.byId(1).then(function(doc) {
+          expect(doc).to.be.an.instanceof(Person);
+          expect(doc._id).to.be.eql(1);
+        });
+      });
     });
 
     describe('saving', function() {
@@ -234,21 +264,18 @@ describe( 'tyranid', function() {
     });
 
     describe('values', function() {
+      var allString = [ '123 Construction', 'Acme Unlimited', 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ];
 
       it( 'should support valuesFor()', function() {
         Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {
           return values.sort();
-        }).should.eventually.eql(
-          [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
-        );
+        }).should.eventually.eql(allString);
       });
 
       it( 'should support Tyranid.valuesBy()', function() {
         return tyr.valuesBy({ name: 'string' }).then(function(values) {
           return values.sort();
-        }).should.eventually.eql(
-          [ 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ]
-        );
+        }).should.eventually.eql(allString);
       });
     });
 
@@ -265,6 +292,50 @@ describe( 'tyranid', function() {
       it( 'should support static data methods', function() {
         expect(Job.SOFTWARE_LEAD.isSoftware()).to.be.eql(true);
         expect(Job.DESIGNER.isSoftware()).to.be.eql(false);
+      });
+    });
+
+    describe('population', function() {
+
+      function verifyPeople(people) {
+        expect(people.length).to.eql(3);
+        expect(people[0]).to.be.an.instanceof(Person);
+        expect(people[0].organization).to.be.an.instanceof(Organization);
+        expect(people[0].organization.name).to.be.eql('Acme Unlimited');
+        expect(people[2].organization.name).to.be.eql('123 Construction');
+      }
+
+      it( 'should work curried', function() {
+        return Person.find()
+          .then(Person.populate({ fields: 'organization' }))
+          .then(function(people) {
+            verifyPeople(people);
+          });
+      });
+      it( 'should work uncurried', function() {
+        return Person.find()
+          .then(function(people) {
+           return Person.populate({ fields: 'organization' }, people).then(function(people) {
+              verifyPeople(people);
+           });
+          });
+      });
+    });
+
+    describe('uids', function() {
+
+      it( 'should parse', function() {
+        tyr.parseUid('t031').should.eql({
+          collection: Person,
+          id: 1
+        });
+      });
+
+      it( 'should support byId()', function() {
+        return tyr.byUid('t031').then(function(person) {
+          expect(person).to.be.an.instanceof(Person);
+          expect(person._id).to.be.eql(1);
+        });
       });
     });
   });

@@ -58,6 +58,33 @@ var collections     = [],
     config          = {};
 
 
+// Name
+// ====
+
+// TODO:  name needs to support paths, not just simple names ... i.e. "person.organization" not just "person"
+function Name(collection, name) {
+  this.col = collection;
+  this.name = name;
+
+  this.def = collection.def.fields[name];
+  if (!this.def) {
+    throw new Error('Cannot find field "' + name + '" on ' + collection.def.name);
+  }
+}
+
+Name.prototype.toString = function() {
+  return this.name;
+};
+
+Name.prototype.get = function(obj) {
+  return obj[this.name];
+};
+
+Name.prototype.set = function(obj, value) {
+  obj[this.name] = value;
+};
+
+
 // Schema
 // ======
 
@@ -107,6 +134,11 @@ Type.prototype.validate = function(validator, path, field) {
   if (v) {
     v(validator, path, field);
   }
+};
+
+Type.prototype.fromString = function(s) {
+  var a = this.def.fromString;
+  return a ? a(s) : s;
 };
 
 Type.prototype.fromClient = function(field, value) {
@@ -224,6 +256,11 @@ Collection.prototype.idToUid = function(id) {
   return this.id + id;
 };
 
+Collection.prototype.byId = function(id) {
+  return this.findOne({ _id: id });
+};
+
+
 /**
  * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
  */
@@ -233,6 +270,18 @@ Collection.prototype.find = function() {
 
   return db.find.apply(db, arguments).then(function(documents) {
     return _.map(documents, function(doc) { return new collection(doc); });
+  });
+};
+
+/**
+ * Behaves like promised-mongo's findOne() method except that the results are mapped to collection instances.
+ */
+Collection.prototype.findOne = function() {
+  var collection = this,
+      db         = collection.db;
+
+  return db.findOne.apply(db, arguments).then(function(doc) {
+    return new collection(doc);
   });
 };
 
@@ -251,20 +300,22 @@ Collection.prototype.populate = function(opts, documents) {
   var col = this,
       fields = opts.fields;
 
-  if (!_.isArray(fields)) {
+  if (_.isString(fields)) {
     fields = [ fields ];
+  } else if (!_.isArray(fields)) {
+    throw new Error('missing opts.fields option to populate()');
   }
+
+  var names = fields.map(function(field) { return new Name(col, field); });
 
   function populator(documents) {
     var insByColId = {};
 
-    fields.forEach(function(fieldName) {
-      // TODO:  parse field name into a path
-      var def = col.def.fields[fieldName],
-          link = def.link;
+    names.forEach(function(name) {
+      var link = name.def.link;
 
       if (!link) {
-        throw new Error('Cannot populate ' +  col.name + '.' + fieldName + ' -- it is not a link');
+        throw new Error('Cannot populate ' + col.name + '.' + name + ' -- it is not a link');
       }
 
       var linkId = link.id,
@@ -274,8 +325,7 @@ Collection.prototype.populate = function(opts, documents) {
       }
 
       documents.forEach(function(doc) {
-        var id = doc[fieldName];
-        ins[id] = 1;
+        ins.push(name.get(doc));
       });
     });
 
@@ -284,10 +334,24 @@ Collection.prototype.populate = function(opts, documents) {
         var linkCol = collectionsById[colId];
 
         return linkCol.find({ _id: { $in: _.uniq(ins) }}).then(function(linkDocs) {
-          // TODO:  iterate through the documents and fill in the missing documents from linkDocs
+          names.forEach(function(name) {
+            if (name.def.link.id === colId) {
+              documents.forEach(function(doc) {
+                var linkId = name.get(doc);
+
+                // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
+                var linkDoc = _.find(linkDocs, { _id: linkId });
+                if (linkDoc) {
+                  name.set(doc, linkDoc);
+                }
+              });
+            }
+          });
         });
       })
-    );
+    ).then(function() {
+      return documents;
+    });
   }
 
   return documents ? populator(documents) : populator;
@@ -345,7 +409,7 @@ Collection.prototype.valuesFor = function(fields) {
             _.each(val, extractValues);
           else
             values.push(val);
-        }
+        };
 
         extractValues(doc);
       } else {
@@ -619,6 +683,30 @@ var Tyranid = {
     });
   },
 
+  parseUid: function(uid) {
+    var colId = uid.substring(0, 3);
+
+    var col = collectionsById[colId];
+
+    if (!col) {
+      throw new Error('No collection found for id "' + colId + '"');
+    }
+
+    var strId = uid.substring(3);
+
+    var idType = col.def.fields._id.is;
+
+    return {
+      collection: col,
+      id: idType.fromString(strId)
+    };
+  },
+
+  byUid: function(uid) {
+    var p = Tyranid.parseUid(uid);
+    return p.collection.byId(p.id);
+  },
+
   /**
    * Mostly just used by tests.
    */
@@ -653,7 +741,12 @@ new Type({
 });
 
 new Type({ name: 'boolean' });
-new Type({ name: 'integer' });
+new Type({
+  name: 'integer',
+  fromString: function(s) {
+    return parseInt(s, 10);
+  }
+});
 new Type({ name: 'string' });
 new Type({ name: 'double' });
 
@@ -683,6 +776,9 @@ new Type({ name: 'object' });
 
 new Type({
   name: 'mongoid',
+  fromString: function(str) {
+    return ObjectId(value);
+  },
   fromClient: function(field, value) {
     return ObjectId(value);
   },
