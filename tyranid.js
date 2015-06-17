@@ -452,6 +452,13 @@ Collection.prototype.fromClient = function(pojo) {
 Collection.prototype.toClient = function(pojo) {
   var fields = this.def.fields;
 
+  if (_.isArray(pojo)) {
+    var col = this;
+    return pojo.map(function(doc) {
+      return col.toClient(doc);
+    });
+  }
+
   var obj = {};
 
   _.each(pojo, function(v, k) {
