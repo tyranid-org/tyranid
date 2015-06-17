@@ -84,6 +84,28 @@ Name.prototype.set = function(obj, value) {
   obj[this.name] = value;
 };
 
+Name.prototype.populate = function(obj, value) {
+  var n = this.name;
+      l = n.length;
+
+  /*
+   * TODO:  make this a configurable Tyranid option as to how populated entries should be named
+   *
+   *    1. organizationId -> organization
+   *    2. organization   -> organization$
+   *    3. organization   -> organization
+   *
+   * TODO:  should we mark populated values as enumerable: false ?
+   */
+  if (n.substring(l-2) === 'Id') {
+    n = n.substring(0, l-2);
+  } else {
+    n += '$';
+  }
+
+  obj[n] = value;
+};
+
 
 // Schema
 // ======
@@ -342,7 +364,7 @@ Collection.prototype.populate = function(opts, documents) {
                 // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
                 var linkDoc = _.find(linkDocs, { _id: linkId });
                 if (linkDoc) {
-                  name.set(doc, linkDoc);
+                  name.populate(doc, linkDoc);
                 }
               });
             }
