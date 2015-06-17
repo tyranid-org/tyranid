@@ -777,7 +777,7 @@ new Type({ name: 'object' });
 new Type({
   name: 'mongoid',
   fromString: function(str) {
-    return ObjectId(value);
+    return ObjectId(str);
   },
   fromClient: function(field, value) {
     return ObjectId(value);
