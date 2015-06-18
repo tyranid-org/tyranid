@@ -178,7 +178,7 @@ describe( 'tyranid', function() {
 
           title: { is: 'string' },
           organization: { link: 'organization' }
-        },
+        }
       });
 
       tyr.validate();
@@ -244,6 +244,11 @@ describe( 'tyranid', function() {
           expect(doc).to.be.an.instanceof(Person);
           expect(doc._id).to.be.eql(1);
         });
+      });
+
+      it('should byLabel()', function() {
+        expect(Job.byLabel('Designer')._id).to.be.eql(3);
+        expect(Job.byLabel('Software Lead')._id).to.be.eql(2);
       });
     });
 

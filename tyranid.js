@@ -709,6 +709,14 @@ Collection.prototype.validateValues = function() {
 
     def.values = newValues;
 
+    col.byLabel = function(n) {
+      var findName = col.labelField;
+      var q = {};
+      q[findName] = n;
+
+      return _.find(def.values, q );
+    };
+
   } else {
     // object format
 
