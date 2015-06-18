@@ -808,7 +808,8 @@ var Tyranid = {
 new Type({
   name: 'link',
   fromClient: function(field, value) {
-    return field.link.def.fields._id.fromClient(value);
+    var linkField = field.link.def.fields._id;
+    return linkField.is.def.fromClient(linkField, value);
   },
   toClient: function(field, value) {
     return value ? value.toString() : value;
@@ -820,7 +821,14 @@ new Type({
   name: 'integer',
   fromString: function(s) {
     return parseInt(s, 10);
-  }
+  },
+  fromClient: function(field, value) {
+    if (typeof value === 'string') {
+      return parseInt(s, 10);
+    } else {
+      return value;
+    }
+  },
 });
 new Type({ name: 'string' });
 new Type({ name: 'double' });
