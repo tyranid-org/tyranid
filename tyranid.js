@@ -57,7 +57,6 @@ var collections     = [],
     typesByName     = {},
     config          = {};
 
-
 // Name
 // ====
 

@@ -12,6 +12,8 @@ var tyr            = require('../tyranid'),
 chai.use(chaiAsPromised);
 chai.should();
 
+global.ObjectId = pmongo.ObjectId;
+
 describe( 'tyranid', function() {
   var db = null;
   before(function(done) {
@@ -165,6 +167,7 @@ describe( 'tyranid', function() {
           },
 
           birthDate: { is: 'date' },
+          job:       { 'link' : 'job' },
 
           siblings: {
             is: 'array',
@@ -331,9 +334,10 @@ describe( 'tyranid', function() {
     describe('client', function() {
 
       it( 'should fromClient', function() {
-        var personObj = { name : { firstName: 'Foo' } };
+        var personObj = { name : { firstName: 'Foo' }, job : 1 };
         var person = Person.fromClient(personObj);
         expect(person).to.be.an.instanceof(Person);
+        expect(person.job).to.be.eql(1);
       });
     });
 
