@@ -486,7 +486,7 @@ Collection.prototype.fromClient = function(pojo) {
     }
   });
 
-  return obj;
+  return new this(obj);
 };
 
 function toClient(col, data) {
@@ -714,7 +714,7 @@ Collection.prototype.validateValues = function() {
       var q = {};
       q[findName] = n;
 
-      return _.find(def.values, q );
+      return _.find(def.values, q);
     };
 
   } else {

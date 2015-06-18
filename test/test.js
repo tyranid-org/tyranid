@@ -328,6 +328,15 @@ describe( 'tyranid', function() {
       });
     });
 
+    describe('client', function() {
+
+      it( 'should fromClient', function() {
+        var personObj = { name : { firstName: 'Foo' } };
+        var person = Person.fromClient(personObj);
+        expect(person).to.be.an.instanceof(Person);
+      });
+    });
+
     describe('uids', function() {
 
       it( 'should parse', function() {
