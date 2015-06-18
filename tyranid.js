@@ -808,10 +808,8 @@ var Tyranid = {
 
 new Type({
   name: 'link',
-  // TODO:  look up the data type of the id, and use that type from inside link, rather than just copying mongoids
-  //        (i.e. if the primary id is an int)
   fromClient: function(field, value) {
-    return ObjectId(value);
+    return field.link.def.fields._id.fromClient(value);
   },
   toClient: function(field, value) {
     return value ? value.toString() : value;
