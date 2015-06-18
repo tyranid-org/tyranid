@@ -1,5 +1,8 @@
 language: node_js
 
+services:
+  - mongodb
+
 #test on two node.js versions: 0.6 and 0.8
 node_js:
   - 0.10
