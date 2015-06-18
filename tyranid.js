@@ -812,7 +812,7 @@ new Type({
     return linkField.is.def.fromClient(linkField, value);
   },
   toClient: function(field, value) {
-    return value ? value.toString() : value;
+    return value ? (value instanceof ObjectId ? value.toString() : value) : value;
   }
 });
 
@@ -828,7 +828,7 @@ new Type({
     } else {
       return value;
     }
-  },
+  }
 });
 new Type({ name: 'string' });
 new Type({ name: 'double' });
