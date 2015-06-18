@@ -834,10 +834,6 @@ new Type({
   name: 'link',
   fromClient: function(field, value) {
     var linkField = field.link.def.fields._id;
-
-    if (!linkField) {
-      console.log('linkField', field.link.def.fields);
-    }
     return linkField.is.def.fromClient(linkField, value);
   },
   toClient: function(field, value) {
