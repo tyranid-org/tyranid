@@ -190,6 +190,14 @@ var documentPrototype = {
     return this.$model.db.save(this);
   },
 
+  $toClient: function() {
+    return this.$model.toClient(this);
+  },
+
+  $populate: function(opts) {
+    return this.$model.populate(opts, this);
+  },
+
   $uid: function() {
     return this.$model.idToUid(this._id);
   }
@@ -335,6 +343,9 @@ Collection.prototype.populate = function(opts, documents) {
   var names = fields.map(function(field) { return new Name(col, field); });
 
   function populator(documents) {
+    var isArray = documents && _.isArray(documents);
+    documents = isArray ? documents : [documents];
+
     var insByColId = {};
 
     names.forEach(function(name) {
@@ -363,10 +374,13 @@ Collection.prototype.populate = function(opts, documents) {
           names.forEach(function(name) {
             if (name.def.link.id === colId) {
               documents.forEach(function(doc) {
-                var linkId = name.get(doc);
+                var linkIdStr = name.get(doc).toString();
 
                 // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
-                var linkDoc = _.find(linkDocs, { _id: linkId });
+                var linkDoc = _.find(linkDocs, function(d) {
+                  return d._id.toString() === linkIdStr;
+                });
+
                 if (linkDoc) {
                   name.populate(doc, linkDoc);
                 }
@@ -376,7 +390,7 @@ Collection.prototype.populate = function(opts, documents) {
         });
       })
     ).then(function() {
-      return documents;
+      return isArray ? documents : documents[0];
     });
   }
 
@@ -475,34 +489,50 @@ Collection.prototype.fromClient = function(pojo) {
   return obj;
 };
 
-/**
- * This creates a new POJO out of a record instance.  Values are copied by reference (not deep-cloned!).
- */
-Collection.prototype.toClient = function(pojo) {
-  var fields = this.def.fields;
+function toClient(col, data) {
 
-  if (_.isArray(pojo)) {
-    var col = this;
-    return pojo.map(function(doc) {
-      return col.toClient(doc);
+  if (_.isArray(data)) {
+    return data.map(function(doc) {
+      return toClient(col, doc);
     });
   }
 
   var obj = {};
 
-  _.each(pojo, function(v, k) {
-    var field = fields[k];
+  var fields = col ? col.def.fields : null;
+  _.each(data, function(v, k) {
+    var field;
 
-    if (field) {
+    if (fields && (field=fields[k])) {
       v = field.is.toClient(field, v);
 
       if (v !== undefined) {
         obj[k] = v;
       }
+    } else if (v.$toClient) {
+      obj[k] = v.$toClient();
+    } else if (_.isArray(v)) {
+      // TODO:  we can figure out the type of k using metadata to make this work for the case when
+      //        we have an array of pojos instead of instances
+      obj[k] = toClient(null, v);
+    } else if (v instanceof ObjectId) {
+      obj[k] = v.toString();
+    } else {
+      // TODO:  right now we're sending down everything we don't have metadata for ...
+      //        for example, populated values ... we probably need a more comprehensive solution here, not sure
+      //        what it would be yet
+      obj[k] = v;
     }
   });
 
   return obj;
+};
+
+/**
+ * This creates a new POJO out of a record instance.  Values are copied by reference (not deep-cloned!).
+ */
+Collection.prototype.toClient = function(data) {
+  return toClient(this, data);
 };
 
 Collection.prototype.validateSchema = function() {
@@ -678,6 +708,14 @@ Collection.prototype.validateValues = function() {
     }
 
     def.values = newValues;
+
+    col.byLabel = function(n) {
+      var findName = col.labelField;
+      var q = {};
+      q[findName] = n;
+
+      return _.find(def.values, q );
+    };
 
   } else {
     // object format
