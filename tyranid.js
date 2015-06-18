@@ -189,6 +189,10 @@ var documentPrototype = {
     return this.$model.db.save(this);
   },
 
+  $update: function() {
+    return this.$model.update(this);
+  },
+
   $toClient: function() {
     return this.$model.toClient(this);
   },
@@ -318,6 +322,23 @@ Collection.prototype.findOne = function() {
   });
 };
 
+Collection.prototype.update = function(obj) {
+  var flds = this.def.fields;
+  var setObj = {};
+
+  _.each(flds, function(v,k) {
+    if (obj[k] !== undefined) {
+      setObj[k] = obj[k];
+    }
+  });
+
+  return this.db.update(
+    { _id : obj._id },
+    { $set : setObj }
+  );
+};
+
+
 /**
  * @opts: options ... options are:
  *   @fields: string | array<string>;   a property name or an array of property names
@@ -351,7 +372,7 @@ Collection.prototype.populate = function(opts, documents) {
       var link = name.def.link;
 
       if (!link) {
-        throw new Error('Cannot populate ' + col.name + '.' + name + ' -- it is not a link');
+        throw new Error('Cannot populate ' + col.def.name + '.' + name + ' -- it is not a link');
       }
 
       var linkId = link.id,
@@ -613,6 +634,10 @@ Collection.prototype.validateSchema = function() {
 
   validator.fields('', col.def.fields);
 
+  if (!col.def.fields._id) {
+    throw new Error('Collection ' + col.def.name + ' is missing an _id field.');
+  }
+
   if (col.def.enum && !col.labelField) {
     throw new Error('Some string field must have the label property set if the collection is an enumeration.');
   }
@@ -809,6 +834,10 @@ new Type({
   name: 'link',
   fromClient: function(field, value) {
     var linkField = field.link.def.fields._id;
+
+    if (!linkField) {
+      console.log('linkField', field.link.def.fields);
+    }
     return linkField.is.def.fromClient(linkField, value);
   },
   toClient: function(field, value) {

@@ -148,6 +148,7 @@ describe( 'tyranid', function() {
         id: 't04',
         name: 'organization',
         fields: {
+          _id: { is: 'integer' },
           name: { is: 'string' }
         }
       });
@@ -338,6 +339,25 @@ describe( 'tyranid', function() {
         var person = Person.fromClient(personObj);
         expect(person).to.be.an.instanceof(Person);
         expect(person.job).to.be.eql(1);
+      });
+    });
+
+    describe('update', function() {
+      it( 'should update shallow', function() {
+        return Person.byId(1)
+          .then( function(savedPerson) {
+            var clientPerson =  { _id: 1, organization: 2 };
+            var person = Person.fromClient(clientPerson);
+
+            return person.$update()
+              .then(function() {
+                return Person.byId(1);
+              })
+              .then(function(newPerson) {
+                savedPerson.$save();
+                expect(newPerson.title).to.be.eql('Developer');
+              });
+          });
       });
     });
 
