@@ -4,7 +4,7 @@
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "tyranid.js",
   "scripts": {
-    "test": "npm test"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
