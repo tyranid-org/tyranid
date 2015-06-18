@@ -184,13 +184,13 @@ describe( 'tyranid', function() {
       tyr.validate();
 
       return Promise.all([
-        Organization.db.drop().then(function() {
+        Organization.db.remove({}).then(function() {
           return Organization.db.insert([
             { _id: 1, name: 'Acme Unlimited' },
             { _id: 2, name: '123 Construction' }
           ]);
         }),
-        Person.db.drop().then(function() {
+        Person.db.remove({}).then(function() {
           return Person.db.insert([
             { _id: 1, organization: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' } },
