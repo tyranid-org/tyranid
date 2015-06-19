@@ -307,7 +307,7 @@ Collection.prototype.find = function() {
       db         = collection.db;
 
   return db.find.apply(db, arguments).then(function(documents) {
-    return _.map(documents, function(doc) { return new collection(doc); });
+    return _.compact(_.map(documents, function(doc) { return doc ? new collection(doc) : null; }));
   });
 };
 
@@ -319,7 +319,7 @@ Collection.prototype.findOne = function() {
       db         = collection.db;
 
   return db.findOne.apply(db, arguments).then(function(doc) {
-    return new collection(doc);
+    return doc ? new collection(doc) : null;
   });
 };
 
@@ -389,6 +389,10 @@ Collection.prototype.populate = function(opts, documents) {
 
     return Promise.all(
       _.map(insByColId, function(ins, colId) {
+
+        if (!ins.length)
+          return Promise.resolve();
+
         var linkCol = collectionsById[colId];
 
         return linkCol.find({ _id: { $in: _.uniq(ins) }}).then(function(linkDocs) {
