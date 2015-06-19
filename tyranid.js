@@ -394,15 +394,19 @@ Collection.prototype.populate = function(opts, documents) {
           names.forEach(function(name) {
             if (name.def.link.id === colId) {
               documents.forEach(function(doc) {
-                var linkIdStr = name.get(doc).toString();
+                var linkId = name.get(doc);
 
-                // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
-                var linkDoc = _.find(linkDocs, function(d) {
-                  return d._id.toString() === linkIdStr;
-                });
+                if (linkId) {
+                  var linkIdStr = linkId.toString();
 
-                if (linkDoc) {
-                  name.populate(doc, linkDoc);
+                  // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
+                  var linkDoc = _.find(linkDocs, function(d) {
+                    return d._id.toString() === linkIdStr;
+                  });
+
+                  if (linkDoc) {
+                    name.populate(doc, linkDoc);
+                  }
                 }
               });
             }

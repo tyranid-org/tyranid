@@ -153,6 +153,15 @@ describe( 'tyranid', function() {
         }
       });
 
+      Department = new tyr.Collection({
+        id: 't05',
+        name: 'department',
+        fields: {
+          _id: { is: 'integer' },
+          name: { is: 'string' }
+        }
+      });
+
       Person = new tyr.Collection({
         id: 't03',
         name: 'person',
@@ -181,7 +190,8 @@ describe( 'tyranid', function() {
           },
 
           title: { is: 'string' },
-          organization: { link: 'organization' }
+          organization: { link: 'organization' },
+          department: { link: 'department' }
         }
       });
 
@@ -194,9 +204,14 @@ describe( 'tyranid', function() {
             { _id: 2, name: '123 Construction' }
           ]);
         }),
+        Department.db.remove({}).then(function() {
+          return Department.db.insert([
+            { _id: 1, name: 'Engineering' }
+          ]);
+        }),
         Person.db.remove({}).then(function() {
           return Person.db.insert([
-            { _id: 1, organization: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
+            { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' } },
             { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe' } ] }
           ]);
@@ -273,7 +288,7 @@ describe( 'tyranid', function() {
     });
 
     describe('values', function() {
-      var allString = [ '123 Construction', 'Acme Unlimited', 'An', 'Anon', 'Developer', 'Doe', 'Jane', 'Jill Doe', 'John' ];
+      var allString = [ '123 Construction', 'Acme Unlimited', 'An', 'Anon', 'Developer', 'Doe', 'Engineering', 'Jane', 'Jill Doe', 'John' ];
 
       it( 'should support valuesFor()', function() {
         Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {
@@ -330,6 +345,16 @@ describe( 'tyranid', function() {
            });
           });
       });
+
+      it( 'should skip fields with no value', function() {
+        return Person.find()
+          .then(function(people) {
+            return Person.populate({ fields: [ 'organization', 'department' ] }, people).then(function(people) {
+              verifyPeople(people);
+            });
+          });
+      });
+
     });
 
     describe('client', function() {
