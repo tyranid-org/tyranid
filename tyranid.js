@@ -327,7 +327,7 @@ Collection.prototype.update = function(obj) {
   var setObj = {};
 
   _.each(flds, function(v,k) {
-    if (obj[k] !== undefined) {
+    if (obj[k] !== undefined && k !== '_id') {
       setObj[k] = obj[k];
     }
   });
