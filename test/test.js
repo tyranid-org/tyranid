@@ -118,84 +118,19 @@ describe( 'tyranid', function() {
   });
 
   describe( 'with model', function() {
-    var Job, Organization, Person;
+    var Job, Organization, Department, Person;
+    var Job2, Organization2, Department2, Person2;
+
     before(function() {
       tyr.reset();
 
-      Job = new tyr.Collection({
-        id: 'j00',
-        name: 'job',
-        enum: true,
-        fields: {
-          _id:     { is: 'integer' },
-          name:    { is: 'string', label: true },
-          manager: { is: 'boolean' }
-        },
-        values: [
-          [ '_id', 'name',              'manager' ],
+      // Test validate load models and byName
+      tyr.validate([{dir:'./test/models'}]);
 
-          [    1,  'Software Engineer', false     ],
-          [    2,  'Software Lead',     true      ],
-          [    3,  'Designer',          false     ]
-        ]
-      });
-
-      Job.prototype.isSoftware = function() {
-        return this.name.substring(0, 8) === 'Software';
-      };
-
-      Organization = new tyr.Collection({
-        id: 't04',
-        name: 'organization',
-        fields: {
-          _id: { is: 'integer' },
-          name: { is: 'string' }
-        }
-      });
-
-      Department = new tyr.Collection({
-        id: 't05',
-        name: 'department',
-        fields: {
-          _id: { is: 'integer' },
-          name: { is: 'string' }
-        }
-      });
-
-      Person = new tyr.Collection({
-        id: 't03',
-        name: 'person',
-        fields: {
-          _id: { is: 'integer' },
-
-          name: {
-            is: 'object',
-            fields: {
-              first: { is: 'string', as: 'First Name' },
-              last:  { is: 'string', as: 'Last Name'  }
-            }
-          },
-
-          birthDate: { is: 'date' },
-          job:       { 'link' : 'job' },
-
-          siblings: {
-            is: 'array',
-            of: {
-              is: 'object',
-              fields: {
-                name: { is: 'string' }
-              }
-            }
-          },
-
-          title: { is: 'string' },
-          organization: { link: 'organization' },
-          department: { link: 'department' }
-        }
-      });
-
-      tyr.validate();
+      Job = tyr.byName('job');
+      Organization = tyr.byName('organization');
+      Department = tyr.byName('department');
+      Person = tyr.byName('person');
 
       return Promise.all([
         Organization.db.remove({}).then(function() {

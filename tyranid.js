@@ -1,5 +1,6 @@
 
-var _ = require( 'lodash' );
+var _ = require( 'lodash'),
+   fs = require('fs');
 
 /*
 
@@ -766,9 +767,34 @@ var Tyranid = {
       throw new Error('Missing "db" in config.');
 
     this.db = opts.db;
+
+    if (opts.validate) {
+      if (!_.isArray(opts.validate))
+        throw new Error('Validate options must be an array of objects of "dir" and "fileMatch".');
+
+      this.validate(opts.validate);
+    }
   },
 
-  validate: function() {
+  validate: function(opts) {
+    if (opts) {
+      _.forEach(opts, function(opt) {
+        if (!opt.dir)
+          throw new Error('dir not specified in validate option.');
+
+        var fileRe = opt.fileMatch ? new RegExp(opt.fileMatch) : undefined;
+
+        fs
+          .readdirSync(opt.dir)
+          .filter(function(file) {
+            return !fileRe || fileRe.test(file);
+          })
+          .forEach(function(file) {
+            require(opt.dir + '/' + file);
+          });
+      });
+    }
+
     collections.forEach(function(col) {
       col.validateSchema();
     });
@@ -813,7 +839,13 @@ var Tyranid = {
     return p.collection.byId(p.id);
   },
 
-  /**
+  byName: function(name) {
+    return _.find(collections, function(c) {
+      return c.def.name === name;
+    });
+  },
+
+/**
    * Mostly just used by tests.
    */
   reset: function() {
