@@ -845,7 +845,7 @@ var Tyranid = {
 
   byName: function(name) {
     return _.find(collections, function(c) {
-      return c.def.name === name;
+      return c.def.name.toLowerCase() === name.toLowerCase();
     });
   },
 
