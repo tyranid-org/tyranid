@@ -744,10 +744,12 @@ Collection.prototype.validateValues = function() {
 
     col.byLabel = function(n) {
       var findName = col.labelField;
-      var q = {};
-      q[findName] = n;
+      var matchLower = n.toLowerCase();
 
-      return _.find(def.values, q);
+      return _.find(def.values, function(v) {
+        var name = v[findName];
+        return name && name.toLowerCase() === matchLower;
+      });
     };
 
   } else {
@@ -844,8 +846,10 @@ var Tyranid = {
   },
 
   byName: function(name) {
+    var nameLower = name.toLowerCase();
+    
     return _.find(collections, function(c) {
-      return c.def.name.toLowerCase() === name.toLowerCase();
+      return c.def.name.toLowerCase() === nameLower;
     });
   },
 
