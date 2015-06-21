@@ -111,8 +111,6 @@ NamePath.prototype.getUniq = function(obj) {
   var values = [];
 
   function getInner(pi, obj) {
-    var name = path[pi];
-
     if (_.isArray(obj)) {
       for (var ai=0, alen=obj.length; ai<alen; ai++ ){
         getInner(pi, obj[ai]);
