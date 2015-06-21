@@ -164,7 +164,7 @@ NamePath.prototype.populate = function(obj, linkDocs) {
       }
 
       return arr;
-    } else if (_.isObject(obj)) {
+    } else if (_.isObject(obj) && !(obj instanceof ObjectId)) {
       throw new Error('Got object when expected a link value');
     } else if (!obj) {
       return obj;
