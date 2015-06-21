@@ -349,6 +349,21 @@ describe( 'tyranid', function() {
         });
       });
     });
+
+    describe('validation', function() {
+
+      it( 'should return no validation errors on a valid data', function() {
+        var person = new Person({ name: { first: 'Jane' }, age: 5 });
+
+        expect(person.$validate().length).to.be.eql(0);
+      });
+
+      it( 'should return validate errors on invalid data', function() {
+        var person = new Person({ age: 5.1 });
+
+        expect(person.$validate().length).to.be.eql(2);
+      });
+    });
   });
 });
 

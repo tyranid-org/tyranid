@@ -56,7 +56,8 @@ var _ = require( 'lodash'),
 var collections     = [],
     collectionsById = {},
     typesByName     = {},
-    config          = {};
+    config          = {},
+    ObjectType;
 
 
 // NamePath
@@ -244,21 +245,30 @@ function Type(def) {
   validateType(this);
 }
 
-Type.prototype.validate = function(validator, path, field) {
-  var v = this.def.validate;
+Type.prototype.validateSchema = function(validator, path, field) {
+  var v = this.def.validateSchema;
   if (v) {
     v(validator, path, field);
   }
 };
 
+Type.prototype.validate = function(path, field, value) {
+  if (field.required && value === undefined) {
+    return new ValidationError(path, 'is required');
+  }
+
+  var f = this.def.validate;
+  return f ? f(path, field, value) : undefined;
+};
+
 Type.prototype.fromString = function(s) {
-  var a = this.def.fromString;
-  return a ? a(s) : s;
+  var f = this.def.fromString;
+  return f ? f(s) : s;
 };
 
 Type.prototype.fromClient = function(field, value) {
-  var a = this.def.fromClient;
-  return a ? a(field, value) : value;
+  var f = this.def.fromClient;
+  return f ? f(field, value) : value;
 };
 
 Type.prototype.toClient = function(field, value) {
@@ -268,9 +278,29 @@ Type.prototype.toClient = function(field, value) {
     return undefined;
   }
 
-  var a = def.toClient;
-  return a ? a(field, value) : value;
+  var f = def.toClient;
+  return f ? f(field, value) : value;
 };
+
+
+// Validation
+// ==========
+
+function ValidationError(path, reason) {
+  this.path = path;
+  this.reason = reason;
+}
+
+Object.defineProperty(ValidationError, 'message', {
+  get: function() {
+    'The value at ' + this.path + ' ' + this.reason;
+  }
+});
+
+ValidationError.prototype.toString = function() {
+  return this.message;
+};
+
 
 
 // Document
@@ -297,6 +327,10 @@ var documentPrototype = {
 
   $uid: function() {
     return this.$model.idToUid(this._id);
+  },
+
+  $validate: function() {
+    return ObjectType.validate('', this.$model.def, this);
   }
 };
 
@@ -705,7 +739,7 @@ Collection.prototype.validateSchema = function() {
 
         field.is = type;
 
-        type.validate(validator, path, field);
+        type.validateSchema(validator, path, field);
 
         if (type.def.name === 'object' && field.fields) {
           validator.fields(path, field.fields);
@@ -874,6 +908,7 @@ Collection.prototype.validateValues = function() {
 
 var Tyranid = {
   Type: Type,
+  ValidationError: ValidationError,
 
   config: function(opts) {
     config = opts;
@@ -1006,6 +1041,11 @@ new Type({
     } else {
       return value;
     }
+  },
+  validate: function(path, field, value) {
+    if (value !== undefined && (typeof value !== 'number' || value % 1 !== 0)) {
+      return new ValidationError(path, 'is not an integer');
+    }
   }
 });
 new Type({ name: 'string' });
@@ -1013,7 +1053,7 @@ new Type({ name: 'double' });
 
 new Type({
   name: 'array',
-  validate: function(validator, path, field) {
+  validateSchema: function(validator, path, field) {
     var of = field.of;
 
     if (!of) {
@@ -1033,7 +1073,26 @@ new Type({
   }
 });
 
-new Type({ name: 'object' });
+ObjectType = new Type({
+  name: 'object',
+  validate: function(path, def, obj) {
+    var errors = [];
+
+    if (obj) {
+      _.each(def.fields, function(field, fieldName) {
+        var error = field.is.validate(path + '.' + fieldName, field, obj[fieldName]);
+        
+        if (error instanceof ValidationError) {
+          errors.push(error);
+        } else if (_.isArray(error)) {
+          Array.prototype.push.apply(errors, error);
+        }
+      });
+    }
+
+    return errors;
+  }
+});
 
 new Type({
   name: 'mongoid',

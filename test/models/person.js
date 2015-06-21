@@ -10,14 +10,16 @@ var Person = new tyr.Collection({
 
     name: {
       is: 'object',
+      required: true,
       fields: {
-        first: { is: 'string', as: 'First Name' },
+        first: { is: 'string', as: 'First Name', required: true },
         last:  { is: 'string', as: 'Last Name'  }
       }
     },
 
     birthDate: { is: 'date' },
     job:       { 'link' : 'job' },
+    age:       { is: 'integer' },
 
     siblings: {
       is: 'array',
