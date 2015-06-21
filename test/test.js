@@ -131,6 +131,7 @@ describe( 'tyranid', function() {
       Organization = tyr.byName('organization');
       Department = tyr.byName('department');
       Person = tyr.byName('person');
+      Task = tyr.byName('task');
 
       return Promise.all([
         Organization.db.remove({}).then(function() {
@@ -147,8 +148,13 @@ describe( 'tyranid', function() {
         Person.db.remove({}).then(function() {
           return Person.db.insert([
             { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
-            { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' } },
+            { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org' },
             { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe' } ] }
+          ]);
+        }),
+        Task.db.remove({}).then(function() {
+          return Task.db.insert([
+            { _id: 1, title: 'Write instance validation tests', assigneeUid: Person.idToUid(1) },
           ]);
         })
       ]);

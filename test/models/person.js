@@ -31,7 +31,8 @@ var Person = new tyr.Collection({
 
     title: { is: 'string' },
     organization: { link: 'organization' },
-    department: { link: 'department' }
+    department: { link: 'department' },
+    homepage: { is: 'url' }
   }
 });
 

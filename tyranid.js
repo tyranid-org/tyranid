@@ -994,6 +994,40 @@ new Type({
   }
 });
 
+function validateUidCollection(validator, path, collection) {
+  var unknownTypeErrMsg = 'Unknown Collection for uid "of".';
+  if (collection instanceof Collection) {
+    if (!collectionsById[collection.id]) {
+      throw validator.err(path, unknownTypeErrMsg);
+    }
+  } else if (typeof collection === 'string') {
+    collection = Tyranid.byName(collection);
+    if (!collection) {
+      throw validator.err(path, unknownTypeErrMsg);
+    }
+  } else {
+    throw validator.err(path, unknownTypeErrMsg);
+  }
+};
+new Type({
+  name: 'uid',
+  validate: function (validator, path, field) {
+    var of = field.of;
+
+    if (!of) {
+      return;
+    }
+
+    if (Array.isArray(of)) {
+      _.each(of, function(v /*,k*/ ) {
+        validateUidCollection(validator, path, v);
+      });
+    } else {
+      validateUidCollection(validator, path, of);
+    }
+  }
+});
+
 new Type({ name: 'boolean' });
 new Type({
   name: 'integer',
@@ -1049,6 +1083,7 @@ new Type({
 });
 
 new Type({ name: 'email' });
+new Type({ name: 'url' });
 new Type({ name: 'password', client: false });
 new Type({ name: 'image' });
 new Type({ name: 'date' });
