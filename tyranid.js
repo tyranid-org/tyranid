@@ -1046,7 +1046,7 @@ function validateUidCollection(validator, path, collection) {
 };
 new Type({
   name: 'uid',
-  validate: function (validator, path, field) {
+  validateSchema: function (validator, path, field) {
     var of = field.of;
 
     if (!of) {
