@@ -58,52 +58,147 @@ var collections     = [],
     typesByName     = {},
     config          = {};
 
-// Name
-// ====
 
-// TODO:  name needs to support paths, not just simple names ... i.e. "person.organization" not just "person"
-function Name(collection, name) {
+// NamePath
+// ========
+
+function NamePath(collection, pathName) {
   this.col = collection;
-  this.name = name;
+  this.name = pathName;
+  var path = this.path = pathName.split('.'),
+      plen = path.length;
 
-  this.def = collection.def.fields[name];
-  if (!this.def) {
-    throw new Error('Cannot find field "' + name + '" on ' + collection.def.name);
+  var defs = this.defs = new Array(plen);
+  
+
+  var def = collection.def;
+  for (var pi=0; pi<plen; pi++) {
+    var name = path[pi];
+
+    def = def.fields[name];
+    while (def.is.def.name === 'array') {
+      def = def.of;
+    }
+
+    if (!def) {
+      throw new Error('Cannot find field "' + this.pathName(pi) + '" in ' + collection.def.name);
+    }
+
+    defs[pi] = def;
   }
 }
 
-Name.prototype.toString = function() {
+NamePath.prototype.pathName = function(pi) {
+  return this.path.length === 1 ? this.name : this.names.slice(0, pi).join('.') + ' in ' + this.name;
+};
+
+NamePath.prototype.toString = function() {
   return this.name;
 };
 
-Name.prototype.get = function(obj) {
-  return obj[this.name];
+NamePath.prototype.tailDef = function() {
+  var def = this.defs[this.defs.length-1];
+  while (def.is.def.name === 'array') {
+    def = def.of;
+  }
+  return def;
 };
 
-Name.prototype.set = function(obj, value) {
-  obj[this.name] = value;
-};
+NamePath.prototype.getUniq = function(obj) {
+  var path = this.path,
+      plen = path.length;
 
-Name.prototype.populate = function(obj, value) {
-  var n = this.name;
-      l = n.length;
+  var values = [];
 
-  /*
-   * TODO:  make this a configurable Tyranid option as to how populated entries should be named
-   *
-   *    1. organizationId -> organization
-   *    2. organization   -> organization$
-   *    3. organization   -> organization
-   *
-   * TODO:  should we mark populated values as enumerable: false ?
-   */
-  if (n.substring(l-2) === 'Id') {
-    n = n.substring(0, l-2);
-  } else {
-    n += '$';
+  function getInner(pi, obj) {
+    var name = path[pi];
+
+    if (_.isArray(obj)) {
+      for (var ai=0, alen=obj.length; ai<alen; ai++ ){
+        getInner(pi, obj[ai]);
+      }
+    } else if (pi === plen) {
+      values.push(obj);
+    } else if (!_.isObject(obj)) {
+      throw new Error('Expected an object or array at ' + this.pathName(pi) + ', but got ' + obj);
+    } else {
+      getInner(pi+1, obj[path[pi]]);
+    }
   }
 
-  obj[n] = value;
+  getInner(0, obj);
+  return _.uniq(values);
+};
+
+/**
+ * TODO:  make this a configurable Tyranid option as to how populated entries should be named
+ *
+ *    1. organizationId -> organization
+ *    2. organization   -> organization$
+ *    3. organization   -> organization
+ */
+NamePath.populateNameFor = function(name) {
+  var l = name.length;
+
+  if (name.substring(l-2) === 'Id') {
+    return name.substring(0, l-2);
+  } else {
+    return name + '$';
+  }
+};
+
+/*
+ * TODO:  should we mark populated values as enumerable: false ?
+ */
+NamePath.prototype.populate = function(obj, linkDocs) {
+  var namePath = this,
+      path     = namePath.path,
+      plen     = path.length;
+
+  function mapIdsToObjects(obj) {
+
+    if (_.isArray(obj)) {
+      var arr = new Array(obj.length);
+
+      for (var ai=0, alen=obj.length; ai<alen; ai++ ){
+        arr[ai] = mapIdsToObjects(obj[ai]);
+      }
+
+      return arr;
+    } else if (_.isObject(obj)) {
+      throw new Error('Got object when expected a link value');
+    } else if (!obj) {
+      return obj;
+    } else {
+      var linkIdStr = obj.toString();
+
+      // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
+      return _.find(linkDocs, function(d) {
+        return d._id.toString() === linkIdStr;
+      });
+    }
+  }
+
+  function walkToEndOfPath(pi, obj) {
+    var name = path[pi];
+
+    if (pi === plen - 1) {
+      var pname = NamePath.populateNameFor(name);
+
+      obj[pname] = mapIdsToObjects(obj[name]);
+
+    } else if (_.isArray(obj)) {
+      for (var ai=0, alen=obj.length; ai<alen; ai++ ){
+        walkToEndOfPath(pi, obj[ai]);
+      }
+    } else if (!_.isObject(obj)) {
+      throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
+    } else {
+      walkToEndOfPath(pi+1, obj[path[pi]]);
+    }
+  }
+
+  walkToEndOfPath(0, obj);
 };
 
 
@@ -355,13 +450,42 @@ Collection.prototype.populate = function(opts, documents) {
   var col = this,
       fields = opts.fields;
 
+  /*
+      populate permissions.members
+       
+        example syntax:
+
+        {
+          'permissions.members': {
+            name: 1,
+            organization: { _id: 0, name: 1 }
+          }
+        }
+
+        ?. is it true that an embedded object equals a population?
+
+           ?. does mongo's projection syntax have embedded objects?
+
+              !. not in regular find(), but you can inside the aggregation framework
+
+        /. solve strings first
+
+        /. recursively process embedded objects
+
+          
+           permissions.members
+
+           
+
+   */
+
   if (_.isString(fields)) {
     fields = [ fields ];
   } else if (!_.isArray(fields)) {
     throw new Error('missing opts.fields option to populate()');
   }
 
-  var names = fields.map(function(field) { return new Name(col, field); });
+  var names = fields.map(function(field) { return new NamePath(col, field); });
 
   function populator(documents) {
     var isArray = documents && _.isArray(documents);
@@ -370,7 +494,7 @@ Collection.prototype.populate = function(opts, documents) {
     var insByColId = {};
 
     names.forEach(function(name) {
-      var link = name.def.link;
+      var link = name.tailDef().link;
 
       if (!link) {
         throw new Error('Cannot populate ' + col.def.name + '.' + name + ' -- it is not a link');
@@ -383,7 +507,7 @@ Collection.prototype.populate = function(opts, documents) {
       }
 
       documents.forEach(function(doc) {
-        ins.push(name.get(doc));
+        Array.prototype.push.apply(ins, name.getUniq(doc));
       });
     });
 
@@ -397,22 +521,9 @@ Collection.prototype.populate = function(opts, documents) {
 
         return linkCol.find({ _id: { $in: _.uniq(ins) }}).then(function(linkDocs) {
           names.forEach(function(name) {
-            if (name.def.link.id === colId) {
+            if (name.tailDef().link.id === colId) {
               documents.forEach(function(doc) {
-                var linkId = name.get(doc);
-
-                if (linkId) {
-                  var linkIdStr = linkId.toString();
-
-                  // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
-                  var linkDoc = _.find(linkDocs, function(d) {
-                    return d._id.toString() === linkIdStr;
-                  });
-
-                  if (linkDoc) {
-                    name.populate(doc, linkDoc);
-                  }
-                }
+                name.populate(doc, linkDocs);
               });
             }
           });
@@ -555,7 +666,7 @@ function toClient(col, data) {
   });
 
   return obj;
-};
+}
 
 /**
  * This creates a new POJO out of a record instance.  Values are copied by reference (not deep-cloned!).
@@ -849,7 +960,7 @@ var Tyranid = {
     });
   },
 
-/**
+  /**
    * Mostly just used by tests.
    */
   reset: function() {
@@ -889,7 +1000,7 @@ new Type({
   },
   fromClient: function(field, value) {
     if (typeof value === 'string') {
-      return parseInt(s, 10);
+      return parseInt(value, 10);
     } else {
       return value;
     }

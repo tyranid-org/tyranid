@@ -6,8 +6,11 @@ var Department = new tyr.Collection({
   id: 't05',
   name: 'department',
   fields: {
-    _id: { is: 'integer' },
-    name: { is: 'string' }
+    _id:         { is: 'integer' },
+    name:        { is: 'string' },
+    permissions: { is: 'object', fields: {
+      members: { is: 'array', of: { link: 'person' } }
+    }},
   }
 });
 

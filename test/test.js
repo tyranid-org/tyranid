@@ -119,13 +119,13 @@ describe( 'tyranid', function() {
 
   describe( 'with model', function() {
     var Job, Organization, Department, Person;
-    var Job2, Organization2, Department2, Person2;
+    //var Job2, Organization2, Department2, Person2;
 
     before(function() {
       tyr.reset();
 
       // Test validate load models and byName
-      tyr.validate([{dir:'./test/models'}]);
+      tyr.validate([{dir:'./test/models', fileMatch: '\.js$' }]);
 
       Job = tyr.byName('job');
       Organization = tyr.byName('organization');
@@ -141,7 +141,7 @@ describe( 'tyranid', function() {
         }),
         Department.db.remove({}).then(function() {
           return Department.db.insert([
-            { _id: 1, name: 'Engineering' }
+            { _id: 1, name: 'Engineering', permissions: { members: [ 2, 3 ] } }
           ]);
         }),
         Person.db.remove({}).then(function() {
@@ -290,6 +290,18 @@ describe( 'tyranid', function() {
           });
       });
 
+      it( 'should populate paths and arrays', function() {
+        return Department.byId(1)
+          .then(function(department) {
+            return department.$populate({ fields: [ 'permissions.members' ] }).then(function() {
+              expect(department.permissions.members$.length).to.be.eql(2);
+              expect(department.permissions.members$[0]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[0].name.first).to.be.eql('John');
+              expect(department.permissions.members$[1]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[1].name.first).to.be.eql('Jane');
+            });
+          });
+      });
     });
 
     describe('client', function() {
