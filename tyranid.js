@@ -1102,7 +1102,8 @@ new Type({
         throw validator.err(path, 'Unknown type for "of".');
       }
 
-      field.of = of;
+      field.of = { is: of.def.name };
+      validator.field(path, field.of);
     }
   }
 });

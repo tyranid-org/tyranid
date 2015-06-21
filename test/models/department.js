@@ -8,8 +8,9 @@ var Department = new tyr.Collection({
   fields: {
     _id:         { is: 'integer' },
     name:        { is: 'string' },
+    tags:        { is: 'array', of: 'string' },
     permissions: { is: 'object', fields: {
-      members: { is: 'array', of: { link: 'person' } }
+      members:   { is: 'array', of: { link: 'person' } }
     }},
   }
 });
