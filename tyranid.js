@@ -1261,6 +1261,16 @@ new Type({ name: 'double' });
 
 new Type({
   name: 'array',
+  fromClient: function(field, value) {
+    if (_.isArray(value)) {
+      var ofField = field.of;
+      return value.map(function(v) {
+        return ofField.is.fromClient(ofField, v);
+      });
+    } else {
+      return value;
+    }
+  },
   validateSchema: function(validator, path, field) {
     var of = field.of;
 
