@@ -72,7 +72,7 @@ function NamePath(collection, pathName) {
       plen = path.length;
 
   var defs = this.defs = new Array(plen);
-  
+
 
   var def = collection.def;
   for (var pi=0; pi<plen; pi++) {
