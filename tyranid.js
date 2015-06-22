@@ -96,7 +96,7 @@ NamePath.prototype.pathName = function(pi) {
 };
 
 NamePath.prototype.toString = function() {
-  return this.col.def.name + '.' + this.name;
+  return this.col.def.name + ':' + this.name;
 };
 
 NamePath.prototype.tailDef = function() {
@@ -186,11 +186,13 @@ NamePath.prototype.getUniq = function(obj) {
 
      X. convert object-format into internal population-format and get existing patterns of it working
 
-     /. support nested population
+     X. support nested population
 
-     /. documentation
+     X. documentation
 
      /. support projection projection
+
+     /. remove "fields:" property?  not needed as much since you can specify projection and options inside the advanced format
  */
 
 function Population(namePath, projection) {
@@ -265,56 +267,104 @@ Population.parse = function(rootCollection, fields) {
   throw new Error('missing opts.fields option to populate()');
 };
 
+Population.prototype.hasNestedPopulations = function() {
+  var proj = this.projection;
+  if (_.isArray(proj)) {
+    return this.projection.some(function(population) { return population instanceof Population; });
+  } else {
+    return false;
+  }
+};
+
 /*
  * TODO:  should we mark populated values as enumerable: false ?
  */
 Population.prototype.populate = function(populator, documents) {
-  var namePath = this.namePath;
-  documents.forEach(function(obj) {
-    var cache = populator.cacheFor(namePath.tailDef().link.id),
-        path     = namePath.path,
-        plen     = path.length;
+  var population = this;
 
-    function mapIdsToObjects(obj) {
-
-      if (_.isArray(obj)) {
-        var arr = new Array(obj.length);
-
-        for (var ai=0, alen=obj.length; ai<alen; ai++ ){
-          arr[ai] = mapIdsToObjects(obj[ai]);
-        }
-
-        return arr;
-      } else if (_.isObject(obj) && !(obj instanceof ObjectId)) {
-        throw new Error('Got object when expected a link value');
-      } else if (!obj) {
-        return obj;
-      } else {
-        return cache[obj.toString()];
-      }
+  population.projection.forEach(function(population) {
+    if (population instanceof Population) {
+      populator.addIds(population, documents);
     }
-
-    function walkToEndOfPath(pi, obj) {
-      var name = path[pi];
-
-      if (pi === plen - 1) {
-        var pname = NamePath.populateNameFor(name);
-
-        obj[pname] = mapIdsToObjects(obj[name]);
-
-      } else if (_.isArray(obj)) {
-        for (var ai=0, alen=obj.length; ai<alen; ai++ ){
-          walkToEndOfPath(pi, obj[ai]);
-        }
-      } else if (!_.isObject(obj)) {
-        throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
-      } else {
-        walkToEndOfPath(pi+1, obj[path[pi]]);
-      }
-    }
-
-    walkToEndOfPath(0, obj);
   });
+
+  // TODO:  PROJECTION-
+  //        need to look at the projection and figure out some way to tell queryMissingIds which fields to query
+  //        it should also do some sort of superset analysis across the population tree
+  //        (i.e. if one population on org needs name and another needs permissions, we need to query name + permissions
+
+  return populator.queryMissingIds()
+    .then(function() {
+      return Promise.all(
+        population.projection.map(function(population) {
+          if (!(population instanceof Population)) {
+            return;
+          }
+
+          var nestedDocs;
+          if (population.hasNestedPopulations()) {
+            nestedDocs = [];
+          }
+
+          var namePath = population.namePath;
+          documents.forEach(function(obj) {
+            var cache = populator.cacheFor(namePath.tailDef().link.id),
+                path  = namePath.path,
+                plen  = path.length;
+
+            function mapIdsToObjects(obj) {
+
+              if (_.isArray(obj)) {
+                var arr = new Array(obj.length);
+
+                for (var ai=0, alen=obj.length; ai<alen; ai++ ) {
+                  arr[ai] = mapIdsToObjects(obj[ai]);
+                }
+
+                return arr;
+              } else if (_.isObject(obj) && !(obj instanceof ObjectId)) {
+                throw new Error('Got object when expected a link value');
+              } else if (!obj) {
+                return obj;
+              } else {
+                obj = cache[obj.toString()];
+                if (nestedDocs) {
+                  nestedDocs.push(obj);
+                }
+                return obj;
+              }
+            }
+
+            function walkToEndOfPath(pi, obj) {
+              var name = path[pi];
+
+              if (pi === plen - 1) {
+                var pname = NamePath.populateNameFor(name);
+
+                obj[pname] = mapIdsToObjects(obj[name]);
+
+              } else if (_.isArray(obj)) {
+                for (var ai=0, alen=obj.length; ai<alen; ai++ ){
+                  walkToEndOfPath(pi, obj[ai]);
+                }
+              } else if (!_.isObject(obj)) {
+                throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
+              } else {
+                walkToEndOfPath(pi+1, obj[path[pi]]);
+              }
+            }
+
+            walkToEndOfPath(0, obj);
+          });
+
+          if (nestedDocs) {
+            return population.populate(populator, nestedDocs);
+          } else {
+            return Promise.resolve();
+          }
+        })
+      );
+    });
 };
 
 
@@ -390,39 +440,6 @@ Populator.prototype.queryMissingIds = function() {
   );
 };
 
-Populator.prototype.populate = function(population, documents) {
-  var populator = this;
-
-  population.projection.forEach(function(population) {
-    populator.addIds(population, documents);
-  });
-
-  return populator.queryMissingIds()
-    .then(function() {
-      population.projection.forEach(function(population) {
-        population.populate(populator, documents);
-      });
-    });
-};
-
-Populator.populate = function(collection, opts, documents) {
-  var fields = opts.fields;
-
-  var population = Population.parse(collection, fields),
-      populator  = new Populator();
-
-  function populatorFunc(documents) {
-    var isArray = documents && _.isArray(documents);
-    documents = isArray ? documents : [documents];
-
-    return populator.populate(population, documents)
-      .then(function() {
-        return isArray ? documents : documents[0];
-      });
-  }
-
-  return documents ? populatorFunc(documents) : populatorFunc;
-};
 
 
 // Schema
@@ -703,7 +720,23 @@ Collection.prototype.update = function(obj) {
  * of documents.  This allows populate to be fed into a promise chain.
  */
 Collection.prototype.populate = function(opts, documents) {
-  return Populator.populate(this, opts, documents);
+  var collection = this,
+      fields = opts.fields,
+
+      population = Population.parse(collection, fields),
+      populator  = new Populator();
+
+  function populatorFunc(documents) {
+    var isArray = documents && _.isArray(documents);
+    documents = isArray ? documents : [documents];
+
+    return population.populate(populator, documents)
+      .then(function() {
+        return isArray ? documents : documents[0];
+      });
+  }
+
+  return documents ? populatorFunc(documents) : populatorFunc;
 };
 
 Collection.prototype.fieldsBy = function(comparable) {

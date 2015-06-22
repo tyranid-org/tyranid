@@ -324,11 +324,13 @@ describe( 'tyranid', function() {
           });
       });
 
-      it( 'should allow multi-level depth population', function() {
+      it( 'should do nested population', function() {
         return Department.byId(1)
           .then(function(department) {
             return department.$populate({ fields: { 'permissions.members': { $all: 1, organization: $all } } }).then(function() {
-              //console.log('department.permissions.members$', department.permissions.members$);
+              var members = department.permissions.members$;
+              expect(members[0].organization$.name).to.be.eql('Acme Unlimited');
+              expect(members[1].organization$.name).to.be.eql('123 Construction');
             });
           });
       });
