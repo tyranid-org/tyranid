@@ -1320,7 +1320,25 @@ new Type({ name: 'email' });
 new Type({ name: 'url' });
 new Type({ name: 'password', client: false });
 new Type({ name: 'image' });
-new Type({ name: 'date' });
+
+new Type({
+  name: 'date',
+  fromString: function(s) {
+    return s ? new Date(s) : s;
+  },
+  fromClient: function(field, value) {
+    if (typeof value === 'string') {
+      return new Date(s);
+    }
+
+    return value;
+  },
+  validate: function(path, field, value) {
+    if (value !== undefined && !(value instanceof Date)) {
+      return new ValidationError(path, 'is not a date');
+    }
+  }
+});
 
 module.exports = Tyranid;
 
