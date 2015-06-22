@@ -720,7 +720,7 @@ Collection.prototype.update = function(obj) {
  * of documents.  This allows populate to be fed into a promise chain.
  */
 Collection.prototype.populate = function(opts, documents) {
-  var collection = this;
+  var collection = this,
 
       population = Population.parse(collection, opts),
       populator  = new Populator();
