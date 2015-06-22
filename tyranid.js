@@ -1328,7 +1328,7 @@ new Type({
   },
   fromClient: function(field, value) {
     if (typeof value === 'string') {
-      return new Date(s);
+      return new Date(value);
     }
 
     return value;
