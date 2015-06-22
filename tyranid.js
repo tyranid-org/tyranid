@@ -57,7 +57,9 @@ var collections     = [],
     collectionsById = {},
     typesByName     = {},
     config          = {},
-    ObjectType;
+    ObjectType,
+
+    $all            = '$all';
 
 
 // NamePath
@@ -201,6 +203,109 @@ NamePath.prototype.populate = function(obj, linkDocs) {
 };
 
 
+// Population
+// ==========
+
+/*
+    populate permissions.members
+
+    X. get strings paths working (along with arrays!)
+       
+    X. come up with syntax
+
+       ES6 shorthand:  $all = '$all'
+
+       {
+         'permissions.members': $all,
+         'permissions.members': { $all, organization: $all }
+       }
+
+     X. come up with internal format:
+
+        FROM: [ 'permissions.members' ]           -OR-
+              { 'permissions.members': $all }
+
+        TO:   [ Population{ np: NamePath('permission.members'), proj: [ $all ] } ]
+
+        ------
+
+        FROM: { 'permissions.members': { $all, department: $all }
+
+        TO:   [ Population{ np: NamePath('permission.members'), proj: [ $all, Population{ np: NamePath(department), proj: [ $all ] } ] } ]
+
+     X. convert existing array-format into internal population-format and get it working
+    
+        [ 'permissions.members' ] -> { 'permission.members': $all }
+
+     /. convert object-format into internal population-format and get existing patterns of it working
+
+     /. support projection projection
+
+     /. support nested population
+
+     /. documentation
+ */
+
+function Population(namePath, proj) {
+  this.namePath = namePath;
+  this.proj = proj;
+}
+
+Population.parse = function(rootCollection, fields) {
+  if (_.isString(fields)) {
+    // process the really simple format -- a simple path name
+    fields = [ fields ];
+  }
+  
+  if (_.isArray(fields)) {
+    // process simplified array of pathnames format
+    return fields.map(function(field) { return new Population( new NamePath(rootCollection, field), [ $all ] ); });
+  }
+
+  if (_.isObject(fields)) {
+    // process advanced object format which supports nested populations and projections
+
+    function parseProjection(collection, fields) {
+      var projection = [];
+
+      _.each(fields, function(value, key) {
+        if (key === $all) {
+          projection.push($all);
+        } else {
+          var namePath = new NamePath(collection, key);
+
+          if (value === 0 || value === false) {
+            projection.push(new Population(namePath, false));
+          } else if (value === 1 || value === true) {
+            projection.push(new Population(namePath, true));
+          } else {
+            var link = namePath.tailDef().link
+
+            if (!link) {
+              throw new Error('Cannot populate ' + collection.def.name + '.' + namePath + ' -- it is not a link');
+            }
+
+            if (value === $all) {
+              projection.push(new Population(namePath, $all));
+            } else if (!_.isObject(value)) {
+              throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePAth + ': ' + value);
+            } else {
+              projection.push(new Population(collectionsById[link.id], parseProjection(pathCol, value)));
+            }
+          }
+        }
+      });
+
+      return projection;
+    }
+
+    return parseProjection(rootCollection, fields);
+  }
+
+  throw new Error('missing opts.fields option to populate()');
+}
+
+
 // Schema
 // ======
 
@@ -233,6 +338,26 @@ function validateType(type) {
 
   typesByName[def.name] = type;
 }
+
+
+
+// Validation
+// ==========
+
+function ValidationError(path, reason) {
+  this.path = path;
+  this.reason = reason;
+}
+
+Object.defineProperty(ValidationError, 'message', {
+  get: function() {
+    return 'The value at ' + this.path + ' ' + this.reason;
+  }
+});
+
+ValidationError.prototype.toString = function() {
+  return this.message;
+};
 
 
 
@@ -281,26 +406,6 @@ Type.prototype.toClient = function(field, value) {
   var f = def.toClient;
   return f ? f(field, value) : value;
 };
-
-
-// Validation
-// ==========
-
-function ValidationError(path, reason) {
-  this.path = path;
-  this.reason = reason;
-}
-
-Object.defineProperty(ValidationError, 'message', {
-  get: function() {
-    'The value at ' + this.path + ' ' + this.reason;
-  }
-});
-
-ValidationError.prototype.toString = function() {
-  return this.message;
-};
-
 
 
 // Document
@@ -482,42 +587,7 @@ Collection.prototype.populate = function(opts, documents) {
   var col = this,
       fields = opts.fields;
 
-  /*
-      populate permissions.members
-       
-        example syntax:
-
-        {
-          'permissions.members': {
-            name: 1,
-            organization: { _id: 0, name: 1 }
-          }
-        }
-
-        ?. is it true that an embedded object equals a population?
-
-           ?. does mongo's projection syntax have embedded objects?
-
-              !. not in regular find(), but you can inside the aggregation framework
-
-        /. solve strings first
-
-        /. recursively process embedded objects
-
-          
-           permissions.members
-
-           
-
-   */
-
-  if (_.isString(fields)) {
-    fields = [ fields ];
-  } else if (!_.isArray(fields)) {
-    throw new Error('missing opts.fields option to populate()');
-  }
-
-  var names = fields.map(function(field) { return new NamePath(col, field); });
+  var populations = Population.parse(col, fields);
 
   function populator(documents) {
     var isArray = documents && _.isArray(documents);
@@ -525,8 +595,9 @@ Collection.prototype.populate = function(opts, documents) {
 
     var insByColId = {};
 
-    names.forEach(function(name) {
-      var link = name.tailDef().link;
+    populations.forEach(function(population) {
+      var namePath = population.namePath;
+      var link = namePath.tailDef().link;
 
       if (!link) {
         throw new Error('Cannot populate ' + col.def.name + '.' + name + ' -- it is not a link');
@@ -539,7 +610,7 @@ Collection.prototype.populate = function(opts, documents) {
       }
 
       documents.forEach(function(doc) {
-        Array.prototype.push.apply(ins, name.getUniq(doc));
+        Array.prototype.push.apply(ins, namePath.getUniq(doc));
       });
     });
 
@@ -552,10 +623,11 @@ Collection.prototype.populate = function(opts, documents) {
         var linkCol = collectionsById[colId];
 
         return linkCol.find({ _id: { $in: _.uniq(ins) }}).then(function(linkDocs) {
-          names.forEach(function(name) {
-            if (name.tailDef().link.id === colId) {
+          populations.forEach(function(population) {
+            var namePath = population.namePath;
+            if (namePath.tailDef().link.id === colId) {
               documents.forEach(function(doc) {
-                name.populate(doc, linkDocs);
+                namePath.populate(doc, linkDocs);
               });
             }
           });
@@ -910,6 +982,8 @@ var Tyranid = {
   Type: Type,
   ValidationError: ValidationError,
 
+  $all: $all,
+
   config: function(opts) {
     config = opts;
 
@@ -1043,7 +1117,8 @@ function validateUidCollection(validator, path, collection) {
   } else {
     throw validator.err(path, unknownTypeErrMsg);
   }
-};
+}
+
 new Type({
   name: 'uid',
   validateSchema: function (validator, path, field) {

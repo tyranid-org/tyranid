@@ -2,6 +2,8 @@
 require('es6-promise');
 
 var tyr            = require('../tyranid'),
+    $all           = tyr.$all,
+
     chai           = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
 
@@ -118,7 +120,7 @@ describe( 'tyranid', function() {
   });
 
   describe( 'with model', function() {
-    var Job, Organization, Department, Person;
+    var Job, Organization, Department, Person, Task;
     //var Job2, Organization2, Department2, Person2;
 
     before(function() {
@@ -287,7 +289,7 @@ describe( 'tyranid', function() {
           });
       });
 
-      it( 'should skip fields with no value', function() {
+      it( 'should skip fields with no value using array format', function() {
         return Person.find()
           .then(function(people) {
             return Person.populate({ fields: [ 'organization', 'department' ] }, people).then(function(people) {
@@ -296,7 +298,7 @@ describe( 'tyranid', function() {
           });
       });
 
-      it( 'should populate paths and arrays', function() {
+      it( 'should populate paths and arrays using array format', function() {
         return Department.byId(1)
           .then(function(department) {
             return department.$populate({ fields: [ 'permissions.members' ] }).then(function() {
@@ -305,6 +307,27 @@ describe( 'tyranid', function() {
               expect(department.permissions.members$[0].name.first).to.be.eql('John');
               expect(department.permissions.members$[1]).to.be.an.instanceof(Person);
               expect(department.permissions.members$[1].name.first).to.be.eql('Jane');
+            });
+          });
+      });
+
+      it( 'should populate paths and arrays using object format', function() {
+        return Department.byId(1)
+          .then(function(department) {
+            return department.$populate({ fields: { 'permissions.members': $all } }).then(function() {
+              expect(department.permissions.members$.length).to.be.eql(2);
+              expect(department.permissions.members$[0]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[0].name.first).to.be.eql('John');
+              expect(department.permissions.members$[1]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[1].name.first).to.be.eql('Jane');
+            });
+          });
+      });
+
+      if (false) it( 'should allow multi-level depth population', function() {
+        return Department.byId(1)
+          .then(function(department) {
+            return department.$populate({ fields: { 'permissions.members': { $all: 1, organization: $all } } }).then(function() {
             });
           });
       });
