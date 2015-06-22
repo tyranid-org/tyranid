@@ -328,6 +328,7 @@ describe( 'tyranid', function() {
         return Department.byId(1)
           .then(function(department) {
             return department.$populate({ fields: { 'permissions.members': { $all: 1, organization: $all } } }).then(function() {
+              //console.log('department.permissions.members$', department.permissions.members$);
             });
           });
       });

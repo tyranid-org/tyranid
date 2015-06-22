@@ -96,7 +96,7 @@ NamePath.prototype.pathName = function(pi) {
 };
 
 NamePath.prototype.toString = function() {
-  return this.name;
+  return this.col.def.name + '.' + this.name;
 };
 
 NamePath.prototype.tailDef = function() {
@@ -151,7 +151,7 @@ NamePath.populateNameFor = function(name) {
 /*
  * TODO:  should we mark populated values as enumerable: false ?
  */
-NamePath.prototype.populate = function(obj, linkDocs) {
+NamePath.prototype.populate = function(obj, cache) {
   var namePath = this,
       path     = namePath.path,
       plen     = path.length;
@@ -171,12 +171,7 @@ NamePath.prototype.populate = function(obj, linkDocs) {
     } else if (!obj) {
       return obj;
     } else {
-      var linkIdStr = obj.toString();
-
-      // TODO:  maybe trade space for time by keeping a hash of the linkDocs by id to make this algorithm not n^2?
-      return _.find(linkDocs, function(d) {
-        return d._id.toString() === linkIdStr;
-      });
+      return cache[obj.toString()];
     }
   }
 
@@ -202,7 +197,6 @@ NamePath.prototype.populate = function(obj, linkDocs) {
   walkToEndOfPath(0, obj);
 };
 
-
 // Population
 // ==========
 
@@ -222,7 +216,8 @@ NamePath.prototype.populate = function(obj, linkDocs) {
 
      X. come up with internal format:
 
-        FROM: [ 'permissions.members' ]           -OR-
+        FROM: 'permissions.members'               -OR-
+              [ 'permissions.members' ]           -OR-
               { 'permissions.members': $all }
 
         TO:   [ Population{ np: NamePath('permission.members'), proj: [ $all ] } ]
@@ -237,7 +232,7 @@ NamePath.prototype.populate = function(obj, linkDocs) {
     
         [ 'permissions.members' ] -> { 'permission.members': $all }
 
-     /. convert object-format into internal population-format and get existing patterns of it working
+     X. convert object-format into internal population-format and get existing patterns of it working
 
      /. support projection projection
 
@@ -260,16 +255,22 @@ Population.parse = function(rootCollection, fields) {
     // process the really simple format -- a simple path name
     fields = [ fields ];
   }
-  
+
   if (_.isArray(fields)) {
     // process simplified array of pathnames format
-    return fields.map(function(field) { return new Population( new NamePath(rootCollection, field), [ $all ] ); });
+    return fields.map(function(field) {
+      if (!_.isString(field)) {
+        throw new Error('The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.');
+      }
+
+      return new Population( new NamePath(rootCollection, field), [ $all ] );
+    });
   }
 
   if (_.isObject(fields)) {
     // process advanced object format which supports nested populations and projections
 
-    function parseProjection(collection, fields) {
+    var parseProjection = function(collection, fields) {
       var projection = [];
 
       _.each(fields, function(value, key) {
@@ -283,7 +284,7 @@ Population.parse = function(rootCollection, fields) {
           } else if (value === 1 || value === true) {
             projection.push(new Population(namePath, true));
           } else {
-            var link = namePath.tailDef().link
+            var link = namePath.tailDef().link;
 
             if (!link) {
               throw new Error('Cannot populate ' + collection.def.name + '.' + namePath + ' -- it is not a link');
@@ -292,7 +293,7 @@ Population.parse = function(rootCollection, fields) {
             if (value === $all) {
               projection.push(new Population(namePath, $all));
             } else if (!_.isObject(value)) {
-              throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePAth + ': ' + value);
+              throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePath + ': ' + value);
             } else {
               projection.push(new Population(namePath, parseProjection(collectionsById[link.id], value)));
             }
@@ -301,13 +302,117 @@ Population.parse = function(rootCollection, fields) {
       });
 
       return projection;
-    }
+    };
 
     return parseProjection(rootCollection, fields);
   }
 
   throw new Error('missing opts.fields option to populate()');
+};
+
+
+// Populator
+// =========
+
+function Populator() {
+
+  this.cachesByColId = {};
 }
+
+/**
+ * cache maps ids to:
+ *  
+ *   undefined:  this id has not been requested yet
+ *   null:       this id has been requested but we don't have a doc for it yet
+ *   document:   this id has been requested and we have a doc for it
+ */
+Populator.prototype.cacheFor = function(colId) {
+  var cache = this.cachesByColId[colId];
+
+  if (!cache) {
+    this.cachesByColId[colId] = cache = {};
+  }
+
+  return cache;
+};
+
+Populator.prototype.addIds = function(population, documents) {
+  var namePath = population.namePath;
+  var link = namePath.tailDef().link;
+
+  if (!link) {
+    throw new Error('Cannot populate ' + namePath + ' -- it is not a link');
+  }
+
+  var linkId = link.id,
+      cache = this.cacheFor(linkId);
+
+  documents.forEach(function(doc) {
+    _.each(namePath.getUniq(doc), function(id) {
+      var v = cache[id];
+      if (v === undefined) {
+        cache[id] = null;
+      }
+    });
+  });
+};
+
+Populator.prototype.queryMissingIds = function() {
+  return Promise.all(
+    _.map(this.cachesByColId, function(cache, colId) {
+      var collection = collectionsById[colId],
+          idType = collection.def.fields._id.is;
+
+      var ids = [];
+      _.each(cache, function(v, k) {
+        if (v === null) {
+          // TODO:  once we can use ES6 Maps we can get rid of this string conversion -- due to keys having to be strings on regular objects
+          ids.push(idType.fromString(k));
+        }
+      });
+
+      if (!ids.length)
+        return Promise.resolve();
+
+      return collection.find({ _id: { $in: ids }}).then(function(linkDocs) {
+        linkDocs.forEach(function(doc) {
+          cache[doc._id] = doc;
+        });
+      });
+    })
+  );
+};
+
+Populator.populate = function(collection, opts, documents) {
+  var fields = opts.fields;
+
+  var populations = Population.parse(collection, fields),
+      populator = new Populator();
+
+  function populatorFunc(documents) {
+    var isArray = documents && _.isArray(documents);
+    documents = isArray ? documents : [documents];
+
+    populations.forEach(function(population) {
+      populator.addIds(population, documents);
+    });
+
+    return populator.queryMissingIds()
+      .then(function() {
+        populations.forEach(function(population) {
+          var namePath = population.namePath;
+          documents.forEach(function(doc) {
+            namePath.populate(doc, populator.cacheFor(namePath.tailDef().link.id));
+          });
+        });
+      })
+      .then(function() {
+        return isArray ? documents : documents[0];
+      });
+  }
+
+  return documents ? populatorFunc(documents) : populatorFunc;
+};
 
 
 // Schema
@@ -588,61 +693,7 @@ Collection.prototype.update = function(obj) {
  * of documents.  This allows populate to be fed into a promise chain.
  */
 Collection.prototype.populate = function(opts, documents) {
-  var col = this,
-      fields = opts.fields;
-
-  var populations = Population.parse(col, fields);
-
-  function populator(documents) {
-    var isArray = documents && _.isArray(documents);
-    documents = isArray ? documents : [documents];
-
-    var insByColId = {};
-
-    populations.forEach(function(population) {
-      var namePath = population.namePath;
-      var link = namePath.tailDef().link;
-
-      if (!link) {
-        throw new Error('Cannot populate ' + col.def.name + '.' + name + ' -- it is not a link');
-      }
-
-      var linkId = link.id,
-          ins = insByColId[linkId];
-      if (!ins) {
-        insByColId[linkId] = ins = [];
-      }
-
-      documents.forEach(function(doc) {
-        Array.prototype.push.apply(ins, namePath.getUniq(doc));
-      });
-    });
-
-    return Promise.all(
-      _.map(insByColId, function(ins, colId) {
-
-        if (!ins.length)
-          return Promise.resolve();
-
-        var linkCol = collectionsById[colId];
-
-        return linkCol.find({ _id: { $in: _.uniq(ins) }}).then(function(linkDocs) {
-          populations.forEach(function(population) {
-            var namePath = population.namePath;
-            if (namePath.tailDef().link.id === colId) {
-              documents.forEach(function(doc) {
-                namePath.populate(doc, linkDocs);
-              });
-            }
-          });
-        });
-      })
-    ).then(function() {
-      return isArray ? documents : documents[0];
-    });
-  }
-
-  return documents ? populator(documents) : populator;
+  return Populator.populate(this, opts, documents);
 };
 
 Collection.prototype.fieldsBy = function(comparable) {
