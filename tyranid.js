@@ -852,7 +852,7 @@ function toClient(col, data) {
       if (v !== undefined) {
         obj[k] = v;
       }
-    } else if (v.$toClient) {
+    } else if (v && v.$toClient) {
       obj[k] = v.$toClient();
     } else if (_.isArray(v)) {
       // TODO:  we can figure out the type of k using metadata to make this work for the case when
