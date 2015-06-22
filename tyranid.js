@@ -72,7 +72,7 @@ function NamePath(collection, pathName) {
       plen = path.length;
 
   var defs = this.defs = new Array(plen);
-  
+
 
   var def = collection.def;
   for (var pi=0; pi<plen; pi++) {
@@ -292,7 +292,7 @@ Population.parse = function(rootCollection, fields) {
             if (value === $all) {
               projection.push(new Population(namePath, $all));
             } else if (!_.isObject(value)) {
-              throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePAth + ': ' + value);
+              throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePath + ': ' + value);
             } else {
               projection.push(new Population(namePath, parseProjection(collectionsById[link.id], value)));
             }
