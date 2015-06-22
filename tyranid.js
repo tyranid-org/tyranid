@@ -68,7 +68,7 @@ var collections     = [],
 function NamePath(collection, pathName) {
   this.col = collection;
   this.name = pathName;
-  var path = this.path = pathName.split('.'),
+  var path = this.path = pathName.length ? pathName.split('.') : [],
       plen = path.length;
 
   var defs = this.defs = new Array(plen);
@@ -107,6 +107,23 @@ NamePath.prototype.tailDef = function() {
   return def;
 };
 
+/**
+ * TODO:  make this a configurable Tyranid option as to how populated entries should be named
+ *
+ *    1. organizationId -> organization
+ *    2. organization   -> organization$
+ *    3. organization   -> organization
+ */
+NamePath.populateNameFor = function(name) {
+  var l = name.length;
+
+  if (name.substring(l-2) === 'Id') {
+    return name.substring(0, l-2);
+  } else {
+    return name + '$';
+  }
+};
+
 NamePath.prototype.getUniq = function(obj) {
   var path = this.path,
       plen = path.length;
@@ -131,71 +148,6 @@ NamePath.prototype.getUniq = function(obj) {
   return _.uniq(values);
 };
 
-/**
- * TODO:  make this a configurable Tyranid option as to how populated entries should be named
- *
- *    1. organizationId -> organization
- *    2. organization   -> organization$
- *    3. organization   -> organization
- */
-NamePath.populateNameFor = function(name) {
-  var l = name.length;
-
-  if (name.substring(l-2) === 'Id') {
-    return name.substring(0, l-2);
-  } else {
-    return name + '$';
-  }
-};
-
-/*
- * TODO:  should we mark populated values as enumerable: false ?
- */
-NamePath.prototype.populate = function(obj, cache) {
-  var namePath = this,
-      path     = namePath.path,
-      plen     = path.length;
-
-  function mapIdsToObjects(obj) {
-
-    if (_.isArray(obj)) {
-      var arr = new Array(obj.length);
-
-      for (var ai=0, alen=obj.length; ai<alen; ai++ ){
-        arr[ai] = mapIdsToObjects(obj[ai]);
-      }
-
-      return arr;
-    } else if (_.isObject(obj) && !(obj instanceof ObjectId)) {
-      throw new Error('Got object when expected a link value');
-    } else if (!obj) {
-      return obj;
-    } else {
-      return cache[obj.toString()];
-    }
-  }
-
-  function walkToEndOfPath(pi, obj) {
-    var name = path[pi];
-
-    if (pi === plen - 1) {
-      var pname = NamePath.populateNameFor(name);
-
-      obj[pname] = mapIdsToObjects(obj[name]);
-
-    } else if (_.isArray(obj)) {
-      for (var ai=0, alen=obj.length; ai<alen; ai++ ){
-        walkToEndOfPath(pi, obj[ai]);
-      }
-    } else if (!_.isObject(obj)) {
-      throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
-    } else {
-      walkToEndOfPath(pi+1, obj[path[pi]]);
-    }
-  }
-
-  walkToEndOfPath(0, obj);
-};
 
 // Population
 // ==========
@@ -220,13 +172,13 @@ NamePath.prototype.populate = function(obj, cache) {
               [ 'permissions.members' ]           -OR-
               { 'permissions.members': $all }
 
-        TO:   [ Population{ np: NamePath('permission.members'), proj: [ $all ] } ]
+        TO:   [ Population{ np: NamePath('permission.members'), projection: [ $all ] } ]
 
         ------
 
         FROM: { 'permissions.members': { $all, department: $all }
 
-        TO:   [ Population{ np: NamePath('permission.members'), proj: [ $all, Population{ np: NamePath(department), proj: [ $all ] } ] } ]
+        TO:   [ Population{ np: NamePath('permission.members'), projection: [ $all, Population{ np: NamePath(department), projection: [ $all ] } ] } ]
 
      X. convert existing array-format into internal population-format and get it working
     
@@ -234,20 +186,20 @@ NamePath.prototype.populate = function(obj, cache) {
 
      X. convert object-format into internal population-format and get existing patterns of it working
 
-     /. support projection projection
-
      /. support nested population
 
      /. documentation
+
+     /. support projection projection
  */
 
-function Population(namePath, proj) {
+function Population(namePath, projection) {
   if (!(namePath instanceof NamePath)) {
     throw new Error('parameter namePath is not an instanceof NamePath, got: ' + namePath);
   }
 
   this.namePath = namePath;
-  this.proj = proj;
+  this.projection = projection;
 }
 
 Population.parse = function(rootCollection, fields) {
@@ -258,13 +210,16 @@ Population.parse = function(rootCollection, fields) {
 
   if (_.isArray(fields)) {
     // process simplified array of pathnames format
-    return fields.map(function(field) {
-      if (!_.isString(field)) {
-        throw new Error('The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.');
-      }
+    return new Population(
+      new NamePath(rootCollection, ''),
+      fields.map(function(field) {
+        if (!_.isString(field)) {
+          throw new Error('The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.');
+        }
 
-      return new Population( new NamePath(rootCollection, field), [ $all ] );
-    });
+        return new Population( new NamePath(rootCollection, field), [ $all ] );
+      })
+    );
   }
 
   if (_.isObject(fields)) {
@@ -304,10 +259,62 @@ Population.parse = function(rootCollection, fields) {
       return projection;
     };
 
-    return parseProjection(rootCollection, fields);
+    return new Population(new NamePath(rootCollection, ''), parseProjection(rootCollection, fields));
   }
 
   throw new Error('missing opts.fields option to populate()');
+};
+
+/*
+ * TODO:  should we mark populated values as enumerable: false ?
+ */
+Population.prototype.populate = function(populator, documents) {
+  var namePath = this.namePath;
+  documents.forEach(function(obj) {
+    var cache = populator.cacheFor(namePath.tailDef().link.id),
+        path     = namePath.path,
+        plen     = path.length;
+
+    function mapIdsToObjects(obj) {
+
+      if (_.isArray(obj)) {
+        var arr = new Array(obj.length);
+
+        for (var ai=0, alen=obj.length; ai<alen; ai++ ){
+          arr[ai] = mapIdsToObjects(obj[ai]);
+        }
+
+        return arr;
+      } else if (_.isObject(obj) && !(obj instanceof ObjectId)) {
+        throw new Error('Got object when expected a link value');
+      } else if (!obj) {
+        return obj;
+      } else {
+        return cache[obj.toString()];
+      }
+    }
+
+    function walkToEndOfPath(pi, obj) {
+      var name = path[pi];
+
+      if (pi === plen - 1) {
+        var pname = NamePath.populateNameFor(name);
+
+        obj[pname] = mapIdsToObjects(obj[name]);
+
+      } else if (_.isArray(obj)) {
+        for (var ai=0, alen=obj.length; ai<alen; ai++ ){
+          walkToEndOfPath(pi, obj[ai]);
+        }
+      } else if (!_.isObject(obj)) {
+        throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
+      } else {
+        walkToEndOfPath(pi+1, obj[path[pi]]);
+      }
+    }
+
+    walkToEndOfPath(0, obj);
+  });
 };
 
 
@@ -383,29 +390,32 @@ Populator.prototype.queryMissingIds = function() {
   );
 };
 
+Populator.prototype.populate = function(population, documents) {
+  var populator = this;
+
+  population.projection.forEach(function(population) {
+    populator.addIds(population, documents);
+  });
+
+  return populator.queryMissingIds()
+    .then(function() {
+      population.projection.forEach(function(population) {
+        population.populate(populator, documents);
+      });
+    });
+};
+
 Populator.populate = function(collection, opts, documents) {
   var fields = opts.fields;
 
-  var populations = Population.parse(collection, fields),
-      populator = new Populator();
+  var population = Population.parse(collection, fields),
+      populator  = new Populator();
 
   function populatorFunc(documents) {
     var isArray = documents && _.isArray(documents);
     documents = isArray ? documents : [documents];
 
-    populations.forEach(function(population) {
-      populator.addIds(population, documents);
-    });
-
-    return populator.queryMissingIds()
-      .then(function() {
-        populations.forEach(function(population) {
-          var namePath = population.namePath;
-          documents.forEach(function(doc) {
-            namePath.populate(doc, populator.cacheFor(namePath.tailDef().link.id));
-          });
-        });
-      })
+    return populator.populate(population, documents)
       .then(function() {
         return isArray ? documents : documents[0];
       });

@@ -279,7 +279,7 @@ describe( 'tyranid', function() {
             verifyPeople(people);
           });
       });
-      
+
       it( 'should work uncurried', function() {
         return Person.find()
           .then(function(people) {
