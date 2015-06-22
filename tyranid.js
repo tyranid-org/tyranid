@@ -406,9 +406,11 @@ Populator.prototype.addIds = function(population, documents) {
 
   documents.forEach(function(doc) {
     _.each(namePath.getUniq(doc), function(id) {
-      var v = cache[id];
-      if (v === undefined) {
-        cache[id] = null;
+      if (id) {
+        var v = cache[id];
+        if (v === undefined) {
+          cache[id] = null;
+        }
       }
     });
   });
