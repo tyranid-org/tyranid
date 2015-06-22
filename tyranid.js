@@ -247,6 +247,10 @@ NamePath.prototype.populate = function(obj, linkDocs) {
  */
 
 function Population(namePath, proj) {
+  if (!(namePath instanceof NamePath)) {
+    throw new Error('parameter namePath is not an instanceof NamePath, got: ' + namePath);
+  }
+
   this.namePath = namePath;
   this.proj = proj;
 }
@@ -290,7 +294,7 @@ Population.parse = function(rootCollection, fields) {
             } else if (!_.isObject(value)) {
               throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePAth + ': ' + value);
             } else {
-              projection.push(new Population(collectionsById[link.id], parseProjection(pathCol, value)));
+              projection.push(new Population(namePath, parseProjection(collectionsById[link.id], value)));
             }
           }
         }

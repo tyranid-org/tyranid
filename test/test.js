@@ -324,7 +324,7 @@ describe( 'tyranid', function() {
           });
       });
 
-      if (false) it( 'should allow multi-level depth population', function() {
+      it( 'should allow multi-level depth population', function() {
         return Department.byId(1)
           .then(function(department) {
             return department.$populate({ fields: { 'permissions.members': { $all: 1, organization: $all } } }).then(function() {
