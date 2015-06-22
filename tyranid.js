@@ -710,7 +710,7 @@ Collection.prototype.update = function(obj) {
 
 /**
  * @opts: options ... options are:
- *   @fields: string | array<string>;   a property name or an array of property names
+ *   string | array<string>;   a property name or an array of property names
  *
  *   TODO: @only: array<string>;        list of fields in linked-to collections to query
  *
@@ -720,10 +720,9 @@ Collection.prototype.update = function(obj) {
  * of documents.  This allows populate to be fed into a promise chain.
  */
 Collection.prototype.populate = function(opts, documents) {
-  var collection = this,
-      fields = opts.fields,
+  var collection = this;
 
-      population = Population.parse(collection, fields),
+      population = Population.parse(collection, opts),
       populator  = new Populator();
 
   function populatorFunc(documents) {

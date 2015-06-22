@@ -144,7 +144,7 @@ describe( 'tyranid', function() {
         }),
         Department.db.remove({}).then(function() {
           return Department.db.insert([
-            { _id: 1, name: 'Engineering', permissions: { members: [ 2, 3 ] } }
+            { _id: 1, name: 'Engineering', creator: 2, head: 3, permissions: { members: [ 2, 3 ] } }
           ]);
         }),
         Person.db.remove({}).then(function() {
@@ -274,7 +274,7 @@ describe( 'tyranid', function() {
 
       it( 'should work curried', function() {
         return Person.find()
-          .then(Person.populate({ fields: 'organization' }))
+          .then(Person.populate('organization'))
           .then(function(people) {
             verifyPeople(people);
           });
@@ -283,7 +283,7 @@ describe( 'tyranid', function() {
       it( 'should work uncurried', function() {
         return Person.find()
           .then(function(people) {
-           return Person.populate({ fields: 'organization' }, people).then(function(people) {
+           return Person.populate('organization', people).then(function(people) {
               verifyPeople(people);
            });
           });
@@ -292,7 +292,7 @@ describe( 'tyranid', function() {
       it( 'should skip fields with no value using array format', function() {
         return Person.find()
           .then(function(people) {
-            return Person.populate({ fields: [ 'organization', 'department' ] }, people).then(function(people) {
+            return Person.populate([ 'organization', 'department' ], people).then(function(people) {
               verifyPeople(people);
             });
           });
@@ -301,7 +301,7 @@ describe( 'tyranid', function() {
       it( 'should populate paths and arrays using array format', function() {
         return Department.byId(1)
           .then(function(department) {
-            return department.$populate({ fields: [ 'permissions.members' ] }).then(function() {
+            return department.$populate([ 'permissions.members' ]).then(function() {
               expect(department.permissions.members$.length).to.be.eql(2);
               expect(department.permissions.members$[0]).to.be.an.instanceof(Person);
               expect(department.permissions.members$[0].name.first).to.be.eql('John');
@@ -314,7 +314,7 @@ describe( 'tyranid', function() {
       it( 'should populate paths and arrays using object format', function() {
         return Department.byId(1)
           .then(function(department) {
-            return department.$populate({ fields: { 'permissions.members': $all } }).then(function() {
+            return department.$populate({ 'permissions.members': $all }).then(function() {
               expect(department.permissions.members$.length).to.be.eql(2);
               expect(department.permissions.members$[0]).to.be.an.instanceof(Person);
               expect(department.permissions.members$[0].name.first).to.be.eql('John');
@@ -324,13 +324,25 @@ describe( 'tyranid', function() {
           });
       });
 
-      it( 'should do nested population', function() {
+      it( 'should do nested population, 1', function() {
         return Department.byId(1)
           .then(function(department) {
-            return department.$populate({ fields: { 'permissions.members': { $all: 1, organization: $all } } }).then(function() {
+            return department.$populate({ 'permissions.members': { $all: 1, organization: $all } }).then(function() {
               var members = department.permissions.members$;
               expect(members[0].organization$.name).to.be.eql('Acme Unlimited');
               expect(members[1].organization$.name).to.be.eql('123 Construction');
+            });
+          });
+      });
+
+      it( 'should do nested population, 2', function() {
+        return Department.byId(1)
+          .then(function(department) {
+            return department.$populate({ creator: { $all: 1, organization: $all }, head: { $all: 1, organization: $all } }).then(function() {
+              expect(department.creator$._id).to.be.eql(2);
+              expect(department.creator$.organization$._id).to.be.eql(1);
+              expect(department.head$._id).to.be.eql(3);
+              expect(department.head$.organization$._id).to.be.eql(2);
             });
           });
       });
