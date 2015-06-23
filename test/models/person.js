@@ -26,7 +26,16 @@ var Person = new tyr.Collection({
       of: {
         is: 'object',
         fields: {
-          name: { is: 'string' }
+          name: { is: 'string' },
+          friends: {
+            is: 'array',
+            of: {
+              is : 'object',
+              fields : {
+                person: { 'link' : 'person' }
+              }
+            }
+          },
         }
       }
     },
