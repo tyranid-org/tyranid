@@ -700,8 +700,7 @@ Collection.prototype.findOne = function() {
 var parseInsertObj = function parseInsertObj(obj, flds) {
   var insertObj = {};
   _.each(flds, function(v,k) {
-    if (obj[k] === undefined && v.defaultValue) {
-      console.log(v.defaultValue);
+    if (obj[k] === undefined && v.defaultValue !== undefined) {
       insertObj[k] = v.defaultValue;
     } else {
       insertObj[k] = obj[k];

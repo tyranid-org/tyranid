@@ -371,6 +371,7 @@ describe( 'tyranid', function() {
         return p.$insert()
           .then(function(newPerson) {
             expect(newPerson.title).to.be.eql('Employee');
+            expect(newPerson.goldStars).to.be.eql(0);
           });
       });
       it('should use specified _id', function() {
