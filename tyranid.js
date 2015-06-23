@@ -92,7 +92,7 @@ function NamePath(collection, pathName) {
 }
 
 NamePath.prototype.pathName = function(pi) {
-  return this.path.length === 1 ? this.name : this.names.slice(0, pi).join('.') + ' in ' + this.name;
+  return this.path.length === 1 ? this.name : this.path.slice(0, pi).join('.') + ' in ' + this.name;
 };
 
 NamePath.prototype.toString = function() {
@@ -125,20 +125,23 @@ NamePath.populateNameFor = function(name) {
 };
 
 NamePath.prototype.getUniq = function(obj) {
-  var path = this.path,
+  var np = this,
+      path = np.path,
       plen = path.length;
 
   var values = [];
 
   function getInner(pi, obj) {
     if (_.isArray(obj)) {
-      for (var ai=0, alen=obj.length; ai<alen; ai++ ){
+      for (var ai=0, alen=obj.length; ai<alen; ai++ ) {
         getInner(pi, obj[ai]);
       }
     } else if (pi === plen) {
       values.push(obj);
+    } else if (obj === undefined || obj === null) {
+      return;
     } else if (!_.isObject(obj)) {
-      throw new Error('Expected an object or array at ' + this.pathName(pi) + ', but got ' + obj);
+      throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
     } else {
       getInner(pi+1, obj[path[pi]]);
     }
@@ -338,15 +341,17 @@ Population.prototype.populate = function(populator, documents) {
             function walkToEndOfPath(pi, obj) {
               var name = path[pi];
 
-              if (pi === plen - 1) {
-                var pname = NamePath.populateNameFor(name);
-
-                obj[pname] = mapIdsToObjects(obj[name]);
-
-              } else if (_.isArray(obj)) {
+              if (_.isArray(obj)) {
                 for (var ai=0, alen=obj.length; ai<alen; ai++ ){
                   walkToEndOfPath(pi, obj[ai]);
                 }
+              } else if (pi === plen - 1) {
+                var pname = NamePath.populateNameFor(name);
+
+                obj[pname] = mapIdsToObjects(obj[name]);
+              } else if (obj === undefined || obj === null) {
+                return;
+
               } else if (!_.isObject(obj)) {
                 throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
               } else {

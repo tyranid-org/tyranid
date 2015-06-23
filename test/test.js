@@ -151,7 +151,7 @@ describe( 'tyranid', function() {
           return Person.db.insert([
             { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org' },
-            { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe', friends: [ { person : 1 }] } ] }
+            { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe', friends: [ { person : 1 } ] } ] }
           ]);
         }),
         Task.db.remove({}).then(function() {
@@ -302,8 +302,7 @@ describe( 'tyranid', function() {
         return Person.find()
           .then(function(people) {
             return Person.populate([ 'organization', 'siblings.friends.person' ], people).then(function(people) {
-              expect(person[2].siblings.friends$.length).to.be.eql(1);
-              expect(people[2].siblings.friends$[0]._id).to.be.eql(1);
+              expect(people[2].siblings[0].friends[0].person$._id).to.be.eql(1);
             });
           });
       });

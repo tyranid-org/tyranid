@@ -1,7 +1,8 @@
 
 var gulp       = require('gulp'),
     jshint     = require('gulp-jshint'),
-    mocha      = require('gulp-mocha');
+    mocha      = require('gulp-mocha'),
+    yargs      = require('yargs');
 
 gulp.task('jshint', function() {
   gulp
@@ -19,7 +20,8 @@ gulp.task('test', function(cb) {
     read: false
   })
   .pipe(mocha({
-    reporter: 'spec'
+    reporter: 'spec',
+    grep: yargs.argv.grep
   }))
   .on('end', function() {
     cb(null);
