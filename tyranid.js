@@ -556,6 +556,10 @@ var documentPrototype = {
     return this.$model.db.save(this);
   },
 
+  $insert: function() {
+    return this.$model.insert(this);
+  },
+
   $update: function() {
     return this.$model.update(this);
   },
@@ -691,6 +695,31 @@ Collection.prototype.findOne = function() {
   return db.findOne.apply(db, arguments).then(function(doc) {
     return doc ? new collection(doc) : null;
   });
+};
+
+var parseInsertObj = function parseInsertObj(obj, flds) {
+  var insertObj = {};
+  _.each(flds, function(v,k) {
+    if (obj[k] !== undefined) {
+      insertObj[k] = obj[k];
+    }
+  });
+
+  return insertObj;
+};
+Collection.prototype.insert = function(obj) {
+  var flds = this.def.fields;
+  var insertObj;
+
+  if(Array.isArray(obj)) {
+    insertObj = _.map(obj, function(el) {
+      return parseInsertObj(el, flds);
+    });
+  } else {
+    insertObj = parseInsertObj(obj, flds);
+  }
+
+  return this.db.insert(insertObj);
 };
 
 Collection.prototype.update = function(obj) {

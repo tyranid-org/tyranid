@@ -358,6 +358,39 @@ describe( 'tyranid', function() {
       });
     });
 
+    describe('insert', function() {
+      it('should generate an _id', function() {
+        var p = new Person({ organization: 1, department: 1, name: { first: 'New', last: 'Person' }, title: 'Developer' });
+        return p.$insert()
+          .then(function(newPerson) {
+            expect(newPerson._id).to.be.an.instanceOf(ObjectId);
+          });
+      });
+      it('should use specified _id', function() {
+        var p = new Person({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'Person' }, title: 'Developer' });
+        return p.$insert()
+          .then(function(newPerson) {
+            expect(newPerson._id).to.be.eql(200);
+          });
+      });
+      it('should throw if _id already exists', function() {
+        var p = new Person({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'Person' }, title: 'Developer' });
+        return p.$insert().should.eventually.be.rejectedWith(Error);
+      });
+      it('should support bulk inserts like mongo insert', function() {
+        var people = [
+          new Person({ organization: 1, department: 1, name: { first: 'First', last: 'Person' }, title: 'Developer' }),
+          new Person({ organization: 1, department: 1, name: { first: 'Second', last: 'Person' }, title: 'Developer' })
+        ];
+        return Person.insert(people)
+          .then(function(newPeople) {
+            expect(newPeople).to.be.instanceof(Array);
+            expect(newPeople.length).to.be.eql(2);
+            expect(newPeople[1].name.first).to.be.eql('Second');
+          });
+      });
+    });
+
     describe('update', function() {
       it( 'should update shallow', function() {
         return Person.byId(1)
