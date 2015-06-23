@@ -366,6 +366,13 @@ describe( 'tyranid', function() {
             expect(newPerson._id).to.be.an.instanceOf(ObjectId);
           });
       });
+      it('should support defaultValues', function() {
+        var p = new Person({ organization: 1, department: 1, name: { first: 'Default', last: 'Employee' } });
+        return p.$insert()
+          .then(function(newPerson) {
+            expect(newPerson.title).to.be.eql('Employee');
+          });
+      });
       it('should use specified _id', function() {
         var p = new Person({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'Person' }, title: 'Developer' });
         return p.$insert()
