@@ -316,7 +316,6 @@ Population.prototype.populate = function(populator, documents) {
                 plen  = path.length;
 
             function mapIdsToObjects(obj) {
-
               if (_.isArray(obj)) {
                 var arr = new Array(obj.length);
 

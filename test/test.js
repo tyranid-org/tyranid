@@ -151,7 +151,7 @@ describe( 'tyranid', function() {
           return Person.db.insert([
             { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org' },
-            { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe', friends: [ { person : 1, person: 2 } ] }, { name: 'Bill Doe', friends: [ { person : 2 } ] } ] }
+            { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [ { name: 'Jill Doe', friends: [ { person : 1 }, { person: 2 } ] }, { name: 'Bill Doe', friends: [ { person : 2 } ] } ] }
           ]);
         }),
         Task.db.remove({}).then(function() {
@@ -299,12 +299,12 @@ describe( 'tyranid', function() {
       });
 
       it( 'should deep populate array links', function() {
-        return Person.find()
+        return Person.find({ _id: 3 })
           .then(function(people) {
             return Person.populate([ 'organization', 'siblings.friends.person' ], people).then(function(people) {
-              expect(people[2].siblings[0].friends[0].person$._id).to.be.eql(1);
-              expect(people[2].siblings[0].friends[1].person$._id).to.be.eql(2);
-              expect(people[2].siblings[1].friends[0].person$._id).to.be.eql(2);
+              expect(people[0].siblings[0].friends[0].person$._id).to.be.eql(1);
+              expect(people[0].siblings[0].friends[1].person$._id).to.be.eql(2);
+              expect(people[0].siblings[1].friends[0].person$._id).to.be.eql(2);
             });
           });
       });
