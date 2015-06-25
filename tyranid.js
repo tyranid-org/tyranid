@@ -840,8 +840,12 @@ Collection.prototype.valuesFor = function(fields) {
 /**
  * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
  */
-Collection.prototype.fromClient = function(pojo) {
+Collection.prototype.fromClient = function(pojo,path) {
   var fields = this.def.fields;
+
+  if (path) {
+    fields = new NamePath(this, path).tailDef().fields;
+  }
 
   if (_.isArray(pojo)) {
     var col = this;

@@ -374,12 +374,17 @@ describe( 'tyranid', function() {
     });
 
     describe('client', function() {
-
       it( 'should fromClient', function() {
         var personObj = { name : { firstName: 'Foo' }, job : 1 };
         var person = Person.fromClient(personObj);
         expect(person).to.be.an.instanceof(Person);
         expect(person.job).to.be.eql(1);
+      });
+
+      it( 'should deep fromClient', function() {
+        var friendObj = { birthDate : '03-07-1969' };
+        var friend = Person.fromClient(friendObj, 'siblings.friends' );
+        expect(friend.birthDate).to.be.an.instanceof(Date);
       });
     });
 

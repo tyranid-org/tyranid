@@ -2,6 +2,25 @@
 
 var tyr = require('../../tyranid');
 
+
+var Friend = {
+  is : 'object',
+  fields: {
+    person: { 'link' : 'person' },
+    birthDate : { is : 'date' }
+  }
+};
+
+var Sibling = {
+  is : 'object',
+  fields: {
+    name:    { is: 'string' },
+    friends: { is: 'array',  of: Friend }
+  }
+};
+
+Sibling.Friend = Friend;
+
 var Person = new tyr.Collection({
   id: 't03',
   name: 'person',
@@ -21,24 +40,7 @@ var Person = new tyr.Collection({
     job:       { 'link' : 'job' },
     age:       { is: 'integer' },
 
-    siblings: {
-      is: 'array',
-      of: {
-        is: 'object',
-        fields: {
-          name: { is: 'string' },
-          friends: {
-            is: 'array',
-            of: {
-              is : 'object',
-              fields : {
-                person: { 'link' : 'person' }
-              }
-            }
-          },
-        }
-      }
-    },
+    siblings: { is: 'array', of: Sibling },
 
     title: { is: 'string', defaultValue: 'Employee' },
     organization: { link: 'organization' },
@@ -47,6 +49,8 @@ var Person = new tyr.Collection({
     goldStars: { is: 'integer', defaultValue: 0 }
   }
 });
+
+Person.Sibling = Sibling;
 
 module.exports = Person;
 
