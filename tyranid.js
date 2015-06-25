@@ -841,17 +841,21 @@ Collection.prototype.valuesFor = function(fields) {
  * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
  */
 Collection.prototype.fromClient = function(pojo,path) {
-  var fields = this.def.fields;
+  var col = this;
+  var fields = col.def.fields;
 
-  if (path) {
-    fields = new NamePath(this, path).tailDef().fields;
-  }
+  var namePath = path ? new NamePath(this, path) : null;
 
   if (_.isArray(pojo)) {
-    var col = this;
     return pojo.map(function(doc) {
-      return col.fromClient(doc);
+      return col.fromClient(doc,path);
     });
+  }
+
+  if (namePath) {
+    var tailDef = namePath.tailDef();
+    col = tailDef.id ? collectionsById[tailDef.id] : null;
+    fields = tailDef.fields;
   }
 
   var obj = {}; // TODO:  create a new instance of this record-class?
@@ -868,7 +872,7 @@ Collection.prototype.fromClient = function(pojo,path) {
     }
   });
 
-  return new this(obj);
+  return col ? new col(obj) : obj;
 };
 
 function toClient(col, data) {

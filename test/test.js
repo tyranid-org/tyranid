@@ -385,6 +385,7 @@ describe( 'tyranid', function() {
         var friendObj = { birthDate : '03-07-1969' };
         var friend = Person.fromClient(friendObj, 'siblings.friends' );
         expect(friend.birthDate).to.be.an.instanceof(Date);
+        expect(friend).not.to.be.an.instanceof(Person);
       });
     });
 
