@@ -9,7 +9,9 @@ var tyr            = require('../tyranid'),
 
     pmongo         = require('promised-mongo'),
 
-    expect         = chai.expect;
+    expect         = chai.expect,
+
+    _              = require('lodash');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -209,6 +211,14 @@ describe( 'tyranid', function() {
         });
       });
 
+      it('should findAndModify()', function() {
+        return Person.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(doc) {
+          var person = doc[0];
+          expect(person).to.be.an.instanceof(Person);
+          expect(person.age).to.be.eql(32);
+        });
+      });
+
       it('should byId()', function() {
         return Person.byId(1).then(function(doc) {
           expect(doc).to.be.an.instanceof(Person);
@@ -274,10 +284,12 @@ describe( 'tyranid', function() {
 
       function verifyPeople(people) {
         expect(people.length).to.eql(3);
-        expect(people[0]).to.be.an.instanceof(Person);
-        expect(people[0].organization$).to.be.an.instanceof(Organization);
-        expect(people[0].organization$.name).to.be.eql('Acme Unlimited');
-        expect(people[2].organization$.name).to.be.eql('123 Construction');
+        var person1 = _.find(people, { _id: 1 });
+        var person3 = _.find(people, { _id: 3 });
+        expect(person1).to.be.an.instanceof(Person);
+        expect(person1.organization$).to.be.an.instanceof(Organization);
+        expect(person1.organization$.name).to.be.eql('Acme Unlimited');
+        expect(person3.organization$.name).to.be.eql('123 Construction');
       }
 
       it( 'should work curried', function() {
@@ -487,7 +499,7 @@ describe( 'tyranid', function() {
         Person.byId(1).then(function(person) {
           person.age = 33;
           person.$update().then(function() {
-            expect(person.updatedAt).to.be.defined();
+            expect(person.updatedAt).to.exist;
           });
         });
       });
@@ -496,11 +508,21 @@ describe( 'tyranid', function() {
         Person.def.timestamps = true;
         Person.save({ name: { first: 'Jacob' } }).then(function(person) {
           return Person.db.remove({ _id: person._id }).then(function() {
-            expect(person.createdAt).to.be.defined();
-            expect(person.updatedAt).to.be.defined();
+            expect(person.createdAt).to.exist;
+            expect(person.updatedAt).to.exist;
           });
         });
       });
+
+      it('should support findAndModify()', function() {
+        Person.def.timestamps = true;
+        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 } }, new: true }).then(function(doc) {
+          var person = doc[0];
+          expect(person.age).to.be.eql(31);
+          expect(person.updatedAt).to.exist;
+        });
+      });
+
     });
   });
 });

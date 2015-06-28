@@ -656,6 +656,33 @@ Collection.prototype.findOne = function() {
   });
 };
 
+/**
+ * Behaves like promised-mongo's findAndModify() method except that the results are mapped to collection instances.
+ */
+Collection.prototype.findAndModify = function(opts) {
+  var collection = this,
+      db         = collection.db,
+      update;
+
+  if ((update=opts.update) && collection.def.timestamps) {
+    var $set = update.$set;
+    if (!$set) {
+      $set = update.$set = {};
+    }
+    $set.updatedAt = new Date();
+  }
+
+  return db.findAndModify(opts).then(function(result) {
+    var doc = result[0];
+
+    if (doc) {
+      result[0] = new collection(doc);
+    }
+
+    return result;
+  });
+};
+
 Collection.prototype.save = function(obj) {
   var col = this;
 
