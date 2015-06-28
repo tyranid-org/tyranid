@@ -480,6 +480,28 @@ describe( 'tyranid', function() {
         expect(person.$validate().length).to.be.eql(2);
       });
     });
+
+    describe('timestamps', function() {
+      it( 'should set updatedAt', function() {
+        Person.def.timestamps = true;
+        Person.byId(1).then(function(person) {
+          person.age = 33;
+          person.$update().then(function() {
+            expect(person.updatedAt).to.be.defined();
+          });
+        });
+      });
+
+      it( 'should set createdAt', function() {
+        Person.def.timestamps = true;
+        Person.save({ name: { first: 'Jacob' } }).then(function(person) {
+          return Person.db.remove({ _id: person._id }).then(function() {
+            expect(person.createdAt).to.be.defined();
+            expect(person.updatedAt).to.be.defined();
+          });
+        });
+      });
+    });
   });
 });
 

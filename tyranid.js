@@ -132,7 +132,7 @@ NamePath.prototype.getUniq = function(obj) {
   var values = [];
 
   function getInner(pi, obj) {
-    if (_.isArray(obj)) {
+    if (Array.isArray(obj)) {
       for (var ai=0, alen=obj.length; ai<alen; ai++ ) {
         getInner(pi, obj[ai]);
       }
@@ -155,49 +155,6 @@ NamePath.prototype.getUniq = function(obj) {
 // Population
 // ==========
 
-/*
-    populate permissions.members
-
-    X. get strings paths working (along with arrays!)
-       
-    X. come up with syntax
-
-       ES6 shorthand:  $all = '$all'
-
-       {
-         'permissions.members': $all,
-         'permissions.members': { $all, organization: $all }
-       }
-
-     X. come up with internal format:
-
-        FROM: 'permissions.members'               -OR-
-              [ 'permissions.members' ]           -OR-
-              { 'permissions.members': $all }
-
-        TO:   [ Population{ np: NamePath('permission.members'), projection: [ $all ] } ]
-
-        ------
-
-        FROM: { 'permissions.members': { $all, department: $all }
-
-        TO:   [ Population{ np: NamePath('permission.members'), projection: [ $all, Population{ np: NamePath(department), projection: [ $all ] } ] } ]
-
-     X. convert existing array-format into internal population-format and get it working
-    
-        [ 'permissions.members' ] -> { 'permission.members': $all }
-
-     X. convert object-format into internal population-format and get existing patterns of it working
-
-     X. support nested population
-
-     X. documentation
-
-     /. support projection projection
-
-     /. remove "fields:" property?  not needed as much since you can specify projection and options inside the advanced format
- */
-
 function Population(namePath, projection) {
   if (!(namePath instanceof NamePath)) {
     throw new Error('parameter namePath is not an instanceof NamePath, got: ' + namePath);
@@ -213,7 +170,7 @@ Population.parse = function(rootCollection, fields) {
     fields = [ fields ];
   }
 
-  if (_.isArray(fields)) {
+  if (Array.isArray(fields)) {
     // process simplified array of pathnames format
     return new Population(
       new NamePath(rootCollection, ''),
@@ -272,7 +229,7 @@ Population.parse = function(rootCollection, fields) {
 
 Population.prototype.hasNestedPopulations = function() {
   var proj = this.projection;
-  if (_.isArray(proj)) {
+  if (Array.isArray(proj)) {
     return this.projection.some(function(population) { return population instanceof Population; });
   } else {
     return false;
@@ -316,7 +273,7 @@ Population.prototype.populate = function(populator, documents) {
                 plen  = path.length;
 
             function mapIdsToObjects(obj) {
-              if (_.isArray(obj)) {
+              if (Array.isArray(obj)) {
                 var arr = new Array(obj.length);
 
                 for (var ai=0, alen=obj.length; ai<alen; ai++ ) {
@@ -340,7 +297,7 @@ Population.prototype.populate = function(populator, documents) {
             function walkToEndOfPath(pi, obj) {
               var name = path[pi];
 
-              if (_.isArray(obj)) {
+              if (Array.isArray(obj)) {
                 for (var ai=0, alen=obj.length; ai<alen; ai++ ){
                   walkToEndOfPath(pi, obj[ai]);
                 }
@@ -555,9 +512,7 @@ Type.prototype.toClient = function(field, value) {
 
 var documentPrototype = {
   $save: function() {
-    // the mongo driver only saves properties on the object directly, prototype values will not be recorded
-
-    return this.$model.db.save(this);
+    return this.$model.save(this);
   },
 
   $insert: function() {
@@ -701,8 +656,34 @@ Collection.prototype.findOne = function() {
   });
 };
 
-var parseInsertObj = function parseInsertObj(obj, flds) {
-  var insertObj = {};
+Collection.prototype.save = function(obj) {
+  var col = this;
+
+  if (Array.isArray(obj)) {
+    return Promise.all(
+      obj.map(function(doc) {
+        col.save(doc);
+      })
+    );
+  } else {
+    if (obj._id) {
+      if (col.def.timestamps) {
+        setObj.updatedAt = new Date();
+      }
+
+      // the mongo driver only saves properties on the object directly, prototype values will not be recorded
+      return col.db.save(obj);
+    } else {
+      return col.insert(obj);
+    }
+  }
+};
+
+var parseInsertObj = function parseInsertObj(col, obj) {
+  var def       = col.def,
+      flds      = def.fields,
+      insertObj = {};
+
   _.each(flds, function(v,k) {
     if (obj[k] === undefined && v.defaultValue !== undefined) {
       insertObj[k] = v.defaultValue;
@@ -711,25 +692,33 @@ var parseInsertObj = function parseInsertObj(obj, flds) {
     }
   });
 
+  if (def.timestamps) {
+    var now = new Date();
+    insertObj.createdAt = now;
+    insertObj.updatedAt = now;
+  }
+
   return insertObj;
 };
-Collection.prototype.insert = function(obj) {
-  var flds = this.def.fields;
-  var insertObj;
 
-  if(Array.isArray(obj)) {
+Collection.prototype.insert = function(obj) {
+  var col  = this,
+      insertObj;
+
+  if (Array.isArray(obj)) {
     insertObj = _.map(obj, function(el) {
-      return parseInsertObj(el, flds);
+      return parseInsertObj(col, el);
     });
   } else {
-    insertObj = parseInsertObj(obj, flds);
+    insertObj = parseInsertObj(col, obj);
   }
 
   return this.db.insert(insertObj);
 };
 
 Collection.prototype.update = function(obj) {
-  var flds = this.def.fields;
+  var def    = this.def,
+      flds   = this.def.fields;
   var setObj = {};
 
   _.each(flds, function(v,k) {
@@ -737,6 +726,10 @@ Collection.prototype.update = function(obj) {
       setObj[k] = obj[k];
     }
   });
+
+  if (def.timestamps) {
+    setObj.updatedAt = new Date();
+  }
 
   return this.db.update(
     { _id : obj._id },
@@ -763,7 +756,7 @@ Collection.prototype.populate = function(opts, documents) {
       populator  = new Populator();
 
   function populatorFunc(documents) {
-    var isArray = documents && _.isArray(documents);
+    var isArray = documents && Array.isArray(documents);
     documents = isArray ? documents : [documents];
 
     return population.populate(populator, documents)
@@ -846,7 +839,7 @@ Collection.prototype.fromClient = function(pojo,path) {
 
   var namePath = path ? new NamePath(this, path) : null;
 
-  if (_.isArray(pojo)) {
+  if (Array.isArray(pojo)) {
     return pojo.map(function(doc) {
       return col.fromClient(doc,path);
     });
@@ -877,7 +870,7 @@ Collection.prototype.fromClient = function(pojo,path) {
 
 function toClient(col, data) {
 
-  if (_.isArray(data)) {
+  if (Array.isArray(data)) {
     return data.map(function(doc) {
       return toClient(col, doc);
     });
@@ -897,7 +890,7 @@ function toClient(col, data) {
       }
     } else if (v && v.$toClient) {
       obj[k] = v.$toClient();
-    } else if (_.isArray(v)) {
+    } else if (Array.isArray(v)) {
       // TODO:  we can figure out the type of k using metadata to make this work for the case when
       //        we have an array of pojos instead of instances
       obj[k] = toClient(null, v);
@@ -1020,7 +1013,7 @@ Collection.prototype.validateValues = function() {
     return;
   }
 
-  if (!_.isArray(rows)) {
+  if (!Array.isArray(rows)) {
     throw new Error('Expected values for collection ' + def.name + ' to be an array');
   }
 
@@ -1030,11 +1023,11 @@ Collection.prototype.validateValues = function() {
     return;
   }
 
-  if (_.isArray(rows[0])) {
+  if (Array.isArray(rows[0])) {
     // array format
 
     for (ri=0; ri<rlen; ri++) {
-      if (!_.isArray(rows[ri])) {
+      if (!Array.isArray(rows[ri])) {
         throw new Error('Expected value on row ' + ri + ' to be an array for collection ' + def.name);
       }
     }
@@ -1135,7 +1128,7 @@ var Tyranid = {
     this.db = opts.db;
 
     if (opts.validate) {
-      if (!_.isArray(opts.validate))
+      if (!Array.isArray(opts.validate))
         throw new Error('Validate options must be an array of objects of "dir" and "fileMatch".');
 
       this.validate(opts.validate);
@@ -1305,7 +1298,7 @@ new Type({ name: 'double' });
 new Type({
   name: 'array',
   fromClient: function(field, value) {
-    if (_.isArray(value)) {
+    if (Array.isArray(value)) {
       var ofField = field.of;
       return value.map(function(v) {
         return ofField.is.fromClient(ofField, v);
@@ -1346,7 +1339,7 @@ ObjectType = new Type({
         
         if (error instanceof ValidationError) {
           errors.push(error);
-        } else if (_.isArray(error)) {
+        } else if (Array.isArray(error)) {
           Array.prototype.push.apply(errors, error);
         }
       });
