@@ -25,7 +25,7 @@ var _ = require( 'lodash'),
    * pre-calc aggregation
 
 
-  Collection Schema BNF: 
+  Collection Schema BNF:
 
   <field def>: {
     is:    <string, a field type>,
@@ -77,6 +77,10 @@ function NamePath(collection, pathName) {
   var def = collection.def;
   for (var pi=0; pi<plen; pi++) {
     var name = path[pi];
+
+    if (!def.fields && def.link) {
+      throw new Error('"' + name + '" in "' + pathName + '" is not a contained within the collection "' + collection.def.name + '" (maybe need advanced population syntax)');
+    }
 
     def = def.fields[name];
     while (def.is.def.name === 'array') {
@@ -339,7 +343,7 @@ function Populator() {
 
 /**
  * cache maps ids to:
- *  
+ *
  *   undefined:  this id has not been requested yet
  *   null:       this id has been requested but we don't have a doc for it yet
  *   document:   this id has been requested and we have a doc for it
@@ -1102,7 +1106,7 @@ Collection.prototype.validateValues = function() {
           nrow[n] = v;
         });
       }
-     
+
       v = new col(nrow);
       if (col.def.enum) {
         name = v[col.labelField];
@@ -1227,7 +1231,7 @@ var Tyranid = {
 
   byName: function(name) {
     var nameLower = name.toLowerCase();
-    
+
     return _.find(collections, function(c) {
       return c.def.name.toLowerCase() === nameLower;
     });
@@ -1363,7 +1367,7 @@ ObjectType = new Type({
     if (obj) {
       _.each(def.fields, function(field, fieldName) {
         var error = field.is.validate(path + '.' + fieldName, field, obj[fieldName]);
-        
+
         if (error instanceof ValidationError) {
           errors.push(error);
         } else if (Array.isArray(error)) {
@@ -1414,4 +1418,3 @@ new Type({
 });
 
 module.exports = Tyranid;
-

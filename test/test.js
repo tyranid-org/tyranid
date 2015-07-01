@@ -23,7 +23,7 @@ describe( 'tyranid', function() {
   before(function(done) {
     db = pmongo('mongodb://localhost:27017/tyranid_test');
     tyr.config({
-      db: db 
+      db: db
     });
     done(null, db);
   });
@@ -159,7 +159,7 @@ describe( 'tyranid', function() {
             },
             { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
                 { name: 'Jill Doe', friends: [ { person : 1 }, { person: 2 } ] },
-                { name: 'Bill Doe', friends: [ { person : 2 }, { person: 3 } ] } 
+                { name: 'Bill Doe', friends: [ { person : 2 }, { person: 3 } ] }
               ]
             }
           ]);
@@ -334,12 +334,13 @@ describe( 'tyranid', function() {
             expect(people[2].siblings[1].friends[1].person$._id).to.be.eql(3);
           });
       });
+
       it( 'should deep populate array link links', function() {
         return Person.db
           .find({ '_id' : 2 })
           .then(Person.populate([ 'organization', 'siblings.bestFriend.organization' ]))
           .then(function(people) {
-            expect(people[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
+            expect(people[0].siblings[0].bestFriend$.organization$.name).to.throw('Acme Unlimited');
           });
       });
 
@@ -534,4 +535,3 @@ describe( 'tyranid', function() {
     });
   });
 });
-
