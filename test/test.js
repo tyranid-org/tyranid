@@ -151,7 +151,7 @@ describe( 'tyranid', function() {
           return Person.db.insert([
             { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
-              { name: 'Tom Doe', friends: [ { person : 3 }, { person: 1 } ] },
+              { name: 'Tom Doe', bestFriend : 1, friends: [ { person : 3 }, { person: 1 } ] },
               { name: 'George Doe', friends: [ { person : 1 }, { person: 3 } ] }
             ]
             },
@@ -322,11 +322,19 @@ describe( 'tyranid', function() {
             expect(people[2].siblings[1].friends[1].person$._id).to.be.eql(3);
           });
       });
+      it( 'should deep populate array link links', function() {
+        return Person.db
+          .find({ '_id' : 2 })
+          .then(Person.populate([ 'organization', 'siblings.bestFriend.organization' ]))
+          .then(function(people) {
+            expect(people[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
+          });
+      });
 
       it( 'should populate paths and arrays using array format', function() {
         return Department.byId(1)
           .then(function(department) {
-            return department.$populate([ 'permissions.members' ]).then(function() {
+            return department.$populate([ 'creator', 'permissions.members' ]).then(function() {
               expect(department.permissions.members$.length).to.be.eql(2);
               expect(department.permissions.members$[0]).to.be.an.instanceof(Person);
               expect(department.permissions.members$[0].name.first).to.be.eql('John');

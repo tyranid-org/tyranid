@@ -15,6 +15,7 @@ var Sibling = {
   is : 'object',
   fields: {
     name:    { is: 'string' },
+    bestFriend: { link : 'person' },
     friends: { is: 'array',  of: Friend }
   }
 };
