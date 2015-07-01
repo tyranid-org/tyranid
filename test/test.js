@@ -338,9 +338,9 @@ describe( 'tyranid', function() {
       it( 'should deep populate array link links', function() {
         return Person.db
           .find({ '_id' : 2 })
-          .then(Person.populate([ 'organization', 'siblings.bestFriend.organization' ]))
+          .then(Person.populate({ organization: $all, 'siblings.bestFriend': { $all: 1, organization: $all } }))
           .then(function(people) {
-            expect(people[0].siblings[0].bestFriend$.organization$.name).to.throw('Acme Unlimited');
+            expect(people[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
           });
       });
 
