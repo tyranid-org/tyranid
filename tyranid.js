@@ -305,13 +305,11 @@ Population.prototype.populate = function(populator, documents) {
                 for (var ai=0, alen=obj.length; ai<alen; ai++ ){
                   walkToEndOfPath(pi, obj[ai]);
                 }
-              } else if (pi === plen - 1) {
-                var pname = NamePath.populateNameFor(name);
-
-                obj[pname] = mapIdsToObjects(obj[name]);
               } else if (obj === undefined || obj === null) {
                 return;
-
+              } else if (pi === plen - 1) {
+                var pname = NamePath.populateNameFor(name);
+                obj[pname] = mapIdsToObjects(obj[name]);
               } else if (!_.isObject(obj)) {
                 throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
               } else {
