@@ -7,7 +7,7 @@ var Organization = new tyr.Collection({
   name: 'organization',
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string' }
+    name: { is: 'string', label: true }
   }
 });
 

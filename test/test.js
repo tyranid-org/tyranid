@@ -226,9 +226,21 @@ describe( 'tyranid', function() {
         });
       });
 
-      it('should byLabel()', function() {
+      it('should byLabel() on static collections', function() {
         expect(Job.byLabel('Designer')._id).to.be.eql(3);
         expect(Job.byLabel('Software Lead')._id).to.be.eql(2);
+      });
+
+      it('should byLabel() on mongo collections', function() {
+        return Organization.byLabel('Acme Unlimited').then(function(row) {
+          expect(row.name).to.be.eql('Acme Unlimited');
+        });
+      });
+
+      it('should fail byLabel() on mongo collections on bad data', function() {
+        return Organization.byLabel('Acme Unlimitedx').then(function(row) {
+          expect(row).to.be.eql(null);
+        });
       });
     });
 

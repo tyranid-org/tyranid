@@ -62,6 +62,11 @@ var collections     = [],
     $all            = '$all';
 
 
+function escapeRegex(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+}
+
+
 // NamePath
 // ========
 
@@ -625,12 +630,36 @@ Collection.prototype.idToUid = function(id) {
   return this.id + id;
 };
 
+Collection.prototype.isStatic = function() {
+  return this.def.enum;
+};
+
 Collection.prototype.byId = function(id) {
   if (typeof id === 'string') {
     id = this.def.fields._id.is.fromString(id);
   }
 
   return this.findOne({ _id: id });
+};
+
+
+Collection.prototype.byLabel = function(n, promise) {
+  var col = this,
+      findName = col.labelField,
+      matchLower = n.toLowerCase();
+
+  if (col.isStatic()) {
+    var value = _.find(col.def.values, function(v) {
+      var name = v[findName];
+      return name && name.toLowerCase() === matchLower;
+    });
+
+    return promise ? new Promise.resolve(value) : value;
+  } else {
+    var query = {};
+    query[findName] = {$regex: escapeRegex(matchLower), $options : 'i'};
+    return col.db.findOne(query);
+  }
 };
 
 
@@ -1120,17 +1149,6 @@ Collection.prototype.validateValues = function() {
     }
 
     def.values = newValues;
-
-    col.byLabel = function(n) {
-      var findName = col.labelField;
-      var matchLower = n.toLowerCase();
-
-      return _.find(def.values, function(v) {
-        var name = v[findName];
-        return name && name.toLowerCase() === matchLower;
-      });
-    };
-
   } else {
     // object format
 
