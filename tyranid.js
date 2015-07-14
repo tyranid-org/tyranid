@@ -518,6 +518,10 @@ Type.prototype.toClient = function(field, value) {
 // ========
 
 var documentPrototype = {
+  $label: function() {
+    return this.$model.labelFor(this);
+  },
+
   $save: function() {
     return this.$model.save(this);
   },
@@ -602,8 +606,9 @@ function Collection(def) {
 
   var db = def.db || config.db;
 
-  if ( !db )
+  if ( !db ) {
     throw new Error('The "db" parameter must be specified either in the Collection schema or in the Tyranid.config().');
+  }
 
   CollectionInstance.db = db.collection(CollectionInstance.def.dbName);
 
@@ -642,8 +647,7 @@ Collection.prototype.byId = function(id) {
   return this.findOne({ _id: id });
 };
 
-
-Collection.prototype.byLabel = function(n, promise) {
+Collection.prototype.byLabel = function(n, forcePromise) {
   var col = this,
       findName = col.labelField,
       matchLower = n.toLowerCase();
@@ -654,12 +658,21 @@ Collection.prototype.byLabel = function(n, promise) {
       return name && name.toLowerCase() === matchLower;
     });
 
-    return promise ? new Promise.resolve(value) : value;
+    return forcePromise ? new Promise.resolve(value) : value;
   } else {
     var query = {};
     query[findName] = {$regex: escapeRegex(matchLower), $options : 'i'};
     return col.db.findOne(query);
   }
+};
+
+Collection.prototype.labelFor = function(doc) {
+  var col = this,
+      labelField = col.labelField;
+
+  // TODO:  have this use path finder to walk the object in case the label is stored in an embedded object
+  // TODO:  support computed properties
+  return doc[labelField];
 };
 
 

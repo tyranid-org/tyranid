@@ -225,7 +225,9 @@ describe( 'tyranid', function() {
           expect(doc._id).to.be.eql(1);
         });
       });
+    });
 
+    describe('labels', function() {
       it('should byLabel() on static collections', function() {
         expect(Job.byLabel('Designer')._id).to.be.eql(3);
         expect(Job.byLabel('Software Lead')._id).to.be.eql(2);
@@ -241,6 +243,11 @@ describe( 'tyranid', function() {
         return Organization.byLabel('Acme Unlimitedx').then(function(row) {
           expect(row).to.be.eql(null);
         });
+      });
+
+      it('should support $label()', function() {
+        expect(Job.byLabel('Designer').$label()).to.be.eql('Designer');
+        expect(Job.byLabel('Software Lead').$label()).to.be.eql('Software Lead');
       });
     });
 
