@@ -245,9 +245,9 @@ describe( 'tyranid', function() {
         });
       });
 
-      it('should support $label()', function() {
-        expect(Job.byLabel('Designer').$label()).to.be.eql('Designer');
-        expect(Job.byLabel('Software Lead').$label()).to.be.eql('Software Lead');
+      it('should support $label', function() {
+        expect(Job.byLabel('Designer').$label).to.be.eql('Designer');
+        expect(Job.byLabel('Software Lead').$label).to.be.eql('Software Lead');
       });
     });
 

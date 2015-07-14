@@ -518,10 +518,6 @@ Type.prototype.toClient = function(field, value) {
 // ========
 
 var documentPrototype = {
-  $label: function() {
-    return this.$model.labelFor(this);
-  },
-
   $save: function() {
     return this.$model.save(this);
   },
@@ -542,14 +538,33 @@ var documentPrototype = {
     return this.$model.populate(opts, this);
   },
 
-  $uid: function() {
-    return this.$model.idToUid(this._id);
-  },
-
   $validate: function() {
     return ObjectType.validate('', this.$model.def, this);
   }
 };
+
+function defineDocumentProperties(dp) {
+  Object.defineProperties(dp, {
+    $label: {
+      get: function() {
+        return this.$model.labelFor(this);
+      },
+      enumerable:   false,
+      writeable:    false,
+      configurable: false
+    },
+
+    $uid: {
+      get: function() {
+        return this.$model.idToUid(this._id);
+      },
+      enumerable:   false,
+      writeable:    false,
+      configurable: false
+    }
+  });
+}
+
 
 
 
@@ -617,7 +632,7 @@ function Collection(def) {
   collectionsById[def.id] = CollectionInstance;
 
   for (var key in dp) {
-    if (key.substring(0,1) === '$') {
+    if (key.substring(0,1) === '$' && key !== '$label') {
       Object.defineProperty(dp, key, {
         enumerable:   false,
         writeable:    false,
@@ -625,6 +640,8 @@ function Collection(def) {
       });
     }
   }
+
+  defineDocumentProperties(dp);
 
   return CollectionInstance;
 }
