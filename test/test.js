@@ -178,7 +178,7 @@ describe( 'tyranid', function() {
         expect(
           Person.fieldsBy({ name: 'string' })
         ).to.eql(
-          [ 'name.first', 'name.last', 'siblings.name', 'title' ]
+          ['fullName', 'name.first', 'name.last', 'siblings.name', 'title']
         );
       });
 
@@ -186,7 +186,7 @@ describe( 'tyranid', function() {
         expect(
           Person.fieldsBy({ name: 'string' })
         ).to.eql(
-          [ 'name.first', 'name.last', 'siblings.name', 'title' ]
+          ['fullName', 'name.first', 'name.last', 'siblings.name', 'title']
         );
       });
     });
@@ -552,5 +552,24 @@ describe( 'tyranid', function() {
       });
 
     });
+
+    describe('computed properties', function() {
+
+      it( 'should support computed properties', function() {
+        var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
+        expect(person.fullName).to.be.eql('Jane Smith');
+      });
+
+      it( 'should work with toClient()', function() {
+        var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
+        expect(person.fullName).to.be.eql('Jane Smith');
+      });
+
+      it( 'should return validate errors on invalid data', function() {
+        var person = new Person({ age: 5.1 });
+        expect(person.$validate().length).to.be.eql(2);
+      });
+    });
+
   });
 });

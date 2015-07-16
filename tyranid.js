@@ -643,6 +643,34 @@ function Collection(def) {
 
   defineDocumentProperties(dp);
 
+  _.each(def.fields, function(field, name) {
+    var get  = field.get,
+        set  = field.set,
+        isDb = field.db;
+
+    if (get || set) {
+      var prop = {
+        enumerable:   isDb !== undefined ? isDb : false,
+        writeable:    false,
+        configurable: false
+      };
+
+      if (get) {
+        prop.get = get;
+      }
+
+      if (set) {
+        prop.set = set;
+      }
+
+      Object.defineProperty(dp, name, prop);
+
+      if (isDb === undefined) {
+        field.db = false;
+      }
+    }
+  });
+
   return CollectionInstance;
 }
 
@@ -756,7 +784,7 @@ Collection.prototype.save = function(obj) {
   } else {
     if (obj._id) {
       if (col.def.timestamps) {
-        setObj.updatedAt = new Date();
+        obj.updatedAt = new Date();
       }
 
       // the mongo driver only saves properties on the object directly, prototype values will not be recorded
@@ -769,14 +797,16 @@ Collection.prototype.save = function(obj) {
 
 var parseInsertObj = function parseInsertObj(col, obj) {
   var def       = col.def,
-      flds      = def.fields,
+      fields    = def.fields,
       insertObj = {};
 
-  _.each(flds, function(v,k) {
-    if (obj[k] === undefined && v.defaultValue !== undefined) {
-      insertObj[k] = v.defaultValue;
-    } else {
-      insertObj[k] = obj[k];
+  _.each(fields, function(field, name) {
+    if (field.db !== false) {
+      if (obj[name] === undefined && field.defaultValue !== undefined) {
+        insertObj[name] = field.defaultValue;
+      } else {
+        insertObj[name] = obj[name];
+      }
     }
   });
 
@@ -806,12 +836,14 @@ Collection.prototype.insert = function(obj) {
 
 Collection.prototype.update = function(obj) {
   var def    = this.def,
-      flds   = this.def.fields;
+      fields = this.def.fields;
   var setObj = {};
 
-  _.each(flds, function(v,k) {
-    if (obj[k] !== undefined && k !== '_id') {
-      setObj[k] = obj[k];
+  _.each(fields, function(field, name) {
+    if (field.db !== false) {
+      if (obj[name] !== undefined && name !== '_id') {
+        setObj[name] = obj[name];
+      }
     }
   });
 
@@ -892,7 +924,9 @@ Collection.prototype.valuesFor = function(fields) {
   return new Promise(function(resolve, reject) {
     var fieldsObj = { _id: 0 };
     _.each(fields, function(field) {
-      fieldsObj[field] = 1;
+      if (field.db !== false) {
+        fieldsObj[field] = 1;
+      }
     });
 
     var values = [];
@@ -989,6 +1023,13 @@ function toClient(col, data) {
       //        for example, populated values ... we probably need a more comprehensive solution here, not sure
       //        what it would be yet
       obj[k] = v;
+    }
+  });
+
+  // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
+  _.each(fields, function(field, name) {
+    if (field.get && field.client) {
+      obj[name] = data[name];
     }
   });
 
@@ -1412,12 +1453,14 @@ ObjectType = new Type({
 
     if (obj) {
       _.each(def.fields, function(field, fieldName) {
-        var error = field.is.validate(path + '.' + fieldName, field, obj[fieldName]);
+        if (!field.get) {
+          var error = field.is.validate(path + '.' + fieldName, field, obj[fieldName]);
 
-        if (error instanceof ValidationError) {
-          errors.push(error);
-        } else if (Array.isArray(error)) {
-          Array.prototype.push.apply(errors, error);
+          if (error instanceof ValidationError) {
+            errors.push(error);
+          } else if (Array.isArray(error)) {
+            Array.prototype.push.apply(errors, error);
+          }
         }
       });
     }

@@ -28,6 +28,8 @@ var Person = new tyr.Collection({
   fields: {
     _id: { is: 'integer' },
 
+    fullName: { is: 'string', client: true, get: function() { return this.name.first + ' ' + this.name.last; } },
+
     name: {
       is: 'object',
       required: true,
@@ -54,4 +56,3 @@ var Person = new tyr.Collection({
 Person.Sibling = Sibling;
 
 module.exports = Person;
-
