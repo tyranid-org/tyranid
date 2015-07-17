@@ -119,6 +119,28 @@ describe( 'tyranid', function() {
         tyr.validate();
       }).to.throw( /Unknown field definition/i );
     });
+
+    it( 'should support re-usable bits of metadata', function() {
+      tyr.reset();
+      expect(function() {
+        var Meta = {
+          is: 'object',
+          fields: {
+            name: { is: 'string' }
+          }
+        };
+
+        new tyr.Collection({
+          id: 't00',
+          name: 'test',
+          fields: {
+            _id: { is: 'mongoid' },
+            one: Meta,
+            two: Meta
+          }
+        });
+      }).to.not.throw();
+    });
   });
 
   describe( 'with model', function() {
@@ -563,11 +585,6 @@ describe( 'tyranid', function() {
       it( 'should work with toClient()', function() {
         var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
         expect(person.fullName).to.be.eql('Jane Smith');
-      });
-
-      it( 'should return validate errors on invalid data', function() {
-        var person = new Person({ age: 5.1 });
-        expect(person.$validate().length).to.be.eql(2);
       });
     });
 

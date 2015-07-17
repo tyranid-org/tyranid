@@ -1063,24 +1063,27 @@ Collection.prototype.validateSchema = function() {
 
       var type;
       if (field.is) {
-        type = typesByName[field.is];
+        if (_.isString(field.is)) {
+          type = typesByName[field.is];
 
-        if (!type) {
-          throw validator.err(path, 'Unknown type ' + field.is);
+          if (!type) {
+            throw validator.err(path, 'Unknown type ' + field.is);
+          }
+
+          if (type instanceof Collection) {
+            throw validator.err(path, 'Trying to "is" a collection -- ' + field.is + ', either make it a "link" or a metadata snippet');
+          }
+
+          field.is = type;
+
+          type.validateSchema(validator, path, field);
+
+          if (type.def.name === 'object' && field.fields) {
+            validator.fields(path, field.fields);
+          }
+        } else if (!_.isPlainObject(field.is)) {
+          err('Expected field.is to be a string, got: ' + field.is);
         }
-
-        if (type instanceof Collection) {
-          throw validator.err(path, 'Trying to "is" a collection -- ' + field.is + ', either make it a "link" or a metadata snippet');
-        }
-
-        field.is = type;
-
-        type.validateSchema(validator, path, field);
-
-        if (type.def.name === 'object' && field.fields) {
-          validator.fields(path, field.fields);
-        }
-
       } else if (field.link) {
         type = typesByName[field.link];
 
