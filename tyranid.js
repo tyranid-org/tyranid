@@ -1081,8 +1081,8 @@ Collection.prototype.validateSchema = function() {
           if (type.def.name === 'object' && field.fields) {
             validator.fields(path, field.fields);
           }
-        } else if (!_.isPlainObject(field.is)) {
-          throw validator.err('Expected field.is to be a string, got: ' + field.is);
+        } else if (!_.isObject(field.is) || !field.is.def) {
+          throw validator.err(path, 'Expected field.is to be a string or a type, got: ' + field.is);
         }
       } else if (field.link) {
         type = typesByName[field.link];
