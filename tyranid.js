@@ -1082,7 +1082,7 @@ Collection.prototype.validateSchema = function() {
             validator.fields(path, field.fields);
           }
         } else if (!_.isPlainObject(field.is)) {
-          err('Expected field.is to be a string, got: ' + field.is);
+          throw validator.err('Expected field.is to be a string, got: ' + field.is);
         }
       } else if (field.link) {
         type = typesByName[field.link];
