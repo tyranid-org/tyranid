@@ -175,14 +175,18 @@ describe( 'tyranid', function() {
           return Person.db.insert([
             { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
-              { name: 'Tom Doe', bestFriend : 1, friends: [ { person : 3 }, { person: 1 } ] },
-              { name: 'George Doe', friends: [ { person : 1 }, { person: 3 } ] }
-            ]
+                { name: 'Tom Doe', bestFriend : 1, friends: [ { person : 3 }, { person: 1 } ] },
+                { name: 'George Doe', friends: [ { person : 1 }, { person: 3 } ] }
+              ],
+              age : 35,
+              ageAppropriateSecret : 'Eats at Chipotle way to much...'
             },
             { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
                 { name: 'Jill Doe', friends: [ { person : 1 }, { person: 2 } ] },
                 { name: 'Bill Doe', friends: [ { person : 2 }, { person: 3 } ] }
-              ]
+              ],
+              age : 20,
+              ageAppropriateSecret : 'Not a fan of construction companies...'
             }
           ]);
         }),
@@ -200,7 +204,7 @@ describe( 'tyranid', function() {
         expect(
           Person.fieldsBy({ name: 'string' })
         ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'siblings.name', 'title']
+          ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
 
@@ -208,7 +212,7 @@ describe( 'tyranid', function() {
         expect(
           Person.fieldsBy({ name: 'string' })
         ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'siblings.name', 'title']
+          ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
     });
@@ -290,7 +294,7 @@ describe( 'tyranid', function() {
     });
 
     describe('values', function() {
-      var allString = [ '123 Construction', 'Acme Unlimited', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Engineering', 'George Doe', 'Jane', 'Jill Doe', 'John', 'Tom Doe' ];
+      var allString = [ '123 Construction', 'Acme Unlimited', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering', 'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe' ];
 
       it( 'should support valuesFor()', function() {
         Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {
@@ -449,6 +453,16 @@ describe( 'tyranid', function() {
         expect(friend.birthDate).to.be.an.instanceof(Date);
         expect(friend).not.to.be.an.instanceof(Person);
       });
+
+      it( 'should allow parametric client flags', function() {
+        Person.find({age : {$exists : true}})
+          .then(function(people) {
+            var clientData = Person.toClient(people);
+            expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...')
+            expect(clientData[1]).ageAppropriateSecret.to.be.eql(undefined);
+          })
+      })
+
     });
 
     describe('insert', function() {
