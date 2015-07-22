@@ -502,15 +502,27 @@ Type.prototype.fromClient = function(field, value) {
   return f ? f(field, value) : value;
 };
 
-Type.prototype.toClient = function(field, value) {
-  var def = this.def;
+Type.prototype.toClient = function(field, value, data) {
 
-  if (setFalse(def.client) || setFalse(field.client)) {
+  var def = this.def,
+      dClient = def.client,
+      fClient = field.client;
+
+  if (_.isFunction(dClient) && !dClient.call(data, value)) {
+    return undefined;
+  }
+
+  if (_.isFunction(fClient) && !fClient.call(data, value)) {
+    return undefined;
+  }
+
+  if (setFalse(dClient) || setFalse(fClient)) {
     return undefined;
   }
 
   var f = def.toClient;
   return f ? f(field, value) : value;
+
 };
 
 
@@ -1005,7 +1017,7 @@ function toClient(col, data) {
     var field;
 
     if (fields && (field=fields[k])) {
-      v = field.is.toClient(field, v);
+      v = field.is.toClient(field, v, data);
 
       if (v !== undefined) {
         obj[k] = v;
@@ -1028,8 +1040,12 @@ function toClient(col, data) {
 
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   _.each(fields, function(field, name) {
-    if (field.get && field.client) {
-      obj[name] = data[name];
+    var value, client;
+    if (field.get && (client = field.client)) {
+      value = data[name];
+      if ( !_.isFunction(client) || client.call(data, value) ) {
+        obj[name] = value;
+      }
     }
   });
 
