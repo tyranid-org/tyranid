@@ -43,6 +43,8 @@ var Person = new tyr.Collection({
     job:       { 'link' : 'job' },
     age:       { is: 'integer' },
 
+    ageAppropriateSecret : { is : 'string', client : function() { return this.age > 30; } },
+
     siblings: { is: 'array', of: Sibling },
 
     title: { is: 'string', defaultValue: 'Employee' },
