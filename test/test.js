@@ -447,6 +447,19 @@ describe( 'tyranid', function() {
         expect(person.job).to.be.eql(1);
       });
 
+      it( 'should fromClient array objects', function() {
+
+        var taskObj = { _id: 1, title: 'Write instance validation tests', assigneeUid: 1, departments: [
+          {
+            secondName: 'foo',
+            department: 1
+          }
+        ] };
+
+        var task = Task.fromClient(taskObj);
+        expect(task.departments[0].department).to.be.an.instanceof(ObjectId);
+      });
+
       it( 'should deep fromClient', function() {
         var friendObj = { birthDate : '03-07-1969' };
         var friend = Person.fromClient(friendObj, 'siblings.friends' );
