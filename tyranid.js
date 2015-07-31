@@ -732,7 +732,6 @@ Collection.prototype.labelFor = function(doc) {
   return doc[labelField];
 };
 
-
 /**
  * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
  */
@@ -967,7 +966,7 @@ Collection.prototype.valuesFor = function(fields) {
 /**
  * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
  */
-Collection.prototype.fromClient = function(pojo,path) {
+Collection.prototype.fromClient = function(pojo, path) {
   var col = this;
   var fields = col.def.fields;
 
@@ -975,7 +974,7 @@ Collection.prototype.fromClient = function(pojo,path) {
 
   if (Array.isArray(pojo)) {
     return pojo.map(function(doc) {
-      return col.fromClient(doc,path);
+      return col.fromClient(doc, path);
     });
   }
 
@@ -1467,6 +1466,28 @@ new Type({
 
 ObjectType = new Type({
   name: 'object',
+  fromClient: function(field, value) {
+    if (!value) {
+      return value;
+    }
+
+    var obj = {};
+
+    var fields = field.fields;
+    _.each(value, function(v, k) {
+      var field = fields[k];
+
+      if (field) {
+        if (!field.is ) {
+          throw new Error('collection missing type ("is"), missing from schema?');
+        }
+
+        obj[k] = field.is.fromClient(field, v);
+      }
+    });
+
+    return obj;
+  },
   validate: function(path, def, obj) {
     var errors = [];
 

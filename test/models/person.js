@@ -4,19 +4,27 @@ var tyr = require('../../tyranid');
 
 
 var Friend = {
-  is : 'object',
+  is: 'object',
   fields: {
-    person: { 'link' : 'person' },
-    birthDate : { is : 'date' }
+    person: { link: 'person' },
+    birthDate: { is: 'date' }
   }
 };
 
 var Sibling = {
-  is : 'object',
+  is: 'object',
   fields: {
-    name:    { is: 'string' },
-    bestFriend: { link : 'person' },
-    friends: { is: 'array',  of: Friend }
+    name:       { is: 'string' },
+    bestFriend: { link: 'person' },
+    friends:    { is: 'array',  of: Friend }
+  }
+};
+
+var RoleStatus = {
+  is: 'object',
+  fields: {
+    role:       { link: 'role' },
+    active:     { is: 'boolean' }
   }
 };
 
@@ -40,10 +48,11 @@ var Person = new tyr.Collection({
     },
 
     birthDate: { is: 'date' },
-    job:       { 'link' : 'job' },
+    job:       { link: 'job' },
     age:       { is: 'integer' },
+    roles:     { is: 'array', of: RoleStatus },
 
-    ageAppropriateSecret : { is : 'string', client : function() { return this.age > 30; } },
+    ageAppropriateSecret: { is: 'string', client: function() { return this.age > 30; } },
 
     siblings: { is: 'array', of: Sibling },
 
