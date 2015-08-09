@@ -355,9 +355,9 @@ describe( 'tyranid', function() {
       it( 'should work uncurried', function() {
         return Person.find()
           .then(function(people) {
-           return Person.populate('organization', people).then(function(people) {
+            return Person.populate('organization', people).then(function(people) {
               verifyPeople(people);
-           });
+            });
           });
       });
 
@@ -443,6 +443,26 @@ describe( 'tyranid', function() {
               expect(department.head$.organization$._id).to.be.eql(2);
             });
           });
+      });
+    });
+
+    describe('denormalization', function() {
+      var julia,
+          juliaMatch = { 'name.first': 'Julia', 'name.last': 'Doe' };
+
+      before(function() {
+        julia = new Person({ _id: 2000, name: { first: 'Julia', last: 'Doe' }, organization: 1 });
+        return julia.$save();
+      });
+
+      after(function() {
+        return Person.db.remove(juliaMatch);
+      });
+
+      it( 'denormalize on save', function() {
+        return Person.db.findOne(juliaMatch).then(function(doc) {
+          expect(doc.organization_.name).to.be.eql('Acme Unlimited');
+        });
       });
     });
 

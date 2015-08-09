@@ -1,3 +1,4 @@
+'use strict';
 
 var _ = require( 'lodash'),
    fs = require('fs');
@@ -123,10 +124,12 @@ NamePath.prototype.tailDef = function() {
  *    2. organization   -> organization$
  *    3. organization   -> organization
  */
-NamePath.populateNameFor = function(name) {
+NamePath.populateNameFor = function(name, denormal) {
   var l = name.length;
 
-  if (name.substring(l-2) === 'Id') {
+  if (denormal) {
+    return name + '_';
+  } else if (name.substring(l-2) === 'Id') {
     return name.substring(0, l-2);
   } else {
     return name + '$';
@@ -172,6 +175,10 @@ function Population(namePath, projection) {
   this.namePath = namePath;
   this.projection = projection;
 }
+
+Population.prototype.isSimple = function() {
+  return _.isBoolean(this.projection);
+};
 
 Population.parse = function(rootCollection, fields) {
   if (_.isString(fields)) {
@@ -252,7 +259,7 @@ Population.prototype.populate = function(populator, documents) {
   var population = this;
 
   population.projection.forEach(function(population) {
-    if (population instanceof Population) {
+    if (population instanceof Population && !population.isSimple()) {
       populator.addIds(population, documents);
     }
   });
@@ -266,7 +273,7 @@ Population.prototype.populate = function(populator, documents) {
     .then(function() {
       return Promise.all(
         population.projection.map(function(population) {
-          if (!(population instanceof Population)) {
+          if (!(population instanceof Population) || population.isSimple()) {
             return;
           }
 
@@ -313,7 +320,7 @@ Population.prototype.populate = function(populator, documents) {
               } else if (obj === undefined || obj === null) {
                 return;
               } else if (pi === plen - 1) {
-                var pname = NamePath.populateNameFor(name);
+                var pname = NamePath.populateNameFor(name, populator.denormal);
                 obj[pname] = mapIdsToObjects(obj[name]);
               } else if (!_.isObject(obj)) {
                 throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
@@ -339,8 +346,9 @@ Population.prototype.populate = function(populator, documents) {
 // Populator
 // =========
 
-function Populator() {
+function Populator(denormal) {
 
+  this.denormal = denormal;
   this.cachesByColId = {};
 }
 
@@ -546,8 +554,8 @@ var documentPrototype = {
     return this.$model.toClient(this);
   },
 
-  $populate: function(opts) {
-    return this.$model.populate(opts, this);
+  $populate: function(fields, denormal) {
+    return this.$model.populate(fields, this, denormal);
   },
 
   $validate: function() {
@@ -783,27 +791,35 @@ Collection.prototype.findAndModify = function(opts) {
   });
 };
 
-Collection.prototype.save = function(obj) {
+function denormalPopulate(col, obj) {
+  var denormal = col.denormal;
+  return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
+}
+
+Collection.prototype.save = function(obj, denormalAlreadyDone) {
   var col = this;
 
-  if (Array.isArray(obj)) {
-    return Promise.all(
-      obj.map(function(doc) {
-        col.save(doc);
-      })
-    );
-  } else {
-    if (obj._id) {
-      if (col.def.timestamps) {
-        obj.updatedAt = new Date();
-      }
+  return denormalPopulate(col, obj, denormalAlreadyDone)
+    .then(function() {
+      if (Array.isArray(obj)) {
+        return Promise.all(
+          obj.map(function(doc) {
+            return col.save(doc, true);
+          })
+        );
+      } else {
+        if (obj._id) {
+          if (col.def.timestamps) {
+            obj.updatedAt = new Date();
+          }
 
-      // the mongo driver only saves properties on the object directly, prototype values will not be recorded
-      return col.db.save(obj);
-    } else {
-      return col.insert(obj);
-    }
-  }
+          // the mongo driver only saves properties on the object directly, prototype values will not be recorded
+          return col.db.save(obj);
+        } else {
+          return col.insert(obj, true);
+        }
+      }
+    });
 };
 
 var parseInsertObj = function parseInsertObj(col, obj) {
@@ -830,19 +846,22 @@ var parseInsertObj = function parseInsertObj(col, obj) {
   return insertObj;
 };
 
-Collection.prototype.insert = function(obj) {
+Collection.prototype.insert = function(obj, denormalAlreadyDone) {
   var col  = this,
       insertObj;
 
-  if (Array.isArray(obj)) {
-    insertObj = _.map(obj, function(el) {
-      return parseInsertObj(col, el);
-    });
-  } else {
-    insertObj = parseInsertObj(col, obj);
-  }
+  return denormalPopulate(col, obj, denormalAlreadyDone)
+    .then(function() {
+      if (Array.isArray(obj)) {
+        insertObj = _.map(obj, function(el) {
+          return parseInsertObj(col, el);
+        });
+      } else {
+        insertObj = parseInsertObj(col, obj);
+      }
 
-  return this.db.insert(insertObj);
+      return col.db.insert(insertObj);
+    });
 };
 
 Collection.prototype.update = function(obj) {
@@ -880,11 +899,11 @@ Collection.prototype.update = function(obj) {
  * If documents is not provided, this function will return a curried version of this function that takes a single array
  * of documents.  This allows populate to be fed into a promise chain.
  */
-Collection.prototype.populate = function(opts, documents) {
+Collection.prototype.populate = function(fields, documents, denormal) {
   var collection = this,
 
-      population = Population.parse(collection, opts),
-      populator  = new Populator();
+      population = Population.parse(collection, fields),
+      populator  = new Populator(denormal);
 
   function populatorFunc(documents) {
     var isArray = documents && Array.isArray(documents);
@@ -1115,6 +1134,15 @@ Collection.prototype.validateSchema = function() {
 
       } else {
         throw validator.err('Unknown field definition at ' + path);
+      }
+
+      if (field.denormal) {
+        if (!field.link) {
+          throw validator.err(path, '"denormal" is only a valid option on links');
+        }
+
+        var denormal = col.denormal = col.denormal || {};
+        denormal[path.substring(1)] = field.denormal;
       }
     },
 
