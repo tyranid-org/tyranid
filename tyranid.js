@@ -810,7 +810,6 @@ Collection.prototype.findAndModify = function(opts) {
 
 function denormalPopulate(col, obj, denormalAlreadyDone) {
   var denormal = !denormalAlreadyDone && col.denormal;
-  console.log('denormal', denormal);
   return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
 }
 
@@ -876,10 +875,6 @@ Collection.prototype.insert = function(obj, denormalAlreadyDone) {
 
   return denormalPopulate(col, obj, denormalAlreadyDone)
     .then(function() {
-      if (col.denormal) {
-        console.log('obj after denormal', obj);
-      }
-
       if (Array.isArray(obj)) {
         insertObj = _.map(obj, function(el) {
           return parseInsertObj(col, el);
