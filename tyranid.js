@@ -791,8 +791,8 @@ Collection.prototype.findAndModify = function(opts) {
   });
 };
 
-function denormalPopulate(col, obj) {
-  var denormal = col.denormal;
+function denormalPopulate(col, obj, denormalAlreadyDone) {
+  var denormal = !denormalAlreadyDone && col.denormal;
   return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
 }
 
@@ -835,6 +835,12 @@ var parseInsertObj = function parseInsertObj(col, obj) {
         insertObj[name] = obj[name];
       }
     }
+  });
+
+  _.each(col.denormal, function(field, name) {
+    // TODO:  need to parse & process name it is a path (if it contains "."s)
+    name = NamePath.populateNameFor(name, true);
+    insertObj[name] = obj[name];
   });
 
   if (def.timestamps) {
