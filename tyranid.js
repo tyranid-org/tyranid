@@ -409,7 +409,7 @@ Populator.prototype.queryMissingIds = function() {
       if (!ids.length)
         return Promise.resolve();
 
-      return collection.find({ _id: { $in: ids }}).then(function(linkDocs) {
+      return collection.byIds(ids).then(function(linkDocs) {
         linkDocs.forEach(function(doc) {
           cache[doc._id] = doc;
         });
@@ -705,11 +705,28 @@ Collection.prototype.isStatic = function() {
 };
 
 Collection.prototype.byId = function(id) {
-  if (typeof id === 'string') {
-    id = this.def.fields._id.is.fromString(id);
-  }
+  if (this.isStatic()) {
+    return Promise.resolve(this.byIdIndex[id]);
 
-  return this.findOne({ _id: id });
+  } else {
+    if (typeof id === 'string') {
+      id = this.def.fields._id.is.fromString(id);
+    }
+
+    return this.findOne({ _id: id });
+  }
+};
+
+Collection.prototype.byIds = function(ids) {
+  var col = this;
+
+  if (col.isStatic()) {
+    console.log('ids', ids);
+    console.log('mapped ids', ids.map(function(id) { return col.byIdIndex[id]; }));
+    return Promise.resolve(ids.map(function(id) { return col.byIdIndex[id]; }));
+  } else {
+    return col.find({ _id: { $in: ids }});
+  }
 };
 
 Collection.prototype.byLabel = function(n, forcePromise) {
@@ -793,6 +810,7 @@ Collection.prototype.findAndModify = function(opts) {
 
 function denormalPopulate(col, obj, denormalAlreadyDone) {
   var denormal = !denormalAlreadyDone && col.denormal;
+  console.log('denormal', denormal);
   return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
 }
 
@@ -858,6 +876,10 @@ Collection.prototype.insert = function(obj, denormalAlreadyDone) {
 
   return denormalPopulate(col, obj, denormalAlreadyDone)
     .then(function() {
+      if (col.denormal) {
+        console.log('obj after denormal', obj);
+      }
+
       if (Array.isArray(obj)) {
         insertObj = _.map(obj, function(el) {
           return parseInsertObj(col, el);
@@ -1281,6 +1303,12 @@ Collection.prototype.validateValues = function() {
       }
     }
   }
+
+
+  var byIdIndex = col.byIdIndex = {};
+  def.values.forEach(function(doc) {
+    byIdIndex[doc._id] = doc;
+  });
 };
 
 var Tyranid = {
