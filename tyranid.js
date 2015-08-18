@@ -1581,7 +1581,7 @@ new Type({
     return ObjectId(str);
   },
   fromClient: function(field, value) {
-    return ObjectId(value);
+    return value ? ObjectId(value) : undefined;
   },
   toClient: function(field, value) {
     return value ? value.toString() : value;
