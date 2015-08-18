@@ -208,14 +208,7 @@ describe( 'tyranid', function() {
 
     describe( 'schema methods', function() {
       it( 'should support fieldsBy()', function() {
-        expect(
-          Person.fieldsBy({ name: 'string' })
-        ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
-        );
-      });
-
-      it( 'should support fieldsBy()', function() {
+        console.log(Person.fieldsBy({ name: 'string' }));
         expect(
           Person.fieldsBy({ name: 'string' })
         ).to.eql(
@@ -477,12 +470,13 @@ describe( 'tyranid', function() {
       it( 'should fromClient array objects', function() {
         var personObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true } ] };
         var person = Person.fromClient(personObj);
+        console.log(person);
         expect(person.roles[0].role).to.be.an.instanceof(ObjectId);
       });
 
       it( 'should deep fromClient', function() {
         var friendObj = { birthDate: '03-07-1969' };
-        var friend = Person.fromClient(friendObj, 'siblings.friends' );
+        var friend = Person.fromClient(friendObj, 'siblings.friends');
         expect(friend.birthDate).to.be.an.instanceof(Date);
         expect(friend).not.to.be.an.instanceof(Person);
       });
@@ -494,8 +488,14 @@ describe( 'tyranid', function() {
             expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...')
             expect(clientData[1]).ageAppropriateSecret.to.be.eql(undefined);
           })
-      })
+      });
 
+      it( 'should copy dynamic objects', function() {
+        var personObj = { name: { firstName: 'Foo' }, bag: { abc123: 5 } };
+        var person = Person.fromClient(personObj);
+        expect(person).to.be.an.instanceof(Person);
+        expect(person.bag).to.be.eql({ abc123: 5 });
+      });
     });
 
     describe('insert', function() {

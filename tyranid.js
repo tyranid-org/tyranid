@@ -947,13 +947,15 @@ Collection.prototype.fieldsBy = function(comparable) {
   var cb = _.callback(comparable);
 
   function fieldsBy(path, val) {
-
     if (val.is) {
       if (val.is.def.name === 'object') {
-        return fieldsBy(path, val.fields);
+        var fields = val.fields;
+        if (fields) {
+          fieldsBy(path, fields);
+        }
 
       } else if (val.is.def.name === 'array') {
-        return fieldsBy(path, val.of);
+        fieldsBy(path, val.of);
 
       } else if (val.is.def){
         if (cb(val.is.def)) {
@@ -1528,20 +1530,27 @@ ObjectType = new Type({
       return value;
     }
 
-    var obj = {};
-
     var fields = field.fields;
-    _.each(value, function(v, k) {
-      var field = fields[k];
 
-      if (field) {
-        if (!field.is ) {
-          throw new Error('collection missing type ("is"), missing from schema?');
+    if (!_.size(fields)) {
+      // this is defined as just an empty object, meaning it's 100% dynamic, grab everything
+      return value;
+
+    } else {
+      var obj = {};
+
+      _.each(value, function(v, k) {
+        var field = fields[k];
+
+        if (field) {
+          if (!field.is ) {
+            throw new Error('collection missing type ("is"), missing from schema?');
+          }
+
+          obj[k] = field.is.fromClient(field, v);
         }
-
-        obj[k] = field.is.fromClient(field, v);
-      }
-    });
+      });
+    }
 
     return obj;
   },

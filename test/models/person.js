@@ -52,6 +52,8 @@ var Person = new tyr.Collection({
     age:       { is: 'integer' },
     roles:     { is: 'array', of: RoleStatus },
 
+    bag:       { is: 'object' },
+
     ageAppropriateSecret: { is: 'string', client: function() { return this.age > 30; } },
 
     siblings: { is: 'array', of: Sibling },
