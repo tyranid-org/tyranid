@@ -1,7 +1,7 @@
 
 require('es6-promise');
 
-var tyr            = require('../tyranid'),
+var tyr            = require('../index.js'),
     $all           = tyr.$all,
 
     chai           = require('chai'),
