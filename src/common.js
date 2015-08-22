@@ -1,5 +1,6 @@
 import _ from 'lodash';
 
+import NamePath from './classes/NamePath.js';
 
 export const config          = {};
 export const collections     = [];

@@ -3,6 +3,15 @@
 var tyr = require('../../index.js'),
   Person = require('./person');
 
+var Department = {
+  is: 'object',
+
+  fields: {
+    secondName: { is: 'string'},
+    department: { link: 'department'}
+  }
+};
+
 var Task = new tyr.Collection({
   id: 'tsk',
   name: 'task',
@@ -13,7 +22,8 @@ var Task = new tyr.Collection({
     assigneeUid: {
       is: 'uid',
       of: [ Person, 'Department' ]
-    }
+    },
+    departments: { is : 'array', of: Department }
   }
 });
 

@@ -144,8 +144,9 @@ describe( 'tyranid', function() {
   });
 
   describe( 'with model', function() {
-    var Job, Organization, Department, Person, Task;
+    var Job, Organization, Department, Person, Task, Role;
     //var Job2, Organization2, Department2, Person2;
+    var AdministratorRoleId = ObjectId("55bb8ecff71d45b995ff8c83");
 
     before(function() {
       tyr.reset();
@@ -158,6 +159,7 @@ describe( 'tyranid', function() {
       Department = tyr.byName('department');
       Person = tyr.byName('person');
       Task = tyr.byName('task');
+      Role = tyr.byName('role');
 
       return Promise.all([
         Organization.db.remove({}).then(function() {
@@ -171,22 +173,28 @@ describe( 'tyranid', function() {
             { _id: 1, name: 'Engineering', creator: 2, head: 3, permissions: { members: [ 2, 3 ] } }
           ]);
         }),
+        Role.db.remove({}).then(function() {
+          return Role.db.insert([
+            { _id: AdministratorRoleId, name: 'Administrator' }
+          ]);
+        }),
         Person.db.remove({}).then(function() {
           return Person.db.insert([
             { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
-                { name: 'Tom Doe', bestFriend : 1, friends: [ { person : 3 }, { person: 1 } ] },
-                { name: 'George Doe', friends: [ { person : 1 }, { person: 3 } ] }
+                { name: 'Tom Doe', bestFriend: 1, friends: [ { person: 3 }, { person: 1 } ] },
+                { name: 'George Doe', friends: [ { person: 1 }, { person: 3 } ] }
               ],
-              age : 35,
-              ageAppropriateSecret : 'Eats at Chipotle way to much...'
+              age: 35,
+              ageAppropriateSecret: 'Eats at Chipotle way to much...',
+              roles: [ { role: AdministratorRoleId, active: true } ]
             },
             { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
-                { name: 'Jill Doe', friends: [ { person : 1 }, { person: 2 } ] },
-                { name: 'Bill Doe', friends: [ { person : 2 }, { person: 3 } ] }
+                { name: 'Jill Doe', friends: [ { person: 1 }, { person: 2 } ] },
+                { name: 'Bill Doe', friends: [ { person: 2 }, { person: 3 } ] }
               ],
-              age : 20,
-              ageAppropriateSecret : 'Not a fan of construction companies...'
+              age: 20,
+              ageAppropriateSecret: 'Not a fan of construction companies...'
             }
           ]);
         }),
@@ -199,16 +207,8 @@ describe( 'tyranid', function() {
     });
 
     describe( 'schema methods', function() {
-
       it( 'should support fieldsBy()', function() {
-        expect(
-          Person.fieldsBy({ name: 'string' })
-        ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
-        );
-      });
-
-      it( 'should support fieldsBy()', function() {
+        console.log(Person.fieldsBy({ name: 'string' }));
         expect(
           Person.fieldsBy({ name: 'string' })
         ).to.eql(
@@ -294,7 +294,7 @@ describe( 'tyranid', function() {
     });
 
     describe('values', function() {
-      var allString = [ '123 Construction', 'Acme Unlimited', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering', 'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe' ];
+      var allString = [ '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering', 'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe' ];
 
       it( 'should support valuesFor()', function() {
         Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {
@@ -348,9 +348,9 @@ describe( 'tyranid', function() {
       it( 'should work uncurried', function() {
         return Person.find()
           .then(function(people) {
-           return Person.populate('organization', people).then(function(people) {
+            return Person.populate('organization', people).then(function(people) {
               verifyPeople(people);
-           });
+            });
           });
       });
 
@@ -366,7 +366,7 @@ describe( 'tyranid', function() {
       it( 'should deep populate array links', function() {
         return Person.db
           .find()
-          .sort({ '_id' : 1 })
+          .sort({ _id: 1 })
           .then(Person.populate([ 'organization', 'siblings.friends.person' ]))
           .then(function(people) {
             expect(people[1].siblings[0].friends[0].person$._id).to.be.eql(3);
@@ -382,7 +382,7 @@ describe( 'tyranid', function() {
 
       it( 'should deep populate array link links', function() {
         return Person.db
-          .find({ '_id' : 2 })
+          .find({ _id: 2 })
           .then(Person.populate({ organization: $all, 'siblings.bestFriend': { $all: 1, organization: $all } }))
           .then(function(people) {
             expect(people[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
@@ -439,30 +439,63 @@ describe( 'tyranid', function() {
       });
     });
 
+    describe('denormalization', function() {
+      var julia,
+          juliaMatch = { 'name.first': 'Julia', 'name.last': 'Doe' };
+
+      before(function() {
+        julia = new Person({ _id: 2000, name: { first: 'Julia', last: 'Doe' }, organization: 1 });
+        return julia.$save();
+      });
+
+      after(function() {
+        return Person.db.remove(juliaMatch);
+      });
+
+      it( 'denormalize on save', function() {
+        return Person.db.findOne(juliaMatch).then(function(doc) {
+          expect(doc.organization_.name).to.be.eql('Acme Unlimited');
+        });
+      });
+    });
+
     describe('client', function() {
       it( 'should fromClient', function() {
-        var personObj = { name : { firstName: 'Foo' }, job : 1 };
+        var personObj = { name: { firstName: 'Foo' }, job: 1 };
         var person = Person.fromClient(personObj);
         expect(person).to.be.an.instanceof(Person);
         expect(person.job).to.be.eql(1);
       });
 
+      it( 'should fromClient array objects', function() {
+        var personObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true } ] };
+        var person = Person.fromClient(personObj);
+        console.log(person);
+        expect(person.roles[0].role).to.be.an.instanceof(ObjectId);
+      });
+
       it( 'should deep fromClient', function() {
-        var friendObj = { birthDate : '03-07-1969' };
-        var friend = Person.fromClient(friendObj, 'siblings.friends' );
+        var friendObj = { birthDate: '03-07-1969' };
+        var friend = Person.fromClient(friendObj, 'siblings.friends');
         expect(friend.birthDate).to.be.an.instanceof(Date);
         expect(friend).not.to.be.an.instanceof(Person);
       });
 
       it( 'should allow parametric client flags', function() {
-        Person.find({age : {$exists : true}})
+        Person.find({ age: { $exists: true } })
           .then(function(people) {
             var clientData = Person.toClient(people);
             expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...')
             expect(clientData[1]).ageAppropriateSecret.to.be.eql(undefined);
           })
-      })
+      });
 
+      it( 'should copy dynamic objects', function() {
+        var personObj = { name: { firstName: 'Foo' }, bag: { abc123: 5 } };
+        var person = Person.fromClient(personObj);
+        expect(person).to.be.an.instanceof(Person);
+        expect(person.bag).to.be.eql({ abc123: 5 });
+      });
     });
 
     describe('insert', function() {

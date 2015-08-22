@@ -139,9 +139,10 @@ export const ObjectType = new Type({
           obj[k] = field.is.fromClient(field, v);
         }
       });
+
+      return obj;
     }
 
-    return obj;
   },
   validate(path, def, obj) {
     let errors = [];

@@ -20,12 +20,6 @@ import {
 } from '../common.js';
 
 
-function denormalPopulate(col, obj, denormalAlreadyDone) {
-  let denormal = !denormalAlreadyDone && col.denormal;
-  return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
-}
-
-
 // Document
 // ========
 
@@ -77,6 +71,12 @@ function defineDocumentProperties(dp) {
       configurable: false
     }
   });
+}
+
+
+function denormalPopulate(col, obj, denormalAlreadyDone) {
+  let denormal = !denormalAlreadyDone && col.denormal;
+  return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
 }
 
 
@@ -328,7 +328,7 @@ export default class Collection {
   }
 
 
-  insert(obj, denormalAlreadyDone) {
+  async insert(obj, denormalAlreadyDone) {
     let col  = this,
         insertObj;
 
