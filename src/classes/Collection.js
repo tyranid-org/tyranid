@@ -195,13 +195,32 @@ export default class Collection {
     return this.def.enum;
   }
 
-  byId(id) {
-    if (typeof id === 'string') {
-      id = this.def.fields._id.is.fromString(id);
-    }
 
-    return this.findOne({ _id: id });
+  byId(id) {
+    if (this.isStatic()) {
+      return Promise.resolve(this.byIdIndex[id]);
+
+    } else {
+      if (typeof id === 'string') {
+        id = this.def.fields._id.is.fromString(id);
+      }
+
+      return this.findOne({ _id: id });
+    }
   }
+
+  byIds(ids) {
+    let col = this;
+
+    if (col.isStatic()) {
+      console.log('ids', ids);
+      console.log('mapped ids', ids.map(function(id) { return col.byIdIndex[id]; }));
+      return Promise.resolve(ids.map(function(id) { return col.byIdIndex[id]; }));
+    } else {
+      return col.find({ _id: { $in: ids }});
+    }
+  }
+
 
   byLabel(n, forcePromise) {
     let col = this,
@@ -685,7 +704,13 @@ export default class Collection {
           throw new Error('Expected value on row ' + ri + ' to be an object for collection ' + def.name);
         }
       }
+
     }
+
+    let byIdIndex = col.byIdIndex = {};
+    def.values.forEach(function(doc) {
+      byIdIndex[doc._id] = doc;
+    });
   }
 
 

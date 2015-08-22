@@ -74,7 +74,7 @@ export default class Populator {
 
       if (!ids.length) return;
 
-      let linkDocs = await collection.find({ _id: { $in: ids }});
+      let linkDocs = await collection.byIds(ids);
 
       linkDocs.forEach(doc => {
         cache[doc._id] = doc;
