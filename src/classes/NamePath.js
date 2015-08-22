@@ -48,14 +48,17 @@ export default class NamePath {
    *    2. organization   -> organization$
    *    3. organization   -> organization
    */
-  static populateNameFor(name) {
+  static populateNameFor(name, denormal) {
     let l = name.length;
 
-    if (name.substring(l-2) === 'Id') {
+    if (denormal) {
+      return name + '_';
+    } else if (name.substring(l-2) === 'Id') {
       return name.substring(0, l-2);
     } else {
       return name + '$';
     }
+
   }
 
   pathName(pi) {

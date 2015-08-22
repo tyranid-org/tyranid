@@ -79,6 +79,9 @@ export default class Population {
     throw new Error('missing opts.fields option to populate()');
   }
 
+  isSimple() {
+    return _.isBoolean(this.projection);
+  }
 
   hasNestedPopulations() {
     let proj = this.projection;
@@ -97,7 +100,7 @@ export default class Population {
     let population = this;
 
     population.projection.forEach(function(population) {
-      if (population instanceof Population) {
+      if (population instanceof Population && !population.isSimple()) {
         populator.addIds(population, documents);
       }
     });
@@ -113,7 +116,7 @@ export default class Population {
     // create function to map projection
     let populateIds = population => {
 
-      if (!(population instanceof Population)) {
+      if (!(population instanceof Population) || population.isSimple()) {
         return;
       }
 
@@ -160,7 +163,7 @@ export default class Population {
           } else if (obj === undefined || obj === null) {
             return;
           } else if (pi === plen - 1) {
-            let pname = NamePath.populateNameFor(name);
+            let pname = NamePath.populateNameFor(name, populator.denormal);
             obj[pname] = mapIdsToObjects(obj[name]);
           } else if (!_.isObject(obj)) {
             throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);

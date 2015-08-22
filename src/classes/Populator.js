@@ -11,7 +11,8 @@ import {
 
 export default class Populator {
 
-  constructor() {
+  constructor(denormal) {
+    this.denormal = denormal;
     this.cachesByColId = {};
   }
 

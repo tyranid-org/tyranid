@@ -20,6 +20,12 @@ import {
 } from '../common.js';
 
 
+function denormalPopulate(col, obj) {
+  let denormal = col.denormal;
+  return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
+}
+
+
 // Document
 // ========
 
@@ -41,8 +47,8 @@ const documentPrototype = {
     return this.$model.toClient(this);
   },
 
-  $populate(opts) {
-    return this.$model.populate(opts, this);
+  $populate(fields, denormal) {
+    return this.$model.populate(fields, this, denormal);
   },
 
   $validate() {
@@ -281,11 +287,13 @@ export default class Collection {
   }
 
 
-  async save(obj) {
+  async save(obj, denormalAlreadyDone) {
     let col = this;
 
+    await denormalPopulate(col, obj, denormalAlreadyDone);
+
     if (Array.isArray(obj)) {
-      return await* obj.map(::col.save);
+      return await* obj.map(doc => col.save(doc, true));
     } else {
       if (obj._id) {
         if (col.def.timestamps) {
@@ -295,15 +303,17 @@ export default class Collection {
         // the mongo driver only saves properties on the object directly, prototype values will not be recorded
         return col.db.save(obj);
       } else {
-        return col.insert(obj);
+        return col.insert(obj, true);
       }
     }
   }
 
 
-  insert(obj) {
+  insert(obj, denormalAlreadyDone) {
     let col  = this,
         insertObj;
+
+    await denormalPopulate(col, obj, denormalAlreadyDone);
 
     if (Array.isArray(obj)) {
       insertObj = _.map(obj, el => parseInsertObj(col, el));
@@ -311,7 +321,7 @@ export default class Collection {
       insertObj = parseInsertObj(col, obj);
     }
 
-    return this.db.insert(insertObj);
+    return col.db.insert(insertObj);
   }
 
   update(obj) {
@@ -349,11 +359,10 @@ export default class Collection {
    * If documents is not provided, this function will return a curried version of this function that takes a single array
    * of documents.  This allows populate to be fed into a promise chain.
    */
-  populate(opts, documents) {
+  populate(fields, documents, denormal) {
     let collection = this,
-
-        population = Population.parse(collection, opts),
-        populator  = new Populator();
+        population = Population.parse(collection, fields),
+        populator  = new Populator(denormal);
 
     async function populatorFunc(documents) {
       let isArray = documents && Array.isArray(documents);
@@ -536,6 +545,16 @@ export default class Collection {
         } else {
           throw validator.err('Unknown field definition at ' + path);
         }
+
+        if (field.denormal) {
+          if (!field.link) {
+            throw validator.err(path, '"denormal" is only a valid option on links');
+          }
+
+          let denormal = col.denormal = col.denormal || {};
+          denormal[path.substring(1)] = field.denormal;
+        }
+
       },
 
       fields(path, val) {
