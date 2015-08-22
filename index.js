@@ -1,3 +1,5 @@
-// register babel and expose tyranid
+/**
+ * register babel and expose tyranid
+ */
 require('babel/register');
-module.exports = require('./tyranid.js');
+module.exports = require('./src/tyranid.js');
