@@ -119,20 +119,27 @@ export const ObjectType = new Type({
       return value;
     }
 
-    let obj = {};
-
     let fields = field.fields;
-    _.each(value, function(v, k) {
-      let field = fields[k];
 
-      if (field) {
-        if (!field.is ) {
-          throw new Error('collection missing type ("is"), missing from schema?');
+    if (!_.size(fields)) {
+      // this is defined as just an empty object, meaning it's 100% dynamic, grab everything
+      return value;
+
+    } else {
+      let obj = {};
+
+      _.each(value, function(v, k) {
+        let field = fields[k];
+
+        if (field) {
+          if (!field.is ) {
+            throw new Error('collection missing type ("is"), missing from schema?');
+          }
+
+          obj[k] = field.is.fromClient(field, v);
         }
-
-        obj[k] = field.is.fromClient(field, v);
-      }
-    });
+      });
+    }
 
     return obj;
   },
