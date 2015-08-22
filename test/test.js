@@ -151,7 +151,7 @@ describe( 'tyranid', function() {
       tyr.reset();
 
       // Test validate load models and byName
-      tyr.validate([{dir:`${__dirname}/models`, fileMatch: '\.js$' }]);
+      tyr.validate([{dir: __dirname + '/models', fileMatch: '\.js$' }]);
 
       Job = tyr.byName('job');
       Organization = tyr.byName('organization');
