@@ -39,6 +39,12 @@ export function parseInsertObj(col, obj) {
     }
   });
 
+  _.each(col.denormal, function(field, name) {
+    // TODO:  need to parse & process name it is a path (if it contains "."s)
+    name = NamePath.populateNameFor(name, true);
+    insertObj[name] = obj[name];
+  });
+
   if (def.timestamps) {
     let now = new Date();
     insertObj.createdAt = now;

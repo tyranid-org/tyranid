@@ -20,8 +20,8 @@ import {
 } from '../common.js';
 
 
-function denormalPopulate(col, obj) {
-  let denormal = col.denormal;
+function denormalPopulate(col, obj, denormalAlreadyDone) {
+  let denormal = !denormalAlreadyDone && col.denormal;
   return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
 }
 
