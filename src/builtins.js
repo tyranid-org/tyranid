@@ -114,6 +114,28 @@ export const ArrayType = new Type({
 
 export const ObjectType = new Type({
   name: 'object',
+  fromClient(field, value) {
+    if (!value) {
+      return value;
+    }
+
+    let obj = {};
+
+    let fields = field.fields;
+    _.each(value, function(v, k) {
+      let field = fields[k];
+
+      if (field) {
+        if (!field.is ) {
+          throw new Error('collection missing type ("is"), missing from schema?');
+        }
+
+        obj[k] = field.is.fromClient(field, v);
+      }
+    });
+
+    return obj;
+  },
   validate(path, def, obj) {
     let errors = [];
 
@@ -141,7 +163,7 @@ export const MongoIdType = new Type({
     return ObjectId(str);
   },
   fromClient(field, value) {
-    return ObjectId(value);
+    return value ? ObjectId(value) : undefined;
   },
   toClient(field, value) {
     return value ? value.toString() : value;

@@ -376,10 +376,13 @@ export default class Collection {
 
       if (val.is) {
         if (val.is.def.name === 'object') {
-          return fieldsBy(path, val.fields);
+          let fields = val.fields;
+          if (fields) {
+            fieldsBy(path, fields);
+          }
 
         } else if (val.is.def.name === 'array') {
-          return fieldsBy(path, val.of);
+          fieldsBy(path, val.of);
 
         } else if (val.is.def){
           if (cb(val.is.def)) {
@@ -434,7 +437,7 @@ export default class Collection {
   /**
    * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
    */
-  fromClient(pojo,path) {
+  fromClient(pojo, path) {
     let col = this;
     let fields = col.def.fields;
 
