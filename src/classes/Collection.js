@@ -185,8 +185,6 @@ export default class Collection {
     return CollectionInstance;
   }
 
-  //Collection.prototype = Object.create( null );
-
   idToUid(id) {
     return this.id + id;
   }

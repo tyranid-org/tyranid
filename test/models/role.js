@@ -1,14 +1,12 @@
-'use strict';
+import Tyr from '../../index';
 
-var tyr = require('../../index');
-
-var Role = new tyr.Collection({
+const schema = {
   id: 'r00',
   name: 'role',
   fields: {
     _id:     { is: 'mongoid' },
     name:    { is: 'string', label: true },
   }
-});
+};
 
-module.exports = Role;
+export default class Role extends new Tyr.Collection(schema) {}
