@@ -2,7 +2,7 @@
   "name": "tyranid",
   "version": "0.0.67",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
-  "main": "tyranid.js",
+  "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
@@ -13,9 +13,10 @@
   "author": "",
   "license": "Apache 2",
   "dependencies": {
+    "babel": "^5.8.21",
+    "lodash": "^3.9.3",
     "mongodb": "^1.4.3",
-    "promised-mongo": "git://github.com/gordonmleigh/promised-mongo.git#v0.11.5",
-    "lodash": "^3.9.3"
+    "promised-mongo": "git://github.com/gordonmleigh/promised-mongo.git#v0.11.5"
   },
   "devDependencies": {
     "chai": "^3.0.0",

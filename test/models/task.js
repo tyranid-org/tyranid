@@ -1,6 +1,6 @@
 'use strict';
 
-var tyr = require('../../tyranid'),
+var tyr = require('../../index.js'),
   Person = require('./person');
 
 var Department = {
@@ -28,4 +28,3 @@ var Task = new tyr.Collection({
 });
 
 module.exports = Task;
-

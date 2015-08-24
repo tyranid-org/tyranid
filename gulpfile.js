@@ -4,6 +4,13 @@ var gulp       = require('gulp'),
     mocha      = require('gulp-mocha'),
     yargs      = require('yargs');
 
+
+/*
+ * Babel server hook configuration
+ */
+require('babel/register');
+
+
 gulp.task('jshint', function() {
   gulp
     .src(['tyranid.js', 'test/**/*.js'])
@@ -29,4 +36,3 @@ gulp.task('test', function(cb) {
 });
 
 gulp.task('default', ['jshint']);
-

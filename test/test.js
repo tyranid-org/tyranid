@@ -1,7 +1,7 @@
 
 require('es6-promise');
 
-var tyr            = require('../tyranid'),
+var tyr            = require('../index.js'),
     $all           = tyr.$all,
 
     chai           = require('chai'),
@@ -152,7 +152,7 @@ describe( 'tyranid', function() {
       tyr.reset();
 
       // Test validate load models and byName
-      tyr.validate([{dir:'./test/models', fileMatch: '\.js$' }]);
+      tyr.validate([{dir: __dirname + '/models', fileMatch: '\.js$' }]);
 
       Job = tyr.byName('job');
       Organization = tyr.byName('organization');

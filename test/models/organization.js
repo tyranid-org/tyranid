@@ -1,6 +1,6 @@
 'use strict';
 
-var tyr = require('../../tyranid');
+var tyr = require('../../index.js');
 
 var Organization = new tyr.Collection({
   id: 't04',
