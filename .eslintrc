@@ -53,9 +53,13 @@
     "_": true,
     "moment": true,
     "describe": true,
-    "it": true,
     "before": true,
-    "after": true
+    "beforeEach": true,
+    "after": true,
+    "afterEach": true,
+    "it": true,
+    "mdb": true,
+    "$": true
   },
   "ecmaFeatures": {
     "arrowFunctions": true,

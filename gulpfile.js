@@ -23,7 +23,7 @@ gulp.task('eslint', function() {
 });
 
 gulp.task('watch', function() {
-  gulp.watch(['src/**/*.js', 'test/**/*.js'], ['jshint']);
+  gulp.watch(['src/**/*.js', 'test/**/*.js'], ['eslint']);
 });
 
 gulp.task('test', function(cb) {
@@ -40,4 +40,4 @@ gulp.task('test', function(cb) {
   });
 });
 
-gulp.task('default', ['jshint']);
+gulp.task('default', ['eslint']);
