@@ -12,7 +12,6 @@ import {
   collections     ,
   collectionsById ,
   typesByName     ,
-  $all            ,
   escapeRegex     ,
   pathAdd         ,
   parseInsertObj  ,
@@ -74,9 +73,9 @@ function defineDocumentProperties(dp) {
 }
 
 
-function denormalPopulate(col, obj, denormalAlreadyDone) {
-  let denormal = !denormalAlreadyDone && col.denormal;
-  return denormal ? col.populate(denormal, obj, true) : Promise.resolve();
+function denormalPopulate(collection, obj, denormalAlreadyDone) {
+  let denormal = !denormalAlreadyDone && collection.denormal;
+  return denormal ? collection.populate(denormal, obj, true) : Promise.resolve();
 }
 
 
@@ -208,40 +207,38 @@ export default class Collection {
   }
 
   byIds(ids) {
-    let col = this;
+    let collection = this;
 
-    if (col.isStatic()) {
-      console.log('ids', ids);
-      console.log('mapped ids', ids.map(function(id) { return col.byIdIndex[id]; }));
-      return Promise.resolve(ids.map(function(id) { return col.byIdIndex[id]; }));
+    if (collection.isStatic()) {
+      return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return col.find({ _id: { $in: ids }});
+      return collection.find({ _id: { $in: ids }});
     }
   }
 
 
   byLabel(n, forcePromise) {
-    let col = this,
-        findName = col.labelField,
+    let collection = this,
+        findName = collection.labelField,
         matchLower = n.toLowerCase();
 
-    if (col.isStatic()) {
-      let value = _.find(col.def.values, function(v) {
+    if (collection.isStatic()) {
+      let value = _.find(collection.def.values, function(v) {
         let name = v[findName];
         return name && name.toLowerCase() === matchLower;
       });
 
-      return forcePromise ? new Promise.resolve(value) : value;
+      return forcePromise ? Promise.resolve(value) : value;
     } else {
       let query = {};
       query[findName] = {$regex: escapeRegex(matchLower), $options : 'i'};
-      return col.db.findOne(query);
+      return collection.db.findOne(query);
     }
   }
 
   labelFor(doc) {
-    let col = this,
-        labelField = col.labelField;
+    let collection = this,
+        labelField = collection.labelField;
 
     // TODO:  have this use path finder to walk the object in case the label is stored in an embedded object
     // TODO:  support computed properties
@@ -305,40 +302,40 @@ export default class Collection {
 
 
   async save(obj, denormalAlreadyDone) {
-    let col = this;
+    let collection = this;
 
-    await denormalPopulate(col, obj, denormalAlreadyDone);
+    await denormalPopulate(collection, obj, denormalAlreadyDone);
 
     if (Array.isArray(obj)) {
-      return await* obj.map(doc => col.save(doc, true));
+      return await* obj.map(doc => collection.save(doc, true));
     } else {
       if (obj._id) {
-        if (col.def.timestamps) {
+        if (collection.def.timestamps) {
           obj.updatedAt = new Date();
         }
 
         // the mongo driver only saves properties on the object directly, prototype values will not be recorded
-        return col.db.save(obj);
+        return collection.db.save(obj);
       } else {
-        return col.insert(obj, true);
+        return collection.insert(obj, true);
       }
     }
   }
 
 
   async insert(obj, denormalAlreadyDone) {
-    let col  = this,
+    let collection  = this,
         insertObj;
 
-    await denormalPopulate(col, obj, denormalAlreadyDone);
+    await denormalPopulate(collection, obj, denormalAlreadyDone);
 
     if (Array.isArray(obj)) {
-      insertObj = _.map(obj, el => parseInsertObj(col, el));
+      insertObj = _.map(obj, el => parseInsertObj(collection, el));
     } else {
-      insertObj = parseInsertObj(col, obj);
+      insertObj = parseInsertObj(collection, obj);
     }
 
-    return col.db.insert(insertObj);
+    return collection.db.insert(insertObj);
   }
 
   update(obj) {
@@ -427,7 +424,7 @@ export default class Collection {
   }
 
   valuesFor(fields) {
-    let col = this;
+    let collection = this;
 
     return new Promise(function(resolve, reject) {
       let fieldsObj = { _id: 0 };
@@ -438,7 +435,7 @@ export default class Collection {
       });
 
       let values = [];
-      col.db.find({}, fieldsObj).forEach((err, doc) => {
+      collection.db.find({}, fieldsObj).forEach((err, doc) => {
         if (err) {
           reject(err);
           return;
@@ -464,18 +461,18 @@ export default class Collection {
    * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
    */
   fromClient(pojo, path) {
-    let col = this;
-    let fields = col.def.fields;
+    let collection = this;
+    let fields = collection.def.fields;
 
     let namePath = path ? new NamePath(this, path) : null;
 
     if (Array.isArray(pojo)) {
-      return pojo.map(doc => col.fromClient(doc, path));
+      return pojo.map(doc => collection.fromClient(doc, path));
     }
 
     if (namePath) {
       let tailDef = namePath.tailDef();
-      col = tailDef.id ? collectionsById[tailDef.id] : null;
+      collection = tailDef.id ? collectionsById[tailDef.id] : null;
       fields = tailDef.fields;
     }
 
@@ -493,7 +490,7 @@ export default class Collection {
       }
     });
 
-    return col ? new col(obj) : obj;
+    return collection ? new collection(obj) : obj;
   }
 
 
@@ -505,8 +502,8 @@ export default class Collection {
   }
 
   validateSchema() {
-    let col = this,
-        def = col.def;
+    let collection = this,
+        def = collection.def;
 
     let validator = {
       err(path, msg) {
@@ -519,7 +516,7 @@ export default class Collection {
         }
 
         if (field.label) {
-          col.labelField = path.substring(1);
+          collection.labelField = path.substring(1);
         }
 
         let type;
@@ -568,7 +565,7 @@ export default class Collection {
             throw validator.err(path, '"denormal" is only a valid option on links');
           }
 
-          let denormal = col.denormal = col.denormal || {};
+          let denormal = collection.denormal = collection.denormal || {};
           denormal[path.substring(1)] = field.denormal;
         }
 
@@ -594,13 +591,13 @@ export default class Collection {
       }
     };
 
-    validator.fields('', col.def.fields);
+    validator.fields('', collection.def.fields);
 
-    if (!col.def.fields._id) {
-      throw new Error('Collection ' + col.def.name + ' is missing an _id field.');
+    if (!collection.def.fields._id) {
+      throw new Error('Collection ' + collection.def.name + ' is missing an _id field.');
     }
 
-    if (col.def.enum && !col.labelField) {
+    if (collection.def.enum && !collection.labelField) {
       throw new Error('Some string field must have the label property set if the collection is an enumeration.');
     }
 
@@ -608,8 +605,8 @@ export default class Collection {
   }
 
   validateValues() {
-    let col  = this,
-        def  = col.def,
+    let collection  = this,
+        def  = collection.def,
         rows = def.values;
 
     if (!rows) {
@@ -622,6 +619,7 @@ export default class Collection {
 
     let ri,
         rlen = rows.length;
+
     if (!rlen) {
       return;
     }
@@ -679,15 +677,15 @@ export default class Collection {
           });
         }
 
-        v = new col(nrow);
-        if (col.def.enum) {
-          name = v[col.labelField];
+        v = new collection(nrow);
+        if (collection.def.enum) {
+          name = v[collection.labelField];
 
           if (!name) {
-            throw new Error('Static document missing label field: ' + col.labelField);
+            throw new Error('Static document missing label field: ' + collection.labelField);
           }
 
-          col[_.snakeCase(name).toUpperCase()] = v;
+          collection[_.snakeCase(name).toUpperCase()] = v;
         }
 
         newValues.push(v);
@@ -705,7 +703,7 @@ export default class Collection {
 
     }
 
-    let byIdIndex = col.byIdIndex = {};
+    let byIdIndex = collection.byIdIndex = {};
     def.values.forEach(function(doc) {
       byIdIndex[doc._id] = doc;
     });

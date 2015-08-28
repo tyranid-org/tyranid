@@ -2,7 +2,7 @@
   "name": "tyranid",
   "version": "0.0.67",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
-  "main": "index.js",
+  "main": "dist/tyranid.js",
   "scripts": {
     "test": "mocha"
   },
@@ -19,13 +19,16 @@
     "promised-mongo": "git://github.com/gordonmleigh/promised-mongo.git#v0.11.5"
   },
   "devDependencies": {
+    "babel-eslint": "^4.1.0",
+    "babel-runtime": "^5.8.20",
     "chai": "^3.0.0",
     "chai-as-promised": "^5.1.0",
     "es6-promise": "^2.3.0",
-    "eslint": "^1.1.0",
     "gulp": "^3.9.0",
-    "gulp-jshint": "^1.11.0",
+    "gulp-babel": "^5.2.1",
+    "gulp-eslint": "^1.0.0",
     "gulp-mocha": "^2.1.1",
+    "gulp-sourcemaps": "^1.5.2",
     "mocha": "^2.2.5",
     "yargs": "^3.12.0"
   }

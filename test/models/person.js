@@ -1,7 +1,4 @@
-'use strict';
-
-var tyr = require('../../index.js');
-
+var tyr = require('../../src/tyranid');
 
 var Friend = {
   is: 'object',

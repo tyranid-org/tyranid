@@ -1,7 +1,5 @@
-'use strict';
-
-var tyr = require('../../index.js'),
-  Person = require('./person');
+var tyr = require('../../src/tyranid'),
+    Person = require('./person');
 
 var Department = {
   is: 'object',

@@ -1,4 +1,4 @@
-import Tyr from '../../index';
+import Tyr from '../../src/tyranid';
 
 const schema = {
   id: 'r00',

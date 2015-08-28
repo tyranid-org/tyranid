@@ -1,6 +1,4 @@
-'use strict';
-
-var tyr = require('../../index.js');
+var tyr = require('../../src/tyranid');
 
 var Job = new tyr.Collection({
   id: 'j00',

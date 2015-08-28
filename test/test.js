@@ -1,16 +1,12 @@
 
 require('es6-promise');
 
-var tyr            = require('../index.js'),
+var tyr            = require('../src/tyranid'),
     $all           = tyr.$all,
-
     chai           = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
-
     pmongo         = require('promised-mongo'),
-
     expect         = chai.expect,
-
     _              = require('lodash');
 
 chai.use(chaiAsPromised);
@@ -18,7 +14,7 @@ chai.should();
 
 global.ObjectId = pmongo.ObjectId;
 
-describe( 'tyranid', function() {
+describe('tyranid', function() {
   var db = null;
   before(function(done) {
     db = pmongo('mongodb://localhost:27017/tyranid_test');
@@ -146,7 +142,7 @@ describe( 'tyranid', function() {
   describe( 'with model', function() {
     var Job, Organization, Department, Person, Task, Role;
     //var Job2, Organization2, Department2, Person2;
-    var AdministratorRoleId = ObjectId("55bb8ecff71d45b995ff8c83");
+    var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
 
     before(function() {
       tyr.reset();
@@ -184,7 +180,7 @@ describe( 'tyranid', function() {
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
                 { name: 'Tom Doe', bestFriend: 1, friends: [ { person: 3 }, { person: 1 } ] },
                 { name: 'George Doe', friends: [ { person: 1 }, { person: 3 } ] }
-              ],
+            ],
               age: 35,
               ageAppropriateSecret: 'Eats at Chipotle way to much...',
               roles: [ { role: AdministratorRoleId, active: true } ]
@@ -192,7 +188,7 @@ describe( 'tyranid', function() {
             { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
                 { name: 'Jill Doe', friends: [ { person: 1 }, { person: 2 } ] },
                 { name: 'Bill Doe', friends: [ { person: 2 }, { person: 3 } ] }
-              ],
+            ],
               age: 20,
               ageAppropriateSecret: 'Not a fan of construction companies...'
             }
@@ -208,7 +204,6 @@ describe( 'tyranid', function() {
 
     describe( 'schema methods', function() {
       it( 'should support fieldsBy()', function() {
-        console.log(Person.fieldsBy({ name: 'string' }));
         expect(
           Person.fieldsBy({ name: 'string' })
         ).to.eql(
@@ -470,7 +465,6 @@ describe( 'tyranid', function() {
       it( 'should fromClient array objects', function() {
         var personObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true } ] };
         var person = Person.fromClient(personObj);
-        console.log(person);
         expect(person.roles[0].role).to.be.an.instanceof(ObjectId);
       });
 

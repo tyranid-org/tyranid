@@ -1,25 +1,29 @@
 
 var gulp       = require('gulp'),
-    jshint     = require('gulp-jshint'),
-    mocha      = require('gulp-mocha'),
-    yargs      = require('yargs');
+  eslint     = require('gulp-eslint'),
+  mocha      = require('gulp-mocha'),
+  sourcemaps = require('gulp-sourcemaps'),
+  babel      = require('gulp-babel'),
+  yargs      = require('yargs');
 
+gulp.task('compile', function() {
+  return gulp
+    .src('src/**/*.js')
+    .pipe(sourcemaps.init())
+    .pipe(babel())
+    .pipe(sourcemaps.write('.'))
+    .pipe(gulp.dest('./dist/'));
+});
 
-/*
- * Babel server hook configuration
- */
-require('babel/register');
-
-
-gulp.task('jshint', function() {
-  gulp
-    .src(['tyranid.js', 'test/**/*.js'])
-    .pipe(jshint('.jshintrc'))
-    .pipe(jshint.reporter('default'));
+gulp.task('eslint', function() {
+  return gulp
+    .src(['src/**/*.js', 'test/**/*.js'])
+    .pipe(eslint('.eslintrc'))
+    .pipe(eslint.format());
 });
 
 gulp.task('watch', function() {
-  gulp.watch(['tyranid.js', 'test/**/*.js'], ['jshint']);
+  gulp.watch(['src/**/*.js', 'test/**/*.js'], ['jshint']);
 });
 
 gulp.task('test', function(cb) {
@@ -28,6 +32,7 @@ gulp.task('test', function(cb) {
   })
   .pipe(mocha({
     reporter: 'spec',
+    require : ['babel/register'],
     grep: yargs.argv.grep
   }))
   .on('end', function() {

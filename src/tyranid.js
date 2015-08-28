@@ -13,8 +13,7 @@ import {
   collections     ,
   collectionsById ,
   typesByName     ,
-  $all            ,
-  escapeRegex
+  $all
 } from './common.js';
 
 

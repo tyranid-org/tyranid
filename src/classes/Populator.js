@@ -1,12 +1,6 @@
 import _ from 'lodash';
 
-import {
-  collections     ,
-  collectionsById ,
-  typesByName     ,
-  $all            ,
-  metaRegex
-} from '../common.js';
+import { collectionsById } from '../common.js';
 
 
 export default class Populator {

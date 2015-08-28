@@ -2,7 +2,7 @@
   "parser": "babel-eslint",
   "rules": {
     "quotes": [2, "single"],
-    "indent": [2, 2],
+    "indent": [2, 2, {"VariableDeclarator": 2}],
     "strict": 2,
     "no-fallthrough": 0,
     "no-bitwise": 0,
@@ -11,7 +11,10 @@
     "no-unused-expressions": 0,
     "wrap-iife": 2,
     "no-undef": 2,
-    "new-cap": 2,
+    "new-cap": [2, {
+      "capIsNewExceptions" : ['ObjectId'],
+      "newIsCapExceptions": ['collection']
+    }],
     "no-caller": 2,
     "no-unused-vars": 2,
     "no-multi-str": 0,
@@ -48,7 +51,11 @@
     "__app": false,
     "ObjectId": false,
     "_": true,
-    "moment": true
+    "moment": true,
+    "describe": true,
+    "it": true,
+    "before": true,
+    "after": true
   },
   "ecmaFeatures": {
     "arrowFunctions": true,
