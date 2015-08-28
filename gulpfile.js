@@ -6,7 +6,7 @@ var gulp       = require('gulp'),
   babel      = require('gulp-babel'),
   yargs      = require('yargs');
 
-gulp.task('compile', function() {
+gulp.task('compile', ['eslint', 'test'], function() {
   return gulp
     .src('src/**/*.js')
     .pipe(sourcemaps.init())
