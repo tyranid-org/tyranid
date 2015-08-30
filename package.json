@@ -4,7 +4,8 @@
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/tyranid.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "prepublish" : "gulp eslint && gulp test && gulp compile"
   },
   "repository": {
     "type": "git",
