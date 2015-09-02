@@ -1,6 +1,9 @@
 import _ from 'lodash';
 
 import NamePath from './classes/NamePath.js';
+import Tyranid from './tyranid.js';
+import Collection from './classes/Collection.js';
+
 
 export const config          = {};
 export const collections     = [];
@@ -104,4 +107,21 @@ export function toClient(col, data) {
   });
 
   return obj;
+}
+
+
+export function validateUidCollection(validator, path, collection) {
+  const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
+  if (collection instanceof Collection) {
+    if (!collectionsById[collection.id]) {
+      throw validator.err(path, unknownTypeErrMsg);
+    }
+  } else if (typeof collection === 'string') {
+    collection = Tyranid.byName(collection);
+    if (!collection) {
+      throw validator.err(path, unknownTypeErrMsg);
+    }
+  } else {
+    throw validator.err(path, unknownTypeErrMsg);
+  }
 }

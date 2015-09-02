@@ -1,27 +1,7 @@
 import _ from 'lodash';
-
 import Type from './classes/Type.js';
-import Tyranid from './tyranid.js';
-import Collection from './classes/Collection.js';
 import ValidationError from './classes/ValidationError.js';
-import { typesByName, collectionsById } from './common.js';
-
-
-export function validateUidCollection(validator, path, collection) {
-  const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
-  if (collection instanceof Collection) {
-    if (!collectionsById[collection.id]) {
-      throw validator.err(path, unknownTypeErrMsg);
-    }
-  } else if (typeof collection === 'string') {
-    collection = Tyranid.byName(collection);
-    if (!collection) {
-      throw validator.err(path, unknownTypeErrMsg);
-    }
-  } else {
-    throw validator.err(path, unknownTypeErrMsg);
-  }
-}
+import { typesByName, validateUidCollection } from './common.js';
 
 
 export const LinkType = new Type({
