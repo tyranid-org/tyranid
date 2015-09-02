@@ -26,9 +26,9 @@ export function pathAdd(path, add) {
 
 
 export function parseInsertObj(col, obj) {
-  let def       = col.def,
-      fields    = def.fields,
-      insertObj = {};
+  const def       = col.def,
+        fields    = def.fields,
+        insertObj = {};
 
   _.each(fields, function(field, name) {
     if (field.db !== false) {
@@ -47,7 +47,7 @@ export function parseInsertObj(col, obj) {
   });
 
   if (def.timestamps) {
-    let now = new Date();
+    const now = new Date();
     insertObj.createdAt = now;
     insertObj.updatedAt = now;
   }
@@ -64,9 +64,9 @@ export function toClient(col, data) {
     });
   }
 
-  let obj = {};
+  const obj = {};
 
-  let fields = col ? col.def.fields : null;
+  const fields = col ? col.def.fields : null;
   _.each(data, function(v, k) {
     let field;
 
@@ -94,7 +94,7 @@ export function toClient(col, data) {
 
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   _.each(fields, function(field, name) {
-    let value, client;
+    let  value, client;
     if (field.get && (client = field.client)) {
       value = data[name];
       if ( !_.isFunction(client) || client.call(data, value) ) {

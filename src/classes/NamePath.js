@@ -8,13 +8,14 @@ export default class NamePath {
     this.col = collection;
     this.name = pathName;
 
-    let path = this.path = pathName.length ? pathName.split('.') : [],
-        plen = path.length,
-        defs = this.defs = new Array(plen),
-        def = collection.def;
+    const path = this.path = pathName.length ? pathName.split('.') : [],
+          plen = path.length,
+          defs = this.defs = new Array(plen);
+          
+    let def = collection.def;
 
     for (let pi=0; pi<plen; pi++) {
-      let name = path[pi];
+      const name = path[pi];
 
       if (!def.fields && def.link) {
         throw new Error(
@@ -49,7 +50,7 @@ export default class NamePath {
    *    3. organization   -> organization
    */
   static populateNameFor(name, denormal) {
-    let l = name.length;
+    const l = name.length;
 
     if (denormal) {
       return name + '_';
@@ -80,11 +81,11 @@ export default class NamePath {
   }
 
   getUniq(obj) {
-    let np = this,
-        path = np.path,
-        plen = path.length;
+    const np = this,
+          path = np.path,
+          plen = path.length;
 
-    let values = [];
+    const values = [];
 
     function getInner(pi, obj) {
       if (Array.isArray(obj)) {

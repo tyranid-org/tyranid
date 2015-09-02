@@ -8,7 +8,7 @@ import { typesByName, collectionsById } from './common.js';
 
 
 export function validateUidCollection(validator, path, collection) {
-  let unknownTypeErrMsg = 'Unknown Collection for uid "of".';
+  const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
   if (collection instanceof Collection) {
     if (!collectionsById[collection.id]) {
       throw validator.err(path, unknownTypeErrMsg);
@@ -27,7 +27,7 @@ export function validateUidCollection(validator, path, collection) {
 export const LinkType = new Type({
   name: 'link',
   fromClient(field, value) {
-    let linkField = field.link.def.fields._id;
+    const linkField = field.link.def.fields._id;
     return linkField.is.def.fromClient(linkField, value);
   },
   toClient(field, value) {
@@ -38,7 +38,7 @@ export const LinkType = new Type({
 export const UidType = new Type({
   name: 'uid',
   validateSchema (validator, path, field) {
-    let of = field.of;
+    const of = field.of;
 
     if (!of) {
       return;
@@ -83,7 +83,7 @@ export const ArrayType = new Type({
   name: 'array',
   fromClient(field, value) {
     if (Array.isArray(value)) {
-      let ofField = field.of;
+      const ofField = field.of;
       return value.map(function(v) {
         return ofField.is.fromClient(ofField, v);
       });
@@ -119,17 +119,17 @@ export const ObjectType = new Type({
       return value;
     }
 
-    let fields = field.fields;
+    const fields = field.fields;
 
     if (!_.size(fields)) {
       // this is defined as just an empty object, meaning it's 100% dynamic, grab everything
       return value;
 
     } else {
-      let obj = {};
+      const obj = {};
 
       _.each(value, function(v, k) {
-        let field = fields[k];
+        const field = fields[k];
 
         if (field) {
           if (!field.is ) {
@@ -145,12 +145,12 @@ export const ObjectType = new Type({
 
   },
   validate(path, def, obj) {
-    let errors = [];
+    const errors = [];
 
     if (obj) {
       _.each(def.fields, function(field, fieldName) {
         if (!field.get) {
-          let error = field.is.validate(path + '.' + fieldName, field, obj[fieldName]);
+          const error = field.is.validate(path + '.' + fieldName, field, obj[fieldName]);
 
           if (error instanceof ValidationError) {
             errors.push(error);

@@ -12,7 +12,7 @@ export default class Type {
   }
 
   validateSchema(validator, path, field) {
-    let v = this.def.validateSchema;
+    const v = this.def.validateSchema;
     if (v) {
       v(validator, path, field);
     }
@@ -23,25 +23,25 @@ export default class Type {
       return new ValidationError(path, 'is required');
     }
 
-    let f = this.def.validate;
+    const f = this.def.validate;
     return f ? f(path, field, value) : undefined;
   }
 
   fromString(s) {
-    let f = this.def.fromString;
+    const f = this.def.fromString;
     return f ? f(s) : s;
   }
 
   fromClient(field, value) {
-    let f = this.def.fromClient;
+    const f = this.def.fromClient;
     return f ? f(field, value) : value;
   }
 
   toClient(field, value, data) {
 
-    let def = this.def,
-        dClient = def.client,
-        fClient = field.client;
+    const def = this.def,
+          dClient = def.client,
+          fClient = field.client;
 
     if (_.isFunction(dClient) && !dClient.call(data, value)) {
       return undefined;
@@ -55,13 +55,13 @@ export default class Type {
       return undefined;
     }
 
-    let f = def.toClient;
+    const f = def.toClient;
     return f ? f(field, value) : value;
 
   }
 
   static validateType(type) {
-    let def = type.def;
+    const def = type.def;
 
     if (!def) {
       throw new Error('Missing schema definition.');

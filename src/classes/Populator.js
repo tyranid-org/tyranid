@@ -28,20 +28,20 @@ export default class Populator {
   }
 
   addIds(population, documents) {
-    let namePath = population.namePath;
-    let link = namePath.tailDef().link;
+    const namePath = population.namePath;
+    const link = namePath.tailDef().link;
 
     if (!link) {
       throw new Error('Cannot populate ' + namePath + ' -- it is not a link');
     }
 
-    let linkId = link.id,
-        cache = this.cacheFor(linkId);
+    const linkId = link.id,
+          cache = this.cacheFor(linkId);
 
     documents.forEach(function(doc) {
       _.each(namePath.getUniq(doc), function(id) {
         if (id) {
-          let v = cache[id];
+          const v = cache[id];
           if (v === undefined) {
             cache[id] = null;
           }
@@ -53,10 +53,10 @@ export default class Populator {
   async queryMissingIds() {
 
     return await* _.map(this.cachesByColId, async(cache, colId) => {
-      let collection = collectionsById[colId],
-          idType = collection.def.fields._id.is;
+      const collection = collectionsById[colId],
+            idType = collection.def.fields._id.is;
 
-      let ids = [];
+      const ids = [];
       _.each(cache, (v, k) => {
         if (v === null) {
           // TODO:  once we can use ES6 Maps we can get rid of
@@ -68,7 +68,7 @@ export default class Populator {
 
       if (!ids.length) return;
 
-      let linkDocs = await collection.byIds(ids);
+      const linkDocs = await collection.byIds(ids);
 
       linkDocs.forEach(doc => {
         cache[doc._id] = doc;

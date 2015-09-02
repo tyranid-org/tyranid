@@ -74,7 +74,7 @@ function defineDocumentProperties(dp) {
 
 
 function denormalPopulate(collection, obj, denormalAlreadyDone) {
-  let denormal = !denormalAlreadyDone && collection.denormal;
+  const denormal = !denormalAlreadyDone && collection.denormal;
   return denormal ? collection.populate(denormal, obj, true) : Promise.resolve();
 }
 
@@ -83,7 +83,7 @@ export default class Collection {
 
   constructor(def) {
 
-    let colId = def.id;
+    const colId = def.id;
     if (!colId) {
       throw new Error('The "id" for the collection was not specified.');
     }
@@ -97,16 +97,16 @@ export default class Collection {
     }
 
     //
-    // instances of Collection are functions so that you can go "let User = ...; let user = new User();"
+    // instances of Collection are functions so that you can go "const User = ...; const user = new User();"
     //
     // i.e.  instances of Collection are collections
     //       instances of instances of Collection are documents (collection instances)
     //
 
-    let dp = {};
+    const dp = {};
     _.assign(dp, documentPrototype);
 
-    let CollectionInstance = function(data) {
+    const CollectionInstance = function(data) {
       this.__proto__ = dp;
 
       if (data) {
@@ -129,7 +129,7 @@ export default class Collection {
       def.dbName = def.name;
     }
 
-    let db = def.db || config.db;
+    const db = def.db || config.db;
 
     if ( !db ) {
       throw new Error('The "db" parameter must be specified either in the Collection schema or in the Tyranid.config().');
@@ -141,7 +141,7 @@ export default class Collection {
 
     collectionsById[def.id] = CollectionInstance;
 
-    for (let key in dp) {
+    for (const key in dp) {
       if (key.substring(0,1) === '$' && key !== '$label') {
         Object.defineProperty(dp, key, {
           enumerable:   false,
@@ -154,12 +154,12 @@ export default class Collection {
     defineDocumentProperties(dp);
 
     _.each(def.fields, function(field, name) {
-      let get  = field.get,
-          set  = field.set,
-          isDb = field.db;
+      const get  = field.get,
+            set  = field.set,
+            isDb = field.db;
 
       if (get || set) {
-        let prop = {
+        const prop = {
           enumerable:   isDb !== undefined ? isDb : false,
           writeable:    false,
           configurable: false
@@ -207,7 +207,7 @@ export default class Collection {
   }
 
   byIds(ids) {
-    let collection = this;
+    const collection = this;
 
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
@@ -218,27 +218,27 @@ export default class Collection {
 
 
   byLabel(n, forcePromise) {
-    let collection = this,
-        findName = collection.labelField,
-        matchLower = n.toLowerCase();
+    const collection = this,
+          findName = collection.labelField,
+          matchLower = n.toLowerCase();
 
     if (collection.isStatic()) {
-      let value = _.find(collection.def.values, function(v) {
-        let name = v[findName];
+      const value = _.find(collection.def.values, function(v) {
+        const name = v[findName];
         return name && name.toLowerCase() === matchLower;
       });
 
       return forcePromise ? Promise.resolve(value) : value;
     } else {
-      let query = {};
+      const query = {};
       query[findName] = {$regex: escapeRegex(matchLower), $options : 'i'};
       return collection.db.findOne(query);
     }
   }
 
   labelFor(doc) {
-    let collection = this,
-        labelField = collection.labelField;
+    const collection = this,
+          labelField = collection.labelField;
 
     // TODO:  have this use path finder to walk the object in case the label is stored in an embedded object
     // TODO:  support computed properties
@@ -250,10 +250,10 @@ export default class Collection {
    * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
    */
   async find(...args) {
-    let collection = this,
-        db         = collection.db;
+    const collection = this,
+          db         = collection.db;
 
-    let documents = await db.find(...args);
+    const documents = await db.find(...args);
 
     return _(documents)
       .map(doc => doc ? new collection(doc) : null)
@@ -265,10 +265,10 @@ export default class Collection {
    * Behaves like promised-mongo's findOne() method except that the results are mapped to collection instances.
    */
   async findOne(...args) {
-    let collection = this,
-        db         = collection.db;
+    const collection = this,
+          db         = collection.db;
 
-    let doc = await db.findOne(...args);
+    const doc = await db.findOne(...args);
 
     return doc ? new collection(doc) : null;
   }
@@ -277,9 +277,10 @@ export default class Collection {
    * Behaves like promised-mongo's findAndModify() method except that the results are mapped to collection instances.
    */
   async findAndModify(opts) {
-    let collection = this,
-        db         = collection.db,
-        update;
+    const collection = this,
+          db         = collection.db;
+
+    let update;
 
     if ((update=opts.update) && collection.def.timestamps) {
       let $set = update.$set;
@@ -289,9 +290,9 @@ export default class Collection {
       $set.updatedAt = new Date();
     }
 
-    let result = await db.findAndModify(opts);
+    const result = await db.findAndModify(opts);
 
-    let doc = result[0];
+    const doc = result[0];
 
     if (doc) {
       result[0] = new collection(doc);
@@ -302,7 +303,7 @@ export default class Collection {
 
 
   async save(obj, denormalAlreadyDone) {
-    let collection = this;
+    const collection = this;
 
     await denormalPopulate(collection, obj, denormalAlreadyDone);
 
@@ -324,8 +325,8 @@ export default class Collection {
 
 
   async insert(obj, denormalAlreadyDone) {
-    let collection  = this,
-        insertObj;
+    const collection  = this;
+    let insertObj;
 
     await denormalPopulate(collection, obj, denormalAlreadyDone);
 
@@ -339,9 +340,9 @@ export default class Collection {
   }
 
   update(obj) {
-    let def    = this.def,
-        fields = this.def.fields;
-    let setObj = {};
+    const def    = this.def,
+          fields = this.def.fields;
+    const setObj = {};
 
     _.each(fields, (field, name) => {
       if (field.db !== false) {
@@ -374,12 +375,12 @@ export default class Collection {
    * of documents.  This allows populate to be fed into a promise chain.
    */
   populate(fields, documents, denormal) {
-    let collection = this,
-        population = Population.parse(collection, fields),
-        populator  = new Populator(denormal);
+    const collection = this,
+          population = Population.parse(collection, fields),
+          populator  = new Populator(denormal);
 
     async function populatorFunc(documents) {
-      let isArray = documents && Array.isArray(documents);
+      const isArray = documents && Array.isArray(documents);
       documents = isArray ? documents : [documents];
 
       await population.populate(populator, documents);
@@ -391,15 +392,15 @@ export default class Collection {
   }
 
   fieldsBy(comparable) {
-    let results = [];
+    const results = [];
 
-    let cb = _.callback(comparable);
+    const cb = _.callback(comparable);
 
     function fieldsBy(path, val) {
 
       if (val.is) {
         if (val.is.def.name === 'object') {
-          let fields = val.fields;
+          const fields = val.fields;
           if (fields) {
             fieldsBy(path, fields);
           }
@@ -424,17 +425,17 @@ export default class Collection {
   }
 
   valuesFor(fields) {
-    let collection = this;
+    const collection = this;
 
     return new Promise(function(resolve, reject) {
-      let fieldsObj = { _id: 0 };
+      const fieldsObj = { _id: 0 };
       _.each(fields, field => {
         if (field.db !== false) {
           fieldsObj[field] = 1;
         }
       });
 
-      let values = [];
+      const values = [];
       collection.db.find({}, fieldsObj).forEach((err, doc) => {
         if (err) {
           reject(err);
@@ -442,7 +443,7 @@ export default class Collection {
         }
 
         if (doc) {
-          let extractValues = function(val) {
+          const extractValues = function(val) {
             if (_.isObject(val) )
               _.each(val, extractValues);
             else
@@ -461,25 +462,25 @@ export default class Collection {
    * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
    */
   fromClient(pojo, path) {
-    let collection = this;
-    let fields = collection.def.fields;
+    let collection = this,
+        fields = collection.def.fields;
 
-    let namePath = path ? new NamePath(this, path) : null;
+    const namePath = path ? new NamePath(this, path) : null;
 
     if (Array.isArray(pojo)) {
       return pojo.map(doc => collection.fromClient(doc, path));
     }
 
     if (namePath) {
-      let tailDef = namePath.tailDef();
+      const tailDef = namePath.tailDef();
       collection = tailDef.id ? collectionsById[tailDef.id] : null;
       fields = tailDef.fields;
     }
 
-    let obj = {}; // TODO:  create a new instance of this record-class?
+    const obj = {}; // TODO:  create a new instance of this record-class?
 
     _.each(pojo, (v, k) => {
-      let field = fields[k];
+      const field = fields[k];
 
       if (field) {
         if (!field.is) {
@@ -502,10 +503,10 @@ export default class Collection {
   }
 
   validateSchema() {
-    let collection = this,
-        def = collection.def;
+    const collection = this,
+          def = collection.def;
 
-    let validator = {
+    const validator = {
       err(path, msg) {
         return new Error('Tyranid Schema Error| ' + def.name + (path ? path : '') + ': ' + msg);
       },
@@ -565,7 +566,7 @@ export default class Collection {
             throw validator.err(path, '"denormal" is only a valid option on links');
           }
 
-          let denormal = collection.denormal = collection.denormal || {};
+          const denormal = collection.denormal = collection.denormal || {};
           denormal[path.substring(1)] = field.denormal;
         }
 
@@ -605,9 +606,9 @@ export default class Collection {
   }
 
   validateValues() {
-    let collection  = this,
-        def  = collection.def,
-        rows = def.values;
+    const collection  = this,
+          def  = collection.def,
+          rows = def.values;
 
     if (!rows) {
       return;
@@ -617,8 +618,8 @@ export default class Collection {
       throw new Error('Expected values for collection ' + def.name + ' to be an array');
     }
 
-    let ri,
-        rlen = rows.length;
+    const rlen = rows.length
+    let ri;
 
     if (!rlen) {
       return;
@@ -633,10 +634,10 @@ export default class Collection {
         }
       }
 
-      let header = rows[0],
-          hi,
-          hlen = header.length,
-          newValues = [],
+      const header = rows[0],
+            hlen = header.length,
+            newValues = [];
+      let hi,
           name;
 
       for (hi=0; hi<hlen; hi++) {
@@ -652,9 +653,9 @@ export default class Collection {
       }
 
       for (ri=1; ri<rlen; ri++) {
-        let orow = rows[ri],
-            nrow = {},
-            v;
+        const orow = rows[ri],
+              nrow = {};
+        let v;
 
         if (orow.length !== hlen && orow.length !== hlen+1) {
           throw new Error('Incorrect number of values on row ' + ri + ' in collection ' + def.name);
@@ -666,7 +667,7 @@ export default class Collection {
         }
 
         if (orow.length > hlen) {
-          let extraVals = orow[hi];
+          const extraVals = orow[hi];
 
           _.each(extraVals, function(v, n) {
             if (!def.fields[n]) {
@@ -703,7 +704,7 @@ export default class Collection {
 
     }
 
-    let byIdIndex = collection.byIdIndex = {};
+    const byIdIndex = collection.byIdIndex = {};
     def.values.forEach(function(doc) {
       byIdIndex[doc._id] = doc;
     });

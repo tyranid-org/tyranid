@@ -2,7 +2,7 @@
   "parser": "babel-eslint",
   "rules": {
     "quotes": [2, "single"],
-    "indent": [2, 2, {"VariableDeclarator": 2}],
+    "indent": [2, 2, {"VariableDeclarator": { "var": 2, "let": 2, "const": 3 }}],
     "strict": 2,
     "no-fallthrough": 0,
     "no-bitwise": 0,
@@ -15,6 +15,7 @@
       "capIsNewExceptions" : ['ObjectId'],
       "newIsCapExceptions": ['collection']
     }],
+    "prefer-const" : 2,
     "no-caller": 2,
     "no-unused-vars": 2,
     "no-multi-str": 0,

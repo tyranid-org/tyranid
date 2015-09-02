@@ -87,7 +87,7 @@ const Tyranid = {
   config(opts) {
 
     // clear object but keep reference
-    for (let prop in config) delete config[prop];
+    for (const prop in config) delete config[prop];
 
     _.extend(config, opts);
 
@@ -111,7 +111,7 @@ const Tyranid = {
         if (!opt.dir)
           throw new Error('dir not specified in validate option.');
 
-        let fileRe = opt.fileMatch ? new RegExp(opt.fileMatch) : undefined;
+        const fileRe = opt.fileMatch ? new RegExp(opt.fileMatch) : undefined;
 
         fs
           .readdirSync(opt.dir)
@@ -126,23 +126,23 @@ const Tyranid = {
   },
 
   async valuesBy(comparable) {
-    let getValues = c => c.valuesFor(c.fieldsBy(comparable));
-    let arrs = await* Tyranid.collections.map(getValues);
+    const getValues = c => c.valuesFor(c.fieldsBy(comparable));
+    const arrs = await* Tyranid.collections.map(getValues);
     return _.union.apply(null, arrs);
   },
 
   parseUid(uid) {
-    let colId = uid.substring(0, 3);
+    const colId = uid.substring(0, 3);
 
-    let col = collectionsById[colId];
+    const col = collectionsById[colId];
 
     if (!col) {
       throw new Error('No collection found for id "' + colId + '"');
     }
 
-    let strId = uid.substring(3);
+    const strId = uid.substring(3);
 
-    let idType = col.def.fields._id.is;
+    const idType = col.def.fields._id.is;
 
     return {
       collection: col,
@@ -151,12 +151,12 @@ const Tyranid = {
   },
 
   byUid(uid) {
-    let p = Tyranid.parseUid(uid);
+    const p = Tyranid.parseUid(uid);
     return p.collection.byId(p.id);
   },
 
   byName(name) {
-    let nameLower = name.toLowerCase();
+    const nameLower = name.toLowerCase();
 
     return _.find(collections, c => c.def.name.toLowerCase() === nameLower);
   },
@@ -166,11 +166,11 @@ const Tyranid = {
    */
   reset() {
     collections.length = 0;
-    for (let id in collectionsById) {
+    for (const id in collectionsById) {
       delete collectionsById[id];
     }
-    for (let name in typesByName) {
-      let type = typesByName[name];
+    for (const name in typesByName) {
+      const type = typesByName[name];
       if (type instanceof Collection) {
         delete typesByName[name];
       }

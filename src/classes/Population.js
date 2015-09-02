@@ -39,21 +39,21 @@ export default class Population {
     if (_.isObject(fields)) {
       // process advanced object format which supports nested populations and projections
 
-      let parseProjection = function(collection, fields) {
-        let projection = [];
+      const parseProjection = function(collection, fields) {
+        const projection = [];
 
         _.each(fields, function(value, key) {
           if (key === $all) {
             projection.push($all);
           } else {
-            let namePath = new NamePath(collection, key);
+            const namePath = new NamePath(collection, key);
 
             if (value === 0 || value === false) {
               projection.push(new Population(namePath, false));
             } else if (value === 1 || value === true) {
               projection.push(new Population(namePath, true));
             } else {
-              let link = namePath.tailDef().link;
+              const link = namePath.tailDef().link;
 
               if (!link) {
                 throw new Error('Cannot populate ' + collection.def.name + '.' + namePath + ' -- it is not a link');
@@ -84,7 +84,7 @@ export default class Population {
   }
 
   hasNestedPopulations() {
-    let proj = this.projection;
+    const proj = this.projection;
     if (Array.isArray(proj)) {
       return this.projection.some(pop => pop instanceof Population);
     } else {
@@ -97,7 +97,7 @@ export default class Population {
    * TODO:  should we mark populated values as enumerable: false ?
    */
   async populate(populator, documents) {
-    let population = this;
+    const population = this;
 
     population.projection.forEach(function(population) {
       if (population instanceof Population && !population.isSimple()) {
@@ -114,7 +114,7 @@ export default class Population {
     await populator.queryMissingIds();
 
     // create function to map projection
-    let populateIds = population => {
+    const populateIds = population => {
 
       if (!(population instanceof Population) || population.isSimple()) {
         return;
@@ -125,15 +125,15 @@ export default class Population {
         nestedDocs = [];
       }
 
-      let namePath = population.namePath;
+      const namePath = population.namePath;
       documents.forEach(function(obj) {
-        let cache = populator.cacheFor(namePath.tailDef().link.id),
-            path  = namePath.path,
-            plen  = path.length;
+        const cache = populator.cacheFor(namePath.tailDef().link.id),
+              path  = namePath.path,
+              plen  = path.length;
 
         function mapIdsToObjects(obj) {
           if (Array.isArray(obj)) {
-            let arr = new Array(obj.length);
+            const arr = new Array(obj.length);
 
             for (let ai=0, alen=obj.length; ai<alen; ai++ ) {
               arr[ai] = mapIdsToObjects(obj[ai]);
@@ -154,7 +154,7 @@ export default class Population {
         }
 
         function walkToEndOfPath(pi, obj) {
-          let name = path[pi];
+          const name = path[pi];
 
           if (Array.isArray(obj)) {
             for (let ai=0, alen=obj.length; ai<alen; ai++ ){
@@ -163,7 +163,7 @@ export default class Population {
           } else if (obj === undefined || obj === null) {
             return;
           } else if (pi === plen - 1) {
-            let pname = NamePath.populateNameFor(name, populator.denormal);
+            const pname = NamePath.populateNameFor(name, populator.denormal);
             obj[pname] = mapIdsToObjects(obj[name]);
           } else if (!_.isObject(obj)) {
             throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
