@@ -1,10 +1,10 @@
 import _ from 'lodash';
 
-import Type from './Type.js';
-import { ObjectType } from '../builtins.js';
-import Population from './Population.js';
-import Populator from './Populator.js';
-import NamePath from './NamePath.js';
+import Type from './Type';
+import { ObjectType } from '../builtins';
+import Population from './Population';
+import Populator from './Populator';
+import NamePath from './NamePath';
 
 // variables shared between classes
 import {
@@ -16,7 +16,7 @@ import {
   pathAdd         ,
   parseInsertObj  ,
   toClient
-} from '../common.js';
+} from '../common';
 
 
 // Document

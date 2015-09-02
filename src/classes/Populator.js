@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { collectionsById } from '../common.js';
+import { collectionsById } from '../common';
 
 
 export default class Populator {

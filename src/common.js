@@ -1,8 +1,8 @@
 import _ from 'lodash';
 
-import NamePath from './classes/NamePath.js';
-import Tyranid from './tyranid.js';
-import Collection from './classes/Collection.js';
+import NamePath from './classes/NamePath';
+import Tyranid from './tyranid';
+import Collection from './classes/Collection';
 
 
 export const config          = {};

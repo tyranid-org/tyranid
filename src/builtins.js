@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import Type from './classes/Type.js';
-import ValidationError from './classes/ValidationError.js';
-import { typesByName, validateUidCollection } from './common.js';
+import Type from './classes/Type';
+import ValidationError from './classes/ValidationError';
+import { typesByName, validateUidCollection } from './common';
 
 
 export const LinkType = new Type({

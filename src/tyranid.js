@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import fs from 'fs';
 
-import './builtins.js';
-import Type from './classes/Type.js';
-import Collection from './classes/Collection.js';
-import ValidationError from './classes/ValidationError.js';
+import './builtins';
+import Type from './classes/Type';
+import Collection from './classes/Collection';
+import ValidationError from './classes/ValidationError';
 
 
 // variables shared between classes
@@ -14,7 +14,7 @@ import {
   collectionsById ,
   typesByName     ,
   $all
-} from './common.js';
+} from './common';
 
 
 /*

@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import NamePath from './NamePath.js';
-import { collectionsById, $all } from '../common.js';
+import NamePath from './NamePath';
+import { collectionsById, $all } from '../common';
 
 
 export default class Population {

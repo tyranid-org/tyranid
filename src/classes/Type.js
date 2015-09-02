@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
-import { typesByName, setFalse } from '../common.js';
-import ValidationError from './ValidationError.js';
+import { typesByName, setFalse } from '../common';
+import ValidationError from './ValidationError';
 
 
 export default class Type {
