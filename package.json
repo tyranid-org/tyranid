@@ -4,7 +4,8 @@
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/tyranid.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "prepublish" : "gulp compile"
   },
   "repository": {
     "type": "git",
@@ -15,12 +16,12 @@
   "dependencies": {
     "lodash": "^3.9.3",
     "mongodb": "^1.4.3",
+    "babel-runtime": "^5.8.20",
+    "babel": "^5.8.23",
     "promised-mongo": "git://github.com/gordonmleigh/promised-mongo.git#v0.11.5"
   },
   "devDependencies": {
-    "babel": "^5.8.23",
     "babel-eslint": "^4.1.0",
-    "babel-runtime": "^5.8.20",
     "chai": "^3.0.0",
     "chai-as-promised": "^5.1.0",
     "es6-promise": "^2.3.0",
