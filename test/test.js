@@ -140,9 +140,10 @@ describe('tyranid', function() {
   });
 
   describe( 'with model', function() {
-    var Job, Organization, Department, Person, Task, Role;
+    var Job, Organization, Department, Person, Task, Role, Book;
     //var Job2, Organization2, Department2, Person2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
+    var BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
 
     before(function() {
       tyr.reset();
@@ -156,6 +157,7 @@ describe('tyranid', function() {
       Person = tyr.byName('person');
       Task = tyr.byName('task');
       Role = tyr.byName('role');
+      Book = tyr.byName('book');
 
       return Promise.all([
         Organization.db.remove({}).then(function() {
@@ -194,9 +196,14 @@ describe('tyranid', function() {
             }
           ]);
         }),
+        Book.db.remove({}).then(function() {
+          return Book.db.insert([
+            { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' },
+          ]);
+        }),
         Task.db.remove({}).then(function() {
           return Task.db.insert([
-            { _id: 1, title: 'Write instance validation tests', assigneeUid: Person.idToUid(1) },
+            { _id: 1, title: 'Write instance validation tests', assigneeUid: Person.idToUid(1), manual: BookIsbn },
           ]);
         })
       ]);
@@ -246,6 +253,14 @@ describe('tyranid', function() {
           expect(doc._id).to.be.eql(1);
         });
       });
+
+      it('should byId() with custom primaryKey', function() {
+        return Book.byId(BookIsbn).then(function(doc) {
+          expect(doc).to.be.an.instanceof(Book);
+          expect(doc._id).to.be.eql(1);
+          expect(doc.isbn).to.be.eql(BookIsbn);
+        });
+      });
     });
 
     describe('labels', function() {
@@ -289,7 +304,7 @@ describe('tyranid', function() {
     });
 
     describe('values', function() {
-      var allString = [ '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering', 'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe' ];
+      var allString = [ '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering', 'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide' ];
 
       it( 'should support valuesFor()', function() {
         Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {
@@ -346,6 +361,16 @@ describe('tyranid', function() {
             return Person.populate('organization', people).then(function(people) {
               verifyPeople(people);
             });
+          });
+      });
+
+      it('should work with custom primaryKey', function() {
+        return Task.findOne({_id:1})
+          .then(Task.populate('manual'))
+          .then(function(task) {
+            expect(task.manual$).to.be.an.instanceof(Book);
+            expect(task.manual$._id).to.be.eql(1);
+            expect(task.manual$.isbn).to.be.eql(BookIsbn);
           });
       });
 
