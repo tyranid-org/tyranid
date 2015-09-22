@@ -7,7 +7,7 @@ import { typesByName, validateUidCollection } from './common';
 export const LinkType = new Type({
   name: 'link',
   fromClient(field, value) {
-    const linkField = field.link.def.fields._id;
+    const linkField = field.link.def.fields[field.link.def.primaryKey];
     return linkField.is.def.fromClient(linkField, value);
   },
   toClient(field, value) {

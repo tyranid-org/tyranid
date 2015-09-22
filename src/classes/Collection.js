@@ -63,7 +63,7 @@ function defineDocumentProperties(dp) {
 
     $uid: {
       get() {
-        return this.$model.idToUid(this._id);
+        return this.$model.idToUid(this[this.def.primaryKey]);
       },
       enumerable:   false,
       writeable:    false,
@@ -127,6 +127,10 @@ export default class Collection {
 
     if (!def.dbName) {
       def.dbName = def.name;
+    }
+
+    if (!def.primaryKey) {
+      def.primaryKey = '_id';
     }
 
     const db = def.db || config.db;
@@ -199,10 +203,10 @@ export default class Collection {
 
     } else {
       if (typeof id === 'string') {
-        id = this.def.fields._id.is.fromString(id);
+        id = this.def.fields[this.def.primaryKey].is.fromString(id);
       }
 
-      return this.findOne({ _id: id });
+      return this.findOne({ [this.def.primaryKey]: id });
     }
   }
 
@@ -212,7 +216,7 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return collection.find({ _id: { $in: ids }});
+      return collection.find({ [this.def.primaryKey]: { $in: ids }});
     }
   }
 
@@ -310,7 +314,7 @@ export default class Collection {
     if (Array.isArray(obj)) {
       return await* obj.map(doc => collection.save(doc, true));
     } else {
-      if (obj._id) {
+      if (obj[collection.def.primaryKey]) {
         if (collection.def.timestamps) {
           obj.updatedAt = new Date();
         }
@@ -346,7 +350,7 @@ export default class Collection {
 
     _.each(fields, (field, name) => {
       if (field.db !== false) {
-        if (obj[name] !== undefined && name !== '_id') {
+        if (obj[name] !== undefined && name !== '_id' && name !== def.primaryKey) {
           setObj[name] = obj[name];
         }
       }
@@ -357,7 +361,7 @@ export default class Collection {
     }
 
     return this.db.update(
-      { _id : obj._id },
+      { [def.primaryKey] : obj[def.primaryKey] },
       { $set : setObj }
     );
   }
@@ -594,8 +598,8 @@ export default class Collection {
 
     validator.fields('', collection.def.fields);
 
-    if (!collection.def.fields._id) {
-      throw new Error('Collection ' + collection.def.name + ' is missing an _id field.');
+    if (!collection.def.fields[collection.def.primaryKey]) {
+      throw new Error('Collection ' + collection.def.name + ' is missing a "' + collection.def.primaryKey + '" primary key field.');
     }
 
     if (collection.def.enum && !collection.labelField) {
@@ -706,7 +710,7 @@ export default class Collection {
 
     const byIdIndex = collection.byIdIndex = {};
     def.values.forEach(function(doc) {
-      byIdIndex[doc._id] = doc;
+      byIdIndex[doc[collection.def.primaryKey]] = doc;
     });
   }
 

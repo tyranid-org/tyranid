@@ -21,7 +21,8 @@ var Task = new tyr.Collection({
       is: 'uid',
       of: [ Person, 'Department' ]
     },
-    departments: { is : 'array', of: Department }
+    departments: { is : 'array', of: Department },
+    manual: { link: 'book' }
   }
 });
 
