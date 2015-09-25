@@ -294,6 +294,14 @@ export default class Collection {
       $set.updatedAt = new Date();
     }
 
+    if (opts.upsert) {
+      opts.update = opts.update || {};
+      const $setOnInsert = parseInsertObj(collection, opts.update.$setOnInsert || {});
+      opts.update.$setOnInsert = _.omit($setOnInsert, (v,k) => {
+        return opts.update.$set && opts.update.$set[k] || v === undefined;
+      });
+    }
+
     const result = await db.findAndModify(opts);
 
     const doc = result[0];

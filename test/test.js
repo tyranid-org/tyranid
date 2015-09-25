@@ -632,10 +632,20 @@ describe('tyranid', function() {
 
       it('should support findAndModify()', function() {
         Person.def.timestamps = true;
-        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 } }, new: true }).then(function(doc) {
+        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } }, new: true }).then(function(doc) {
           var person = doc[0];
           expect(person.age).to.be.eql(31);
           expect(person.updatedAt).to.exist;
+          expect(person.title).to.not.exist;
+        });
+      });
+
+      it('should support findAndModify() with defaultValues on upsert', function() {
+        return Person.findAndModify({ query: { _id: 999 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(doc) {
+          var person = doc[0];
+          expect(person.name.first).to.be.eql('Bill');
+          expect(person.title).to.be.eql('Employee');
+          expect(person.goldStars).to.be.eql(0);
         });
       });
 
