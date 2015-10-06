@@ -2,6 +2,7 @@ import _ from 'lodash';
 import Type from './classes/Type';
 import ValidationError from './classes/ValidationError';
 import { typesByName, validateUidCollection } from './common';
+import { ObjectId } from 'promised-mongo';
 
 
 export const LinkType = new Type({
@@ -147,6 +148,9 @@ export const ObjectType = new Type({
 
 export const MongoIdType = new Type({
   name: 'mongoid',
+  generatePrimaryKeyVal() {
+    return new ObjectId();
+  },
   fromString(str) {
     return ObjectId(str);
   },

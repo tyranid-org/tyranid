@@ -43,6 +43,11 @@ export function parseInsertObj(col, obj) {
     }
   });
 
+  if (insertObj[def.primaryKey] === undefined) {
+    const type = fields[def.primaryKey].is;
+    insertObj[def.primaryKey] = type.generatePrimaryKeyVal();
+  }
+
   _.each(col.denormal, function(field, name) {
     // TODO:  need to parse & process name it is a path (if it contains "."s)
     name = NamePath.populateNameFor(name, true);

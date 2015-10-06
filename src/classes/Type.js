@@ -27,6 +27,15 @@ export default class Type {
     return f ? f(path, field, value) : undefined;
   }
 
+  generatePrimaryKeyVal() {
+    const f = this.def.generatePrimaryKeyVal;
+    if (f) {
+      return f();
+    } else {
+      throw new Error('Generation of a default primary key value should implemented in type definition');
+    }
+  }
+
   fromString(s) {
     const f = this.def.fromString;
     return f ? f(s) : s;

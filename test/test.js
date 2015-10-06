@@ -293,7 +293,7 @@ describe('tyranid', function() {
       });
 
       it('should save objects', function() {
-        var elizabeth = new Person({ name: { first: 'Elizabeth', last: 'Smith' }, title: 'Software Engineer' });
+        var elizabeth = new Person({ _id: 999, name: { first: 'Elizabeth', last: 'Smith' }, title: 'Software Engineer' });
 
         return elizabeth.$save().then(function() {
           Person.db.find({ 'name.first': 'Elizabeth', 'name.last': 'Smith' }).then(function(person) {
@@ -518,15 +518,22 @@ describe('tyranid', function() {
     });
 
     describe('insert', function() {
-      it('should generate an _id', function() {
-        var p = new Person({ organization: 1, department: 1, name: { first: 'New', last: 'Person' }, title: 'Developer' });
-        return p.$insert()
-          .then(function(newPerson) {
-            expect(newPerson._id).to.be.an.instanceOf(ObjectId);
+      it('should generate an _id if Type.generatePrimaryKeyVal() defined', function() {
+        var r = new Role();
+        return r.$insert()
+          .then(function(newRole) {
+            expect(newRole._id).to.be.an.instanceOf(ObjectId);
+          });
+      });
+      it('should generate a custom primarKey if Type.generatePrimaryKeyVal() defined', function() {
+        var b = new Book();
+        return b.$insert()
+          .then(function(newBook) {
+            expect(newBook.isbn).to.be.an.instanceOf(ObjectId);
           });
       });
       it('should support defaultValues', function() {
-        var p = new Person({ organization: 1, department: 1, name: { first: 'Default', last: 'Employee' } });
+        var p = new Person({ _id: 1000, organization: 1, department: 1, name: { first: 'Default', last: 'Employee' } });
         return p.$insert()
           .then(function(newPerson) {
             expect(newPerson.title).to.be.eql('Employee');
@@ -546,8 +553,8 @@ describe('tyranid', function() {
       });
       it('should support bulk inserts like mongo insert', function() {
         var people = [
-          new Person({ organization: 1, department: 1, name: { first: 'First', last: 'Person' }, title: 'Developer' }),
-          new Person({ organization: 1, department: 1, name: { first: 'Second', last: 'Person' }, title: 'Developer' })
+          new Person({ _id: 1001, organization: 1, department: 1, name: { first: 'First', last: 'Person' }, title: 'Developer' }),
+          new Person({ _id: 1002, organization: 1, department: 1, name: { first: 'Second', last: 'Person' }, title: 'Developer' })
         ];
         return Person.insert(people)
           .then(function(newPeople) {
@@ -641,7 +648,7 @@ describe('tyranid', function() {
       });
 
       it('should support findAndModify() with defaultValues on upsert', function() {
-        return Person.findAndModify({ query: { _id: 999 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(doc) {
+        return Person.findAndModify({ query: { _id: 1003 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(doc) {
           var person = doc[0];
           expect(person.name.first).to.be.eql('Bill');
           expect(person.title).to.be.eql('Employee');
