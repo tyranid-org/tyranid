@@ -155,6 +155,9 @@ export const MongoIdType = new Type({
     return ObjectId(str);
   },
   fromClient(field, value) {
+    if (value instanceof ObjectId) {
+      return value;
+    }
     return value ? ObjectId(value) : undefined;
   },
   toClient(field, value) {

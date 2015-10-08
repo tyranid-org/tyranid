@@ -481,10 +481,12 @@ describe('tyranid', function() {
 
     describe('client', function() {
       it( 'should fromClient', function() {
-        var personObj = { name: { firstName: 'Foo' }, job: 1 };
-        var person = Person.fromClient(personObj);
-        expect(person).to.be.an.instanceof(Person);
-        expect(person.job).to.be.eql(1);
+        var title = 'Browsers';
+        var bookObj = { title, isbn: ObjectId('5614c2f00000000000000000') };
+        var book = Book.fromClient(bookObj);
+        expect(book).to.be.an.instanceof(Book);
+        expect(book.title).to.be.eql(title);
+        expect(book.isbn).to.be.an.instanceof(ObjectId);
       });
 
       it( 'should fromClient array objects', function() {
