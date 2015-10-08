@@ -155,10 +155,12 @@ export const MongoIdType = new Type({
     return ObjectId(str);
   },
   fromClient(field, value) {
+    // Following usually fails when called externally since caller probably
+    // not using Tyranid's promised-mongo
     if (value instanceof ObjectId) {
       return value;
     }
-    return value ? ObjectId(value) : undefined;
+    return value ? ObjectId(value.toString()) : undefined;
   },
   toClient(field, value) {
     return value ? value.toString() : value;

@@ -296,7 +296,7 @@ export default class Collection {
 
     if (opts.upsert) {
       opts.update = opts.update || {};
-      const $setOnInsert = parseInsertObj(collection, _.merge(opts.query, opts.update.$setOnInsert));
+      const $setOnInsert = parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), opts.update.$setOnInsert));
       opts.update.$setOnInsert = _.omit($setOnInsert, (v,k) => {
         return opts.update.$set && opts.update.$set[k] || v === undefined;
       });
