@@ -12,7 +12,7 @@ export const LinkType = new Type({
     return linkField.is.def.fromClient(linkField, value);
   },
   toClient(field, value) {
-    return value ? (value instanceof ObjectId ? value.toString() : value) : value;
+    return value ? (ObjectId.isValid(value.toString()) ? value.toString() : value) : value;
   }
 });
 

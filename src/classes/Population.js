@@ -140,7 +140,7 @@ export default class Population {
             }
 
             return arr;
-          } else if (_.isObject(obj) && !(obj instanceof ObjectId)) {
+          } else if (_.isObject(obj) && !ObjectId.isValid(obj.toString())) {
             throw new Error('Got object when expected a link value');
           } else if (!obj) {
             return obj;
