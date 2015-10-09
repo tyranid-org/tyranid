@@ -304,10 +304,8 @@ export default class Collection {
 
     const result = await db.findAndModify(opts);
 
-    const doc = result[0];
-
-    if (doc) {
-      result[0] = new collection(doc);
+    if (result && result.value) {
+      result.value = new collection(result.value);
     }
 
     return result;
@@ -436,38 +434,38 @@ export default class Collection {
     return results;
   }
 
-  valuesFor(fields) {
+  async valuesFor(fields) {
     const collection = this;
 
-    return new Promise(function(resolve, reject) {
-      const fieldsObj = { _id: 0 };
-      _.each(fields, field => {
-        if (field.db !== false) {
-          fieldsObj[field] = 1;
-        }
-      });
+    const fieldsObj = { _id: 0 };
 
-      const values = [];
-      collection.db.find({}, fieldsObj).forEach((err, doc) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        if (doc) {
-          const extractValues = function(val) {
-            if (_.isObject(val) )
-              _.each(val, extractValues);
-            else
-              values.push(val);
-          };
-
-          extractValues(doc);
-        } else {
-          resolve(_.uniq(values));
-        }
-      });
+    _.each(fields, field => {
+      if (field.db !== false) {
+        fieldsObj[field] = 1;
+      }
     });
+
+    const values = [];
+
+    const extractValues = val => {
+
+      if (!val) {
+        return;
+      }
+
+      if (_.isObject(val)) {
+        _.each(val, extractValues);
+      } else {
+        values.push(val);
+      }
+
+    };
+
+    await collection.db
+      .find({}, fieldsObj)
+      .forEach(extractValues);
+
+    return _.uniq(values);
   }
 
   /**

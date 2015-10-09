@@ -240,8 +240,8 @@ describe('tyranid', function() {
       });
 
       it('should findAndModify()', function() {
-        return Person.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(doc) {
-          var person = doc[0];
+        return Person.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(result) {
+          var person = result.value;
           expect(person).to.be.an.instanceof(Person);
           expect(person.age).to.be.eql(32);
         });
@@ -641,8 +641,8 @@ describe('tyranid', function() {
 
       it('should support findAndModify()', function() {
         Person.def.timestamps = true;
-        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } }, new: true }).then(function(doc) {
-          var person = doc[0];
+        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } }, new: true }).then(function(result) {
+          var person = result.value;
           expect(person.age).to.be.eql(31);
           expect(person.updatedAt).to.exist;
           expect(person.title).to.not.exist;
@@ -650,8 +650,8 @@ describe('tyranid', function() {
       });
 
       it('should support findAndModify() with defaultValues on upsert', function() {
-        return Person.findAndModify({ query: { _id: 1003 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(doc) {
-          var person = doc[0];
+        return Person.findAndModify({ query: { _id: 1003 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(result) {
+          var person = result.value;
           expect(person.name.first).to.be.eql('Bill');
           expect(person.title).to.be.eql('Employee');
           expect(person.goldStars).to.be.eql(0);
