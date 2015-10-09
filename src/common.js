@@ -90,7 +90,7 @@ export function toClient(col, data) {
       // TODO:  we can figure out the type of k using metadata to make this work for the case when
       //        we have an array of pojos instead of instances
       obj[k] = toClient(null, v);
-    } else if (ObjectId.isValid(v.toString())) {
+    } else if (v && ObjectId.isValid(v.toString())) {
       obj[k] = v.toString();
     } else {
       // TODO:  right now we're sending down everything we don't have metadata for ...
