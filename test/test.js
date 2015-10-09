@@ -156,8 +156,9 @@ describe('tyranid', function() {
       Department = tyr.byName('department');
       Person = tyr.byName('person');
       Task = tyr.byName('task');
-      Role = tyr.byName('role');
       Book = tyr.byName('book');
+
+      Role = require('./models/role.js'); // require to get extra link in prototype chain
 
       return Promise.all([
         Organization.db.remove({}).then(function() {
@@ -217,6 +218,11 @@ describe('tyranid', function() {
           ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
+      it('should support static  methods in ES6 class defs', function() {
+        return Role.search('Admin').then(function(docs) {
+          expect(docs[0].name).to.equal('Administrator');
+        })
+      })
     });
 
     describe('finding', function() {

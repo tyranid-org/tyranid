@@ -123,6 +123,9 @@ export default class Collection {
     CollectionInstance.def = def;
     CollectionInstance.id = colId;
 
+    // add apply back to proto, for class inheritance...
+    CollectionInstance.__proto__.apply = Function.prototype.apply;
+
     Type.validateType(CollectionInstance);
 
     if (!def.dbName) {
