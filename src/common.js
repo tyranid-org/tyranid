@@ -63,6 +63,18 @@ export function parseInsertObj(col, obj) {
   return insertObj;
 }
 
+export function parseProjection(col, obj) {
+  const def        = col.def,
+        projection = Object.assign({}, obj);
+
+  if (projection[def.primaryKey] === undefined) {
+    projection[def.primaryKey] = 1;
+  }
+
+  // TODO: consider default removing _id if not the primary
+
+  return projection;
+}
 
 export function toClient(col, data) {
 

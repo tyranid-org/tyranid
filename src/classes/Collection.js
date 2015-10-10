@@ -15,6 +15,7 @@ import {
   escapeRegex     ,
   pathAdd         ,
   parseInsertObj  ,
+  parseProjection ,
   toClient
 } from '../common';
 
@@ -255,7 +256,12 @@ export default class Collection {
    */
   async find(...args) {
     const collection = this,
-          db         = collection.db;
+          db         = collection.db,
+          projection = args[1];
+    
+    if (projection) {
+      args[1] = parseProjection(collection, projection);
+    }
 
     const documents = await db.find(...args);
 
@@ -270,7 +276,12 @@ export default class Collection {
    */
   async findOne(...args) {
     const collection = this,
-          db         = collection.db;
+          db         = collection.db,
+          projection = args[1];
+
+    if (projection) {
+      args[1] = parseProjection(collection, projection);
+    }
 
     const doc = await db.findOne(...args);
 
@@ -300,6 +311,10 @@ export default class Collection {
       opts.update.$setOnInsert = _.omit($setOnInsert, (v,k) => {
         return opts.update.$set && opts.update.$set[k] || v === undefined;
       });
+    }
+
+    if (opts.fields) {
+      opts.fields = parseProjection(collection, opts.fields);
     }
 
     const result = await db.findAndModify(opts);

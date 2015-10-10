@@ -263,6 +263,32 @@ describe('tyranid', function() {
       });
     });
 
+    describe('projections', function() {
+      it('should return custom primaryKey if not specified in projection', function() {
+        return Book.find({isbn:BookIsbn},{_id:1}).then(function(docs) {
+          expect(docs.length).to.be.eql(1);
+          expect(docs[0].title).to.not.exist;
+          expect(docs[0].isbn).to.be.eql(BookIsbn);
+        });
+      });
+
+      it('should not include custom primaryKey if specifically excluded', function() {
+        return Book.findOne({isbn:BookIsbn},{isbn:0}).then(function(doc) {
+          expect(doc.isbn).to.not.exist;
+        });
+      });
+
+      it('should work with findAndModify `fields` param', function() {
+        return Book.findAndModify({
+          query: { isbn:BookIsbn },
+          update: { $set: { fakeProp: 'fake' } },
+          fields: { title:1 }
+        }).then(function(doc) {
+          expect(doc[0].isbn).to.be.eql(BookIsbn);
+        });
+      });
+    });
+
     describe('labels', function() {
       it('should byLabel() on static collections', function() {
         expect(Job.byLabel('Designer')._id).to.be.eql(3);
