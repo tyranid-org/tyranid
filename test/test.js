@@ -156,8 +156,9 @@ describe('tyranid', function() {
       Department = tyr.byName('department');
       Person = tyr.byName('person');
       Task = tyr.byName('task');
-      Role = tyr.byName('role');
       Book = tyr.byName('book');
+
+      Role = require('./models/role.js'); // require to get extra link in prototype chain
 
       return Promise.all([
         Organization.db.remove({}).then(function() {
@@ -217,6 +218,11 @@ describe('tyranid', function() {
           ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
+      it('should support static  methods in ES6 class defs', function() {
+        return Role.search('Admin').then(function(docs) {
+          expect(docs[0].name).to.equal('Administrator');
+        })
+      })
     });
 
     describe('finding', function() {
@@ -240,8 +246,8 @@ describe('tyranid', function() {
       });
 
       it('should findAndModify()', function() {
-        return Person.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(doc) {
-          var person = doc[0];
+        return Person.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(result) {
+          var person = result.value;
           expect(person).to.be.an.instanceof(Person);
           expect(person.age).to.be.eql(32);
         });
@@ -667,8 +673,8 @@ describe('tyranid', function() {
 
       it('should support findAndModify()', function() {
         Person.def.timestamps = true;
-        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } }, new: true }).then(function(doc) {
-          var person = doc[0];
+        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } }, new: true }).then(function(result) {
+          var person = result.value;
           expect(person.age).to.be.eql(31);
           expect(person.updatedAt).to.exist;
           expect(person.title).to.not.exist;
@@ -676,8 +682,8 @@ describe('tyranid', function() {
       });
 
       it('should support findAndModify() with defaultValues on upsert', function() {
-        return Person.findAndModify({ query: { _id: 1003 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(doc) {
-          var person = doc[0];
+        return Person.findAndModify({ query: { _id: 1003 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(result) {
+          var person = result.value;
           expect(person.name.first).to.be.eql('Bill');
           expect(person.title).to.be.eql('Employee');
           expect(person.goldStars).to.be.eql(0);
