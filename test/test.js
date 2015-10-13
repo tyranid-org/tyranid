@@ -290,7 +290,7 @@ describe('tyranid', function() {
           update: { $set: { fakeProp: 'fake' } },
           fields: { title:1 }
         }).then(function(doc) {
-          expect(doc[0].isbn).to.be.eql(BookIsbn);
+          expect(doc.value.isbn).to.be.eql(BookIsbn);
         });
       });
     });
@@ -328,8 +328,9 @@ describe('tyranid', function() {
         var elizabeth = new Person({ _id: 999, name: { first: 'Elizabeth', last: 'Smith' }, title: 'Software Engineer' });
 
         return elizabeth.$save().then(function() {
-          Person.db.find({ 'name.first': 'Elizabeth', 'name.last': 'Smith' }).then(function(person) {
-            expect(person.name.first).to.eql('Elizabeth 2');
+          return Person.db.find({ 'name.first': 'Elizabeth', 'name.last': 'Smith' }).then(function(docs) {
+            expect(docs.length).to.eql(1);
+            expect(docs[0].name.first).to.eql('Elizabeth');
           });
         });
       });
