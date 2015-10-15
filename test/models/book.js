@@ -8,7 +8,7 @@ var Book = new tyr.Collection({
     isbn: { is: 'mongoid' }, // Pretend ISBNs are ObjectIds
     title: { is: 'string' }
   },
-  primaryKey: 'isbn'
+  primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true }
 });
 
 module.exports = Book;

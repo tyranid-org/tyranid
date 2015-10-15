@@ -54,7 +54,7 @@ export default class Populator {
 
     return await* _.map(this.cachesByColId, async(cache, colId) => {
       const collection = collectionsById[colId],
-            idType = collection.def.fields[collection.def.primaryKey].is;
+            idType = collection.def.fields[collection.def.primaryKey.field].is;
 
       const ids = [];
       _.each(cache, (v, k) => {
@@ -71,7 +71,7 @@ export default class Populator {
       const linkDocs = await collection.byIds(ids);
 
       linkDocs.forEach(doc => {
-        cache[doc[collection.def.primaryKey]] = doc;
+        cache[doc[collection.def.primaryKey.field]] = doc;
       });
 
     });

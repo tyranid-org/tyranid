@@ -43,9 +43,13 @@ export function parseInsertObj(col, obj) {
     }
   });
 
-  if (insertObj[def.primaryKey] === undefined) {
-    const type = fields[def.primaryKey].is;
-    insertObj[def.primaryKey] = type.generatePrimaryKeyVal();
+  if (insertObj[def.primaryKey.field] === undefined) {
+    const type = fields[def.primaryKey.field].is;
+    insertObj[def.primaryKey.field] = type.generatePrimaryKeyVal();
+  }
+
+  if (def.primaryKey.defaultMatchIdOnInsert && insertObj._id === undefined) {
+    insertObj._id = insertObj[def.primaryKey.field];
   }
 
   _.each(col.denormal, function(field, name) {
@@ -67,8 +71,8 @@ export function parseProjection(col, obj) {
   const def        = col.def,
         projection = Object.assign({}, obj);
 
-  if (projection[def.primaryKey] === undefined) {
-    projection[def.primaryKey] = 1;
+  if (projection[def.primaryKey.field] === undefined) {
+    projection[def.primaryKey.field] = 1;
   }
 
   // TODO: consider default removing _id if not the primary

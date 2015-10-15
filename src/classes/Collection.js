@@ -64,7 +64,7 @@ function defineDocumentProperties(dp) {
 
     $uid: {
       get() {
-        return this.$model.idToUid(this[this.def.primaryKey]);
+        return this.$model.idToUid(this[this.def.primaryKey.field]);
       },
       enumerable:   false,
       writeable:    false,
@@ -134,7 +134,15 @@ export default class Collection {
     }
 
     if (!def.primaryKey) {
-      def.primaryKey = '_id';
+      def.primaryKey = {
+        field: '_id'
+      };
+    } else if(_.isString(def.primaryKey)) {
+      def.primaryKey = {
+        field: def.primaryKey
+      };
+    } else if(!_.isObject(def.primaryKey)) {
+      throw new Error('Invalid `primaryKey` parameter');
     }
 
     const db = def.db || config.db;
@@ -207,10 +215,10 @@ export default class Collection {
 
     } else {
       if (typeof id === 'string') {
-        id = this.def.fields[this.def.primaryKey].is.fromString(id);
+        id = this.def.fields[this.def.primaryKey.field].is.fromString(id);
       }
 
-      return this.findOne({ [this.def.primaryKey]: id });
+      return this.findOne({ [this.def.primaryKey.field]: id });
     }
   }
 
@@ -220,7 +228,7 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return collection.find({ [this.def.primaryKey]: { $in: ids }});
+      return collection.find({ [this.def.primaryKey.field]: { $in: ids }});
     }
   }
 
@@ -338,7 +346,7 @@ export default class Collection {
     if (Array.isArray(obj)) {
       return await* obj.map(doc => collection.save(doc, true));
     } else {
-      if (obj[collection.def.primaryKey]) {
+      if (obj[collection.def.primaryKey.field]) {
         if (collection.def.timestamps) {
           obj.updatedAt = new Date();
         }
@@ -374,7 +382,7 @@ export default class Collection {
 
     _.each(fields, (field, name) => {
       if (field.db !== false) {
-        if (obj[name] !== undefined && name !== '_id' && name !== def.primaryKey) {
+        if (obj[name] !== undefined && name !== '_id' && name !== def.primaryKey.field) {
           setObj[name] = obj[name];
         }
       }
@@ -385,7 +393,7 @@ export default class Collection {
     }
 
     return this.db.update(
-      { [def.primaryKey] : obj[def.primaryKey] },
+      { [def.primaryKey.field] : obj[def.primaryKey.field] },
       { $set : setObj }
     );
   }
@@ -622,8 +630,8 @@ export default class Collection {
 
     validator.fields('', collection.def.fields);
 
-    if (!collection.def.fields[collection.def.primaryKey]) {
-      throw new Error('Collection ' + collection.def.name + ' is missing a "' + collection.def.primaryKey + '" primary key field.');
+    if (!collection.def.fields[collection.def.primaryKey.field]) {
+      throw new Error('Collection ' + collection.def.name + ' is missing a "' + collection.def.primaryKey.field + '" primary key field.');
     }
 
     if (collection.def.enum && !collection.labelField) {
@@ -734,7 +742,7 @@ export default class Collection {
 
     const byIdIndex = collection.byIdIndex = {};
     def.values.forEach(function(doc) {
-      byIdIndex[doc[collection.def.primaryKey]] = doc;
+      byIdIndex[doc[collection.def.primaryKey.field]] = doc;
     });
   }
 

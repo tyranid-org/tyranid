@@ -560,11 +560,12 @@ describe('tyranid', function() {
             expect(newRole._id).to.be.an.instanceOf(ObjectId);
           });
       });
-      it('should generate a custom primarKey if Type.generatePrimaryKeyVal() defined', function() {
+      it('should generate a custom primaryKey if Type.generatePrimaryKeyVal() defined', function() {
         var b = new Book();
         return b.$insert()
           .then(function(newBook) {
             expect(newBook.isbn).to.be.an.instanceOf(ObjectId);
+            expect(newBook._id).to.eql(newBook.isbn);
           });
       });
       it('should support defaultValues', function() {
