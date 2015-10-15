@@ -306,22 +306,39 @@ export default class Collection {
     const collection = this,
           db         = collection.db;
 
-    let update;
+    let update = opts.update;
 
-    if ((update=opts.update) && collection.def.timestamps) {
-      let $set = update.$set;
-      if (!$set) {
-        $set = update.$set = {};
-      }
-      $set.updatedAt = new Date();
-    }
+    if (update) {
+      // Check for whether update param is all field:value expressions.
+      // If so, we should replace the entire doc (per Mongo api docs)
+      let replaceEntireDoc = true;
 
-    if (opts.upsert) {
-      opts.update = opts.update || {};
-      const $setOnInsert = parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), opts.update.$setOnInsert));
-      opts.update.$setOnInsert = _.omit($setOnInsert, (v,k) => {
-        return opts.update.$set && opts.update.$set[k] || v === undefined;
+      // Use Array.prototype.every() since it can break early
+      Object.keys(update).every(el => {
+        return (replaceEntireDoc = !el.startsWith('$'));
       });
+
+      if (collection.def.timestamps) {
+        if (replaceEntireDoc) {
+          update.updatedAt = new Date();
+        } else {
+          update.$set = update.$set || {};
+          update.$set.updatedAt = new Date();
+        }
+      }
+
+      if (opts.upsert) {
+        const setOnInsertSrc = replaceEntireDoc ? update : update.$setOnInsert,
+              $setOnInsert = parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), setOnInsertSrc));
+
+        if (replaceEntireDoc) {
+          update = $setOnInsert;
+        } else {
+          update.$setOnInsert = _.omit($setOnInsert, (v,k) => {
+            return update.$set && update.$set[k] || v === undefined;
+          });
+        }
+      }
     }
 
     if (opts.fields) {
@@ -351,8 +368,13 @@ export default class Collection {
           obj.updatedAt = new Date();
         }
 
-        // the mongo driver only saves properties on the object directly, prototype values will not be recorded
-        return collection.db.save(obj);
+        let result = await collection.findAndModify({
+          query: { [collection.def.primaryKey]: obj[collection.def.primaryKey] },
+          update: obj,
+          upsert: true,
+          new: true
+        });
+        return result.value;
       } else {
         return collection.insert(obj, true);
       }

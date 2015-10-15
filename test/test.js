@@ -320,17 +320,32 @@ describe('tyranid', function() {
     });
 
     describe('saving', function() {
+      var newIsbn = ObjectId('561cabf00000000000000000');
+
       after(function() {
-        return Person.db.remove({'name.first': 'Elizabeth', 'name.last': 'Smith' });
+        return Book.db.remove({ isbn: newIsbn });
       });
 
-      it('should save objects', function() {
-        var elizabeth = new Person({ _id: 999, name: { first: 'Elizabeth', last: 'Smith' }, title: 'Software Engineer' });
+      it('should save new objects', function() {
+        var book = new Book({ isbn: newIsbn, title: 'Datamodeling for Dummies' });
 
-        return elizabeth.$save().then(function() {
-          return Person.db.find({ 'name.first': 'Elizabeth', 'name.last': 'Smith' }).then(function(docs) {
+        return book.$save().then(function() {
+          return Book.db.find({ isbn: newIsbn }).then(function(docs) {
             expect(docs.length).to.eql(1);
-            expect(docs[0].name.first).to.eql('Elizabeth');
+            expect(docs[0].title).to.eql('Datamodeling for Dummies');
+          });
+        });
+      });
+
+      it('should save existing objects', function() {
+        var book = new Book({ isbn: newIsbn, description: 'Lovely' });
+
+        return book.$save().then(function() {
+          return Book.db.find({ isbn: newIsbn }).then(function(docs) {
+            expect(docs.length).to.eql(1);
+            expect(docs[0].description).to.eql('Lovely');
+            // $save should replace entire doc
+            expect(docs[0].title).to.not.exist;
           });
         });
       });
@@ -689,6 +704,24 @@ describe('tyranid', function() {
           expect(person.name.first).to.be.eql('Bill');
           expect(person.title).to.be.eql('Employee');
           expect(person.goldStars).to.be.eql(0);
+        });
+      });
+
+      it('should support findAndModify() with complete doc replacement', function() {
+        return Person.findAndModify({ query: { _id: 1003 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
+          var person = result.value;
+          expect(person.name).to.not.exist;
+          expect(person.goldStars).to.not.exist;
+          expect(person.title).to.be.eql('Good Boy');
+        });
+      });
+
+      it('should support findAndModify() upsert with complete doc replacement', function() {
+        return Person.findAndModify({ query: { _id: 1004 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
+          var person = result.value;
+          expect(person.name).to.not.exist;
+          expect(person.goldStars).to.not.exist;
+          expect(person.title).to.be.eql('Good Boy');
         });
       });
 
