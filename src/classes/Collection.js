@@ -369,7 +369,7 @@ export default class Collection {
         }
 
         let result = await collection.findAndModify({
-          query: { [collection.def.primaryKey]: obj[collection.def.primaryKey] },
+          query: { [collection.def.primaryKey.field]: obj[collection.def.primaryKey.field] },
           update: obj,
           upsert: true,
           new: true
