@@ -368,7 +368,7 @@ export default class Collection {
           obj.updatedAt = new Date();
         }
 
-        let result = await collection.findAndModify({
+        const result = await collection.findAndModify({
           query: { [collection.def.primaryKey.field]: obj[collection.def.primaryKey.field] },
           update: obj,
           upsert: true,
