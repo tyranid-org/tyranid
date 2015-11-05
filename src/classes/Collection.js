@@ -461,8 +461,31 @@ export default class Collection {
   }
 
   /**
-   * Remove **all** hooks for a particular method
-   * @param  {tring|Array} [methods] Method or methods. Unhooks all methods if unspecified. 
+   * Add a post hook
+   * 
+   * @param {string|Array} methods method name or array of method names to add post hook
+   * @param {Function(next, result)} cb hook callback
+   * @param {Function} cb.next if modifying result, return next(modifiedResult)
+   * @param {Array} cb.result original method result
+   * @return {Collection} self for chaining
+   */
+  post(methods, cb) {
+    hooker.hook(this, methods, {
+      post(result) {
+        const next = (result) => {
+          return hooker.override(result);
+        };
+        return this::cb(next, result);
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Remove hooks for a particular method. Needs to
+   * be called once per pre/post() call.
+   * 
+   * @param  {tring|Array} [methods] Method or methods. Unhooks all methods if unspecified.
    * @return {Collection} self for chaining
    */
   unhook(methods) {

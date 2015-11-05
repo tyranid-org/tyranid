@@ -758,7 +758,25 @@ describe('tyranid', function() {
           });
       });
 
+      it( 'should support post hooks', function() {
+        Book.post('insert', (next, promise) => {
+          const modified = promise.then(newBook => {
+            // Add 2 more pages
+            newBook.pages += 2;
+            return newBook;
+          });
+          return next(modified);
+        });
+
+        var b = new Book({ pages: 5 });
+        return b.$insert()
+          .then(function(newBook) {
+            expect(newBook.pages).to.be.eql(9);
+          });
+      });
+
       it( 'should unhook', function() {
+        Book.unhook('insert');
         Book.unhook('insert');
         var b = new Book({ pages: 5 });
         return b.$insert()
