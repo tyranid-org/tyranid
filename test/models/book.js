@@ -7,7 +7,8 @@ var Book = new tyr.Collection({
     _id: { is: 'integer' },
     isbn: { is: 'mongoid' }, // Pretend ISBNs are ObjectIds
     title: { is: 'string' },
-    description: { is: 'string' }
+    description: { is: 'string' },
+    pages: { is: 'integer' }
   },
   primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true }
 });

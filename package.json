@@ -1,6 +1,6 @@
 {
   "name": "tyranid",
-  "version": "0.0.78",
+  "version": "0.0.79",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/tyranid.js",
   "scripts": {
@@ -16,6 +16,7 @@
   "dependencies": {
     "babel": "^5.8.23",
     "babel-runtime": "^5.8.20",
+    "hooker": "^0.2.3",
     "lodash": "^3.9.3",
     "mongodb": "^1.4.3",
     "promised-mongo": "git+https://github.com/CrossLead/promised-mongo.git#ec25ae4219f8bb7a064b19353627545fcbbe759f"

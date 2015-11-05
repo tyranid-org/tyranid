@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import hooker from 'hooker';
 
 import Type from './Type';
 import { ObjectType } from '../builtins';
@@ -420,6 +421,54 @@ export default class Collection {
     );
   }
 
+  /**
+   * Register a plugin for this Collection. Similar API to Mongoose plugins:
+   * http://mongoosejs.com/docs/plugins.html
+   *
+   * Note that the hooks API *does* differ from Mongoose's
+   *
+   * @see hook
+   * @param  {Function} fn plugin callback
+   * @param  {Object} [opts]
+   * @return {Collection} self for chaining
+   */
+  plugin(fn, opts) {
+    fn(this, opts);
+    return this;
+  }
+
+  /**
+   * Add a pre hook
+   * 
+   * @param {string|Array} methods method name or array of method names to add pre hook
+   * @param {Function(next, ...args)} cb hook callback
+   * @param {Function} cb.next if modifying arguments, return next(modifiedArgs)
+   * @param {Array} cb.args original method args
+   * @return {Collection} self for chaining
+   */
+  pre(methods, cb) {
+    hooker.hook(this, methods, {
+      pre(...args) {
+        const next = (...cbArgs) => {
+          // hooker.filter() takes an args array (it uses Function.apply()
+          // behind the scenes)
+          return hooker.filter(this, cbArgs);
+        };
+        return this::cb(next, ...args);
+      }
+    });
+    return this;
+  }
+
+  /**
+   * Remove **all** hooks for a particular method
+   * @param  {tring|Array} [methods] Method or methods. Unhooks all methods if unspecified. 
+   * @return {Collection} self for chaining
+   */
+  unhook(methods) {
+    hooker.unhook(this, methods);
+    return this;
+  }
 
   /**
    * @opts: options ... options are:

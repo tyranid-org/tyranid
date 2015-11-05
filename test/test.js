@@ -740,5 +740,50 @@ describe('tyranid', function() {
       });
     });
 
+    describe('hooks and plugins', function() {
+      it( 'should support pre hooks', function() {
+        Book.pre('insert', (next, obj, ...otherArgs) => {
+          // Following is specific to this test, verifying args passed correctly
+          expect(obj.pages).to.be.eql(5);
+
+          // Add 2 pages for for front and back cover
+          obj.pages += 2;
+          return next(obj, ...otherArgs);
+        });
+
+        var b = new Book({ pages: 5 });
+        return b.$insert()
+          .then(function(newBook) {
+            expect(newBook.pages).to.be.eql(7);
+          });
+      });
+
+      it( 'should unhook', function() {
+        Book.unhook('insert');
+        var b = new Book({ pages: 5 });
+        return b.$insert()
+          .then(function(newBook) {
+            expect(newBook.pages).to.be.eql(5);
+          });
+      });
+
+      it( 'should support plugins', function() {
+        Book.plugin(function(collection, options) {
+          expect(collection).to.be.eql(Book);
+          expect(options.testOption).to.be.eql('test');
+
+          Book.def.timestamps = true;
+        }, { testOption: 'test' });
+
+        var b = new Book({ pages: 5 });
+        return b.$insert()
+          .then(function(newBook) {
+            expect(newBook.createdAt).to.exist;
+            expect(newBook.updatedAt).to.exist;
+          });
+      });
+
+    });
+
   });
 });
