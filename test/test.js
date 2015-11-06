@@ -239,6 +239,16 @@ describe('tyranid', function() {
         });
       });
 
+      it('should return a cursor', function() {
+        return Person.find().skip(1).limit(2).sort({'name.first':-1}).then(function(docs) {
+          expect(docs.length).to.be.eql(2);
+          expect(docs[0].name.first).to.be.eql('Jane');
+          expect(docs[1].name.first).to.be.eql('An');
+          expect(docs[0]).to.be.an.instanceof(Person);
+          expect(docs[1]).to.be.an.instanceof(Person);
+        });
+      });
+
       it('should findOne()', function() {
         return Person.findOne({'name.first': 'An'}).then(function(doc) {
           expect(doc).to.be.an.instanceof(Person);

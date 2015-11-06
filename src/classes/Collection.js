@@ -266,7 +266,7 @@ export default class Collection {
   /**
    * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
    */
-  async find(...args) {
+  find(...args) {
     const collection = this,
           db         = collection.db,
           projection = args[1];
@@ -275,12 +275,16 @@ export default class Collection {
       args[1] = parseProjection(collection, projection);
     }
 
-    const documents = await db.find(...args);
+    const cursor = db.find(...args);
 
-    return _(documents)
-      .map(doc => doc ? new collection(doc) : null)
-      .compact()
-      .value();
+    hooker.hook(cursor, 'next', {
+      post(promise) {
+        const modified = promise.then(doc => doc ? new collection(doc) : null);
+        return hooker.override(modified);
+      }
+    });
+
+    return cursor;
   }
 
   /**
