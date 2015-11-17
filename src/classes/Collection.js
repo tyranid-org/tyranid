@@ -373,9 +373,13 @@ export default class Collection {
           obj.updatedAt = new Date();
         }
 
+        // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
+        // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
+        const update = _.omit(obj, '_id');
+
         const result = await collection.findAndModify({
           query: { [collection.def.primaryKey.field]: obj[collection.def.primaryKey.field] },
-          update: obj,
+          update: update,
           upsert: true,
           new: true
         });
