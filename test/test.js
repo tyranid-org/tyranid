@@ -744,9 +744,15 @@ describe('tyranid', function() {
         expect(person.fullName).to.be.eql('Jane Smith');
       });
 
-      it( 'should work with toClient()', function() {
+      it( 'should work with CollectionInstance.toClient()', function() {
         var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
         expect(person.fullName).to.be.eql('Jane Smith');
+      });
+
+      it( 'should work with POJO toClient()', function() {
+        var person = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
+        var clientPerson = Person.toClient(person);
+        expect(clientPerson.fullName).to.be.eql('Jane Smith');
       });
     });
 

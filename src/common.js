@@ -120,7 +120,15 @@ export function toClient(col, data) {
   _.each(fields, function(field, name) {
     let  value, client;
     if (field.get && (client = field.client)) {
-      value = data[name];
+      if (name in data) {
+        // Property will have been set on CollectionInstances
+        value = data[name];
+      } else if( _.isFunction(field.get)) {
+        // Have to set manually for POJO
+        value = data::field.get();
+      } else {
+        throw new Error('Incorrect computed value definition: ' + name);
+      }
       if ( !_.isFunction(client) || client.call(data, value) ) {
         obj[name] = value;
       }
