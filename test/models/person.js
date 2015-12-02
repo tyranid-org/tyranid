@@ -40,7 +40,7 @@ var Person = new tyr.Collection({
       required: true,
       fields: {
         first: { is: 'string', as: 'First Name', required: true },
-        last:  { is: 'string', as: 'Last Name'  }
+        last:  { is: 'string', as: 'Last Name' }
       }
     },
 

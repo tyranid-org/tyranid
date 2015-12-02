@@ -148,11 +148,10 @@ export default class Collection {
 
     const db = def.db || config.db;
 
-    if ( !db ) {
-      throw new Error('The "db" parameter must be specified either in the Collection schema or in the Tyranid.config().');
+    if (db) {
+      CollectionInstance.db = db.collection(CollectionInstance.def.dbName);
     }
 
-    CollectionInstance.db = db.collection(CollectionInstance.def.dbName);
 
     collections.push(CollectionInstance);
 
@@ -233,7 +232,6 @@ export default class Collection {
     }
   }
 
-
   byLabel(n, forcePromise) {
     const collection = this,
           findName = collection.labelField,
@@ -270,7 +268,7 @@ export default class Collection {
     const collection = this,
           db         = collection.db,
           projection = args[1];
-    
+
     if (projection) {
       args[1] = parseProjection(collection, projection);
     }
@@ -447,7 +445,7 @@ export default class Collection {
 
   /**
    * Add a pre hook
-   * 
+   *
    * @param {string|Array} methods method name or array of method names to add pre hook
    * @param {Function(next, ...args)} cb hook callback
    * @param {Function} cb.next if modifying arguments, return next(modifiedArgs)
@@ -470,7 +468,7 @@ export default class Collection {
 
   /**
    * Add a post hook
-   * 
+   *
    * @param {string|Array} methods method name or array of method names to add post hook
    * @param {Function(next, result)} cb hook callback
    * @param {Function} cb.next if modifying result, return next(modifiedResult)
@@ -492,7 +490,7 @@ export default class Collection {
   /**
    * Remove hooks for a particular method. Needs to
    * be called once per pre/post() call.
-   * 
+   *
    * @param  {tring|Array} [methods] Method or methods. Unhooks all methods if unspecified.
    * @return {Collection} self for chaining
    */
@@ -640,10 +638,7 @@ export default class Collection {
     return toClient(this, data);
   }
 
-  validateSchema() {
-    const collection = this,
-          def = collection.def;
-
+  createValidator(collection, def) {
     const validator = {
       err(path, msg) {
         return new Error('Tyranid Schema Error| ' + def.name + (path ? path : '') + ': ' + msg);
@@ -730,6 +725,13 @@ export default class Collection {
       }
     };
 
+    return validator;
+  }
+
+  validateSchema() {
+    const collection = this;
+
+    const validator = collection.createValidator(collection, collection.def);
     validator.fields('', collection.def.fields);
 
     if (!collection.def.fields[collection.def.primaryKey.field]) {

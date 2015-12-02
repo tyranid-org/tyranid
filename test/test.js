@@ -140,7 +140,8 @@ describe('tyranid', function() {
   });
 
   describe( 'with model', function() {
-    var Job, Organization, Department, Person, Task, Role, Book;
+    var Job, Organization, Department, Person, Task, Role, Book,
+        TyrSchema, TyrSchemaType;
     //var Job2, Organization2, Department2, Person2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
     var BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
@@ -157,6 +158,9 @@ describe('tyranid', function() {
       Person = tyr.byName('person');
       Task = tyr.byName('task');
       Book = tyr.byName('book');
+      TyrSchema = tyr.byName('tyrSchema');
+      TyrSchemaType = tyr.byName('tyrSchemaType');
+      console.log('TyrSchema', TyrSchema);
 
       Role = require('./models/role.js'); // require to get extra link in prototype chain
 
@@ -206,6 +210,22 @@ describe('tyranid', function() {
           return Task.db.insert([
             { _id: 1, title: 'Write instance validation tests', assigneeUid: Person.idToUid(1), manual: BookIsbn },
           ]);
+        }),
+        TyrSchema.db.remove({}).then(function() {
+          return TyrSchema.db.insert([
+            {
+              collection: Person.id,
+              match: {
+                organization: 1
+              },
+              type: TyrSchemaType.PARTIAL._id,
+              def: {
+                fields: {
+                  acmeX: { is: 'integer' }
+                }
+              }
+            }
+          ]);
         })
       ]);
     });
@@ -218,11 +238,24 @@ describe('tyranid', function() {
           ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
+
       it('should support static  methods in ES6 class defs', function() {
         return Role.search('Admin').then(function(docs) {
           expect(docs[0].name).to.equal('Administrator');
         })
       })
+    });
+
+    describe('dynamic schemas', () => {
+      it( 'should support matching fieldsFor()', async () => {
+        const fields = await Person.fieldsFor({ organizationId: 1 });
+        expect(Object.values(fields).length).to.be.eql(16);
+      });
+
+      it( 'should support unmatching fieldsFor()', async () => {
+        const fields = await Person.fieldsFor({ organization: 2 });
+        expect(Object.values(fields).length).to.be.eql(15);
+      });
     });
 
     describe('finding', function() {
@@ -362,7 +395,10 @@ describe('tyranid', function() {
     });
 
     describe('values', function() {
-      var allString = [ '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering', 'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide' ];
+      var allString = [
+        '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
+        'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 't03'
+      ];
 
       it( 'should support valuesFor()', function() {
         Person.valuesFor(Person.fieldsBy({ name: 'string' })).then(function(values) {

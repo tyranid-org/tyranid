@@ -6,6 +6,7 @@ import Type from './classes/Type';
 import Collection from './classes/Collection';
 import ValidationError from './classes/ValidationError';
 
+import /*Schema from */ './schema';
 
 // variables shared between classes
 import {
@@ -95,7 +96,12 @@ const Tyranid = {
       throw new Error('Missing "db" in config.');
     }
 
-    this.db = opts.db;
+    const db = this.db = opts.db;
+    collections.forEach(collection => {
+      if (!collection.db) {
+        collection.db = db.collection(collection.def.dbName);
+      }
+    });
 
     if (opts.validate) {
       if (!Array.isArray(opts.validate)) {
@@ -157,7 +163,6 @@ const Tyranid = {
 
   byName(name) {
     const nameLower = name.toLowerCase();
-
     return _.find(collections, c => c.def.name.toLowerCase() === nameLower);
   },
 
@@ -165,13 +170,30 @@ const Tyranid = {
    * Mostly just used by tests.
    */
   reset() {
-    collections.length = 0;
+    function builtin(collection) {
+      return collection.def.name.startsWith('tyr');
+    }
+
+    for (let ci=0; ci<collections.length; ) {
+      const c = collections[ci];
+
+      if (!builtin(c)) {
+        collections.splice(ci);
+      } else {
+        ci++;
+      }
+    }
+
     for (const id in collectionsById) {
-      delete collectionsById[id];
+      const c = collectionsById[id];
+
+      if (!builtin(c)) {
+        delete collectionsById[id];
+      }
     }
     for (const name in typesByName) {
       const type = typesByName[name];
-      if (type instanceof Collection) {
+      if (type instanceof Collection && !builtin(type)) {
         delete typesByName[name];
       }
     }
