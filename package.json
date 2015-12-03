@@ -16,6 +16,7 @@
   "dependencies": {
     "babel": "^5.8.23",
     "babel-runtime": "^5.8.20",
+    "faker": "^3.0.1",
     "hooker": "^0.2.3",
     "lodash": "^3.9.3",
     "mongodb": "^1.4.3",
