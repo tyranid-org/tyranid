@@ -248,7 +248,7 @@ describe('tyranid', function() {
 
     describe('dynamic schemas', () => {
       it( 'should support matching fieldsFor()', async () => {
-        const fields = await Person.fieldsFor({ organizationId: 1 });
+        const fields = await Person.fieldsFor({ organization: 1 });
         expect(Object.values(fields).length).to.be.eql(16);
       });
 
