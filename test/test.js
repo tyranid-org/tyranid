@@ -871,6 +871,25 @@ describe('tyranid', function() {
           });
       });
 
+      describe( 'Fake data generation', function() {
+
+        const seed = 100;
+
+        it('faker: should successfully create valid document', async () => {
+          const fakeDoc = await Person.fake({ seed });
+          expect(fakeDoc, 'Fake document should be valid instance of person').to.be.instanceOf(Person);
+          fakeDoc.$validate();
+        });
+
+        it('faker: should produce same document given same seed', async () => {
+          const fakeDoc1 = JSON.stringify(await Person.fake({ seed }), null, 2),
+                fakeDoc2 = JSON.stringify(await Person.fake({ seed }), null, 2);
+
+          expect(fakeDoc2).to.deep.equal(fakeDoc1);
+        });
+
+      });
+
     });
 
   });
