@@ -114,13 +114,10 @@ function fakeField(field) {
 
   case 'link':
   case 'mongoid':
-    const idString = faker
-      .random
-      .uuid()
-      .replace(/-/g, '')
-      .slice(0, 24);
-
-    return ObjectId(idString);
+    let i = 24,
+        s = '';
+    while(i--) s += faker.random.number(15).toString(16);
+    return ObjectId(s);
 
   case 'boolean':
     return faker.random.boolean();
