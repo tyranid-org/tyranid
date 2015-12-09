@@ -185,8 +185,8 @@ describe('tyranid', function() {
           return Person.db.insert([
             { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
             { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
-                { name: 'Tom Doe', bestFriend: 1, friends: [ { person: 3 }, { person: 1 } ] },
-                { name: 'George Doe', friends: [ { person: 1 }, { person: 3 } ] }
+              { name: 'Tom Doe', bestFriend: 1, friends: [ { person: 3 }, { person: 1 } ] },
+              { name: 'George Doe', friends: [ { person: 1 }, { person: 3 } ] }
             ],
               age: 35,
               ageAppropriateSecret: 'Eats at Chipotle way to much...',
@@ -198,7 +198,8 @@ describe('tyranid', function() {
             ],
               age: 20,
               ageAppropriateSecret: 'Not a fan of construction companies...'
-            }
+            },
+            { _id: 4, organization: 2, name: { first: 'Jill', last: 'Doe' }, age: 20 }
           ]);
         }),
         Book.db.remove({}).then(function() {
@@ -239,7 +240,7 @@ describe('tyranid', function() {
         );
       });
 
-      it('should support static  methods in ES6 class defs', function() {
+      it('should support static methods in ES6 class defs', function() {
         return Role.search('Admin').then(function(docs) {
           expect(docs[0].name).to.equal('Administrator');
         })
@@ -248,7 +249,7 @@ describe('tyranid', function() {
 
     describe('dynamic schemas', () => {
       it( 'should support matching fieldsFor()', async () => {
-        const fields = await Person.fieldsFor({ organizationId: 1 });
+        const fields = await Person.fieldsFor({ organization: 1 });
         expect(Object.values(fields).length).to.be.eql(16);
       });
 
@@ -273,7 +274,7 @@ describe('tyranid', function() {
       });
 
       it('should return a cursor', function() {
-        return Person.find().skip(1).limit(2).sort({'name.first':-1}).then(function(docs) {
+        return Person.find().skip(2).limit(2).sort({'name.first':-1}).then(function(docs) {
           expect(docs.length).to.be.eql(2);
           expect(docs[0].name.first).to.be.eql('Jane');
           expect(docs[1].name.first).to.be.eql('An');
@@ -397,7 +398,7 @@ describe('tyranid', function() {
     describe('values', function() {
       var allString = [
         '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
-        'George Doe', 'Jane', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 't03'
+        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 't03'
       ];
 
       it( 'should support valuesFor()', function() {
@@ -432,7 +433,7 @@ describe('tyranid', function() {
     describe('population', function() {
 
       function verifyPeople(people) {
-        expect(people.length).to.eql(3);
+        expect(people.length).to.eql(4);
         var person1 = _.find(people, { _id: 1 });
         var person3 = _.find(people, { _id: 3 });
         expect(person1).to.be.an.instanceof(Person);
@@ -662,7 +663,7 @@ describe('tyranid', function() {
       });
     });
 
-    describe('update', function() {
+    describe('$update', function() {
       it( 'should update shallow', function() {
         return Person.byId(1)
           .then( function(savedPerson) {
@@ -678,6 +679,23 @@ describe('tyranid', function() {
                 expect(newPerson.title).to.be.eql('Developer');
               });
           });
+      });
+    });
+
+    describe('update', function() {
+      it( 'should update', async () => {
+        await Person.update({ _id: 4 }, { title: 'Software Engineer' });
+        const person = await Person.byId(4);
+        expect(person.title).to.be.eql('Software Engineer');
+      });
+    });
+
+    describe('remove', function() {
+      it( 'should remove', async () => {
+        const dale = new Person({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });
+        await dale.$save();
+        await Person.remove({ _id: 2001 });
+        expect(await Person.db.findOne({ _id: 2001 })).to.be.null;
       });
     });
 

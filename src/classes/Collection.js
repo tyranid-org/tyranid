@@ -36,7 +36,7 @@ const documentPrototype = {
   },
 
   $update() {
-    return this.$model.update(this);
+    return this.$model.updateDoc(this);
   },
 
   $toClient() {
@@ -494,7 +494,25 @@ export default class Collection {
     return collection.db.insert(insertObj);
   }
 
-  update(obj) {
+  /**
+   * Behaves like promised-mongo's update().
+   */
+  async update(query, update, opts) {
+    const collection = this;
+
+    if (collection.def.timestamps) {
+      update.$set = update.$set || {};
+      update.$set.updatedAt = new Date();
+    }
+
+    return await collection.db.update(query, update, opts);
+  }
+
+
+  /**
+   * Updates a single document.  Used to implement document.$update() for example. @see update() for regular mongodb update()
+   */
+  updateDoc(obj) {
     const def    = this.def,
           fields = this.def.fields;
     const setObj = {};
@@ -515,6 +533,13 @@ export default class Collection {
       { [def.primaryKey.field] : obj[def.primaryKey.field] },
       { $set : setObj }
     );
+  }
+
+  /**
+   * Behaves like promised-mongo's remove().
+   */
+  async remove(query, justOne) {
+    return await this.db.remove(query, justOne);
   }
 
   /**
