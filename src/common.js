@@ -32,9 +32,7 @@ export async function parseInsertObj(col, obj) {
   const def       = col.def,
         fields    = Object.assign({}, def.fields),
         insertObj = {},
-        // TODO: figure out how to retrieve Schema not using hard-coded id
-        // while avoiding circular dep
-        Schema    = Tyranid.byName('tyrSchema'),
+        Schema    = require('./schema').default,
         dynSchemas = await Schema.find({ collection: col.id });
 
   dynSchemas.forEach(dynSchema => {
