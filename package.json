@@ -28,7 +28,7 @@
     "chai-as-promised": "^5.1.0",
     "es6-promise": "^2.3.0",
     "gulp": "^3.9.0",
-    "gulp-babel": "6.1.1",
+    "gulp-babel": "5.2.1",
     "gulp-eslint": "^1.0.0",
     "gulp-mocha": "^2.1.1",
     "gulp-sourcemaps": "^1.5.2",
