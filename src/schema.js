@@ -32,7 +32,8 @@ const Schema = new Collection({
     collection: { is:   'string' },
     type:       { link: 'tyrSchemaType' },
     match:      { is:   'object' },
-    def:        { is:   'object' }
+    def:        { is:   'object' },
+    src:        { is:   'string' }
   },
   timestamps: true
 });
