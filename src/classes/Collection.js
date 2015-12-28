@@ -419,7 +419,7 @@ export default class Collection {
 
       if (opts.upsert) {
         const setOnInsertSrc = replaceEntireDoc ? update : update.$setOnInsert,
-              $setOnInsert = parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), setOnInsertSrc));
+              $setOnInsert = await parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), setOnInsertSrc));
 
         if (replaceEntireDoc) {
           update = $setOnInsert;
@@ -483,9 +483,9 @@ export default class Collection {
     await denormalPopulate(collection, obj, denormalAlreadyDone);
 
     if (Array.isArray(obj)) {
-      insertObj = _.map(obj, el => parseInsertObj(collection, el));
+      insertObj = await* _.map(obj, el => parseInsertObj(collection, el));
     } else {
-      insertObj = parseInsertObj(collection, obj);
+      insertObj = await parseInsertObj(collection, obj);
     }
 
     return collection.db.insert(insertObj);

@@ -28,10 +28,22 @@ export function pathAdd(path, add) {
 }
 
 
-export function parseInsertObj(col, obj) {
+export async function parseInsertObj(col, obj) {
   const def       = col.def,
-        fields    = def.fields,
-        insertObj = {};
+        fields    = Object.assign({}, def.fields),
+        insertObj = {},
+        // TODO: figure out how to retrieve Schema not using hard-coded id
+        // while avoiding circular dep
+        Schema    = Tyranid.byName('tyrSchema'),
+        dynSchemas = await Schema.find({ collection: col.id });
+
+  dynSchemas.forEach(dynSchema => {
+    if (_.matches(dynSchema.match)(obj)) {
+      _.each(dynSchema.def.fields, (field, name) => {
+        fields[name] = field;
+      });
+    }
+  });
 
   _.each(fields, function(field, name) {
     if (field.db !== false) {
@@ -53,7 +65,7 @@ export function parseInsertObj(col, obj) {
   }
 
   _.each(col.denormal, function(field, name) {
-    // TODO:  need to parse & process name it is a path (if it contains "."s)
+    // TODO:  need to parse & process name if it is a path (if it contains "."s)
     name = NamePath.populateNameFor(name, true);
     insertObj[name] = obj[name];
   });

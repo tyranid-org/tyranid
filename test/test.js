@@ -248,6 +248,11 @@ describe('tyranid', function() {
     });
 
     describe('dynamic schemas', () => {
+      const dynPersonId = 111;
+      afterEach(() => {
+        return Person.db.remove({ _id: dynPersonId });
+      });
+
       it( 'should support matching fieldsFor()', async () => {
         const fields = await Person.fieldsFor({ organization: 1 });
         expect(Object.values(fields).length).to.be.eql(16);
@@ -256,6 +261,18 @@ describe('tyranid', function() {
       it( 'should support unmatching fieldsFor()', async () => {
         const fields = await Person.fieldsFor({ organization: 2 });
         expect(Object.values(fields).length).to.be.eql(15);
+      });
+
+      it( 'should set dyn fields on insert for matching objects', async () => {
+        return Person.insert({ _id: dynPersonId, organization: 1, name: { first: 'Dynamic', last: 'Schema' }, acmeX: 999 }).then(p => {
+          expect(p.acmeX).to.be.eql(999);
+        });
+      });
+
+      it( 'should NOT set dyn fields on insert for unmatching objects', async () => {
+        return Person.insert({ _id: dynPersonId, organization: 2, name: { first: 'Not', last: 'Dynamic' }, acmeX: 999 }).then(p => {
+          expect(p.acmeX).to.not.exist;
+        });
       });
     });
 
