@@ -13,7 +13,7 @@ export const SchemaType = new Collection({
   enum: true,
   fields: {
     _id:  { is: 'integer' },
-    name: { is: 'string', label: true }
+    name: { is: 'string', labelField: true }
   },
   values: [
     [ '_id', 'name'    ],

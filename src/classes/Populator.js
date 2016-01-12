@@ -52,9 +52,10 @@ export default class Populator {
 
   async queryMissingIds() {
 
-    return await* _.map(this.cachesByColId, async(cache, colId) => {
+    return await* _.map(this.cachesByColId, async (cache, colId) => {
       const collection = collectionsById[colId],
-            idType = collection.def.fields[collection.def.primaryKey.field].is;
+            primaryKeyField = collection.def.primaryKey.field,
+            idType = collection.def.fields[primaryKeyField].is;
 
       const ids = [];
       _.each(cache, (v, k) => {
@@ -71,7 +72,7 @@ export default class Populator {
       const linkDocs = await collection.byIds(ids);
 
       linkDocs.forEach(doc => {
-        cache[doc[collection.def.primaryKey.field]] = doc;
+        cache[doc[primaryKeyField]] = doc;
       });
 
     });

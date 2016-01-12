@@ -6,7 +6,7 @@ var Job = new tyr.Collection({
   enum: true,
   fields: {
     _id:     { is: 'integer' },
-    name:    { is: 'string', label: true },
+    name:    { is: 'string', labelField: true },
     manager: { is: 'boolean' }
   },
   values: [

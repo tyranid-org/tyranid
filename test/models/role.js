@@ -6,7 +6,7 @@ const schema = {
   name: 'role',
   fields: {
     _id:     { is: 'mongoid' },
-    name:    { is: 'string', label: true },
+    name:    { is: 'string', labelField: true },
   }
 };
 

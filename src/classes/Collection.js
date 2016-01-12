@@ -315,7 +315,7 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return collection.find({ [this.def.primaryKey.field]: { $in: ids }});
+      return collection.find({ [this.def.primaryKey.field]: { $in: ids }}).toArray();
     }
   }
 
@@ -761,7 +761,7 @@ export default class Collection {
           throw validator.err('Invalid field definition, expected an object, got: ' + field);
         }
 
-        if (field.label) {
+        if (field.labelField) {
           collection.labelField = path.substring(1);
         }
 
@@ -851,7 +851,7 @@ export default class Collection {
     }
 
     if (collection.def.enum && !collection.labelField) {
-      throw new Error('Some string field must have the label property set if the collection is an enumeration.');
+      throw new Error('Some string field must have the label property set if the collection ' + collection.def.name + ' is an enumeration.');
     }
 
     this.validateValues();

@@ -160,7 +160,6 @@ describe('tyranid', function() {
       Book = tyr.byName('book');
       TyrSchema = tyr.byName('tyrSchema');
       TyrSchemaType = tyr.byName('tyrSchemaType');
-      console.log('TyrSchema', TyrSchema);
 
       Role = require('./models/role.js'); // require to get extra link in prototype chain
 
