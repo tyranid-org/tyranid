@@ -148,7 +148,7 @@ const Tyranid = {
 
     const strId = uid.substring(3);
 
-    const idType = col.def.fields[col.def.primaryKey.field].is;
+    const idType = col.def.fields[col.def.primaryKey.field].def.is;
 
     return {
       collection: col,

@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Field from './classes/Field';
 import Type from './classes/Type';
 import ValidationError from './classes/ValidationError';
 import { typesByName, validateUidCollection } from './common';
@@ -8,8 +9,8 @@ import { ObjectId } from 'promised-mongo';
 export const LinkType = new Type({
   name: 'link',
   fromClient(field, value) {
-    const linkField = field.link.def.fields[field.link.def.primaryKey.field];
-    return linkField.is.def.fromClient(linkField, value);
+    const linkField = field.def.link.def.fields[field.def.link.def.primaryKey.field];
+    return linkField.def.is.def.fromClient(linkField, value);
   },
   toClient(field, value) {
     return value ? (ObjectId.isValid(value.toString()) ? value.toString() : value) : value;
@@ -64,10 +65,9 @@ export const ArrayType = new Type({
   name: 'array',
   fromClient(field, value) {
     if (Array.isArray(value)) {
-      const ofField = field.of;
-      return value.map(function(v) {
-        return ofField.is.fromClient(ofField, v);
-      });
+      const ofField = field.def.of,
+            ofFieldDefIs = ofField.def.is;
+      return value.map(v => ofFieldDefIs.fromClient(ofField, v));
     } else {
       return value;
     }
@@ -75,11 +75,16 @@ export const ArrayType = new Type({
   validateSchema(validator, path, field) {
     let of = field.of;
 
+    if (of instanceof Field) {
+      return; // already validated
+    }
+
     if (!of) {
       throw validator.err(path, 'Missing "of" property on array definition');
     }
 
     if (_.isPlainObject(of)) {
+      of = field.of = new Field(of);
       validator.field(path, of);
     } else {
       of = typesByName[of];
@@ -87,7 +92,7 @@ export const ArrayType = new Type({
         throw validator.err(path, 'Unknown type for "of".');
       }
 
-      field.of = { is: of.def.name };
+      field.of = new Field({ is: of.def.name });
       validator.field(path, field.of);
     }
   }
@@ -100,7 +105,7 @@ export const ObjectType = new Type({
       return value;
     }
 
-    const fields = field.fields;
+    const fields = field.def.fields;
 
     if (!_.size(fields)) {
       // this is defined as just an empty object, meaning it's 100% dynamic, grab everything
@@ -113,11 +118,11 @@ export const ObjectType = new Type({
         const field = fields[k];
 
         if (field) {
-          if (!field.is ) {
+          if (!field.def.is ) {
             throw new Error('collection missing type ("is"), missing from schema?');
           }
 
-          obj[k] = field.is.fromClient(field, v);
+          obj[k] = field.def.is.fromClient(field, v);
         }
       });
 
@@ -125,13 +130,17 @@ export const ObjectType = new Type({
     }
 
   },
-  validate(path, def, obj) {
+  validate(path, field, obj) {
     const errors = [];
 
     if (obj) {
-      _.each(def.fields, function(field, fieldName) {
-        if (!field.get) {
-          const error = field.is.validate(path + '.' + fieldName, field, obj[fieldName]);
+      _.each(field.def.fields, function(field, fieldName) {
+        const fieldDef = field.def;
+
+        if (!fieldDef.get) {
+          const fieldDefIs = fieldDef.is;
+
+          const error = fieldDefIs.validate(path + '.' + fieldName, field, obj[fieldName]);
 
           if (error instanceof ValidationError) {
             errors.push(error);

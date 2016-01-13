@@ -17,44 +17,43 @@ export function setFalse(v) {
   return v !== undefined && !v;
 }
 
-
 export function escapeRegex(str) {
   return str.replace(metaRegex, '\\$&');
 }
-
 
 export function pathAdd(path, add) {
   return path ? path + '.' + add : add;
 }
 
+export function labelize(name) {
+
+  // TODO:  more cases to be added here later on
+  return _.startCase(name);
+}
 
 export async function parseInsertObj(col, obj) {
   const def       = col.def,
-        fields    = Object.assign({}, def.fields),
-        insertObj = {},
-        Schema    = require('./schema').default,
-        dynSchemas = await Schema.find({ collection: col.id });
-
-  dynSchemas.forEach(dynSchema => {
-    if (_.matches(dynSchema.match)(obj)) {
-      _.each(dynSchema.def.fields, (field, name) => {
-        fields[name] = field;
-      });
-    }
-  });
+        fields    = await col.fieldsFor(obj),
+        insertObj = {};
 
   _.each(fields, function(field, name) {
-    if (field.db !== false) {
-      if (obj[name] === undefined && field.defaultValue !== undefined) {
-        insertObj[name] = field.defaultValue;
+    const fieldDef = field.def;
+
+    if (fieldDef.db !== false) {
+      const v = obj[name];
+
+      if (v === undefined) {
+        if (fieldDef.defaultValue !== undefined) {
+          insertObj[name] = fieldDef.defaultValue;
+        }
       } else {
-        insertObj[name] = obj[name];
+        insertObj[name] = v;
       }
     }
   });
 
   if (insertObj[def.primaryKey.field] === undefined) {
-    const type = fields[def.primaryKey.field].is;
+    const type = fields[def.primaryKey.field].def.is;
     insertObj[def.primaryKey.field] = type.generatePrimaryKeyVal();
   }
 
@@ -105,7 +104,7 @@ export function toClient(col, data) {
     let field;
 
     if (fields && (field=fields[k])) {
-      v = field.is.toClient(field, v, data);
+      v = field.def.is.toClient(field, v, data);
 
       if (v !== undefined) {
         obj[k] = v;
@@ -129,13 +128,14 @@ export function toClient(col, data) {
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   _.each(fields, function(field, name) {
     let  value, client;
-    if (field.get && (client = field.client)) {
+    const fieldDef = field.def;
+    if (fieldDef.get && (client = fieldDef.client)) {
       if (name in data) {
         // Property will have been set on CollectionInstances
         value = data[name];
-      } else if( _.isFunction(field.get)) {
+      } else if( _.isFunction(fieldDef.get)) {
         // Have to set manually for POJO
-        value = data::field.get();
+        value = data::fieldDef.get();
       } else {
         throw new Error('Incorrect computed value definition: ' + name);
       }

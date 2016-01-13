@@ -55,7 +55,7 @@ export default class Populator {
     return await* _.map(this.cachesByColId, async (cache, colId) => {
       const collection = collectionsById[colId],
             primaryKeyField = collection.def.primaryKey.field,
-            idType = collection.def.fields[primaryKeyField].is;
+            idType = collection.def.fields[primaryKeyField].def.is;
 
       const ids = [];
       _.each(cache, (v, k) => {

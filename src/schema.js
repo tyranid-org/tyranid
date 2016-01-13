@@ -53,16 +53,17 @@ Collection.prototype.fieldsFor = async function(obj) {
             validator  = this.createValidator(collection, def);
 
       validator.fields('', def.fields);
+
+      schema.objMatcher = _.matches(schema.match);
     });
   }
 
-  const objMatch = _.matches(obj),
-        fields = {};
+  const fields = {};
 
   _.assign(fields, this.def.fields);
 
   schemaCache.forEach(schema => {
-    if (schema.collection === this.id && objMatch(schema.match)) {
+    if (schema.collection === this.id && schema.objMatcher(obj)) {
       _.each(schema.def.fields, (field, name) => {
         fields[name] = field;
       });

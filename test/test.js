@@ -7,7 +7,8 @@ var tyr            = require('../src/tyranid'),
     chaiAsPromised = require('chai-as-promised'),
     pmongo         = require('promised-mongo'),
     expect         = chai.expect,
-    _              = require('lodash');
+    _              = require('lodash'),
+    Field          = require('../src/classes/Field');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -116,6 +117,11 @@ describe('tyranid', function() {
       }).to.throw( /Unknown field definition/i );
     });
 
+    /*
+       Tyranid modifies field definitions with backreferences so therefore the defs are not reusable.
+
+       However, you can still clone definitions before passing them on to Tyranid.
+     */
     it( 'should support re-usable bits of metadata', function() {
       tyr.reset();
       expect(function() {
@@ -131,8 +137,8 @@ describe('tyranid', function() {
           name: 'test',
           fields: {
             _id: { is: 'mongoid' },
-            one: Meta,
-            two: Meta
+            one: _.cloneDeep(Meta),
+            two: _.cloneDeep(Meta)
           }
         });
       }).to.not.throw();
@@ -355,6 +361,18 @@ describe('tyranid', function() {
       });
     });
 
+    describe('fields', function() {
+      it('model fields should be an instanceof Field', function() {
+        expect(Job.def.fields.manager instanceof Field).to.be.eql(true);
+      });
+
+      it('model fields should have name and path fields', function() {
+        expect(Job.def.fields.manager.name).to.be.eql('manager');
+        expect(Person.def.fields.name.def.fields.first.name).to.be.eql('first');
+        expect(Person.def.fields.name.def.fields.first.path).to.be.eql('name.first');
+      });
+    });
+
     describe('labels', function() {
       it('should byLabel() on static collections', function() {
         expect(Job.byLabel('Designer')._id).to.be.eql(3);
@@ -373,9 +391,20 @@ describe('tyranid', function() {
         });
       });
 
-      it('should support $label', function() {
+      it('should support $label on instances', function() {
         expect(Job.byLabel('Designer').$label).to.be.eql('Designer');
         expect(Job.byLabel('Software Lead').$label).to.be.eql('Software Lead');
+      });
+
+      it('should support label on collections', function() {
+        expect(Job.label).to.be.eql('Job');
+        expect(Task.label).to.be.eql('Issue');
+      });
+
+      it('should support label on fields', function() {
+        expect(Job.def.fields.manager.label).to.be.eql('Manager');
+        expect(Task.def.fields.assigneeUid.label).to.be.eql('Assignee UID');
+        expect(Person.def.fields.birthDate.label).to.be.eql('Dyn Birth Date');
       });
     });
 
@@ -742,7 +771,6 @@ describe('tyranid', function() {
 
       it( 'should return validate errors on invalid data', function() {
         var person = new Person({ age: 5.1 });
-
         expect(person.$validate().length).to.be.eql(2);
       });
     });

@@ -19,12 +19,12 @@ export default class Type {
   }
 
   validate(path, field, value) {
-    if (field.required && value === undefined) {
+    if (field.def.required && value === undefined) {
       return new ValidationError(path, 'is required');
     }
 
-    const f = this.def.validate;
-    return f ? f(path, field, value) : undefined;
+    const fn = this.def.validate;
+    return fn ? fn(path, field, value) : undefined;
   }
 
   generatePrimaryKeyVal() {
@@ -50,7 +50,7 @@ export default class Type {
 
     const def = this.def,
           dClient = def.client,
-          fClient = field.client;
+          fClient = field.def.client;
 
     if (_.isFunction(dClient) && !dClient.call(data, value)) {
       return undefined;

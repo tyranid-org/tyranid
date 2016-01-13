@@ -11,7 +11,7 @@ export default class NamePath {
     const path = this.path = pathName.length ? pathName.split('.') : [],
           plen = path.length,
           defs = this.defs = new Array(plen);
-          
+
     let def = collection.def;
 
     for (let pi=0; pi<plen; pi++) {
@@ -25,9 +25,9 @@ export default class NamePath {
         );
       }
 
-      def = def.fields[name];
+      def = def.fields[name].def;
       while (def.is.def.name === 'array') {
-        def = def.of;
+        def = def.of.def;
       }
 
       if (!def) {

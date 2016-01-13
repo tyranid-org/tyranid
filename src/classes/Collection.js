@@ -7,6 +7,7 @@ import { ObjectType } from '../builtins';
 import Population from './Population';
 import Populator from './Populator';
 import NamePath from './NamePath';
+import Field from './Field';
 
 // variables shared between classes
 import {
@@ -15,6 +16,7 @@ import {
   collectionsById ,
   typesByName     ,
   escapeRegex     ,
+  labelize        ,
   pathAdd         ,
   parseInsertObj  ,
   parseProjection ,
@@ -48,7 +50,7 @@ const documentPrototype = {
   },
 
   $validate() {
-    return ObjectType.validate('', this.$model.def, this);
+    return ObjectType.validate('', this.$model, this);
   }
 
 };
@@ -267,6 +269,10 @@ export default class Collection {
     });
 
     return CollectionInstance;
+  }
+
+  get label() {
+    return _.result(this.def, 'label') || labelize(this.def.name);
   }
 
   async fake({ n, schemaOpts, seed } = {}) {
@@ -515,7 +521,9 @@ export default class Collection {
     const setObj = {};
 
     _.each(fields, (field, name) => {
-      if (field.db !== false) {
+      const fieldDef = field.def;
+
+      if (fieldDef.db !== false) {
         if (obj[name] !== undefined && name !== '_id' && name !== def.primaryKey.field) {
           setObj[name] = obj[name];
         }
@@ -645,19 +653,20 @@ export default class Collection {
     const cb = _.callback(comparable);
 
     function fieldsBy(path, val) {
+      const def = val.def;
 
-      if (val.is) {
-        if (val.is.def.name === 'object') {
-          const fields = val.fields;
+      if (def && def.is) {
+        if (def.is.def.name === 'object') {
+          const fields = def.fields;
           if (fields) {
             fieldsBy(path, fields);
           }
 
-        } else if (val.is.def.name === 'array') {
-          fieldsBy(path, val.of);
+        } else if (def.is.def.name === 'array') {
+          fieldsBy(path, def.of);
 
-        } else if (val.is.def){
-          if (cb(val.is.def)) {
+        } else if (def.is.def){
+          if (cb(def.is.def)) {
             results.push(path);
           }
         }
@@ -672,15 +681,14 @@ export default class Collection {
     return results;
   }
 
-  async valuesFor(fields) {
-    const collection = this;
+  async valuesFor(fieldNames) {
+    const collection = this,
+          colFields = collection.def.fields;
 
     const fieldsObj = { _id: 0 };
 
-    _.each(fields, field => {
-      if (field.db !== false) {
-        fieldsObj[field] = 1;
-      }
+    _.each(fieldNames, fieldName => {
+      fieldsObj[fieldName] = 1;
     });
 
     const values = [];
@@ -731,11 +739,13 @@ export default class Collection {
       const field = fields[k];
 
       if (field) {
-        if (!field.is) {
+        const is = field.def.is;
+
+        if (!is) {
           throw new Error('collection missing type ("is"), missing from schema?');
         }
 
-        obj[k] = field.is.fromClient(field, v);
+        obj[k] = is.fromClient(field, v);
       }
     });
 
@@ -757,62 +767,69 @@ export default class Collection {
       },
 
       field(path, field) {
-        if (!_.isObject(field)) {
-          throw validator.err('Invalid field definition, expected an object, got: ' + field);
+        const fieldDef = field.def;
+        if (!_.isObject(fieldDef)) {
+          throw validator.err('Invalid field definition, expected an object, got: ' + fieldDef);
         }
 
-        if (field.labelField) {
+        if (fieldDef.labelField) {
           collection.labelField = path.substring(1);
         }
 
+        // Store the field path and name on the field itself to support methods on Field
+        field.path = path.substring(1);
+        const lastDot = path.lastIndexOf('.');
+        const fieldName = path.substring(lastDot+1);
+        field.name = fieldName;
+
         let type;
-        if (field.is) {
-          if (_.isString(field.is)) {
-            type = typesByName[field.is];
+        if (fieldDef.is) {
+          if (_.isString(fieldDef.is)) {
+            type = typesByName[fieldDef.is];
 
             if (!type) {
-              throw validator.err(path, 'Unknown type ' + field.is);
+              throw validator.err(path, 'Unknown type ' + fieldDef.is);
             }
 
             if (type instanceof Collection) {
-              throw validator.err(path, 'Trying to "is" a collection -- ' + field.is + ', either make it a "link" or a metadata snippet');
+              throw validator.err(path, 'Trying to "is" a collection -- ' + fieldDef.is + ', either make it a "link" or a metadata snippet');
             }
 
-            field.is = type;
+            fieldDef.is = type;
 
-            type.validateSchema(validator, path, field);
+            type.validateSchema(validator, path, fieldDef);
 
-            if (type.def.name === 'object' && field.fields) {
-              validator.fields(path, field.fields);
+            if (type.def.name === 'object' && fieldDef.fields) {
+              validator.fields(path, fieldDef.fields);
             }
-          } else if (!_.isObject(field.is) || !field.is.def) {
-            throw validator.err(path, 'Expected field.is to be a string or a type, got: ' + field.is);
+          } else if (!_.isObject(fieldDef.is) || !fieldDef.is.def) {
+            throw validator.err(path, 'Expected field.is to be a string or a type, got: ' + fieldDef.is);
           }
-        } else if (field.link) {
-          type = typesByName[field.link];
+        } else if (fieldDef.link) {
+          type = typesByName[fieldDef.link];
 
           if (!type) {
-            throw validator.err(path, 'Unknown type ' + field.link);
+            throw validator.err(path, 'Unknown type ' + fieldDef.link);
           }
 
           if (!(type instanceof Collection)) {
-            throw validator.err(path, 'Links must link to a collection, instead linked to ' + field.link);
+            throw validator.err(path, 'Links must link to a collection, instead linked to ' + fieldDef.link);
           }
 
-          field.is = typesByName.link;
-          field.link = type;
+          fieldDef.is = typesByName.link;
+          fieldDef.link = type;
 
         } else {
           throw validator.err('Unknown field definition at ' + path);
         }
 
-        if (field.denormal) {
-          if (!field.link) {
+        if (fieldDef.denormal) {
+          if (!fieldDef.link) {
             throw validator.err(path, '"denormal" is only a valid option on links');
           }
 
           const denormal = collection.denormal = collection.denormal || {};
-          denormal[path.substring(1)] = field.denormal;
+          denormal[path.substring(1)] = fieldDef.denormal;
         }
 
       },
@@ -826,10 +843,17 @@ export default class Collection {
           throw validator.err(path, '"fields" should be an object, got: ' + val);
         }
 
-        _.each(val, function(field, name) {
+        _.each(_.keys(val), function(name) {
+          let field = val[name];
+
           if (_.isString(field)) {
-            val[name] = field = { is: field };
+            field = { is: field };
+          } else if (field instanceof Field) {
+            // it's already been parsed
+            return;
           }
+
+          field = val[name] = new Field(field);
 
           return validator.field(path + '.' + name, field);
         });
@@ -961,6 +985,4 @@ export default class Collection {
       byIdIndex[doc[collection.def.primaryKey.field]] = doc;
     });
   }
-
-
 }
