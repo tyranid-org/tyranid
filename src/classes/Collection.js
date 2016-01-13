@@ -308,7 +308,7 @@ export default class Collection {
 
     } else {
       if (typeof id === 'string') {
-        id = this.def.fields[this.def.primaryKey.field].is.fromString(id);
+        id = this.def.fields[this.def.primaryKey.field].def.is.fromString(id);
       }
 
       return this.findOne({ [this.def.primaryKey.field]: id });

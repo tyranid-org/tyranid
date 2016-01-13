@@ -326,6 +326,13 @@ describe('tyranid', function() {
         });
       });
 
+      it('should byId() with string conversions', function() {
+        return Person.byId('1').then(function(doc) {
+          expect(doc).to.be.an.instanceof(Person);
+          expect(doc._id).to.be.eql(1);
+        });
+      });
+
       it('should byId() with custom primaryKey', function() {
         return Book.byId(BookIsbn).then(function(doc) {
           expect(doc).to.be.an.instanceof(Book);
