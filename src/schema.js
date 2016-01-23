@@ -11,6 +11,7 @@ export const SchemaType = new Collection({
   id: '_t0',
   name: 'tyrSchemaType',
   enum: true,
+  client: false,
   fields: {
     _id:  { is: 'integer' },
     name: { is: 'string', labelField: true }
@@ -27,6 +28,7 @@ export const SchemaType = new Collection({
 const Schema = new Collection({
   id: '_t1',
   name: 'tyrSchema',
+  client: false,
   fields: {
     _id:        { is:   'mongoid' },
     collection: { is:   'string' },
@@ -49,10 +51,10 @@ Collection.prototype.fieldsFor = async function(obj) {
 
     schemaCache.forEach(schema => {
       const collection = collectionsById[schema.collection],
-            def        = schema.def,
-            validator  = this.createValidator(collection, def);
+            def        = schema.def;
 
-      validator.fields('', def.fields);
+      this.createCompiler(collection, def, 'compile').fields('', def.fields);
+      this.createCompiler(collection, def, 'link').fields('', def.fields);
 
       schema.objMatcher = _.matches(schema.match);
     });

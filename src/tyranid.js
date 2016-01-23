@@ -127,7 +127,7 @@ const Tyranid = {
     }
 
     collections.forEach(col => {
-      col.validateSchema();
+      col.compile('link');
     });
   },
 

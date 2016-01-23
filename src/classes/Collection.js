@@ -268,6 +268,9 @@ export default class Collection {
       }
     });
 
+    CollectionInstance.compile('compile');
+    CollectionInstance.validateValues();
+
     return CollectionInstance;
   }
 
@@ -760,8 +763,9 @@ export default class Collection {
     return toClient(this, data);
   }
 
-  createValidator(collection, def) {
-    const validator = {
+  createCompiler(collection, def, stage) {
+    const compiler = {
+      stage: stage,
       err(path, msg) {
         return new Error('Tyranid Schema Error| ' + def.name + (path ? path : '') + ': ' + msg);
       },
@@ -769,7 +773,7 @@ export default class Collection {
       field(path, field) {
         const fieldDef = field.def;
         if (!_.isObject(fieldDef)) {
-          throw validator.err('Invalid field definition, expected an object, got: ' + fieldDef);
+          throw compiler.err('Invalid field definition, expected an object, got: ' + fieldDef);
         }
 
         if (fieldDef.labelField) {
@@ -783,49 +787,58 @@ export default class Collection {
         field.name = fieldName;
 
         let type;
-        if (fieldDef.is) {
-          if (_.isString(fieldDef.is)) {
+        if (fieldDef.link) {
+
+          if (_.isString(fieldDef.link)) {
+            type = typesByName[fieldDef.link];
+          } else {
+            type = fieldDef.link;
+          }
+
+          if (type || stage === 'link') {
+            if (!type) {
+              throw compiler.err(path, 'Unknown type ' + fieldDef.link);
+            }
+
+            if (!(type instanceof Collection)) {
+              throw compiler.err(path, 'Links must link to a collection, instead linked to ' + fieldDef.link);
+            }
+
+            fieldDef.is = typesByName.link;
+            fieldDef.link = type;
+          }
+        } else if (fieldDef.is) {
+          type = fieldDef.is;
+          if (_.isString(type)) {
             type = typesByName[fieldDef.is];
 
-            if (!type) {
-              throw validator.err(path, 'Unknown type ' + fieldDef.is);
-            }
-
             if (type instanceof Collection) {
-              throw validator.err(path, 'Trying to "is" a collection -- ' + fieldDef.is + ', either make it a "link" or a metadata snippet');
+              throw compiler.err(path, 'Trying to "is" a collection -- ' + fieldDef.is + ', either make it a "link" or a metadata snippet');
             }
 
-            fieldDef.is = type;
+            if (type) {
+              fieldDef.is = type;
+            }
+          }
 
-            type.validateSchema(validator, path, fieldDef);
+          if (type) {
+            type.compile(compiler, path, fieldDef);
 
             if (type.def.name === 'object' && fieldDef.fields) {
-              validator.fields(path, fieldDef.fields);
+              compiler.fields(path, fieldDef.fields);
             }
+
           } else if (!_.isObject(fieldDef.is) || !fieldDef.is.def) {
-            throw validator.err(path, 'Expected field.is to be a string or a type, got: ' + fieldDef.is);
+            throw compiler.err(path, 'Expected field.is to be a string or a type, got: ' + fieldDef.is);
           }
-        } else if (fieldDef.link) {
-          type = typesByName[fieldDef.link];
-
-          if (!type) {
-            throw validator.err(path, 'Unknown type ' + fieldDef.link);
-          }
-
-          if (!(type instanceof Collection)) {
-            throw validator.err(path, 'Links must link to a collection, instead linked to ' + fieldDef.link);
-          }
-
-          fieldDef.is = typesByName.link;
-          fieldDef.link = type;
 
         } else {
-          throw validator.err('Unknown field definition at ' + path);
+          throw compiler.err('Unknown field definition at ' + path);
         }
 
         if (fieldDef.denormal) {
           if (!fieldDef.link) {
-            throw validator.err(path, '"denormal" is only a valid option on links');
+            throw compiler.err(path, '"denormal" is only a valid option on links');
           }
 
           const denormal = collection.denormal = collection.denormal || {};
@@ -836,11 +849,11 @@ export default class Collection {
 
       fields(path, val) {
         if (!val) {
-          throw validator.err(path, 'Missing "fields"');
+          throw compiler.err(path, 'Missing "fields"');
         }
 
         if (!_.isObject(val)) {
-          throw validator.err(path, '"fields" should be an object, got: ' + val);
+          throw compiler.err(path, '"fields" should be an object, got: ' + val);
         }
 
         _.each(_.keys(val), function(name) {
@@ -848,27 +861,24 @@ export default class Collection {
 
           if (_.isString(field)) {
             field = { is: field };
-          } else if (field instanceof Field) {
-            // it's already been parsed
-            return;
+          } else if (!(field instanceof Field)) {
+            field = val[name] = new Field(field);
           }
 
-          field = val[name] = new Field(field);
-
-          return validator.field(path + '.' + name, field);
+          return compiler.field(path + '.' + name, field);
         });
 
       }
     };
 
-    return validator;
+    return compiler;
   }
 
-  validateSchema() {
+  compile(stage) {
     const collection = this;
 
-    const validator = collection.createValidator(collection, collection.def);
-    validator.fields('', collection.def.fields);
+    const compiler = collection.createCompiler(collection, collection.def, stage);
+    compiler.fields('', collection.def.fields);
 
     if (!collection.def.fields[collection.def.primaryKey.field]) {
       throw new Error('Collection ' + collection.def.name + ' is missing a "' + collection.def.primaryKey.field + '" primary key field.');
@@ -877,8 +887,6 @@ export default class Collection {
     if (collection.def.enum && !collection.labelField) {
       throw new Error('Some string field must have the label property set if the collection ' + collection.def.name + ' is an enumeration.');
     }
-
-    this.validateValues();
   }
 
   validateValues() {

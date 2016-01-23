@@ -37,7 +37,9 @@ describe('tyranid', function() {
       expect(function() {
         new tyr.Collection({
           id: 't00',
-          fields: {}
+          fields: {
+            _id:     { is: 'mongoid' },
+          }
         });
       }).to.throw();
     });
@@ -47,21 +49,32 @@ describe('tyranid', function() {
         new tyr.Collection({
           id: 't00',
           name: 3,
-          fields: {}
+          fields: {
+            _id:     { is: 'mongoid' },
+          }
         });
       }).to.throw();
     });
 
+    /*
+     * This test is disabled because we now require a collection to have a primary key field defined.
+     * Possibly this decision will be reversed if we find a use case where it is valid.
+     *
     it( 'should accept a present but empty fields array', function() {
       expect(function() {
+        try {
         new tyr.Collection({
           id: 't00',
           name: 'test',
           fields: {
           }
         });
+      } catch (err) {
+        console.log(err);
+      }
       }).to.not.throw();
     });
+     */
 
     it( 'should throw if arrays do not contain a single value', function() {
       expect(function() {

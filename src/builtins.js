@@ -19,7 +19,7 @@ export const LinkType = new Type({
 
 export const UidType = new Type({
   name: 'uid',
-  validateSchema (validator, path, field) {
+  compile(compiler, path, field) {
     const of = field.of;
 
     if (!of) {
@@ -28,10 +28,10 @@ export const UidType = new Type({
 
     if (Array.isArray(of)) {
       _.each(of, function(v /*,k*/ ) {
-        validateUidCollection(validator, path, v);
+        validateUidCollection(compiler, path, v);
       });
     } else {
-      validateUidCollection(validator, path, of);
+      validateUidCollection(compiler, path, of);
     }
   }
 });
@@ -72,28 +72,28 @@ export const ArrayType = new Type({
       return value;
     }
   },
-  validateSchema(validator, path, field) {
+  compile(compiler, path, field) {
     let of = field.of;
 
-    if (of instanceof Field) {
-      return; // already validated
-    }
-
     if (!of) {
-      throw validator.err(path, 'Missing "of" property on array definition');
+      throw compiler.err(path, 'Missing "of" property on array definition');
     }
 
     if (_.isPlainObject(of)) {
       of = field.of = new Field(of);
-      validator.field(path, of);
-    } else {
+    } else if (_.isString(of)) {
       of = typesByName[of];
       if (!of) {
-        throw validator.err(path, 'Unknown type for "of".');
+        if (compiler.stage === 'link') {
+          throw compiler.err(path, 'Unknown type for "of".');
+        }
+      } else {
+        field.of = new Field({ is: of.def.name });
       }
+    }
 
-      field.of = new Field({ is: of.def.name });
-      validator.field(path, field.of);
+    if (field.of instanceof Field) {
+      compiler.field(path, field.of);
     }
   }
 });

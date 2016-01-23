@@ -11,10 +11,17 @@ export default class Type {
     Type.validateType(this);
   }
 
-  validateSchema(validator, path, field) {
-    const v = this.def.validateSchema;
+  compile(compiler, path, field) {
+    const v = this.def.compile;
     if (v) {
-      v(validator, path, field);
+      v(compiler, path, field);
+    }
+  }
+
+  link(linker, path, field) {
+    const v = this.def.link;
+    if (v) {
+      v(linker, path, field);
     }
   }
 
