@@ -16,7 +16,11 @@ export default function(app, auth) {
   //        call to be eliminated and for the file to be bundled using the client applications
   //        bundling process.  This would also allow splitting up the constant source code into
   //        its own file and also permit using ES6/ES7/etc.
+  //
+  //        NOTE that if it is exposed as a build task, then dynamic schema metadata will still
+  //        need to be handled!
 
+  // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
 (function() {
   var Tyr = window.Tyr = {},
@@ -81,8 +85,15 @@ export default function(app, auth) {
   }
   Tyr.Field = Field;
 
-  Field.prototype.labels = function() {
-    // TODO
+  Field.prototype.labels = function(text) {
+
+    return ajax({
+      url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (text || '')
+    //}).then(function(docs) {
+      //return docs.map(function(doc) { return new col(doc); });
+    }).catch(function(err) {
+      console.log(err);
+    });
   };
 
 
@@ -140,6 +151,7 @@ export default function(app, auth) {
         var p = path ? path + '.' + name : name;
         field.name = name;
         field.path = p;
+        field.collection = CollectionInstance;
         fbp[p] = field;
         vField(p, field);
       });
@@ -473,13 +485,47 @@ Collection.prototype.express = function(app, auth) {
               [col.labelField]: new RegExp(req.params.search, 'i')
             };
 
-            console.log('query', query);
             const results = await col.find(query, { [col.labelField]: 1 });
-            console.log('results', results.map(r => r.$toClient()));
             res.json(results.map(r => r.$toClient()));
           } catch(err) {
             console.log(err.stack);
             res.sendStatus(500);
+          }
+        });
+      }
+
+
+      /*
+       *     /api/NAME/FIELD_PATH/label/:search
+       */
+
+      if (express.rest || express.get) {
+        _.each(col.fields, field => {
+          const to = field.def.link;
+          if (to && to.labelField) {
+            r = app.route('/api/' + name + '/' + field.path + '/label/:search?');
+            r.all(auth);
+            r.get(async (req, res) => {
+              try {
+                const query = {};
+
+                const search = req.params.search;
+                if (search) {
+                  query[to.labelField] = new RegExp(search, 'i');
+                }
+
+                const where = field.def.where;
+                if (where) {
+                  _.assign(query, where);
+                }
+
+                const results = await to.find(query, { [to.labelField]: 1 });
+                res.json(results.map(r => r.$toClient()));
+              } catch(err) {
+                console.log(err.stack);
+                res.sendStatus(500);
+              }
+            });
           }
         });
       }
