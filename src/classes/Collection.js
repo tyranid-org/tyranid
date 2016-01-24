@@ -685,8 +685,7 @@ export default class Collection {
   }
 
   async valuesFor(fieldNames) {
-    const collection = this,
-          colFields = collection.def.fields;
+    const collection = this;
 
     const fieldsObj = { _id: 0 };
 

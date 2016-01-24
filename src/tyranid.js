@@ -4,6 +4,7 @@ import fs from 'fs';
 import './builtins';
 import Type from './classes/Type';
 import Collection from './classes/Collection';
+import Field from './classes/Field';
 import ValidationError from './classes/ValidationError';
 
 import /*Schema from */ './schema';
@@ -80,6 +81,7 @@ const Tyranid = {
   $all,
   Collection,
   collections,
+  Field,
 
 
   /**
