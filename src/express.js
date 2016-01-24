@@ -1,9 +1,10 @@
 
-import Tyr from './tyranid';
 import _   from 'lodash';
 
-Tyr.express = function(app, auth) {
-  const collections = Tyr.collections;
+import { collections } from './common';
+import Collection from './classes/Collection';
+
+export default function(app, auth) {
 
   /*
    *     /api/tyranid
@@ -353,7 +354,7 @@ Tyr.express = function(app, auth) {
   collections.forEach(col => col.express(app, auth));
 };
 
-Tyr.Collection.prototype.express = function(app, auth) {
+Collection.prototype.express = function(app, auth) {
   const col     = this,
         express = col.def.express;
 

@@ -7,6 +7,8 @@ import Collection from './classes/Collection';
 import Field from './classes/Field';
 import ValidationError from './classes/ValidationError';
 
+import express from './express';
+
 import /*Schema from */ './schema';
 
 // variables shared between classes
@@ -72,7 +74,6 @@ import {
 
 const Tyranid = {
 
-
   /**
    * Properties
    */
@@ -82,6 +83,7 @@ const Tyranid = {
   Collection,
   collections,
   Field,
+  express,
 
 
   /**

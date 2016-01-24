@@ -37,7 +37,7 @@ gulp.task('eslint', function() {
  * Linting watch task for development
  */
 gulp.task('watch', function() {
-  return gulp.watch([src, test], ['eslint']);
+  return gulp.watch([src, test], ['eslint', 'compile']);
 });
 
 
