@@ -140,7 +140,7 @@ export default function(app, auth) {
     function vField(path, field) {
       var def = field.def;
       if (def.is === 'array') {
-        vField(path, def.of);
+        vField(path + '._', def.of);
       } else if (def.fields) {
         vFields(path, def.fields);
       }

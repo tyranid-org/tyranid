@@ -93,7 +93,7 @@ export const ArrayType = new Type({
     }
 
     if (field.of instanceof Field) {
-      compiler.field(path, field.of);
+      compiler.field(path + '._', field.of);
     }
   }
 });

@@ -252,6 +252,7 @@ describe('tyranid', function() {
     describe( 'schema methods', function() {
       it( 'should support fields object', function() {
         expect(Person.fields['name.first']).to.be.instanceof(Field);
+        expect(Person.fields['roles._.role']).to.be.instanceof(Field);
       });
 
       it( 'should support fieldsBy()', function() {
