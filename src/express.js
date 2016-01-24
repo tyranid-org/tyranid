@@ -6,6 +6,7 @@ import Collection from './classes/Collection';
 
 export default function(app, auth) {
 
+
   /*
    *     /api/tyranid
    */

@@ -1,7 +1,6 @@
 
 import _ from 'lodash';
 
-
 // variables shared between classes
 import {
   labelize

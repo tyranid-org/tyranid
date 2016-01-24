@@ -268,6 +268,8 @@ export default class Collection {
       }
     });
 
+    CollectionInstance.fields = {};
+
     CollectionInstance.compile('compile');
     CollectionInstance.validateValues();
 
@@ -776,13 +778,15 @@ export default class Collection {
         }
 
         if (fieldDef.labelField) {
-          collection.labelField = path.substring(1);
+          collection.labelField = path;
         }
 
         // Store the field path and name on the field itself to support methods on Field
-        field.path = path.substring(1);
+        field.collection = collection;
+        field.path = path;
+        collection.fields[path] = field;
         const lastDot = path.lastIndexOf('.');
-        const fieldName = path.substring(lastDot+1);
+        const fieldName = lastDot > -1 ? path.substring(lastDot+1) : path;
         field.name = fieldName;
 
         let type;
@@ -841,7 +845,7 @@ export default class Collection {
           }
 
           const denormal = collection.denormal = collection.denormal || {};
-          denormal[path.substring(1)] = fieldDef.denormal;
+          denormal[path] = fieldDef.denormal;
         }
 
       },
@@ -864,7 +868,7 @@ export default class Collection {
             field = val[name] = new Field(field);
           }
 
-          return compiler.field(path + '.' + name, field);
+          return compiler.field(path ? path + '.' + name : name, field);
         });
 
       }

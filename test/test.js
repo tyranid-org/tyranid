@@ -250,6 +250,10 @@ describe('tyranid', function() {
     });
 
     describe( 'schema methods', function() {
+      it( 'should support fields object', function() {
+        expect(Person.fields['name.first']).to.exist;
+      });
+
       it( 'should support fieldsBy()', function() {
         expect(
           Person.fieldsBy({ name: 'string' })
