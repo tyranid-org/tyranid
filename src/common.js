@@ -1,16 +1,16 @@
 import _ from 'lodash';
 
 import NamePath from './classes/NamePath';
-import Tyranid from './tyranid';
 import Collection from './classes/Collection';
 
 
-export const config          = {};
-export const collections     = [];
-export const collectionsById = {};
-export const typesByName     = {};
-export const $all            = '$all';
-export const metaRegex       = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+export const config            = {};
+export const collections       = [];
+export const collectionsById   = {};
+export const collectionsByName = {};
+export const typesByName       = {};
+export const $all              = '$all';
+export const metaRegex         = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
 
 export function setFalse(v) {
@@ -151,12 +151,13 @@ export function toClient(col, data) {
 
 export function validateUidCollection(validator, path, collection) {
   const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
+
   if (collection instanceof Collection) {
     if (!collectionsById[collection.id]) {
       throw validator.err(path, unknownTypeErrMsg);
     }
   } else if (typeof collection === 'string') {
-    collection = Tyranid.byName(collection);
+    collection = collectionsByName[collection];
     if (!collection) {
       throw validator.err(path, unknownTypeErrMsg);
     }

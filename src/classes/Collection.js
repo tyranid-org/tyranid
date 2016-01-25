@@ -11,15 +11,16 @@ import Field from './Field';
 
 // variables shared between classes
 import {
-  config          ,
-  collections     ,
-  collectionsById ,
-  typesByName     ,
-  escapeRegex     ,
-  labelize        ,
-  pathAdd         ,
-  parseInsertObj  ,
-  parseProjection ,
+  config           ,
+  collections      ,
+  collectionsById  ,
+  collectionsByName,
+  typesByName      ,
+  escapeRegex      ,
+  labelize         ,
+  pathAdd          ,
+  parseInsertObj   ,
+  parseProjection  ,
   toClient
 } from '../common';
 
@@ -189,7 +190,6 @@ export default class Collection {
 
     dp.constructor = dp.$model = CollectionInstance;
     dp.__proto__ = CollectionInstance.prototype;
-    dp.$name = def.name;
 
     CollectionInstance.constructor = Collection;
     CollectionInstance.__proto__ = Collection.prototype;
@@ -225,8 +225,8 @@ export default class Collection {
 
 
     collections.push(CollectionInstance);
-
     collectionsById[def.id] = CollectionInstance;
+    collectionsByName[def.name] = CollectionInstance;
 
     for (const key in dp) {
       if (key.substring(0,1) === '$' && key !== '$label') {

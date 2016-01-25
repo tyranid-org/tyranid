@@ -23,7 +23,10 @@ export default function(app, auth) {
   // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
 (function() {
-  var Tyr = window.Tyr = {},
+  var Tyr = window.Tyr = {
+        collections: [],
+        collectionsById: {}
+      },
       byName = {};
 
   // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest directly
@@ -48,6 +51,25 @@ export default function(app, auth) {
         value:        obj[key]
       });
     }
+  }
+
+  Tyr.parseUid = function(uid) {
+    const colId = uid.substring(0, 3);
+
+    const col = Tyr.collectionsById[colId];
+
+    if (!col) {
+      throw new Error('No collection found for id "' + colId + '"');
+    }
+
+    const strId = uid.substring(3);
+
+    const idType = col.def.fields[col.def.primaryKey.field].def.is;
+
+    return {
+      collection: col,
+      id: idType.fromString(strId)
+    };
   }
 
   const documentPrototype = Tyr.documentPrototype = {
@@ -115,7 +137,6 @@ export default function(app, auth) {
 
     var dp = Object.create(documentPrototype);
     dp.constructor = dp.$model = CollectionInstance;
-    dp.$name = def.name;
     CollectionInstance.prototype = dp;
 
     CollectionInstance.def = def;
@@ -158,6 +179,10 @@ export default function(app, auth) {
     }
 
     vFields('', def.fields);
+
+    Tyr.collections.push(CollectionInstance);
+    Tyr.collectionsById[CollectionInstance.id] = CollectionInstance;
+    byName[def.name] = CollectionInstance;
 
     return CollectionInstance;
   }
@@ -350,7 +375,7 @@ export default function(app, auth) {
       }
 
       file += `
-  byName.${name} = new Collection(def);
+  new Collection(def);
 `;
     }
   });

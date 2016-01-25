@@ -171,14 +171,14 @@ describe('tyranid', function() {
       // Test validate load models and byName
       tyr.validate([{dir: __dirname + '/models', fileMatch: '\.js$' }]);
 
-      Job = tyr.byName('job');
-      Organization = tyr.byName('organization');
-      Department = tyr.byName('department');
-      Person = tyr.byName('person');
-      Task = tyr.byName('task');
-      Book = tyr.byName('book');
-      TyrSchema = tyr.byName('tyrSchema');
-      TyrSchemaType = tyr.byName('tyrSchemaType');
+      Job = tyr.byName.job;
+      Organization = tyr.byName.organization;
+      Department = tyr.byName.department;
+      Person = tyr.byName.person;
+      Task = tyr.byName.task;
+      Book = tyr.byName.book;
+      TyrSchema = tyr.byName.tyrSchema;
+      TyrSchemaType = tyr.byName.tyrSchemaType;
 
       Role = require('./models/role.js'); // require to get extra link in prototype chain
 

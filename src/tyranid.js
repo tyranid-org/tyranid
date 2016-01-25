@@ -13,10 +13,11 @@ import /*Schema from */ './schema';
 
 // variables shared between classes
 import {
-  config          ,
-  collections     ,
-  collectionsById ,
-  typesByName     ,
+  config           ,
+  collections      ,
+  collectionsById  ,
+  collectionsByName,
+  typesByName      ,
   $all
 } from './common';
 
@@ -82,6 +83,8 @@ const Tyranid = {
   $all,
   Collection,
   collections,
+  byId: collectionsById,
+  byName: collectionsByName,
   Field,
   express,
 
@@ -163,11 +166,6 @@ const Tyranid = {
   byUid(uid) {
     const p = Tyranid.parseUid(uid);
     return p.collection.byId(p.id);
-  },
-
-  byName(name) {
-    const nameLower = name.toLowerCase();
-    return _.find(collections, c => c.def.name.toLowerCase() === nameLower);
   },
 
   /**
