@@ -24,6 +24,7 @@ export default function(app, auth) {
   let file = `
 (function() {
   var Tyr = window.Tyr = {
+        $all: '$all',
         collections: [],
         collectionsById: {}
       },

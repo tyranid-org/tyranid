@@ -306,7 +306,6 @@ export default class Collection {
     return this.def.enum;
   }
 
-
   byId(id) {
     if (this.isStatic()) {
       return Promise.resolve(this.byIdIndex[id]);
