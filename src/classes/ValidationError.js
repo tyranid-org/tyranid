@@ -13,5 +13,4 @@ export default class ValidationError {
   toString() {
     return this.message;
   }
-
 }

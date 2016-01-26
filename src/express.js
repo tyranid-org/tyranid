@@ -185,6 +185,12 @@ export default function(app, auth) {
     Tyr.collectionsById[CollectionInstance.id] = CollectionInstance;
     byName[def.name] = CollectionInstance;
 
+    var lf = def.labelField;
+    if (lf) {
+      CollectionInstance.labelField = CollectionInstance.fields[lf];
+      delete def.labelField;
+    }
+
     return CollectionInstance;
   }
 
@@ -192,8 +198,12 @@ export default function(app, auth) {
     return this.def.id + id;
   };
 
+  Collection.prototype.isStatic = function() {
+    return this.def.values;
+  };
+
   Collection.prototype.labelFor = function(doc) {
-    return doc[this.def.labelField];
+    return doc[this.def.labelField.path];
   };
 
   Collection.prototype.byId = function(id) {
@@ -243,7 +253,7 @@ export default function(app, auth) {
     });
   };
 
-  Collection.prototype.findLabels = function(text) {
+  Collection.prototype.labels = function(text) {
     var col  = this;
 
     return ajax({
@@ -372,7 +382,7 @@ export default function(app, auth) {
       }
       if (col.labelField) {
         file += `
-  def.labelField = ${JSON.stringify(col.labelField)};`;
+  def.labelField = ${JSON.stringify(col.labelField.path)};`;
       }
 
       file += `
@@ -508,10 +518,10 @@ Collection.prototype.express = function(app, auth) {
         r.get(async (req, res) => {
           try {
             const query = {
-              [col.labelField]: new RegExp(req.params.search, 'i')
+              [col.labelField.path]: new RegExp(req.params.search, 'i')
             };
 
-            const results = await col.find(query, { [col.labelField]: 1 });
+            const results = await col.find(query, { [col.labelField.path]: 1 });
             res.json(results.map(r => r.$toClient()));
           } catch(err) {
             console.log(err.stack);
@@ -537,7 +547,7 @@ Collection.prototype.express = function(app, auth) {
 
                 const search = req.params.search;
                 if (search) {
-                  query[to.labelField] = new RegExp(search, 'i');
+                  query[to.labelField.path] = new RegExp(search, 'i');
                 }
 
                 const where = field.def.where;
@@ -545,7 +555,7 @@ Collection.prototype.express = function(app, auth) {
                   _.assign(query, where);
                 }
 
-                const results = await to.find(query, { [to.labelField]: 1 });
+                const results = await to.find(query, { [to.labelField.path]: 1 });
                 res.json(results.map(r => r.$toClient()));
               } catch(err) {
                 console.log(err.stack);

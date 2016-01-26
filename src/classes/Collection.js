@@ -303,7 +303,7 @@ export default class Collection {
   }
 
   isStatic() {
-    return this.def.enum;
+    return this.def.values;
   }
 
   byId(id) {
@@ -331,7 +331,7 @@ export default class Collection {
 
   byLabel(n, forcePromise) {
     const collection = this,
-          findName = collection.labelField,
+          findName = collection.labelField.path,
           matchLower = n.toLowerCase();
 
     if (collection.isStatic()) {
@@ -350,7 +350,7 @@ export default class Collection {
 
   labelFor(doc) {
     const collection = this,
-          labelField = collection.labelField;
+          labelField = collection.labelField.path;
 
     // TODO:  have this use path finder to walk the object in case the label is stored in an embedded object
     // TODO:  support computed properties
@@ -777,7 +777,7 @@ export default class Collection {
         }
 
         if (fieldDef.labelField) {
-          collection.labelField = path;
+          collection.labelField = field;
         }
 
         // Store the field path and name on the field itself to support methods on Field
@@ -966,10 +966,10 @@ export default class Collection {
 
         v = new collection(nrow);
         if (collection.def.enum) {
-          name = v[collection.labelField];
+          name = v[collection.labelField.path];
 
           if (!name) {
-            throw new Error('Static document missing label field: ' + collection.labelField);
+            throw new Error('Static document missing label field: ' + collection.labelField.path);
           }
 
           collection[_.snakeCase(name).toUpperCase()] = v;
