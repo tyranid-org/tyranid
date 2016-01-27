@@ -879,6 +879,28 @@ describe('tyranid', function() {
       });
     });
 
+    describe('methods', function() {
+
+      it( 'should support methods', function() {
+        var child = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
+        expect(child.canDrink()).to.be.eql(false);
+
+        var adult = new Person({ name: { first: 'Jill', last: 'Smith' }, age: 32 });
+        expect(adult.canDrink()).to.be.eql(true);
+      });
+
+      it( 'should work with CollectionInstance.toClient()', function() {
+        var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
+        expect(person.fullName).to.be.eql('Jane Smith');
+      });
+
+      it( 'should work with POJO toClient()', function() {
+        var person = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
+        var clientPerson = Person.toClient(person);
+        expect(clientPerson.fullName).to.be.eql('Jane Smith');
+      });
+    });
+
     describe('hooks and plugins', function() {
       it( 'should support pre hooks', function() {
         Book.pre('insert', (next, obj, ...otherArgs) => {

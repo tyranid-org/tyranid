@@ -241,11 +241,21 @@ export default class Collection {
     defineDocumentProperties(dp);
 
     _.each(def.fields, function(field, name) {
-      const get  = field.get,
-            set  = field.set,
+      const get  = field.serverGet || field.get,
+            set  = field.serverSet || field.set,
+            fn   = field.fn || field.clientFn || field.serverFn,
             isDb = field.db;
 
+      if (fn) {
+        throw new Error('Field ' + def.name + '.' + name + ' has fn/clientFn/serverFn set, fn is a method option, not a field option.');
+      }
+
+      if (!fn && field.clientGet && isDb) {
+        throw new Error('Field ' + def.name + '.' + name + ' needs a server-side get if db is set and client-side get is set.');
+      }
+
       if (get || set) {
+
         const prop = {
           enumerable:   isDb !== undefined ? isDb : false,
           writeable:    false,
@@ -266,6 +276,26 @@ export default class Collection {
           field.db = false;
         }
       }
+    });
+
+    _.each(def.methods, function(method, name) {
+      if (!method.fn && !method.clientFn && !method.serverFn) {
+        throw new Error('Method ' + def.name + '.' + name + ' has no fn, clientFn, or serverFn function set.');
+      }
+
+      if (method.fn && (method.clientFn || method.serverFn)) {
+        throw new Error('Method ' + def.name + '.' + name + ' has both fn and clientFn/serverFn set, they are mutually exclusive.');
+      }
+
+      const fn = method.fn || method.serverFn;
+
+      method.name = name;
+      Object.defineProperty(dp, name, {
+        enumerable:   false,
+        writeable:    false,
+        configurable: false,
+        value:        fn
+      });
     });
 
     CollectionInstance.fields = {};
@@ -485,7 +515,6 @@ export default class Collection {
     }
   }
 
-
   async insert(obj, denormalAlreadyDone) {
     const collection  = this;
     let insertObj;
@@ -500,21 +529,6 @@ export default class Collection {
 
     return collection.db.insert(insertObj);
   }
-
-  /**
-   * Behaves like promised-mongo's update().
-   */
-  async update(query, update, opts) {
-    const collection = this;
-
-    if (collection.def.timestamps) {
-      update.$set = update.$set || {};
-      update.$set.updatedAt = new Date();
-    }
-
-    return await collection.db.update(query, update, opts);
-  }
-
 
   /**
    * Updates a single document.  Used to implement document.$update() for example. @see update() for regular mongodb update()
@@ -542,6 +556,20 @@ export default class Collection {
       { [def.primaryKey.field] : obj[def.primaryKey.field] },
       { $set : setObj }
     );
+  }
+
+  /**
+   * Behaves like promised-mongo's update().
+   */
+  async update(query, update, opts) {
+    const collection = this;
+
+    if (collection.def.timestamps) {
+      update.$set = update.$set || {};
+      update.$set.updatedAt = new Date();
+    }
+
+    return await collection.db.update(query, update, opts);
   }
 
   /**

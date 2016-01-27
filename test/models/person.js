@@ -60,6 +60,9 @@ var Person = new tyr.Collection({
     department: { link: 'department' },
     homepage: { is: 'url' },
     goldStars: { is: 'integer', defaultValue: 0 }
+  },
+  methods: {
+    canDrink: { is: 'boolean', fn: function() { return this.age >= 21; } }
   }
 });
 

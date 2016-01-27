@@ -181,6 +181,42 @@ export default function(app, auth) {
 
     vFields('', def.fields);
 
+    _.each(def.fields, function(field, name) {
+      const fdef  = field.def,
+            get  = fdef.get,
+            set  = fdef.set,
+            isDb = fdef.db;
+
+      if (get || set) {
+        const prop = {
+          enumerable:   isDb !== undefined ? isDb : false,
+          writeable:    false,
+          configurable: false
+        };
+
+        if (get) {
+          prop.get = get;
+        }
+
+        if (set) {
+          prop.set = set;
+        }
+
+        Object.defineProperty(dp, name, prop);
+      }
+    });
+
+    _.each(def.methods, function(method, name) {
+      const fn = method.fn;
+      method.name = name;
+      Object.defineProperty(dp, name, {
+        enumerable:   false,
+        writeable:    false,
+        configurable: false,
+        value:        fn
+      });
+    });
+
     Tyr.collections.push(CollectionInstance);
     Tyr.collectionsById[CollectionInstance.id] = CollectionInstance;
     byName[def.name] = CollectionInstance;
@@ -330,6 +366,22 @@ export default function(app, auth) {
         this.field(of);
       }
 
+      var get = def.clientGet || def.get;
+      if (get) {
+        this.newline();
+        this.file += 'get: ' + get.toString() + ',';
+      }
+
+      if (def.db) {
+        this.newline();
+        this.file += 'db: ' + def.db + ',';
+      }
+
+      var set = def.clientSet || def.set;
+      if (set) {
+        this.newline();
+        this.file += 'set: ' + set.toString() + ',';
+      }
       if (def.fields) {
         this.fields(def.fields);
       }
@@ -353,6 +405,27 @@ export default function(app, auth) {
       });
       this.depth--;
       this.newline();
+      this.file += '},';
+    }
+
+    methods(methods) {
+      this.newline();
+      this.file += 'methods: {';
+
+      this.depth++;
+      _.each(methods, method => {
+        if (method.clientFn || method.fn) {
+          this.newline();
+          this.file += method.name + ': {';
+          this.depth++;
+          this.newline();
+          this.file += 'fn: ' + (method.clientFn || method.fn).toString();
+          this.depth--;
+          this.file += '},';
+        }
+      });
+      this.depth--;
+      this.newline();
       this.file += '}';
     }
   }
@@ -371,6 +444,9 @@ export default function(app, auth) {
 
       const ser = new Serializer('.', 2);
       ser.fields(def.fields);
+      if (def.methods) {
+        ser.methods(def.methods);
+      }
       file += ser.file;
 
       file += `
