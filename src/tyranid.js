@@ -18,6 +18,7 @@ import {
   collectionsById  ,
   collectionsByName,
   typesByName      ,
+  labelize         ,
   $all
 } from './common';
 
@@ -87,6 +88,7 @@ const Tyranid = {
   byName: collectionsByName,
   Field,
   express,
+  labelize,
 
 
   /**
@@ -111,26 +113,30 @@ const Tyranid = {
     });
 
     if (opts.validate) {
-      if (!Array.isArray(opts.validate)) {
-        throw new Error('Validate options must be an array of objects of "dir" and "fileMatch".');
-      }
       this.validate(opts.validate);
     }
   },
 
   validate(opts) {
     if (opts) {
-      _.forEach(opts, function(opt) {
-        if (!opt.dir)
+      function process(dirOpts) {
+        if (!dirOpts.dir) {
           throw new Error('dir not specified in validate option.');
+        }
 
-        const fileRe = opt.fileMatch ? new RegExp(opt.fileMatch) : undefined;
+        const fileRe = dirOpts.fileMatch ? new RegExp(dirOpts.fileMatch) : undefined;
 
         fs
-          .readdirSync(opt.dir)
+          .readdirSync(dirOpts.dir)
           .filter(file => !fileRe || fileRe.test(file))
-          .forEach(file => { require(opt.dir + '/' + file); });
-      });
+          .forEach(file => { require(dirOpts.dir + '/' + file); });
+      }
+
+      if (_.isArray(opts)) {
+        opts.forEach(process);
+      } else {
+        process(opts);
+      }
     }
 
     collections.forEach(col => {
@@ -138,8 +144,8 @@ const Tyranid = {
     });
   },
 
-  async valuesBy(comparable) {
-    const getValues = c => c.valuesFor(c.fieldsBy(comparable));
+  async valuesBy(filter) {
+    const getValues = c => c.valuesFor(c.fieldsBy(filter));
     const arrs = await* Tyranid.collections.map(getValues);
     return _.union.apply(null, arrs);
   },
@@ -170,6 +176,7 @@ const Tyranid = {
 
   /**
    * Mostly just used by tests.
+   * @private
    */
   reset() {
     function builtin(collection) {

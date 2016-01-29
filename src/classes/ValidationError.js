@@ -1,13 +1,13 @@
 
 export default class ValidationError {
 
-  constructor(path, reason) {
-    this.path = path;
+  constructor(field, reason) {
+    this.field = field;
     this.reason = reason;
   }
 
   get message() {
-    return 'The value at ' + this.path + ' ' + this.reason;
+    return 'The value at ' + this.field.path + ' ' + this.reason;
   }
 
   toString() {

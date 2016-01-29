@@ -51,7 +51,7 @@ const documentPrototype = {
   },
 
   $validate() {
-    return ObjectType.validate('', this.$model, this);
+    return ObjectType.validate(this.$model, this);
   }
 
 };
@@ -167,7 +167,7 @@ export default class Collection {
     }
 
     if (collectionsById[colId]) {
-      throw new Error('The collection "id" is already in use by ' + collectionsById[colId].name + '.');
+      throw new Error(`The collection id "${colId}" is already in use by ${collectionsById[colId].def.name}.`);
     }
 
     //
@@ -214,7 +214,7 @@ export default class Collection {
         field: def.primaryKey
       };
     } else if(!_.isObject(def.primaryKey)) {
-      throw new Error('Invalid `primaryKey` parameter');
+      throw new Error('Invalid "primaryKey" parameter');
     }
 
     const db = def.db || config.db;
@@ -679,47 +679,17 @@ export default class Collection {
     return documents ? populatorFunc(documents) : populatorFunc;
   }
 
-  fieldsBy(comparable) {
-    const results = [];
-
-    const cb = _.callback(comparable);
-
-    function fieldsBy(path, val) {
-      const def = val.def;
-
-      if (def && def.is) {
-        if (def.is.def.name === 'object') {
-          const fields = def.fields;
-          if (fields) {
-            fieldsBy(path, fields);
-          }
-
-        } else if (def.is.def.name === 'array') {
-          fieldsBy(path, def.of);
-
-        } else if (def.is.def){
-          if (cb(def.is.def)) {
-            results.push(path);
-          }
-        }
-      } else {
-        _.each( val, function(field, name) {
-          fieldsBy(pathAdd(path, name), field);
-        });
-      }
-    }
-
-    fieldsBy('', this.def.fields);
-    return results;
+  fieldsBy(filter) {
+    return _.filter(this.fields, filter);
   }
 
-  async valuesFor(fieldNames) {
+  async valuesFor(fields) {
     const collection = this;
 
     const fieldsObj = { _id: 0 };
 
-    _.each(fieldNames, fieldName => {
-      fieldsObj[fieldName] = 1;
+    _.each(fields, field => {
+      fieldsObj[field.spath] = 1;
     });
 
     const values = [];

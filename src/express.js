@@ -479,6 +479,9 @@ export default function(app, auth) {
   collections.forEach(col => col.express(app, auth));
 };
 
+/**
+ * @private ... clients should use Tyr.express()
+ */
 Collection.prototype.express = function(app, auth) {
   const col     = this,
         express = col.def.express;

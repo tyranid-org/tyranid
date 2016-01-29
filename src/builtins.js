@@ -50,9 +50,9 @@ export const IntegerType = new Type({
       return value;
     }
   },
-  validate(path, field, value) {
+  validate(field, value) {
     if (value !== undefined && (typeof value !== 'number' || value % 1 !== 0)) {
-      return new ValidationError(path, 'is not an integer');
+      return new ValidationError(field, 'is not an integer');
     }
   }
 });
@@ -130,7 +130,7 @@ export const ObjectType = new Type({
     }
 
   },
-  validate(path, field, obj) {
+  validate(field, obj) {
     const errors = [];
 
     if (obj) {
@@ -140,7 +140,7 @@ export const ObjectType = new Type({
         if (!fieldDef.get) {
           const fieldDefIs = fieldDef.is;
 
-          const error = fieldDefIs.validate(path + '.' + fieldName, field, obj[fieldName]);
+          const error = fieldDefIs.validate(field, obj[fieldName]);
 
           if (error instanceof ValidationError) {
             errors.push(error);
@@ -193,9 +193,9 @@ export const DateType = new Type({
 
     return value;
   },
-  validate(path, field, value) {
+  validate(field, value) {
     if (value !== undefined && !(value instanceof Date)) {
-      return new ValidationError(path, 'is not a date');
+      return new ValidationError(field, 'is not a date');
     }
   }
 });

@@ -16,4 +16,13 @@ export default class Field {
   get label() {
     return _.result(this.def, 'label') || labelize(this.name);
   }
+
+  get spath() {
+    let sp = this._spath;
+    if (!sp) {
+      sp = this._spath = this.path.replace('._', '');
+    }
+
+    return sp;
+  }
 }

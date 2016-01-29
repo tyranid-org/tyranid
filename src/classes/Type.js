@@ -18,20 +18,13 @@ export default class Type {
     }
   }
 
-  link(linker, path, field) {
-    const v = this.def.link;
-    if (v) {
-      v(linker, path, field);
-    }
-  }
-
-  validate(path, field, value) {
+  validate(field, value) {
     if (field.def.required && value === undefined) {
-      return new ValidationError(path, 'is required');
+      return new ValidationError(field, 'is required');
     }
 
     const fn = this.def.validate;
-    return fn ? fn(path, field, value) : undefined;
+    return fn ? fn(field, value) : undefined;
   }
 
   generatePrimaryKeyVal() {
