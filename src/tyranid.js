@@ -90,8 +90,6 @@ const Tyranid = {
   Field,
   express,
   labelize,
-
-  /** @private */
   NamePath,
 
 

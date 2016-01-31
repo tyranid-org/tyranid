@@ -29,7 +29,7 @@ export default class Populator {
 
   addIds(population, documents) {
     const namePath = population.namePath;
-    const link = namePath.tailField().def.link;
+    const link = namePath.tail().def.link;
 
     if (!link) {
       throw new Error('Cannot populate ' + namePath + ' -- it is not a link');
@@ -39,7 +39,7 @@ export default class Populator {
           cache = this.cacheFor(linkId);
 
     documents.forEach(function(doc) {
-      _.each(namePath.getUniq(doc), function(id) {
+      _.each(namePath.uniq(doc), function(id) {
         if (id) {
           const v = cache[id];
           if (v === undefined) {

@@ -88,6 +88,8 @@ export default class NamePath {
    *    1. organizationId -> organization
    *    2. organization   -> organization$
    *    3. organization   -> organization
+   *
+   * @private
    */
   static populateNameFor(name, denormal) {
     const l = name.length;
@@ -112,19 +114,21 @@ export default class NamePath {
     return this.col.def.name + ':' + this.name;
   }
 
-  tailField() {
+  tail() {
     return skipArray(this.fields[this.fields.length-1]);
   }
 
-  getUniq(obj) {
-    const np = this,
+  get(obj) {
+    const np   = this,
           path = np.path,
           plen = path.length;
+    let arrayInPath = false;
 
     const values = [];
 
     function getInner(pi, obj) {
       if (Array.isArray(obj)) {
+        arrayInPath = true;
         for (let ai=0, alen=obj.length; ai<alen; ai++ ) {
           getInner(pi, obj[ai]);
         }
@@ -140,6 +144,20 @@ export default class NamePath {
     }
 
     getInner(0, obj);
-    return _.uniq(values);
+
+    if (!arrayInPath) {
+      switch (values.length) {
+      case 0: return undefined;
+      case 1: return values[0];
+      // fall through
+      }
+    }
+
+    return values;
+  }
+
+  uniq(obj) {
+    const val = this.get(obj);
+    return _.isArray(val) ? _.uniq(val) : [ val ];
   }
 }

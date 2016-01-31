@@ -646,14 +646,14 @@ describe('tyranid', function() {
 
       it( 'simple denormalize pathing', function() {
         const np = new NamePath(Person, 'organization_.name'),
-              field = np.tailField();
+              field = np.tail();
         expect(field.collection).to.be.eql(tyr.byName.organization);
         expect(field.name).to.be.eql('name');
       });
 
       it( 'complex denormalize pathing', function() {
         const np = new NamePath(Person, 'organization_.owner_.name.first'),
-              field = np.tailField();
+              field = np.tail();
         expect(field.collection).to.be.eql(tyr.byName.person);
         expect(field.name).to.be.eql('first');
       });

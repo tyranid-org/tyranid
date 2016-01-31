@@ -25,13 +25,13 @@ export default class Population {
     if (Array.isArray(fields)) {
       // process simplified array of pathnames format
       return new Population(
-        new NamePath(rootCollection, ''),
+        rootCollection.parsePath(''),
         fields.map(function(field) {
           if (!_.isString(field)) {
             throw new Error('The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.');
           }
 
-          return new Population( new NamePath(rootCollection, field), [ $all ] );
+          return new Population( rootCollection.parsePath(field), [ $all ] );
         })
       );
     }
@@ -46,14 +46,14 @@ export default class Population {
           if (key === $all) {
             projection.push($all);
           } else {
-            const namePath = new NamePath(collection, key);
+            const namePath = collection.parsePath(key);
 
             if (value === 0 || value === false) {
               projection.push(new Population(namePath, false));
             } else if (value === 1 || value === true) {
               projection.push(new Population(namePath, true));
             } else {
-              const link = namePath.tailField().def.link;
+              const link = namePath.tail().def.link;
 
               if (!link) {
                 throw new Error('Cannot populate ' + collection.def.name + '.' + namePath + ' -- it is not a link');
@@ -73,7 +73,7 @@ export default class Population {
         return projection;
       };
 
-      return new Population(new NamePath(rootCollection, ''), parseProjection(rootCollection, fields));
+      return new Population(rootCollection.parsePath(''), parseProjection(rootCollection, fields));
     }
 
     throw new Error('missing opts.fields option to populate()');
@@ -127,7 +127,7 @@ export default class Population {
 
       const namePath = population.namePath;
       documents.forEach(function(obj) {
-        const cache = populator.cacheFor(namePath.tailField().def.link.id),
+        const cache = populator.cacheFor(namePath.tail().def.link.id),
               path  = namePath.path,
               plen  = path.length;
 

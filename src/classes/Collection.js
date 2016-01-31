@@ -721,16 +721,16 @@ export default class Collection {
     let collection = this,
         fields = collection.def.fields;
 
-    const namePath = path ? new NamePath(this, path) : null;
+    const namePath = path ? this.parsePath(path) : null;
 
     if (Array.isArray(pojo)) {
       return pojo.map(doc => collection.fromClient(doc, path));
     }
 
     if (namePath) {
-      const tailField = namePath.tailField();
-      collection = tailField.def.id ? collectionsById[tailField.def.id] : null;
-      fields = tailField.def.fields;
+      const tail = namePath.tail();
+      collection = tail.def.id ? collectionsById[tail.def.id] : null;
+      fields = tail.def.fields;
     }
 
     const obj = {}; // TODO:  create a new instance of this record-class?
@@ -758,6 +758,10 @@ export default class Collection {
    */
   toClient(data) {
     return toClient(this, data);
+  }
+
+  parsePath(path) {
+    return new NamePath(this, path);
   }
 
   createCompiler(collection, def, stage) {
