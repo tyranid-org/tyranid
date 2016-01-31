@@ -108,7 +108,27 @@ export default function(app, auth) {
   }
   Tyr.Field = Field;
 
-  Field.prototype.labels = function(text) {
+  Field.prototype.labels = function(search) {
+    const to = this.def.link;
+    if (to.isStatic() ) {
+      var values = to.def.values;
+
+      if (search) {
+        var re = new RegExp(search, 'i');
+        values = values.filter(function(val) {
+          return re.test(val.$label);
+        });
+      }
+
+      const where = this.def.where;
+      if (where) {
+        values = values.filter(function(val) {
+          return _.isMatch(val, where);
+        });
+      }
+
+      return values;
+    }
 
     return ajax({
       url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (text || '')
@@ -232,6 +252,16 @@ export default function(app, auth) {
     return CollectionInstance;
   }
 
+  Collection.prototype.compile = function() {
+    _.each(this.fields, function(field) {
+      var def = field.def;
+
+      if (def.link) {
+        def.link = Tyr.byName[def.link];
+      }
+    });
+  };
+
   Collection.prototype.idToUid = ${Collection.prototype.idToUid};
 
   Collection.prototype.idToLabel = function(id) {
@@ -291,11 +321,24 @@ export default function(app, auth) {
     });
   };
 
-  Collection.prototype.labels = function(text) {
+  Collection.prototype.labels = function(search) {
     var col  = this;
 
+    if (col.isStatic() ) {
+      var values = col.def.values;
+
+      if (search) {
+        var re = new RegExp(search, 'i');
+        values = values.filter(function(val) {
+          return re.test(val.$label);
+        });
+      }
+
+      return values;
+    }
+
     return ajax({
-      url: '/api/' + col.def.name + '/label/' + text
+      url: '/api/' + col.def.name + '/label/' + (search || '')
     //}).then(function(docs) {
       //return docs.map(function(doc) { return new col(doc); });
     }).catch(function(err) {
@@ -471,6 +514,7 @@ export default function(app, auth) {
 
   file += `
   Tyr.byName = byName;
+  Tyr.collections.forEach(function(c) { c.compile(); });
 })();
 `;
 

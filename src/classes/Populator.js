@@ -29,7 +29,7 @@ export default class Populator {
 
   addIds(population, documents) {
     const namePath = population.namePath;
-    const link = namePath.tail().def.link;
+    const link = namePath.tail.def.link;
 
     if (!link) {
       throw new Error('Cannot populate ' + namePath + ' -- it is not a link');

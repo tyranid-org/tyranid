@@ -756,7 +756,7 @@ export default class Collection {
     }
 
     if (namePath) {
-      const tail = namePath.tail();
+      const tail = namePath.tail;
       collection = tail.def.id ? collectionsById[tail.def.id] : null;
       fields = tail.def.fields;
     }

@@ -114,7 +114,7 @@ export default class NamePath {
     return this.col.def.name + ':' + this.name;
   }
 
-  tail() {
+  get tail() {
     return skipArray(this.fields[this.fields.length-1]);
   }
 
