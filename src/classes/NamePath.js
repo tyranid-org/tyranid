@@ -29,7 +29,7 @@ export default class NamePath {
     let pi = 0,
         denormal;
 
-  nextPath:
+    nextPath:
     while (pi<plen) {
       const name = path[pi],
             def  = at.def;
