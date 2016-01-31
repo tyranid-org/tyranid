@@ -56,7 +56,7 @@ var Person = new tyr.Collection({
     siblings: { is: 'array', of: Sibling },
 
     title: { is: 'string', defaultValue: 'Employee' },
-    organization: { link: 'organization', denormal: { name: 1 } },
+    organization: { link: 'organization', denormal: { name: 1, owner: { name: 1 } } },
     department: { link: 'department' },
     homepage: { is: 'url' },
     goldStars: { is: 'integer', defaultValue: 0 }

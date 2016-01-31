@@ -53,7 +53,7 @@ export default class Population {
             } else if (value === 1 || value === true) {
               projection.push(new Population(namePath, true));
             } else {
-              const link = namePath.tailDef().link;
+              const link = namePath.tailField().def.link;
 
               if (!link) {
                 throw new Error('Cannot populate ' + collection.def.name + '.' + namePath + ' -- it is not a link');
@@ -127,7 +127,7 @@ export default class Population {
 
       const namePath = population.namePath;
       documents.forEach(function(obj) {
-        const cache = populator.cacheFor(namePath.tailDef().link.id),
+        const cache = populator.cacheFor(namePath.tailField().def.link.id),
               path  = namePath.path,
               plen  = path.length;
 

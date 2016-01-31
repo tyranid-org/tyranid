@@ -18,7 +18,6 @@ import {
   typesByName      ,
   escapeRegex      ,
   labelize         ,
-  pathAdd          ,
   parseInsertObj   ,
   parseProjection  ,
   toClient
@@ -729,9 +728,9 @@ export default class Collection {
     }
 
     if (namePath) {
-      const tailDef = namePath.tailDef();
-      collection = tailDef.id ? collectionsById[tailDef.id] : null;
-      fields = tailDef.fields;
+      const tailField = namePath.tailField();
+      collection = tailField.def.id ? collectionsById[tailField.def.id] : null;
+      fields = tailField.def.fields;
     }
 
     const obj = {}; // TODO:  create a new instance of this record-class?

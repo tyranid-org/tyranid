@@ -2,6 +2,7 @@
 require('es6-promise');
 
 var tyr            = require('../src/tyranid'),
+    NamePath       = tyr.NamePath,
     $all           = tyr.$all,
     chai           = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
@@ -186,7 +187,7 @@ describe('tyranid', function() {
         Organization.db.remove({}).then(function() {
           return Organization.db.insert([
             { _id: 1, name: 'Acme Unlimited' },
-            { _id: 2, name: '123 Construction' }
+            { _id: 2, name: '123 Construction', owner: 3 },
           ]);
         }),
         Department.db.remove({}).then(function() {
@@ -641,6 +642,20 @@ describe('tyranid', function() {
         return Person.db.findOne(juliaMatch).then(function(doc) {
           expect(doc.organization_.name).to.be.eql('Acme Unlimited');
         });
+      });
+
+      it( 'simple denormalize pathing', function() {
+        const np = new NamePath(Person, 'organization_.name'),
+              field = np.tailField();
+        expect(field.collection).to.be.eql(tyr.byName.organization);
+        expect(field.name).to.be.eql('name');
+      });
+
+      it( 'complex denormalize pathing', function() {
+        const np = new NamePath(Person, 'organization_.owner_.name.first'),
+              field = np.tailField();
+        expect(field.collection).to.be.eql(tyr.byName.person);
+        expect(field.name).to.be.eql('first');
       });
     });
 

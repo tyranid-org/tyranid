@@ -1,6 +1,17 @@
+
 import _ from 'lodash';
 
 
+function skipArray(field) {
+  while (field && field.def.is.def.name === 'array') {
+    field = field.def.of;
+  }
+
+  return field;
+}
+
+
+// this only parses "simplified paths" so far
 export default class NamePath {
 
 
@@ -8,36 +19,65 @@ export default class NamePath {
     this.col = collection;
     this.name = pathName;
 
-    const path = this.path = pathName.length ? pathName.split('.') : [],
-          plen = path.length,
-          defs = this.defs = new Array(plen);
+    const path       = this.path = pathName.length ? pathName.split('.') : [],
+          plen       = path.length,
+          pathFields = this.fields = new Array(plen);
 
-    let def = collection.def;
+    let curCollection = collection;
+    let at = collection;
 
-    for (let pi=0; pi<plen; pi++) {
-      const name = path[pi];
+    let pi = 0,
+        denormal;
 
-      if (!def.fields && def.link) {
+  nextPath:
+    while (pi<plen) {
+      const name = path[pi],
+            def  = at.def;
+
+      if (!def.fields) {
         throw new Error(
           '"' + name + '" in "' + pathName +
-          '" is not a contained within the collection "' + collection.def.name +
-          '" (maybe need advanced population syntax)'
+          '" is not a contained within the collection "' + curCollection.def.name +
+          ( def.link ? '" (maybe need advanced population syntax)' : '' )
         );
       }
 
-      def = def.fields[name].def;
-      while (def.is.def.name === 'array') {
-        def = def.of.def;
+      at = def.fields[name];
+      if (!at && name.endsWith('_')) {
+        // does this name match a denormalized entry?
+        const _name = name.substring(0, name.length-1);
+
+        while (_name) {
+          const _at = def.fields[_name];
+
+          if (!denormal) {
+            denormal = _at.def.denormal;
+            if (!denormal) {
+              break;
+            }
+          } else {
+            if (!denormal[_name]) {
+              break;
+            }
+
+            denormal = denormal[_name];
+          }
+
+          at = _at;
+          pathFields[pi++] = at;
+          at = at.def.link;
+          curCollection = at;
+          continue nextPath;
+        }
       }
 
-      if (!def) {
-        throw new Error(
-          'Cannot find field "' + this.pathName(pi) +
-          '" in ' + collection.def.name
-        );
+      at = skipArray(at);
+
+      if (!at) {
+        throw new Error('Cannot find field "' + this.pathName(pi) + '" in ' + collection.def.name);
       }
 
-      defs[pi] = def;
+      pathFields[pi++] = at;
     }
   }
 
@@ -63,7 +103,7 @@ export default class NamePath {
   }
 
   pathName(pi) {
-    return this.path.length === 1 ?
+    return pi <= 1 ?
       this.name :
       this.path.slice(0, pi).join('.') + ' in ' + this.name;
   }
@@ -72,12 +112,8 @@ export default class NamePath {
     return this.col.def.name + ':' + this.name;
   }
 
-  tailDef() {
-    let def = this.defs[this.defs.length-1];
-    while (def.is.def.name === 'array') {
-      def = def.of;
-    }
-    return def;
+  tailField() {
+    return skipArray(this.fields[this.fields.length-1]);
   }
 
   getUniq(obj) {
@@ -106,6 +142,4 @@ export default class NamePath {
     getInner(0, obj);
     return _.uniq(values);
   }
-
-
 }

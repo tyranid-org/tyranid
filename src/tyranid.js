@@ -6,6 +6,7 @@ import Type from './classes/Type';
 import Collection from './classes/Collection';
 import Field from './classes/Field';
 import ValidationError from './classes/ValidationError';
+import NamePath from './classes/NamePath';
 
 import express from './express';
 
@@ -89,6 +90,9 @@ const Tyranid = {
   Field,
   express,
   labelize,
+
+  /** @private */
+  NamePath,
 
 
   /**
