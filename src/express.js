@@ -152,8 +152,10 @@ export default function(app, auth) {
         return new CollectionInstance(v);
       });
 
+      var byIdIndex = CollectionInstance.byIdIndex = {};
       vals.forEach(function(v) {
         CollectionInstance[_.snakeCase(v.name).toUpperCase()] = v;
+        byIdIndex[v._id] = v;
       });
     }
 
@@ -230,30 +232,30 @@ export default function(app, auth) {
     return CollectionInstance;
   }
 
-  Collection.prototype.idToUid = function(id) {
-    return this.def.id + id;
-  };
+  Collection.prototype.idToUid = ${Collection.prototype.idToUid};
 
-  Collection.prototype.isStatic = function() {
-    return this.def.values;
-  };
+  Collection.prototype.idToLabel = function(id) {
+    if (this.isStatic()) {
+      if (!id) return '';
+      const doc = this.byIdIndex[id];
+      return doc ? doc.$label : 'Unknown';
+    }
 
-  Collection.prototype.labelFor = function(doc) {
-    return doc[this.def.labelField.path];
-  };
+    if (!id) return Promise.resolve('');
+    // TODO:  make the server-side version of this isomorphic portions of this once the other functionality is client-side
+    return this.byId(id).then(doc => doc ? doc.$label : 'Unknown');
+  }
+
+  Collection.prototype.isStatic = ${Collection.prototype.isStatic};
+
+  Collection.prototype.labelFor = ${Collection.prototype.labelFor};
 
   Collection.prototype.byId = function(id) {
-    var col  = this,
-        vals = col.def.values;
+    var col  = this;
 
-    if (vals) {
-      for (var vi=0; vi<vals.length; vi++) {
-        var v = vals[vi];
-        if (v._id === id)
-          return v;
-      }
+    if (col.isStatic()) {
+      return col.byIdIndex[id];
     } else {
-
       return ajax({
         url: '/api/' + col.def.name + '/' + id
       }).then(function(doc) {

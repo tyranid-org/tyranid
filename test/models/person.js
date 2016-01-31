@@ -33,7 +33,7 @@ var Person = new tyr.Collection({
   fields: {
     _id: { is: 'integer' },
 
-    fullName: { is: 'string', client: true, get: function() { return this.name.first + ' ' + this.name.last; } },
+    fullName: { is: 'string', client: true, labelField: true, get: function() { return this.name.first + ' ' + this.name.last; } },
 
     name: {
       is: 'object',

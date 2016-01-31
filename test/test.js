@@ -422,6 +422,18 @@ describe('tyranid', function() {
         expect(Job.byLabel('Software Lead').$label).to.be.eql('Software Lead');
       });
 
+      it('should support idToLabel on static collections both async and non-async', async function() {
+        expect(Job.idToLabel(3)).to.be.eql('Designer');
+        expect(Job.idToLabel(undefined)).to.be.eql('');
+        expect(await Job.idToLabel(3)).to.be.eql('Designer');
+      });
+
+      it('should support idToLabel on non-static collections both async and non-async', async function() {
+        expect(await Organization.idToLabel(1)).to.be.eql('Acme Unlimited');
+        expect(await Organization.idToLabel(null)).to.be.eql('');
+        expect(await Person.idToLabel(1)).to.be.eql('An Anon');
+      });
+
       it('should support label on collections', function() {
         expect(Job.label).to.be.eql('Job');
         expect(Task.label).to.be.eql('Issue');

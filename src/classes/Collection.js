@@ -326,11 +326,39 @@ export default class Collection {
     }
   }
 
-
+  /** @isomorphic */
   idToUid(id) {
     return this.id + id;
   }
 
+  idToLabel(id) {
+    if (this.isStatic()) {
+      if (!id) {
+        return '';
+      }
+
+      const doc = this.byIdIndex[id];
+      return doc ? doc.$label : 'Unknown';
+    }
+
+    if (!id) {
+      return Promise.resolve('');
+    }
+
+    const lf = this.labelField;
+    if (lf.def.get || lf.def.serverGet) {
+      // if the label field is computed, we need to query the whole thing since we don't know what the computation requires
+      // (TODO:  analyze functions to determine their dependencies)
+
+      return this.byId(id)
+        .then(doc => { return doc ? doc.$label : 'Unknown'; });
+    } else {
+      return this.findOne({ [this.def.primaryKey.field]: id }, { [lf.spath]: 1 })
+        .then(doc => doc ? doc.$label : 'Unknown');
+    }
+  }
+
+  /** @isomorphic */
   isStatic() {
     return this.def.values;
   }
@@ -377,15 +405,15 @@ export default class Collection {
     }
   }
 
+  /** @isomorphic */
   labelFor(doc) {
     const collection = this,
           labelField = collection.labelField.path;
 
-    // TODO:  have this use path finder to walk the object in case the label is stored in an embedded object
+    // TODO:  have this use parsePath() to walk the object in case the label is stored in an embedded object
     // TODO:  support computed properties
     return doc[labelField];
   }
-
 
   /**
    * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
