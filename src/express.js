@@ -542,6 +542,7 @@ Collection.prototype.express = function(app, auth) {
        *     /api/NAME
        */
 
+      console.log('adding route: ' + name);
       let r = app.route('/api/' + name);
       r.all(auth);
 
@@ -550,7 +551,7 @@ Collection.prototype.express = function(app, auth) {
           const query = req.query;
 
           try {
-            const docs = await col.find(query);
+            const docs = await col.find(col.fromClientQuery(query));
             return res.json(col.toClient(docs));
           } catch (err) {
             console.log(err.stack);

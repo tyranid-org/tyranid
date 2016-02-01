@@ -674,7 +674,7 @@ describe('tyranid', function() {
     describe('client', function() {
       it( 'should fromClient', function() {
         var title = 'Browsers';
-        var bookObj = { title, isbn: ObjectId('5614c2f00000000000000000') };
+        var bookObj = { title, isbn: '5614c2f00000000000000000' };
         var book = Book.fromClient(bookObj);
         expect(book).to.be.an.instanceof(Book);
         expect(book.title).to.be.eql(title);
@@ -708,6 +708,64 @@ describe('tyranid', function() {
         var person = Person.fromClient(personObj);
         expect(person).to.be.an.instanceof(Person);
         expect(person.bag).to.be.eql({ abc123: 5 });
+      });
+    });
+
+    describe('fromClientQuery', function() {
+      it( 'should variation 1', function() {
+        var title = 'Browsers';
+        var clientQuery = {
+          title,
+          isbn: '5614c2f00000000000000000'
+        };
+        var serverQuery = Book.fromClientQuery(clientQuery);
+        expect(serverQuery.title).to.be.eql(title);
+        expect(serverQuery.isbn).to.be.an.instanceof(ObjectId);
+      });
+
+      it( 'should variation 2', function() {
+        var clientQuery = {
+          isbn: { $in: [ '5614c2f00000000000000000', '5614c2f00000000000000001' ] }
+        };
+        var serverQuery = Book.fromClientQuery(clientQuery);
+        expect(serverQuery.isbn.$in.length).to.be.eql(2);
+        expect(serverQuery.isbn.$in[0]).to.be.an.instanceof(ObjectId);
+        expect(serverQuery.isbn.$in[1]).to.be.an.instanceof(ObjectId);
+      });
+
+      it( 'should variation 3', function() {
+        var clientQuery = {
+          isbn: { $ne: '5614c2f00000000000000000' },
+          title: { $exists: true }
+        };
+        var serverQuery = Book.fromClientQuery(clientQuery);
+        expect(serverQuery.title.$exists).to.be.eql(true);
+        expect(serverQuery.isbn.$ne).to.be.an.instanceof(ObjectId);
+      });
+
+      it( 'should variation 4', function() {
+        var clientQuery = {
+          $or: [
+            { title: { $exists: true } },
+            { isbn: { $in: [ '5614c2f00000000000000000' ] } }
+          ]
+        };
+        var serverQuery = Book.fromClientQuery(clientQuery);
+        expect(serverQuery.$or[0].title.$exists).to.be.eql(true);
+        expect(serverQuery.$or[1].isbn.$in.length).to.be.eql(1);
+        expect(serverQuery.$or[1].isbn.$in[0]).to.be.an.instanceof(ObjectId);
+      });
+
+      it( 'should variation 5', function() {
+        var clientQuery = {
+          name: {
+            first: { $eq: 'An' },
+            last: 'Anon'
+          }
+        };
+        var serverQuery = Person.fromClientQuery(clientQuery);
+        expect(serverQuery.name.first.$eq).to.be.eql('An');
+        expect(serverQuery.name.last).to.be.eql('Anon');
       });
     });
 

@@ -1,5 +1,4 @@
 *.swp
 node_modules/
 dist/*
-tyranid-org.github.com/
 .DS_Store
