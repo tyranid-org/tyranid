@@ -108,6 +108,17 @@ export default function(app, auth) {
   }
   Tyr.Field = Field;
 
+  Object.defineProperties(Field.prototype, {
+    db: {
+      get: function() {
+        return this.def.db !== false;
+      },
+      enumerable:   false,
+      writeable:    false,
+      configurable: false
+    }
+  });
+
   Field.prototype.labels = function(search) {
     const to = this.def.link;
     if (to.isStatic() ) {

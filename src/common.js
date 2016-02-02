@@ -43,8 +43,9 @@ export async function parseInsertObj(col, obj) {
       const v = obj[name];
 
       if (v === undefined) {
-        if (fieldDef.defaultValue !== undefined) {
-          insertObj[name] = fieldDef.defaultValue;
+        const df = _.result(fieldDef, 'defaultValue');
+        if (df !== undefined) {
+          insertObj[name] = df;
         }
       } else {
         insertObj[name] = v;

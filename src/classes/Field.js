@@ -25,4 +25,8 @@ export default class Field {
 
     return sp;
   }
+
+  get db() {
+    return this.def.db !== false;
+  }
 }
