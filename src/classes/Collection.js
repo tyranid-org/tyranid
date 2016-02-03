@@ -9,6 +9,7 @@ import Populator from './Populator';
 import NamePath from './NamePath';
 import Field from './Field';
 
+
 // variables shared between classes
 import {
   config           ,
@@ -300,6 +301,7 @@ export default class Collection {
     CollectionInstance.fields = {};
 
     CollectionInstance.compile('compile');
+    CollectionInstance._updateFields(null, def.fields);
     CollectionInstance.validateValues();
 
     return CollectionInstance;
@@ -851,6 +853,16 @@ export default class Collection {
 
   parsePath(path) {
     return new NamePath(this, path);
+  }
+
+  /** @private */
+  _updateFields(parent, obj) {
+    if (obj instanceof Field) {
+      obj.parent = parent;
+      this._updateFields(obj, obj.def);
+    } else if (_.isArray(obj) || _.isObject(obj)) {
+      _.each(obj, v => this._updateFields(parent, v));
+    }
   }
 
   createCompiler(collection, def, stage) {

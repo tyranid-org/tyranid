@@ -3,6 +3,7 @@ import _   from 'lodash';
 
 import { collections } from './common';
 import Collection from './classes/Collection';
+import Field from './classes/Field';
 
 export default function(app, auth) {
 
@@ -108,11 +109,25 @@ export default function(app, auth) {
   }
   Tyr.Field = Field;
 
+  Field.prototype._calcPathLabel = ${Field.prototype._calcPathLabel};
+
   Object.defineProperties(Field.prototype, {
     db: {
-      get: function() {
-        return this.def.db !== false;
-      },
+      get: function() { return this.def.db !== false; },
+      enumerable:   false,
+      writeable:    false,
+      configurable: false
+    },
+
+    label: {
+      get: function() { return this.def.label; },
+      enumerable:   false,
+      writeable:    false,
+      configurable: false
+    },
+
+    pathLabel: {
+      get: function() { return this._calcPathLabel(); },
       enumerable:   false,
       writeable:    false,
       configurable: false
@@ -260,8 +275,19 @@ export default function(app, auth) {
       delete def.labelField;
     }
 
+    CollectionInstance._updateFields(null, def.fields);
+
     return CollectionInstance;
   }
+
+  Collection.prototype._updateFields = function(parent, obj) {
+    if (obj instanceof Field) {
+      obj.parent = parent;
+      this._updateFields(obj, obj.def);
+    } else if (_.isArray(obj) || _.isObject(obj)) {
+      _.each(obj, v => this._updateFields(parent, v));
+    }
+  };
 
   Collection.prototype.compile = function() {
     _.each(this.fields, function(field) {
@@ -406,6 +432,11 @@ export default function(app, auth) {
       this.newline();
       this.file += 'is: "';
       this.file += def.is.def.name;
+      this.file += '",';
+
+      this.newline();
+      this.file += 'label: "';
+      this.file += field.label;
       this.file += '",';
 
       if (def.link) {

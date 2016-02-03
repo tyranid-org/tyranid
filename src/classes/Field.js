@@ -29,4 +29,24 @@ export default class Field {
   get db() {
     return this.def.db !== false;
   }
+
+  /** @private @isopmorphic */
+  _calcPathLabel() {
+    const p = this.parent,
+          l = this.def.pathLabel || this.label;
+
+    if (p) {
+      const pl = p.pathLabel;
+
+      if (pl) {
+        return pl + ' ' + l;
+      }
+    }
+
+    return l;
+  }
+
+  get pathLabel() {
+    return this._calcPathLabel();
+  }
 }

@@ -250,11 +250,25 @@ describe('tyranid', function() {
       ]);
     });
 
-    describe( 'schema methods', function() {
+    describe('fields', function() {
       it( 'should support fields object', function() {
         expect(Person.fields['name.first']).to.be.instanceof(Field);
         expect(Person.fields['roles._.role']).to.be.instanceof(Field);
       });
+
+      it( 'should support field.parent', function() {
+        expect(Person.fields['name.first'].parent.name).to.be.eql('name');
+        expect(Person.fields['name'].parent).to.be.eql(null);
+      });
+
+      it( 'should support field.pathLabel', function() {
+        expect(Person.fields['name.first'].parent.pathLabel).to.be.eql('Name');
+        expect(Person.fields['name.first'].pathLabel).to.be.eql('Name First Name');
+        expect(Person.fields['name.last'].pathLabel).to.be.eql('Name Last');
+      });
+    });
+
+    describe( 'schema methods', function() {
 
       it( 'should support fieldsBy()', function() {
         expect(
