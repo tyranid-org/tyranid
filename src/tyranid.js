@@ -1,12 +1,19 @@
 import _ from 'lodash';
 import fs from 'fs';
 
+import Tyr from './Tyr';
 import './builtins';
+
 import Type from './classes/Type';
 import Collection from './classes/Collection';
 import Field from './classes/Field';
 import ValidationError from './classes/ValidationError';
 import NamePath from './classes/NamePath';
+
+import './unit/unitSystem';
+import './unit/unitFactor';
+import './unit/unitType';
+import './unit/unit';
 
 import express from './express';
 
@@ -75,7 +82,7 @@ import {
 
 */
 
-const Tyranid = {
+_.assign(Tyr, {
 
   /**
    * Properties
@@ -148,7 +155,7 @@ const Tyranid = {
 
   async valuesBy(filter) {
     const getValues = c => c.valuesFor(c.fieldsBy(filter));
-    const arrs = await* Tyranid.collections.map(getValues);
+    const arrs = await* Tyr.collections.map(getValues);
     return _.union.apply(null, arrs);
   },
 
@@ -172,7 +179,7 @@ const Tyranid = {
   },
 
   byUid(uid) {
-    const p = Tyranid.parseUid(uid);
+    const p = Tyr.parseUid(uid);
     return p.collection.byId(p.id);
   },
 
@@ -210,7 +217,6 @@ const Tyranid = {
     }
   }
 
-};
+});
 
-
-export default Tyranid;
+export default Tyr;

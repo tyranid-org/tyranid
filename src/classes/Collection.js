@@ -1028,6 +1028,22 @@ export default class Collection {
       let hi,
           name;
 
+      function parseValue(field, value) {
+        const link = field.def.link;
+        if (link && _.isString(value)) {
+          const doc = link.byLabel(value);
+
+          if (!doc) {
+            throw new Error('Label not found in ' + link.def.name + ': ' + value);
+          }
+
+          return doc._id;
+        }
+
+        return value;
+      }
+
+      const headerFields = new Array(hlen);
       for (hi=0; hi<hlen; hi++) {
         name = header[hi];
 
@@ -1035,9 +1051,12 @@ export default class Collection {
           throw new Error('Expected value ' + hi + ' in the values header for collection ' + def.name + ' to be a string');
         }
 
-        if (!def.fields[name]) {
+        const field = def.fields[name];
+        if (!field) {
           throw new Error('Field ' + name + ' does not exist on collection ' + def.name);
         }
+
+        headerFields[hi] = field;
       }
 
       for (ri=1; ri<rlen; ri++) {
@@ -1051,18 +1070,19 @@ export default class Collection {
 
         for (hi=0; hi<hlen; hi++) {
           v = orow[hi];
-          nrow[header[hi]] = v;
+          nrow[header[hi]] = parseValue(headerFields[hi], v);
         }
 
         if (orow.length > hlen) {
           const extraVals = orow[hi];
 
           _.each(extraVals, function(v, n) {
-            if (!def.fields[n]) {
+            const field = def.fields[n];
+            if (!field) {
               throw new Error('Field ' + n + ' does not exist on collection ' + def.name + ' on row ' + ri);
             }
 
-            nrow[n] = v;
+            nrow[n] = parseValue(field, v);
           });
         }
 
@@ -1071,7 +1091,7 @@ export default class Collection {
           name = v[collection.labelField.path];
 
           if (!name) {
-            throw new Error('Static document missing label field: ' + collection.labelField.path);
+            throw new Error('Static document in collection ' + collection.def.name + ' missing label field: ' + collection.labelField.path);
           }
 
           collection[_.snakeCase(name).toUpperCase()] = v;

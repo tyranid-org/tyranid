@@ -1,4 +1,7 @@
 import _ from 'lodash';
+
+
+import Tyr from './tyr';
 import Field from './classes/Field';
 import Type from './classes/Type';
 import ValidationError from './classes/ValidationError';
@@ -40,6 +43,14 @@ export const BooleanType = new Type({ name: 'boolean' });
 
 export const IntegerType = new Type({
   name: 'integer',
+  compile(compiler, path, field) {
+    if (compiler.stage === 'link') {
+      const unit = field.in;
+      if (unit) {
+        field.in = Tyr.Unit.parse(unit);
+      }
+    }
+  },
   fromString(s) {
     return parseInt(s, 10);
   },
@@ -59,7 +70,17 @@ export const IntegerType = new Type({
 
 export const StringType = new Type({ name: 'string' });
 
-export const DoubleType = new Type({ name: 'double' });
+export const DoubleType = new Type({
+  name: 'double',
+  compile(compiler, path, field) {
+    if (compiler.stage === 'link') {
+      const unit = field.in;
+      if (unit) {
+        field.in = Tyr.Unit.parse(unit);
+      }
+    }
+  }
+});
 
 export const ArrayType = new Type({
   name: 'array',

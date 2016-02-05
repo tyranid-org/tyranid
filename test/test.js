@@ -9,7 +9,10 @@ var tyr            = require('../src/tyranid'),
     pmongo         = require('promised-mongo'),
     expect         = chai.expect,
     _              = require('lodash'),
-    Field          = require('../src/classes/Field');
+    Field          = require('../src/classes/Field'),
+    UnitBase       = require('../src/unit/unitBase'),
+    UnitFactor     = require('../src/unit/unitFactor'),
+    Unit           = require('../src/unit/unit');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -495,7 +498,7 @@ describe('tyranid', function() {
     describe('values', function() {
       var allString = [
         '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
-        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 't03'
+        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide'
       ];
 
       it( 'should support valuesFor()', function() {
@@ -524,6 +527,11 @@ describe('tyranid', function() {
       it( 'should support static data methods', function() {
         expect(Job.SOFTWARE_LEAD.isSoftware()).to.be.eql(true);
         expect(Job.DESIGNER.isSoftware()).to.be.eql(false);
+      });
+
+      it ('it should support lookups by label in string data', () => {
+        expect(UnitBase.byLabel('dram').system).to.be.eql(2);
+        expect(UnitBase.byLabel('meter').system).to.be.eql(1);
       });
     });
 
@@ -682,6 +690,7 @@ describe('tyranid', function() {
               field = np.tail;
         expect(field.collection).to.be.eql(tyr.byName.person);
         expect(field.name).to.be.eql('first');
+        expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
       });
     });
 
@@ -1082,5 +1091,35 @@ describe('tyranid', function() {
 
     });
 
+    describe('units', function() {
+
+      it('should parse factors', () => {
+        let u = UnitFactor.factor('km');
+        expect(u.abbreviation).to.be.eql('km');
+        expect(u.factor.symbol).to.be.eql('k');
+
+        u = UnitFactor.factor('cm');
+        expect(u.abbreviation).to.be.eql('cm');
+        expect(u.factor.symbol).to.be.eql('c');
+
+        u = UnitFactor.factor('kibibyte');
+        expect(u.abbreviation).to.be.eql('KiB');
+        expect(u.factor.symbol).to.be.eql('Ki');
+      });
+
+      it('should parse units', () => {
+        let u = Unit.parse('cm');
+        expect(u.abbreviation).to.be.eql('cm');
+        expect(u.factor.symbol).to.be.eql('c');
+
+        u = Unit.parse('m');
+        expect(u.abbreviation).to.be.eql('m');
+        expect(u.factor).to.be.undefined;
+      });
+
+      it('should support "in" on numbers', () => {
+        expect(Person.fields.age.def.in.abbreviation).to.be.eql('Yr');
+      });
+    });
   });
 });

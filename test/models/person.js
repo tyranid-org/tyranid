@@ -46,7 +46,7 @@ var Person = new tyr.Collection({
 
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
     job:       { link: 'job' },
-    age:       { is: 'integer' },
+    age:       { is: 'integer', in: 'year' },
     roles:     { is: 'array', of: RoleStatus },
 
     bag:       { is: 'object' },

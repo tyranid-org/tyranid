@@ -160,4 +160,28 @@ export default class NamePath {
     const val = this.get(obj);
     return _.isArray(val) ? _.uniq(val) : [ val ];
   }
+
+  get pathLabel() {
+    const pf = this.fields;
+    let i = 0,
+        label = '';
+    while (i<pf.length-1) {
+      const f = pf[i++];
+
+      const l = f.pathLabel || f.label;
+      if (l) {
+        if (label) {
+          label += ' ';
+        }
+
+        label += l;
+      }
+    }
+
+    if (label) {
+      label += ' ';
+    }
+    label += this.fields[i].label;
+    return label;
+  }
 }
