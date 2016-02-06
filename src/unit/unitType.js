@@ -14,8 +14,7 @@ const UnitType = new Collection({
     abbreviation:     { is: 'string' },
     formula:          { is: 'string' },
     normal:           { is: 'string' },
-    standard:         { link: 'unitStandard' },
-    note:             { is: 'string' },
+    note:             { is: 'string' }
   },
   values: [
     [ '_id', 'name',                   'formula' ],

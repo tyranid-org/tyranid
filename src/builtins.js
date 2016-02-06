@@ -47,7 +47,7 @@ export const IntegerType = new Type({
     if (compiler.stage === 'link') {
       const unit = field.in;
       if (unit) {
-        field.in = Tyr.Unit.parse(unit);
+        field.in = Tyr.Units.parse(unit);
       }
     }
   },

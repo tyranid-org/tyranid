@@ -63,7 +63,7 @@ UnitFactor.factor = function(name) {
       continue;
     }
 
-    const u = Tyr.UnitBase.bySymbol(sname);
+    const u = Tyr.Unit.bySymbol[sname];
     if (!u) {
       continue;
     }

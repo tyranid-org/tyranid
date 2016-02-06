@@ -10,9 +10,9 @@ var tyr            = require('../src/tyranid'),
     expect         = chai.expect,
     _              = require('lodash'),
     Field          = require('../src/classes/Field'),
-    UnitBase       = require('../src/unit/unitBase'),
     UnitFactor     = require('../src/unit/unitFactor'),
-    Unit           = require('../src/unit/unit');
+    Unit           = require('../src/unit/unit'),
+    Units          = require('../src/unit/units');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -37,6 +37,12 @@ describe('tyranid', function() {
   });
 
   describe( 'schema validation', function() {
+    afterEach(() => {
+      tyr.forget('t00');
+      tyr.forget('t01');
+      tyr.forget('t02');
+    });
+
     it( 'should error if no name is provided', function() {
       expect(function() {
         new tyr.Collection({
@@ -93,7 +99,6 @@ describe('tyranid', function() {
     });
 
     it( 'should support self-referential links', function() {
-      tyr.reset();
       expect(function() {
         new tyr.Collection({
           id: 't00',
@@ -107,7 +112,6 @@ describe('tyranid', function() {
     });
 
     it( 'should throw if a field is missing a definition', function() {
-      tyr.reset();
       expect(function() {
         new tyr.Collection({
           id: 't01',
@@ -119,7 +123,6 @@ describe('tyranid', function() {
         tyr.validate();
       }).to.throw( /Invalid field definition/i );
 
-      tyr.reset();
       expect(function() {
         new tyr.Collection({
           id: 't02',
@@ -140,7 +143,6 @@ describe('tyranid', function() {
        However, you can still clone definitions before passing them on to Tyranid.
      */
     it( 'should support re-usable bits of metadata', function() {
-      tyr.reset();
       expect(function() {
         var Meta = {
           is: 'object',
@@ -170,8 +172,6 @@ describe('tyranid', function() {
     var BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
 
     before(function() {
-      tyr.reset();
-
       // Test validate load models and byName
       tyr.validate([{dir: __dirname + '/models', fileMatch: '\.js$' }]);
 
@@ -498,7 +498,7 @@ describe('tyranid', function() {
     describe('values', function() {
       var allString = [
         '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
-        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide'
+        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 't03'
       ];
 
       it( 'should support valuesFor()', function() {
@@ -530,8 +530,8 @@ describe('tyranid', function() {
       });
 
       it ('it should support lookups by label in string data', () => {
-        expect(UnitBase.byLabel('dram').system).to.be.eql(2);
-        expect(UnitBase.byLabel('meter').system).to.be.eql(1);
+        expect(Unit.byLabel('dram').system).to.be.eql(2);
+        expect(Unit.byLabel('meter').system).to.be.eql(1);
       });
     });
 
@@ -1107,18 +1107,34 @@ describe('tyranid', function() {
         expect(u.factor.symbol).to.be.eql('Ki');
       });
 
-      it('should parse units', () => {
-        let u = Unit.parse('cm');
-        expect(u.abbreviation).to.be.eql('cm');
-        expect(u.factor.symbol).to.be.eql('c');
+      it('should parse simple units', () => {
+        let u = Units.parse('cm');
+        expect(u.cm).to.be.eql(1);
 
-        u = Unit.parse('m');
-        expect(u.abbreviation).to.be.eql('m');
-        expect(u.factor).to.be.undefined;
+        u = Units.parse('m');
+        expect(u.m).to.be.eql(1);
+
+        expect(() => Units.parse('draculas')).to.throw(/"draculas"/);
+      });
+
+      it('should parse composite units', () => {
+        let u = Units.parse('m/s^2');
+        expect(u.m).to.be.eql(1);
+        expect(u.s).to.be.eql(-2);
+
+        u = Units.parse('N*m');
+        expect(u.N).to.be.eql(1);
+        expect(u.m).to.be.eql(1);
+
+        u = Units.parse('s-2*m');
+        expect(u.m).to.be.eql(1);
+        expect(u.s).to.be.eql(-2);
+
+        expect(() => Units.parse('m/foo^2')).to.throw(/"foo"/);
       });
 
       it('should support "in" on numbers', () => {
-        expect(Person.fields.age.def.in.abbreviation).to.be.eql('Yr');
+        expect(Person.fields.age.def.in.Yr).to.be.eql(1);
       });
     });
   });

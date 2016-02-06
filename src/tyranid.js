@@ -14,6 +14,7 @@ import './unit/unitSystem';
 import './unit/unitFactor';
 import './unit/unitType';
 import './unit/unit';
+import './unit/units';
 
 import express from './express';
 
@@ -148,9 +149,31 @@ _.assign(Tyr, {
       }
     }
 
-    collections.forEach(col => {
+    function bootstrap(stage) {
+      const bootstrapping = collections.filter(col => col.boot);
+
+      for (let pass=1; bootstrapping.length && pass < 100; pass++) {
+        for (let i=0; i<bootstrapping.length; ) {
+          if (bootstrapping[i].boot(stage, pass)) {
+            i++;
+          } else {
+            bootstrapping.splice(i);
+          }
+        }
+      }
+
+      if (bootstrapping.length) {
+        throw new Error('Tyranid could not boot during ${stage} stage after 100 passes.  Deadlocked collections: ' + bootstrapping.map(c => c.def.name).join(', '));
+      }
+    }
+
+    bootstrap('compile');
+
+    for (const col of collections) {
       col.compile('link');
-    });
+    }
+
+    bootstrap('link');
   },
 
   async valuesBy(filter) {
@@ -184,39 +207,18 @@ _.assign(Tyr, {
   },
 
   /**
-   * Mostly just used by tests.
+   * Mostly just used by tests, not rigorous.
    * @private
    */
-  reset() {
-    function builtin(collection) {
-      return collection.def.name.startsWith('tyr');
-    }
+  forget(collectionId) {
+    const col = collectionsById[collectionId];
 
-    for (let ci=0; ci<collections.length; ) {
-      const c = collections[ci];
-
-      if (!builtin(c)) {
-        collections.splice(ci);
-      } else {
-        ci++;
-      }
-    }
-
-    for (const id in collectionsById) {
-      const c = collectionsById[id];
-
-      if (!builtin(c)) {
-        delete collectionsById[id];
-      }
-    }
-    for (const name in typesByName) {
-      const type = typesByName[name];
-      if (type instanceof Collection && !builtin(type)) {
-        delete typesByName[name];
-      }
+    if (col) {
+      _.remove(collections, col => col.id === collectionId);
+      delete collectionsById[collectionId];
+      delete typesByName[col.def.name];
     }
   }
-
 });
 
 export default Tyr;

@@ -869,7 +869,7 @@ export default class Collection {
     const compiler = {
       stage: stage,
       err(path, msg) {
-        return new Error('Tyranid Schema Error| ' + def.name + (path ? path : '') + ': ' + msg);
+        return new Error('Tyranid Schema Error| ' + def.name + (path ? '.' + path : '') + ': ' + msg);
       },
 
       field(path, field) {
