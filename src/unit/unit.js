@@ -134,21 +134,64 @@ const Unit = new Collection({
 const bySid    = Unit.bySid    = {};
 const bySymbol = Unit.bySymbol = {};
 
+function register(unit) {
+  unit.sid = unit.abbreviation || unit.formula.replace('/', '_');
+
+  bySid[unit.sid] = unit;
+
+  if (unit.abbreviation) {
+    bySymbol[unit.abbreviation] = unit;
+  }
+
+  bySymbol[unit.name] = unit;
+}
+
 Unit.boot = function(stage, pass) {
   if (stage === 'compile' && pass === 1) {
-    for (const value of Unit.def.values) {
-      value.sid = value.abbreviation || value.formula.replace('/', '_');
-
-      bySid[value.sid] = value;
-
-      if (value.abbreviation) {
-        bySymbol[value.abbreviation] = value;
-      }
-
-      bySymbol[value.name] = value;
+    for (const unit of Unit.def.values) {
+      register(unit);
     }
   }
 }
+
+Unit.parse = function(name) {
+  const UnitFactor = Tyr.UnitFactor;
+
+  let u = bySymbol[name];
+  if (u) {
+    return u;
+  }
+
+  for (const f of UnitFactor.def.values) {
+    let sname;
+    if (name.startsWith(f.prefix)) {
+      sname = name.substring(f.prefix.length);
+    } else if (name.startsWith(f.symbol)) {
+      sname = name.substring(f.symbol.length);
+    } else {
+      continue;
+    }
+
+    u = bySymbol[sname];
+    if (!u) {
+      continue;
+    }
+
+    const du = new Unit();
+    du.abbreviation = f.symbol + u.abbreviation;
+    du.name = f.prefix + u.name;
+    du.factor = f;
+    du.type = u.type;
+    du.baseMultiplier = ( u.baseMultiplier ? u.baseMultiplier * f.factor : f.factor );
+    du.system = u.system;
+
+    register(du);
+
+    return du;
+  }
+
+  //return undefined;
+};
 
 Tyr.Unit = Unit;
 export default Unit;

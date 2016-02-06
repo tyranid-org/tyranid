@@ -19,17 +19,75 @@ const isLetter = code => (code >= _A && code <= _Z) || (code >= _a && code <= _z
 const isDigit  = code => code >= _0 && code <= _9;
 
 
+
+class UnitDegree {
+  constructor(unit, degree) {
+    this.unit   = unit;
+    this.degree = degree;
+  }
+}
+
 class Units {
+  constructor(sid, comps) {
+
+    Object.defineProperty(this, 'sid',   { value: sid });
+    Object.defineProperty(this, 'comps', { value: comps });
+
+    for (const comp of comps) {
+      this[comp.unit.sid] = comp.degree;
+    }
+  }
 };
 
+const bySid = {};
+
+function sortByDegreeThenAbbrev(ud1, ud2) {
+  let d1 = ud1.degree;
+  if ( d1 < 0 ) {
+    // we want negative degrees at the end, with larger negatives further back
+    d1 = 32768 - d1;
+  }
+
+  let d2 = ud2.degree;
+  if ( d2 < 0 ) {
+    d2 = 32768 - d2;
+  }
+
+  const diff = d1 - d2;
+  if (diff) {
+    return diff;
+  }
+
+  return ud1.unit.abbreviation.localeCompare(ud2.unit.abbreviation);
+}
+
+function make(unitDegrees) {
+  unitDegrees.sort(sortByDegreeThenAbbrev);
+
+  let sid = '';
+  for (const ud of unitDegrees) {
+    sid += ud.unit.sid;
+    sid += ud.degree;
+  }
+
+  let units = bySid[sid];
+
+  if (!units) {
+    units = new Units(sid, unitDegrees);
+    bySid[sid] = units;
+  }
+
+  return units;
+}
 
 /**
  * Given "a2b-3c2" this returns 3.
+ */
 function countComponents(components) {
 
+  const len = components.length;
   let c = 0,
-      identifier = false,
-      len = components.length;
+      identifier = false;
 
   for (let i=0; i<len; i++) {
     const ch = components.charCodeAt(i);
@@ -39,7 +97,7 @@ function countComponents(components) {
         identifier = true;
         c++;
       }
-    } else if (ch == _minus || ch == _caret || isDigit(ch) || ch == _slash || ch == _asterisk) {
+    } else if (ch === _minus || ch === _caret || isDigit(ch) || ch === _slash || ch === _asterisk) {
       if (!c) {
         throw new Error(`A units component clause must start with an identifier in "${components}"`);
       }
@@ -52,7 +110,6 @@ function countComponents(components) {
 
   return c;
 }
-*/
 
 Units.parse = function(text) {
 
@@ -60,11 +117,18 @@ Units.parse = function(text) {
     return; // undefined
   }
 
-  let multiplier = 1;
-  let pos = 0;
+  const compCount = countComponents(text);
+  if (!compCount) {
+    return; // undefined
+  }
 
-  const len = text.length,
-        units = new Units();
+  const len   = text.length,
+        comps = new Array(compCount);
+
+  let multiplier = 1,
+      pos = 0,
+      nextComp = 0;
+
 
   //console.log(`parsing unit ${text}:`);
   while (pos < len) {
@@ -87,7 +151,7 @@ Units.parse = function(text) {
     }
 
     const name = text.substring(s, pos);
-    const unit = Tyr.Unit.bySymbol[name] || Tyr.UnitFactor.factor(name);
+    const unit = Tyr.Unit.parse(name);
     if (!unit) {
       throw new Error(`Unknown unit "${name}" in "${text}"`);
     }
@@ -118,13 +182,25 @@ Units.parse = function(text) {
     }
 
     degree *= multiplier;
-    const abbrev = unit.abbreviation;
-    units[abbrev] = (units[abbrev] || 0) + degree;
+
+    let ci = 0;
+    for (; ci<nextComp; ci++) {
+      const comp = comps[ci];
+
+      if (comp.unit === unit) {
+        comp.degree += degree;
+        break;
+      }
+    }
+
+    if (ci >= nextComp) {
+      comps[nextComp++] = new UnitDegree(unit, degree);
+    }
 
     //console.log(` + ${name} ==> ${degree}`);
   }
 
-  return units;
+  return make(comps);
 }
 
 Tyr.Units = Units;

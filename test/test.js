@@ -10,7 +10,6 @@ var tyr            = require('../src/tyranid'),
     expect         = chai.expect,
     _              = require('lodash'),
     Field          = require('../src/classes/Field'),
-    UnitFactor     = require('../src/unit/unitFactor'),
     Unit           = require('../src/unit/unit'),
     Units          = require('../src/unit/units');
 
@@ -1093,16 +1092,16 @@ describe('tyranid', function() {
 
     describe('units', function() {
 
-      it('should parse factors', () => {
-        let u = UnitFactor.factor('km');
+      it('should parse unit factors', () => {
+        let u = Unit.parse('km');
         expect(u.abbreviation).to.be.eql('km');
         expect(u.factor.symbol).to.be.eql('k');
 
-        u = UnitFactor.factor('cm');
+        u = Unit.parse('cm');
         expect(u.abbreviation).to.be.eql('cm');
         expect(u.factor.symbol).to.be.eql('c');
 
-        u = UnitFactor.factor('kibibyte');
+        u = Unit.parse('kibibyte');
         expect(u.abbreviation).to.be.eql('KiB');
         expect(u.factor.symbol).to.be.eql('Ki');
       });
@@ -1122,6 +1121,10 @@ describe('tyranid', function() {
         expect(u.m).to.be.eql(1);
         expect(u.s).to.be.eql(-2);
 
+        u = Units.parse('m/s2');
+        expect(u.m).to.be.eql(1);
+        expect(u.s).to.be.eql(-2);
+
         u = Units.parse('N*m');
         expect(u.N).to.be.eql(1);
         expect(u.m).to.be.eql(1);
@@ -1131,6 +1134,21 @@ describe('tyranid', function() {
         expect(u.s).to.be.eql(-2);
 
         expect(() => Units.parse('m/foo^2')).to.throw(/"foo"/);
+      });
+
+      it('should iterate', () => {
+        const expected = { m: 1, s: -2 };
+        _.each(Units.parse('m/s^2'), (v, k) => {
+          expect(expected[k]).to.be.eql(v);
+        });
+      });
+
+      it('should be shared and unique', () => {
+        expect(Unit.parse('s')     === Unit.parse('s')).to.be.true;
+        expect(Unit.parse('Mmol')  === Unit.parse('Mmol')).to.be.true;
+        expect(Unit.parse('km')    === Unit.parse('km')).to.be.true;
+        expect(Units.parse('m/s2') === Units.parse('s-2*m')).to.be.true;
+        expect(Units.parse('N')    === Units.parse('N')).to.be.true;
       });
 
       it('should support "in" on numbers', () => {

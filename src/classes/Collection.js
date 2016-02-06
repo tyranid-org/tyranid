@@ -63,7 +63,6 @@ function defineDocumentProperties(dp) {
         return this.$model.labelFor(this);
       },
       enumerable:   false,
-      writeable:    false,
       configurable: false
     },
 
@@ -72,7 +71,6 @@ function defineDocumentProperties(dp) {
         return this.$model.idToUid(this[this.def.primaryKey.field]);
       },
       enumerable:   false,
-      writeable:    false,
       configurable: false
     }
   });
@@ -232,7 +230,7 @@ export default class Collection {
       if (key.substring(0,1) === '$' && key !== '$label') {
         Object.defineProperty(dp, key, {
           enumerable:   false,
-          writeable:    false,
+          writable:     false,
           configurable: false
         });
       }
@@ -258,7 +256,6 @@ export default class Collection {
 
         const prop = {
           enumerable:   isDb !== undefined ? isDb : false,
-          writeable:    false,
           configurable: false
         };
 
@@ -292,7 +289,7 @@ export default class Collection {
       method.name = name;
       Object.defineProperty(dp, name, {
         enumerable:   false,
-        writeable:    false,
+        writable:     false,
         configurable: false,
         value:        fn
       });

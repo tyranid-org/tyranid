@@ -52,40 +52,5 @@ const UnitFactor = new Collection({
   ]
 });
 
-UnitFactor.factor = function(name) {
-  for (const f of this.def.values) {
-    let sname;
-    if (name.startsWith(f.prefix)) {
-      sname = name.substring(f.prefix.length);
-    } else if (name.startsWith(f.symbol)) {
-      sname = name.substring(f.symbol.length);
-    } else {
-      continue;
-    }
-
-    const u = Tyr.Unit.bySymbol[sname];
-    if (!u) {
-      continue;
-    }
-
-    const fu = new Tyr.Unit();
-    fu.abbreviation = f.symbol + u.abbreviation;
-    fu.name = f.prefix + u.name;
-    fu.factor = f;
-    fu.type = u.type;
-    fu.baseMultiplier = ( u.baseMultiplier ? u.baseMultiplier * f.factor : f.factor );
-    fu.system = u.system;
-
-  	//if ( u.components != null ) {
-  		//fu.componentText = u.componentText;
-  		//fu.components = Unit.analyze( fu.componentText );
-  	//}
-
-    return fu;
-  }
-
-  //return undefined;
-};
-
 Tyr.UnitFactor = UnitFactor;
 export default UnitFactor;

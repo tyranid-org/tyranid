@@ -48,7 +48,7 @@ export default function(app, auth) {
     for (var key in obj) {
       Object.defineProperty(obj, key, {
         enumerable:   false,
-        writeable:    false,
+        writable:     false,
         configurable: false,
         value:        obj[key]
       });
@@ -86,7 +86,6 @@ export default function(app, auth) {
         return this.$model.labelFor(this);
       },
       enumerable:   false,
-      writeable:    false,
       configurable: false
     },
 
@@ -96,7 +95,6 @@ export default function(app, auth) {
         return model.idToUid(this[model.def.primaryKey.field]);
       },
       enumerable:   false,
-      writeable:    false,
       configurable: false
     }
   });
@@ -115,21 +113,18 @@ export default function(app, auth) {
     db: {
       get: function() { return this.def.db !== false; },
       enumerable:   false,
-      writeable:    false,
       configurable: false
     },
 
     label: {
       get: function() { return this.def.label; },
       enumerable:   false,
-      writeable:    false,
       configurable: false
     },
 
     pathLabel: {
       get: function() { return this._calcPathLabel(); },
       enumerable:   false,
-      writeable:    false,
       configurable: false
     }
   });
@@ -176,7 +171,7 @@ export default function(app, auth) {
     };
     CollectionInstance.__proto__ = Collection.prototype;
     Object.defineProperty(CollectionInstance, 'name', {
-      writeable: false,
+      writable:  false,
       enumerable: false,
       configurable: true,
       value: def.name
@@ -238,7 +233,6 @@ export default function(app, auth) {
       if (get || set) {
         const prop = {
           enumerable:   isDb !== undefined ? isDb : false,
-          writeable:    false,
           configurable: false
         };
 
@@ -259,7 +253,7 @@ export default function(app, auth) {
       method.name = name;
       Object.defineProperty(dp, name, {
         enumerable:   false,
-        writeable:    false,
+        writable:     false,
         configurable: false,
         value:        fn
       });
