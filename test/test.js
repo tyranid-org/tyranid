@@ -1154,6 +1154,18 @@ describe('tyranid', function() {
       it('should support "in" on numbers', () => {
         expect(Person.fields.age.def.in.Yr).to.be.eql(1);
       });
+
+      it('should support base units', () => {
+        expect(Units.parse('m').base === Units.parse('m')).to.be.true;
+        expect(Units.parse('m').base).to.eql({ m: 1 });
+        expect(Units.parse('N').base).to.eql({ kg: 1, m: 1, s: -2 });
+        expect(Units.parse('Pa').base).to.eql({ kg: 1, m: -1, s: -2 });
+        expect(Units.parse('J').base).to.eql({ kg: 1, m: 2, s: -2 });
+        expect(Units.parse('W').base).to.eql({ kg: 1, m: 2, s: -3 });
+        expect(Units.parse('V').base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
+        expect(Units.parse('Wb').base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
+        expect(Units.parse('rad').base).to.eql({ m: 0 });
+      });
     });
   });
 });

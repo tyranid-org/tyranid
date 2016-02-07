@@ -4,21 +4,25 @@ import Tyr from '../tyr';
 //import _   from 'lodash';
 
 
-const _asterisk = 42;
-const _minus    = 45;
-const _slash    = 47;
-const _0        = 48;
-const _9        = 57;
-const _A        = 64;
-const _Z        = 90;
-const _caret    = 94;
-const _a        = 97;
-const _z        = 122;
-
-const isLetter = code => (code >= _A && code <= _Z) || (code >= _a && code <= _z);
-const isDigit  = code => code >= _0 && code <= _9;
 
 
+class Units {
+  constructor(sid, components) {
+
+    Object.defineProperty(this, 'sid',         { value: sid });
+    Object.defineProperty(this, 'components',  { value: components });
+    Object.defineProperty(this, 'conversions', { value: {} });
+
+    for (const comp of components) {
+      this[comp.unit.sid] = comp.degree;
+    }
+  }
+};
+
+
+//
+//  Unit Degrees
+//
 
 class UnitDegree {
   constructor(unit, degree) {
@@ -27,19 +31,9 @@ class UnitDegree {
   }
 }
 
-class Units {
-  constructor(sid, comps) {
-
-    Object.defineProperty(this, 'sid',   { value: sid });
-    Object.defineProperty(this, 'comps', { value: comps });
-
-    for (const comp of comps) {
-      this[comp.unit.sid] = comp.degree;
-    }
-  }
+function sortByAbbrev(ud1, ud2) {
+  return ud1.unit.abbreviation.localeCompare(ud2.unit.abbreviation);
 };
-
-const bySid = {};
 
 function sortByDegreeThenAbbrev(ud1, ud2) {
   let d1 = ud1.degree;
@@ -60,6 +54,27 @@ function sortByDegreeThenAbbrev(ud1, ud2) {
 
   return ud1.unit.abbreviation.localeCompare(ud2.unit.abbreviation);
 }
+
+
+//
+//  Unit Parsing
+//
+
+const _asterisk = 42;
+const _minus    = 45;
+const _slash    = 47;
+const _0        = 48;
+const _9        = 57;
+const _A        = 64;
+const _Z        = 90;
+const _caret    = 94;
+const _a        = 97;
+const _z        = 122;
+
+const isLetter = code => (code >= _A && code <= _Z) || (code >= _a && code <= _z);
+const isDigit  = code => code >= _0 && code <= _9;
+
+const bySid = {};
 
 function make(unitDegrees) {
   unitDegrees.sort(sortByDegreeThenAbbrev);
@@ -122,8 +137,8 @@ Units.parse = function(text) {
     return; // undefined
   }
 
-  const len   = text.length,
-        comps = new Array(compCount);
+  const len        = text.length,
+        components = new Array(compCount);
 
   let multiplier = 1,
       pos = 0,
@@ -185,7 +200,7 @@ Units.parse = function(text) {
 
     let ci = 0;
     for (; ci<nextComp; ci++) {
-      const comp = comps[ci];
+      const comp = components[ci];
 
       if (comp.unit === unit) {
         comp.degree += degree;
@@ -194,14 +209,69 @@ Units.parse = function(text) {
     }
 
     if (ci >= nextComp) {
-      comps[nextComp++] = new UnitDegree(unit, degree);
+      components[nextComp++] = new UnitDegree(unit, degree);
     }
 
     //console.log(` + ${name} ==> ${degree}`);
   }
 
-  return make(comps);
+  components.length = nextComp;
+  return make(components);
 }
+
+
+//
+//  Base Analysis
+//
+
+function addBase(next, base, add, degree) {
+
+  for (const ud of add) {
+    const units = ud.unit.units;
+    if (units) {
+      next = addBase(next, base, units.base.components, degree * ud.degree);
+    } else {
+      let i = 0;
+      for ( ; i<next; i++) {
+        const bud = base[i];
+
+        if (bud.unit === ud.unit) {
+          bud.degree += ud.degree * degree;
+          break;
+        }
+      }
+
+      if (i === next) {
+        base[next++] = new UnitDegree(ud.unit, ud.degree * degree);
+      }
+    }
+  }
+
+  return next;
+}
+
+function deriveBase(components) {
+  if (!components || !components.length) {
+    return; // undefined
+  }
+
+  const base = new Array(components.length * 4);
+  base.length = addBase(0, base, components, 1);
+  base.sort(sortByAbbrev);
+  return make(base);
+}
+
+Object.defineProperty(Units.prototype, 'base', {
+  get: function() {
+    if (!this._base) {
+      const components = this.components;
+      Object.defineProperty(this, '_base', { value: components ? deriveBase(components) : this });
+    }
+
+    return this._base;
+  }
+});
+
 
 Tyr.Units = Units;
 export default Units;

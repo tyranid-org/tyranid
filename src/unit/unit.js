@@ -148,8 +148,15 @@ function register(unit) {
 
 Unit.boot = function(stage, pass) {
   if (stage === 'compile' && pass === 1) {
-    for (const unit of Unit.def.values) {
+    const units = Unit.def.values;
+    for (const unit of units) {
       register(unit);
+    }
+
+    for (const unit of units) {
+      if (unit.formula) {
+        unit.units = Tyr.Units.parse(unit.formula);
+      }
     }
   }
 }
