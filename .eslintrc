@@ -11,7 +11,7 @@
     "no-unused-expressions": 0,
     "wrap-iife": 2,
     "no-undef": 2,
-    "new-cap": [2, {
+    "new-cap": [0, {
       "capIsNewExceptions" : ['ObjectId'],
       "newIsCapExceptions": ['collection']
     }],

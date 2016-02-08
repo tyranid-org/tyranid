@@ -434,7 +434,82 @@ Units.prototype.convert = function(value, targetUnit) {
 
   return value;
 };
-Object.defineProperty(Units.prototype, 'convert', { enumerable: false });
+
+
+//
+//  Unit Arithmetic
+//
+
+Units.prototype.add = function(value, addUnit, addValue) {
+  addValue = addUnit.convert(addValue, this);
+  return value + addValue;
+};
+
+Units.prototype.subtract = function(value, subUnit, subValue) {
+  subValue = subUnit.convert(subValue, this);
+  return value - subValue;
+}
+
+function multAdd(len, components, addComponents, mult) {
+
+  for (const addComp of addComponents) {
+    const addUnit = addComp.unit,
+          addDegree = addComp.degree * mult;
+    let ci = 0;
+
+    for (; ci<len; ci++) {
+      const comp = components[ci];
+
+      if (comp.unit === addUnit) {
+        comp.degree += addDegree;
+        break;
+      }
+    }
+
+    if (ci === len) {
+      components[len++] = new UnitDegree(addUnit, addDegree);
+    }
+  }
+
+  return len;
+}
+
+function mult(name, units, by) {
+
+  let multipliers = units[name];
+  if (!multipliers) {
+    multipliers = {};
+    Object.defineProperty(units, name, { value: multipliers });
+  }
+
+  let is = multipliers[by.sid];
+  if (!is) {
+    const components = new Array(units.components.length + by.components.length);
+    let len = 0;
+
+    len = multAdd(len, components, units.components, 1);
+    len = multAdd(len, components, by.components, name === 'divisors' ? -1 : 1);
+    components.length = len;
+
+    multipliers[by.sid] = is = make(components);
+  }
+
+  return is;
+}
+
+Units.prototype.multiply = function(byUnits) {
+  return mult('multipliers', this, byUnits);
+}
+
+Units.prototype.divide = function(byUnits) {
+  return mult('divisors', this, byUnits);
+}
+
+
+
+for (const method of ['convert', 'add', 'subtract', 'multiply', 'divide']) {
+  Object.defineProperty(Units.prototype, method, { enumerable: false });
+}
 
 Tyr.Units = Units;
 export default Units;

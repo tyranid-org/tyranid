@@ -17,6 +17,10 @@ var tyr            = require('../src/tyranid'),
 chai.use(chaiAsPromised);
 chai.should();
 
+function round5(v) {
+  return parseFloat(v.toFixed(5));
+}
+
 global.ObjectId = pmongo.ObjectId;
 
 describe('tyranid', function() {
@@ -1173,34 +1177,37 @@ describe('tyranid', function() {
         expect(Person.fields.age.def.in.Yr).to.be.eql(1);
       });
 
+      const U = ::Units.parse;
+
       it('should support base units', () => {
-        expect(Units.parse('m'  ).base === Units.parse('m')).to.be.true;
-        expect(Units.parse('m'  ).base).to.eql({ m: 1 });
-        expect(Units.parse('N'  ).base).to.eql({ kg: 1, m: 1, s: -2 });
-        expect(Units.parse('Pa' ).base).to.eql({ kg: 1, m: -1, s: -2 });
-        expect(Units.parse('J'  ).base).to.eql({ kg: 1, m: 2, s: -2 });
-        expect(Units.parse('W'  ).base).to.eql({ kg: 1, m: 2, s: -3 });
-        expect(Units.parse('V'  ).base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
-        expect(Units.parse('Wb' ).base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
-        expect(Units.parse('rad').base).to.eql({});
+        expect(U('m'  ).base === Units.parse('m')).to.be.true;
+        expect(U('m'  ).base).to.eql({ m: 1 });
+        expect(U('N'  ).base).to.eql({ kg: 1, m: 1, s: -2 });
+        expect(U('Pa' ).base).to.eql({ kg: 1, m: -1, s: -2 });
+        expect(U('J'  ).base).to.eql({ kg: 1, m: 2, s: -2 });
+        expect(U('W'  ).base).to.eql({ kg: 1, m: 2, s: -3 });
+        expect(U('V'  ).base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
+        expect(U('Wb' ).base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
+        expect(U('rad').base).to.eql({});
       });
 
       it('should have types', () => {
-        expect(Units.parse('m'    ).type.name).to.eql('length');
-        expect(Units.parse('m2'   ).type.name).to.eql('area');
-        expect(Units.parse('cm*m' ).type.name).to.eql('area');
-        expect(Units.parse('ft2'  ).type.name).to.eql('area');
-        expect(Units.parse('N'    ).type.name).to.eql('force');
-        expect(Units.parse('N/kg' ).type.name).to.eql('acceleration');
-        expect(Units.parse('N*m'  ).type.name).to.eql('energy');
-        expect(Units.parse('N*m/s').type.name).to.eql('power');
-        expect(Units.parse('kC'   ).type.name).to.eql('electricCharge');
+        expect(U('m'    ).type.name).to.eql('length');
+        expect(U('m2'   ).type.name).to.eql('area');
+        expect(U('m3'   ).type.name).to.eql('volume');
+        expect(U('cm*m' ).type.name).to.eql('area');
+        expect(U('ft2'  ).type.name).to.eql('area');
+        expect(U('N'    ).type.name).to.eql('force');
+        expect(U('N/kg' ).type.name).to.eql('acceleration');
+        expect(U('N*m'  ).type.name).to.eql('energy');
+        expect(U('N*m/s').type.name).to.eql('power');
+        expect(U('kC'   ).type.name).to.eql('electricCharge');
       });
 
       it('should support compatibility checks', () => {
-        expect(Units.parse('m').isCompatibleWith(Units.parse('ft'))).to.be.true;
-        expect(Units.parse('cm*m').isCompatibleWith(Units.parse('m2'))).to.be.true;
-        expect(Units.parse('kC').isCompatibleWith(Units.parse('kA*us'))).to.be.true;
+        expect(U('m').isCompatibleWith(U('ft'))).to.be.true;
+        expect(U('cm*m').isCompatibleWith(U('m2'))).to.be.true;
+        expect(U('kC').isCompatibleWith(U('kA*us'))).to.be.true;
       });
 
       it('should support valid conversions', () => {
@@ -1215,15 +1222,11 @@ describe('tyranid', function() {
           [  1, 'ft*ms',     0.012,  'in*s' ],
         ];
 
-        function round5(v) {
-          return parseFloat(v.toFixed(5));
-        }
-
         for (const test of tests) {
           const fromValue = test[0],
-                fromUnits = Units.parse(test[1]),
+                fromUnits = U(test[1]),
                 toValue   = test[2],
-                toUnits   = Units.parse(test[3]);
+                toUnits   = U(test[3]);
 
           expect(round5(fromUnits.convert(fromValue, toUnits))).to.equal(toValue);
         }
@@ -1240,12 +1243,26 @@ describe('tyranid', function() {
 
         for (const test of tests) {
           const fromValue = test[0],
-                fromUnits = Units.parse(test[1]),
-                toUnits   = Units.parse(test[2]);
+                fromUnits = U(test[1]),
+                toUnits   = U(test[2]);
 
           expect(() => fromUnits.convert(fromValue, toUnits)).to.throw(/Cannot convert/);
         }
       });
+
+      it('should support unit arithmetic', () => {
+        expect(U('in').add(5, U('ft'), 1)).to.eql(17);
+
+        expect(round5(U('in').subtract(5, U('ft'), 1))).to.eql(-7);
+
+        expect(U('m').multiply(U('s'))).to.eql(U('m*s'));
+        expect(U('km').multiply(U('m'))).to.eql(U('km*m'));
+        expect(U('m/s').multiply(U('m/s'))).to.eql(U('m2/s2'));
+
+        expect(U('m').divide(U('s'))).to.eql(U('m/s'));
+        expect(U('m/s*A').divide(U('s'))).to.eql(U('m/s2*A'));
+      });
+
     });
   });
 });
