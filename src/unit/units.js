@@ -126,12 +126,12 @@ class Units {
   }
 };
 
+const bySid = {};
+
 
 //
 //  Unit Parsing
 //
-
-const bySid = {};
 
 function make(unitDegrees) {
   U.compact(unitDegrees);
@@ -505,9 +505,79 @@ Units.prototype.divide = function(byUnits) {
   return mult('divisors', this, byUnits);
 }
 
+Units.prototype.invert = function() {
+  let inversion = this.inversion;
+  if (!inversion) {
+    const components = new Array(this.components.length);
+    multAdd(0, components, this.components, -1);
+    inversion = make(components);
+
+    Object.defineProperty(this, 'inversion', { value: inversion });
+  }
+
+  return inversion;
+}
 
 
-for (const method of ['convert', 'add', 'subtract', 'multiply', 'divide']) {
+//
+// Normals
+//
+
+Units.prototype.normal = function() {
+  const Unit = Tyr.Unit;
+  let normal = this._normal;
+
+  if (!normal) {
+    const nuds = this.base.components.map(comp => new UnitDegree(Unit.bySid[comp.unit.type$.normal], comp.degree));
+    U.merge('unit', nuds);
+    normal = make(nuds);
+    Object.defineProperty(this, '_normal', { value: normal });
+  }
+
+  return normal;
+}
+
+
+//
+// Units formatting
+//
+
+Units.prototype.toString = function() {
+  let str = '',
+      positiveFound = false,
+      inverse = false,
+      floatingOne = false;
+
+  for (const ud of this.components) {
+    if (ud.degree > 0) {
+      positiveFound = true;
+    } else if (ud.degree < 0 && positiveFound && !inverse) {
+      inverse = true;
+      str += '/';
+      floatingOne = false;
+    }
+
+    if (floatingOne) {
+      str += '1';
+      floatingOne = false;
+    }
+
+    str += ud.unit.abbreviation;
+
+    const degree = inverse ? ud.degree * -1 : ud.degree;
+    if (degree !== 1) {
+      str += degree;
+    } else {
+      floatingOne = true;
+    }
+  }
+
+  return str;
+}
+
+
+
+for (const method of ['convert', 'add', 'subtract', 'multiply', 'divide', 'invert', 'normal', 'toString']) {
   Object.defineProperty(Units.prototype, method, { enumerable: false });
 }
 

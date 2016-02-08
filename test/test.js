@@ -1261,8 +1261,24 @@ describe('tyranid', function() {
 
         expect(U('m').divide(U('s'))).to.eql(U('m/s'));
         expect(U('m/s*A').divide(U('s'))).to.eql(U('m/s2*A'));
+
+        expect(U('m').invert()).to.eql(U('m-1'));
+        expect(U('m/s*A').invert()).to.eql(U('s*A/m'));
       });
 
+      it('should support normals', () => {
+        expect(U('m/s'       ).normal()).to.eql({ m: 1, s: -1 });
+        expect(U('ft'        ).normal()).to.eql({ m: 1 });
+        expect(U('ft/h'      ).normal()).to.eql({ m: 1, s: -1 });
+        expect(U('ft*furlong').normal()).to.eql({ m: 2 });
+        expect(U('cm*m*ft'   ).normal()).to.eql({ m: 3 });
+      });
+
+      it('should support formatting', () => {
+        expect(U('m*s-1').toString()).to.eql('m/s');
+        expect(U('m*s-2').toString()).to.eql('m/s2');
+        expect(U('N2*m*s-1').toString()).to.eql('m1N2/s');
+      });
     });
   });
 });
