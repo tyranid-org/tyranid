@@ -1238,10 +1238,6 @@ describe('tyranid', function() {
           [  1,   'ft',    'in2' ],
         ];
 
-        function round5(v) {
-          return parseFloat(v.toFixed(5));
-        }
-
         for (const test of tests) {
           const fromValue = test[0],
                 fromUnits = Units.parse(test[1]),
