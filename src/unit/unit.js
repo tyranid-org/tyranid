@@ -47,16 +47,17 @@ const Unit = new Collection({
     [ 23,    'hertz',                       'Hz',         's-1',           'frequency',              'metric' ],
     [ 24,    'newton',                      'N',          'm1kg1/s2',      'force',                  'metric' ],
     [ 25,    'pascal',                      'Pa',         'N/m2',          'pressure',               'metric' ],
-    [ 26,    'joule',                       'J',          'N1m1',          'energy',                 'metric' ],
-    [ 27,    'watt',                        'W',          'J/s',           'power',                  'metric' ],
-    [ 28,    'coulomb',                     'C',          's1A1',          'electricCharge',         'metric' ],
-    [ 29,    'volt',                        'V',          'W/A',           'voltage',                'metric' ],
-    [ 30,    'farad',                       'F',          'C/V',           'capacitance',            'metric' ],
-    [ 31,    'ohm',                         'OHM',        'V/A',           'electricResistance',     'metric' ],
-    [ 32,    'siemens',                     'S',          'A/V',           'electricConductance',    'metric' ],
-    [ 33,    'weber',                       'Wb',         'V*s',           'magneticFlux',           'metric' ],
-    [ 34,    'tesla',                       'T',          'Wb/m2',         'magneticFluxDensity',    'metric' ],
-    [ 35,    'henry',                       'H',          'Wb/A',          'inductance',             'metric' ],
+    [ 26,    'newtonMeter',                 null,         'N1m1',          'momentOfForce',          'metric' ],
+    [ 27,    'joule',                       'J',          'N1m1',          'energy',                 'metric' ],
+    [ 28,    'watt',                        'W',          'J/s',           'power',                  'metric' ],
+    [ 29,    'coulomb',                     'C',          's1A1',          'electricCharge',         'metric' ],
+    [ 30,    'volt',                        'V',          'W/A',           'voltage',                'metric' ],
+    [ 31,    'farad',                       'F',          'C/V',           'capacitance',            'metric' ],
+    [ 32,    'ohm',                         'OHM',        'V/A',           'electricResistance',     'metric' ],
+    [ 33,    'siemens',                     'S',          'A/V',           'electricConductance',    'metric' ],
+    [ 34,    'weber',                       'Wb',         'V*s',           'magneticFlux',           'metric' ],
+    [ 35,    'tesla',                       'T',          'Wb/m2',         'magneticFluxDensity',    'metric' ],
+    [ 36,    'henry',                       'H',          'Wb/A',          'inductance',             'metric' ],
     [ 37,    'lumen',                       'lm',         'cd1sr1',        'luminousFlux',           'metric' ],
     [ 38,    'lux',                         'lx',         'lm/m2',         'illuminance',            'metric' ],
     [ 39,    'becquerel',                   'Bq',         's-1',           'activity',               'metric' ],
@@ -64,7 +65,6 @@ const Unit = new Collection({
     [ 41,    'sievert',                     'Sv',         'J/kg',          'doseEquivalent',         'metric' ],
     [ 42,    'katal',                       'kat',        'mol/s',         'catalyticActivity',      'metric' ],
     [ 43,    'pascalSecond',                null,         'Pa1s1',         'dynamicViscosity',       'metric' ],
-    [ 44,    'newtonMeter',                 null,         'N1m1',          'momentOfForce',          'metric' ],
     [ 45,    'newtonPerMeter',              null,         'N/m',           'surfaceTension',         'metric' ],
     [ 46,    'radianPerSecond',             null,         'rad/s',         'angularVelocity',        'metric' ],
     [ 47,    'radianPerSecondSquared',      null,         'rad/s2',        'angularAcceleration',    'metric' ],
@@ -93,11 +93,11 @@ const Unit = new Collection({
     [ 70,    'furlong',                     'furlong',    null,            'length',                 'english',  { baseMultiplier: 201.168 } ],
     [ 71,    'mile',                        'mi',         null,            'length',                 'english',  { baseMultiplier: 1609.344 } ],
     [ 72,    'league',                      'league',     null,            'length',                 'english',  { baseMultiplier: 5556 } ],
-    [ 73,    'acre',                        'acre',       'chain*furlong', 'area',                   'english'],
-    [ 74,    'celsius',                     'degC',       null,            'temperature',            'metric',   { baseAdditive: 273.15 } ],
-    [ 75,    'fahrenheit',                  'degF',       null,            'temperature',            'english',  { baseMultiplier: 0.555555556, baseAdditive: 255.372222222 } ],
-    [ 76,    'rod',                         'rod',        null,            'length',                 'english',  { baseMultiplier: 5.0292 } ],
-    [ 77,    'chain',                       'chain',      null,            'length',                 'english',  { baseMultiplier: 20.1168 } ],
+    [ 73,    'chain',                       'chain',      null,            'length',                 'english',  { baseMultiplier: 20.1168 } ],
+    [ 74,    'acre',                        'acre',       'chain*furlong', 'area',                   'english'],
+    [ 75,    'celsius',                     'degC',       null,            'temperature',            'metric',   { baseAdditive: 273.15 } ],
+    [ 76,    'fahrenheit',                  'degF',       null,            'temperature',            'english',  { baseMultiplier: 0.555555556, baseAdditive: 255.372222222 } ],
+    [ 77,    'rod',                         'rod',        null,            'length',                 'english',  { baseMultiplier: 5.0292 } ],
     [ 78,    'gram',                        'g',          null,            'mass',                   'metric' ],
     [ 79,    'ton',                         't',          null,            'mass',                   'metric',   { baseMultiplier: 10000000 } ],
     [ 80,    'minute',                      'min',        null,            'duration',               'metric',   { baseMultiplier: 60 } ],
@@ -146,8 +146,12 @@ function register(unit) {
   bySymbol[unit.name] = unit;
 }
 
+let bootNeeded = true;
 Unit.boot = function(stage, pass) {
-  if (stage === 'compile' && pass === 1) {
+  const UnitType = Tyr.UnitType;
+  if (bootNeeded && UnitType && UnitType.def.values) {
+    // need to boot after UnitType
+
     const units = Unit.def.values;
     for (const unit of units) {
       register(unit);
@@ -157,8 +161,16 @@ Unit.boot = function(stage, pass) {
       if (unit.formula) {
         unit.units = Tyr.Units.parse(unit.formula);
       }
+
+      if (unit.type) {
+        unit.type$ = UnitType.byId(unit.type);
+      }
     }
+
+    bootNeeded = false;
   }
+
+  return bootNeeded;
 }
 
 Unit.parse = function(name) {
@@ -189,6 +201,7 @@ Unit.parse = function(name) {
     du.name = f.prefix + u.name;
     du.factor = f;
     du.type = u.type;
+    du.type$ = Tyr.UnitType.byId(du.type);
     du.baseMultiplier = ( u.baseMultiplier ? u.baseMultiplier * f.factor : f.factor );
     du.system = u.system;
 

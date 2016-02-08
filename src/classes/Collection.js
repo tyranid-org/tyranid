@@ -364,7 +364,7 @@ export default class Collection {
 
   byId(id) {
     if (this.isStatic()) {
-      return Promise.resolve(this.byIdIndex[id]);
+      return this.byIdIndex[id];
 
     } else {
       if (typeof id === 'string') {

@@ -10,6 +10,7 @@ var tyr            = require('../src/tyranid'),
     expect         = chai.expect,
     _              = require('lodash'),
     Field          = require('../src/classes/Field'),
+    UnitType       = require('../src/unit/unitType'),
     Unit           = require('../src/unit/unit'),
     Units          = require('../src/unit/units');
 
@@ -1090,6 +1091,22 @@ describe('tyranid', function() {
 
     });
 
+    describe('unit types', function() {
+      it('should parse base and composite unit types', () => {
+        expect(UnitType.parse('l'      ).name === 'length').to.be.true;
+        expect(UnitType.parse('l^2'    ).name === 'area'     ).to.be.true;
+        expect(UnitType.parse('l-2*lum').name === 'luminance').to.be.true;
+
+        expect(() => UnitType.parse('l-2*cure')).to.throw(/"cure"/);
+      });
+
+      it('should be shared and unique', () => {
+        expect(UnitType.parse('l')           === UnitType.parse('l')           ).to.be.true;
+        expect(UnitType.parse('l^2')         === UnitType.parse('l2')          ).to.be.true;
+        expect(UnitType.parse('l2m1/s2cur1') === UnitType.parse('cur-1s-2m1l2')).to.be.true;
+      });
+    });
+
     describe('units', function() {
 
       it('should parse unit factors', () => {
@@ -1144,11 +1161,12 @@ describe('tyranid', function() {
       });
 
       it('should be shared and unique', () => {
-        expect(Unit.parse('s')     === Unit.parse('s')).to.be.true;
-        expect(Unit.parse('Mmol')  === Unit.parse('Mmol')).to.be.true;
-        expect(Unit.parse('km')    === Unit.parse('km')).to.be.true;
+        expect(Unit.parse('s')     === Unit.parse('s')     ).to.be.true;
+        expect(Unit.parse('Mmol')  === Unit.parse('Mmol')  ).to.be.true;
+        expect(Unit.parse('km')    === Unit.parse('km')    ).to.be.true;
+
         expect(Units.parse('m/s2') === Units.parse('s-2*m')).to.be.true;
-        expect(Units.parse('N')    === Units.parse('N')).to.be.true;
+        expect(Units.parse('N')    === Units.parse('N')    ).to.be.true;
       });
 
       it('should support "in" on numbers', () => {
@@ -1156,15 +1174,33 @@ describe('tyranid', function() {
       });
 
       it('should support base units', () => {
-        expect(Units.parse('m').base === Units.parse('m')).to.be.true;
-        expect(Units.parse('m').base).to.eql({ m: 1 });
-        expect(Units.parse('N').base).to.eql({ kg: 1, m: 1, s: -2 });
-        expect(Units.parse('Pa').base).to.eql({ kg: 1, m: -1, s: -2 });
-        expect(Units.parse('J').base).to.eql({ kg: 1, m: 2, s: -2 });
-        expect(Units.parse('W').base).to.eql({ kg: 1, m: 2, s: -3 });
-        expect(Units.parse('V').base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
-        expect(Units.parse('Wb').base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
-        expect(Units.parse('rad').base).to.eql({ m: 0 });
+        expect(Units.parse('m'  ).base === Units.parse('m')).to.be.true;
+        expect(Units.parse('m'  ).base).to.eql({ m: 1 });
+        expect(Units.parse('N'  ).base).to.eql({ kg: 1, m: 1, s: -2 });
+        expect(Units.parse('Pa' ).base).to.eql({ kg: 1, m: -1, s: -2 });
+        expect(Units.parse('J'  ).base).to.eql({ kg: 1, m: 2, s: -2 });
+        expect(Units.parse('W'  ).base).to.eql({ kg: 1, m: 2, s: -3 });
+        expect(Units.parse('V'  ).base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
+        expect(Units.parse('Wb' ).base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
+        expect(Units.parse('rad').base).to.eql({});
+      });
+
+      it('should have types', () => {
+        expect(Units.parse('m'    ).type.name).to.eql('length');
+        expect(Units.parse('m2'   ).type.name).to.eql('area');
+        expect(Units.parse('cm*m' ).type.name).to.eql('area');
+        expect(Units.parse('ft2'  ).type.name).to.eql('area');
+        expect(Units.parse('N'    ).type.name).to.eql('force');
+        expect(Units.parse('N/kg' ).type.name).to.eql('acceleration');
+        expect(Units.parse('N*m'  ).type.name).to.eql('energy');
+        expect(Units.parse('N*m/s').type.name).to.eql('power');
+        expect(Units.parse('kC'   ).type.name).to.eql('electricCharge');
+      });
+
+      it('should support compatibility checks', () => {
+        expect(Units.parse('m').isCompatibleWith(Units.parse('ft'))).to.be.true;
+        expect(Units.parse('cm*m').isCompatibleWith(Units.parse('m2'))).to.be.true;
+        expect(Units.parse('kC').isCompatibleWith(Units.parse('kA*us'))).to.be.true;
       });
     });
   });

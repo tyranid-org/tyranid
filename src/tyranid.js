@@ -157,7 +157,7 @@ _.assign(Tyr, {
           if (bootstrapping[i].boot(stage, pass)) {
             i++;
           } else {
-            bootstrapping.splice(i);
+            bootstrapping.splice(i, 1);
           }
         }
       }
