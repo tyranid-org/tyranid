@@ -1202,6 +1202,54 @@ describe('tyranid', function() {
         expect(Units.parse('cm*m').isCompatibleWith(Units.parse('m2'))).to.be.true;
         expect(Units.parse('kC').isCompatibleWith(Units.parse('kA*us'))).to.be.true;
       });
+
+      it('should support valid conversions', () => {
+        const tests = [
+          [  1,     'm',       100,    'cm' ],
+          [  0,  'degC',        32,  'degF' ],
+          [ 80,    'kg', 176.36981,    'lb' ],
+          [  5,    'mi',   8.04672,    'km' ],
+          [  1,    'ft',        12,    'in' ],
+          [  1,    'm3',   1000000,   'cm3' ],
+          [  1,    'm3',     10000, 'm*cm2' ],
+          [  1, 'ft*ms',     0.012,  'in*s' ],
+        ];
+
+        function round5(v) {
+          return parseFloat(v.toFixed(5));
+        }
+
+        for (const test of tests) {
+          const fromValue = test[0],
+                fromUnits = Units.parse(test[1]),
+                toValue   = test[2],
+                toUnits   = Units.parse(test[3]);
+
+          expect(round5(fromUnits.convert(fromValue, toUnits))).to.equal(toValue);
+        }
+      });
+
+      it('should throw on invalid conversions', () => {
+        const tests = [
+          [  1,    'm',   'degC' ],
+          [  0, 'degC', 'degF*s' ],
+          [ 80,   'kg',      'm' ],
+          [  5,  'm*s',   'm*s2' ],
+          [  1,   'ft',    'in2' ],
+        ];
+
+        function round5(v) {
+          return parseFloat(v.toFixed(5));
+        }
+
+        for (const test of tests) {
+          const fromValue = test[0],
+                fromUnits = Units.parse(test[1]),
+                toUnits   = Units.parse(test[2]);
+
+          expect(() => fromUnits.convert(fromValue, toUnits)).to.throw(/Cannot convert/);
+        }
+      });
     });
   });
 });

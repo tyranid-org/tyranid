@@ -137,6 +137,10 @@ const bySymbol = Unit.bySymbol = {};
 function register(unit) {
   unit.sid = unit.abbreviation || unit.formula.replace('/', '_');
 
+  if (!unit.baseMultiplier) {
+    unit.baseMultiplier = 1.0;
+  }
+
   bySid[unit.sid] = unit;
 
   if (unit.abbreviation) {
@@ -147,7 +151,7 @@ function register(unit) {
 }
 
 let bootNeeded = true;
-Unit.boot = function(stage, pass) {
+Unit.boot = function(/*stage, pass*/) {
   const UnitType = Tyr.UnitType;
   if (bootNeeded && UnitType && UnitType.def.values) {
     // need to boot after UnitType
