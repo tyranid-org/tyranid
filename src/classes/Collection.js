@@ -905,8 +905,13 @@ export default class Collection {
               throw compiler.err(path, 'Links must link to a collection, instead linked to ' + fieldDef.link);
             }
 
-            fieldDef.is = typesByName.link;
+            // TODO:  don't really want to overwrite this anymore now that field.type is available,
+            //        also would prefer field.link rather than field.def.link
             fieldDef.link = type;
+            fieldDef.is = typesByName.link;
+
+            field.link = type;
+            field.type = typesByName.link;
           }
         } else if (fieldDef.is) {
           type = fieldDef.is;
@@ -918,12 +923,13 @@ export default class Collection {
             }
 
             if (type) {
-              fieldDef.is = type;
+              fieldDef.is = type; // TODO:  don't really want to overwrite this anymore now that field.type is available
+              field.type = type;
             }
           }
 
           if (type) {
-            type.compile(compiler, path, fieldDef);
+            type.compile(compiler, field);
 
             if (type.def.name === 'object' && fieldDef.fields) {
               compiler.fields(path, fieldDef.fields);

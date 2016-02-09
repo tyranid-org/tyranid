@@ -17,7 +17,6 @@ const Unit = new Collection({
     formula:          { is: 'string' },
     type:             { link: 'unitType' },
     system:           { link: 'unitSystem' },
-    label:            { is: 'string' },
     baseMultiplier:   { is: 'double' },
     baseAdditive:     { is: 'double' },
     note:             { is: 'string' }
@@ -25,6 +24,7 @@ const Unit = new Collection({
   values: [
     [ '_id', 'name',                   'abbreviation',    'formula',       'type',                   'system' ],
     [ 1,     'meter',                       'm',          null,            'length',                 'metric' ],
+    [ 2,     'gram',                        'g',          null,            'mass',                   'metric', { baseMultiplier: 0.001 } ],
     [ 3,     'second',                      's',          null,            'duration',               'metric' ],
     [ 4,     'ampere',                      'A',          null,            'current',                'metric' ],
     [ 5,     'kelvin',                      'K',          null,            'temperature',            'metric' ],
@@ -98,8 +98,8 @@ const Unit = new Collection({
     [ 75,    'celsius',                     'degC',       null,            'temperature',            'metric',   { baseAdditive: 273.15 } ],
     [ 76,    'fahrenheit',                  'degF',       null,            'temperature',            'english',  { baseMultiplier: 0.555555556, baseAdditive: 255.372222222 } ],
     [ 77,    'rod',                         'rod',        null,            'length',                 'english',  { baseMultiplier: 5.0292 } ],
-    [ 78,    'gram',                        'g',          null,            'mass',                   'metric' ],
-    [ 79,    'ton',                         't',          null,            'mass',                   'metric',   { baseMultiplier: 10000000 } ],
+    [ 78,    'void',                        'void',       null,            'none',                   null ],
+    [ 79,    'ton',                         'ton',        null,            'mass',                   'metric',   { baseMultiplier: 1000 } ],
     [ 80,    'minute',                      'min',        null,            'duration',               'metric',   { baseMultiplier: 60 } ],
     [ 81,    'hour',                        'h',          null,            'duration',               'metric',   { baseMultiplier: 3600 } ],
     [ 82,    'day',                         'day',        null,            'duration',               'metric',   { baseMultiplier: 86400 } ],
@@ -107,12 +107,12 @@ const Unit = new Collection({
     [ 84,    'month',                       'mon',        null,            'duration',               'metric',   { baseMultiplier: 2419200 } ],
     [ 85,    'year',                        'Yr',         null,            'duration',               'metric',   { baseMultiplier: 31449600 } ],
     [ 86,    'grain',                       'gr',         null,            'mass',                   'english',  { baseMultiplier: 0.06479891 } ],
-    [ 87,    'dram',                        'dr',         null,            'mass',                   'english',  { baseMultiplier: 1.7718452 } ],
-    [ 88,    'ounce',                       'oz',         null,            'mass',                   'english',  { baseMultiplier: 28.3495231 } ],
-    [ 89,    'pound',                       'lb',         null,            'mass',                   'english',  { baseMultiplier: 453.59237 } ],
-    [ 90,    'hundredweight',               'cwt',        null,            'mass',                   'english',  { baseMultiplier: 453.59237 } ],
-    [ 91,    'shortTon',                    'shortTon',   null,            'mass',                   'english',  { baseMultiplier: 907184.74 } ],
-    [ 92,    'longTon',                     'longTon',    null,            'mass',                   'english',  { baseMultiplier: 1016046.91 } ],
+    [ 87,    'dram',                        'dr',         null,            'mass',                   'english',  { baseMultiplier: 0.00177185 } ],
+    [ 88,    'ounce',                       'oz',         null,            'mass',                   'english',  { baseMultiplier: 0.0283495 } ],
+    [ 89,    'pound',                       'lb',         null,            'mass',                   'english',  { baseMultiplier: 0.45359237 } ],
+    [ 90,    'hundredweight',               'cwt',        null,            'mass',                   'english',  { baseMultiplier: 50.80234544 } ],
+    [ 91,    'shortTon',                    'shortTon',   null,            'mass',                   'english',  { baseMultiplier: 907.18474 } ],
+    [ 92,    'longTon',                     'longTon',    null,            'mass',                   'english',  { baseMultiplier: 1016.04691 } ],
     [ 93,    'liter',                       'L',          null,            'volume',                 'metric',   { baseMultiplier: 0.001 } ],
     [ 94,    'teaspoon',                    'tsp',        null,            'volume',                 'metric',   { baseMultiplier: 0.000004929 } ],
     [ 95,    'tablespoon',                  'tbsp',       null,            'volume',                 'metric',   { baseMultiplier: 0.000014787 } ],
@@ -121,13 +121,19 @@ const Unit = new Collection({
     [ 98,    'pint',                        'pt',         null,            'volume',                 'metric',   { baseMultiplier: 0.000473176 } ],
     [ 99,    'quart',                       'qt',         null,            'volume',                 'metric',   { baseMultiplier: 0.000946353 } ],
     [ 100,   'gallon',                      'gal',        null,            'volume',                 'metric',   { baseMultiplier: 0.003785412 } ],
-    [ 101,   'void',                        'void',       null,            'none',                   null ],
-    [ 102,   'nauticalMile',                'nautmi',     null,            'length',                 'english',  { baseMultiplier: 1852 } ],
-    [ 103,   'knot',                        'knot',       'nautmi/h',      'velocity',               'english'],
-    [ 104,   'bit',                         'bit',        null,            'bit',                    'metric' ],
-    [ 105,   'crumb',                       'crumb',      null,            'bit',                    'metric',   { baseMultiplier: 2 } ],
-    [ 106,   'nibble',                      'nibble',     null,            'bit',                    'metric',   { baseMultiplier: 4 } ],
-    [ 107,   'byte',                        'B',          null,            'bit',                    'metric',   { baseMultiplier: 8 } ]
+    [ 101,   'nauticalMile',                'nautmi',     null,            'length',                 'english',  { baseMultiplier: 1852 } ],
+    [ 102,   'knot',                        'knot',       'nautmi/h',      'velocity',               'english'],
+    [ 103,   'bit',                         'bit',        null,            'bit',                    'metric' ],
+    [ 104,   'crumb',                       'crumb',      null,            'bit',                    'metric',   { baseMultiplier: 2 } ],
+    [ 105,   'nibble',                      'nibble',     null,            'bit',                    'metric',   { baseMultiplier: 4 } ],
+    [ 106,   'byte',                        'B',          null,            'bit',                    'metric',   { baseMultiplier: 8 } ],
+    [ 107,   'planckLength',                'lP',         null,            'length',                 'planck',   { baseMultiplier: 1.616199E-35 } ],
+    [ 108,   'planckMass',                  'mP',         null,            'mass',                   'planck',   { baseMultiplier: 2.17651E-8 } ],
+    [ 109,   'planckTime',                  'tP',         null,            'duration',               'planck',   { baseMultiplier: 5.39106E-44 } ],
+    [ 110,   'planckCharge',                'qP',         null,            'electricCharge',         'planck',   { baseMultiplier: 1.875545956E-18 } ],
+    [ 111,   'planckTemperature',           'TP',         null,            'temperature',            'planck',   { baseMultiplier: 1.416833E32 } ],
+    [ 112,   'planckArea',                  null,         'lP2',           'area',                   'planck' ],
+    [ 113,   'planckVolume',                null,         'lP3',           'volume',                 'planck' ]
   ]
 });
 
@@ -152,7 +158,9 @@ function register(unit) {
 
 let bootNeeded = true;
 Unit.boot = function(/*stage, pass*/) {
-  const UnitType = Tyr.UnitType;
+  const UnitType = Tyr.UnitType,
+        UnitSystem = Tyr.UnitSystem;
+  
   if (bootNeeded && UnitType && UnitType.def.values) {
     // need to boot after UnitType
 
@@ -167,7 +175,11 @@ Unit.boot = function(/*stage, pass*/) {
       }
 
       if (unit.type) {
-        unit.type$ = UnitType.byId(unit.type);
+        unit.type = UnitType.byId(unit.type);
+      }
+
+      if (unit.system) {
+        unit.system = UnitSystem.byId(unit.system);
       }
     }
 
@@ -205,7 +217,6 @@ Unit.parse = function(name) {
     du.name = f.prefix + u.name;
     du.factor = f;
     du.type = u.type;
-    du.type$ = Tyr.UnitType.byId(du.type);
     du.baseMultiplier = ( u.baseMultiplier ? u.baseMultiplier * f.factor : f.factor );
     du.system = u.system;
 

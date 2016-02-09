@@ -9,14 +9,16 @@ const UnitSystem = new Collection({
   enum: true,
   client: false,
   fields: {
-    _id:              { is: 'integer' },
-    name:             { is: 'string', labelField: true },
+    _id:     { is: 'integer' },
+    name:    { is: 'string', labelField: true },
+    url:     { is: 'url' },
   },
   values: [
-    [ '_id', 'name' ],
+    [ '_id', 'name',     'url' ],
 
-    [     1, 'metric' ],
-    [     2, 'english' ]
+    [     1, 'metric',   'https://en.wikipedia.org/wiki/International_System_of_Units' ],
+    [     2, 'english',  'https://en.wikipedia.org/wiki/English_units' ],
+    [     3, 'planck',   'https://en.wikipedia.org/wiki/Planck_units' ]
   ]
 });
 

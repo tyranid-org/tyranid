@@ -22,7 +22,7 @@ const UnitType = new Collection({
     [ '_id', 'name',                   'formula' ],
     [     1, 'none',                   null,            { abbreviation: 'none', normal: 'none', note: 'No units.' } ],
     [     2, 'length',                 null,            { abbreviation: 'l',    normal: 'm',    note: 'Length.' } ],
-    [     3, 'mass',                   null,            { abbreviation: 'm',    normal: 'g',    note: 'Mass.' } ],
+    [     3, 'mass',                   null,            { abbreviation: 'm',    normal: 'kg',   note: 'Mass.' } ],
     [     4, 'duration',               null,            { abbreviation: 's',    normal: 's',    note: 'Time.' } ],
     [     5, 'current',                null,            { abbreviation: 'cur',  normal: 'A',    note: 'Electric current.' } ],
     [     6, 'temperature',            null,            { abbreviation: 't',    normal: 'K',    note: 'Thermodynamic temperature.' } ],

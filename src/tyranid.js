@@ -1,7 +1,8 @@
 import _ from 'lodash';
 import fs from 'fs';
 
-import Tyr from './Tyr';
+import Tyr from './tyr';
+
 import './builtins';
 
 import Type from './classes/Type';
@@ -128,7 +129,7 @@ _.assign(Tyr, {
   },
 
   validate(opts) {
-    if (opts) {
+    if (opts && opts !== true) {
       function process(dirOpts) {
         if (!dirOpts.dir) {
           throw new Error('dir not specified in validate option.');

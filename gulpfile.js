@@ -1,10 +1,15 @@
 'use strict';
+
+require('babel/register');
+
 var gulp       = require('gulp'),
     eslint     = require('gulp-eslint'),
     mocha      = require('gulp-mocha'),
     sourcemaps = require('gulp-sourcemaps'),
     babel      = require('gulp-babel'),
-    yargs      = require('yargs');
+    yargs      = require('yargs'),
+
+    doc        = require('./doc/doc');
 
 var src = './src/**/*.js',
     test = './test/**/*.js';
@@ -56,3 +61,7 @@ gulp.task('test', function() {
 });
 
 gulp.task('default', ['eslint']);
+
+gulp.task('docs', function() {
+  doc()
+});

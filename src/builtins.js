@@ -22,8 +22,8 @@ export const LinkType = new Type({
 
 export const UidType = new Type({
   name: 'uid',
-  compile(compiler, path, field) {
-    const of = field.of;
+  compile(compiler, field) {
+    const of = field.def.of;
 
     if (!of) {
       return;
@@ -31,10 +31,10 @@ export const UidType = new Type({
 
     if (Array.isArray(of)) {
       _.each(of, function(v /*,k*/ ) {
-        validateUidCollection(compiler, path, v);
+        validateUidCollection(compiler, field.path, v);
       });
     } else {
-      validateUidCollection(compiler, path, of);
+      validateUidCollection(compiler, field.path, of);
     }
   }
 });
@@ -43,9 +43,9 @@ export const BooleanType = new Type({ name: 'boolean' });
 
 export const IntegerType = new Type({
   name: 'integer',
-  compile(compiler, path, field) {
+  compile(compiler, field) {
     if (compiler.stage === 'link') {
-      const unit = field.in;
+      const unit = field.def.in;
       if (unit) {
         field.in = Tyr.Units.parse(unit);
       }
@@ -72,9 +72,9 @@ export const StringType = new Type({ name: 'string' });
 
 export const DoubleType = new Type({
   name: 'double',
-  compile(compiler, path, field) {
+  compile(compiler, field) {
     if (compiler.stage === 'link') {
-      const unit = field.in;
+      const unit = field.def.in;
       if (unit) {
         field.in = Tyr.Unit.parse(unit);
       }
@@ -93,28 +93,28 @@ export const ArrayType = new Type({
       return value;
     }
   },
-  compile(compiler, path, field) {
-    let of = field.of;
+  compile(compiler, field) {
+    let of = field.def.of;
 
     if (!of) {
-      throw compiler.err(path, 'Missing "of" property on array definition');
+      throw compiler.err(field.path, 'Missing "of" property on array definition');
     }
 
     if (_.isPlainObject(of)) {
-      of = field.of = new Field(of);
+      of = field.def.of = new Field(of);
     } else if (_.isString(of)) {
       of = typesByName[of];
       if (!of) {
         if (compiler.stage === 'link') {
-          throw compiler.err(path, 'Unknown type for "of".');
+          throw compiler.err(field.path, 'Unknown type for "of".');
         }
       } else {
-        field.of = new Field({ is: of.def.name });
+        field.def.of = new Field({ is: of.def.name });
       }
     }
 
-    if (field.of instanceof Field) {
-      compiler.field(path + '._', field.of);
+    if (field.def.of instanceof Field) {
+      compiler.field(field.path + '._', field.def.of);
     }
   }
 });

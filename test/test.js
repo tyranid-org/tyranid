@@ -1,15 +1,16 @@
 
 require('es6-promise');
 
-var tyr            = require('../src/tyranid'),
-    NamePath       = tyr.NamePath,
-    $all           = tyr.$all,
+var Tyr            = require('../src/tyranid'),
+    NamePath       = Tyr.NamePath,
+    $all           = Tyr.$all,
     chai           = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
     pmongo         = require('promised-mongo'),
     expect         = chai.expect,
     _              = require('lodash'),
     Field          = require('../src/classes/Field'),
+    Type           = require('../src/classes/Type'),
     UnitType       = require('../src/unit/unitType'),
     Unit           = require('../src/unit/unit'),
     Units          = require('../src/unit/units');
@@ -21,20 +22,24 @@ function round5(v) {
   return parseFloat(v.toFixed(5));
 }
 
+function prec5(v) {
+  return parseFloat(v.toPrecision(5));
+}
+
 global.ObjectId = pmongo.ObjectId;
 
 describe('tyranid', function() {
   var db = null;
   before(function(done) {
     db = pmongo('mongodb://localhost:27017/tyranid_test');
-    tyr.config({
+    Tyr.config({
       db: db
     });
     done(null, db);
   });
 
   after(function() {
-    tyr.db.close();
+    Tyr.db.close();
     setTimeout(function() {
       process.exit(0);
     }, 500);
@@ -42,14 +47,14 @@ describe('tyranid', function() {
 
   describe( 'schema validation', function() {
     afterEach(() => {
-      tyr.forget('t00');
-      tyr.forget('t01');
-      tyr.forget('t02');
+      Tyr.forget('t00');
+      Tyr.forget('t01');
+      Tyr.forget('t02');
     });
 
     it( 'should error if no name is provided', function() {
       expect(function() {
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't00',
           fields: {
             _id:     { is: 'mongoid' },
@@ -60,7 +65,7 @@ describe('tyranid', function() {
 
     it( 'should throw if the name is not a string', function() {
       expect(function() {
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't00',
           name: 3,
           fields: {
@@ -77,7 +82,7 @@ describe('tyranid', function() {
     it( 'should accept a present but empty fields array', function() {
       expect(function() {
         try {
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't00',
           name: 'test',
           fields: {
@@ -90,9 +95,9 @@ describe('tyranid', function() {
     });
      */
 
-    it( 'should throw if arrays do not contain a single value', function() {
+    it('should throw if arrays do not contain a single value', function() {
       expect(function() {
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't00',
           name: 'test',
           fields: {
@@ -102,9 +107,9 @@ describe('tyranid', function() {
       }).to.throw();
     });
 
-    it( 'should support self-referential links', function() {
+    it('should support self-referential links', function() {
       expect(function() {
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't00',
           name: 'test',
           fields: {
@@ -115,20 +120,20 @@ describe('tyranid', function() {
       }).to.not.throw();
     });
 
-    it( 'should throw if a field is missing a definition', function() {
+    it('should throw if a field is missing a definition', function() {
       expect(function() {
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't01',
           name: 'test1',
           fields: {
             cat: 3
           }
         });
-        tyr.validate();
+        Tyr.validate();
       }).to.throw( /Invalid field definition/i );
 
       expect(function() {
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't02',
           name: 'test2',
           fields: {
@@ -137,7 +142,7 @@ describe('tyranid', function() {
             ]
           }
         });
-        tyr.validate();
+        Tyr.validate();
       }).to.throw( /Unknown field definition/i );
     });
 
@@ -146,7 +151,7 @@ describe('tyranid', function() {
 
        However, you can still clone definitions before passing them on to Tyranid.
      */
-    it( 'should support re-usable bits of metadata', function() {
+    it('should support re-usable bits of metadata', function() {
       expect(function() {
         var Meta = {
           is: 'object',
@@ -155,7 +160,7 @@ describe('tyranid', function() {
           }
         };
 
-        new tyr.Collection({
+        new Tyr.Collection({
           id: 't00',
           name: 'test',
           fields: {
@@ -168,7 +173,7 @@ describe('tyranid', function() {
     });
   });
 
-  describe( 'with model', function() {
+  describe('with model', function() {
     var Job, Organization, Department, Person, Task, Role, Book,
         TyrSchema, TyrSchemaType;
     //var Job2, Organization2, Department2, Person2;
@@ -177,16 +182,16 @@ describe('tyranid', function() {
 
     before(function() {
       // Test validate load models and byName
-      tyr.validate([{dir: __dirname + '/models', fileMatch: '\.js$' }]);
+      Tyr.validate([{dir: __dirname + '/models', fileMatch: '\.js$' }]);
 
-      Job = tyr.byName.job;
-      Organization = tyr.byName.organization;
-      Department = tyr.byName.department;
-      Person = tyr.byName.person;
-      Task = tyr.byName.task;
-      Book = tyr.byName.book;
-      TyrSchema = tyr.byName.tyrSchema;
-      TyrSchemaType = tyr.byName.tyrSchemaType;
+      Job = Tyr.byName.job;
+      Organization = Tyr.byName.organization;
+      Department = Tyr.byName.department;
+      Person = Tyr.byName.person;
+      Task = Tyr.byName.task;
+      Book = Tyr.byName.book;
+      TyrSchema = Tyr.byName.tyrSchema;
+      TyrSchemaType = Tyr.byName.tyrSchemaType;
 
       Role = require('./models/role.js'); // require to get extra link in prototype chain
 
@@ -258,17 +263,26 @@ describe('tyranid', function() {
     });
 
     describe('fields', function() {
-      it( 'should support fields object', function() {
+      it('should support fields object', function() {
         expect(Person.fields['name.first']).to.be.instanceof(Field);
         expect(Person.fields['roles._.role']).to.be.instanceof(Field);
       });
 
-      it( 'should support field.parent', function() {
+      it('should support field.type', function() {
+        expect(Person.fields['name.first'].type).to.be.instanceof(Type);
+        expect(Person.fields['roles._.role'].type).to.be.instanceof(Type);
+      });
+
+      it('should support field.link', function() {
+        expect(Person.fields['roles._.role'].link).to.be.eql(Tyr.byName.role);
+      });
+
+      it('should support field.parent', function() {
         expect(Person.fields['name.first'].parent.name).to.be.eql('name');
         expect(Person.fields['name'].parent).to.be.eql(null);
       });
 
-      it( 'should support field.pathLabel', function() {
+      it('should support field.pathLabel', function() {
         expect(Person.fields['name.first'].parent.pathLabel).to.be.eql('Name');
         expect(Person.fields['name.first'].pathLabel).to.be.eql('Name First Name');
         expect(Person.fields['name.last'].pathLabel).to.be.eql('Name Last');
@@ -512,7 +526,7 @@ describe('tyranid', function() {
       });
 
       it( 'should support Tyranid.valuesBy()', function() {
-        return tyr.valuesBy(field => field.def.is.def.name === 'string').then(function(values) {
+        return Tyr.valuesBy(field => field.def.is.def.name === 'string').then(function(values) {
           return values.sort();
         }).should.eventually.eql(allString);
       });
@@ -534,8 +548,8 @@ describe('tyranid', function() {
       });
 
       it ('it should support lookups by label in string data', () => {
-        expect(Unit.byLabel('dram').system).to.be.eql(2);
-        expect(Unit.byLabel('meter').system).to.be.eql(1);
+        expect(Unit.byLabel('dram').system.name).to.be.eql('english');
+        expect(Unit.byLabel('meter').system.name).to.be.eql('metric');
       });
     });
 
@@ -685,14 +699,14 @@ describe('tyranid', function() {
       it( 'simple denormalize pathing', function() {
         const np = new NamePath(Person, 'organization_.name'),
               field = np.tail;
-        expect(field.collection).to.be.eql(tyr.byName.organization);
+        expect(field.collection).to.be.eql(Tyr.byName.organization);
         expect(field.name).to.be.eql('name');
       });
 
       it( 'complex denormalize pathing', function() {
         const np = new NamePath(Person, 'organization_.owner_.name.first'),
               field = np.tail;
-        expect(field.collection).to.be.eql(tyr.byName.person);
+        expect(field.collection).to.be.eql(Tyr.byName.person);
         expect(field.name).to.be.eql('first');
         expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
       });
@@ -884,14 +898,14 @@ describe('tyranid', function() {
     describe('uids', function() {
 
       it( 'should parse', function() {
-        tyr.parseUid('t031').should.eql({
+        Tyr.parseUid('t031').should.eql({
           collection: Person,
           id: 1
         });
       });
 
       it( 'should support byId()', function() {
-        return tyr.byUid('t031').then(function(person) {
+        return Tyr.byUid('t031').then(function(person) {
           expect(person).to.be.an.instanceof(Person);
           expect(person._id).to.be.eql(1);
         });
@@ -1097,7 +1111,7 @@ describe('tyranid', function() {
 
     describe('unit types', function() {
       it('should parse base and composite unit types', () => {
-        expect(UnitType.parse('l'      ).name === 'length').to.be.true;
+        expect(UnitType.parse('l'      ).name === 'length'   ).to.be.true;
         expect(UnitType.parse('l^2'    ).name === 'area'     ).to.be.true;
         expect(UnitType.parse('l-2*lum').name === 'luminance').to.be.true;
 
@@ -1174,21 +1188,21 @@ describe('tyranid', function() {
       });
 
       it('should support "in" on numbers', () => {
-        expect(Person.fields.age.def.in.Yr).to.be.eql(1);
+        expect(Person.fields.age.in.Yr).to.be.eql(1);
       });
 
-      const U = ::Units.parse;
+      const U = Tyr.U;
 
       it('should support base units', () => {
-        expect(U('m'  ).base === Units.parse('m')).to.be.true;
-        expect(U('m'  ).base).to.eql({ m: 1 });
-        expect(U('N'  ).base).to.eql({ kg: 1, m: 1, s: -2 });
-        expect(U('Pa' ).base).to.eql({ kg: 1, m: -1, s: -2 });
-        expect(U('J'  ).base).to.eql({ kg: 1, m: 2, s: -2 });
-        expect(U('W'  ).base).to.eql({ kg: 1, m: 2, s: -3 });
-        expect(U('V'  ).base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
-        expect(U('Wb' ).base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
-        expect(U('rad').base).to.eql({});
+        expect(U`m`  .base === U('m')).to.be.true;
+        expect(U`m`  .base).to.eql({ m: 1 });
+        expect(U`N`  .base).to.eql({ kg: 1, m: 1, s: -2 });
+        expect(U`Pa` .base).to.eql({ kg: 1, m: -1, s: -2 });
+        expect(U`J`  .base).to.eql({ kg: 1, m: 2, s: -2 });
+        expect(U`W`  .base).to.eql({ kg: 1, m: 2, s: -3 });
+        expect(U`V`  .base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
+        expect(U`Wb` .base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
+        expect(U`rad`.base).to.eql({});
       });
 
       it('should have types', () => {
@@ -1205,9 +1219,10 @@ describe('tyranid', function() {
       });
 
       it('should support compatibility checks', () => {
-        expect(U('m').isCompatibleWith(U('ft'))).to.be.true;
+        expect(U`m`.isCompatibleWith(U`ft`)).to.be.true;
         expect(U('cm*m').isCompatibleWith(U('m2'))).to.be.true;
         expect(U('kC').isCompatibleWith(U('kA*us'))).to.be.true;
+        expect(U('degC').isCompatibleWith(U('m*s'))).to.be.false;
       });
 
       it('should support valid conversions', () => {
@@ -1217,6 +1232,7 @@ describe('tyranid', function() {
           [ 80,    'kg', 176.36981,    'lb' ],
           [  5,    'mi',   8.04672,    'km' ],
           [  1,    'ft',        12,    'in' ],
+          [  1,    'ft',    0.3048,     'm' ],
           [  1,    'm3',   1000000,   'cm3' ],
           [  1,    'm3',     10000, 'm*cm2' ],
           [  1, 'ft*ms',     0.012,  'in*s' ],
@@ -1264,6 +1280,17 @@ describe('tyranid', function() {
 
         expect(U('m').invert()).to.eql(U('m-1'));
         expect(U('m/s*A').invert()).to.eql(U('s*A/m'));
+      });
+
+      it('should support planck units', () => {
+        const c  = 299792458,
+              EP = 1.0,
+              mP = EP, // EP == mP
+              m  = U`mP`.convert(mP, U`kg`),
+              E  = m*c*c;
+
+        expect(prec5(m)).to.eql(2.1765e-8);
+        expect(prec5(E)).to.eql(1.9561E9);
       });
 
       it('should support normals', () => {

@@ -3,7 +3,7 @@ import _   from 'lodash';
 
 import Tyr from '../tyr';
 
-import * as U from './unitUtil';
+import * as Uu from './unitUtil';
 
 
 
@@ -80,7 +80,7 @@ function deriveBase(components) {
 
   const base = new Array(components.length * 4);
   base.length = addBase(0, base, components, 1);
-  U.compact(base);
+  Uu.compact(base);
   base.sort(sortByAbbrev);
   return make(base);
 }
@@ -110,11 +110,11 @@ class Units {
     Object.defineProperty(this, 'base', { value: base });
 
     const typeComponents = base.components.map(comp => ({
-      type:   comp.unit.type$,
+      type:   comp.unit.type,
       degree: comp.degree
     }));
 
-    U.merge('type', typeComponents);
+    Uu.merge('type', typeComponents);
 
     Object.defineProperty(this, 'type', {
       value: Tyr.UnitType.byComponents(typeComponents)
@@ -134,7 +134,7 @@ const bySid = {};
 //
 
 function make(unitDegrees) {
-  U.compact(unitDegrees);
+  Uu.compact(unitDegrees);
   unitDegrees.sort(sortByDegreeThenAbbrev);
 
   let sid = '';
@@ -153,13 +153,20 @@ function make(unitDegrees) {
   return units;
 }
 
+
 Units.parse = function(text) {
 
   if (!text) {
     return; // undefined
   }
 
-  const compCount = U.countComponents(text);
+  // this method can be used as a tagged template string
+  const r = text.raw;
+  if (r) {
+    text = r[0];
+  }
+
+  const compCount = Uu.countComponents(text);
   if (!compCount) {
     return; // undefined
   }
@@ -176,10 +183,10 @@ Units.parse = function(text) {
   while (pos < len) {
     let ch = text.charCodeAt(pos);
 
-    if (ch === U.slash) {
+    if (ch === Uu.slash) {
       multiplier *= -1;
       pos++;
-    } else if (ch === U.asterisk) {
+    } else if (ch === Uu.asterisk) {
       pos++;
     }
 
@@ -187,7 +194,7 @@ Units.parse = function(text) {
     for (; pos<len; pos++) {
       ch = text.charCodeAt(pos);
 
-      if (!U.isLetter(ch)) {
+      if (!Uu.isLetter(ch)) {
         break;
       }
     }
@@ -198,16 +205,16 @@ Units.parse = function(text) {
       throw new Error(`Unknown unit "${name}" in "${text}"`);
     }
 
-    if (pos<len && text.charCodeAt(pos) === U.caret) {
+    if (pos<len && text.charCodeAt(pos) === Uu.caret) {
       pos++;
     }
 
     s = pos;
-    if (pos<len && text.charCodeAt(pos) === U.minus) {
+    if (pos<len && text.charCodeAt(pos) === Uu.minus) {
       pos++;
     }
 
-    while (pos<len && U.isDigit(text.charCodeAt(pos))) {
+    while (pos<len && Uu.isDigit(text.charCodeAt(pos))) {
       pos++;
     }
 
@@ -245,6 +252,8 @@ Units.parse = function(text) {
   components.length = nextComp;
   return make(components);
 }
+
+Tyr.U = ::Units.parse;
 
 
 //
@@ -528,8 +537,8 @@ Units.prototype.normal = function() {
   let normal = this._normal;
 
   if (!normal) {
-    const nuds = this.base.components.map(comp => new UnitDegree(Unit.bySid[comp.unit.type$.normal], comp.degree));
-    U.merge('unit', nuds);
+    const nuds = this.base.components.map(comp => new UnitDegree(Unit.bySid[comp.unit.type.normal], comp.degree));
+    Uu.merge('unit', nuds);
     normal = make(nuds);
     Object.defineProperty(this, '_normal', { value: normal });
   }
@@ -576,10 +585,10 @@ Units.prototype.toString = function() {
 }
 
 
-
-for (const method of ['convert', 'add', 'subtract', 'multiply', 'divide', 'invert', 'normal', 'toString']) {
-  Object.defineProperty(Units.prototype, method, { enumerable: false });
+for (const prop of ['convert', 'add', 'subtract', 'multiply', 'divide', 'invert', 'normal', 'toString']) {
+  Object.defineProperty(Units.prototype, prop, { enumerable: false });
 }
 
+Tyr.UnitDegree = UnitDegree;
 Tyr.Units = Units;
 export default Units;
