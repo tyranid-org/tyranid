@@ -293,7 +293,7 @@ describe('tyranid', function() {
 
       it( 'should support fieldsBy()', function() {
         expect(
-          Person.fieldsBy(field => field.def.is.def.name === 'string').map(field => field.spath)
+          Person.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
           ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
@@ -520,13 +520,13 @@ describe('tyranid', function() {
       ];
 
       it( 'should support valuesFor()', function() {
-        Person.valuesFor(Person.fieldsBy(field => field.def.is.def.name === 'string')).then(function(values) {
+        Person.valuesFor(Person.fieldsBy(field => field.type.def.name === 'string')).then(function(values) {
           return values.sort();
         }).should.eventually.eql(allString);
       });
 
       it( 'should support Tyranid.valuesBy()', function() {
-        return Tyr.valuesBy(field => field.def.is.def.name === 'string').then(function(values) {
+        return Tyr.valuesBy(field => field.type.def.name === 'string').then(function(values) {
           return values.sort();
         }).should.eventually.eql(allString);
       });

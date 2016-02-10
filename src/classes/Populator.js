@@ -29,7 +29,7 @@ export default class Populator {
 
   addIds(population, documents) {
     const namePath = population.namePath;
-    const link = namePath.tail.def.link;
+    const link = namePath.tail.link;
 
     if (!link) {
       throw new Error('Cannot populate ' + namePath + ' -- it is not a link');
@@ -55,7 +55,7 @@ export default class Populator {
     return await* _.map(this.cachesByColId, async (cache, colId) => {
       const collection = collectionsById[colId],
             primaryKeyField = collection.def.primaryKey.field,
-            idType = collection.def.fields[primaryKeyField].def.is;
+            idType = collection.def.fields[primaryKeyField].type;
 
       const ids = [];
       _.each(cache, (v, k) => {

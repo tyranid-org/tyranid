@@ -54,7 +54,7 @@ export async function parseInsertObj(col, obj) {
   });
 
   if (insertObj[def.primaryKey.field] === undefined) {
-    const type = fields[def.primaryKey.field].def.is;
+    const type = fields[def.primaryKey.field].type;
     insertObj[def.primaryKey.field] = type.generatePrimaryKeyVal();
   }
 
@@ -105,7 +105,7 @@ export function toClient(col, data) {
     let field;
 
     if (fields && (field=fields[k])) {
-      v = field.def.is.toClient(field, v, data);
+      v = field.type.toClient(field, v, data);
 
       if (v !== undefined) {
         obj[k] = v;

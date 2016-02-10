@@ -194,7 +194,7 @@ _.assign(Tyr, {
 
     const strId = uid.substring(3);
 
-    const idType = col.def.fields[col.def.primaryKey.field].def.is;
+    const idType = col.def.fields[col.def.primaryKey.field].type;
 
     return {
       collection: col,

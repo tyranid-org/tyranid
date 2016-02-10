@@ -368,7 +368,7 @@ export default class Collection {
 
     } else {
       if (typeof id === 'string') {
-        id = this.def.fields[this.def.primaryKey.field].def.is.fromString(id);
+        id = this.def.fields[this.def.primaryKey.field].type.fromString(id);
       }
 
       return this.findOne({ [this.def.primaryKey.field]: id });
@@ -766,13 +766,13 @@ export default class Collection {
       const field = fields[k];
 
       if (field) {
-        const is = field.def.is;
+        const type = field.type;
 
-        if (!is) {
+        if (!type) {
           throw new Error('collection missing type ("is"), missing from schema?');
         }
 
-        obj[k] = is.fromClient(field, v);
+        obj[k] = type.fromClient(field, v);
       }
     });
 
@@ -784,9 +784,9 @@ export default class Collection {
 
     function convertValue(field, value) {
       if (_.isArray(value)) {
-        return value.map(v => field.def.is.fromClient(field, v));
+        return value.map(v => field.type.fromClient(field, v));
       } else {
-        return field.def.is.fromClient(field, value);
+        return field.type.fromClient(field, value);
       }
     }
 
@@ -905,26 +905,25 @@ export default class Collection {
               throw compiler.err(path, 'Links must link to a collection, instead linked to ' + fieldDef.link);
             }
 
-            // TODO:  don't really want to overwrite this anymore now that field.type is available,
-            //        also would prefer field.link rather than field.def.link
-            fieldDef.link = type;
-            fieldDef.is = typesByName.link;
-
             field.link = type;
             field.type = typesByName.link;
           }
         } else if (fieldDef.is) {
-          type = fieldDef.is;
-          if (_.isString(type)) {
-            type = typesByName[fieldDef.is];
+          type = field.type;
 
-            if (type instanceof Collection) {
-              throw compiler.err(path, 'Trying to "is" a collection -- ' + fieldDef.is + ', either make it a "link" or a metadata snippet');
-            }
+          if (!type) {
+            type = fieldDef.is;
+            if (_.isString(type)) {
+              type = typesByName[fieldDef.is];
 
-            if (type) {
-              fieldDef.is = type; // TODO:  don't really want to overwrite this anymore now that field.type is available
-              field.type = type;
+              if (type instanceof Collection) {
+                throw compiler.err(path, 'Trying to "is" a collection -- ' + fieldDef.is + ', either make it a "link" or a metadata snippet');
+              }
+
+              if (type) {
+                fieldDef.is = type; // TODO:  don't really want to overwrite this anymore now that field.type is available
+                field.type = type;
+              }
             }
           }
 
@@ -1032,7 +1031,7 @@ export default class Collection {
           name;
 
       function parseValue(field, value) {
-        const link = field.def.link;
+        const link = field.link;
         if (link && _.isString(value)) {
           const doc = link.byLabel(value);
 

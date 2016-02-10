@@ -3,7 +3,7 @@ import _ from 'lodash';
 
 
 function skipArray(field) {
-  while (field && field.def.is.def.name === 'array') {
+  while (field && field.type.def.name === 'array') {
     field = field.def.of;
   }
 
@@ -38,7 +38,7 @@ export default class NamePath {
         throw new Error(
           '"' + name + '" in "' + pathName +
           '" is not a contained within the collection "' + curCollection.def.name +
-          ( def.link ? '" (maybe need advanced population syntax)' : '' )
+          ( at.link ? '" (maybe need advanced population syntax)' : '' )
         );
       }
 
@@ -65,7 +65,7 @@ export default class NamePath {
 
           at = _at;
           pathFields[pi++] = at;
-          at = at.def.link;
+          at = at.link;
           curCollection = at;
           continue nextPath;
         }

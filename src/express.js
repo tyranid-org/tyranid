@@ -66,7 +66,7 @@ export default function(app, auth) {
 
     const strId = uid.substring(3);
 
-    const idType = col.def.fields[col.def.primaryKey.field].def.is;
+    const idType = col.def.fields[col.def.primaryKey.field].type;
 
     return {
       collection: col,
@@ -130,7 +130,7 @@ export default function(app, auth) {
   });
 
   Field.prototype.labels = function(search) {
-    const to = this.def.link;
+    const to = this.link;
     if (to.isStatic() ) {
       var values = to.def.values;
 
@@ -288,7 +288,7 @@ export default function(app, auth) {
       var def = field.def;
 
       if (def.link) {
-        def.link = Tyr.byName[def.link];
+        field.link = Tyr.byName[def.link];
       }
     });
   };
@@ -425,7 +425,7 @@ export default function(app, auth) {
 
       this.newline();
       this.file += 'is: "';
-      this.file += def.is.def.name;
+      this.file += field.type.def.name;
       this.file += '",';
 
       this.newline();
@@ -433,10 +433,10 @@ export default function(app, auth) {
       this.file += field.label;
       this.file += '",';
 
-      if (def.link) {
+      if (field.link) {
         this.newline();
         this.file += 'link: "';
-        this.file += def.link.def.name;
+        this.file += field.link.def.name;
         this.file += '",';
       }
 
@@ -699,7 +699,7 @@ Collection.prototype.express = function(app, auth) {
 
       if (express.rest || express.get) {
         _.each(col.fields, field => {
-          const to = field.def.link;
+          const to = field.link;
           if (to && to.labelField) {
             r = app.route('/api/' + name + '/' + field.path + '/label/:search?');
             r.all(auth);
