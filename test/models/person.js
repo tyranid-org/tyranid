@@ -1,3 +1,4 @@
+
 var tyr = require('../../src/tyranid');
 
 var Friend = {

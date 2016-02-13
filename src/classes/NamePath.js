@@ -2,7 +2,7 @@
 import _ from 'lodash';
 
 
-function skipArray(field) {
+function _skipArray(field) {
   while (field && field.type.def.name === 'array') {
     field = field.def.of;
   }
@@ -10,12 +10,9 @@ function skipArray(field) {
   return field;
 }
 
-
-// this only parses "simplified paths" so far
 export default class NamePath {
 
-
-  constructor(collection, pathName) {
+  constructor(collection, pathName, skipArray) {
     this.col = collection;
     this.name = pathName;
 
@@ -31,47 +28,67 @@ export default class NamePath {
 
     nextPath:
     while (pi<plen) {
-      const name = path[pi],
-            def  = at.def;
+      const name = path[pi];
+      let def  = at.def;
 
-      if (!def.fields) {
-        throw new Error(
-          '"' + name + '" in "' + pathName +
-          '" is not a contained within the collection "' + curCollection.def.name +
-          ( at.link ? '" (maybe need advanced population syntax)' : '' )
-        );
-      }
+      if (name === '_') {
+        if (!at.def.of) {
+          throw new Error(`"${name} in ${pathName} on the collection "${curCollection.def.name}" is not an array.`);
+        }
 
-      at = def.fields[name];
-      if (!at && name.endsWith('_')) {
-        // does this name match a denormalized entry?
-        const _name = name.substring(0, name.length-1);
+        at = at.def.of;
+        pathFields[pi++] = at;
+        continue nextPath;
 
-        while (_name) {
-          const _at = def.fields[_name];
+      } else {
+        if (!def.fields) {
+          const aAt = _skipArray(at);
 
-          if (!denormal) {
-            denormal = _at.def.denormal;
-            if (!denormal) {
-              break;
-            }
+          if (aAt && aAt.def.fields) {
+            at = aAt;
+            def = at.def;
+
           } else {
-            if (!denormal[_name]) {
-              break;
+            throw new Error(
+              `"${name}" in "${pathName}" is not contained within the collection "${curCollection.def.name}"` +
+              (at.link ? '" (maybe need advanced population syntax)' : '')
+            );
+          }
+        }
+
+        at = def.fields[name];
+        if (!at && name.length > 1 && name.endsWith('_')) {
+          // does this name match a denormalized entry?
+          const _name = name.substring(0, name.length-1);
+
+          while (_name) {
+            const _at = def.fields[_name];
+
+            if (!denormal) {
+              denormal = _at.def.denormal;
+              if (!denormal) {
+                break;
+              }
+            } else {
+              if (!denormal[_name]) {
+                break;
+              }
+
+              denormal = denormal[_name];
             }
 
-            denormal = denormal[_name];
+            at = _at;
+            pathFields[pi++] = at;
+            at = at.link;
+            curCollection = at;
+            continue nextPath;
           }
-
-          at = _at;
-          pathFields[pi++] = at;
-          at = at.link;
-          curCollection = at;
-          continue nextPath;
         }
       }
 
-      at = skipArray(at);
+      if (skipArray && (pi+1 >= plen || path[pi+1] !== '_')) {
+        at = _skipArray(at);
+      }
 
       if (!at) {
         throw new Error('Cannot find field "' + this.pathName(pi) + '" in ' + collection.def.name);
@@ -115,7 +132,7 @@ export default class NamePath {
   }
 
   get tail() {
-    return skipArray(this.fields[this.fields.length-1]);
+    return _skipArray(this.fields[this.fields.length-1]);
   }
 
   get(obj) {
@@ -182,6 +199,10 @@ export default class NamePath {
       label += ' ';
     }
     label += this.fields[i].label;
+    if (!label) {
+      console.log('***', this.fields.length);
+      console.log('***', this.fields);
+    }
     return label;
   }
 }

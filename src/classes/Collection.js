@@ -921,7 +921,6 @@ export default class Collection {
               }
 
               if (type) {
-                fieldDef.is = type; // TODO:  don't really want to overwrite this anymore now that field.type is available
                 field.type = type;
               }
             }

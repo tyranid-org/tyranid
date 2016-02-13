@@ -677,6 +677,34 @@ describe('tyranid', function() {
       });
     });
 
+    describe('NamePath', function() {
+      it('should parse arrays', () => {
+        let np = new NamePath(Person, 'roles._');
+        expect(np.fields.length).to.eql(2);
+        expect(np.fields[0].type.def.name).to.eql('array');
+        expect(np.fields[1].type.def.name).to.eql('object');
+
+        np = new NamePath(Person, 'roles', true);
+        expect(np.fields.length).to.eql(1);
+        expect(np.fields[0].type.def.name).to.eql('object');
+
+        np = new NamePath(Person, 'roles');
+        expect(np.fields.length).to.eql(1);
+        expect(np.fields[0].type.def.name).to.eql('array');
+
+        np = new NamePath(Person, 'roles._.role');
+        expect(np.fields.length).to.eql(3);
+        expect(np.fields[0].type.def.name).to.eql('array');
+        expect(np.fields[1].type.def.name).to.eql('object');
+        expect(np.fields[2].type.def.name).to.eql('link');
+
+        np = new NamePath(Person, 'roles.role');
+        expect(np.fields.length).to.eql(2);
+        expect(np.fields[0].type.def.name).to.eql('array');
+        expect(np.fields[1].type.def.name).to.eql('link');
+      });
+    });
+
     describe('denormalization', function() {
       var julia,
           juliaMatch = { 'name.first': 'Julia', 'name.last': 'Doe' };
