@@ -755,9 +755,9 @@ export default class Collection {
     }
 
     if (namePath) {
-      const tail = namePath.tail;
-      collection = tail.def.id ? collectionsById[tail.def.id] : null;
-      fields = tail.def.fields;
+      const detail = namePath.detail;
+      collection = detail.def.id ? collectionsById[detail.def.id] : null;
+      fields = detail.def.fields;
     }
 
     const obj = {}; // TODO:  create a new instance of this record-class?
