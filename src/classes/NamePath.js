@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 function _skipArray(field) {
   while (field && field.type.def.name === 'array') {
-    field = field.def.of;
+    field = field.of;
   }
 
   return field;
@@ -32,11 +32,11 @@ export default class NamePath {
       let def  = at.def;
 
       if (name === '_') {
-        if (!at.def.of) {
+        if (!at.of) {
           throw new Error(`"${name} in ${pathName} on the collection "${curCollection.def.name}" is not an array.`);
         }
 
-        at = at.def.of;
+        at = at.of;
         pathFields[pi++] = at;
         continue nextPath;
 

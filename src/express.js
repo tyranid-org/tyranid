@@ -81,6 +81,14 @@ export default function(app, auth) {
   };
 
   Object.defineProperties(documentPrototype, {
+    $id: {
+      get: function() {
+        return this[this.$model.def.primaryKey.field];
+      },
+      enumerable:   false,
+      configurable: false
+    },
+
     $label: {
       get: function() {
         return this.$model.labelFor(this);
@@ -205,7 +213,8 @@ export default function(app, auth) {
     function vField(path, field) {
       var def = field.def;
       if (def.is === 'array') {
-        vField(path + '._', def.of);
+        field.of = def.of;
+        vField(path + '._', field.of);
       } else if (def.fields) {
         vFields(path, def.fields);
       }
@@ -440,7 +449,7 @@ export default function(app, auth) {
         this.file += '",';
       }
 
-      const of = def.of;
+      const of = field.of;
       if (of) {
         this.newline();
         this.file += 'of';

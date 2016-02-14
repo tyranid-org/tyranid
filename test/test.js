@@ -452,6 +452,16 @@ describe('tyranid', function() {
         });
       });
 
+      it('should support $id on instances', function() {
+        expect(Job.byLabel('Designer').$id).to.be.eql(3);
+        expect(Job.byLabel('Software Lead').$id).to.be.eql(2);
+      });
+
+      it('should support $uid on instances', function() {
+        expect(Job.byLabel('Designer').$uid).to.be.eql('j003');
+        expect(Job.byLabel('Software Lead').$uid).to.be.eql('j002');
+      });
+
       it('should support $label on instances', function() {
         expect(Job.byLabel('Designer').$label).to.be.eql('Designer');
         expect(Job.byLabel('Software Lead').$label).to.be.eql('Software Lead');
@@ -731,7 +741,7 @@ describe('tyranid', function() {
         expect(field.name).to.be.eql('name');
       });
 
-      it( 'complex denormalize pathing', function() {
+      it('complex denormalize pathing', function() {
         const np = new NamePath(Person, 'organization_.owner_.name.first'),
               field = np.detail;
         expect(field.collection).to.be.eql(Tyr.byName.person);
@@ -741,7 +751,7 @@ describe('tyranid', function() {
     });
 
     describe('client', function() {
-      it( 'should fromClient', function() {
+      it('should fromClient', function() {
         var title = 'Browsers';
         var bookObj = { title, isbn: '5614c2f00000000000000000' };
         var book = Book.fromClient(bookObj);
@@ -750,20 +760,20 @@ describe('tyranid', function() {
         expect(book.isbn).to.be.an.instanceof(ObjectId);
       });
 
-      it( 'should fromClient array objects', function() {
+      it('should fromClient array objects', function() {
         var personObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true } ] };
         var person = Person.fromClient(personObj);
         expect(person.roles[0].role).to.be.an.instanceof(ObjectId);
       });
 
-      it( 'should deep fromClient', function() {
+      it('should deep fromClient', function() {
         var friendObj = { birthDate: '03-07-1969' };
         var friend = Person.fromClient(friendObj, 'siblings.friends');
         expect(friend.birthDate).to.be.an.instanceof(Date);
         expect(friend).not.to.be.an.instanceof(Person);
       });
 
-      it( 'should allow parametric client flags', function() {
+      it('should allow parametric client flags', function() {
         Person.find({ age: { $exists: true } })
           .then(function(people) {
             var clientData = Person.toClient(people);
@@ -772,11 +782,20 @@ describe('tyranid', function() {
           })
       });
 
-      it( 'should copy dynamic objects', function() {
+      it('should copy dynamic objects', function() {
         var personObj = { name: { firstName: 'Foo' }, bag: { abc123: 5 } };
         var person = Person.fromClient(personObj);
         expect(person).to.be.an.instanceof(Person);
         expect(person.bag).to.be.eql({ abc123: 5 });
+      });
+
+      it('links should fromClient by label or id', () => {
+        let personObj = { job: 'Designer' };
+        const person = Person.fromClient(personObj);
+        expect(person.job).to.be.eql(3);
+
+        personObj = { job: 'Astronaut' };
+        expect(() => Person.fromClient(personObj)).to.throw(/Invalid integer/);
       });
     });
 

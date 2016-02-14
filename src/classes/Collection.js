@@ -58,6 +58,14 @@ const documentPrototype = {
 
 function defineDocumentProperties(dp) {
   Object.defineProperties(dp, {
+    $id: {
+      get() {
+        return this[this.$model.def.primaryKey.field];
+      },
+      enumerable:   false,
+      configurable: false
+    },
+
     $label: {
       get() {
         return this.$model.labelFor(this);
@@ -68,7 +76,8 @@ function defineDocumentProperties(dp) {
 
     $uid: {
       get() {
-        return this.$model.idToUid(this[this.def.primaryKey.field]);
+        const model = this.$model;
+        return model.idToUid(this[model.def.primaryKey.field]);
       },
       enumerable:   false,
       configurable: false
@@ -400,7 +409,7 @@ export default class Collection {
     } else {
       const query = {};
       query[findName] = {$regex: escapeRegex(matchLower), $options : 'i'};
-      return collection.db.findOne(query);
+      return collection.findOne(query);
     }
   }
 

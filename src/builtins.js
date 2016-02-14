@@ -12,8 +12,25 @@ import { ObjectId } from 'promised-mongo';
 export const LinkType = new Type({
   name: 'link',
   fromClient(field, value) {
-    const linkField = field.link.def.fields[field.link.def.primaryKey.field];
-    return linkField.type.def.fromClient(linkField, value);
+    const link = field.link,
+          linkField = link.def.fields[field.link.def.primaryKey.field];
+
+    try {
+      return linkField.type.def.fromClient(linkField, value);
+    } catch (err) {
+      if (_.isString(value) && link.isStatic() && link.labelField) {
+        // integer and ObjectId parse errors
+        if (err.toString().match(/Invalid integer|24 hex/)) {
+          const v = link.byLabel(value);
+
+          if (v) {
+            return v[link.def.primaryKey.field];
+          }
+        }
+      }
+
+      throw err;
+    }
   },
   toClient(field, value) {
     return value ? (ObjectId.isValid(value.toString()) ? value.toString() : value) : value;
@@ -23,7 +40,7 @@ export const LinkType = new Type({
 export const UidType = new Type({
   name: 'uid',
   compile(compiler, field) {
-    const of = field.def.of;
+    const of = field.of;
 
     if (!of) {
       return;
@@ -56,7 +73,11 @@ export const IntegerType = new Type({
   },
   fromClient(field, value) {
     if (typeof value === 'string') {
-      return parseInt(value, 10);
+      const v = parseInt(value, 10);
+
+      if (v.toString() !== value) {
+        throw new Error(`Invalid integer: ${value}`);
+      }
     } else {
       return value;
     }
@@ -86,7 +107,7 @@ export const ArrayType = new Type({
   name: 'array',
   fromClient(field, value) {
     if (Array.isArray(value)) {
-      const ofField = field.def.of,
+      const ofField = field.of,
             ofFieldType = ofField.type;
       return value.map(v => ofFieldType.fromClient(ofField, v));
     } else {
@@ -100,21 +121,25 @@ export const ArrayType = new Type({
       throw compiler.err(field.path, 'Missing "of" property on array definition');
     }
 
-    if (_.isPlainObject(of)) {
-      of = field.def.of = new Field(of);
-    } else if (_.isString(of)) {
-      of = typesByName[of];
-      if (!of) {
-        if (compiler.stage === 'link') {
-          throw compiler.err(field.path, 'Unknown type for "of".');
+    if (!field.of) {
+      if (_.isPlainObject(of)) {
+        of = field.of = new Field(of);
+      } else if (_.isString(of)) {
+        of = typesByName[of];
+        if (!of) {
+          if (compiler.stage === 'link') {
+            throw compiler.err(field.path, 'Unknown type for "of".');
+          }
+        } else {
+          field.of = new Field({ is: of.def.name });
         }
       } else {
-        field.def.of = new Field({ is: of.def.name });
+        throw compiler.err(field.path, `Invalid "of":  ${of}`);
       }
     }
 
-    if (field.def.of instanceof Field) {
-      compiler.field(field.path + '._', field.def.of);
+    if (field.of instanceof Field) {
+      compiler.field(field.path + '._', field.of);
     }
   }
 });
@@ -190,7 +215,18 @@ export const MongoIdType = new Type({
     if (value instanceof ObjectId) {
       return value;
     }
-    return value ? ObjectId(value.toString()) : undefined;
+
+    if (value) {
+      const str = value.toString();
+      // we don't want to accept 12-byte strings from the client
+      if (str.length !== 24) {
+        throw new Error('Invalid ObjectId');
+      }
+
+      return ObjectId(str);
+    }
+
+    //return undefined;
   },
   toClient(field, value) {
     return value ? value.toString() : value;
