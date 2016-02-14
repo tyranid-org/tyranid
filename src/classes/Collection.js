@@ -239,16 +239,16 @@ export default class Collection {
     defineDocumentProperties(dp);
 
     _.each(def.fields, function(field, name) {
-      const get  = field.serverGet || field.get,
-            set  = field.serverSet || field.set,
-            fn   = field.fn || field.clientFn || field.serverFn,
+      const get  = field.getServer || field.get,
+            set  = field.setServer || field.set,
+            fn   = field.fn || field.fnClient || field.fnServer,
             isDb = field.db;
 
       if (fn) {
-        throw new Error('Field ' + def.name + '.' + name + ' has fn/clientFn/serverFn set, fn is a method option, not a field option.');
+        throw new Error('Field ' + def.name + '.' + name + ' has fn/fnClient/fnServer set, fn is a method option, not a field option.');
       }
 
-      if (!fn && field.clientGet && isDb) {
+      if (!fn && field.getClient && isDb) {
         throw new Error('Field ' + def.name + '.' + name + ' needs a server-side get if db is set and client-side get is set.');
       }
 
@@ -276,15 +276,15 @@ export default class Collection {
     });
 
     _.each(def.methods, function(method, name) {
-      if (!method.fn && !method.clientFn && !method.serverFn) {
-        throw new Error('Method ' + def.name + '.' + name + ' has no fn, clientFn, or serverFn function set.');
+      if (!method.fn && !method.fnClient && !method.fnServer) {
+        throw new Error('Method ' + def.name + '.' + name + ' has no fn, fnClient, or fnServer function set.');
       }
 
-      if (method.fn && (method.clientFn || method.serverFn)) {
-        throw new Error('Method ' + def.name + '.' + name + ' has both fn and clientFn/serverFn set, they are mutually exclusive.');
+      if (method.fn && (method.fnClient || method.fnServer)) {
+        throw new Error('Method ' + def.name + '.' + name + ' has both fn and fnClient/fnServer set, they are mutually exclusive.');
       }
 
-      const fn = method.fn || method.serverFn;
+      const fn = method.fn || method.fnServer;
 
       method.name = name;
       Object.defineProperty(dp, name, {
@@ -345,7 +345,7 @@ export default class Collection {
     }
 
     const lf = this.labelField;
-    if (lf.def.get || lf.def.serverGet) {
+    if (lf.def.get || lf.def.getServer) {
       // if the label field is computed, we need to query the whole thing since we don't know what the computation requires
       // (TODO:  analyze functions to determine their dependencies)
 

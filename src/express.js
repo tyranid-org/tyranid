@@ -447,7 +447,7 @@ export default function(app, auth) {
         this.field(of);
       }
 
-      var get = def.clientGet || def.get;
+      var get = def.getClient || def.get;
       if (get) {
         this.newline();
         this.file += 'get: ' + get.toString() + ',';
@@ -458,7 +458,7 @@ export default function(app, auth) {
         this.file += 'db: ' + def.db + ',';
       }
 
-      var set = def.clientSet || def.set;
+      var set = def.setClient || def.set;
       if (set) {
         this.newline();
         this.file += 'set: ' + set.toString() + ',';
@@ -495,12 +495,12 @@ export default function(app, auth) {
 
       this.depth++;
       _.each(methods, method => {
-        if (method.clientFn || method.fn) {
+        if (method.fnClient || method.fn) {
           this.newline();
           this.file += method.name + ': {';
           this.depth++;
           this.newline();
-          this.file += 'fn: ' + (method.clientFn || method.fn).toString();
+          this.file += 'fn: ' + (method.fnClient || method.fn).toString();
           this.depth--;
           this.file += '},';
         }

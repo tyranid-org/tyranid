@@ -131,6 +131,12 @@ export default class NamePath {
     return this.col.def.name + ':' + this.name;
   }
 
+  // TODO:  don't like this last vs. tail ...
+  //        populator needs tail behavior ... maybe change tail to work like last(), get rid of last(), and fix populator
+  get last() {
+    return this.fields[this.fields.length-1];
+  }
+
   get tail() {
     return _skipArray(this.fields[this.fields.length-1]);
   }
