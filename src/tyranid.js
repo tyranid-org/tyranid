@@ -152,10 +152,18 @@ _.assign(Tyr, {
 
     function bootstrap(stage) {
       const bootstrapping = collections.filter(col => col.boot);
+      let reasons;
 
       for (let pass=1; bootstrapping.length && pass < 100; pass++) {
+        reasons = [];
         for (let i=0; i<bootstrapping.length; ) {
-          if (bootstrapping[i].boot(stage, pass)) {
+          let thisReasons = bootstrapping[i].boot(stage, pass);
+          if (thisReasons && !_.isArray(thisReasons)) {
+            thisReasons = [ thisReasons ];
+          }
+
+          if (thisReasons && thisReasons.length) {
+            reasons.push(...thisReasons);
             i++;
           } else {
             bootstrapping.splice(i, 1);
@@ -164,7 +172,12 @@ _.assign(Tyr, {
       }
 
       if (bootstrapping.length) {
-        throw new Error('Tyranid could not boot during ${stage} stage after 100 passes.  Deadlocked collections: ' + bootstrapping.map(c => c.def.name).join(', '));
+        throw new Error(
+          `Tyranid could not boot during ${stage} stage after 100 passes.\n\n` +
+          'Deadlocked collections: ' +
+          bootstrapping.map(c => c.def.name).join(', ') +
+          '\n\nReasons:\n' +
+          reasons.map(r => '  ' + r).join('\n'));
       }
     }
 

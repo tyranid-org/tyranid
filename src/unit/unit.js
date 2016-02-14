@@ -156,11 +156,11 @@ function register(unit) {
   bySymbol[unit.name] = unit;
 }
 
-let bootNeeded = true;
+let bootNeeded = 'UnitType needs to be booted';
 Unit.boot = function(/*stage, pass*/) {
   const UnitType = Tyr.UnitType,
         UnitSystem = Tyr.UnitSystem;
-  
+
   if (bootNeeded && UnitType && UnitType.def.values) {
     // need to boot after UnitType
 
@@ -183,7 +183,7 @@ Unit.boot = function(/*stage, pass*/) {
       }
     }
 
-    bootNeeded = false;
+    bootNeeded = undefined;
   }
 
   return bootNeeded;
