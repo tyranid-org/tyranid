@@ -878,13 +878,13 @@ export default class Collection {
     const compiler = {
       stage: stage,
       err(path, msg) {
-        return new Error('Tyranid Schema Error| ' + def.name + (path ? '.' + path : '') + ': ' + msg);
+        return new Error('Tyranid Schema Error| ' + def.name + (path ? '.' + path : '') + ' | ' + msg);
       },
 
       field(path, field) {
         const fieldDef = field.def;
         if (!_.isObject(fieldDef)) {
-          throw compiler.err('Invalid field definition, expected an object, got: ' + fieldDef);
+          throw compiler.err(path, `Invalid field definition, expected an object, got: "${fieldDef}"`);
         }
 
         if (fieldDef.labelField) {
@@ -950,7 +950,7 @@ export default class Collection {
           }
 
         } else {
-          throw compiler.err('Unknown field definition at ' + path);
+          throw compiler.err(path, 'Unknown field definition');
         }
 
         if (fieldDef.denormal) {
@@ -978,13 +978,14 @@ export default class Collection {
 
           if (_.isString(field)) {
             field = { is: field };
-          } else if (!(field instanceof Field)) {
+          }
+
+          if (!(field instanceof Field)) {
             field = val[name] = new Field(field);
           }
 
           return compiler.field(path ? path + '.' + name : name, field);
         });
-
       }
     };
 
