@@ -4,6 +4,42 @@ import _   from 'lodash';
 import { collections } from './common';
 import Collection from './classes/Collection';
 import Field from './classes/Field';
+import NamePath from './classes/NamePath';
+import Type from './classes/Type';
+
+
+const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
+const skipNonFnProps = ['constructor'];
+
+function translateClass(cls) {
+  const cname = cls.name;
+  let s = '';
+  s += cls.toString() + '\n';
+
+  function translateObj(path, o) {
+    const isfn = _.isFunction(o);
+    for (const n of Object.getOwnPropertyNames(o)) {
+      if ((isfn ? skipFnProps : skipNonFnProps).indexOf(n) !== -1) {
+        continue;
+      }
+
+      const desc = Object.getOwnPropertyDescriptor(o, n);
+
+      const value = desc.value;
+      if (value) {
+        s += `${cname}${path}.${n} = ${value.toString()};\n`;
+      } else if (desc.get) {
+        s += `Object.defineProperty(${cname}${path}, '${n}', {get:${desc.get.toString()},enumerable:${desc.enumerable}});\n`;
+      }
+    }
+  }
+
+  translateObj('',           cls);
+  translateObj('.prototype', cls.prototype);
+
+  s += `Tyr.${cname} = ${cname};\n`;
+  return s;
+}
 
 export default function(app, auth) {
 
@@ -44,6 +80,9 @@ export default function(app, auth) {
     });
   }
 
+  // needed so grid can get at it ... document this or @private?
+  Tyr.ajax = ajax;
+
   function lock(obj) {
     for (var key in obj) {
       Object.defineProperty(obj, key, {
@@ -73,6 +112,7 @@ export default function(app, auth) {
       id: idType.fromString(strId)
     };
   }
+
 
   const documentPrototype = Tyr.documentPrototype = {
     $save: function() {
@@ -110,8 +150,37 @@ export default function(app, auth) {
   lock(documentPrototype);
 
 
+
+  function Type(def) {
+    var name = def.name;
+    this.def = def;
+    this.name = name;
+    Type.byName[name] = this;
+  }
+  Type.prototype.format = ${Type.prototype.format.toString()};
+  Type.byName = {};
+  Tyr.Type = Type;
+`;
+
+  _.each(Type.byName, type => {
+    file += `  new Type({
+      name: '${type.name}',`;
+
+    if (type.def.format) {
+      file += `
+      format: ${type.def.format.toString()},`;
+    }
+
+    file += `});\n`;
+  });
+
+  file += `
+
+
+
   function Field(def) {
     this.def = def;
+    this.type = Type.byName[def.is];
   }
   Tyr.Field = Field;
 
@@ -119,15 +188,21 @@ export default function(app, auth) {
 
   Object.defineProperties(Field.prototype, {
     db: {
-      get: function() { return this.def.db !== false; },
-      enumerable:   false,
-      configurable: false
+      get: function() { return this.def.db !== false; }
     },
 
     label: {
-      get: function() { return this.def.label; },
-      enumerable:   false,
-      configurable: false
+      get: function() { return this.def.label; }
+    },
+
+    namePath: {
+      get: function() {
+        var np = this._np;
+        if (!np) {
+          np = this._np = new NamePath(this.collection, this.path);
+        }
+        return np;
+      }
     },
 
     pathLabel: {
@@ -167,6 +242,10 @@ export default function(app, auth) {
       console.log(err);
     });
   };
+
+
+
+  ${translateClass(NamePath)}
 
 
 
@@ -293,6 +372,16 @@ export default function(app, auth) {
   };
 
   Collection.prototype.compile = function() {
+
+    var def = this.def;
+    if (def.labelField) {
+      this.labelField = new NamePath(this, def.labelField).tail;
+    }
+
+    if (def.values) {
+      this.values = def.values;
+    }
+
     _.each(this.fields, function(field) {
       var def = field.def;
 
@@ -434,7 +523,7 @@ export default function(app, auth) {
 
       this.newline();
       this.file += 'is: "';
-      this.file += field.type.def.name;
+      this.file += field.type.name;
       this.file += '",';
 
       this.newline();
@@ -447,6 +536,12 @@ export default function(app, auth) {
         this.file += 'link: "';
         this.file += field.link.def.name;
         this.file += '",';
+      }
+
+      const denormal = def.denormal;
+      if (denormal) {
+        this.newline();
+        this.file += 'denormal: ' + JSON.stringify(denormal) + ',';
       }
 
       const of = field.of;
@@ -549,6 +644,10 @@ export default function(app, auth) {
       if (col.labelField) {
         file += `
   def.labelField = ${JSON.stringify(col.labelField.path)};`;
+      }
+      if (def.grids) {
+        file += `
+  def.grids = ${JSON.stringify(def.grids)};`;
       }
 
       file += `

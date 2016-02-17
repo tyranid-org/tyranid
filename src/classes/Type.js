@@ -1,13 +1,15 @@
-import _ from 'lodash';
 
-import { typesByName, setFalse } from '../common';
+// can't be import due to client-side
+const _ = require('lodash');
+
+import { setFalse } from '../common';
 import ValidationError from './ValidationError';
-
 
 export default class Type {
 
   constructor(def) {
     this.def = def;
+    this.name = def.name;
     Type.validateType(this);
   }
 
@@ -43,6 +45,28 @@ export default class Type {
 
   fromClient(field, value) {
     const f = this.def.fromClient;
+    return f ? f(field, value) : value;
+  }
+
+  format(field, value) {
+    const f = this.def.format;
+    return f ? f.call(this, field, value) : value;
+  }
+
+  query(namePath, where, query) {
+    const f = this.def.query;
+    if (f) {
+      f(namePath, where, query);
+    }
+  }
+
+  matches(namePath, where, doc) {
+    const f = this.def.matches;
+    return f ? f(namePath, where, doc) : namePath.get(doc) === where;
+  }
+
+  sortValue(field, value) {
+    const f = this.def.sortValue;
     return f ? f(field, value) : value;
   }
 
@@ -84,11 +108,12 @@ export default class Type {
       throw new Error('"name" should be a string in schema definition.');
     }
 
-    if (typesByName[def.name]) {
+    if (Type.byName[def.name]) {
       throw new Error('Type ' + def.name + ' redefined.');
     }
 
-    typesByName[def.name] = type;
+    Type.byName[def.name] = type;
   }
-
 }
+
+Type.byName = {};

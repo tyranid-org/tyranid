@@ -712,6 +712,13 @@ describe('tyranid', function() {
         expect(np.fields.length).to.eql(2);
         expect(np.fields[0].type.def.name).to.eql('array');
         expect(np.fields[1].type.def.name).to.eql('link');
+
+        np = Person.fields['roles._.role'].namePath;
+        expect(np.fields.length).to.eql(3);
+        expect(np.fields[0].type.def.name).to.eql('array');
+        expect(np.fields[1].type.def.name).to.eql('object');
+        expect(np.fields[2].type.def.name).to.eql('link');
+
       });
     });
 
@@ -1154,6 +1161,12 @@ describe('tyranid', function() {
 
       });
 
+    });
+
+    describe('types', () => {
+      it('should support Type.byName', () => {
+        expect(Type.byName.integer).to.exist;
+      });
     });
 
     describe('unit types', function() {

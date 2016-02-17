@@ -8,7 +8,6 @@ export const config            = {};
 export const collections       = [];
 export const collectionsById   = {};
 export const collectionsByName = {};
-export const typesByName       = {};
 export const $all              = '$all';
 export const metaRegex         = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 

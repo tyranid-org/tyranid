@@ -6,6 +6,8 @@ import {
   labelize
 } from '../common';
 
+import NamePath from './NamePath';
+
 
 export default class Field {
 
@@ -15,6 +17,14 @@ export default class Field {
 
   get label() {
     return _.result(this.def, 'label') || labelize(this.name);
+  }
+
+  get namePath() {
+    let np = this._np;
+    if (!np) {
+      np = this._np = new NamePath(this.collection, this.path);
+    }
+    return np;
   }
 
   get spath() {

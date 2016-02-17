@@ -27,7 +27,6 @@ import {
   collections      ,
   collectionsById  ,
   collectionsByName,
-  typesByName      ,
   labelize         ,
   $all
 } from './common';
@@ -230,7 +229,7 @@ _.assign(Tyr, {
     if (col) {
       _.remove(collections, col => col.id === collectionId);
       delete collectionsById[collectionId];
-      delete typesByName[col.def.name];
+      delete Type.byName[col.def.name];
     }
   }
 });

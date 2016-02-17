@@ -16,7 +16,6 @@ import {
   collections      ,
   collectionsById  ,
   collectionsByName,
-  typesByName      ,
   escapeRegex      ,
   labelize         ,
   parseInsertObj   ,
@@ -416,11 +415,15 @@ export default class Collection {
   /** @isomorphic */
   labelFor(doc) {
     const collection = this,
-          labelField = collection.labelField.path;
+          labelField = collection.labelField;
+
+    if (!labelField) {
+      throw new Error('No labelField defined for collection ' + collection.name);
+    }
 
     // TODO:  have this use parsePath() to walk the object in case the label is stored in an embedded object
     // TODO:  support computed properties
-    return doc[labelField];
+    return doc[labelField.path];
   }
 
   /**
@@ -900,7 +903,7 @@ export default class Collection {
         if (fieldDef.link) {
 
           if (_.isString(fieldDef.link)) {
-            type = typesByName[fieldDef.link];
+            type = Type.byName[fieldDef.link];
           } else {
             type = fieldDef.link;
           }
@@ -915,7 +918,7 @@ export default class Collection {
             }
 
             field.link = type;
-            field.type = typesByName.link;
+            field.type = Type.byName.link;
           }
         } else if (fieldDef.is) {
           type = field.type;
@@ -923,7 +926,7 @@ export default class Collection {
           if (!type) {
             type = fieldDef.is;
             if (_.isString(type)) {
-              type = typesByName[fieldDef.is];
+              type = Type.byName[fieldDef.is];
 
               if (type instanceof Collection) {
                 throw compiler.err(path, 'Trying to "is" a collection -- ' + fieldDef.is + ', either make it a "link" or a metadata snippet');
