@@ -52,9 +52,10 @@ export async function parseInsertObj(col, obj) {
     }
   });
 
-  if (insertObj[def.primaryKey.field] === undefined) {
-    const type = fields[def.primaryKey.field].type;
-    insertObj[def.primaryKey.field] = type.generatePrimaryKeyVal();
+  const pkFieldName = def.primaryKey.field;
+  if (insertObj[pkFieldName] === undefined) {
+    const type = fields[pkFieldName].type;
+    insertObj[pkFieldName] = type.generatePrimaryKeyVal();
   }
 
   if (def.primaryKey.defaultMatchIdOnInsert && insertObj._id === undefined) {

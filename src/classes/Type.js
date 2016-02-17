@@ -34,7 +34,7 @@ export default class Type {
     if (f) {
       return f();
     } else {
-      throw new Error('Generation of a default primary key value should implemented in type definition');
+      throw new Error(`Type "${this.name}" does not support generatePrimaryKeyVal()`);
     }
   }
 
