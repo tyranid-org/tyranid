@@ -285,6 +285,18 @@ describe('tyranid', function() {
       });
     });
 
+    describe('maps', function() {
+      it('should support "keys"', function() {
+        expect(Department.fields['checkouts'].keys).to.be.instanceof(Field);
+        expect(Department.fields['checkouts'].keys.type.name).to.eql('uid');
+      });
+
+      it('should support "of"', function() {
+        expect(Department.fields['checkouts'].of).to.be.instanceof(Field);
+        expect(Department.fields['checkouts'].of.type.name).to.eql('double');
+      });
+    });
+
     describe( 'schema methods', function() {
 
       it( 'should support fieldsBy()', function() {
@@ -715,6 +727,39 @@ describe('tyranid', function() {
         expect(np.fields[1].type.def.name).to.eql('object');
         expect(np.fields[2].type.def.name).to.eql('link');
 
+        const obj = new Department({ tags: [ 'red', 'tiny' ] });
+
+        np = Department.fields.tags.namePath;
+        expect(np.get(obj)).to.eql([ 'red', 'tiny' ]);
+
+        np = Department.parsePath('tags.1');
+        expect(np.get(obj)).to.eql('tiny');
+      });
+
+      it('should parse maps', () => {
+        let np = Department.fields['checkouts._'].namePath;
+        expect(np.fields.length).to.eql(2);
+        expect(np.fields[0].type.def.name).to.eql('object');
+        expect(np.fields[1].type.def.name).to.eql('double');
+
+        const obj = new Department({
+          checkouts: {
+            'uid1': 1.0,
+            'uid2': 2.0
+          },
+          cubicles: {
+            1: { name: 'West', size: 100 },
+            3: { name: 'East', size: 200 }
+          }
+        });
+
+        expect(np.get(obj)).to.eql([ 1.0, 2.0 ]);
+
+        np = Department.fields['cubicles._.size'].namePath;
+        expect(np.get(obj)).to.eql([ 100, 200 ]);
+
+        np = Department.parsePath('cubicles.3.size');
+        expect(np.get(obj)).to.eql(200);
       });
     });
 

@@ -4,6 +4,8 @@ const _ = require('lodash');
 
 const Tyr = require('../tyr');
 
+const numberRegex = /^[0-9]$/;
+
 /**
  * NOTE: This cannot be a ES6 class because it is isomorphic
  *
@@ -31,7 +33,7 @@ function NamePath(collection, pathName, skipArray) {
 
     if (name === '_') {
       if (!at.of) {
-        throw new Error(`"${name} in ${pathName} on the collection "${curCollection.def.name}" is not an array.`);
+        throw new Error(`"${name} in ${pathName} on the collection "${curCollection.def.name}" is not an array or map.`);
       }
 
       at = at.of;
@@ -39,22 +41,37 @@ function NamePath(collection, pathName, skipArray) {
       continue nextPath;
 
     } else {
+      if (name.match(numberRegex) && pi && pathFields[pi-1].type.name === 'array') {
+        at = at.of;
+        pathFields[pi++] = at;
+        continue nextPath;
+      }
+
       if (!def.fields) {
         const aAt = NamePath._skipArray(at);
 
-        if (aAt && aAt.def.fields) {
+        if (aAt && aAt.def.fields && aAt.def.fields[name]) {
           at = aAt;
           def = at.def;
 
         } else {
-          throw new Error(
-            `"${name}" in "${pathName}" is not contained within the collection "${curCollection.def.name}"` +
-            (at.link ? '" (maybe need advanced population syntax)' : '')
-          );
+          if (!def.keys) {
+            throw new Error(
+              `"${name}" in "${pathName}" is not contained within the collection "${curCollection.def.name}"` +
+              (at.link ? '" (maybe need advanced population syntax)' : '')
+            );
+          }
         }
       }
 
-      at = def.fields[name];
+      const f = def.fields;
+      if ((!f || !f[name]) && def.keys) {
+        at = at.of;
+        pathFields[pi++] = at;
+        continue nextPath;
+      }
+
+      at = f[name];
       if (!at && name.length > 1 && name.endsWith('_')) {
         // does this name match a denormalized entry?
         const _name = name.substring(0, name.length-1);
@@ -153,15 +170,24 @@ Object.defineProperty(NamePath.prototype, 'detail', {
 });
 
 NamePath.prototype.get = function(obj) {
-  const np   = this,
-        path = np.path,
-        plen = path.length;
+  const np     = this,
+        path   = np.path,
+        fields = np.fields,
+        plen   = path.length;
   let arrayInPath = false;
 
   const values = [];
 
   function getInner(pi, obj) {
     if (Array.isArray(obj)) {
+      const name = path[pi];
+      if (name === '_') {
+        pi++;
+      } else if (name && name.match(numberRegex)) {
+        getInner(pi+1, obj[name]);
+        return;
+      }
+
       arrayInPath = true;
       for (let ai=0, alen=obj.length; ai<alen; ai++ ) {
         getInner(pi, obj[ai]);
@@ -173,7 +199,13 @@ NamePath.prototype.get = function(obj) {
     } else if (!_.isObject(obj)) {
       throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
     } else {
-      getInner(pi+1, obj[path[pi]]);
+      if (pi && fields[pi-1].type.name === 'object' && path[pi] === '_') {
+        arrayInPath = true;
+        pi++;
+        _.each(obj, v => getInner(pi, v));
+      } else {
+        getInner(pi+1, obj[path[pi]]);
+      }
     }
   }
 
@@ -217,10 +249,6 @@ Object.defineProperty(NamePath.prototype, 'pathLabel', {
       label += ' ';
     }
     label += this.fields[i].label;
-    if (!label) {
-      console.log('***', this.fields.length);
-      console.log('***', this.fields);
-    }
     return label;
   }
 });

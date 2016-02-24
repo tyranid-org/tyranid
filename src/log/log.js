@@ -14,12 +14,46 @@ import Collection from '../core/collection';
 
    /. log level to show to console
 
+   /. log event?  some sort of categorization system
+
+      "_id"      is DbMongoId         is 'id;
+      "e"        is DbLink(Event)     as "Event";
+      "du"       is DbLong            as "Duration in MS";
+      "ct"       is DbInt             as "Count";
+      "ex"       is DbText            as "Stack Trace";
+      "sid"      is DbChar(64)        as "Session ID";
+      "d"        is DbLink(DnsDomain) as "Domain";
+      "ua"       is DbLink(UserAgent) as "User Agent";
+      "ip"       is DbChar(32)        as "IP";
+      "p"        is DbChar(128)       as "Path";
+      "bid"      is DbChar(10)        as "Browser ID";
+      "sv"       is DbChar(32)        as "Server ID";
+
    /. user
+
+   /. session
+
+   /. user agent
+
+   /. path / route
+
+   /. OS
+
+   /. IP
+
+   /. domain
+
+   /. durationMs
+
+   /. server ID
 
    /. additional log options
 
       /. class / file / line number?
 
+   /. make sure log saves everything, even properties it doesn't know about
+
+   /. need ability for client to add new metadata so that they can add custom fields like "org"
 
  */
 

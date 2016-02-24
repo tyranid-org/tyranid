@@ -1,7 +1,4 @@
 
-const _ = require('lodash'); // client-side
-
-import Field from '../core/field';
 import Type from '../core/type';
 
 
@@ -9,32 +6,7 @@ const ArrayType = new Type({
   name: 'array',
 
   compile(compiler, field) {
-    let of = field.def.of;
-
-    if (!of) {
-      throw compiler.err(field.path, 'Missing "of" property on array definition');
-    }
-
-    if (!field.of) {
-      if (_.isPlainObject(of)) {
-        of = field.of = new Field(of);
-      } else if (_.isString(of)) {
-        of = Type.byName[of];
-        if (!of) {
-          if (compiler.stage === 'link') {
-            throw compiler.err(field.path, 'Unknown type for "of".');
-          }
-        } else {
-          field.of = new Field({ is: of.def.name });
-        }
-      } else {
-        throw compiler.err(field.path, `Invalid "of":  ${of}`);
-      }
-    }
-
-    if (field.of instanceof Field) {
-      compiler.field(field.path + '._', field.of);
-    }
+    compiler.type(field, 'of', true);
   },
 
   fromClient(field, value) {

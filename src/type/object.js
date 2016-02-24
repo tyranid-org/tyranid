@@ -7,6 +7,24 @@ import ValidationError from '../core/validationError';
 
 const ObjectType = new Type({
   name: 'object',
+
+  compile(compiler, field) {
+    const def = field.def;
+
+    if (def.fields) {
+      compiler.fields(field.path, def.fields);
+    }
+
+    if (def.keys && !def.of) {
+      throw compiler.err(field.path, '"of" must be specified if "keys" is present');
+    } else if (!def.keys && def.of) {
+      throw compiler.err(field.path, '"keys" must be specified if "of" is present');
+    }
+
+    compiler.type(field, 'keys');
+    compiler.type(field, 'of');
+  },
+
   fromClient(field, value) {
     if (!value) {
       return value;
@@ -35,8 +53,8 @@ const ObjectType = new Type({
 
       return obj;
     }
-
   },
+
   validate(field, obj) {
     const errors = [];
 

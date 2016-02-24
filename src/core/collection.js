@@ -880,8 +880,45 @@ export default class Collection {
   createCompiler(collection, def, stage) {
     const compiler = {
       stage: stage,
+  
       err(path, msg) {
         return new Error('Tyranid Schema Error| ' + def.name + (path ? '.' + path : '') + ' | ' + msg);
+      },
+
+      type(field, name, required) {
+        let type = field[name];
+
+        if (!type) {
+          type = field.def[name];
+
+          if (!type) {
+            if (required) {
+              throw this.err(field.path, 'Missing "${name}" property');
+            }
+
+            return;
+          }
+
+          if (_.isPlainObject(type)) {
+            type = field[name] = new Field(type);
+          } else if (_.isString(type)) {
+            type = Type.byName[type];
+            if (!type) {
+              if (this.stage === 'link') {
+                throw this.err(field.path, `Unknown type for "${name}".`);
+              }
+            } else {
+              type = field[name] = new Field({ is: type.def.name });
+            }
+          } else {
+            console.log('type', type);
+            throw this.err(field.path, `Invalid "${name}":  ${type}`);
+          }
+        }
+
+        if (type instanceof Field) {
+          this.field(field.path + '._', type);
+        }
       },
 
       field(path, field) {
@@ -943,10 +980,6 @@ export default class Collection {
 
           if (type) {
             type.compile(compiler, field);
-
-            if (type.def.name === 'object' && fieldDef.fields) {
-              compiler.fields(path, fieldDef.fields);
-            }
 
           } else if (!_.isObject(fieldDef.is) || !fieldDef.is.def) {
             throw compiler.err(path, 'Expected field.is to be a string or a type, got: ' + fieldDef.is);

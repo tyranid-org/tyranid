@@ -12,6 +12,8 @@ var Department = new tyr.Collection({
     permissions: { is: 'object', fields: {
       members:   { is: 'array', of: { link: 'user' } }
     }},
+    checkouts:   { is: 'object', keys: 'uid', of: 'double' },
+    cubicles:    { is: 'object', keys: 'string', of: { is: 'object', fields: { name: 'string', size: { is: 'double', in: 'ft^2' } } } }
   }
 });
 
