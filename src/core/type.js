@@ -2,7 +2,8 @@
 // can't be import due to client-side
 const _ = require('lodash');
 
-import { setFalse } from '../common';
+import { setFalse }    from '../common';
+import Tyr             from '../tyr';
 import ValidationError from './validationError';
 
 export default class Type {
@@ -117,3 +118,5 @@ export default class Type {
 }
 
 Type.byName = {};
+
+Tyr.Type = Type;

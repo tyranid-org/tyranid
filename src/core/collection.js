@@ -3,6 +3,7 @@ import _          from 'lodash';
 import hooker     from 'hooker';
 import faker      from 'faker';
 
+import Tyr        from '../tyr';
 import Type       from './type';
 import ObjectType from '../type/object';
 import Population from './population';
@@ -14,15 +15,16 @@ import Field      from './field';
 // variables shared between classes
 import {
   config           ,
-  collections      ,
-  collectionsById  ,
-  collectionsByName,
   escapeRegex      ,
-  labelize         ,
   parseInsertObj   ,
   parseProjection  ,
   toClient
 } from '../common';
+
+import {
+  collections,
+  labelize
+} from '../tyr';
 
 
 // Document
@@ -173,8 +175,8 @@ export default class Collection {
       throw new Error('The collection "id" should be three characters long.');
     }
 
-    if (collectionsById[colId]) {
-      throw new Error(`The collection id "${colId}" is already in use by ${collectionsById[colId].def.name}.`);
+    if (Tyr.byId[colId]) {
+      throw new Error(`The collection id "${colId}" is already in use by ${Tyr.byId[colId].def.name}.`);
     }
 
     //
@@ -232,8 +234,8 @@ export default class Collection {
 
 
     collections.push(CollectionInstance);
-    collectionsById[def.id] = CollectionInstance;
-    collectionsByName[def.name] = CollectionInstance;
+    Tyr.byId[def.id] = CollectionInstance;
+    Tyr.byName[def.name] = CollectionInstance;
 
     for (const key in dp) {
       if (key.substring(0,1) === '$' && key !== '$label') {
@@ -769,7 +771,7 @@ export default class Collection {
 
     if (namePath) {
       const detail = namePath.detail;
-      collection = detail.def.id ? collectionsById[detail.def.id] : null;
+      collection = detail.def.id ? Tyr.byId[detail.def.id] : null;
       fields = detail.def.fields;
     }
 
@@ -1133,3 +1135,5 @@ export default class Collection {
     });
   }
 }
+
+Tyr.Collection = Collection;

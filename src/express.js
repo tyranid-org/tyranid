@@ -1,7 +1,7 @@
 
 import _   from 'lodash';
 
-import { collections } from './common';
+import Tyr             from './tyr';
 import Collection      from './core/collection';
 import Field           from './core/field';
 import NamePath        from './core/namePath';
@@ -41,7 +41,7 @@ function translateClass(cls) {
   return s;
 }
 
-export default function(app, auth) {
+export default function express(app, auth) {
 
 
   /*
@@ -63,7 +63,7 @@ export default function(app, auth) {
   var Tyr = window.Tyr = {
         $all: '$all',
         collections: [],
-        collectionsById: {}
+        byId: {}
       },
       byName = {};
 
@@ -97,7 +97,7 @@ export default function(app, auth) {
   Tyr.parseUid = function(uid) {
     const colId = uid.substring(0, 3);
 
-    const col = Tyr.collectionsById[colId];
+    const col = Tyr.byId[colId];
 
     if (!col) {
       throw new Error('No collection found for id "' + colId + '"');
@@ -348,7 +348,7 @@ export default function(app, auth) {
     });
 
     Tyr.collections.push(CollectionInstance);
-    Tyr.collectionsById[CollectionInstance.id] = CollectionInstance;
+    Tyr.byId[CollectionInstance.id] = CollectionInstance;
     byName[def.name] = CollectionInstance;
 
     var lf = def.labelField;
@@ -615,7 +615,7 @@ export default function(app, auth) {
     }
   }
 
-  collections.forEach(col => {
+  Tyr.collections.forEach(col => {
     const def = col.def;
 
     if (def.client !== false) {
@@ -666,8 +666,10 @@ export default function(app, auth) {
     .all(auth)
     .get(async (req, res) => res.send(file));
 
-  collections.forEach(col => col.express(app, auth));
+  Tyr.collections.forEach(col => col.express(app, auth));
 };
+
+Tyr.express = express;
 
 /**
  * @private ... clients should use Tyr.express()

@@ -1,4 +1,6 @@
 
+import Tyr from '../tyr';
+
 export default class ValidationError {
 
   constructor(field, reason) {
@@ -14,3 +16,5 @@ export default class ValidationError {
     return this.message;
   }
 }
+
+Tyr.ValidationError = ValidationError;

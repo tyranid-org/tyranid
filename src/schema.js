@@ -1,11 +1,8 @@
 
 import _ from 'lodash';
 
+import Tyr        from './tyr';
 import Collection from './core/collection';
-
-import {
-  collectionsById
-} from './common';
 
 export const SchemaType = new Collection({
   id: '_t0',
@@ -55,7 +52,7 @@ Collection.prototype.fieldsFor = async function(obj) {
     schemaCache = await Schema.db.find();
 
     schemaCache.forEach(schema => {
-      const collection = collectionsById[schema.collection],
+      const collection = Tyr.byId[schema.collection],
             def        = schema.def;
 
       this.createCompiler(collection, def, 'compile').fields('', def.fields);

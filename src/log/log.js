@@ -112,5 +112,15 @@ Log.fatal = async function() {
   return log(LogLevel.FATAL, ...arguments);
 };
 
-Tyr.Log = Log;
+_.assign(Tyr, {
+  Log,
+  log:    ::Log.log,
+  trace:  ::Log.trace,
+  debug:  ::Log.debug,
+  info:   ::Log.info,
+  warn:   ::Log.warn,
+  error:  ::Log.error,
+  fatal:  ::Log.fatal,
+});
+
 export default Log;

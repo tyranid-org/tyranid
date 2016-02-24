@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _  from 'lodash';
 import fs from 'fs';
 
 import Tyr from './tyr';
@@ -18,13 +18,14 @@ import './type/string';
 import './type/uid';
 import './type/url';
 
-import Type            from './core/type';
-import Collection      from './core/collection';
-import Field           from './core/field';
-import ValidationError from './core/validationError';
-import NamePath        from './core/namePath';
+import Type from './core/type';
 
-import Log             from './log/log';
+import './core/collection';
+import './core/field';
+import './core/validationError';
+import './core/namePath';
+
+import './log/log';
 
 import './unit/unitSystem';
 import './unit/unitFactor';
@@ -32,19 +33,12 @@ import './unit/unitType';
 import './unit/unit';
 import './unit/units';
 
-import express from './express';
+import './express';
 
 import /*Schema from */ './schema';
 
 // variables shared between classes
-import {
-  config           ,
-  collections      ,
-  collectionsById  ,
-  collectionsByName,
-  labelize         ,
-  $all
-} from './common';
+import { config } from './common';
 
 
 /*
@@ -100,34 +94,6 @@ import {
 
 _.assign(Tyr, {
 
-  /**
-   * Properties
-   */
-  Type,
-  ValidationError,
-  $all,
-  Collection,
-  collections,
-  byId: collectionsById,
-  byName: collectionsByName,
-  Field,
-  express,
-  labelize,
-  NamePath,
-
-  Log,
-  log:    ::Log.log,
-  trace:  ::Log.trace,
-  debug:  ::Log.debug,
-  info:   ::Log.info,
-  warn:   ::Log.warn,
-  error:  ::Log.error,
-  fatal:  ::Log.fatal,
-
-
-  /**
-   * Methods
-   */
   config(opts) {
 
     // clear object but keep reference
@@ -140,7 +106,7 @@ _.assign(Tyr, {
     }
 
     const db = this.db = opts.db;
-    collections.forEach(collection => {
+    Tyr.collections.forEach(collection => {
       if (!collection.db) {
         collection.db = db.collection(collection.def.dbName);
       }
@@ -174,7 +140,7 @@ _.assign(Tyr, {
     }
 
     function bootstrap(stage) {
-      const bootstrapping = collections.filter(col => col.boot);
+      const bootstrapping = Tyr.collections.filter(col => col.boot);
       let reasons;
 
       for (let pass=1; bootstrapping.length && pass < 100; pass++) {
@@ -206,41 +172,11 @@ _.assign(Tyr, {
 
     bootstrap('compile');
 
-    for (const col of collections) {
+    for (const col of Tyr.collections) {
       col.compile('link');
     }
 
     bootstrap('link');
-  },
-
-  async valuesBy(filter) {
-    const getValues = c => c.valuesFor(c.fieldsBy(filter));
-    const arrs = await* Tyr.collections.map(getValues);
-    return _.union.apply(null, arrs);
-  },
-
-  parseUid(uid) {
-    const colId = uid.substring(0, 3);
-
-    const col = collectionsById[colId];
-
-    if (!col) {
-      throw new Error('No collection found for id "' + colId + '"');
-    }
-
-    const strId = uid.substring(3);
-
-    const idType = col.def.fields[col.def.primaryKey.field].type;
-
-    return {
-      collection: col,
-      id: idType.fromString(strId)
-    };
-  },
-
-  byUid(uid) {
-    const p = Tyr.parseUid(uid);
-    return p.collection.byId(p.id);
   },
 
   /**
@@ -248,11 +184,11 @@ _.assign(Tyr, {
    * @private
    */
   forget(collectionId) {
-    const col = collectionsById[collectionId];
+    const col = Tyr.byId[collectionId];
 
     if (col) {
-      _.remove(collections, col => col.id === collectionId);
-      delete collectionsById[collectionId];
+      _.remove(Tyr.collections, col => col.id === collectionId);
+      delete Tyr.byId[collectionId];
       delete Type.byName[col.def.name];
     }
   }

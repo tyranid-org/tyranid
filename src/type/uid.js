@@ -1,24 +1,20 @@
 
 const _ = require('lodash'); // client-side
 
-import {
-  collectionsById  ,
-  collectionsByName,
-} from '../common';
-
+import Tyr        from '../tyr';
 import Collection from '../core/collection';
-import Type from '../core/type';
+import Type       from '../core/type';
 
 
 function validateUidCollection(validator, path, collection) {
   const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
 
   if (collection instanceof Collection) {
-    if (!collectionsById[collection.id]) {
+    if (!Tyr.byId[collection.id]) {
       throw validator.err(path, unknownTypeErrMsg);
     }
   } else if (typeof collection === 'string') {
-    collection = collectionsByName[collection];
+    collection = Tyr.byName[collection];
     if (!collection) {
       throw validator.err(path, unknownTypeErrMsg);
     }

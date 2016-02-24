@@ -2,6 +2,7 @@
 // cannot use import because @isomorphic
 const _ = require('lodash');
 
+const Tyr = require('../tyr');
 
 /**
  * NOTE: This cannot be a ES6 class because it is isomorphic
@@ -224,4 +225,5 @@ Object.defineProperty(NamePath.prototype, 'pathLabel', {
   }
 });
 
+Tyr.NamePath = NamePath;
 export default NamePath;

@@ -1,7 +1,10 @@
-import _ from 'lodash';
-import NamePath from './namePath';
-import { collectionsById, $all } from '../common';
 
+import _ from 'lodash';
+
+import Tyr      from '../tyr';
+import NamePath from './namePath';
+
+const $all = Tyr.$all;
 
 export default class Population {
 
@@ -64,7 +67,7 @@ export default class Population {
               } else if (!_.isObject(value)) {
                 throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePath + ': ' + value);
               } else {
-                projection.push(new Population(namePath, parseProjection(collectionsById[link.id], value)));
+                projection.push(new Population(namePath, parseProjection(Tyr.byId[link.id], value)));
               }
             }
           }

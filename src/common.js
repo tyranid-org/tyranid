@@ -4,10 +4,6 @@ import NamePath from './core/namePath';
 
 
 export const config            = {};
-export const collections       = [];
-export const collectionsById   = {};
-export const collectionsByName = {};
-export const $all              = '$all';
 export const metaRegex         = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
 
@@ -21,12 +17,6 @@ export function escapeRegex(str) {
 
 export function pathAdd(path, add) {
   return path ? path + '.' + add : add;
-}
-
-export function labelize(name) {
-
-  // TODO:  more cases to be added here later on
-  return _.startCase(name);
 }
 
 export async function parseInsertObj(col, obj) {

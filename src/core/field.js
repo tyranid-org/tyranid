@@ -1,11 +1,8 @@
 
 import _ from 'lodash';
 
-// variables shared between classes
-import {
-  labelize
-} from '../common';
 
+import Tyr      from '../tyr';
 import NamePath from './namePath';
 
 
@@ -16,7 +13,7 @@ export default class Field {
   }
 
   get label() {
-    return _.result(this.def, 'label') || labelize(this.name);
+    return _.result(this.def, 'label') || Tyr.labelize(this.name);
   }
 
   get namePath() {
@@ -60,3 +57,5 @@ export default class Field {
     return this._calcPathLabel();
   }
 }
+
+Tyr.Field = Field;

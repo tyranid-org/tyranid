@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { collectionsById } from '../common';
+import Tyr from '../tyr';
 
 
 export default class Populator {
@@ -53,7 +53,7 @@ export default class Populator {
   async queryMissingIds() {
 
     return await* _.map(this.cachesByColId, async (cache, colId) => {
-      const collection = collectionsById[colId],
+      const collection = Tyr.byId[colId],
             primaryKeyField = collection.def.primaryKey.field,
             idType = collection.def.fields[primaryKeyField].type;
 
