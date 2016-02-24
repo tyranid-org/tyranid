@@ -1,8 +1,8 @@
 
 const _ = require('lodash'); // client-side
 
-import Field from '../classes/Field';
-import Type from '../classes/Type';
+import Field from '../core/field';
+import Type from '../core/type';
 
 
 const ArrayType = new Type({

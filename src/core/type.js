@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 import { setFalse } from '../common';
-import ValidationError from './ValidationError';
+import ValidationError from './validationError';
 
 export default class Type {
 

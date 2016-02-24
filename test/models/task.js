@@ -1,5 +1,5 @@
 var tyr = require('../../src/tyranid'),
-    Person = require('./person');
+    User = require('./user');
 
 var Department = {
   is: 'object',
@@ -21,7 +21,7 @@ var Task = new tyr.Collection({
     assigneeUid: {
       is: 'uid',
       label: 'Assignee UID',
-      of: [ Person, 'department' ]
+      of: [ User, 'department' ]
     },
     departments: { is : 'array', of: Department },
     manual: { link: 'book' }

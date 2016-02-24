@@ -18,11 +18,13 @@ import './type/string';
 import './type/uid';
 import './type/url';
 
-import Type from './classes/Type';
-import Collection from './classes/Collection';
-import Field from './classes/Field';
-import ValidationError from './classes/ValidationError';
-import NamePath from './classes/NamePath';
+import Type            from './core/type';
+import Collection      from './core/collection';
+import Field           from './core/field';
+import ValidationError from './core/validationError';
+import NamePath        from './core/namePath';
+
+import Log             from './log/log';
 
 import './unit/unitSystem';
 import './unit/unitFactor';
@@ -112,6 +114,15 @@ _.assign(Tyr, {
   express,
   labelize,
   NamePath,
+
+  Log,
+  log:    ::Log.log,
+  trace:  ::Log.trace,
+  debug:  ::Log.debug,
+  info:   ::Log.info,
+  warn:   ::Log.warn,
+  error:  ::Log.error,
+  fatal:  ::Log.fatal,
 
 
   /**

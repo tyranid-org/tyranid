@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import NamePath from './classes/NamePath';
+import NamePath from './core/namePath';
 
 
 export const config            = {};

@@ -4,7 +4,7 @@ var tyr = require('../../src/tyranid');
 var Friend = {
   is: 'object',
   fields: {
-    person: { link: 'person' },
+    user: { link: 'user' },
     birthDate: { is: 'date' }
   }
 };
@@ -13,7 +13,7 @@ var Sibling = {
   is: 'object',
   fields: {
     name:       { is: 'string' },
-    bestFriend: { link: 'person' },
+    bestFriend: { link: 'user' },
     friends:    { is: 'array',  of: Friend }
   }
 };
@@ -28,9 +28,9 @@ var RoleStatus = {
 
 Sibling.Friend = Friend;
 
-var Person = new tyr.Collection({
-  id: 't03',
-  name: 'person',
+var User = new tyr.Collection({
+  id: 'u00',
+  name: 'user',
   fields: {
     _id: { is: 'integer' },
 
@@ -67,6 +67,6 @@ var Person = new tyr.Collection({
   }
 });
 
-Person.Sibling = Sibling;
+User.Sibling = Sibling;
 
-module.exports = Person;
+module.exports = User;

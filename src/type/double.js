@@ -2,7 +2,7 @@
 const _ = require('lodash'); // client-side
 
 import Tyr from '../tyr';
-import Type from '../classes/Type';
+import Type from '../core/type';
 
 
 const DoubleType = new Type({

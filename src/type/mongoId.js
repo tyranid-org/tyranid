@@ -1,7 +1,7 @@
 
 import { ObjectId } from 'promised-mongo';
 
-import Type from '../classes/Type';
+import Type from '../core/type';
 
 
 export const MongoIdType = new Type({

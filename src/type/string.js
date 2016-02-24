@@ -1,7 +1,7 @@
 
 const _ = require('lodash'); // client-side
 
-import Type from '../classes/Type';
+import Type from '../core/type';
 
 
 const StringType = new Type({

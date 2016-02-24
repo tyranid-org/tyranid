@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import NamePath from './NamePath';
+import NamePath from './namePath';
 import { collectionsById, $all } from '../common';
 
 

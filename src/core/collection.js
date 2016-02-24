@@ -1,13 +1,14 @@
-import _ from 'lodash';
-import hooker from 'hooker';
-import faker from 'faker';
 
-import Type from './Type';
+import _          from 'lodash';
+import hooker     from 'hooker';
+import faker      from 'faker';
+
+import Type       from './type';
 import ObjectType from '../type/object';
-import Population from './Population';
-import Populator from './Populator';
-import NamePath from './NamePath';
-import Field from './Field';
+import Population from './population';
+import Populator  from './populator';
+import NamePath   from './namePath';
+import Field      from './field';
 
 
 // variables shared between classes

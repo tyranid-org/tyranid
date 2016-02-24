@@ -6,8 +6,8 @@ import {
   collectionsByName,
 } from '../common';
 
-import Collection from '../classes/Collection';
-import Type from '../classes/Type';
+import Collection from '../core/collection';
+import Type from '../core/type';
 
 
 function validateUidCollection(validator, path, collection) {

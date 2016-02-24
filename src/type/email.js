@@ -1,5 +1,5 @@
 
-import Type from '../classes/Type';
+import Type from '../core/type';
 
 
 const EmailType = new Type({ name: 'email' });

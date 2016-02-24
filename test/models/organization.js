@@ -6,7 +6,7 @@ var Organization = new tyr.Collection({
   fields: {
     _id: { is: 'integer' },
     name: { is: 'string', labelField: true },
-    owner: { link: 'person' }
+    owner: { link: 'user' }
   }
 });
 

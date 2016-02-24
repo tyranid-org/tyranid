@@ -8,12 +8,16 @@ var Tyr            = require('../src/tyranid'),
     chaiAsPromised = require('chai-as-promised'),
     pmongo         = require('promised-mongo'),
     expect         = chai.expect,
+    assert         = chai.assert,
     _              = require('lodash'),
-    Field          = require('../src/classes/Field'),
-    Type           = require('../src/classes/Type'),
+    Field          = require('../src/core/field'),
+    Type           = require('../src/core/type'),
     UnitType       = require('../src/unit/unitType'),
     Unit           = require('../src/unit/unit'),
-    Units          = require('../src/unit/units');
+    Units          = require('../src/unit/units'),
+
+    Log            = Tyr.Log;
+
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -174,20 +178,20 @@ describe('tyranid', function() {
   });
 
   describe('with model', function() {
-    var Job, Organization, Department, Person, Task, Role, Book,
+    var Job, Organization, Department, User, Task, Role, Book,
         TyrSchema, TyrSchemaType;
-    //var Job2, Organization2, Department2, Person2;
+    //var Job2, Organization2, Department2, User2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
     var BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
 
-    before(function() {
+    before(async function() {
       // Test validate load models and byName
       Tyr.validate([{dir: __dirname + '/models', fileMatch: '\.js$' }]);
 
       Job = Tyr.byName.job;
       Organization = Tyr.byName.organization;
       Department = Tyr.byName.department;
-      Person = Tyr.byName.person;
+      User = Tyr.byName.user;
       Task = Tyr.byName.task;
       Book = Tyr.byName.book;
       TyrSchema = Tyr.byName.tyrSchema;
@@ -195,97 +199,89 @@ describe('tyranid', function() {
 
       Role = require('./models/role.js'); // require to get extra link in prototype chain
 
-      return Promise.all([
-        Organization.db.remove({}).then(function() {
-          return Organization.db.insert([
-            { _id: 1, name: 'Acme Unlimited' },
-            { _id: 2, name: '123 Construction', owner: 3 },
-          ]);
-        }),
-        Department.db.remove({}).then(function() {
-          return Department.db.insert([
-            { _id: 1, name: 'Engineering', creator: 2, head: 3, permissions: { members: [ 2, 3 ] } }
-          ]);
-        }),
-        Role.db.remove({}).then(function() {
-          return Role.db.insert([
-            { _id: AdministratorRoleId, name: 'Administrator' }
-          ]);
-        }),
-        Person.db.remove({}).then(function() {
-          return Person.db.insert([
-            { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
-            { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
-              { name: 'Tom Doe', bestFriend: 1, friends: [ { person: 3 }, { person: 1 } ] },
-              { name: 'George Doe', friends: [ { person: 1 }, { person: 3 } ] }
-            ],
-              age: 35,
-              ageAppropriateSecret: 'Eats at Chipotle way to much...',
-              roles: [ { role: AdministratorRoleId, active: true } ]
-            },
-            { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
-                { name: 'Jill Doe', friends: [ { person: 1 }, { person: 2 } ] },
-                { name: 'Bill Doe', friends: [ { person: 2 }, { person: 3 } ] }
-            ],
-              age: 20,
-              ageAppropriateSecret: 'Not a fan of construction companies...'
-            },
-            { _id: 4, organization: 2, name: { first: 'Jill', last: 'Doe' }, age: 20 }
-          ]);
-        }),
-        Book.db.remove({}).then(function() {
-          return Book.db.insert([
-            { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' },
-          ]);
-        }),
-        Task.db.remove({}).then(function() {
-          return Task.db.insert([
-            { _id: 1, title: 'Write instance validation tests', assigneeUid: Person.idToUid(1), manual: BookIsbn },
-          ]);
-        }),
-        TyrSchema.db.remove({}).then(function() {
-          return TyrSchema.db.insert([
-            {
-              collection: Person.id,
-              match: {
-                organization: 1
-              },
-              type: TyrSchemaType.PARTIAL._id,
-              def: {
-                fields: {
-                  acmeX: { is: 'integer' }
-                }
-              }
-            }
-          ]);
-        })
+      await Organization.db.remove({});
+      await Organization.db.insert([
+        { _id: 1, name: 'Acme Unlimited' },
+        { _id: 2, name: '123 Construction', owner: 3 },
       ]);
+      await Department.db.remove({});
+      await Department.db.insert([
+        { _id: 1, name: 'Engineering', creator: 2, head: 3, permissions: { members: [ 2, 3 ] } }
+      ]);
+      await Role.db.remove({});
+      await Role.db.insert([
+        { _id: AdministratorRoleId, name: 'Administrator' }
+      ]);
+      await User.db.remove({});
+      await User.db.insert([
+        { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
+        { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
+          { name: 'Tom Doe', bestFriend: 1, friends: [ { user: 3 }, { user: 1 } ] },
+          { name: 'George Doe', friends: [ { user: 1 }, { user: 3 } ] }
+        ],
+          age: 35,
+          ageAppropriateSecret: 'Eats at Chipotle way to much...',
+          roles: [ { role: AdministratorRoleId, active: true } ]
+        },
+        { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
+            { name: 'Jill Doe', friends: [ { user: 1 }, { user: 2 } ] },
+            { name: 'Bill Doe', friends: [ { user: 2 }, { user: 3 } ] }
+        ],
+          age: 20,
+          ageAppropriateSecret: 'Not a fan of construction companies...'
+        },
+        { _id: 4, organization: 2, name: { first: 'Jill', last: 'Doe' }, age: 20 }
+      ]);
+      await Book.db.remove({});
+      await Book.db.insert([
+        { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' },
+      ]);
+      await Task.db.remove({});
+      await Task.db.insert([
+        { _id: 1, title: 'Write instance validation tests', assigneeUid: User.idToUid(1), manual: BookIsbn },
+      ]);
+      await TyrSchema.db.remove({});
+      await TyrSchema.db.insert([
+        {
+          collection: User.id,
+          match: {
+            organization: 1
+          },
+          type: TyrSchemaType.PARTIAL._id,
+          def: {
+            fields: {
+              acmeX: { is: 'integer' }
+            }
+          }
+        }
+      ]);
+      await Log.db.remove({});
     });
 
     describe('fields', function() {
       it('should support fields object', function() {
-        expect(Person.fields['name.first']).to.be.instanceof(Field);
-        expect(Person.fields['roles._.role']).to.be.instanceof(Field);
+        expect(User.fields['name.first']).to.be.instanceof(Field);
+        expect(User.fields['roles._.role']).to.be.instanceof(Field);
       });
 
       it('should support field.type', function() {
-        expect(Person.fields['name.first'].type).to.be.instanceof(Type);
-        expect(Person.fields['roles._.role'].type).to.be.instanceof(Type);
+        expect(User.fields['name.first'].type).to.be.instanceof(Type);
+        expect(User.fields['roles._.role'].type).to.be.instanceof(Type);
       });
 
       it('should support field.link', function() {
-        expect(Person.fields['roles._.role'].link).to.be.eql(Tyr.byName.role);
+        expect(User.fields['roles._.role'].link).to.be.eql(Tyr.byName.role);
       });
 
       it('should support field.parent', function() {
-        expect(Person.fields['name.first'].parent.name).to.be.eql('name');
-        expect(Person.fields['name'].parent).to.be.eql(null);
+        expect(User.fields['name.first'].parent.name).to.be.eql('name');
+        expect(User.fields['name'].parent).to.be.eql(null);
       });
 
       it('should support field.pathLabel', function() {
-        expect(Person.fields['name.first'].parent.pathLabel).to.be.eql('Name');
-        expect(Person.fields['name.first'].pathLabel).to.be.eql('Name First Name');
-        expect(Person.fields['name.last'].pathLabel).to.be.eql('Name Last');
+        expect(User.fields['name.first'].parent.pathLabel).to.be.eql('Name');
+        expect(User.fields['name.first'].pathLabel).to.be.eql('Name First Name');
+        expect(User.fields['name.last'].pathLabel).to.be.eql('Name Last');
       });
     });
 
@@ -293,7 +289,7 @@ describe('tyranid', function() {
 
       it( 'should support fieldsBy()', function() {
         expect(
-          Person.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
+          User.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
           ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
@@ -307,29 +303,29 @@ describe('tyranid', function() {
     });
 
     describe('dynamic schemas', () => {
-      const dynPersonId = 111;
+      const dynUserId = 111;
       afterEach(() => {
-        return Person.db.remove({ _id: dynPersonId });
+        return User.db.remove({ _id: dynUserId });
       });
 
       it( 'should support matching fieldsFor()', async () => {
-        const fields = await Person.fieldsFor({ organization: 1 });
+        const fields = await User.fieldsFor({ organization: 1 });
         expect(Object.values(fields).length).to.be.eql(16);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
-        const fields = await Person.fieldsFor({ organization: 2 });
+        const fields = await User.fieldsFor({ organization: 2 });
         expect(Object.values(fields).length).to.be.eql(15);
       });
 
       it( 'should set dyn fields on insert for matching objects', async () => {
-        return Person.insert({ _id: dynPersonId, organization: 1, name: { first: 'Dynamic', last: 'Schema' }, acmeX: 999 }).then(p => {
+        return User.insert({ _id: dynUserId, organization: 1, name: { first: 'Dynamic', last: 'Schema' }, acmeX: 999 }).then(p => {
           expect(p.acmeX).to.be.eql(999);
         });
       });
 
       it( 'should NOT set dyn fields on insert for unmatching objects', async () => {
-        return Person.insert({ _id: dynPersonId, organization: 2, name: { first: 'Not', last: 'Dynamic' }, acmeX: 999 }).then(p => {
+        return User.insert({ _id: dynUserId, organization: 2, name: { first: 'Not', last: 'Dynamic' }, acmeX: 999 }).then(p => {
           expect(p.acmeX).to.not.exist;
         });
       });
@@ -337,52 +333,52 @@ describe('tyranid', function() {
 
     describe('finding', function() {
       it('should find unwrapped objects', function() {
-        return Person.db.find({'name.first': 'An'}).then(function(docs) {
+        return User.db.find({'name.first': 'An'}).then(function(docs) {
           expect(docs.length).to.be.eql(1);
         });
       });
 
       it('should find wrapped objects', function() {
-        return Person.find({'name.first': 'An'}).then(function(docs) {
+        return User.find({'name.first': 'An'}).then(function(docs) {
           expect(docs.length).to.be.eql(1);
-          expect(docs[0]).to.be.an.instanceof(Person);
+          expect(docs[0]).to.be.an.instanceof(User);
         });
       });
 
       it('should return a cursor', function() {
-        return Person.find().skip(2).limit(2).sort({'name.first':-1}).then(function(docs) {
+        return User.find().skip(2).limit(2).sort({'name.first':-1}).then(function(docs) {
           expect(docs.length).to.be.eql(2);
           expect(docs[0].name.first).to.be.eql('Jane');
           expect(docs[1].name.first).to.be.eql('An');
-          expect(docs[0]).to.be.an.instanceof(Person);
-          expect(docs[1]).to.be.an.instanceof(Person);
+          expect(docs[0]).to.be.an.instanceof(User);
+          expect(docs[1]).to.be.an.instanceof(User);
         });
       });
 
       it('should findOne()', function() {
-        return Person.findOne({'name.first': 'An'}).then(function(doc) {
-          expect(doc).to.be.an.instanceof(Person);
+        return User.findOne({'name.first': 'An'}).then(function(doc) {
+          expect(doc).to.be.an.instanceof(User);
         });
       });
 
       it('should findAndModify()', function() {
-        return Person.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(result) {
-          var person = result.value;
-          expect(person).to.be.an.instanceof(Person);
-          expect(person.age).to.be.eql(32);
+        return User.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(result) {
+          var user = result.value;
+          expect(user).to.be.an.instanceof(User);
+          expect(user.age).to.be.eql(32);
         });
       });
 
       it('should byId()', function() {
-        return Person.byId(1).then(function(doc) {
-          expect(doc).to.be.an.instanceof(Person);
+        return User.byId(1).then(function(doc) {
+          expect(doc).to.be.an.instanceof(User);
           expect(doc._id).to.be.eql(1);
         });
       });
 
       it('should byId() with string conversions', function() {
-        return Person.byId('1').then(function(doc) {
-          expect(doc).to.be.an.instanceof(Person);
+        return User.byId('1').then(function(doc) {
+          expect(doc).to.be.an.instanceof(User);
           expect(doc._id).to.be.eql(1);
         });
       });
@@ -429,8 +425,8 @@ describe('tyranid', function() {
 
       it('model fields should have name and path fields', function() {
         expect(Job.def.fields.manager.name).to.be.eql('manager');
-        expect(Person.def.fields.name.def.fields.first.name).to.be.eql('first');
-        expect(Person.def.fields.name.def.fields.first.path).to.be.eql('name.first');
+        expect(User.def.fields.name.def.fields.first.name).to.be.eql('first');
+        expect(User.def.fields.name.def.fields.first.path).to.be.eql('name.first');
       });
     });
 
@@ -476,7 +472,7 @@ describe('tyranid', function() {
       it('should support idToLabel on non-static collections both async and non-async', async function() {
         expect(await Organization.idToLabel(1)).to.be.eql('Acme Unlimited');
         expect(await Organization.idToLabel(null)).to.be.eql('');
-        expect(await Person.idToLabel(1)).to.be.eql('An Anon');
+        expect(await User.idToLabel(1)).to.be.eql('An Anon');
       });
 
       it('should support label on collections', function() {
@@ -487,7 +483,7 @@ describe('tyranid', function() {
       it('should support label on fields', function() {
         expect(Job.def.fields.manager.label).to.be.eql('Manager');
         expect(Task.def.fields.assigneeUid.label).to.be.eql('Assignee UID');
-        expect(Person.def.fields.birthDate.label).to.be.eql('Dyn Birth Date');
+        expect(User.def.fields.birthDate.label).to.be.eql('Dyn Birth Date');
       });
     });
 
@@ -526,11 +522,11 @@ describe('tyranid', function() {
     describe('values', function() {
       var allString = [
         '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
-        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 't03'
+        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 'u00'
       ];
 
       it( 'should support valuesFor()', function() {
-        Person.valuesFor(Person.fieldsBy(field => field.type.def.name === 'string')).then(function(values) {
+        User.valuesFor(User.fieldsBy(field => field.type.def.name === 'string')).then(function(values) {
           return values.sort();
         }).should.eventually.eql(allString);
       });
@@ -565,29 +561,29 @@ describe('tyranid', function() {
 
     describe('population', function() {
 
-      function verifyPeople(people) {
-        expect(people.length).to.eql(4);
-        var person1 = _.find(people, { _id: 1 });
-        var person3 = _.find(people, { _id: 3 });
-        expect(person1).to.be.an.instanceof(Person);
-        expect(person1.organization$).to.be.an.instanceof(Organization);
-        expect(person1.organization$.name).to.be.eql('Acme Unlimited');
-        expect(person3.organization$.name).to.be.eql('123 Construction');
+      function verifyPeople(users) {
+        expect(users.length).to.eql(4);
+        var user1 = _.find(users, { _id: 1 });
+        var user3 = _.find(users, { _id: 3 });
+        expect(user1).to.be.an.instanceof(User);
+        expect(user1.organization$).to.be.an.instanceof(Organization);
+        expect(user1.organization$.name).to.be.eql('Acme Unlimited');
+        expect(user3.organization$.name).to.be.eql('123 Construction');
       }
 
       it( 'should work curried', function() {
-        return Person.find()
-          .then(Person.populate('organization'))
-          .then(function(people) {
-            verifyPeople(people);
+        return User.find()
+          .then(User.populate('organization'))
+          .then(function(users) {
+            verifyPeople(users);
           });
       });
 
       it( 'should work uncurried', function() {
-        return Person.find()
-          .then(function(people) {
-            return Person.populate('organization', people).then(function(people) {
-              verifyPeople(people);
+        return User.find()
+          .then(function(users) {
+            return User.populate('organization', users).then(function(users) {
+              verifyPeople(users);
             });
           });
       });
@@ -603,37 +599,37 @@ describe('tyranid', function() {
       });
 
       it( 'should skip fields with no value using array format', function() {
-        return Person.find()
-          .then(function(people) {
-            return Person.populate([ 'organization', 'department' ], people).then(function(people) {
-              verifyPeople(people);
+        return User.find()
+          .then(function(users) {
+            return User.populate([ 'organization', 'department' ], users).then(function(users) {
+              verifyPeople(users);
             });
           });
       });
 
       it( 'should deep populate array links', function() {
-        return Person.db
+        return User.db
           .find()
           .sort({ _id: 1 })
-          .then(Person.populate([ 'organization', 'siblings.friends.person' ]))
-          .then(function(people) {
-            expect(people[1].siblings[0].friends[0].person$._id).to.be.eql(3);
-            expect(people[1].siblings[0].friends[1].person$._id).to.be.eql(1);
-            expect(people[1].siblings[1].friends[0].person$._id).to.be.eql(1);
-            expect(people[1].siblings[1].friends[1].person$._id).to.be.eql(3);
-            expect(people[2].siblings[0].friends[0].person$._id).to.be.eql(1);
-            expect(people[2].siblings[0].friends[1].person$._id).to.be.eql(2);
-            expect(people[2].siblings[1].friends[0].person$._id).to.be.eql(2);
-            expect(people[2].siblings[1].friends[1].person$._id).to.be.eql(3);
+          .then(User.populate([ 'organization', 'siblings.friends.user' ]))
+          .then(function(users) {
+            expect(users[1].siblings[0].friends[0].user$._id).to.be.eql(3);
+            expect(users[1].siblings[0].friends[1].user$._id).to.be.eql(1);
+            expect(users[1].siblings[1].friends[0].user$._id).to.be.eql(1);
+            expect(users[1].siblings[1].friends[1].user$._id).to.be.eql(3);
+            expect(users[2].siblings[0].friends[0].user$._id).to.be.eql(1);
+            expect(users[2].siblings[0].friends[1].user$._id).to.be.eql(2);
+            expect(users[2].siblings[1].friends[0].user$._id).to.be.eql(2);
+            expect(users[2].siblings[1].friends[1].user$._id).to.be.eql(3);
           });
       });
 
       it( 'should deep populate array link links', function() {
-        return Person.db
+        return User.db
           .find({ _id: 2 })
-          .then(Person.populate({ organization: $all, 'siblings.bestFriend': { $all: 1, organization: $all } }))
-          .then(function(people) {
-            expect(people[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
+          .then(User.populate({ organization: $all, 'siblings.bestFriend': { $all: 1, organization: $all } }))
+          .then(function(users) {
+            expect(users[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
           });
       });
 
@@ -642,9 +638,9 @@ describe('tyranid', function() {
           .then(function(department) {
             return department.$populate([ 'creator', 'permissions.members' ]).then(function() {
               expect(department.permissions.members$.length).to.be.eql(2);
-              expect(department.permissions.members$[0]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[0]).to.be.an.instanceof(User);
               expect(department.permissions.members$[0].name.first).to.be.eql('John');
-              expect(department.permissions.members$[1]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[1]).to.be.an.instanceof(User);
               expect(department.permissions.members$[1].name.first).to.be.eql('Jane');
             });
           });
@@ -655,9 +651,9 @@ describe('tyranid', function() {
           .then(function(department) {
             return department.$populate({ 'permissions.members': $all }).then(function() {
               expect(department.permissions.members$.length).to.be.eql(2);
-              expect(department.permissions.members$[0]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[0]).to.be.an.instanceof(User);
               expect(department.permissions.members$[0].name.first).to.be.eql('John');
-              expect(department.permissions.members$[1]).to.be.an.instanceof(Person);
+              expect(department.permissions.members$[1]).to.be.an.instanceof(User);
               expect(department.permissions.members$[1].name.first).to.be.eql('Jane');
             });
           });
@@ -689,31 +685,31 @@ describe('tyranid', function() {
 
     describe('NamePath', function() {
       it('should parse arrays', () => {
-        let np = new NamePath(Person, 'roles._');
+        let np = new NamePath(User, 'roles._');
         expect(np.fields.length).to.eql(2);
         expect(np.fields[0].type.def.name).to.eql('array');
         expect(np.fields[1].type.def.name).to.eql('object');
 
-        np = new NamePath(Person, 'roles', true);
+        np = new NamePath(User, 'roles', true);
         expect(np.fields.length).to.eql(1);
         expect(np.fields[0].type.def.name).to.eql('object');
 
-        np = new NamePath(Person, 'roles');
+        np = new NamePath(User, 'roles');
         expect(np.fields.length).to.eql(1);
         expect(np.fields[0].type.def.name).to.eql('array');
 
-        np = new NamePath(Person, 'roles._.role');
+        np = new NamePath(User, 'roles._.role');
         expect(np.fields.length).to.eql(3);
         expect(np.fields[0].type.def.name).to.eql('array');
         expect(np.fields[1].type.def.name).to.eql('object');
         expect(np.fields[2].type.def.name).to.eql('link');
 
-        np = new NamePath(Person, 'roles.role');
+        np = new NamePath(User, 'roles.role');
         expect(np.fields.length).to.eql(2);
         expect(np.fields[0].type.def.name).to.eql('array');
         expect(np.fields[1].type.def.name).to.eql('link');
 
-        np = Person.fields['roles._.role'].namePath;
+        np = User.fields['roles._.role'].namePath;
         expect(np.fields.length).to.eql(3);
         expect(np.fields[0].type.def.name).to.eql('array');
         expect(np.fields[1].type.def.name).to.eql('object');
@@ -727,31 +723,31 @@ describe('tyranid', function() {
           juliaMatch = { 'name.first': 'Julia', 'name.last': 'Doe' };
 
       before(function() {
-        julia = new Person({ _id: 2000, name: { first: 'Julia', last: 'Doe' }, organization: 1 });
+        julia = new User({ _id: 2000, name: { first: 'Julia', last: 'Doe' }, organization: 1 });
         return julia.$save();
       });
 
       after(function() {
-        return Person.db.remove(juliaMatch);
+        return User.db.remove(juliaMatch);
       });
 
       it( 'denormalize on save', function() {
-        return Person.db.findOne(juliaMatch).then(function(doc) {
+        return User.db.findOne(juliaMatch).then(function(doc) {
           expect(doc.organization_.name).to.be.eql('Acme Unlimited');
         });
       });
 
       it( 'simple denormalize pathing', function() {
-        const np = new NamePath(Person, 'organization_.name'),
+        const np = new NamePath(User, 'organization_.name'),
               field = np.detail;
         expect(field.collection).to.be.eql(Tyr.byName.organization);
         expect(field.name).to.be.eql('name');
       });
 
       it('complex denormalize pathing', function() {
-        const np = new NamePath(Person, 'organization_.owner_.name.first'),
+        const np = new NamePath(User, 'organization_.owner_.name.first'),
               field = np.detail;
-        expect(field.collection).to.be.eql(Tyr.byName.person);
+        expect(field.collection).to.be.eql(Tyr.byName.user);
         expect(field.name).to.be.eql('first');
         expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
       });
@@ -768,41 +764,41 @@ describe('tyranid', function() {
       });
 
       it('should fromClient array objects', function() {
-        var personObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true } ] };
-        var person = Person.fromClient(personObj);
-        expect(person.roles[0].role).to.be.an.instanceof(ObjectId);
+        var userObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true } ] };
+        var user = User.fromClient(userObj);
+        expect(user.roles[0].role).to.be.an.instanceof(ObjectId);
       });
 
       it('should deep fromClient', function() {
         var friendObj = { birthDate: '03-07-1969' };
-        var friend = Person.fromClient(friendObj, 'siblings.friends');
+        var friend = User.fromClient(friendObj, 'siblings.friends');
         expect(friend.birthDate).to.be.an.instanceof(Date);
-        expect(friend).not.to.be.an.instanceof(Person);
+        expect(friend).not.to.be.an.instanceof(User);
       });
 
       it('should allow parametric client flags', function() {
-        Person.find({ age: { $exists: true } })
-          .then(function(people) {
-            var clientData = Person.toClient(people);
+        User.find({ age: { $exists: true } })
+          .then(function(users) {
+            var clientData = User.toClient(users);
             expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...')
             expect(clientData[1]).ageAppropriateSecret.to.be.eql(undefined);
           })
       });
 
       it('should copy dynamic objects', function() {
-        var personObj = { name: { firstName: 'Foo' }, bag: { abc123: 5 } };
-        var person = Person.fromClient(personObj);
-        expect(person).to.be.an.instanceof(Person);
-        expect(person.bag).to.be.eql({ abc123: 5 });
+        var userObj = { name: { firstName: 'Foo' }, bag: { abc123: 5 } };
+        var user = User.fromClient(userObj);
+        expect(user).to.be.an.instanceof(User);
+        expect(user.bag).to.be.eql({ abc123: 5 });
       });
 
       it('links should fromClient by label or id', () => {
-        let personObj = { job: 'Designer' };
-        const person = Person.fromClient(personObj);
-        expect(person.job).to.be.eql(3);
+        let userObj = { job: 'Designer' };
+        const user = User.fromClient(userObj);
+        expect(user.job).to.be.eql(3);
 
-        personObj = { job: 'Astronaut' };
-        expect(() => Person.fromClient(personObj)).to.throw(/Invalid integer/);
+        userObj = { job: 'Astronaut' };
+        expect(() => User.fromClient(userObj)).to.throw(/Invalid integer/);
       });
     });
 
@@ -858,7 +854,7 @@ describe('tyranid', function() {
             last: 'Anon'
           }
         };
-        var serverQuery = Person.fromClientQuery(clientQuery);
+        var serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery.name.first.$eq).to.be.eql('An');
         expect(serverQuery.name.last).to.be.eql('Anon');
       });
@@ -881,30 +877,30 @@ describe('tyranid', function() {
           });
       });
       it('should support defaultValues', function() {
-        var p = new Person({ _id: 1000, organization: 1, department: 1, name: { first: 'Default', last: 'Employee' } });
+        var p = new User({ _id: 1000, organization: 1, department: 1, name: { first: 'Default', last: 'Employee' } });
         return p.$insert()
-          .then(function(newPerson) {
-            expect(newPerson.title).to.be.eql('Employee');
-            expect(newPerson.goldStars).to.be.eql(0);
+          .then(function(newUser) {
+            expect(newUser.title).to.be.eql('Employee');
+            expect(newUser.goldStars).to.be.eql(0);
           });
       });
       it('should use specified _id', function() {
-        var p = new Person({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'Person' }, title: 'Developer' });
+        var p = new User({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'User' }, title: 'Developer' });
         return p.$insert()
-          .then(function(newPerson) {
-            expect(newPerson._id).to.be.eql(200);
+          .then(function(newUser) {
+            expect(newUser._id).to.be.eql(200);
           });
       });
       it('should throw if _id already exists', function() {
-        var p = new Person({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'Person' }, title: 'Developer' });
+        var p = new User({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'User' }, title: 'Developer' });
         return p.$insert().should.eventually.be.rejectedWith(Error);
       });
       it('should support bulk inserts like mongo insert', function() {
-        var people = [
-          new Person({ _id: 1001, organization: 1, department: 1, name: { first: 'First', last: 'Person' }, title: 'Developer' }),
-          new Person({ _id: 1002, organization: 1, department: 1, name: { first: 'Second', last: 'Person' }, title: 'Developer' })
+        var users = [
+          new User({ _id: 1001, organization: 1, department: 1, name: { first: 'First', last: 'User' }, title: 'Developer' }),
+          new User({ _id: 1002, organization: 1, department: 1, name: { first: 'Second', last: 'User' }, title: 'Developer' })
         ];
-        return Person.insert(people)
+        return User.insert(users)
           .then(function(newPeople) {
             expect(newPeople).to.be.instanceof(Array);
             expect(newPeople.length).to.be.eql(2);
@@ -915,18 +911,18 @@ describe('tyranid', function() {
 
     describe('$update', function() {
       it( 'should update shallow', function() {
-        return Person.byId(1)
-          .then( function(savedPerson) {
-            var clientPerson =  { _id: 1, organization: 2 };
-            var person = Person.fromClient(clientPerson);
+        return User.byId(1)
+          .then( function(savedUser) {
+            var clientUser =  { _id: 1, organization: 2 };
+            var user = User.fromClient(clientUser);
 
-            return person.$update()
+            return user.$update()
               .then(function() {
-                return Person.byId(1);
+                return User.byId(1);
               })
-              .then(function(newPerson) {
-                savedPerson.$save();
-                expect(newPerson.title).to.be.eql('Developer');
+              .then(function(newUser) {
+                savedUser.$save();
+                expect(newUser.title).to.be.eql('Developer');
               });
           });
       });
@@ -934,34 +930,34 @@ describe('tyranid', function() {
 
     describe('update', function() {
       it( 'should update', async () => {
-        await Person.update({ _id: 4 }, { title: 'Software Engineer' });
-        const person = await Person.byId(4);
-        expect(person.title).to.be.eql('Software Engineer');
+        await User.update({ _id: 4 }, { title: 'Software Engineer' });
+        const user = await User.byId(4);
+        expect(user.title).to.be.eql('Software Engineer');
       });
     });
 
     describe('remove', function() {
       it( 'should remove', async () => {
-        const dale = new Person({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });
+        const dale = new User({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });
         await dale.$save();
-        await Person.remove({ _id: 2001 });
-        expect(await Person.db.findOne({ _id: 2001 })).to.be.null;
+        await User.remove({ _id: 2001 });
+        expect(await User.db.findOne({ _id: 2001 })).to.be.null;
       });
     });
 
     describe('uids', function() {
 
       it( 'should parse', function() {
-        Tyr.parseUid('t031').should.eql({
-          collection: Person,
+        Tyr.parseUid('u001').should.eql({
+          collection: User,
           id: 1
         });
       });
 
       it( 'should support byId()', function() {
-        return Tyr.byUid('t031').then(function(person) {
-          expect(person).to.be.an.instanceof(Person);
-          expect(person._id).to.be.eql(1);
+        return Tyr.byUid('u001').then(function(user) {
+          expect(user).to.be.an.instanceof(User);
+          expect(user._id).to.be.eql(1);
         });
       });
     });
@@ -969,72 +965,72 @@ describe('tyranid', function() {
     describe('validation', function() {
 
       it( 'should return no validation errors on a valid data', function() {
-        var person = new Person({ name: { first: 'Jane' }, age: 5 });
+        var user = new User({ name: { first: 'Jane' }, age: 5 });
 
-        expect(person.$validate().length).to.be.eql(0);
+        expect(user.$validate().length).to.be.eql(0);
       });
 
       it( 'should return validate errors on invalid data', function() {
-        var person = new Person({ age: 5.1 });
-        expect(person.$validate().length).to.be.eql(2);
+        var user = new User({ age: 5.1 });
+        expect(user.$validate().length).to.be.eql(2);
       });
     });
 
     describe('timestamps', function() {
       it( 'should set updatedAt', function() {
-        Person.def.timestamps = true;
-        Person.byId(1).then(function(person) {
-          person.age = 33;
-          person.$update().then(function() {
-            expect(person.updatedAt).to.exist;
+        User.def.timestamps = true;
+        User.byId(1).then(function(user) {
+          user.age = 33;
+          user.$update().then(function() {
+            expect(user.updatedAt).to.exist;
           });
         });
       });
 
       it( 'should set createdAt', function() {
-        Person.def.timestamps = true;
-        Person.save({ name: { first: 'Jacob' } }).then(function(person) {
-          return Person.db.remove({ _id: person._id }).then(function() {
-            expect(person.createdAt).to.exist;
-            expect(person.updatedAt).to.exist;
+        User.def.timestamps = true;
+        User.save({ name: { first: 'Jacob' } }).then(function(user) {
+          return User.db.remove({ _id: user._id }).then(function() {
+            expect(user.createdAt).to.exist;
+            expect(user.updatedAt).to.exist;
           });
         });
       });
 
       it('should support findAndModify()', function() {
-        Person.def.timestamps = true;
-        return Person.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } }, new: true }).then(function(result) {
-          var person = result.value;
-          expect(person.age).to.be.eql(31);
-          expect(person.updatedAt).to.exist;
-          expect(person.title).to.not.exist;
+        User.def.timestamps = true;
+        return User.findAndModify({ query: { _id: 2 }, update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } }, new: true }).then(function(result) {
+          var user = result.value;
+          expect(user.age).to.be.eql(31);
+          expect(user.updatedAt).to.exist;
+          expect(user.title).to.not.exist;
         });
       });
 
       it('should support findAndModify() with defaultValues on upsert', function() {
-        return Person.findAndModify({ query: { _id: 1003 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(result) {
-          var person = result.value;
-          expect(person.name.first).to.be.eql('Bill');
-          expect(person.title).to.be.eql('Employee');
-          expect(person.goldStars).to.be.eql(0);
+        return User.findAndModify({ query: { _id: 1003 }, update: { $set: { age: 31 }, $setOnInsert: { name: { first: 'Bill', last: 'Gates' } } }, upsert: true, new: true }).then(function(result) {
+          var user = result.value;
+          expect(user.name.first).to.be.eql('Bill');
+          expect(user.title).to.be.eql('Employee');
+          expect(user.goldStars).to.be.eql(0);
         });
       });
 
       it('should support findAndModify() with complete doc replacement', function() {
-        return Person.findAndModify({ query: { _id: 1003 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
-          var person = result.value;
-          expect(person.name).to.not.exist;
-          expect(person.goldStars).to.not.exist;
-          expect(person.title).to.be.eql('Good Boy');
+        return User.findAndModify({ query: { _id: 1003 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
+          var user = result.value;
+          expect(user.name).to.not.exist;
+          expect(user.goldStars).to.not.exist;
+          expect(user.title).to.be.eql('Good Boy');
         });
       });
 
       it('should support findAndModify() upsert with complete doc replacement', function() {
-        return Person.findAndModify({ query: { _id: 1004 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
-          var person = result.value;
-          expect(person.name).to.not.exist;
-          expect(person.goldStars).to.not.exist;
-          expect(person.title).to.be.eql('Good Boy');
+        return User.findAndModify({ query: { _id: 1004 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
+          var user = result.value;
+          expect(user.name).to.not.exist;
+          expect(user.goldStars).to.not.exist;
+          expect(user.title).to.be.eql('Good Boy');
         });
       });
 
@@ -1043,41 +1039,41 @@ describe('tyranid', function() {
     describe('computed properties', function() {
 
       it( 'should support computed properties', function() {
-        var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
-        expect(person.fullName).to.be.eql('Jane Smith');
+        var user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
+        expect(user.fullName).to.be.eql('Jane Smith');
       });
 
       it( 'should work with CollectionInstance.toClient()', function() {
-        var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
-        expect(person.fullName).to.be.eql('Jane Smith');
+        var user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
+        expect(user.fullName).to.be.eql('Jane Smith');
       });
 
       it( 'should work with POJO toClient()', function() {
-        var person = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
-        var clientPerson = Person.toClient(person);
-        expect(clientPerson.fullName).to.be.eql('Jane Smith');
+        var user = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
+        var clientUser = User.toClient(user);
+        expect(clientUser.fullName).to.be.eql('Jane Smith');
       });
     });
 
     describe('methods', function() {
 
       it( 'should support methods', function() {
-        var child = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
+        var child = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
         expect(child.canDrink()).to.be.eql(false);
 
-        var adult = new Person({ name: { first: 'Jill', last: 'Smith' }, age: 32 });
+        var adult = new User({ name: { first: 'Jill', last: 'Smith' }, age: 32 });
         expect(adult.canDrink()).to.be.eql(true);
       });
 
       it( 'should work with CollectionInstance.toClient()', function() {
-        var person = new Person({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
-        expect(person.fullName).to.be.eql('Jane Smith');
+        var user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
+        expect(user.fullName).to.be.eql('Jane Smith');
       });
 
       it( 'should work with POJO toClient()', function() {
-        var person = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
-        var clientPerson = Person.toClient(person);
-        expect(clientPerson.fullName).to.be.eql('Jane Smith');
+        var user = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
+        var clientUser = User.toClient(user);
+        expect(clientUser.fullName).to.be.eql('Jane Smith');
       });
     });
 
@@ -1147,14 +1143,14 @@ describe('tyranid', function() {
         const seed = 100;
 
         it('faker: should successfully create valid document', async () => {
-          const fakeDoc = await Person.fake({ seed });
-          expect(fakeDoc, 'Fake document should be valid instance of person').to.be.instanceOf(Person);
+          const fakeDoc = await User.fake({ seed });
+          expect(fakeDoc, 'Fake document should be valid instance of user').to.be.instanceOf(User);
           fakeDoc.$validate();
         });
 
         it('faker: should produce same document given same seed', async () => {
-          const fakeDoc1 = JSON.stringify(await Person.fake({ seed }), null, 2),
-                fakeDoc2 = JSON.stringify(await Person.fake({ seed }), null, 2);
+          const fakeDoc1 = JSON.stringify(await User.fake({ seed }), null, 2),
+                fakeDoc2 = JSON.stringify(await User.fake({ seed }), null, 2);
 
           expect(fakeDoc2).to.deep.equal(fakeDoc1);
         });
@@ -1248,7 +1244,7 @@ describe('tyranid', function() {
       });
 
       it('should support "in" on numbers', () => {
-        expect(Person.fields.age.in.Yr).to.be.eql(1);
+        expect(User.fields.age.in.Yr).to.be.eql(1);
       });
 
       const U = Tyr.U;
@@ -1366,6 +1362,69 @@ describe('tyranid', function() {
         expect(U('m*s-2').toString()).to.eql('m/s2');
         expect(U('N2*m*s-1').toString()).to.eql('m1N2/s');
       });
+    });
+
+    describe('logging', function() {
+      const LogLevel = Tyr.byName.tyrLogLevel;
+
+      afterEach(async function() {
+        await Log.db.remove({});
+      });
+
+      it('should log simple strings', async function() {
+        await Tyr.info('test');
+
+        const logs = await Log.db.find({});
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].m).to.be.eql('test');
+        expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
+      });
+
+      it('should log objects', async function() {
+        await Tyr.info({ m: 'test' });
+
+        const logs = await Log.db.find({});
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].m).to.be.eql('test');
+        expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
+      });
+
+      it( 'should log errors', async function() {
+        await Tyr.warn('test one', new Error('test'));
+
+        const logs = await Log.db.find({});
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].m).to.be.eql('test one');
+        expect(logs[0].l).to.be.eql(LogLevel.WARN._id);
+        expect(logs[0].st).to.match(/Error: test/);
+      });
+
+      it( 'should log errors, #2', async function() {
+        await Tyr.info(new Error('test'));
+
+        const logs = await Log.db.find({});
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].m).to.be.eql('test');
+        expect(logs[0].st).to.match(/Error: test/);
+      });
+
+      it('should support generic log method', async function() {
+        await Tyr.log(Tyr.byName.tyrLogLevel.INFO, 'test');
+
+        const logs = await Log.db.find({});
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].m).to.be.eql('test');
+        expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
+      });
+
+      it('should throw on invalid parameters', function() {
+        return Tyr.info(3, 'test')
+          .then(() => assert(false, 'no exception thrown'))
+          .catch(err => {
+            expect(err.message).to.match(/Invalid option "3"/)
+          });
+      });
+
     });
   });
 });

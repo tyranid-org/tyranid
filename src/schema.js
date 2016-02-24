@@ -1,7 +1,7 @@
 
 import _ from 'lodash';
 
-import Collection from './classes/Collection';
+import Collection from './core/collection';
 
 import {
   collectionsById

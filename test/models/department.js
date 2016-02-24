@@ -7,10 +7,10 @@ var Department = new tyr.Collection({
     _id:         { is: 'integer' },
     name:        { is: 'string' },
     tags:        { is: 'array', of: 'string' },
-    creator:     { link: 'person' },
-    head:        { link: 'person' },
+    creator:     { link: 'user' },
+    head:        { link: 'user' },
     permissions: { is: 'object', fields: {
-      members:   { is: 'array', of: { link: 'person' } }
+      members:   { is: 'array', of: { link: 'user' } }
     }},
   }
 });

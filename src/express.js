@@ -2,10 +2,10 @@
 import _   from 'lodash';
 
 import { collections } from './common';
-import Collection from './classes/Collection';
-import Field from './classes/Field';
-import NamePath from './classes/NamePath';
-import Type from './classes/Type';
+import Collection      from './core/collection';
+import Field           from './core/field';
+import NamePath        from './core/namePath';
+import Type            from './core/type';
 
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];

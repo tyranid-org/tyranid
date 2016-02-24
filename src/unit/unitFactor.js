@@ -1,6 +1,6 @@
 
 import Tyr from '../tyr';
-import Collection from '../classes/Collection';
+import Collection from '../core/collection';
 
 
 const UnitFactor = new Collection({

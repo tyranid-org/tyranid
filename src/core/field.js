@@ -6,7 +6,7 @@ import {
   labelize
 } from '../common';
 
-import NamePath from './NamePath';
+import NamePath from './namePath';
 
 
 export default class Field {
