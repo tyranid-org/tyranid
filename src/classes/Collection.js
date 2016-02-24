@@ -3,7 +3,7 @@ import hooker from 'hooker';
 import faker from 'faker';
 
 import Type from './Type';
-import { ObjectType } from '../builtins';
+import ObjectType from '../type/object';
 import Population from './Population';
 import Populator from './Populator';
 import NamePath from './NamePath';

@@ -3,7 +3,20 @@ import fs from 'fs';
 
 import Tyr from './tyr';
 
-import './builtins';
+import './type/array';
+import './type/boolean';
+import './type/date';
+import './type/double';
+import './type/email';
+import './type/image';
+import './type/integer';
+import './type/link';
+import './type/mongoId';
+import './type/object';
+import './type/password';
+import './type/string';
+import './type/uid';
+import './type/url';
 
 import Type from './classes/Type';
 import Collection from './classes/Collection';
