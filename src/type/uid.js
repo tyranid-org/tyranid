@@ -42,4 +42,58 @@ const UidType = new Type({
   }
 });
 
+
+Tyr.parseUid = function(uid) {
+  const colId = uid.substring(0, 3);
+
+  const col = Tyr.byId[colId];
+
+  if (!col) {
+    throw new Error('No collection found for id "' + colId + '"');
+  }
+
+  const strId = uid.substring(3);
+
+  const idType = col.def.fields[col.def.primaryKey.field].type;
+
+  return {
+    collection: col,
+    id: idType.fromString(strId)
+  };
+}
+
+Tyr.byUid = function(uid) {
+  const p = Tyr.parseUid(uid);
+  return p.collection.byId(p.id);
+}
+
+Tyr.byUids = async function(uids) {
+  const byColId = {};
+
+  for (const uid of uids) {
+    const { collection, id } = Tyr.parseUid(uid),
+          colId = collection.id;
+
+    const colUids = byColId[colId];
+    if (!colUids) {
+      byColId[colId] = [ id ];
+    } else {
+      colUids.push(id);
+    }
+  }
+
+  const docsByUid = {};
+
+  await Promise.all(_.map(byColId, async (ids, colId) => {
+    const docs = await Tyr.byId[colId].byIds(ids);
+
+    for (const doc of docs) {
+      docsByUid[doc.$uid] = doc;
+    }
+  }));
+
+  return uids.map(uid => docsByUid[uid]);
+};
+
+
 export default UidType;

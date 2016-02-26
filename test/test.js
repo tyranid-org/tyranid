@@ -744,22 +744,26 @@ describe('tyranid', function() {
 
         const obj = new Department({
           checkouts: {
-            'uid1': 1.0,
-            'uid2': 2.0
+            u002: 1.0,
+            u001: 2.0
           },
           cubicles: {
-            1: { name: 'West', size: 100 },
-            3: { name: 'East', size: 200 }
+            1:    { name: 'West',     size: 100 },
+            3:    { name: 'East',     size: 200 },
+            old3: { name: 'Old East', size: 170 }
           }
         });
 
         expect(np.get(obj)).to.eql([ 1.0, 2.0 ]);
 
         np = Department.fields['cubicles._.size'].namePath;
-        expect(np.get(obj)).to.eql([ 100, 200 ]);
+        expect(np.get(obj)).to.eql([ 100, 200, 170 ]);
 
         np = Department.parsePath('cubicles.3.size');
         expect(np.get(obj)).to.eql(200);
+
+        np = Department.parsePath('cubicles.old3.size');
+        expect(np.get(obj)).to.eql(170);
       });
     });
 
@@ -999,10 +1003,44 @@ describe('tyranid', function() {
         });
       });
 
-      it( 'should support byId()', function() {
+      it( 'should support byUid()', function() {
         return Tyr.byUid('u001').then(function(user) {
           expect(user).to.be.an.instanceof(User);
           expect(user._id).to.be.eql(1);
+        });
+      });
+
+      it( 'should support byUids()', function() {
+        return Tyr.byUids(['u001']).then(function(docs) {
+          expect(docs.length).to.eql(1);
+          expect(docs[0]).to.be.an.instanceof(User);
+          expect(docs[0]._id).to.be.eql(1);
+        });
+      });
+
+      it( 'should support byUids() from multiple collections', function() {
+        return Tyr.byUids(['u001', 't041', 'u003']).then(function(docs) {
+          expect(docs.length).to.eql(3);
+          expect(docs[0]).to.be.an.instanceof(User);
+          expect(docs[0]._id).to.be.eql(1);
+          expect(docs[1]).to.be.an.instanceof(Organization);
+          expect(docs[1].name).to.be.eql('Acme Unlimited');
+          expect(docs[2]).to.be.an.instanceof(User);
+          expect(docs[2].name.first).to.be.eql('Jane');
+        });
+      });
+
+      it( 'should support byUids(), some of which are static', function() {
+        return Tyr.byUids(['u001', 'j002', 'u003', 't041']).then(function(docs) {
+          expect(docs.length).to.eql(4);
+          expect(docs[0]).to.be.an.instanceof(User);
+          expect(docs[0]._id).to.be.eql(1);
+          expect(docs[1]).to.be.an.instanceof(Job);
+          expect(docs[1].name).to.be.eql('Software Lead');
+          expect(docs[2]).to.be.an.instanceof(User);
+          expect(docs[2].name.first).to.be.eql('Jane');
+          expect(docs[3]).to.be.an.instanceof(Organization);
+          expect(docs[3].name).to.be.eql('Acme Unlimited');
         });
       });
     });

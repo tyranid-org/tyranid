@@ -54,10 +54,10 @@ export default class Type {
     return f ? f.call(this, field, value) : value;
   }
 
-  query(namePath, where, query) {
+  async query(namePath, where, query) {
     const f = this.def.query;
     if (f) {
-      f(namePath, where, query);
+      await f(namePath, where, query);
     }
   }
 

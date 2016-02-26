@@ -4,8 +4,6 @@ const _ = require('lodash');
 
 const Tyr = require('../tyr');
 
-const numberRegex = /^[0-9]$/;
-
 /**
  * NOTE: This cannot be a ES6 class because it is isomorphic
  *
@@ -41,7 +39,7 @@ function NamePath(collection, pathName, skipArray) {
       continue nextPath;
 
     } else {
-      if (name.match(numberRegex) && pi && pathFields[pi-1].type.name === 'array') {
+      if (name.match(NamePath._numberRegex) && pi && pathFields[pi-1].type.name === 'array') {
         at = at.of;
         pathFields[pi++] = at;
         continue nextPath;
@@ -113,6 +111,8 @@ function NamePath(collection, pathName, skipArray) {
   }
 }
 
+NamePath._numberRegex = /^[0-9]$/;
+
 NamePath._skipArray = function(field) {
   if (field && !field.type) {
     debugger;
@@ -183,7 +183,7 @@ NamePath.prototype.get = function(obj) {
       const name = path[pi];
       if (name === '_') {
         pi++;
-      } else if (name && name.match(numberRegex)) {
+      } else if (name && name.match(NamePath._numberRegex)) {
         getInner(pi+1, obj[name]);
         return;
       }
