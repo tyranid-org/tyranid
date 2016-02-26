@@ -20,7 +20,13 @@ const ArrayType = new Type({
   },
 
   async query(namePath, where, query) {
-    let values = where.filter($=> $ !== 'None');
+    if (!where.length) {
+      // TODO:  need to figure out a cleaner way to handle this case?
+      query.__foo__ = true;
+      return;
+    }
+
+    let values = where.filter($=> $ !== '- None -');
     let or;
 
     if (values.length !== where.length) {
