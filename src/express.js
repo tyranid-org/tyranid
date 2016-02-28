@@ -1,11 +1,12 @@
 
 import _   from 'lodash';
 
-import Tyr             from './tyr';
-import Collection      from './core/collection';
-import Field           from './core/field';
-import NamePath        from './core/namePath';
-import Type            from './core/type';
+import Tyr        from './tyr';
+import Collection from './core/collection';
+import Field      from './core/field';
+import NamePath   from './core/namePath';
+import Type       from './core/type';
+import local      from './local/local';
 
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
@@ -42,6 +43,8 @@ function translateClass(cls) {
 }
 
 export default function express(app, auth) {
+
+  app.use(local.express);
 
 
   /*

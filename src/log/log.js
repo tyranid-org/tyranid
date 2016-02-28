@@ -1,61 +1,12 @@
 
-import _ from 'lodash';
+import _          from 'lodash';
+//import onHeaders  from 'on-headers';
+import onFinished from 'on-finished';
 
 import Tyr from '../tyr';
 import Collection from '../core/collection';
+import UserAgent from './userAgent';
 
-
-
-/*
-
-   TODO
-
-   /. client
-
-   /. log level to show to console
-
-   /. log event?  some sort of categorization system
-
-      "_id"      is DbMongoId         is 'id;
-      "e"        is DbLink(Event)     as "Event";
-      "du"       is DbLong            as "Duration in MS";
-      "ct"       is DbInt             as "Count";
-      "ex"       is DbText            as "Stack Trace";
-      "sid"      is DbChar(64)        as "Session ID";
-      "d"        is DbLink(DnsDomain) as "Domain";
-      "ua"       is DbLink(UserAgent) as "User Agent";
-      "ip"       is DbChar(32)        as "IP";
-      "p"        is DbChar(128)       as "Path";
-      "bid"      is DbChar(10)        as "Browser ID";
-      "sv"       is DbChar(32)        as "Server ID";
-
-   /. user
-
-   /. session
-
-   /. user agent
-
-   /. path / route
-
-   /. OS
-
-   /. IP
-
-   /. domain
-
-   /. durationMs
-
-   /. server ID
-
-   /. additional log options
-
-      /. class / file / line number?
-
-   /. make sure log saves everything, even properties it doesn't know about
-
-   /. need ability for client to add new metadata so that they can add custom fields like "org"
-
- */
 
 const LogLevel = new Collection({
   id: '_l1',
@@ -82,12 +33,19 @@ const Log = new Collection({
   name: 'tyrLog',
   client: false,
   fields: {
-    _id: { is: 'mongoid' },
-    l:   { link: 'tyrLogLevel', label: 'Level'       },
-    m:   { is: 'string',        label: 'Message'     },
-    u:   { link: 'user',        label: 'User'        },
-    st:  { is: 'string',        label: 'Stack Trace' },
-    on:  { is: 'date',          label: 'On'          },
+    _id:  { is: 'mongoid' },
+    l:    { link: 'tyrLogLevel',  label: 'Level'       },
+    m:    { is: 'string',         label: 'Message'     },
+    u:    { link: 'user',         label: 'User'        },
+    st:   { is: 'string',         label: 'Stack Trace' },
+    on:   { is: 'date',           label: 'On'          },
+    du:   { is: 'integer',        label: 'Duration',   in: 'ns' },
+    r:    { is: 'object',         label: 'Request', fields: {
+      p:  { is: 'string',         label: 'Path'        },
+      m:  { is: 'string',         label: 'Method'      },
+      ip: { is: 'string',         label: 'IP'          },
+      ua: { link: 'tyrUserAgent', label: 'User Agent'  },
+    }}
   },
 });
 
@@ -114,6 +72,25 @@ async function log(level, ...opts) {
   }
 
   obj.on = new Date();
+
+  const local = Tyr.local,
+        req   = local.req,
+        user  = local.user;
+
+  if (user) {
+    obj.u = user.$id;
+  }
+
+  if (req) {
+    const ua = await UserAgent.by(req.headers['user-agent']);
+
+    obj.r = {
+      p:  req.path,
+      m:  req.method,
+      ip: req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
+      ua: ua._id
+    };
+  }
 
   return Log.db.save(obj);
 };
@@ -145,6 +122,32 @@ Log.error = async function() {
 Log.fatal = async function() {
   return log(LogLevel.FATAL, ...arguments);
 };
+
+
+//
+// Express Request Logging (adapted from morgan)
+//
+
+function recordStartTime() {
+  this._startAt = process.hrtime();
+}
+
+/** @private */
+Log.request = function(req, res) {
+  recordStartTime.call(req);
+
+  //res._startAt = undefined;
+  //onHeaders(res, recordStartTime);
+
+  onFinished(res, function() {
+
+    const diff = process.hrtime(req._startAt);
+    Log.info({
+      du: diff[0] * 1e9 + diff[1]
+    });
+  });
+}
+
 
 _.assign(Tyr, {
   Log,
