@@ -880,7 +880,7 @@ export default class Collection {
   createCompiler(collection, def, stage) {
     const compiler = {
       stage: stage,
-  
+
       err(path, msg) {
         return new Error('Tyranid Schema Error| ' + def.name + (path ? '.' + path : '') + ' | ' + msg);
       },
@@ -1166,6 +1166,11 @@ export default class Collection {
     def.values.forEach(function(doc) {
       byIdIndex[doc[collection.def.primaryKey.field]] = doc;
     });
+  }
+
+  addValue(doc) {
+    this.def.values.push(doc);
+    this.byIdIndex[doc.$id] = doc;
   }
 }
 

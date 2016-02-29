@@ -44,7 +44,7 @@ function translateClass(cls) {
 
 export default function express(app, auth) {
 
-  app.use(local.express);
+  //app.use(local.express);
 
 
   /*
@@ -673,6 +673,8 @@ export default function express(app, auth) {
 };
 
 Tyr.express = express;
+
+express.middleware = ::local.express;
 
 /**
  * @private ... clients should use Tyr.express()

@@ -96,6 +96,10 @@ _.assign(Tyr, {
 
   config(opts) {
 
+    if (!opts) {
+      return config;
+    }
+
     // clear object but keep reference
     for (const prop in config) delete config[prop];
 
@@ -168,6 +172,22 @@ _.assign(Tyr, {
           '\n\nReasons:\n' +
           reasons.map(r => '  ' + r).join('\n'));
       }
+
+      function parseLogLevel(name) {
+        const ll = config[name];
+        if (_.isString(ll)) {
+          config[name] = Tyr.byName.tyrLogLevel.byLabel(ll);
+
+          if (!config[name]) {
+            throw new Error(`Unknown ${name}: "${ll}".`);
+          }
+        }
+      }
+
+      parseLogLevel('logLevel');
+      parseLogLevel('consoleLogLevel');
+      parseLogLevel('dbLogLevel');
+
     }
 
     bootstrap('compile');

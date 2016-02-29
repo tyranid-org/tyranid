@@ -37,7 +37,9 @@ describe('tyranid', function() {
   before(function(done) {
     db = pmongo('mongodb://localhost:27017/tyranid_test');
     Tyr.config({
-      db: db
+      db: db,
+      consoleLogLevel: 'ERROR',
+      dbLogLevel: 'TRACE'
     });
     done(null, db);
   });
@@ -1464,15 +1466,16 @@ describe('tyranid', function() {
       });
 
       it('should log objects', async function() {
-        await Tyr.info({ m: 'test' });
+        await Tyr.info({ m: 'test', e: 'http' });
 
         const logs = await Log.db.find({});
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
+        expect(logs[0].e).to.be.eql('http');
       });
 
-      it( 'should log errors', async function() {
+      it('should log errors', async function() {
         await Tyr.warn('test one', new Error('test'));
 
         const logs = await Log.db.find({});
@@ -1482,7 +1485,7 @@ describe('tyranid', function() {
         expect(logs[0].st).to.match(/Error: test/);
       });
 
-      it( 'should log errors, #2', async function() {
+      it('should log errors, #2', async function() {
         await Tyr.info(new Error('test'));
 
         const logs = await Log.db.find({});
@@ -1506,6 +1509,25 @@ describe('tyranid', function() {
           .catch(err => {
             expect(err.message).to.match(/Invalid option "3"/)
           });
+      });
+
+      it('should throw on an invalid event', async function() {
+        return Tyr.warn({ m: 'test', e: 'bad_event' })
+          .then(() => assert(false, 'no exception thrown'))
+          .catch(err => {
+            expect(err.message).to.match(/Invalid event.*"bad_event"/)
+          });
+      });
+
+      it('should allow events to be added', async function() {
+        Tyr.Log.addEvent('myEvent', 'My Event');
+
+        await Tyr.info({ e: 'myEvent', m: 'a test' });
+
+        const logs = await Log.db.find({});
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].m).to.be.eql('a test');
+        expect(logs[0].e).to.be.eql('myEvent');
       });
 
     });
