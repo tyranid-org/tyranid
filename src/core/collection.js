@@ -306,10 +306,10 @@ export default class Collection {
       });
     });
 
+    CollectionInstance.paths = {};
     CollectionInstance.fields = {};
 
     CollectionInstance.compile('compile');
-    CollectionInstance._updateFields(null, def.fields);
     CollectionInstance.validateValues();
 
     return CollectionInstance;
@@ -721,7 +721,7 @@ export default class Collection {
   }
 
   fieldsBy(filter) {
-    return _.filter(this.fields, filter);
+    return _.filter(this.paths, filter);
   }
 
   async valuesFor(fields) {
@@ -809,7 +809,7 @@ export default class Collection {
 
       let field;
       if (path) {
-        field = col.fields[path];
+        field = col.paths[path];
 
         if (!field) {
           throw new Error('unknown path: ' + path);
@@ -865,16 +865,6 @@ export default class Collection {
 
   parsePath(path) {
     return new NamePath(this, path);
-  }
-
-  /** @private */
-  _updateFields(parent, obj) {
-    if (obj instanceof Field) {
-      obj.parent = parent;
-      this._updateFields(obj, obj.def);
-    } else if (_.isArray(obj) || _.isObject(obj)) {
-      _.each(obj, v => this._updateFields(parent, v));
-    }
   }
 
   createCompiler(collection, def, stage) {
@@ -934,7 +924,7 @@ export default class Collection {
         // Store the field path and name on the field itself to support methods on Field
         field.collection = collection;
         field.path = path;
-        collection.fields[path] = field;
+        collection.paths[path] = field;
         const lastDot = path.lastIndexOf('.');
         const fieldName = lastDot > -1 ? path.substring(lastDot+1) : path;
         field.name = fieldName;
@@ -1000,25 +990,29 @@ export default class Collection {
 
       },
 
-      fields(path, val) {
-        if (!val) {
+      fields(path, parent, defFields) {
+        if (!defFields) {
           throw compiler.err(path, 'Missing "fields"');
         }
 
-        if (!_.isObject(val)) {
-          throw compiler.err(path, '"fields" should be an object, got: ' + val);
+        if (!_.isObject(defFields)) {
+          throw compiler.err(path, '"fields" should be an object, got: ' + defFields);
         }
 
-        _.each(_.keys(val), function(name) {
-          let field = val[name];
+        _.each(_.keys(defFields), function(name) {
+          let field = defFields[name];
 
           if (_.isString(field)) {
             field = { is: field };
           }
 
           if (!(field instanceof Field)) {
-            field = val[name] = new Field(field);
+            field = defFields[name] = new Field(field);
           }
+
+          const parentFields = parent.fields = parent.fields || {};
+          parentFields[name] = field;
+          field.parent = parent;
 
           return compiler.field(path ? path + '.' + name : name, field);
         });
@@ -1032,14 +1026,14 @@ export default class Collection {
     const collection = this;
 
     const compiler = collection.createCompiler(collection, collection.def, stage);
-    compiler.fields('', collection.def.fields);
+    compiler.fields('', collection, collection.def.fields);
 
     if (!collection.def.fields[collection.def.primaryKey.field]) {
       throw new Error('Collection ' + collection.def.name + ' is missing a "' + collection.def.primaryKey.field + '" primary key field.');
     }
 
     if (collection.def.enum && !collection.labelField) {
-      throw new Error('Some string field must have the label property set if the collection ' + collection.def.name + ' is an enumeration.');
+      throw new Error(`Some string field must have the label property set if the collection "${collection.def.name}" is an enumeration.`);
     }
   }
 

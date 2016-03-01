@@ -108,7 +108,7 @@ export default function express(app, auth) {
 
     const strId = uid.substring(3);
 
-    const idType = col.def.fields[col.def.primaryKey.field].type;
+    const idType = col.fields[col.def.primaryKey.field].type;
 
     return {
       collection: col,
@@ -290,32 +290,41 @@ export default function express(app, auth) {
       });
     }
 
-    var fbp = CollectionInstance.fields = {};
+    var fbp = CollectionInstance.paths = {};
 
-    function vField(path, field) {
+    function vField(path, parent, field) {
+      field.path = path;
+      field.parent = parent;
+      fbp[path] = field;
+      field.collection = CollectionInstance;
+
       var def = field.def;
       if (def.is === 'array') {
-        field.of = def.of;
-        vField(path + '._', field.of);
+        var of = new Field(def.of);
+        field.of = of;
+        vField(path + '._', field, of);
       } else if (def.fields) {
-        vFields(path, def.fields);
+        vFields(path, field, def.fields);
       }
     }
 
-    function vFields(path, fields) {
-      _.each(fields, function(field, name) {
+    function vFields(path, parent, fieldDefs) {
+      _.each(fieldDefs, function(fieldDef, name) {
         var p = path ? path + '.' + name : name;
+        var field = new Field(fieldDef);
         field.name = name;
-        field.path = p;
-        field.collection = CollectionInstance;
-        fbp[p] = field;
-        vField(p, field);
+
+        var parentFields = parent.fields = parent.fields || {};
+        parentFields[name] = field;
+        field.parent = parent;
+
+        vField(p, parent, field);
       });
     }
 
-    vFields('', def.fields);
+    vFields('', CollectionInstance, def.fields);
 
-    _.each(def.fields, function(field, name) {
+    _.each(CollectionInstance.fields, function(field, name) {
       const fdef  = field.def,
             get  = fdef.get,
             set  = fdef.set,
@@ -356,23 +365,12 @@ export default function express(app, auth) {
 
     var lf = def.labelField;
     if (lf) {
-      CollectionInstance.labelField = CollectionInstance.fields[lf];
+      CollectionInstance.labelField = CollectionInstance.paths[lf];
       delete def.labelField;
     }
 
-    CollectionInstance._updateFields(null, def.fields);
-
     return CollectionInstance;
   }
-
-  Collection.prototype._updateFields = function(parent, obj) {
-    if (obj instanceof Field) {
-      obj.parent = parent;
-      this._updateFields(obj, obj.def);
-    } else if (_.isArray(obj) || _.isObject(obj)) {
-      _.each(obj, v => this._updateFields(parent, v));
-    }
-  };
 
   Collection.prototype.compile = function() {
 
@@ -385,7 +383,7 @@ export default function express(app, auth) {
       this.values = def.values;
     }
 
-    _.each(this.fields, function(field) {
+    _.each(this.paths, function(field) {
       var def = field.def;
 
       if (def.link) {
@@ -519,7 +517,7 @@ export default function express(app, auth) {
     }
 
     field(field) {
-      this.file += ': new Field({';
+      this.file += ': {';
       this.depth++;
 
       const def = field.def;
@@ -570,13 +568,13 @@ export default function express(app, auth) {
         this.newline();
         this.file += 'set: ' + set.toString() + ',';
       }
-      if (def.fields) {
-        this.fields(def.fields);
+      if (field.fields) {
+        this.fields(field.fields);
       }
 
       this.depth--;
       this.newline();
-      this.file += '}),';
+      this.file += '},';
     }
 
     fields(fields) {
@@ -631,7 +629,7 @@ export default function express(app, auth) {
     name: '${name}',`
 
       const ser = new Serializer('.', 2);
-      ser.fields(def.fields);
+      ser.fields(col.fields);
       if (def.methods) {
         ser.methods(def.methods);
       }
@@ -813,7 +811,7 @@ Collection.prototype.express = function(app, auth) {
        */
 
       if (express.rest || express.get) {
-        _.each(col.fields, field => {
+        _.each(col.paths, field => {
           const to = field.link;
           if (to && to.labelField) {
             r = app.route('/api/' + name + '/' + field.path + '/label/:search?');

@@ -12,7 +12,7 @@ const ObjectType = new Type({
     const def = field.def;
 
     if (def.fields) {
-      compiler.fields(field.path, def.fields);
+      compiler.fields(field.path, field, def.fields);
     }
 
     if (def.keys && !def.of) {

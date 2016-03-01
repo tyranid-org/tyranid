@@ -262,46 +262,46 @@ describe('tyranid', function() {
 
     describe('fields', function() {
       it('should support fields object', function() {
-        expect(User.fields['name.first']).to.be.instanceof(Field);
-        expect(User.fields['roles._.role']).to.be.instanceof(Field);
+        expect(User.paths['name.first']).to.be.instanceof(Field);
+        expect(User.paths['roles._.role']).to.be.instanceof(Field);
       });
 
       it('should support field.type', function() {
-        expect(User.fields['name.first'].type).to.be.instanceof(Type);
-        expect(User.fields['roles._.role'].type).to.be.instanceof(Type);
+        expect(User.paths['name.first'].type).to.be.instanceof(Type);
+        expect(User.paths['roles._.role'].type).to.be.instanceof(Type);
       });
 
       it('should support field.link', function() {
-        expect(User.fields['roles._.role'].link).to.be.eql(Tyr.byName.role);
+        expect(User.paths['roles._.role'].link).to.be.eql(Tyr.byName.role);
       });
 
       it('should support field.parent', function() {
-        expect(User.fields['name.first'].parent.name).to.be.eql('name');
-        expect(User.fields['name'].parent).to.be.eql(null);
+        expect(User.paths['name.first'].parent.name).to.be.eql('name');
+        expect(User.paths['name'].parent).to.be.eql(User);
       });
 
       it('should support field.pathLabel', function() {
-        expect(User.fields['name.first'].parent.pathLabel).to.be.eql('Name');
-        expect(User.fields['name.first'].pathLabel).to.be.eql('Name First Name');
-        expect(User.fields['name.last'].pathLabel).to.be.eql('Name Last');
+        expect(User.paths['name.first'].parent.pathLabel).to.be.eql('Name');
+        expect(User.paths['name.first'].pathLabel).to.be.eql('Name First Name');
+        expect(User.paths['name.last'].pathLabel).to.be.eql('Name Last');
       });
     });
 
     describe('maps', function() {
       it('should support "keys"', function() {
-        expect(Department.fields['checkouts'].keys).to.be.instanceof(Field);
-        expect(Department.fields['checkouts'].keys.type.name).to.eql('uid');
+        expect(Department.paths['checkouts'].keys).to.be.instanceof(Field);
+        expect(Department.paths['checkouts'].keys.type.name).to.eql('uid');
       });
 
       it('should support "of"', function() {
-        expect(Department.fields['checkouts'].of).to.be.instanceof(Field);
-        expect(Department.fields['checkouts'].of.type.name).to.eql('double');
+        expect(Department.paths['checkouts'].of).to.be.instanceof(Field);
+        expect(Department.paths['checkouts'].of.type.name).to.eql('double');
       });
     });
 
     describe( 'schema methods', function() {
 
-      it( 'should support fieldsBy()', function() {
+      it('should support fieldsBy()', function() {
         expect(
           User.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
@@ -314,6 +314,20 @@ describe('tyranid', function() {
           expect(docs[0].name).to.equal('Administrator');
         })
       })
+    });
+
+    describe('mixin schemas', () => {
+      it('should support mixin()', function() {
+        Department.mixin({
+          fields: {
+            city: { is: 'string' }
+          }
+        });
+
+        expect(Department.def.fields.city.def.is).to.eql('string');
+        expect(Department.fields.city.type.name).to.eql('string');
+        expect(Department.paths.city.type.name).to.eql('string');
+      });
     });
 
     describe('dynamic schemas', () => {
@@ -723,7 +737,7 @@ describe('tyranid', function() {
         expect(np.fields[0].type.def.name).to.eql('array');
         expect(np.fields[1].type.def.name).to.eql('link');
 
-        np = User.fields['roles._.role'].namePath;
+        np = User.paths['roles._.role'].namePath;
         expect(np.fields.length).to.eql(3);
         expect(np.fields[0].type.def.name).to.eql('array');
         expect(np.fields[1].type.def.name).to.eql('object');
@@ -731,7 +745,7 @@ describe('tyranid', function() {
 
         const obj = new Department({ tags: [ 'red', 'tiny' ] });
 
-        np = Department.fields.tags.namePath;
+        np = Department.paths.tags.namePath;
         expect(np.get(obj)).to.eql([ 'red', 'tiny' ]);
 
         np = Department.parsePath('tags.1');
@@ -739,7 +753,7 @@ describe('tyranid', function() {
       });
 
       it('should parse maps', () => {
-        let np = Department.fields['checkouts._'].namePath;
+        let np = Department.paths['checkouts._'].namePath;
         expect(np.fields.length).to.eql(2);
         expect(np.fields[0].type.def.name).to.eql('object');
         expect(np.fields[1].type.def.name).to.eql('double');
@@ -758,7 +772,7 @@ describe('tyranid', function() {
 
         expect(np.get(obj)).to.eql([ 1.0, 2.0 ]);
 
-        np = Department.fields['cubicles._.size'].namePath;
+        np = Department.paths['cubicles._.size'].namePath;
         expect(np.get(obj)).to.eql([ 100, 200, 170 ]);
 
         np = Department.parsePath('cubicles.3.size');
@@ -1329,7 +1343,7 @@ describe('tyranid', function() {
       });
 
       it('should support "in" on numbers', () => {
-        expect(User.fields.age.in.Yr).to.be.eql(1);
+        expect(User.paths.age.in.Yr).to.be.eql(1);
       });
 
       const U = Tyr.U;

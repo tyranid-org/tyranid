@@ -45,10 +45,10 @@ function NamePath(collection, pathName, skipArray) {
         continue nextPath;
       }
 
-      if (!def.fields) {
+      if (!at.fields) {
         const aAt = NamePath._skipArray(at);
 
-        if (aAt && aAt.def.fields && aAt.def.fields[name]) {
+        if (aAt && aAt.fields && aAt.fields[name]) {
           at = aAt;
           def = at.def;
 
@@ -62,20 +62,21 @@ function NamePath(collection, pathName, skipArray) {
         }
       }
 
-      const f = def.fields;
+      const f = at.fields;
       if ((!f || !f[name]) && def.keys) {
         at = at.of;
         pathFields[pi++] = at;
         continue nextPath;
       }
 
+      const parentAt = at;
       at = f[name];
       if (!at && name.length > 1 && name.endsWith('_')) {
         // does this name match a denormalized entry?
         const _name = name.substring(0, name.length-1);
 
-        while (_name) {
-          const _at = def.fields[_name];
+        while /* if */ (_name) {
+          const _at = parentAt.fields[_name];
 
           if (!denormal) {
             denormal = _at.def.denormal;

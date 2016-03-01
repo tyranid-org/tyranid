@@ -55,8 +55,10 @@ Collection.prototype.fieldsFor = async function(obj) {
       const collection = Tyr.byId[schema.collection],
             def        = schema.def;
 
-      this.createCompiler(collection, def, 'compile').fields('', def.fields);
-      this.createCompiler(collection, def, 'link').fields('', def.fields);
+      // TODO:  this is affecting Collection.fields and Collection.paths ...
+      //        maybe pass in a "dynamic" flag to createCompiler() to not set those?
+      this.createCompiler(collection, def, 'compile').fields('', collection, def.fields);
+      this.createCompiler(collection, def, 'link').fields('', collection, def.fields);
 
       schema.objMatcher = _.matches(schema.match);
     });
@@ -75,6 +77,22 @@ Collection.prototype.fieldsFor = async function(obj) {
   });
 
   return fields;
+};
+
+Collection.prototype.mixin = function(def) {
+
+  const collection = this;
+
+  this.createCompiler(collection, def, 'compile').fields('', collection, def.fields);
+  this.createCompiler(collection, def, 'link').fields('', collection, def.fields);
+
+  const baseDefFields = collection.def.fields;
+
+  _.each(def.fields, (fieldDef, name) => {
+    // TODO:  once we stop storing Fields inside def, use the following line instead
+    //baseDefFields[name] = fieldDef;
+    baseDefFields[name] = collection.fields[name];
+  });
 };
 
 export default Schema;
