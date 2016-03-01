@@ -30,7 +30,7 @@ const ObjectType = new Type({
       return value;
     }
 
-    const fields = field.def.fields;
+    const fields = field.fields;
 
     if (!_.size(fields)) {
       // this is defined as just an empty object, meaning it's 100% dynamic, grab everything
@@ -59,7 +59,7 @@ const ObjectType = new Type({
     const errors = [];
 
     if (obj) {
-      _.each(field.def.fields, function(field, fieldName) {
+      _.each(field.fields, function(field, fieldName) {
         const fieldDef = field.def;
 
         if (!fieldDef.get) {

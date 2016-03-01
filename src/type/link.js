@@ -9,7 +9,7 @@ const LinkType = new Type({
   name: 'link',
   fromClient(field, value) {
     const link = field.link,
-          linkField = link.def.fields[field.link.def.primaryKey.field];
+          linkField = link.fields[field.link.def.primaryKey.field];
 
     try {
       return linkField.type.def.fromClient(linkField, value);

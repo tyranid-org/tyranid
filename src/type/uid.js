@@ -54,7 +54,7 @@ Tyr.parseUid = function(uid) {
 
   const strId = uid.substring(3);
 
-  const idType = col.def.fields[col.def.primaryKey.field].type;
+  const idType = col.fields[col.def.primaryKey.field].type;
 
   return {
     collection: col,

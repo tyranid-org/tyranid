@@ -379,7 +379,7 @@ export default class Collection {
 
     } else {
       if (typeof id === 'string') {
-        id = this.def.fields[this.def.primaryKey.field].type.fromString(id);
+        id = this.fields[this.def.primaryKey.field].type.fromString(id);
       }
 
       return this.findOne({ [this.def.primaryKey.field]: id });
@@ -576,7 +576,7 @@ export default class Collection {
    */
   updateDoc(obj) {
     const def    = this.def,
-          fields = this.def.fields;
+          fields = this.fields;
     const setObj = {};
 
     _.each(fields, (field, name) => {
@@ -761,7 +761,7 @@ export default class Collection {
    */
   fromClient(pojo, path) {
     let collection = this,
-        fields = collection.def.fields;
+        fields = collection.fields;
 
     const namePath = path ? this.parsePath(path) : null;
 
@@ -772,7 +772,7 @@ export default class Collection {
     if (namePath) {
       const detail = namePath.detail;
       collection = detail.def.id ? Tyr.byId[detail.def.id] : null;
-      fields = detail.def.fields;
+      fields = detail.fields;
     }
 
     const obj = {}; // TODO:  create a new instance of this record-class?

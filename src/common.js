@@ -89,7 +89,7 @@ export function toClient(col, data) {
 
   const obj = {};
 
-  const fields = col ? col.def.fields : null;
+  const fields = col ? col.fields : null;
   _.each(data, function(v, k) {
     let field;
 
