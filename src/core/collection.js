@@ -32,6 +32,10 @@ import {
 
 const documentPrototype = {
 
+  $clone() {
+    return new this.$model(_.cloneDeep(this));
+  },
+
   $save() {
     return this.$model.save(this);
   },
@@ -189,13 +193,16 @@ export default class Collection {
     const dp = {};
     _.assign(dp, documentPrototype);
 
-    const CollectionInstance = function(data) {
+    // hack so that our custom functions have the proper name
+    let CollectionInstance;
+    const lodash = _; // eval only takes in local variables into its scope
+    eval(`CollectionInstance = function ${lodash.capitalize(def.name)}(data) {
       this.__proto__ = dp;
 
       if (data) {
-        _.assign(this, data);
+        lodash.assign(this, data);
       }
-    };
+    }`);
 
     dp.constructor = dp.$model = CollectionInstance;
     dp.__proto__ = CollectionInstance.prototype;
@@ -557,18 +564,17 @@ export default class Collection {
   }
 
   async insert(obj, denormalAlreadyDone) {
-    const collection  = this;
-    let insertObj;
+    const collection = this;
 
     await denormalPopulate(collection, obj, denormalAlreadyDone);
 
     if (Array.isArray(obj)) {
-      insertObj = await* _.map(obj, el => parseInsertObj(collection, el));
+      const parsedArr = await* _.map(obj, el => parseInsertObj(collection, el));
+      return await collection.db.insert(parsedArr);
     } else {
-      insertObj = await parseInsertObj(collection, obj);
+      const parsedObj = await parseInsertObj(collection, obj);
+      return await collection.db.insert(parsedObj);
     }
-
-    return collection.db.insert(insertObj);
   }
 
   /**

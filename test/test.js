@@ -180,7 +180,7 @@ describe('tyranid', function() {
   });
 
   describe('with model', function() {
-    var Job, Organization, Department, User, Task, Role, Book,
+    var Job, Organization, Department, User, Task, Role, Book, Location,
         TyrSchema, TyrSchemaType;
     //var Job2, Organization2, Department2, User2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
@@ -196,6 +196,7 @@ describe('tyranid', function() {
       User = Tyr.byName.user;
       Task = Tyr.byName.task;
       Book = Tyr.byName.book;
+      Location = Tyr.byName.location;
       TyrSchema = Tyr.byName.tyrSchema;
       TyrSchemaType = Tyr.byName.tyrSchemaType;
 
@@ -458,6 +459,26 @@ describe('tyranid', function() {
       });
     });
 
+    describe('documents', function() {
+      it('should support $clone() on instances', function() {
+        const orig  = Job.byLabel('Designer'),
+              clone = orig.$clone();
+        expect(clone.$label).to.eql('Designer');
+        expect(clone.$model).to.equal(orig.$model);
+        expect(clone).to.not.equal(orig);
+      });
+
+      it('should support $id on instances', function() {
+        expect(Job.byLabel('Designer').$id).to.be.eql(3);
+        expect(Job.byLabel('Software Lead').$id).to.be.eql(2);
+      });
+
+      it('should support $uid on instances', function() {
+        expect(Job.byLabel('Designer').$uid).to.be.eql('j003');
+        expect(Job.byLabel('Software Lead').$uid).to.be.eql('j002');
+      });
+    });
+
     describe('labels', function() {
       it('should byLabel() on static collections', function() {
         expect(Job.byLabel('Designer')._id).to.be.eql(3);
@@ -474,16 +495,6 @@ describe('tyranid', function() {
         return Organization.byLabel('Acme Unlimitedx').then(function(row) {
           expect(row).to.be.eql(null);
         });
-      });
-
-      it('should support $id on instances', function() {
-        expect(Job.byLabel('Designer').$id).to.be.eql(3);
-        expect(Job.byLabel('Software Lead').$id).to.be.eql(2);
-      });
-
-      it('should support $uid on instances', function() {
-        expect(Job.byLabel('Designer').$uid).to.be.eql('j003');
-        expect(Job.byLabel('Software Lead').$uid).to.be.eql('j002');
       });
 
       it('should support $label on instances', function() {
@@ -933,6 +944,7 @@ describe('tyranid', function() {
             expect(newRole._id).to.be.an.instanceOf(ObjectId);
           });
       });
+
       it('should generate a custom primaryKey if Type.generatePrimaryKeyVal() defined', function() {
         var b = new Book();
         return b.$insert()
@@ -941,6 +953,7 @@ describe('tyranid', function() {
             expect(newBook._id).to.eql(newBook.isbn);
           });
       });
+
       it('should support defaultValues', function() {
         var p = new User({ _id: 1000, organization: 1, department: 1, name: { first: 'Default', last: 'Employee' } });
         return p.$insert()
@@ -949,6 +962,7 @@ describe('tyranid', function() {
             expect(newUser.goldStars).to.be.eql(0);
           });
       });
+
       it('should use specified _id', function() {
         var p = new User({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'User' }, title: 'Developer' });
         return p.$insert()
@@ -956,10 +970,12 @@ describe('tyranid', function() {
             expect(newUser._id).to.be.eql(200);
           });
       });
+
       it('should throw if _id already exists', function() {
         var p = new User({ _id: 200, organization: 1, department: 1, name: { first: 'New', last: 'User' }, title: 'Developer' });
         return p.$insert().should.eventually.be.rejectedWith(Error);
       });
+
       it('should support bulk inserts like mongo insert', function() {
         var users = [
           new User({ _id: 1001, organization: 1, department: 1, name: { first: 'First', last: 'User' }, title: 'Developer' }),
@@ -971,6 +987,19 @@ describe('tyranid', function() {
             expect(newPeople.length).to.be.eql(2);
             expect(newPeople[1].name.first).to.be.eql('Second');
           });
+      });
+
+      it('should return Document instances from insert()', async () => {
+        after(async () => await Location.db.remove({}));
+
+        const l = await Location.insert(new Location({ name: 'Test Location' }));
+        expect(l).to.be.instanceof(Location);
+
+        // some checks here to make sure that we're properly returning the new ObjectId
+        expect(l._id).to.be.instanceof(ObjectId);
+
+        const rslt = await Location.db.findOne({ name: 'Test Location' });
+        expect(rslt._id).to.eql(l._id);
       });
     });
 
@@ -1506,15 +1535,6 @@ describe('tyranid', function() {
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].st).to.match(/Error: test/);
-      });
-
-      it('should support generic log method', async function() {
-        await Tyr.log(Tyr.byName.tyrLogLevel.INFO, 'test');
-
-        const logs = await Log.db.find({});
-        expect(logs.length).to.be.eql(1);
-        expect(logs[0].m).to.be.eql('test');
-        expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
       });
 
       it('should throw on invalid parameters', function() {

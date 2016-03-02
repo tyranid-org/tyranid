@@ -118,6 +118,10 @@ export default function express(app, auth) {
 
 
   const documentPrototype = Tyr.documentPrototype = {
+    $clone: function() {
+      return new this.$model(_.cloneDeep(this));
+    },
+
     $save: function() {
       return this.$model.save(this);
     }
@@ -659,7 +663,15 @@ export default function express(app, auth) {
 
   file += `
   Tyr.byName = byName;
-  Tyr.collections.forEach(function(c) { c.compile(); });
+  Tyr.collections.forEach(function(c) { c.compile(); });`;
+
+  Tyr.collections.forEach(col => {
+    if (col.clientCode) {
+      file = col.clientCode(file);
+    }
+  });
+
+  file += `
 })();
 `;
 
@@ -680,6 +692,10 @@ express.middleware = ::local.express;
 Collection.prototype.express = function(app, auth) {
   const col     = this,
         express = col.def.express;
+
+  if (col.routes) {
+    col.routes(app, auth);
+  }
 
   if (express) {
     const name = col.def.name;

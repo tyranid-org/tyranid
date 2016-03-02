@@ -185,6 +185,7 @@ _.assign(Tyr, {
       }
 
       parseLogLevel('logLevel');
+      parseLogLevel('clientLogLevel');
       parseLogLevel('consoleLogLevel');
       parseLogLevel('dbLogLevel');
 

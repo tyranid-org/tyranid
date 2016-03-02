@@ -29,28 +29,27 @@ import UserAgent from './userAgent';
 
          -. this will require ui to use aggregation/$lookup/etc.
 
-
-
  */
 
 const LogLevel = new Collection({
   id: '_l1',
   name: 'tyrLogLevel',
-  client: false,
+  client: true,
   enum: true,
   fields: {
-    _id:  { is: 'integer' },
-    name: { is: 'string', labelField: true },
-    code: { is: 'string' }
+    _id:    { is: 'integer' },
+    name:   { is: 'string', labelField: true },
+    code:   { is: 'string' },
+    method: { is: 'string', help: 'The console.X() method to use when logging to the console.' }
   },
   values: [
-    [ '_id', 'name',  'code' ],
-    [     1, 'trace', 'T' ],
-    [     2, 'debug', 'D' ],
-    [     3, 'info',  'I' ],
-    [     4, 'warn',  'W' ],
-    [     5, 'error', 'E' ],
-    [     6, 'fatal', 'F' ]
+    [ '_id', 'name',  'code', 'method' ],
+    [     1, 'trace', 'T',    'trace'  ],
+    [     2, 'log',   'L',    'log'    ],
+    [     3, 'info',  'I',    'info'   ],
+    [     4, 'warn',  'W',    'warn'   ],
+    [     5, 'error', 'E',    'error'  ],
+    [     6, 'fatal', 'F',    'error'  ]
   ]
 });
 
@@ -61,11 +60,12 @@ const LogEvent = new Collection({
   enum: true,
   fields: {
     _id:   { is: 'string' },
-    label: { is: 'string', labelField: true }
+    label: { is: 'string', labelField: true },
+    notes: { is: 'string' }
   },
   values: [
-    [ '_id',  'label'        ],
-    [ 'http', 'HTTP Request' ]
+    [ '_id',  'label',   'notes'         ],
+    [ 'http', 'HTTP',    'HTTP Requests' ]
   ]
 });
 
@@ -85,7 +85,7 @@ const Log = new Collection({
     r:     { is: 'object',         label: 'Request', fields: {
       p:   { is: 'string',         label: 'Path'        },
       m:   { is: 'string',         label: 'Method'      },
-      ip:  { is: 'string',         label: 'IP'          },
+      ip:  { is: 'string',         label: 'Remote IP'   },
       ua:  { link: 'tyrUserAgent', label: 'User Agent'  },
       q:   { is: 'object',         label: 'Query'       },
       sid: { is: 'string',         label: 'Session ID'  },
@@ -93,6 +93,11 @@ const Log = new Collection({
     }}
   },
 });
+
+
+//
+// Server-side Logging Methods
+//
 
 async function log(level, ...opts) {
   const obj = {};
@@ -114,6 +119,8 @@ async function log(level, ...opts) {
 
   if (level) {
     obj.l = level._id;
+  } else {
+    level = LogLevel.byId(obj.l);
   }
 
   const event = obj.e;
@@ -177,13 +184,13 @@ async function log(level, ...opts) {
         const sc = res.statusCode;
         str += ' ' + (sc === 200 ? chalk.green('200') : chalk.red(sc));
       }
-      str += ' ' + Tyr.U`ns`.convert(obj.du, Tyr.U`ms`).toFixed(2) + 'ms';
+      str += ' ' + Log.fields.du.in.convert(obj.du, Tyr.U`ms`).toFixed(2) + 'ms';
     }
 
-    console.log(str);
+    console[level.method](str);
 
     if (obj.st) {
-      console.log(obj.st);
+      console[level.method](obj.st);
     }
   }
 
@@ -192,16 +199,15 @@ async function log(level, ...opts) {
   }
 };
 
-Log.log = async function(level, ...opts) {
-  log(level, ...opts);
-};
-
 Log.trace = async function() {
   return log(LogLevel.TRACE, ...arguments);
 };
 
-Log.debug = async function() {
-  return log(LogLevel.DEBUG, ...arguments);
+Log.log = async function() {
+  // TODO:  allow some way to specify the log level in opts ?
+  //Log.log = async function(level, ...opts) {
+
+  return log(LogLevel.LOG, ...arguments);
 };
 
 Log.info = async function() {
@@ -220,12 +226,12 @@ Log.fatal = async function() {
   return log(LogLevel.FATAL, ...arguments);
 };
 
-Log.addEvent = function(name, label) {
+Log.addEvent = function(name, label, notes) {
   if (LogEvent.byId(name)) {
     throw new Error(`Event "${name}" already exists.`);
   }
 
-  LogEvent.addValue(new LogEvent({ _id: name, label: label }));
+  LogEvent.addValue(new LogEvent({ _id: name, label: label || name, notes: notes }));
 };
 
 
@@ -255,11 +261,121 @@ Log.request = function(req, res) {
 }
 
 
+//
+// Express Routing
+//
+
+Log.routes = function(app, auth) {
+
+  app.route('/api/log/_log')
+    .all(auth)
+    .get((req, res) => {
+      try {
+        const o = JSON.parse(req.query.o);
+        log(null, o);
+
+        res.send(200);
+      } catch (err) {
+        console.log(err.stack);
+        res.sendStatus(500);
+      }
+    });
+};
+
+
+//
+// Client
+//
+
+Log.clientCode = function(file) {
+  const config = Tyr.config(),
+        clientLogLevel  = config.clientLogLevel                     || LogLevel.ERROR,
+        consoleLogLevel = config.consoleLogLevel || config.logLevel || LogLevel.INFO,
+        dbLogLevel      = config.dbLogLevel      || config.logLevel || LogLevel.INFO,
+        serverLogLevel  = consoleLogLevel._id < dbLogLevel._id ? consoleLogLevel : dbLogLevel;
+
+  file += `
+
+var LL = Tyr.byName.tyrLogLevel;
+function log() {
+
+  var obj = {};
+
+  var level = LL.INFO;
+
+  function arg(opt) {
+    if (opt instanceof Error) {
+      obj.st = opt.stack;
+      if (!obj.m) {
+        obj.m = opt.message;
+      }
+    } else if (opt instanceof LL) {
+      level = opt;
+    } else if (_.isString(opt)) {
+      obj.m = opt;
+    } else if (opt.length) {
+      for (var ai=0; ai<opt.length; ai++) {
+        arg(opt[ai]);
+      }
+    } else if (_.isObject(opt)) {
+      _.assign(obj, opt);
+    } else {
+      throw new Error('Invalid option "' + opt + '"');
+    }
+  }
+
+  arg(arguments);
+
+  obj.l = level._id;
+
+  if (level._id >= ${clientLogLevel._id}) {
+    var str = '';
+    if (obj.e) {
+      str += obj.e;
+    }
+    if (obj.m) {
+      str += ' ' + obj.m;
+    }
+
+    console[level.method](str);
+
+    if (obj.st) {
+      console[level.method](obj.st);
+    }
+  }
+
+  if (level._id >= ${serverLogLevel._id}) {
+    return ajax({
+      url: '/api/log/_log',
+      data: { o: JSON.stringify(obj) }
+    }).catch(function(err) {
+      console.log(err);
+    });
+  }
+}
+
+Tyr.trace = function() { log(LL.byLabel('trace'), arguments); };
+Tyr.log   = function() { log(LL.byLabel('log'), arguments); };
+Tyr.info  = function() { log(LL.byLabel('info'), arguments); };
+Tyr.warn  = function() { log(LL.byLabel('warn'), arguments); };
+Tyr.error = function() { log(LL.byLabel('error'), arguments); };
+Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
+
+`;
+
+  return file;
+}
+
+
+
+//
+// Tyranid Namespacing
+//
+
 _.assign(Tyr, {
   Log,
-  log:    ::Log.log,
   trace:  ::Log.trace,
-  debug:  ::Log.debug,
+  log:    ::Log.log,
   info:   ::Log.info,
   warn:   ::Log.warn,
   error:  ::Log.error,

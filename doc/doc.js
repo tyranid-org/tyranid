@@ -6,6 +6,14 @@ var Tyr            = require('../src/tyranid'),
     _              = require('lodash'),
     fs             = require('fs');
 
+// hack to make tyranid link ... TODO:  need to provide a base User collection that people can mixin()
+const User = new Tyr.Collection({
+  id: 'u00',
+  name: 'user',
+  fields: {
+    _id: 'mongoid'
+  }
+});
 
 export default function doc() {
   global.ObjectId = pmongo.ObjectId;
@@ -102,8 +110,38 @@ export default function doc() {
     fs.writeFileSync(path + '/unit-table.html', html);
   }
 
+  function logLevel() {
+    let html  = header();
+    html += '<table>\n';
+    html += '<tr><th>Name<th>Code<th>Method\n'
+
+    for (const row of Tyr.byName.tyrLogLevel.def.values) {
+      html += `<tr><td>${row.name || ''}<td>${row.code || ''}<td>${row.method || ''}\n`;
+    }
+
+    html += '</table>\n';
+
+    fs.writeFileSync(path + '/logLevel-table.html', html);
+  }
+
+  function logEvent() {
+    let html  = header();
+    html += '<table>\n';
+    html += '<tr><th>Name<th>Label<th>Notes\n'
+
+    for (const row of Tyr.byName.tyrLogEvent.def.values) {
+      html += `<tr><td>${row._id || ''}<td>${row.label || ''}<td>${row.notes || ''}\n`;
+    }
+
+    html += '</table>\n';
+
+    fs.writeFileSync(path + '/logEvent-table.html', html);
+  }
+
   unit();
   unitFactor();
   unitSystem();
   unitType();
+  logLevel();
+  logEvent();
 }

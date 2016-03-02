@@ -22,7 +22,7 @@ export function pathAdd(path, add) {
 export async function parseInsertObj(col, obj) {
   const def       = col.def,
         fields    = await col.fieldsFor(obj),
-        insertObj = {};
+        insertObj = new col();
 
   _.each(fields, function(field, name) {
     const fieldDef = field.def;

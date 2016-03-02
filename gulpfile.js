@@ -7,9 +7,7 @@ var gulp       = require('gulp'),
     mocha      = require('gulp-mocha'),
     sourcemaps = require('gulp-sourcemaps'),
     babel      = require('gulp-babel'),
-    yargs      = require('yargs'),
-
-    doc        = require('./doc/doc');
+    yargs      = require('yargs');
 
 var src = './src/**/*.js',
     test = './test/**/*.js';
@@ -63,5 +61,5 @@ gulp.task('test', function() {
 gulp.task('default', ['eslint']);
 
 gulp.task('docs', function() {
-  doc()
+  require('./doc/doc')();
 });
