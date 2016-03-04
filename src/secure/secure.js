@@ -3,7 +3,7 @@ import Tyr from '../tyr';
 
 import Component from '../core/component';
 
-const Secure {
+const Secure = {
 
 
 };
