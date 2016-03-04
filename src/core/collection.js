@@ -4,6 +4,7 @@ import hooker     from 'hooker';
 import faker      from 'faker';
 
 import Tyr        from '../tyr';
+import Component  from './component';
 import Type       from './type';
 import ObjectType from '../type/object';
 import Population from './population';
@@ -570,10 +571,10 @@ export default class Collection {
 
     if (Array.isArray(obj)) {
       const parsedArr = await* _.map(obj, el => parseInsertObj(collection, el));
-      return await collection.db.insert(parsedArr);
+      return collection.db.insert(parsedArr);
     } else {
       const parsedObj = await parseInsertObj(collection, obj);
-      return await collection.db.insert(parsedObj);
+      return collection.db.insert(parsedObj);
     }
   }
 
@@ -1173,5 +1174,7 @@ export default class Collection {
     this.byIdIndex[doc.$id] = doc;
   }
 }
+
+Tyr.mixin(Collection, Component);
 
 Tyr.Collection = Collection;

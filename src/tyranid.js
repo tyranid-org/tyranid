@@ -20,6 +20,7 @@ import './type/url';
 
 import Type from './core/type';
 
+import './core/component';
 import './core/collection';
 import './core/field';
 import './core/validationError';
@@ -93,7 +94,6 @@ import { config } from './common';
 */
 
 _.assign(Tyr, {
-
   config(opts) {
 
     if (!opts) {

@@ -19,6 +19,15 @@ const Tyr = {
     return _.union.apply(null, arrs);
   },
 
+  mixin(target, mixin) {
+    for (const name in mixin) {
+      if (name === 'prototype') {
+        _.extend(target.prototype, mixin.prototype);
+      } else {
+        target[name] = mixin[name];
+      }
+    }
+  }
 };
 
 
