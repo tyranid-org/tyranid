@@ -1565,5 +1565,56 @@ describe('tyranid', function() {
       });
 
     });
+
+    describe('query merging', function() {
+      const merge = Tyr.query.merge;
+
+      function test(v1, v2, expected) {
+        expect(merge(v1, v2)).to.eql(expected);
+        expect(merge(v2, v1)).to.eql(expected);
+      }
+
+      it('should merge empty queries', () => {
+        test(null, null, null);
+        test(null, {}, {});
+        test({}, {}, {});
+        test({ foo: 1 }, {}, { foo: 1 });
+      });
+
+      it('should merge deep queries', () => {
+        const v = { foo: [1, 2, { bar: 3 }]};
+        test({}, v, v);
+      });
+
+      it('should merge queries without duplication', () => {
+        expect(merge({ org: 1 }, { org: 1 })).to.eql({ org: 1 });
+      });
+
+      it('should detect equal ObjectIds', () => {
+        const id = '1bac2bac3bac4bac5bac6bac';
+        expect(merge({ org: ObjectId(id) }, { org: ObjectId(id) })).to.eql({ org: ObjectId(id) });
+      });
+
+      it('should work with $in', () => {
+        test({ org: 1 }, { org: { $in: [1, 2] } }, { org: 1 });
+        test({ org: { $in: [2, 3] } }, { org: { $in: [1, 2] } }, { org: 2 });
+        test({ org: { $in: [2, 3, 4] } }, { org: { $in: [1, 2, 4] } }, { org: { $in: [2, 4] } });
+        test({ org: { $in: [2] } }, { org: 3 }, false);
+        test({ org: { $in: [2] } }, { org: { $in: [3] } }, false);
+      });
+
+      it('should work with ObjectIds and $in', () => {
+        const i1 = '111111111111111111111111',
+              i2 = '222222222222222222222222',
+              i3 = '333333333333333333333333',
+              i4 = '444444444444444444444444';
+
+        test({ org: ObjectId(i1) }, { org: { $in: [ObjectId(i1), ObjectId(i2)] } }, { org: ObjectId(i1) });
+        test({ org: { $in: [ObjectId(i2), ObjectId(i3)] } }, { org: { $in: [ObjectId(i1), ObjectId(i2)] } }, { org: ObjectId(i2) });
+        test({ org: { $in: [ObjectId(i2), ObjectId(i3), ObjectId(i4)] } }, { org: { $in: [ObjectId(i1), ObjectId(i2), ObjectId(i4)] } }, { org: { $in: [ObjectId(i2), ObjectId(i4)] } });
+        test({ org: { $in: [ObjectId(i2)] } }, { org: ObjectId(i3) }, false);
+        test({ org: { $in: [ObjectId(i2)] } }, { org: { $in: [ObjectId(i3)] } }, false);
+      });
+    });
   });
 });

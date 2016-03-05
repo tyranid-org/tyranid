@@ -25,6 +25,7 @@ import './core/collection';
 import './core/field';
 import './core/validationError';
 import './core/namePath';
+import './core/query';
 
 import './log/log';
 
