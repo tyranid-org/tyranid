@@ -956,6 +956,8 @@ export default class Collection {
 
             field.link = type;
             field.type = Type.byName.link;
+
+            field.type.compile(compiler, field);
           }
         } else if (fieldDef.is) {
           type = field.type;

@@ -7,6 +7,21 @@ import Type from '../core/type';
 
 const LinkType = new Type({
   name: 'link',
+
+  compile(compiler, field) {
+    const relate = field.def.relate;
+
+    switch (relate) {
+    case undefined:
+    case 'associate':
+    case 'owns':
+    case 'ownedBy':
+      break;
+    default:
+      throw compiler.err(field.path, '"relate" must be one of "associate", "owns", or "ownedBy" if present');
+    }
+  },
+
   fromClient(field, value) {
     const link = field.link,
           linkField = link.fields[field.link.def.primaryKey.field];
@@ -28,6 +43,7 @@ const LinkType = new Type({
       throw err;
     }
   },
+
   toClient(field, value) {
     return value ? (ObjectId.isValid(value.toString()) ? value.toString() : value) : value;
   },
