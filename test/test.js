@@ -1567,10 +1567,18 @@ describe('tyranid', function() {
     });
 
     describe('query merging', function() {
-      const merge = Tyr.query.merge;
+      const merge = Tyr.query.merge,
+            i1 = '111111111111111111111111',
+            i2 = '222222222222222222222222',
+            i3 = '333333333333333333333333',
+            i4 = '444444444444444444444444';
+
+      function testl(v1, v2, expected) {
+        expect(merge(v1, v2)).to.eql(expected);
+      }
 
       function test(v1, v2, expected) {
-        expect(merge(v1, v2)).to.eql(expected);
+        testl(v1, v2, expected);
         expect(merge(v2, v1)).to.eql(expected);
       }
 
@@ -1578,6 +1586,7 @@ describe('tyranid', function() {
         test(null, null, null);
         test(null, {}, {});
         test({}, {}, {});
+        test({ foo: 1 }, null, { foo: 1 });
         test({ foo: 1 }, {}, { foo: 1 });
       });
 
@@ -1590,9 +1599,24 @@ describe('tyranid', function() {
         expect(merge({ org: 1 }, { org: 1 })).to.eql({ org: 1 });
       });
 
+      it('should merge non-overlapping queries', () => {
+        expect(merge({ org: 1 }, { user: 1 })).to.eql({ org: 1, user: 1 });
+      });
+
       it('should detect equal ObjectIds', () => {
-        const id = '1bac2bac3bac4bac5bac6bac';
-        expect(merge({ org: ObjectId(id) }, { org: ObjectId(id) })).to.eql({ org: ObjectId(id) });
+        expect(merge({ org: ObjectId(i1) }, { org: ObjectId(i1) })).to.eql({ org: ObjectId(i1) });
+      });
+
+      it('should work with $eq', () => {
+        test({ org: { $eq: 1 } }, { org: 1 }, { org: 1 });
+        test({ org: 1 }, { org: 2 }, false);
+        test({ org: 1 }, { org: { $eq: 2 } }, false);
+      });
+
+      it('should work with $ne', () => {
+        test({ org: { $ne: 1 } }, { org: 1 }, false);
+        test({ org: { $ne: 1 } }, { org: 2 }, { org: 2 });
+        testl({ org: { $ne: 1 } }, { org: { $ne: 2 } }, { org: { $nin: [ 1, 2 ] } });
       });
 
       it('should work with $in', () => {
@@ -1600,20 +1624,32 @@ describe('tyranid', function() {
         test({ org: { $in: [2, 3] } }, { org: { $in: [1, 2] } }, { org: 2 });
         test({ org: { $in: [2, 3, 4] } }, { org: { $in: [1, 2, 4] } }, { org: { $in: [2, 4] } });
         test({ org: { $in: [2] } }, { org: 3 }, false);
+        test({ org: { $in: [2] } }, { org: { $eq: 3 } }, false);
         test({ org: { $in: [2] } }, { org: { $in: [3] } }, false);
       });
 
-      it('should work with ObjectIds and $in', () => {
-        const i1 = '111111111111111111111111',
-              i2 = '222222222222222222222222',
-              i3 = '333333333333333333333333',
-              i4 = '444444444444444444444444';
+      it('should work with $nin', () => {
+        testl({ org: { $nin: [ 1, 2 ] } }, { org: { $nin: [3, 4] } }, { org: { $nin: [1, 2, 3, 4] } });
+        testl({ org: { $ne: 1, $nin: [3, 4] } }, { org: { $ne: 2 } }, { org: { $nin: [ 1, 2, 3, 4] } });
+      });
 
+      it('should work with ObjectIds and $in/$nin', () => {
         test({ org: ObjectId(i1) }, { org: { $in: [ObjectId(i1), ObjectId(i2)] } }, { org: ObjectId(i1) });
         test({ org: { $in: [ObjectId(i2), ObjectId(i3)] } }, { org: { $in: [ObjectId(i1), ObjectId(i2)] } }, { org: ObjectId(i2) });
         test({ org: { $in: [ObjectId(i2), ObjectId(i3), ObjectId(i4)] } }, { org: { $in: [ObjectId(i1), ObjectId(i2), ObjectId(i4)] } }, { org: { $in: [ObjectId(i2), ObjectId(i4)] } });
         test({ org: { $in: [ObjectId(i2)] } }, { org: ObjectId(i3) }, false);
         test({ org: { $in: [ObjectId(i2)] } }, { org: { $in: [ObjectId(i3)] } }, false);
+        testl({ org: { $nin: [ObjectId(i2)] } }, { org: { $nin: [ObjectId(i3)] } }, { org: { $nin: [ ObjectId(i2), ObjectId(i3) ] } });
+      });
+
+      it('should merge compatible comparisons', () => {
+        test({ count: { $ge: 1 } }, { count: { $lt: 4 } }, { count: { $ge: 1, $lt: 4 } });
+      });
+
+      it('should work with composite queries', () => {
+        test({ org: { $in: [ObjectId(i2)] }, name: 'Foo' }, { org: { $in: [ObjectId(i3)] } }, false);
+        test({ org: 1, name: 'Foo' }, { org: { $in: [1, 2] } }, { org: 1, name: 'Foo' });
+        test({ org: { $in: [1, 2], $eq: 2 } }, { org: 2 }, { org: 2 });
       });
     });
   });
