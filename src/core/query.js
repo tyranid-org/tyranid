@@ -236,7 +236,6 @@ function simplify(v) {
   return isOpObject(v) ? simplifyOpObject(v) : v;
 }
 
-
 function merge(query1, query2) {
   if (!query1) {
     return query2;
@@ -248,8 +247,7 @@ function merge(query1, query2) {
     return simplify(query1);
   }
 
-  let query = {},
-      canMerge = true;
+  let query = {};
 
   for (const n in query1) {
     const v1 = query1[n],
@@ -265,18 +263,12 @@ function merge(query1, query2) {
       const v = mergeOpObject(v1, v2);
 
       if (v === false) {
-        query = false;
+        return false;
       } else if (v === null) {
-        canMerge = false;
+        return { $and: [ query1, query2 ] };
       } else {
         query[n] = v;
       }
-    }
-
-    if (!canMerge) {
-      return { $and: [ query1, query2 ] };
-    } else if (!query) {
-      return query;
     }
   }
 

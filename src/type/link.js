@@ -2,7 +2,9 @@
 const _ = require('lodash'); // client-side
 import { ObjectId } from 'promised-mongo';
 
-import Type from '../core/type';
+import Tyr        from '../tyr';
+import Type       from '../core/type';
+import Collection from '../core/collection';
 
 
 const LinkType = new Type({
@@ -16,6 +18,7 @@ const LinkType = new Type({
     case 'associate':
     case 'owns':
     case 'ownedBy':
+      field.relate = relate;
       break;
     default:
       throw compiler.err(field.path, '"relate" must be one of "associate", "owns", or "ownedBy" if present');
@@ -52,5 +55,64 @@ const LinkType = new Type({
     return field.link.idToLabel(value);
   }
 });
+
+Collection.prototype.links = function(search) {
+  search = search || {};
+
+  let relate = search.relate;
+  switch (relate) {
+  case 'associate':
+  case 'owns':
+  case 'ownedBy':
+  case undefined:
+  case null:
+    break;
+  default:
+    throw new Error(`Unknown links() relate option "${relate}"`);
+  }
+
+  function matchesRelate(field) {
+    return (
+      !relate ||
+      field.relate === relate ||
+      (relate === 'associate' && !field.relate)
+    );
+  }
+
+  const direction = search.direction;
+  switch (direction) {
+  case 'incoming':
+  case 'outgoing':
+  case undefined:
+  case null:
+    break;
+  default:
+    throw new Error(`Unknown links() direction option "${direction}"`);
+  }
+
+  const links = [];
+
+  if (!direction || direction === 'outgoing') {
+    _.each(this.paths, field => {
+      if (field.link && matchesRelate(field)) {
+        links.push(field);
+      }
+    });
+  }
+
+  if (!direction || direction === 'incoming') {
+    for (const col of Tyr.collections) {
+      if (col !== this) {
+        _.each(col.paths, field => {
+          if (field.link === this && matchesRelate(field)) {
+            links.push(field);
+          }
+        });
+      }
+    }
+  }
+
+  return links;
+};
 
 export default LinkType;
