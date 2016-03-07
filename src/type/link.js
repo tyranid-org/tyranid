@@ -18,7 +18,7 @@ const LinkType = new Type({
     case 'associate':
     case 'owns':
     case 'ownedBy':
-      field.relate = relate;
+      field.relate = relate || 'associate';
       break;
     default:
       throw compiler.err(field.path, '"relate" must be one of "associate", "owns", or "ownedBy" if present');
@@ -72,11 +72,7 @@ Collection.prototype.links = function(search) {
   }
 
   function matchesRelate(field) {
-    return (
-      !relate ||
-      field.relate === relate ||
-      (relate === 'associate' && !field.relate)
-    );
+    return !relate || field.relate === relate;
   }
 
   const direction = search.direction;
