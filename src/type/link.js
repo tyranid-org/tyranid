@@ -59,7 +59,7 @@ const LinkType = new Type({
 Collection.prototype.links = function(search) {
   search = search || {};
 
-  let relate = search.relate;
+  const relate = search.relate;
   switch (relate) {
   case 'associate':
   case 'owns':

@@ -30,7 +30,7 @@ function isOpObject(obj) {
 
 function validateInArray(arr) {
   if (!_.isArray(arr)) {
-    throw new Error(`Invalid query, $in did not contain an array: "${v}"`);
+    throw new Error(`Invalid query, $in did not contain an array: "${arr}"`);
   }
 
   return true;
@@ -85,7 +85,7 @@ function union(arr1, arr2) {
 //
 
 function mergeOpObject(v1, v2) {
-  let o = {};
+  const o = {};
 
   const o1 = isOpObject(v1) ? v1 : { $eq: v1 },
         o2 = isOpObject(v2) ? v2 : { $eq: v2 };
@@ -195,9 +195,9 @@ function simplifyOpObject(o) {
   // Simplify and check for contradictions
   //
 
-  let inv = o.$in,
-      eqv = o.$eq,
-      nev = o.$ne;
+  const inv = o.$in,
+        nev = o.$ne;
+  let eqv = o.$eq;
   if (inv) {
     validateInArray(inv);
 
@@ -247,7 +247,7 @@ function merge(query1, query2) {
     return simplify(query1);
   }
 
-  let query = {};
+  const query = {};
 
   for (const n in query1) {
     const v1 = query1[n],

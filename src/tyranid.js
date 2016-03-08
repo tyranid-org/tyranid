@@ -134,7 +134,13 @@ _.assign(Tyr, {
         fs
           .readdirSync(dirOpts.dir)
           .filter(file => !fileRe || fileRe.test(file))
-          .forEach(file => { require(dirOpts.dir + '/' + file); });
+          .forEach(file => {
+            const fileName = dirOpts.dir + '/' + file;
+
+            if (!fs.lstatSync(fileName).isDirectory()) {
+              require(fileName);
+            }
+          });
       }
 
       if (_.isArray(opts)) {
