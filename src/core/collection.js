@@ -445,6 +445,8 @@ export default class Collection {
           db         = collection.db,
           projection = args[1];
 
+    args[0] = this.secureQuery(args[0]);
+
     if (projection) {
       args[1] = parseProjection(collection, projection);
     }

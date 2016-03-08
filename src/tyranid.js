@@ -29,6 +29,8 @@ import './core/query';
 
 import './log/log';
 
+import './secure/secure';
+
 import './unit/unitSystem';
 import './unit/unitFactor';
 import './unit/unitType';
@@ -196,6 +198,9 @@ _.assign(Tyr, {
       parseLogLevel('consoleLogLevel');
       parseLogLevel('dbLogLevel');
 
+      // TODO:  if config.secure is an array of Secures, set Tyr.secure to a
+      //        composite Secure that has the array of config.secure as children
+      Tyr.secure = config.secure;
     }
 
     bootstrap('compile');
