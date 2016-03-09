@@ -242,6 +242,7 @@ export default class Collection {
 
 
     collections.push(CollectionInstance);
+    Tyr.components.push(CollectionInstance);
     Tyr.byId[def.id] = CollectionInstance;
     Tyr.byName[def.name] = CollectionInstance;
 

@@ -198,9 +198,13 @@ _.assign(Tyr, {
       parseLogLevel('consoleLogLevel');
       parseLogLevel('dbLogLevel');
 
-      // TODO:  if config.secure is an array of Secures, set Tyr.secure to a
-      //        composite Secure that has the array of config.secure as children
-      Tyr.secure = config.secure;
+      const secure = config.secure;
+      if (secure) {
+        // TODO:  if config.secure is an array of Secures, set Tyr.secure to a
+        //        composite Secure that has the array of config.secure as children
+        Tyr.secure = secure;
+        Tyr.components.push(secure);
+      }
     }
 
     bootstrap('compile');

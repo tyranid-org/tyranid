@@ -665,9 +665,9 @@ export default function express(app, auth) {
   Tyr.byName = byName;
   Tyr.collections.forEach(function(c) { c.compile(); });`;
 
-  Tyr.collections.forEach(col => {
-    if (col.clientCode) {
-      file = col.clientCode(file);
+  Tyr.components.forEach(comp => {
+    if (comp.clientCode) {
+      file = comp.clientCode(file);
     }
   });
 
@@ -680,6 +680,11 @@ export default function express(app, auth) {
     .get(async (req, res) => res.send(file));
 
   Tyr.collections.forEach(col => col.express(app, auth));
+  Tyr.components.forEach(comp => {
+    if (comp.routes) {
+      comp.routes(app, auth);
+    }
+  });
 };
 
 Tyr.express = express;
@@ -692,10 +697,6 @@ express.middleware = ::local.express;
 Collection.prototype.express = function(app, auth) {
   const col     = this,
         express = col.def.express;
-
-  if (col.routes) {
-    col.routes(app, auth);
-  }
 
   if (express) {
     const name = col.def.name;

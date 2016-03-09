@@ -6,6 +6,8 @@ const Tyr = {
   byId: {},
   byName: {},
 
+  components: [],
+
   $all: '$all',
 
   labelize(name) {
