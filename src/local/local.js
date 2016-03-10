@@ -1,9 +1,17 @@
 
-import cls from 'continuation-local-storage';
+//import cls from 'continuation-local-storage';
 
 import Tyr from '../tyr';
 
-const ns = cls.createNamespace('tyranid');
+//const ns = cls.createNamespace('tyranid');
+
+const ns = {
+  set(/*name, value*/) {
+  },
+
+  get(/*name*/) {
+  }
+}
 
 /**
  * Wrap all access to underlying local storage mechanism to shield users since it will likely change.
@@ -31,6 +39,7 @@ Tyr.local = local;
 
 const api = {
   express(req, res, next) {
+    /*
     ns.bindEmitter(req);
     ns.bindEmitter(res);
 
@@ -41,6 +50,9 @@ const api = {
       Tyr.Log.request(req, res);
       next();
     });
+    */
+    Tyr.Log.request(req, res);
+    next();
   }
 };
 

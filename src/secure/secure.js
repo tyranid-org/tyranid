@@ -3,7 +3,8 @@ import Tyr from '../tyr';
 
 import Component  from '../core/component';
 import Collection from '../core/collection';
-import query      from '../core/query';
+import Query      from '../core/query';
+
 
 const Secure = {
 
@@ -20,7 +21,7 @@ Collection.prototype.secureQuery = function(query) {
   query = query || {};
 
   if (secure) {
-    query = query.merge(query, secure.query(this));
+    query = Query.merge(query, secure.query(this));
   }
 
   return query;

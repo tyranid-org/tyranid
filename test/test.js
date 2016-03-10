@@ -1,4 +1,6 @@
 
+console.log('###', process.addAsyncListener);
+
 require('es6-promise');
 
 var Tyr            = require('../src/tyranid'),

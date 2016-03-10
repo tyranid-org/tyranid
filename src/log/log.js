@@ -131,10 +131,29 @@ async function log(level, ...opts) {
 
   obj.on = new Date();
 
-  const local = Tyr.local,
-        req   = local.req,
-        res   = local.res,
-        user  = local.user;
+  const local = Tyr.local;
+  let req   = local.req,
+      res   = local.res,
+      user  = local.user;
+
+  if (obj.req) {
+    req = obj.req;
+    delete obj.req;
+
+    if (!obj.user && req.user) {
+      user = req.user;
+    }
+  }
+
+  if (obj.res) {
+    res = obj.res;
+    delete obj.res;
+  }
+
+  if (obj.user) {
+    user = obj.user;
+    delete obj.user;
+  }
 
   if (user) {
     obj.u = user.$id;
@@ -254,8 +273,10 @@ Log.request = function(req, res) {
 
     const diff = process.hrtime(req._startAt);
     Log.info({
-      e:  'http',
-      du: diff[0] * 1e9 + diff[1]
+      e:    'http',
+      du:   diff[0] * 1e9 + diff[1],
+      req:  req,
+      res:  res
     });
   });
 }
