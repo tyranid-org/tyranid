@@ -2,6 +2,8 @@
 import _ from 'lodash';
 
 const Tyr = {
+  options: {},
+
   collections: [],
   byId: {},
   byName: {},

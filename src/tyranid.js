@@ -41,9 +41,7 @@ import './express';
 
 import /*Schema from */ './schema';
 
-// variables shared between classes
-import { config } from './common';
-
+const options = Tyr.options;
 
 /*
 
@@ -90,7 +88,7 @@ import { config } from './common';
   <schema>: {
     name:  <string>,
     id:    <3-character alphanum beginning with a non-hex alphanum character>,
-    db:    <mongodb database>, // optional, if not present will default to config.db
+    db:    <mongodb database>, // optional, if not present will default to options.db
     fields: <field object>
   }
 
@@ -101,13 +99,13 @@ _.assign(Tyr, {
   config(opts) {
 
     if (!opts) {
-      return config;
+      return options;
     }
 
     // clear object but keep reference
-    for (const prop in config) delete config[prop];
+    for (const prop in options) delete options[prop];
 
-    _.extend(config, opts);
+    _.extend(options, opts);
 
     if (!opts.db) {
       throw new Error('Missing "db" in config.');
@@ -184,11 +182,11 @@ _.assign(Tyr, {
       }
 
       function parseLogLevel(name) {
-        const ll = config[name];
+        const ll = options[name];
         if (_.isString(ll)) {
-          config[name] = Tyr.byName.tyrLogLevel.byLabel(ll);
+          options[name] = Tyr.byName.tyrLogLevel.byLabel(ll);
 
-          if (!config[name]) {
+          if (!options[name]) {
             throw new Error(`Unknown ${name}: "${ll}".`);
           }
         }
@@ -199,10 +197,10 @@ _.assign(Tyr, {
       parseLogLevel('consoleLogLevel');
       parseLogLevel('dbLogLevel');
 
-      const secure = config.secure;
+      const secure = options.secure;
       if (secure) {
-        // TODO:  if config.secure is an array of Secures, set Tyr.secure to a
-        //        composite Secure that has the array of config.secure as children
+        // TODO:  if options.secure is an array of Secures, set Tyr.secure to a
+        //        composite Secure that has the array of options.secure as children
         Tyr.secure = secure;
         Tyr.components.push(secure);
       }

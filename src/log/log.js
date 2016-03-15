@@ -182,7 +182,7 @@ async function log(level, ...opts) {
     }
   }
 
-  const config = Tyr.config(),
+  const config = Tyr.options,
         consoleLogLevel = config.consoleLogLevel || config.logLevel || LogLevel.INFO,
         dbLogLevel      = config.dbLogLevel      || config.logLevel || LogLevel.INFO;
 

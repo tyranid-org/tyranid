@@ -1,16 +1,20 @@
 
-//import cls from 'continuation-local-storage';
-
 import Tyr from '../tyr';
 
-//const ns = cls.createNamespace('tyranid');
 
-const ns = {
-  set(/*name, value*/) {
-  },
+let cls,
+    ns;
+if (Tyr.options.cls !== false) {
+  cls = require('continuation-local-storage');
+  ns = cls.createNamespace('tyranid');
+} else {
+  ns = {
+    set(/*name, value*/) {
+    },
 
-  get(/*name*/) {
-  }
+    get(/*name*/) {
+    }
+  };
 }
 
 /**
@@ -39,18 +43,19 @@ Tyr.local = local;
 
 const api = {
   express(req, res, next) {
-    /*
-    ns.bindEmitter(req);
-    ns.bindEmitter(res);
+    if (cls) {
+      ns.bindEmitter(req);
+      ns.bindEmitter(res);
 
-    ns.run(() => {
-      local.req = req;
-      local.res = res;
-      local.user = req.user;
-      Tyr.Log.request(req, res);
-      next();
-    });
-    */
+      ns.run(() => {
+        local.req = req;
+        local.res = res;
+        local.user = req.user;
+        Tyr.Log.request(req, res);
+        next();
+      });
+    }
+
     Tyr.Log.request(req, res);
     next();
   }

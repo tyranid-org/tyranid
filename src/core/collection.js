@@ -15,7 +15,6 @@ import Field      from './field';
 
 // variables shared between classes
 import {
-  config           ,
   escapeRegex      ,
   parseInsertObj   ,
   parseProjection  ,
@@ -237,7 +236,7 @@ export default class Collection {
       throw new Error('Invalid "primaryKey" parameter');
     }
 
-    const db = def.db || config.db;
+    const db = def.db || Tyr.options.db;
 
     if (db) {
       CollectionInstance.db = db.collection(CollectionInstance.def.dbName);

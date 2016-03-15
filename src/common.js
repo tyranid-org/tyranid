@@ -3,7 +3,6 @@ import _ from 'lodash';
 import NamePath from './core/namePath';
 
 
-export const config            = {};
 export const metaRegex         = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
 
