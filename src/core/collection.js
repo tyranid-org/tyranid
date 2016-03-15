@@ -462,8 +462,13 @@ export default class Collection {
       const cp          = cursor.constructor.prototype,
             origConnect = cp.connect;
 
+      let queryModified = false;
+
       cp.connect = async function connect() {
-        this.command.query = await collection.secureQuery(this.command.query, 'view');
+        if (!queryModified) {
+          this.command.query = await collection.secureQuery(this.command.query, 'view');
+          queryModified = true;
+        }
         return origConnect.call(this);
       }
 
