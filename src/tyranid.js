@@ -151,6 +151,14 @@ _.assign(Tyr, {
       }
     }
 
+    const secure = options.secure;
+    if (secure) {
+      // TODO:  if options.secure is an array of Secures, set Tyr.secure to a
+      //        composite Secure that has the array of options.secure as children
+      Tyr.secure = secure;
+      Tyr.components.push(secure);
+    }
+
     function bootstrap(stage) {
       const bootstrapping = Tyr.components.filter(col => col.boot);
       let reasons;
@@ -196,14 +204,6 @@ _.assign(Tyr, {
       parseLogLevel('clientLogLevel');
       parseLogLevel('consoleLogLevel');
       parseLogLevel('dbLogLevel');
-
-      const secure = options.secure;
-      if (secure) {
-        // TODO:  if options.secure is an array of Secures, set Tyr.secure to a
-        //        composite Secure that has the array of options.secure as children
-        Tyr.secure = secure;
-        Tyr.components.push(secure);
-      }
     }
 
     bootstrap('compile');
