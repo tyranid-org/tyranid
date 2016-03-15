@@ -1,7 +1,12 @@
 
-console.log('###', process.addAsyncListener);
-
 require('es6-promise');
+
+/*
+    3. boot() not getting called
+
+    4. document Tyr.db, Collection.db
+
+ */
 
 var Tyr            = require('../src/tyranid'),
     NamePath       = Tyr.NamePath,

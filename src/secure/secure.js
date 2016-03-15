@@ -15,13 +15,13 @@ Tyr.mixin(Secure, Component);
 
 Tyr.Secure = Secure;
 
-Collection.prototype.secureQuery = function(query) {
+Collection.prototype.secureQuery = async function(query) {
   const secure = Tyr.secure;
 
   query = query || {};
 
   if (secure) {
-    query = Query.merge(query, secure.query(this));
+    query = Query.merge(query, await secure.query(this));
   }
 
   return query;

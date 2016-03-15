@@ -28,6 +28,9 @@ import {
 } from '../tyr';
 
 
+let patchedCursorConnect;
+
+
 // Document
 // ========
 
@@ -446,13 +449,27 @@ export default class Collection {
           db         = collection.db,
           projection = args[1];
 
-    args[0] = this.secureQuery(args[0]);
-
     if (projection) {
       args[1] = parseProjection(collection, projection);
     }
 
     const cursor = db.find(...args);
+
+    /**
+     * Patch promised-mongo's connect() method to work with our async secureQuery() method.
+     * This patch is necessary because find() itself is not async.
+     */
+    if (!patchedCursorConnect) {
+      const cp          = cursor.constructor.prototype,
+            origConnect = cp.connect;
+
+      cp.connect = async function connect() {
+        this.command.query = await collection.secureQuery(this.command.query, 'view');
+        return origConnect.call(this);
+      }
+
+      patchedCursorConnect = true;
+    }
 
     hooker.hook(cursor, 'next', {
       post(promise) {

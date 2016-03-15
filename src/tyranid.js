@@ -96,6 +96,7 @@ import { config } from './common';
 
 */
 
+
 _.assign(Tyr, {
   config(opts) {
 
@@ -153,7 +154,7 @@ _.assign(Tyr, {
     }
 
     function bootstrap(stage) {
-      const bootstrapping = Tyr.collections.filter(col => col.boot);
+      const bootstrapping = Tyr.components.filter(col => col.boot);
       let reasons;
 
       for (let pass=1; bootstrapping.length && pass < 100; pass++) {
@@ -214,6 +215,8 @@ _.assign(Tyr, {
     }
 
     bootstrap('link');
+
+    bootstrap('post-link');
   },
 
   /**
