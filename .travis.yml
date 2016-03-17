@@ -16,7 +16,11 @@ before_script:
 
 #test on two node.js versions: 0.6 and 0.8
 node_js:
-  - 0.10
+  - "0.10"
+  - "0.12"
+  - "iojs"
+  - "4"
+  - "5"
   # configure notifications (email, IRC, campfire etc)
   # please update this section to your needs!
   #notifications:
