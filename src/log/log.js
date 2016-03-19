@@ -1,4 +1,6 @@
 
+import os         from 'os';
+
 import _          from 'lodash';
 import util       from 'util';
 import moment     from 'moment';
@@ -82,6 +84,7 @@ const Log = new Collection({
     st:    { is: 'string',         label: 'Stack Trace' },
     on:    { is: 'date',           label: 'On'          },
     du:    { is: 'integer',        label: 'Duration',   in: 'ns' },
+    hn:    { is: 'string',         label: 'Host Name'   },
     r:     { is: 'object',         label: 'Request', fields: {
       p:   { is: 'string',         label: 'Path'        },
       m:   { is: 'string',         label: 'Method'      },
@@ -89,7 +92,7 @@ const Log = new Collection({
       ua:  { link: 'tyrUserAgent', label: 'User Agent'  },
       q:   { is: 'object',         label: 'Query'       },
       sid: { is: 'string',         label: 'Session ID'  },
-      h:   { is: 'string',         label: 'Host Domain' },
+      sc:  { is: 'integer',        label: 'Status Code' },
     }}
   },
 });
@@ -130,6 +133,7 @@ async function log(level, ...opts) {
 
 
   obj.on = new Date();
+  obj.hn = os.hostname();
 
   const local = Tyr.local;
   let req   = local.req,
@@ -166,7 +170,7 @@ async function log(level, ...opts) {
     r = obj.r = {
       p:  req.path,
       m:  req.method,
-      ip: req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
+      ip: req.headers['X-Forwarded-For'] || req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
       ua: ua._id,
       q:  req.query
     };
@@ -176,9 +180,8 @@ async function log(level, ...opts) {
       r.sid = sid;
     }
 
-    const host = req.socket.remoteAddress;
-    if (host) {
-      r.h = host;
+    if (res) {
+      r.sc = res.statusCode;
     }
   }
 
