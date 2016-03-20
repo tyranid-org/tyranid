@@ -260,17 +260,17 @@ export default class Collection {
 
     defineDocumentProperties(dp);
 
-    _.each(def.fields, function(field, name) {
-      const get  = field.getServer || field.get,
-            set  = field.setServer || field.set,
-            fn   = field.fn || field.fnClient || field.fnServer,
-            isDb = field.db;
+    _.each(def.fields, function(fieldDef, name) {
+      const get  = fieldDef.getServer || fieldDef.get,
+            set  = fieldDef.setServer || fieldDef.set,
+            fn   = fieldDef.fn || fieldDef.fnClient || fieldDef.fnServer,
+            isDb = fieldDef.db;
 
       if (fn) {
         throw new Error('Field ' + def.name + '.' + name + ' has fn/fnClient/fnServer set, fn is a method option, not a field option.');
       }
 
-      if (!fn && field.getClient && isDb) {
+      if (!fn && fieldDef.getClient && isDb) {
         throw new Error('Field ' + def.name + '.' + name + ' needs a server-side get if db is set and client-side get is set.');
       }
 
@@ -292,7 +292,7 @@ export default class Collection {
         Object.defineProperty(dp, name, prop);
 
         if (isDb === undefined) {
-          field.db = false;
+          fieldDef.db = false;
         }
       }
     });
@@ -566,7 +566,10 @@ export default class Collection {
     if (Array.isArray(obj)) {
       return await* obj.map(doc => collection.save(doc, true));
     } else {
-      if (obj[collection.def.primaryKey.field]) {
+      const keyFieldName = collection.def.primaryKey.field,
+            keyValue = obj[keyFieldName];
+
+      if (keyValue) {
         if (collection.def.timestamps) {
           obj.updatedAt = new Date();
         }
@@ -576,11 +579,12 @@ export default class Collection {
         const update = _.omit(obj, '_id');
 
         const result = await collection.findAndModify({
-          query: { [collection.def.primaryKey.field]: obj[collection.def.primaryKey.field] },
+          query: { [keyFieldName]: keyValue },
           update: update,
           upsert: true,
           new: true
         });
+
         return result.value;
       } else {
         return collection.insert(obj, true);
@@ -932,7 +936,6 @@ export default class Collection {
               type = field[name] = new Field({ is: type.def.name });
             }
           } else {
-            console.log('type', type);
             throw this.err(field.path, `Invalid "${name}":  ${type}`);
           }
         }
