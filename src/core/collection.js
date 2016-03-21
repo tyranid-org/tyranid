@@ -2,6 +2,7 @@
 import _          from 'lodash';
 import hooker     from 'hooker';
 import faker      from 'faker';
+import { ObjectId } from 'promised-mongo';
 
 import Tyr        from '../tyr';
 import Component  from './component';
