@@ -28,6 +28,16 @@ import {
 } from '../tyr';
 
 
+/**
+ *  Given an options pojo with { tyranid: {} },
+    extract the tyranid prop, delete it from the pojo, and return
+ */
+function extractTyranidQueryOptions(opts) {
+  const tyrOpts = _.get(opts, 'tyranid', {});
+  if (_.isObject(opts)) delete opts['tyranid'];
+  return tyrOpts;
+}
+
 let patchedCursorConnect;
 
 
@@ -459,7 +469,9 @@ export default class Collection {
   find(...args) {
     const collection = this,
           db         = collection.db,
-          projection = args[1];
+          projection = args[1],
+          // extract tyranid specific options
+          tyrOpts    = extractTyranidQueryOptions(args[2]);
 
     if (projection) {
       args[1] = parseProjection(collection, projection);
@@ -476,7 +488,7 @@ export default class Collection {
             origConnect = cp.connect;
 
       cp.connect = async function connect() {
-        if (!this.tyranidQueryModified) {
+        if (!this.tyranidQueryModified && !tyrOpts.insecure) {
           this.command.query = await collection.secureQuery(this.command.query, 'view');
           this.tyranidQueryModified = true;
         }
