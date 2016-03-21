@@ -24,6 +24,12 @@ export async function parseInsertObj(col, obj) {
         fields    = await col.fieldsFor(obj),
         insertObj = new col();
 
+  _.each(col.denormal, function(field, name) {
+    // TODO:  need to parse & process name if it is a path (if it contains "."s)
+    name = NamePath.populateNameFor(name, true);
+    insertObj[name] = obj[name];
+  });
+
   _.each(fields, function(field, name) {
     const fieldDef = field.def;
 
@@ -50,12 +56,6 @@ export async function parseInsertObj(col, obj) {
   if (def.primaryKey.defaultMatchIdOnInsert && insertObj._id === undefined) {
     insertObj._id = insertObj[def.primaryKey.field];
   }
-
-  _.each(col.denormal, function(field, name) {
-    // TODO:  need to parse & process name if it is a path (if it contains "."s)
-    name = NamePath.populateNameFor(name, true);
-    insertObj[name] = obj[name];
-  });
 
   if (def.timestamps) {
     const now = new Date();

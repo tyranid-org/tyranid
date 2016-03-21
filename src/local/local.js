@@ -2,47 +2,66 @@
 import Tyr from '../tyr';
 
 
-let cls,
-    ns;
-if (Tyr.options.cls !== false) {
-  cls = require('continuation-local-storage');
-  ns = cls.createNamespace('tyranid');
-} else {
-  ns = {
-    set(/*name, value*/) {
-    },
+let initialized = false,
+    cls,
+    ns,
+    local;
 
-    get(/*name*/) {
+function init() {
+  if (Tyr.options.cls !== false) {
+    cls = require('continuation-local-storage');
+    ns = cls.createNamespace('tyranid');
+  } else {
+    ns = {
+      set(/*name, value*/) {
+      },
+
+      get(/*name*/) {
+      }
+    };
+  }
+
+  /**
+   * Wrap all access to underlying local storage mechanism to shield users since it will likely change.
+   */
+  local = {
+    define(name) {
+      if (name === 'define') {
+        throw new Error('You cannot redefine define()');
+      }
+
+      Object.defineProperty(local, name, {
+        get:          ()    => ns.get(name),
+        set:          value => ns.set(name, value),
+        enumerable:   true,
+        configurable: false
+      });
     }
   };
-}
 
-/**
- * Wrap all access to underlying local storage mechanism to shield users since it will likely change.
- */
-const local = {
-  define(name) {
-    if (name === 'define') {
-      throw new Error('You cannot redefine define()');
-    }
+  local.define('user');
+  local.define('req');
+  local.define('res');
 
-    Object.defineProperty(local, name, {
-      get:          ()    => ns.get(name),
-      set:          value => ns.set(name, value),
-      enumerable:   true,
-      configurable: false
-    });
-  }
+  Tyr.local = local;
+
+  initialized = true;
 };
 
-local.define('user');
-local.define('req');
-local.define('res');
+Object.defineProperty(Tyr, 'local', {
+  value: function() {
+    if (!initialized) {
+      init();
+    }
 
-Tyr.local = local;
+    return local;
+  }
+});
 
 const api = {
   express(req, res, next) {
+    const local = Tyr.local;
+
     if (cls) {
       ns.bindEmitter(req);
       ns.bindEmitter(res);

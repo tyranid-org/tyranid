@@ -60,6 +60,10 @@ const documentPrototype = Tyr.documentPrototype = {
     return this.$model.updateDoc(this);
   },
 
+  $remove() {
+    return this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true);
+  },
+
   $toClient() {
     return this.$model.toClient(this);
   },
