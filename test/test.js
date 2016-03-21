@@ -22,6 +22,7 @@ var Tyr            = require('../src/tyranid'),
     UnitType       = require('../src/unit/unitType'),
     Unit           = require('../src/unit/unit'),
     Units          = require('../src/unit/units'),
+    ObjectId       = require('promised-mongo').ObjectId,
 
     Log            = Tyr.Log;
 
@@ -36,8 +37,6 @@ function round5(v) {
 function prec5(v) {
   return parseFloat(v.toPrecision(5));
 }
-
-global.ObjectId = pmongo.ObjectId;
 
 describe('tyranid', function() {
   var db = null;

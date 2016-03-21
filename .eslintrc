@@ -49,18 +49,12 @@
     "node": true
   },
   "globals": {
-    "__app": false,
-    "ObjectId": false,
-    "_": true,
-    "moment": true,
     "describe": true,
     "before": true,
     "beforeEach": true,
     "after": true,
     "afterEach": true,
-    "it": true,
-    "mdb": true,
-    "$": true
+    "it": true
   },
   "ecmaFeatures": {
     "arrowFunctions": true,
