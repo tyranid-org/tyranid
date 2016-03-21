@@ -462,12 +462,10 @@ export default class Collection {
       const cp          = cursor.constructor.prototype,
             origConnect = cp.connect;
 
-      let queryModified = false;
-
       cp.connect = async function connect() {
-        if (!queryModified) {
+        if (!this.tyranidQueryModified) {
           this.command.query = await collection.secureQuery(this.command.query, 'view');
-          queryModified = true;
+          this.tyranidQueryModified = true;
         }
         return origConnect.call(this);
       }
