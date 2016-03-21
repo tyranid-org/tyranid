@@ -48,11 +48,19 @@ function init() {
   initialized = true;
 };
 
-const api = {
-  express(req, res, next) {
+Object.defineProperty(Tyr, 'local', {
+  value: function() {
     if (!initialized) {
       init();
     }
+
+    return local;
+  }
+});
+
+const api = {
+  express(req, res, next) {
+    const local = Tyr.local;
 
     if (cls) {
       ns.bindEmitter(req);
