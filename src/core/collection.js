@@ -34,7 +34,7 @@ let patchedCursorConnect;
 // Document
 // ========
 
-const documentPrototype = {
+const documentPrototype = Tyr.documentPrototype = {
 
   $clone() {
     return new this.$model(_.cloneDeep(this));
