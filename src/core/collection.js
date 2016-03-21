@@ -38,8 +38,6 @@ function extractTyranidQueryOptions(opts) {
   return tyrOpts;
 }
 
-let patchedCursorConnect;
-
 
 // Document
 // ========
@@ -483,20 +481,14 @@ export default class Collection {
      * Patch promised-mongo's connect() method to work with our async secureQuery() method.
      * This patch is necessary because find() itself is not async.
      */
-    if (!patchedCursorConnect) {
-      const cp          = cursor.constructor.prototype,
-            origConnect = cp.connect;
-
-      cp.connect = async function connect() {
-        if (!this.tyranidQueryModified && !tyrOpts.insecure) {
-          this.command.query = await collection.secureQuery(this.command.query, 'view');
-          this.tyranidQueryModified = true;
-        }
-        return origConnect.call(this);
+    cursor.connect = async function connect() {
+      if (!this.tyranidQueryModified && !tyrOpts.insecure) {
+        this.command.query = await collection.secureQuery(this.command.query, 'view');
+        this.tyranidQueryModified = true;
       }
-
-      patchedCursorConnect = true;
+      return cursor.constructor.prototype.connect.call(this);
     }
+
 
     hooker.hook(cursor, 'next', {
       post(promise) {
