@@ -3,6 +3,7 @@ import _ from 'lodash';
 
 import Tyr      from '../tyr';
 import NamePath from './namePath';
+import { ObjectId } from 'promised-mongo';
 
 const $all = Tyr.$all;
 

@@ -1,7 +1,0 @@
-{
-  "sourceMaps" : "both",
-  "modules" : "common",
-  "stage": 0,
-  "compact" : false,
-  "optional" : [ "runtime" ]
-}

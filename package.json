@@ -1,6 +1,6 @@
-a
+{
   "name": "tyranid",
-  "version": "0.0.141",
+  "version": "0.0.144",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/tyranid.js",
   "scripts": {
@@ -38,5 +38,12 @@ a
     "gulp-sourcemaps": "^1.5.2",
     "mocha": "^2.2.5",
     "yargs": "^3.12.0"
+  },
+  "babel": {
+    "sourceMaps" : "both",
+    "modules" : "common",
+    "stage": 0,
+    "compact" : false,
+    "optional" : [ "runtime" ]
   }
 }

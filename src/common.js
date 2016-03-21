@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { ObjectId } from 'promised-mongo';
 
 import NamePath from './core/namePath';
 

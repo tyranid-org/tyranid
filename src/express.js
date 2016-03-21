@@ -1,5 +1,6 @@
 
 import _   from 'lodash';
+import { ObjectId } from 'promised-mongo';
 
 import Tyr        from './tyr';
 import Collection from './core/collection';

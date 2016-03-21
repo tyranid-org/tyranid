@@ -2,6 +2,7 @@
 import _          from 'lodash';
 import hooker     from 'hooker';
 import faker      from 'faker';
+import { ObjectId } from 'promised-mongo';
 
 import Tyr        from '../tyr';
 import Component  from './component';
@@ -27,13 +28,23 @@ import {
 } from '../tyr';
 
 
+/**
+ *  Given an options pojo with { tyranid: {} },
+    extract the tyranid prop, delete it from the pojo, and return
+ */
+function extractTyranidQueryOptions(opts) {
+  const tyrOpts = _.get(opts, 'tyranid', {});
+  if (_.isObject(opts)) delete opts['tyranid'];
+  return tyrOpts;
+}
+
 let patchedCursorConnect;
 
 
 // Document
 // ========
 
-const documentPrototype = {
+const documentPrototype = Tyr.documentPrototype = {
 
   $clone() {
     return new this.$model(_.cloneDeep(this));
@@ -205,6 +216,18 @@ export default class Collection {
     const lodash = _; // eval only takes in local variables into its scope
     eval(`CollectionInstance = function ${lodash.capitalize(def.name)}(data) {
       this.__proto__ = dp;
+
+      // add properties to dp if not available
+      for (var key in documentPrototype) {
+        if (key.substring(0,1) === '$' && !(key in dp)) {
+          Object.defineProperty(dp, key, {
+            enumerable:   false,
+            writable:     false,
+            configurable: false,
+            value: documentPrototype[key]
+          });
+        }
+      }
 
       if (data) {
         lodash.assign(this, data);
@@ -450,7 +473,9 @@ export default class Collection {
   find(...args) {
     const collection = this,
           db         = collection.db,
-          projection = args[1];
+          projection = args[1],
+          // extract tyranid specific options
+          tyrOpts    = extractTyranidQueryOptions(args[2]);
 
     if (projection) {
       args[1] = parseProjection(collection, projection);
@@ -467,7 +492,7 @@ export default class Collection {
             origConnect = cp.connect;
 
       cp.connect = async function connect() {
-        if (!this.tyranidQueryModified) {
+        if (!this.tyranidQueryModified && !tyrOpts.insecure) {
           this.command.query = await collection.secureQuery(this.command.query, 'view');
           this.tyranidQueryModified = true;
         }
