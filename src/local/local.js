@@ -54,10 +54,10 @@ const api = {
         Tyr.Log.request(req, res);
         next();
       });
+    } else {
+      Tyr.Log.request(req, res);
+      next();
     }
-
-    Tyr.Log.request(req, res);
-    next();
   }
 };
 

@@ -26,7 +26,7 @@ export async function parseInsertObj(col, obj) {
   _.each(fields, function(field, name) {
     const fieldDef = field.def;
 
-    if (fieldDef.db !== false) {
+    if (fieldDef.db !== false && !(fieldDef.get || fieldDef.getServer)) {
       const v = obj[name];
 
       if (v === undefined) {
