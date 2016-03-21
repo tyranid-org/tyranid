@@ -51,6 +51,10 @@ const documentPrototype = {
     return this.$model.updateDoc(this);
   },
 
+  $remove() {
+    return this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true);
+  },
+
   $toClient() {
     return this.$model.toClient(this);
   },
@@ -557,9 +561,11 @@ export default class Collection {
 
 
   async save(obj, denormalAlreadyDone) {
+    console.log('\n\n\nBEFORE', obj);
     const collection = this;
 
     await denormalPopulate(collection, obj, denormalAlreadyDone);
+    console.log('\n\n\nDENORMAL', obj);
 
     if (Array.isArray(obj)) {
       return await* obj.map(doc => collection.save(doc, true));
@@ -574,6 +580,7 @@ export default class Collection {
 
         // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
         // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
+        console.log('\n\n\nAFTER', obj);
         const update = _.omit(obj, '_id');
 
         const result = await collection.findAndModify({
