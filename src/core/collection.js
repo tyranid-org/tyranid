@@ -203,6 +203,18 @@ export default class Collection {
     eval(`CollectionInstance = function ${lodash.capitalize(def.name)}(data) {
       this.__proto__ = dp;
 
+      // add properties to dp if not available
+      for (var key in documentPrototype) {
+        if (key.substring(0,1) === '$' && !(key in dp)) {
+          Object.defineProperty(dp, key, {
+            enumerable:   false,
+            writable:     false,
+            configurable: false,
+            value: documentPrototype[key]
+          });
+        }
+      }
+
       if (data) {
         lodash.assign(this, data);
       }
