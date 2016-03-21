@@ -13,10 +13,13 @@ function init() {
     ns = cls.createNamespace('tyranid');
   } else {
     ns = {
-      set(/*name, value*/) {
+      _data: {},
+      set(name, value) {
+        this._data[name] = value;
+        return this;
       },
-
-      get(/*name*/) {
+      get(name) {
+        return this._data[name];
       }
     };
   }
