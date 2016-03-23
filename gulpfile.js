@@ -1,6 +1,6 @@
 'use strict';
 
-require('babel/register');
+require('babel-core/register');
 
 var gulp       = require('gulp'),
     eslint     = require('gulp-eslint'),
@@ -53,7 +53,7 @@ gulp.task('test', function() {
     .pipe(mocha({
       reporter: 'spec',
       // babel import hook
-      require : ['babel/register'],
+      require : ['babel-core/register'],
       grep: yargs.argv.grep
     }));
 });

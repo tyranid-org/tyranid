@@ -19,7 +19,7 @@ const Tyr = {
 
   async valuesBy(filter) {
     const getValues = c => c.valuesFor(c.fieldsBy(filter));
-    const arrs = await* Tyr.collections.map(getValues);
+    const arrs = await Promise.all(Tyr.collections.map(getValues));
     return _.union.apply(null, arrs);
   },
 

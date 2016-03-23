@@ -52,7 +52,7 @@ export default class Populator {
 
   async queryMissingIds() {
 
-    return await* _.map(this.cachesByColId, async (cache, colId) => {
+    return await Promise.all(_.map(this.cachesByColId, async (cache, colId) => {
       const collection = Tyr.byId[colId],
             primaryKeyField = collection.def.primaryKey.field,
             idType = collection.fields[primaryKeyField].type;
@@ -75,7 +75,7 @@ export default class Populator {
         cache[doc[primaryKeyField]] = doc;
       });
 
-    });
+    }));
 
   }
 
