@@ -1,6 +1,3 @@
-
-require('es6-promise');
-
 /*
     3. boot() not getting called
 
@@ -349,12 +346,12 @@ describe('tyranid', function() {
 
       it( 'should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(Object.values(fields).length).to.be.eql(16);
+        expect(_.values(fields).length).to.be.eql(16);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(Object.values(fields).length).to.be.eql(15);
+        expect(_.values(fields).length).to.be.eql(15);
       });
 
       it( 'should set dyn fields on insert for matching objects', async () => {

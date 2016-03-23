@@ -187,7 +187,7 @@ export default class Population {
     }
 
     // wait for resolution of all
-    return await* population.projection.map(populateIds);
+    return await Promise.all(population.projection.map(populateIds));
   }
 
 }

@@ -11,11 +11,20 @@
     "type": "git",
     "url": "https://github.com/tyranid-org/tyranid"
   },
+  "engine": {
+    "node": ">=4.3.0"
+  },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "babel": "^5.8.23",
-    "babel-runtime": "^5.8.20",
+    "babel-core": "6.7.2",
+    "babel-plugin-add-module-exports": "0.1.2",
+    "babel-plugin-transform-class-properties": "6.6.0",
+    "babel-plugin-transform-flow-strip-types": "6.7.0",
+    "babel-plugin-transform-runtime": "6.6.0",
+    "babel-preset-es2015-node4": "2.0.3",
+    "babel-preset-stage-0": "6.5.0",
+    "babel-runtime": "6.6.1",
     "chalk": "^1.1.1",
     "continuation-local-storage": "^3.1.6",
     "faker": "git+https://github.com/bsouthga/faker.js.git#ddc474344d1b81a073e13a1047eec7589413759b",
@@ -27,23 +36,28 @@
     "promised-mongo": "git+https://github.com/CrossLead/promised-mongo.git#ec25ae4219f8bb7a064b19353627545fcbbe759f"
   },
   "devDependencies": {
-    "babel-eslint": "^4.1.0",
+    "babel-eslint": "5.0.0",
     "chai": "^3.0.0",
     "chai-as-promised": "^5.1.0",
-    "es6-promise": "^2.3.0",
     "gulp": "^3.9.0",
-    "gulp-babel": "5.2.1",
-    "gulp-eslint": "^1.0.0",
+    "gulp-babel": "^6.1.2",
+    "gulp-eslint": "1.1.1",
     "gulp-mocha": "^2.1.1",
     "gulp-sourcemaps": "^1.5.2",
     "mocha": "^2.2.5",
     "yargs": "^3.12.0"
   },
   "babel": {
-    "sourceMaps" : "both",
-    "modules" : "common",
-    "stage": 0,
-    "compact" : false,
-    "optional" : [ "runtime" ]
+    "sourceMaps": "both",
+    "compact": false,
+    "presets": [
+      "stage-0",
+      "es2015-node4"
+    ],
+    "plugins": [
+      "transform-class-properties",
+      "transform-flow-strip-types",
+      "add-module-exports"
+    ]
   }
 }

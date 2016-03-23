@@ -585,7 +585,7 @@ export default class Collection {
     await denormalPopulate(collection, obj, denormalAlreadyDone);
 
     if (Array.isArray(obj)) {
-      return await* obj.map(doc => collection.save(doc, true));
+      return await Promise.all(obj.map(doc => collection.save(doc, true)));
     } else {
       const keyFieldName = collection.def.primaryKey.field,
             keyValue = obj[keyFieldName];
@@ -619,7 +619,7 @@ export default class Collection {
     await denormalPopulate(collection, obj, denormalAlreadyDone);
 
     if (Array.isArray(obj)) {
-      const parsedArr = await* _.map(obj, el => parseInsertObj(collection, el));
+      const parsedArr = await Promise.all(_.map(obj, el => parseInsertObj(collection, el)));
       return collection.db.insert(parsedArr);
     } else {
       const parsedObj = await parseInsertObj(collection, obj);
