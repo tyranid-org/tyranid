@@ -1661,6 +1661,16 @@ describe('tyranid', function() {
         test({ org: 1, name: 'Foo' }, { org: { $in: [1, 2] } }, { org: 1, name: 'Foo' });
         test({ org: { $in: [1, 2], $eq: 2 } }, { org: 2 }, { org: 2 });
       });
+
+      it('should work with $and', () => {
+        testl({ $and: [ { blog: 1 }, { org: 1 } ] }, { $and: [ { foo: 1 }, { bar: 2 } ] },
+              { $and: [ { blog: 1 }, { org: 1 }, { foo: 1 }, { bar: 2 } ] });
+      });
+
+      it('should work with $or', () => {
+        testl({ $or: [ { blog: 1 }, { org: 1 } ] }, { $or: [ { foo: 1 }, { bar: 2 } ] },
+              { $or: [ { blog: 1 }, { org: 1 }, { foo: 1 }, { bar: 2 } ] });
+      });
     });
 
     describe('collection.links()', function() {

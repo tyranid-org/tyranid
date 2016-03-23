@@ -165,6 +165,14 @@ function mergeOpObject(v1, v2) {
         o.$ge = Math.max(v1, v2);
         break;
 
+      case '$and':
+        o.$and = v1.concat(v2);
+        break;
+
+      case '$or':
+        o.$or = v1.concat(v2);
+        break;
+
       default:
         throw new Error(`Unsupported operation "${op}" in query merging`);
       }
@@ -245,6 +253,10 @@ function merge(query1, query2) {
 
   if (_.isEqual(query1, query2)) {
     return simplify(query1);
+  }
+
+  if (isOpObject(query1) && isOpObject(query2)) {
+    return mergeOpObject(query1, query2);
   }
 
   const query = {};
