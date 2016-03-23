@@ -422,13 +422,13 @@ export default class Collection {
     }
   }
 
-  byIds(ids) {
+  byIds(ids, projection = null, findOptions) {
     const collection = this;
 
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return collection.find({ [this.def.primaryKey.field]: { $in: ids }}).toArray();
+      return collection.find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions).toArray();
     }
   }
 

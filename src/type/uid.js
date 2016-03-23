@@ -67,7 +67,7 @@ Tyr.byUid = function(uid) {
   return p.collection.byId(p.id);
 }
 
-Tyr.byUids = async function(uids) {
+Tyr.byUids = async function(uids, findOptions) {
   const byColId = {};
 
   for (const uid of uids) {
@@ -85,7 +85,7 @@ Tyr.byUids = async function(uids) {
   const docsByUid = {};
 
   await Promise.all(_.map(byColId, async (ids, colId) => {
-    const docs = await Tyr.byId[colId].byIds(ids);
+    const docs = await Tyr.byId[colId].byIds(ids, null, findOptions);
 
     for (const doc of docs) {
       docsByUid[doc.$uid] = doc;
