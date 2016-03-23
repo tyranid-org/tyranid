@@ -487,7 +487,9 @@ export default class Collection {
      */
     cursor.connect = async function connect() {
       if (!this.tyranidQueryModified && !tyrOpts.insecure) {
-        this.command.query = await collection.secureQuery(this.command.query, 'view');
+        this.command.query = (await collection.secureQuery(this.command.query, 'view')) ||
+          // if the secureQuery() returns non-truthy value, that means they have no access so provide an efficient contradiction
+          { _id: null };
         this.tyranidQueryModified = true;
       }
       return cursor.constructor.prototype.connect.call(this);
