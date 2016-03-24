@@ -43,6 +43,17 @@ function translateClass(cls) {
   return s;
 }
 
+function es5Fn(fn) {
+  let s = fn.toString();
+
+  if (!s.startsWith('function')) {
+    s = 'function ' + s;
+  }
+
+  console.log('---\n', fn, '\n---');
+  return s;
+}
+
 export default function express(app, auth) {
 
   //app.use(local.express);
@@ -165,7 +176,7 @@ export default function express(app, auth) {
     this.name = name;
     Type.byName[name] = this;
   }
-  Type.prototype.format = ${Type.prototype.format.toString()};
+  Type.prototype.format = ${es5Fn(Type.prototype.format)};
   Type.byName = {};
   Tyr.Type = Type;
 `;
@@ -176,7 +187,7 @@ export default function express(app, auth) {
 
     if (type.def.format) {
       file += `
-      format: ${type.def.format.toString()},`;
+      format: ${es5Fn(type.def.format)},`;
     }
 
     file += `});\n`;
@@ -192,7 +203,7 @@ export default function express(app, auth) {
   }
   Tyr.Field = Field;
 
-  Field.prototype._calcPathLabel = ${Field.prototype._calcPathLabel};
+  Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
 
   Object.defineProperties(Field.prototype, {
     db: {
@@ -397,7 +408,7 @@ export default function express(app, auth) {
     });
   };
 
-  Collection.prototype.idToUid = ${Collection.prototype.idToUid};
+  Collection.prototype.idToUid = ${es5Fn(Collection.prototype.idToUid)};
 
   Collection.prototype.idToLabel = function(id) {
     if (this.isStatic()) {
@@ -411,9 +422,9 @@ export default function express(app, auth) {
     return this.byId(id).then(doc => doc ? doc.$label : 'Unknown');
   }
 
-  Collection.prototype.isStatic = ${Collection.prototype.isStatic};
+  Collection.prototype.isStatic = ${es5Fn(Collection.prototype.isStatic)};
 
-  Collection.prototype.labelFor = ${Collection.prototype.labelFor};
+  Collection.prototype.labelFor = ${es5Fn(Collection.prototype.labelFor)};
 
   Collection.prototype.byId = function(id) {
     var col  = this;
@@ -560,7 +571,7 @@ export default function express(app, auth) {
       var get = def.getClient || def.get;
       if (get) {
         this.newline();
-        this.file += 'get: ' + get.toString() + ',';
+        this.file += 'get: ' + es5Fn(get) + ',';
       }
 
       if (def.db) {
@@ -571,7 +582,7 @@ export default function express(app, auth) {
       var set = def.setClient || def.set;
       if (set) {
         this.newline();
-        this.file += 'set: ' + set.toString() + ',';
+        this.file += 'set: ' + es5Fn(set) + ',';
       }
       if (field.fields) {
         this.fields(field.fields);
@@ -610,7 +621,7 @@ export default function express(app, auth) {
           this.file += method.name + ': {';
           this.depth++;
           this.newline();
-          this.file += 'fn: ' + (method.fnClient || method.fn).toString();
+          this.file += 'fn: ' + es5Fn(method.fnClient || method.fn);
           this.depth--;
           this.file += '},';
         }
