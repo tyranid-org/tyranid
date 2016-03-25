@@ -486,10 +486,18 @@ export default class Collection {
      * This patch is necessary because find() itself is not async.
      */
     cursor.connect = async function connect() {
-      if (!this.tyranidQueryModified && !tyrOpts.insecure) {
-        this.command.query = (await collection.secureQuery(this.command.query, 'view')) ||
-          // if the secureQuery() returns non-truthy value, that means they have no access so provide an efficient contradiction
-          { _id: null };
+      if (tyrOpts.secure && !this.tyranidQueryModified) {
+
+        const securedQuery = await collection.secureQuery(
+          this.command.query,
+          'view',
+          // allow passthrough of specific user
+          // through options
+          tyrOpts.subject || tyrOpts.user || Tyr.local.user
+        );
+
+        // if the secureQuery() returns non-truthy value, that means they have no access so provide an efficient contradiction
+        this.command.query = securedQuery || { _id: null };
         this.tyranidQueryModified = true;
       }
       return cursor.constructor.prototype.connect.call(this);
