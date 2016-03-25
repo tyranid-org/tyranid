@@ -1,4 +1,4 @@
-var tyr = require('../../src/tyranid');
+import tyr from '../../src/tyranid';
 
 var Job = new tyr.Collection({
   id: 'j00',
@@ -22,4 +22,4 @@ Job.prototype.isSoftware = function() {
   return this.name.substring(0, 8) === 'Software';
 };
 
-module.exports = Job;
+export default Job;

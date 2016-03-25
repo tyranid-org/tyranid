@@ -1,4 +1,4 @@
-var tyr = require('../../src/tyranid');
+import tyr from '../../src/tyranid';
 
 var Department = new tyr.Collection({
   id: 't05',
@@ -17,4 +17,4 @@ var Department = new tyr.Collection({
   }
 });
 
-module.exports = Department;
+export default Department;

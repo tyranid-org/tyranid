@@ -1,5 +1,4 @@
-
-var tyr = require('../../src/tyranid');
+import tyr from '../../src/tyranid';
 
 var Friend = {
   is: 'object',
@@ -69,4 +68,4 @@ var User = new tyr.Collection({
 
 User.Sibling = Sibling;
 
-module.exports = User;
+export default User;

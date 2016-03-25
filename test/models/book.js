@@ -1,4 +1,4 @@
-var tyr = require('../../src/tyranid');
+import tyr from '../../src/tyranid';
 
 var Book = new tyr.Collection({
   id: 'b00',
@@ -13,4 +13,4 @@ var Book = new tyr.Collection({
   primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true }
 });
 
-module.exports = Book;
+export default Book;

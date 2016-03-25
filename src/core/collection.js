@@ -22,11 +22,10 @@ import {
   toClient
 } from '../common';
 
-import {
+const {
   collections,
   labelize
-} from '../tyr';
-
+} = Tyr;
 
 /**
  *  Given an options pojo with { tyranid: {} },

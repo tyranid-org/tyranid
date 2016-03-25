@@ -2,7 +2,7 @@
 // cannot use import because @isomorphic
 const _ = require('lodash');
 
-const Tyr = require('../tyr');
+const Tyr = require('../tyr').default;
 
 /**
  * NOTE: This cannot be a ES6 class because it is isomorphic
