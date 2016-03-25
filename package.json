@@ -1,6 +1,6 @@
 {
   "name": "tyranid",
-  "version": "0.0.148",
+  "version": "0.0.149",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/tyranid.js",
   "scripts": {
@@ -17,10 +17,6 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "babel-core": "6.7.2",
-    "babel-plugin-transform-class-properties": "6.6.0",
-    "babel-preset-es2015-node4": "2.0.3",
-    "babel-preset-stage-0": "6.5.0",
     "chalk": "^1.1.1",
     "continuation-local-storage": "^3.1.6",
     "faker": "^3.1.0",
@@ -32,6 +28,10 @@
     "promised-mongo": "git+https://github.com/CrossLead/promised-mongo.git#ec25ae4219f8bb7a064b19353627545fcbbe759f"
   },
   "devDependencies": {
+    "babel-core": "6.7.2",
+    "babel-plugin-transform-class-properties": "6.6.0",
+    "babel-preset-es2015-node4": "2.0.3",
+    "babel-preset-stage-0": "6.5.0",
     "babel-eslint": "5.0.0",
     "chai": "^3.0.0",
     "chai-as-promised": "^5.1.0",
