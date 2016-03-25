@@ -18,9 +18,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "babel-core": "6.7.2",
-    "babel-plugin-add-module-exports": "0.1.2",
     "babel-plugin-transform-class-properties": "6.6.0",
-    "babel-plugin-transform-flow-strip-types": "6.7.0",
     "babel-preset-es2015-node4": "2.0.3",
     "babel-preset-stage-0": "6.5.0",
     "chalk": "^1.1.1",
@@ -53,9 +51,7 @@
       "es2015-node4"
     ],
     "plugins": [
-      "transform-class-properties",
-      "transform-flow-strip-types",
-      "add-module-exports"
+      "transform-class-properties"
     ]
   }
 }

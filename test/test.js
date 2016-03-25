@@ -4,24 +4,33 @@
     4. document Tyr.db, Collection.db
 
  */
+import Tyr            from '../src/tyranid';
+import chai           from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import pmongo         from 'promised-mongo';
+import _              from 'lodash';
+import Field          from '../src/core/field';
+import Type           from '../src/core/type';
+import UnitType       from '../src/unit/unitType';
+import Unit           from '../src/unit/unit';
+import Units          from '../src/unit/units';
+import Role           from './models/role.js'; // require to get extra link in prototype chain
 
-var Tyr            = require('../src/tyranid'),
-    NamePath       = Tyr.NamePath,
-    $all           = Tyr.$all,
-    chai           = require('chai'),
-    chaiAsPromised = require('chai-as-promised'),
-    pmongo         = require('promised-mongo'),
-    expect         = chai.expect,
-    assert         = chai.assert,
-    _              = require('lodash'),
-    Field          = require('../src/core/field'),
-    Type           = require('../src/core/type'),
-    UnitType       = require('../src/unit/unitType'),
-    Unit           = require('../src/unit/unit'),
-    Units          = require('../src/unit/units'),
-    ObjectId       = require('promised-mongo').ObjectId,
 
-    Log            = Tyr.Log;
+const {
+  ObjectId
+} = pmongo;
+
+const {
+  NamePath,
+  $all,
+  Log
+} = Tyr;
+
+const {
+  expect,
+  assert
+} = chai;
 
 
 chai.use(chaiAsPromised);
@@ -183,7 +192,7 @@ describe('tyranid', function() {
   });
 
   describe('with model', function() {
-    var Job, Organization, Department, User, Task, Role, Book, Location,
+    var Job, Organization, Department, User, Task, Book, Location,
         TyrSchema, TyrSchemaType;
     //var Job2, Organization2, Department2, User2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
@@ -206,8 +215,6 @@ describe('tyranid', function() {
       Location = Tyr.byName.location;
       TyrSchema = Tyr.byName.tyrSchema;
       TyrSchemaType = Tyr.byName.tyrSchemaType;
-
-      Role = require('./models/role.js'); // require to get extra link in prototype chain
 
       await Organization.db.remove({});
       await Organization.db.insert([

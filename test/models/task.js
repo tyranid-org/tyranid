@@ -1,5 +1,5 @@
-var tyr = require('../../src/tyranid'),
-    User = require('./user');
+import tyr from '../../src/tyranid';
+import User from './user';
 
 var Department = {
   is: 'object',
@@ -28,4 +28,4 @@ var Task = new tyr.Collection({
   }
 });
 
-module.exports = Task;
+export default Task;
