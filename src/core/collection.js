@@ -2,7 +2,7 @@
 import _          from 'lodash';
 import hooker     from 'hooker';
 import faker      from 'faker';
-import { ObjectId } from 'promised-mongo';
+import { ObjectId } from 'mongodb';
 
 import Tyr        from '../tyr';
 import Component  from './component';
@@ -427,7 +427,9 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return collection.find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions).toArray();
+      return collection
+        .find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions)
+        .then(cursor => cursor.toArray());
     }
   }
 
@@ -467,7 +469,7 @@ export default class Collection {
   /**
    * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
    */
-  find(...args) {
+  async find(...args) {
     const collection = this,
           db         = collection.db,
           projection = args[1],
@@ -478,39 +480,42 @@ export default class Collection {
       args[1] = parseProjection(collection, projection);
     }
 
-    const cursor = db.find(...args);
-
-    /**
-     * Patch promised-mongo's connect() method to work with our async secureQuery() method.
-     * This patch is necessary because find() itself is not async.
-     */
-    cursor.connect = async function connect() {
-      if (tyrOpts.secure && !this.tyranidQueryModified) {
-
-        const securedQuery = await collection.secureQuery(
-          this.command.query,
-          'view',
-          // allow passthrough of specific user
-          // through options
-          tyrOpts.subject || tyrOpts.user || Tyr.local.user
-        );
-
-        // if the secureQuery() returns non-truthy value, that means they have no access so provide an efficient contradiction
-        this.command.query = securedQuery || { _id: null };
-        this.tyranidQueryModified = true;
-      }
-      return cursor.constructor.prototype.connect.call(this);
+    if (tyrOpts.secure) {
+      args[0] = await collection.secureQuery(
+        args[0],
+        'view',
+        // allow passthrough of specific user
+        // through options
+        tyrOpts.subject || tyrOpts.user || Tyr.local.user
+      );
     }
 
+    const cursor = await db.find(...args);
 
     hooker.hook(cursor, 'next', {
       post(promise) {
+        console.log('next', promise);
         const modified = promise.then(doc => doc ? new collection(doc) : null);
         return hooker.override(modified);
       }
     });
 
+    hooker.hook(cursor, 'toArray', {
+      post(promise) {
+        const modified = promise.then(docs => docs.map(doc => doc ? new collection(doc) : null));
+        return hooker.override(modified);
+      }
+    });
+
     return cursor;
+  }
+
+  /**
+   * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
+   */
+  async findAll(...args) {
+    const cursor = await this.find(...args);
+    return cursor.toArray();
   }
 
   /**
@@ -576,7 +581,7 @@ export default class Collection {
       opts.fields = parseProjection(collection, opts.fields);
     }
 
-    const result = await db.findAndModify(opts);
+    const result = await db.findAndModify(opts.query, opts.sort, opts.update, opts);
 
     if (result && result.value) {
       result.value = new collection(result.value);
@@ -627,10 +632,14 @@ export default class Collection {
 
     if (Array.isArray(obj)) {
       const parsedArr = await Promise.all(_.map(obj, el => parseInsertObj(collection, el)));
-      return collection.db.insert(parsedArr);
+      const rslt = await collection.db.insert(parsedArr);
+
+      return rslt.ops;
     } else {
       const parsedObj = await parseInsertObj(collection, obj);
-      return collection.db.insert(parsedObj);
+      const rslt = await collection.db.insert(parsedObj);
+
+      return rslt.ops[0];
     }
   }
 
@@ -812,9 +821,7 @@ export default class Collection {
 
     };
 
-    await collection.db
-      .find({}, fieldsObj)
-      .forEach(extractValues);
+    (await (await collection.db.find({}, fieldsObj)).toArray()).forEach(extractValues);
 
     return _.uniq(values);
   }

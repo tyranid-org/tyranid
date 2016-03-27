@@ -1,5 +1,5 @@
 
-import { ObjectId } from 'promised-mongo';
+import { ObjectId } from 'mongodb';
 
 import Type from '../core/type';
 
