@@ -94,8 +94,9 @@ const options = Tyr.options;
 
 */
 
-
 _.assign(Tyr, {
+
+  version: require('../package.json').version,
 
   config(opts) {
 
@@ -232,5 +233,16 @@ _.assign(Tyr, {
     }
   }
 });
+
+if (global.__TyranidGlobal) {
+  throw new Error(
+    `Multiple versions of tyranid are being required, only one global tyranid can exist! ` +
+    `Tried to create tyranid version = ${Tyr.version} but ` +
+    `global tyranid version = ${global.__TyranidGlobal.version} exists!`
+  );
+}
+
+global.__TyranidGlobal = Tyr;
+
 
 export default Tyr;
