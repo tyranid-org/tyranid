@@ -441,6 +441,12 @@ describe('tyranid', function() {
     });
 
     describe('projections', function() {
+      it('should support projections', async function() {
+        const docs = await (await User.db.find({ 'name.first': 'An'}, { name: 1 })).toArray();
+        expect(docs.length).to.be.eql(1);
+        expect(_.keys(docs[0]).length).to.be.eql(2);
+      });
+
       it('should return custom primaryKey if not specified in projection', function() {
         return Book.findAll({isbn:BookIsbn},{_id:1}).then(function(docs) {
           expect(docs.length).to.be.eql(1);
