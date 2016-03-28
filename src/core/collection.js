@@ -467,7 +467,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
+   * Behaves like native mongodb's find() method except that the results are mapped to collection instances.
    */
   async find(...args) {
     const collection = this,
@@ -511,7 +511,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
+   * A short-cut to do find() + toArray()
    */
   async findAll(...args) {
     const cursor = await this.find(...args);
@@ -519,7 +519,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's findOne() method except that the results are mapped to collection instances.
+   * Behaves like native mongodb's findOne() method except that the results are mapped to collection instances.
    */
   async findOne(...args) {
     const collection = this,
@@ -536,7 +536,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's findAndModify() method except that the results are mapped to collection instances.
+   * Behaves like native mongodb's findAndModify() method except that the results are mapped to collection instances.
    */
   async findAndModify(opts) {
     const collection = this,
@@ -672,7 +672,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's update().
+   * Behaves like native mongodb's update().
    */
   async update(query, update, opts) {
     const collection = this;
@@ -686,7 +686,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's remove().
+   * Behaves like native mongodb's remove().
    */
   async remove(query, justOne) {
     return await this.db.remove(query, justOne);

@@ -96,6 +96,7 @@ const options = Tyr.options;
 
 
 _.assign(Tyr, {
+
   config(opts) {
 
     if (!opts) {
