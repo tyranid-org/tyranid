@@ -377,7 +377,7 @@ describe('tyranid', function() {
 
     describe('finding', function() {
       it('should find unwrapped objects', async function() {
-        const docs = await (await User.db.find({'name.first': 'An'})).toArray();
+        const docs = await User.db.find({'name.first': 'An'}).toArray();
         expect(docs.length).to.be.eql(1);
       });
 
@@ -404,6 +404,13 @@ describe('tyranid', function() {
 
       it('should findAll()', function() {
         return User.findAll({'name.first': 'An'}).then(function(docs) {
+          expect(docs.length).to.be.eql(1);
+          expect(docs[0]).to.be.an.instanceof(User);
+        });
+      });
+
+      it('should findAll() with options', function() {
+        return User.findAll({ query: {'name.first': /^J/}, skip: 1, limit: 1 }).then(function(docs) {
           expect(docs.length).to.be.eql(1);
           expect(docs[0]).to.be.an.instanceof(User);
         });
@@ -441,6 +448,12 @@ describe('tyranid', function() {
     });
 
     describe('projections', function() {
+      it('should support projections returning a cursor out of find (not a promise of a cursor)', async function() {
+        const docs = await User.db.find({ 'name.first': 'An'}).limit(1).toArray();
+        console.log(User.db.find({ 'name.first': 'An'}).then);
+        expect(docs.length).to.be.eql(1);
+      });
+
       it('should support projections', async function() {
         const docs = await (await User.db.find({ 'name.first': 'An'}, { name: 1 })).toArray();
         expect(docs.length).to.be.eql(1);
@@ -877,7 +890,7 @@ describe('tyranid', function() {
       });
 
       it('should allow parametric client flags', function() {
-        User.find({ age: { $exists: true } })
+        User.findAll({ age: { $exists: true } })
           .then(function(users) {
             var clientData = User.toClient(users);
             expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...')

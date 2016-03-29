@@ -28,13 +28,29 @@ const {
 } = Tyr;
 
 /**
- *  Given an options pojo with { tyranid: {} },
-    extract the tyranid prop, delete it from the pojo, and return
+ * Extracts the authorization out of a mongodb options-style object.
+ *
  */
-function extractTyranidQueryOptions(opts) {
-  const tyrOpts = _.get(opts, 'tyranid', {});
-  if (_.isObject(opts)) delete opts['tyranid'];
-  return tyrOpts;
+function extractAuthorization(opts) {
+  if (!opts) {
+    return undefined;
+  }
+
+  const auth = opts.auth;
+  if (auth) {
+    delete opts.auth;
+    return auth === true ? Tyr.local.user : auth;
+  }
+
+  const tyrOpts = opts.tyranid;
+  if (tyrOpts) {
+    delete opts.tyranid;
+    if (tyrOpts.secure) {
+      return tyrOpts.subject || tyrOpts.user || Tyr.local.user;
+    }
+  }
+
+  //return undefined;
 }
 
 
@@ -427,9 +443,8 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return collection
-        .find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions)
-        .then(cursor => cursor.toArray());
+      const cursor = collection.find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions);
+      return cursor.then ? cursor.then(cursor => cursor.toArray()) : cursor.toArray();
     }
   }
 
@@ -466,54 +481,81 @@ export default class Collection {
     return doc[labelField.path];
   }
 
-  /**
-   * Behaves like native mongodb's find() method except that the results are mapped to collection instances.
-   */
-  async find(...args) {
+  find(...args) {
     const collection = this,
           db         = collection.db,
           projection = args[1],
           // extract tyranid specific options
-          tyrOpts    = extractTyranidQueryOptions(args[2]);
+          auth       = extractAuthorization(args[2]);
 
     if (projection) {
       args[1] = parseProjection(collection, projection);
     }
 
-    if (tyrOpts.secure) {
-      args[0] = await collection.secureQuery(
-        args[0],
-        'view',
-        // allow passthrough of specific user
-        // through options
-        tyrOpts.subject || tyrOpts.user || Tyr.local.user
-      );
+    function cursor() {
+      const cursor = db.find(...args);
+
+      hooker.hook(cursor, 'next', {
+        post(promise) {
+          console.log('next', promise);
+          const modified = promise.then(doc => doc ? new collection(doc) : null);
+          return hooker.override(modified);
+        }
+      });
+
+      hooker.hook(cursor, 'toArray', {
+        post(promise) {
+          const modified = promise.then(docs => docs.map(doc => doc ? new collection(doc) : null));
+          return hooker.override(modified);
+        }
+      });
+
+      return cursor;
     }
 
-    const cursor = await db.find(...args);
+    if (auth) {
+      const secure = collection.secureQuery(args[0], 'view', auth);
 
-    hooker.hook(cursor, 'next', {
-      post(promise) {
-        console.log('next', promise);
-        const modified = promise.then(doc => doc ? new collection(doc) : null);
-        return hooker.override(modified);
+      if (secure.then) {
+        return secure.then(query => {
+          args[0] = secure;
+          return cursor();
+        });
+      } else {
+       args[0] = secure;
       }
-    });
+    }
 
-    hooker.hook(cursor, 'toArray', {
-      post(promise) {
-        const modified = promise.then(docs => docs.map(doc => doc ? new collection(doc) : null));
-        return hooker.override(modified);
-      }
-    });
-
-    return cursor;
+    return cursor();
   }
 
   /**
    * A short-cut to do find() + toArray()
    */
   async findAll(...args) {
+    if (args.length === 1) {
+      const opts = args[0];
+
+      let v = opts.query;
+      if (v) {
+        const cursor = await this.find(v, opts.projection, opts);
+
+        if ( (v=opts.limit) ) {
+          cursor.limit(v);
+        }
+
+        if ( (v=opts.skip) ) {
+          cursor.skip(v);
+        }
+
+        if ( (v=opts.sort) ) {
+          cursor.sort(v);
+        }
+
+        return cursor.toArray();
+      }
+    }
+
     const cursor = await this.find(...args);
     return cursor.toArray();
   }
