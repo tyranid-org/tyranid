@@ -2,7 +2,7 @@
 import _          from 'lodash';
 import hooker     from 'hooker';
 import faker      from 'faker';
-import { ObjectId } from 'promised-mongo';
+import { ObjectId } from 'mongodb';
 
 import Tyr        from '../tyr';
 import Component  from './component';
@@ -28,13 +28,29 @@ const {
 } = Tyr;
 
 /**
- *  Given an options pojo with { tyranid: {} },
-    extract the tyranid prop, delete it from the pojo, and return
+ * Extracts the authorization out of a mongodb options-style object.
+ *
  */
-function extractTyranidQueryOptions(opts) {
-  const tyrOpts = _.get(opts, 'tyranid', {});
-  if (_.isObject(opts)) delete opts['tyranid'];
-  return tyrOpts;
+function extractAuthorization(opts) {
+  if (!opts) {
+    return undefined;
+  }
+
+  const auth = opts.auth;
+  if (auth) {
+    delete opts.auth;
+    return auth === true ? Tyr.local.user : auth;
+  }
+
+  const tyrOpts = opts.tyranid;
+  if (tyrOpts) {
+    delete opts.tyranid;
+    if (tyrOpts.secure) {
+      return tyrOpts.subject || tyrOpts.user || Tyr.local.user;
+    }
+  }
+
+  //return undefined;
 }
 
 
@@ -427,7 +443,8 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      return collection.find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions).toArray();
+      const cursor = collection.find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions);
+      return cursor.then ? cursor.then(cursor => cursor.toArray()) : cursor.toArray();
     }
   }
 
@@ -464,57 +481,87 @@ export default class Collection {
     return doc[labelField.path];
   }
 
-  /**
-   * Behaves like promised-mongo's find() method except that the results are mapped to collection instances.
-   */
   find(...args) {
     const collection = this,
           db         = collection.db,
           projection = args[1],
           // extract tyranid specific options
-          tyrOpts    = extractTyranidQueryOptions(args[2]);
+          auth       = extractAuthorization(args[2]);
 
     if (projection) {
       args[1] = parseProjection(collection, projection);
     }
 
-    const cursor = db.find(...args);
+    function cursor() {
+      const cursor = db.find(...args);
 
-    /**
-     * Patch promised-mongo's connect() method to work with our async secureQuery() method.
-     * This patch is necessary because find() itself is not async.
-     */
-    cursor.connect = async function connect() {
-      if (tyrOpts.secure && !this.tyranidQueryModified) {
+      hooker.hook(cursor, 'next', {
+        post(promise) {
+          console.log('next', promise);
+          const modified = promise.then(doc => doc ? new collection(doc) : null);
+          return hooker.override(modified);
+        }
+      });
 
-        const securedQuery = await collection.secureQuery(
-          this.command.query,
-          'view',
-          // allow passthrough of specific user
-          // through options
-          tyrOpts.subject || tyrOpts.user || Tyr.local.user
-        );
+      hooker.hook(cursor, 'toArray', {
+        post(promise) {
+          const modified = promise.then(docs => docs.map(doc => doc ? new collection(doc) : null));
+          return hooker.override(modified);
+        }
+      });
 
-        // if the secureQuery() returns non-truthy value, that means they have no access so provide an efficient contradiction
-        this.command.query = securedQuery || { _id: null };
-        this.tyranidQueryModified = true;
-      }
-      return cursor.constructor.prototype.connect.call(this);
+      return cursor;
     }
 
+    if (auth) {
+      const secure = collection.secureQuery(args[0], 'view', auth);
 
-    hooker.hook(cursor, 'next', {
-      post(promise) {
-        const modified = promise.then(doc => doc ? new collection(doc) : null);
-        return hooker.override(modified);
+      if (secure.then) {
+        return secure.then(query => {
+          args[0] = secure;
+          return cursor();
+        });
+      } else {
+       args[0] = secure;
       }
-    });
+    }
 
-    return cursor;
+    return cursor();
   }
 
   /**
-   * Behaves like promised-mongo's findOne() method except that the results are mapped to collection instances.
+   * A short-cut to do find() + toArray()
+   */
+  async findAll(...args) {
+    if (args.length === 1) {
+      const opts = args[0];
+
+      let v = opts.query;
+      if (v) {
+        const cursor = await this.find(v, opts.projection, opts);
+
+        if ( (v=opts.limit) ) {
+          cursor.limit(v);
+        }
+
+        if ( (v=opts.skip) ) {
+          cursor.skip(v);
+        }
+
+        if ( (v=opts.sort) ) {
+          cursor.sort(v);
+        }
+
+        return cursor.toArray();
+      }
+    }
+
+    const cursor = await this.find(...args);
+    return cursor.toArray();
+  }
+
+  /**
+   * Behaves like native mongodb's findOne() method except that the results are mapped to collection instances.
    */
   async findOne(...args) {
     const collection = this,
@@ -531,7 +578,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's findAndModify() method except that the results are mapped to collection instances.
+   * Behaves like native mongodb's findAndModify() method except that the results are mapped to collection instances.
    */
   async findAndModify(opts) {
     const collection = this,
@@ -576,7 +623,7 @@ export default class Collection {
       opts.fields = parseProjection(collection, opts.fields);
     }
 
-    const result = await db.findAndModify(opts);
+    const result = await db.findAndModify(opts.query, opts.sort, opts.update, opts);
 
     if (result && result.value) {
       result.value = new collection(result.value);
@@ -627,10 +674,14 @@ export default class Collection {
 
     if (Array.isArray(obj)) {
       const parsedArr = await Promise.all(_.map(obj, el => parseInsertObj(collection, el)));
-      return collection.db.insert(parsedArr);
+      const rslt = await collection.db.insert(parsedArr);
+
+      return rslt.ops;
     } else {
       const parsedObj = await parseInsertObj(collection, obj);
-      return collection.db.insert(parsedObj);
+      const rslt = await collection.db.insert(parsedObj);
+
+      return rslt.ops[0];
     }
   }
 
@@ -663,7 +714,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's update().
+   * Behaves like native mongodb's update().
    */
   async update(query, update, opts) {
     const collection = this;
@@ -677,7 +728,7 @@ export default class Collection {
   }
 
   /**
-   * Behaves like promised-mongo's remove().
+   * Behaves like native mongodb's remove().
    */
   async remove(query, justOne) {
     return await this.db.remove(query, justOne);
@@ -812,9 +863,7 @@ export default class Collection {
 
     };
 
-    await collection.db
-      .find({}, fieldsObj)
-      .forEach(extractValues);
+    (await (await collection.db.find({}, fieldsObj)).toArray()).forEach(extractValues);
 
     return _.uniq(values);
   }

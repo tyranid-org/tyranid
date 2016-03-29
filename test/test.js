@@ -1,13 +1,13 @@
 /*
-    3. boot() not getting called
+   collection.find() returns Promise<Cursor> not Cursor
 
-    4. document Tyr.db, Collection.db
+
 
  */
 import Tyr            from '../src/tyranid';
 import chai           from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import pmongo         from 'promised-mongo';
+import mongodb        from 'mongodb';
 import _              from 'lodash';
 import Field          from '../src/core/field';
 import Type           from '../src/core/type';
@@ -19,7 +19,7 @@ import Role           from './models/role.js'; // require to get extra link in p
 
 const {
   ObjectId
-} = pmongo;
+} = mongodb;
 
 const {
   NamePath,
@@ -46,8 +46,8 @@ function prec5(v) {
 
 describe('tyranid', function() {
   var db = null;
-  before(function(done) {
-    db = pmongo('mongodb://localhost:27017/tyranid_test');
+  before(async function(done) {
+    db = await mongodb.MongoClient.connect('mongodb://localhost:27017/tyranid_test');
     Tyr.config({
       db: db,
       consoleLogLevel: 'ERROR',
@@ -324,8 +324,9 @@ describe('tyranid', function() {
         );
       });
 
-      it('should support static methods in ES6 class defs', function() {
-        return Role.search('Admin').then(function(docs) {
+      it('should support static methods in ES6 class defs', async function() {
+        const cursor = await Role.search('Admin');
+        return cursor.toArray().then(function(docs) {
           expect(docs[0].name).to.equal('Administrator');
         })
       })
@@ -375,32 +376,43 @@ describe('tyranid', function() {
     });
 
     describe('finding', function() {
-      it('should find unwrapped objects', function() {
-        return User.db.find({'name.first': 'An'}).then(function(docs) {
-          expect(docs.length).to.be.eql(1);
-        });
+      it('should find unwrapped objects', async function() {
+        const docs = await User.db.find({'name.first': 'An'}).toArray();
+        expect(docs.length).to.be.eql(1);
       });
 
-      it('should find wrapped objects', function() {
-        return User.find({'name.first': 'An'}).then(function(docs) {
-          expect(docs.length).to.be.eql(1);
-          expect(docs[0]).to.be.an.instanceof(User);
-        });
+      it('should find wrapped objects', async function() {
+        const docs = await (await User.find({'name.first': 'An'})).toArray();
+        expect(docs.length).to.be.eql(1);
+        expect(docs[0]).to.be.an.instanceof(User);
       });
 
-      it('should return a cursor', function() {
-        return User.find().skip(2).limit(2).sort({'name.first':-1}).then(function(docs) {
-          expect(docs.length).to.be.eql(2);
-          expect(docs[0].name.first).to.be.eql('Jane');
-          expect(docs[1].name.first).to.be.eql('An');
-          expect(docs[0]).to.be.an.instanceof(User);
-          expect(docs[1]).to.be.an.instanceof(User);
-        });
+      it('should return a cursor', async function() {
+        const docs = await (await User.find()).skip(2).limit(2).sort({'name.first':-1}).toArray();
+        expect(docs.length).to.be.eql(2);
+        expect(docs[0].name.first).to.be.eql('Jane');
+        expect(docs[1].name.first).to.be.eql('An');
+        expect(docs[0]).to.be.an.instanceof(User);
+        expect(docs[1]).to.be.an.instanceof(User);
       });
 
       it('should findOne()', function() {
         return User.findOne({'name.first': 'An'}).then(function(doc) {
           expect(doc).to.be.an.instanceof(User);
+        });
+      });
+
+      it('should findAll()', function() {
+        return User.findAll({'name.first': 'An'}).then(function(docs) {
+          expect(docs.length).to.be.eql(1);
+          expect(docs[0]).to.be.an.instanceof(User);
+        });
+      });
+
+      it('should findAll() with options', function() {
+        return User.findAll({ query: {'name.first': /^J/}, skip: 1, limit: 1 }).then(function(docs) {
+          expect(docs.length).to.be.eql(1);
+          expect(docs[0]).to.be.an.instanceof(User);
         });
       });
 
@@ -436,8 +448,20 @@ describe('tyranid', function() {
     });
 
     describe('projections', function() {
+      it('should support projections returning a cursor out of find (not a promise of a cursor)', async function() {
+        const docs = await User.db.find({ 'name.first': 'An'}).limit(1).toArray();
+        console.log(User.db.find({ 'name.first': 'An'}).then);
+        expect(docs.length).to.be.eql(1);
+      });
+
+      it('should support projections', async function() {
+        const docs = await (await User.db.find({ 'name.first': 'An'}, { name: 1 })).toArray();
+        expect(docs.length).to.be.eql(1);
+        expect(_.keys(docs[0]).length).to.be.eql(2);
+      });
+
       it('should return custom primaryKey if not specified in projection', function() {
-        return Book.find({isbn:BookIsbn},{_id:1}).then(function(docs) {
+        return Book.findAll({isbn:BookIsbn},{_id:1}).then(function(docs) {
           expect(docs.length).to.be.eql(1);
           expect(docs[0].title).to.not.exist;
           expect(docs[0].isbn).to.be.eql(BookIsbn);
@@ -551,7 +575,7 @@ describe('tyranid', function() {
         var book = new Book({ isbn: newIsbn, title: 'Datamodeling for Dummies' });
 
         return book.$save().then(function() {
-          return Book.db.find({ isbn: newIsbn }).then(function(docs) {
+          return Book.findAll({ isbn: newIsbn }).then(function(docs) {
             expect(docs.length).to.eql(1);
             expect(docs[0].title).to.eql('Datamodeling for Dummies');
           });
@@ -562,7 +586,7 @@ describe('tyranid', function() {
         var book = new Book({ isbn: newIsbn, description: 'Lovely' });
 
         return book.$save().then(function() {
-          return Book.db.find({ isbn: newIsbn }).then(function(docs) {
+          return Book.findAll({ isbn: newIsbn }).then(function(docs) {
             expect(docs.length).to.eql(1);
             expect(docs[0].description).to.eql('Lovely');
             // $save should replace entire doc
@@ -625,7 +649,7 @@ describe('tyranid', function() {
       }
 
       it( 'should work curried', function() {
-        return User.find()
+        return User.findAll()
           .then(User.populate('organization'))
           .then(function(users) {
             verifyPeople(users);
@@ -633,7 +657,7 @@ describe('tyranid', function() {
       });
 
       it( 'should work uncurried', function() {
-        return User.find()
+        return User.findAll()
           .then(function(users) {
             return User.populate('organization', users).then(function(users) {
               verifyPeople(users);
@@ -652,7 +676,7 @@ describe('tyranid', function() {
       });
 
       it( 'should skip fields with no value using array format', function() {
-        return User.find()
+        return User.findAll()
           .then(function(users) {
             return User.populate([ 'organization', 'department' ], users).then(function(users) {
               verifyPeople(users);
@@ -660,10 +684,10 @@ describe('tyranid', function() {
           });
       });
 
-      it( 'should deep populate array links', function() {
-        return User.db
-          .find()
+      it( 'should deep populate array links', async function() {
+        return (await User.db.find())
           .sort({ _id: 1 })
+          .toArray()
           .then(User.populate([ 'organization', 'siblings.friends.user' ]))
           .then(function(users) {
             expect(users[1].siblings[0].friends[0].user$._id).to.be.eql(3);
@@ -678,8 +702,7 @@ describe('tyranid', function() {
       });
 
       it( 'should deep populate array link links', function() {
-        return User.db
-          .find({ _id: 2 })
+        return User.findAll({ _id: 2 })
           .then(User.populate({ organization: $all, 'siblings.bestFriend': { $all: 1, organization: $all } }))
           .then(function(users) {
             expect(users[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
@@ -867,7 +890,7 @@ describe('tyranid', function() {
       });
 
       it('should allow parametric client flags', function() {
-        User.find({ age: { $exists: true } })
+        User.findAll({ age: { $exists: true } })
           .then(function(users) {
             var clientData = User.toClient(users);
             expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...')
@@ -1004,16 +1027,21 @@ describe('tyranid', function() {
       });
 
       it('should return Document instances from insert()', async () => {
-        after(async () => await Location.db.remove({}));
+        try {
+          await Location.db.remove({});
 
-        const l = await Location.insert(new Location({ name: 'Test Location' }));
-        expect(l).to.be.instanceof(Location);
+          const l = await Location.insert(new Location({ name: 'Test Location' }));
+          expect(l).to.be.instanceof(Location);
 
-        // some checks here to make sure that we're properly returning the new ObjectId
-        expect(l._id).to.be.instanceof(ObjectId);
+          // some checks here to make sure that we're properly returning the new ObjectId
+          expect(l._id).to.be.instanceof(ObjectId);
 
-        const rslt = await Location.db.findOne({ name: 'Test Location' });
-        expect(rslt._id).to.eql(l._id);
+          const locs = await Location.findAll({ name: 'Test Location' });
+          expect(locs.length).to.eql(1);
+          expect(locs[0]._id).to.eql(l._id);
+        } finally {
+          await Location.db.remove({});
+        }
       });
     });
 
@@ -1516,7 +1544,7 @@ describe('tyranid', function() {
       it('should log simple strings', async function() {
         await Tyr.info('test');
 
-        const logs = await Log.db.find({});
+        const logs = await Log.findAll({});
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
@@ -1525,7 +1553,7 @@ describe('tyranid', function() {
       it('should log objects', async function() {
         await Tyr.info({ m: 'test', e: 'http' });
 
-        const logs = await Log.db.find({});
+        const logs = await Log.findAll({});
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
@@ -1535,7 +1563,7 @@ describe('tyranid', function() {
       it('should log errors', async function() {
         await Tyr.warn('test one', new Error('test'));
 
-        const logs = await Log.db.find({});
+        const logs = await Log.findAll({});
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test one');
         expect(logs[0].l).to.be.eql(LogLevel.WARN._id);
@@ -1545,7 +1573,7 @@ describe('tyranid', function() {
       it('should log errors, #2', async function() {
         await Tyr.info(new Error('test'));
 
-        const logs = await Log.db.find({});
+        const logs = await Log.findAll({});
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].st).to.match(/Error: test/);
@@ -1572,7 +1600,7 @@ describe('tyranid', function() {
 
         await Tyr.info({ e: 'myEvent', m: 'a test' });
 
-        const logs = await Log.db.find({});
+        const logs = await Log.findAll({});
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('a test');
         expect(logs[0].e).to.be.eql('myEvent');

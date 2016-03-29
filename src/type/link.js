@@ -1,6 +1,6 @@
 
 const _ = require('lodash'); // client-side
-import { ObjectId } from 'promised-mongo';
+import { ObjectId } from 'mongodb';
 
 import Tyr        from '../tyr';
 import Type       from '../core/type';

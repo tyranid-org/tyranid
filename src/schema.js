@@ -49,7 +49,7 @@ Collection.prototype.fieldsFor = async function(obj) {
 
   // TODO:  schema invalidation
   if (!schemaCache) {
-    schemaCache = await Schema.db.find();
+    schemaCache = await (await Schema.db.find()).toArray();
 
     schemaCache.forEach(schema => {
       const collection = Tyr.byId[schema.collection],

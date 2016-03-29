@@ -1,5 +1,5 @@
 
-import { ObjectId } from 'promised-mongo';
+import { ObjectId } from 'mongodb';
 
 import Type from '../core/type';
 
@@ -13,8 +13,6 @@ export const MongoIdType = new Type({
     return ObjectId(str);
   },
   fromClient(field, value) {
-    // Following usually fails when called externally since caller probably
-    // not using Tyranid's promised-mongo
     if (value instanceof ObjectId) {
       return value;
     }

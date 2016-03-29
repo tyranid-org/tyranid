@@ -95,7 +95,9 @@ const options = Tyr.options;
 */
 
 _.assign(Tyr, {
+
   version: require('../package.json').version,
+
   config(opts) {
 
     if (!opts) {

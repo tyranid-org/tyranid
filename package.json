@@ -23,9 +23,8 @@
     "hooker": "^0.2.3",
     "lodash": "^3.9.3",
     "moment": "^2.11.2",
-    "mongodb": "^1.4.3",
-    "on-finished": "^2.3.0",
-    "promised-mongo": "git+https://github.com/CrossLead/promised-mongo.git#ec25ae4219f8bb7a064b19353627545fcbbe759f"
+    "mongodb": "^2.1.4",
+    "on-finished": "^2.3.0"
   },
   "devDependencies": {
     "babel-core": "6.7.2",
