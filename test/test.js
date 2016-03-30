@@ -1703,6 +1703,12 @@ describe('tyranid', function() {
         testl({ $or: [ { blog: 1 }, { org: 1 } ] }, { $or: [ { foo: 1 }, { bar: 2 } ] },
               { $or: [ { blog: 1 }, { org: 1 }, { foo: 1 }, { bar: 2 } ] });
       });
+
+      it('should work with nested $and/$or', () => {
+        test({ $and: [ { $or: [ { blogId: { $in: [ ObjectId('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ ObjectId('56fc2aacbb4c31a277f9a45b') ] } } ] } ] },
+             {},
+             { $and: [ { $or: [ { blogId: { $in: [ ObjectId('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ ObjectId('56fc2aacbb4c31a277f9a45b') ] } } ] } ] });
+      });
     });
 
     describe('collection.links()', function() {
