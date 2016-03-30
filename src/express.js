@@ -454,7 +454,7 @@ export default function express(app, auth) {
     }
   };
 
-  Collection.prototype.find = function(query) {
+  Collection.prototype.findAll = function(query) {
     var col  = this;
 
     return ajax({
