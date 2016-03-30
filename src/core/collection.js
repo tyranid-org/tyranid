@@ -515,14 +515,13 @@ export default class Collection {
 
     if (auth) {
       const secure = collection.secureQuery(args[0], 'view', auth);
-
       if (secure.then) {
         return secure.then(query => {
-          args[0] = secure;
+          args[0] = query;
           return cursor();
         });
       } else {
-       args[0] = secure;
+        args[0] = secure;
       }
     }
 
