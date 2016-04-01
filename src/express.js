@@ -50,7 +50,7 @@ function es5Fn(fn) {
     s = 'function ' + s;
   }
 
-  console.log('---\n', fn, '\n---');
+  //console.log('---\n', fn, '\n---');
   return s;
 }
 
@@ -688,7 +688,8 @@ export default function express(app, auth) {
 `;
 
   app.route('/api/tyranid')
-    .all(auth)
+    // we don't send insecure information in /api/tyranid, it is just source code
+    //.all(auth)
     .get(async (req, res) => res.send(file));
 
   Tyr.collections.forEach(col => col.express(app, auth));
