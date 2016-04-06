@@ -33,6 +33,18 @@ const {
 } = chai;
 
 
+const fakeSecure = {
+  boot() {},
+  query(query, permission, auth) {
+    query.SECURED = {
+      permission,
+      auth: auth.$uid
+    };
+    return query;
+  }
+}
+
+
 chai.use(chaiAsPromised);
 chai.should();
 
@@ -51,7 +63,8 @@ describe('tyranid', function() {
     Tyr.config({
       db: db,
       consoleLogLevel: 'ERROR',
-      dbLogLevel: 'TRACE'
+      dbLogLevel: 'TRACE',
+      secure: fakeSecure
     });
     done(null, db);
   });
@@ -371,6 +384,17 @@ describe('tyranid', function() {
       it( 'should NOT set dyn fields on insert for unmatching objects', async () => {
         return User.insert({ _id: dynUserId, organization: 2, name: { first: 'Not', last: 'Dynamic' }, acmeX: 999 }).then(p => {
           expect(p.acmeX).to.not.exist;
+        });
+      });
+    });
+
+    describe('secure', function() {
+      it('should add properties passed to secure.query', async function() {
+        const user = await User.findOne({});
+        const secured = await User.secureQuery({}, 'view', user);
+        expect(secured.SECURED).to.deep.equal({
+          permission: 'view',
+          auth: user.$uid
         });
       });
     });

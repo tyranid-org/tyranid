@@ -62,9 +62,9 @@ Tyr.parseUid = function(uid) {
   };
 }
 
-Tyr.byUid = function(uid) {
+Tyr.byUid = function(uid, findOptions) {
   const p = Tyr.parseUid(uid);
-  return p.collection.byId(p.id);
+  return p.collection.byId(p.id, findOptions);
 }
 
 Tyr.byUids = async function(uids, findOptions) {

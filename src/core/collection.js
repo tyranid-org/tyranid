@@ -424,7 +424,7 @@ export default class Collection {
     return this.def.values;
   }
 
-  byId(id) {
+  byId(id, findOptions) {
     if (this.isStatic()) {
       return this.byIdIndex[id];
 
@@ -433,7 +433,7 @@ export default class Collection {
         id = this.fields[this.def.primaryKey.field].type.fromString(id);
       }
 
-      return this.findOne({ [this.def.primaryKey.field]: id });
+      return this.findOne({ [this.def.primaryKey.field]: id }, findOptions);
     }
   }
 
@@ -565,10 +565,14 @@ export default class Collection {
   async findOne(...args) {
     const collection = this,
           db         = collection.db,
-          projection = args[1];
+          projection = args[1],
+          auth       = extractAuthorization(args[2]);
 
     if (projection) {
       args[1] = parseProjection(collection, projection);
+    }
+    if (auth) {
+      args[0] = await this.secureQuery(args[0] || {}, 'view', auth);
     }
 
     const doc = await db.findOne(...args);
@@ -581,7 +585,12 @@ export default class Collection {
    */
   async findAndModify(opts) {
     const collection = this,
-          db         = collection.db;
+          db         = collection.db,
+          auth       = extractAuthorization(opts);
+
+    if (auth) {
+      opts.query = await this.secureQuery(opts.query, 'edit', auth);
+    }
 
     let update = opts.update;
 
