@@ -43,6 +43,7 @@ const UidType = new Type({
 });
 
 
+/** @isomorphic */
 Tyr.parseUid = function(uid) {
   const colId = uid.substring(0, 3);
 
@@ -62,12 +63,13 @@ Tyr.parseUid = function(uid) {
   };
 }
 
-Tyr.byUid = function(uid, findOptions) {
+/** @isomorphic */
+Tyr.byUid = function(uid, opts) {
   const p = Tyr.parseUid(uid);
-  return p.collection.byId(p.id, findOptions);
+  return p.collection.byId(p.id, opts);
 }
 
-Tyr.byUids = async function(uids, findOptions) {
+Tyr.byUids = async function(uids, opts) {
   const byColId = {};
 
   for (const uid of uids) {
@@ -85,7 +87,7 @@ Tyr.byUids = async function(uids, findOptions) {
   const docsByUid = {};
 
   await Promise.all(_.map(byColId, async (ids, colId) => {
-    const docs = await Tyr.byId[colId].byIds(ids, null, findOptions);
+    const docs = await Tyr.byId[colId].byIds(ids, null, opts);
 
     for (const doc of docs) {
       docsByUid[doc.$uid] = doc;

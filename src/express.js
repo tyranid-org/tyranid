@@ -109,25 +109,8 @@ export default function express(app, auth) {
     }
   }
 
-  Tyr.parseUid = function(uid) {
-    const colId = uid.substring(0, 3);
-
-    const col = Tyr.byId[colId];
-
-    if (!col) {
-      throw new Error('No collection found for id "' + colId + '"');
-    }
-
-    const strId = uid.substring(3);
-
-    const idType = col.fields[col.def.primaryKey.field].type;
-
-    return {
-      collection: col,
-      id: idType.fromString(strId)
-    };
-  }
-
+  Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
+  Tyr.byUid = ${es5Fn(Tyr.byUid)};
 
   const documentPrototype = Tyr.documentPrototype = {
     $clone: function() {
@@ -730,7 +713,7 @@ Collection.prototype.express = function(app, auth) {
           const query = req.query;
 
           try {
-            const docs = await col.find(col.fromClientQuery(query));
+            const docs = await col.findAll({ query: col.fromClientQuery(query), auth: req.user });
             return res.json(col.toClient(docs));
           } catch (err) {
             console.log(err.stack);
@@ -748,6 +731,7 @@ Collection.prototype.express = function(app, auth) {
               res.status(403).send('Use put for updates');
 
             } else {
+              // TODO-SECURE
               await doc.$save();
 
             }
@@ -766,6 +750,7 @@ Collection.prototype.express = function(app, auth) {
             const doc = col.fromClient(req.body);
 
             if (doc._id) {
+              // TODO-SECURE
               const existingDoc = await col.findOne({ _id: doc._id });
               _.assign(existingDoc, doc);
               await existingDoc.$save();
@@ -793,7 +778,7 @@ Collection.prototype.express = function(app, auth) {
 
       if (express.rest || express.get) {
         r.get(async (req, res) => {
-          const doc = await col.byId(req.params.id);
+          const doc = await col.byId(req.params.id, { auth: req.user });
           res.json(doc.$toClient());
         });
       }
@@ -801,6 +786,7 @@ Collection.prototype.express = function(app, auth) {
       if (express.rest || express.delete) {
         r.delete(async (req, res) => {
           try {
+            // TODO-SECURE
             await col.db.remove({ _id : ObjectId(req.params.id) });
             res.sendStatus(200);
           } catch(err) {
@@ -826,7 +812,7 @@ Collection.prototype.express = function(app, auth) {
               [col.labelField.path]: new RegExp(req.params.search, 'i')
             };
 
-            const results = await col.find(query, { [col.labelField.path]: 1 });
+            const results = await col.findAll({ query, projection: { [col.labelField.path]: 1 }, auth: req.user });
             res.json(results.map(r => r.$toClient()));
           } catch(err) {
             console.log(err.stack);
@@ -860,7 +846,7 @@ Collection.prototype.express = function(app, auth) {
                   _.assign(query, where);
                 }
 
-                const results = await to.find(query, { [to.labelField.path]: 1 });
+                const results = await to.findAll({ query, projection: { [to.labelField.path]: 1 }, auth: req.user });
                 res.json(results.map(r => r.$toClient()));
               } catch(err) {
                 console.log(err.stack);

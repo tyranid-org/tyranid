@@ -1107,6 +1107,10 @@ describe('tyranid', function() {
 
     describe('uids', function() {
 
+      it( 'should support collections ids', function() {
+        expect(User.id).to.eql('u00');
+      });
+
       it( 'should parse', function() {
         Tyr.parseUid('u001').should.eql({
           collection: User,
