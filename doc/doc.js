@@ -1,13 +1,9 @@
-
-require('es6-promise');
-
-var Tyr            = require('../src/tyranid'),
-    pmongo         = require('promised-mongo'),
-    _              = require('lodash'),
-    fs             = require('fs');
+import Tyr from '../src/tyranid';
+import mongodb from 'mongodb';
+import fs from 'fs';
 
 // hack to make tyranid link ... TODO:  need to provide a base User collection that people can mixin()
-const User = new Tyr.Collection({
+new Tyr.Collection({
   id: 'u00',
   name: 'user',
   fields: {
@@ -15,11 +11,13 @@ const User = new Tyr.Collection({
   }
 });
 
-export default function doc() {
-  global.ObjectId = pmongo.ObjectId;
+export default async function doc() {
+  global.ObjectId = mongodb.ObjectId;
+
+  const db = await mongodb.MongoClient.connect('mongodb://localhost:27017/tyranid_test');
 
   Tyr.config({
-    db: pmongo('mongodb://localhost:27017/tyranid_test'),
+    db: db,
     validate: true
   });
 

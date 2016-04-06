@@ -61,5 +61,5 @@ gulp.task('test', function() {
 gulp.task('default', ['eslint']);
 
 gulp.task('docs', function() {
-  require('./doc/doc')();
+  require('./doc/doc').default();
 });
