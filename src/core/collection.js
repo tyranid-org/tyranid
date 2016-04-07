@@ -53,6 +53,10 @@ function extractAuthorization(opts) {
   //return undefined;
 }
 
+function extractProjection(opts) {
+  return opts.fields || opts.project || opts.projection;
+}
+
 function combineOpts(...sources) {
   const o = {};
   for (const source of sources) {
@@ -61,6 +65,12 @@ function combineOpts(...sources) {
   return o;
 }
 
+async function populate(collection, opts, documents) {
+  let populate;
+  if (opts && (populate = opts.populate)) {
+    await collection.populate(populate, documents);
+  }
+}
 
 // Document
 // ========
@@ -432,7 +442,7 @@ export default class Collection {
     return this.def.values;
   }
 
-  byId(id, findOptions) {
+  byId(id, options) {
     if (this.isStatic()) {
       return this.byIdIndex[id];
 
@@ -441,7 +451,7 @@ export default class Collection {
         id = this.fields[this.def.primaryKey.field].type.fromString(id);
       }
 
-      return this.findOne({ [this.def.primaryKey.field]: id }, findOptions);
+      return this.findOne({ [this.def.primaryKey.field]: id }, options);
     }
   }
 
@@ -451,8 +461,8 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      const cursor = collection.find({ [this.def.primaryKey.field]: { $in: ids }}, null, options);
-      return cursor.then ? cursor.then(cursor => cursor.toArray()) : cursor.toArray();
+      const opts = combineOpts(options, { query: { [this.def.primaryKey.field]: { $in: ids } } });
+      return collection.findAll(opts);
     }
   }
 
@@ -555,10 +565,12 @@ export default class Collection {
    * A short-cut to do find() + toArray()
    */
   async findAll(...args) {
-    if (args.length === 1) {
-      const opts = args[0];
+    let opts;
 
-      let v = opts.query;
+    if (args.length === 1) {
+      opts = args[0];
+
+      const v = opts.query;
       if (v) {
         const cursor = await this.find(v, opts.projection, opts);
 
@@ -567,7 +579,12 @@ export default class Collection {
     }
 
     const cursor = await this.find(...args);
-    return cursor.toArray();
+
+    const documents = await cursor.toArray();
+
+    populate(this, opts, documents);
+
+    return documents;
   }
 
   /**
@@ -580,7 +597,6 @@ export default class Collection {
     let opts, query;
     if (args.length === 1 && (opts = args[0]) && opts.query) {
       query = opts.query;
-      projection = opts.projection || opts.project;
     } else if (args.length === 2) {
       query = args[0];
       opts = args[1];
@@ -593,7 +609,7 @@ export default class Collection {
       opts = {};
     }
 
-    let projection = opts.fields || opts.project || opts.projection;
+    let projection = extractProjection(opts);
     if (projection) {
       projection = parseProjection(collection, projection);
     }
@@ -607,9 +623,15 @@ export default class Collection {
       }
     }
 
-    const doc = await db.findOne(query, opts);
+    let doc = await db.findOne(query, opts);
 
-    return doc ? new collection(doc) : null;
+    if (doc) {
+      doc = new collection(doc);
+      populate(this, opts, doc);
+      return doc;
+    }
+
+    return null;
   }
 
   /**
@@ -659,6 +681,7 @@ export default class Collection {
       }
     }
 
+    opts.fields = extractProjection(opts);
     if (opts.fields) {
       opts.fields = parseProjection(collection, opts.fields);
     }

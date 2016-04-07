@@ -426,6 +426,11 @@ describe('tyranid', function() {
         });
       });
 
+      it('should findOne() with options', async function() {
+        const doc = await User.findOne({ query: { 'name.first': 'An' }, fields: { name: 1 } });
+        expect(doc).to.be.an.instanceof(User);
+      });
+
       it('should findAll()', function() {
         return User.findAll({'name.first': 'An'}).then(function(docs) {
           expect(docs.length).to.be.eql(1);
@@ -1113,6 +1118,7 @@ describe('tyranid', function() {
 
       it( 'should support collection.isUid()', function() {
         expect(User.isUid('u001')).to.eql(true);
+        expect(User.isUid('o001')).to.eql(false);
       });
 
       it( 'should parse', function() {
