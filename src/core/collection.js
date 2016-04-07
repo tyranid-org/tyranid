@@ -57,6 +57,19 @@ function extractProjection(opts) {
   return opts.fields || opts.project || opts.projection;
 }
 
+function isOptions(opts) {
+  // TODO:  this is a hack, need to figure out a better way
+  return opts && (opts.query || opts.fields || opts.populate || opts.skip || opts.limit);
+}
+
+function extractOptions(args) {
+  if (args.length && isOptions(args[args.length - 1])) {
+    return args.pop();
+  } else {
+    return {};
+  }
+}
+
 function combineOpts(...sources) {
   const o = {};
   for (const source of sources) {
@@ -571,11 +584,11 @@ export default class Collection {
       opts = args[0];
 
       const v = opts.query;
-      if (v) {
-        const cursor = await this.find(v, opts.projection, opts);
+      if (isOptions(opts)) {
+        const cursor = await this.find(v || {}, opts.projection, opts);
 
         const documents = await cursor.toArray();
-        populate(this, opts, documents);
+        await populate(this, opts, documents);
         return documents;
       }
     }
@@ -583,7 +596,7 @@ export default class Collection {
     const cursor = await this.find(...args);
 
     const documents = await cursor.toArray();
-    populate(this, opts, documents);
+    await populate(this, opts, documents);
     return documents;
   }
 
@@ -594,15 +607,14 @@ export default class Collection {
     const collection = this,
           db         = collection.db;
 
-    let opts, query;
-    if (args.length === 1 && (opts = args[0]) && opts.query) {
-      query = opts.query;
-    } else if (args.length === 2) {
-      query = args[0];
-      opts = args[1];
-    } else {
-      query = args[0];
-      opts = {};
+    let opts = extractOptions(args);
+
+    switch (args.length) {
+    case 2:
+      opts.fields = args[1];
+      // fall through
+    case 1:
+      opts.query = args[0];
     }
 
     if (opts === undefined) {
@@ -615,19 +627,19 @@ export default class Collection {
     }
 
     const auth = extractAuthorization(opts);
+    let query = opts.query || {};
     if (auth) {
-      query = await this.secureQuery(args[0] || {}, opts.perm || 'view', auth);
+      query = await this.secureQuery(query, opts.perm || 'view', auth);
 
       if (!query) {
         return null;
       }
     }
 
-    let doc = await db.findOne(query, opts);
-
+    let doc = await db.findOne(query, projection, opts);
     if (doc) {
       doc = new collection(doc);
-      populate(this, opts, doc);
+      await populate(this, opts, doc);
       return doc;
     }
 
@@ -782,9 +794,27 @@ export default class Collection {
   /**
    * Behaves like native mongodb's update().
    */
-  async update(query, update, opts) {
+  async update(...args) {
     const collection = this;
 
+    const opts = extractOptions(args);
+
+    switch (args.length) {
+    case 2:
+      opts.update = args[1];
+      // fall through
+    case 1:
+      opts.query = args[0];
+    }
+
+    let query  = opts.query,
+        update = opts.update,
+        auth   = extractAuthorization(opts);
+
+    if (auth) {
+      query = await collection.secureFindQuery(query, opts.perm || 'view', auth);
+    }
+  
     if (collection.def.timestamps) {
       update.$set = update.$set || {};
       update.$set.updatedAt = new Date();
