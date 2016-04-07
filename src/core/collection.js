@@ -812,9 +812,9 @@ export default class Collection {
         auth   = extractAuthorization(opts);
 
     if (auth) {
-      query = await collection.secureFindQuery(query, opts.perm || 'view', auth);
+      query = await collection.secureFindQuery(query, opts.perm || 'edit', auth);
     }
-  
+
     if (collection.def.timestamps) {
       update.$set = update.$set || {};
       update.$set.updatedAt = new Date();
