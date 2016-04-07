@@ -807,9 +807,14 @@ export default class Collection {
       opts.query = args[0];
     }
 
-    const query = opts.query,
-          update = opts.update;
+    let query  = opts.query,
+        update = opts.update,
+        auth   = extractAuthorization(opts);
 
+    if (auth) {
+      query = await collection.secureFindQuery(query, opts.perm || 'view', auth);
+    }
+  
     if (collection.def.timestamps) {
       update.$set = update.$set || {};
       update.$set.updatedAt = new Date();
