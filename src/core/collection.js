@@ -571,11 +571,11 @@ export default class Collection {
       opts = args[0];
 
       const v = opts.query;
-      if (v) {
-        const cursor = await this.find(v, opts.projection, opts);
+      if (v || opts.populate || opts.skip || opts.limit) {
+        const cursor = await this.find(v || {}, opts.projection, opts);
 
         const documents = await cursor.toArray();
-        populate(this, opts, documents);
+        await populate(this, opts, documents);
         return documents;
       }
     }
@@ -583,7 +583,7 @@ export default class Collection {
     const cursor = await this.find(...args);
 
     const documents = await cursor.toArray();
-    populate(this, opts, documents);
+    await populate(this, opts, documents);
     return documents;
   }
 
@@ -627,7 +627,7 @@ export default class Collection {
 
     if (doc) {
       doc = new collection(doc);
-      populate(this, opts, doc);
+      await populate(this, opts, doc);
       return doc;
     }
 

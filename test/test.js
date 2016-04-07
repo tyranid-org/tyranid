@@ -677,7 +677,7 @@ describe('tyranid', function() {
         expect(user3.organization$.name).to.be.eql('123 Construction');
       }
 
-      it( 'should work curried', function() {
+      it('should work curried', function() {
         return User.findAll()
           .then(User.populate('organization'))
           .then(function(users) {
@@ -685,13 +685,18 @@ describe('tyranid', function() {
           });
       });
 
-      it( 'should work uncurried', function() {
+      it('should work uncurried', function() {
         return User.findAll()
           .then(function(users) {
             return User.populate('organization', users).then(function(users) {
               verifyPeople(users);
             });
           });
+      });
+
+      it('should work with populate in options', async function() {
+        const users = await User.findAll({ populate: 'organization' });
+        verifyPeople(users);
       });
 
       it('should work with custom primaryKey', function() {
