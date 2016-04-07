@@ -31,6 +31,16 @@ const Tyr = {
         target[name] = mixin[name];
       }
     }
+  },
+
+  mapAwait(value, fn) {
+    if (value.then) {
+      return value.then(value => {
+        return fn(value);
+      });
+    } else {
+      return fn(value);
+    }
   }
 };
 

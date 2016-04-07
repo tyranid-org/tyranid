@@ -392,6 +392,7 @@ export default function express(app, auth) {
   };
 
   Collection.prototype.idToUid = ${es5Fn(Collection.prototype.idToUid)};
+  Collection.prototype.isUid(uid) = ${es5Fn(Collection.prototype.isUid)};
 
   Collection.prototype.idToLabel = function(id) {
     if (this.isStatic()) {
@@ -731,9 +732,7 @@ Collection.prototype.express = function(app, auth) {
               res.status(403).send('Use put for updates');
 
             } else {
-              // TODO-SECURE
-              await doc.$save();
-
+              await doc.$save({ auth: req.user });
             }
 
             res.json(col.toClient(doc));
@@ -750,8 +749,7 @@ Collection.prototype.express = function(app, auth) {
             const doc = col.fromClient(req.body);
 
             if (doc._id) {
-              // TODO-SECURE
-              const existingDoc = await col.findOne({ _id: doc._id });
+              const existingDoc = await col.findOne({ _id: doc._id }, { auth: req.user });
               _.assign(existingDoc, doc);
               await existingDoc.$save();
 

@@ -104,6 +104,15 @@ function mergeOpObject(v1, v2) {
     }
   }
 
+  let and;
+  function addToAnd(obj) {
+    if (and) {
+      and.push(obj);
+    } else {
+      and = [ obj ];
+    }
+  }
+
   for (const op in o1) {
     const v1 = o1[op],
           v2 = o2[op];
@@ -170,7 +179,8 @@ function mergeOpObject(v1, v2) {
         break;
 
       case '$or':
-        o.$or = v1.concat(v2);
+        addToAnd({ $or: v1 });
+        addToAnd({ $or: v2 });
         break;
 
       default:
@@ -192,6 +202,11 @@ function mergeOpObject(v1, v2) {
   if (nin) {
     const onin = o.$nin;
     o.$nin = onin ? union(nin, onin) : nin;
+  }
+
+  if (and) {
+    const oand = o.$and;
+    o.$and = oand ? union(and, oand) : and;
   }
 
   return simplifyOpObject(o);

@@ -43,6 +43,11 @@ const UidType = new Type({
 });
 
 
+Collection.prototype.isUid = function(uid) {
+  return uid && uid.substring(0, 3) === this.id;
+}
+
+
 /** @isomorphic */
 Tyr.parseUid = function(uid) {
   const colId = uid.substring(0, 3);

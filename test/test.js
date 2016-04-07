@@ -1111,6 +1111,10 @@ describe('tyranid', function() {
         expect(User.id).to.eql('u00');
       });
 
+      it( 'should support collection.isUid()', function() {
+        expect(User.isUid('u001')).to.eql(true);
+      });
+
       it( 'should parse', function() {
         Tyr.parseUid('u001').should.eql({
           collection: User,
@@ -1729,7 +1733,19 @@ describe('tyranid', function() {
 
       it('should work with $or', () => {
         testl({ $or: [ { blog: 1 }, { org: 1 } ] }, { $or: [ { foo: 1 }, { bar: 2 } ] },
-              { $or: [ { blog: 1 }, { org: 1 }, { foo: 1 }, { bar: 2 } ] });
+              { $and: [ { $or: [ { blog: 1 }, { org: 1 } ] }, { $or: [ { foo: 1  }, { bar: 2 } ] } ] });
+      });
+
+      it('should work with $or and $ands together', () => {
+        testl({ $or: [ { blog: 1 }, { org: 1 } ], $and: [ { a1: 1 }, { b1: 1 } ] },
+              { $or: [ { foo: 1  }, { bar: 2 } ], $and: [ { c1: 1 }            ] },
+              { $and: [
+                  { $or: [ { blog: 1 }, { org: 1 } ] },
+                  { $or: [ { foo: 1  }, { bar: 2 } ] },
+                  { a1: 1 },
+                  { b1: 1 },
+                  { c1: 1 },
+              ] });
       });
 
       it('should work with nested $and/$or', () => {

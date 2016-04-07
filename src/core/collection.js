@@ -53,6 +53,14 @@ function extractAuthorization(opts) {
   //return undefined;
 }
 
+function combineOpts(...sources) {
+  const o = {};
+  for (const source of sources) {
+    _.assign(o, source);
+  }
+  return o;
+}
+
 
 // Document
 // ========
@@ -64,19 +72,19 @@ const documentPrototype = Tyr.documentPrototype = {
   },
 
   $save() {
-    return this.$model.save(this);
+    return this.$model.save(this, ...arguments);
   },
 
   $insert() {
-    return this.$model.insert(this);
+    return this.$model.insert(this, ...arguments);
   },
 
   $update() {
-    return this.$model.updateDoc(this);
+    return this.$model.updateDoc(this, ...arguments);
   },
 
   $remove() {
-    return this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true);
+    return this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true, ...arguments);
   },
 
   $toClient() {
@@ -123,8 +131,8 @@ function defineDocumentProperties(dp) {
 }
 
 
-function denormalPopulate(collection, obj, denormalAlreadyDone) {
-  const denormal = !denormalAlreadyDone && collection.denormal;
+function denormalPopulate(collection, obj, opts) {
+  const denormal = (!opts || !opts.denormalAlreadyDone) && collection.denormal;
   return denormal ? collection.populate(denormal, obj, true) : Promise.resolve();
 }
 
@@ -437,13 +445,13 @@ export default class Collection {
     }
   }
 
-  byIds(ids, projection = null, findOptions) {
+  byIds(ids, options) {
     const collection = this;
 
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      const cursor = collection.find({ [this.def.primaryKey.field]: { $in: ids }}, projection, findOptions);
+      const cursor = collection.find({ [this.def.primaryKey.field]: { $in: ids }}, null, options);
       return cursor.then ? cursor.then(cursor => cursor.toArray()) : cursor.toArray();
     }
   }
@@ -485,8 +493,9 @@ export default class Collection {
     const collection = this,
           db         = collection.db,
           projection = args[1],
-          // extract tyranid specific options
-          auth       = extractAuthorization(args[2]);
+          // extract tyranid specific options,
+          opts       = args[2] || {},
+          auth       = extractAuthorization(opts);
 
     if (projection) {
       args[1] = parseProjection(collection, projection);
@@ -494,6 +503,22 @@ export default class Collection {
 
     function cursor() {
       const cursor = db.find(...args);
+
+      const opts = args[2];
+      if (opts) {
+        let v;
+        if ( (v=opts.limit) ) {
+          cursor.limit(v);
+        }
+
+        if ( (v=opts.skip) ) {
+          cursor.skip(v);
+        }
+
+        if ( (v=opts.sort) ) {
+          cursor.sort(v);
+        }
+      }
 
       hooker.hook(cursor, 'next', {
         post(promise) {
@@ -514,15 +539,13 @@ export default class Collection {
     }
 
     if (auth) {
-      const secure = collection.secureQuery(args[0], 'view', auth);
-      if (secure.then) {
-        return secure.then(query => {
-          args[0] = query;
+      return Tyr.mapAwait(
+        collection.secureFindQuery(args[0], opts.perm || 'view', auth),
+        securedQuery => {
+          args[0] = securedQuery;
           return cursor();
-        });
-      } else {
-        args[0] = secure;
-      }
+        }
+      );
     }
 
     return cursor();
@@ -539,18 +562,6 @@ export default class Collection {
       if (v) {
         const cursor = await this.find(v, opts.projection, opts);
 
-        if ( (v=opts.limit) ) {
-          cursor.limit(v);
-        }
-
-        if ( (v=opts.skip) ) {
-          cursor.skip(v);
-        }
-
-        if ( (v=opts.sort) ) {
-          cursor.sort(v);
-        }
-
         return cursor.toArray();
       }
     }
@@ -564,18 +575,39 @@ export default class Collection {
    */
   async findOne(...args) {
     const collection = this,
-          db         = collection.db,
-          projection = args[1],
-          auth       = extractAuthorization(args[2]);
+          db         = collection.db;
 
+    let opts, query;
+    if (args.length === 1 && (opts = args[0]) && opts.query) {
+      query = opts.query;
+      projection = opts.projection || opts.project;
+    } else if (args.length === 2) {
+      query = args[0];
+      opts = args[1];
+    } else {
+      query = args[0];
+      opts = {};
+    }
+
+    if (opts === undefined) {
+      opts = {};
+    }
+
+    let projection = opts.fields || opts.project || opts.projection;
     if (projection) {
-      args[1] = parseProjection(collection, projection);
-    }
-    if (auth) {
-      args[0] = await this.secureQuery(args[0] || {}, 'view', auth);
+      projection = parseProjection(collection, projection);
     }
 
-    const doc = await db.findOne(...args);
+    const auth = extractAuthorization(opts);
+    if (auth) {
+      query = await this.secureQuery(args[0] || {}, opts.perm || 'view', auth);
+
+      if (!query) {
+        return null;
+      }
+    }
+
+    const doc = await db.findOne(query, opts);
 
     return doc ? new collection(doc) : null;
   }
@@ -589,7 +621,7 @@ export default class Collection {
           auth       = extractAuthorization(opts);
 
     if (auth) {
-      opts.query = await this.secureQuery(opts.query, 'edit', auth);
+      opts.query = await this.secureFindQuery(opts.query, 'edit', auth);
     }
 
     let update = opts.update;
@@ -641,13 +673,14 @@ export default class Collection {
   }
 
 
-  async save(obj, denormalAlreadyDone) {
+  async save(obj, opts) {
     const collection = this;
 
-    await denormalPopulate(collection, obj, denormalAlreadyDone);
+    await denormalPopulate(collection, obj, opts);
 
     if (Array.isArray(obj)) {
-      return await Promise.all(obj.map(doc => collection.save(doc, true)));
+      const arrOpts = combineOpts(opts, { denormalAlreadyDone: true });
+      return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
       const keyFieldName = collection.def.primaryKey.field,
             keyValue = obj[keyFieldName];
@@ -661,24 +694,26 @@ export default class Collection {
         // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
         const update = _.omit(obj, '_id');
 
-        const result = await collection.findAndModify({
+        const famOpts = combineOpts(opts, {
           query: { [keyFieldName]: keyValue },
           update: update,
           upsert: true,
           new: true
         });
 
+        const result = await collection.findAndModify(famOpts);
         return result.value;
       } else {
-        return collection.insert(obj, true);
+        const modOpts = combineOpts(opts, { denormalAlreadyDone: true });
+        return collection.insert(obj, modOpts);
       }
     }
   }
 
-  async insert(obj, denormalAlreadyDone) {
+  async insert(obj, opts) {
     const collection = this;
 
-    await denormalPopulate(collection, obj, denormalAlreadyDone);
+    await denormalPopulate(collection, obj, opts);
 
     if (Array.isArray(obj)) {
       const parsedArr = await Promise.all(_.map(obj, el => parseInsertObj(collection, el)));

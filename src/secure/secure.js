@@ -15,16 +15,24 @@ Tyr.mixin(Secure, Component);
 
 Tyr.Secure = Secure;
 
-Collection.prototype.secureQuery = async function(query, permissionType, user) {
+Collection.prototype.secureQuery = function(query, permissionType, user) {
   const secure = Tyr.secure;
 
   query = query || {};
 
   if (secure) {
-    query = Query.merge(query, await secure.query(this, permissionType, user));
+    return Tyr.mapAwait(secure.query(this, permissionType, user), q => Query.merge(query, q));
   }
 
   return query;
+};
+
+Collection.prototype.secureFindQuery = async function(query, permissionType, user) {
+  return Tyr.mapAwait(
+    this.secureQuery(query, permissionType, user),
+    // TODO: compare how fast this is compared to { _id: { $exists: false } }
+    q => q ? q : { _id: null }
+  );
 };
 
 export default Secure;
