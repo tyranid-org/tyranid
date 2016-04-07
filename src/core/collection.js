@@ -59,7 +59,15 @@ function extractProjection(opts) {
 
 function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way
-  return opts && (opts.query || opts.populate || opts.skip || opts.limit);
+  return opts && (opts.query || opts.fields || opts.populate || opts.skip || opts.limit);
+}
+
+function extractOptions(args) {
+  if (args.length && isOptions(args[args.length - 1])) {
+    return args.pop();
+  } else {
+    return {};
+  }
 }
 
 function combineOpts(...sources) {
@@ -599,12 +607,7 @@ export default class Collection {
     const collection = this,
           db         = collection.db;
 
-    let opts;
-    if (args.length && isOptions( (opts = args[args.length-1]) )) {
-      args.pop();
-    } else {
-      opts = {};
-    }
+    let opts = extractOptions(args);
 
     switch (args.length) {
     case 2:
@@ -791,8 +794,21 @@ export default class Collection {
   /**
    * Behaves like native mongodb's update().
    */
-  async update(query, update, opts) {
+  async update(...args) {
     const collection = this;
+
+    const opts = extractOptions(args);
+
+    switch (args.length) {
+    case 2:
+      opts.update = args[1];
+      // fall through
+    case 1:
+      opts.query = args[0];
+    }
+
+    const query = opts.query,
+          update = opts.update;
 
     if (collection.def.timestamps) {
       update.$set = update.$set || {};
