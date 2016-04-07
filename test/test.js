@@ -479,7 +479,6 @@ describe('tyranid', function() {
     describe('projections', function() {
       it('should support projections returning a cursor out of find (not a promise of a cursor)', async function() {
         const docs = await User.db.find({ 'name.first': 'An'}).limit(1).toArray();
-        console.log(User.db.find({ 'name.first': 'An'}).then);
         expect(docs.length).to.be.eql(1);
       });
 

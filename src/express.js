@@ -749,7 +749,7 @@ Collection.prototype.express = function(app, auth) {
             const doc = col.fromClient(req.body);
 
             if (doc._id) {
-              const existingDoc = await col.findOne({ _id: doc._id }, { auth: req.user });
+              const existingDoc = await col.findOne({ query: { _id: doc._id }, auth: req.user });
               _.assign(existingDoc, doc);
               await existingDoc.$save();
 
@@ -784,8 +784,7 @@ Collection.prototype.express = function(app, auth) {
       if (express.rest || express.delete) {
         r.delete(async (req, res) => {
           try {
-            // TODO-SECURE
-            await col.db.remove({ _id : ObjectId(req.params.id) });
+            await col.db.remove({ query: { _id: ObjectId(req.params.id) }, auth: req.user });
             res.sendStatus(200);
           } catch(err) {
             console.log(err.stack);
@@ -810,7 +809,7 @@ Collection.prototype.express = function(app, auth) {
               [col.labelField.path]: new RegExp(req.params.search, 'i')
             };
 
-            const results = await col.findAll({ query, projection: { [col.labelField.path]: 1 }, auth: req.user });
+            const results = await col.findAll({ query, fields: { [col.labelField.path]: 1 }, auth: req.user });
             res.json(results.map(r => r.$toClient()));
           } catch(err) {
             console.log(err.stack);
@@ -844,7 +843,7 @@ Collection.prototype.express = function(app, auth) {
                   _.assign(query, where);
                 }
 
-                const results = await to.findAll({ query, projection: { [to.labelField.path]: 1 }, auth: req.user });
+                const results = await to.findAll({ query, fields: { [to.labelField.path]: 1 }, auth: req.user });
                 res.json(results.map(r => r.$toClient()));
               } catch(err) {
                 console.log(err.stack);

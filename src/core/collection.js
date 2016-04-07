@@ -94,16 +94,16 @@ const documentPrototype = Tyr.documentPrototype = {
     return new this.$model(_.cloneDeep(this));
   },
 
-  $save() {
-    return this.$model.save(this, ...arguments);
+  $save(...args) {
+    return this.$model.save(this, ...args);
   },
 
-  $insert() {
-    return this.$model.insert(this, ...arguments);
+  $insert(...args) {
+    return this.$model.insert(this, ...args);
   },
 
-  $update() {
-    return this.$model.updateDoc(this, ...arguments);
+  $update(...args) {
+    return this.$model.updateDoc(this, ...args);
   },
 
   $remove() {
@@ -545,7 +545,6 @@ export default class Collection {
 
       hooker.hook(cursor, 'next', {
         post(promise) {
-          console.log('next', promise);
           const modified = promise.then(doc => doc ? new collection(doc) : null);
           return hooker.override(modified);
         }
@@ -766,7 +765,7 @@ export default class Collection {
   /**
    * Updates a single document.  Used to implement document.$update() for example. @see update() for regular mongodb update()
    */
-  updateDoc(obj) {
+  async updateDoc(obj, ...args) {
     const def    = this.def,
           fields = this.fields;
     const setObj = {};
@@ -785,9 +784,22 @@ export default class Collection {
       setObj.updatedAt = new Date();
     }
 
+    const opts = extractOptions(args),
+          auth = extractAuthorization(opts);
+
+    let query = { [def.primaryKey.field] : obj[def.primaryKey.field] };
+    if (auth) {
+      query = await collection.secureQuery(query, opts.perm || 'edit', auth);
+
+      if (!query) {
+        // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
+        return false;
+      }
+    }
+
     return this.db.update(
-      { [def.primaryKey.field] : obj[def.primaryKey.field] },
-      { $set : setObj }
+      query,
+      { $set: setObj }
     );
   }
 
@@ -807,12 +819,17 @@ export default class Collection {
       opts.query = args[0];
     }
 
-    let query  = opts.query,
-        update = opts.update,
-        auth   = extractAuthorization(opts);
+    const update = opts.update,
+          auth   = extractAuthorization(opts);
+    let query = opts.query;
 
     if (auth) {
-      query = await collection.secureFindQuery(query, opts.perm || 'edit', auth);
+      query = await collection.secureQuery(query, opts.perm || 'edit', auth);
+
+      if (!query) {
+        // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
+        return false;
+      }
     }
 
     if (collection.def.timestamps) {
@@ -826,7 +843,30 @@ export default class Collection {
   /**
    * Behaves like native mongodb's remove().
    */
-  async remove(query, justOne) {
+  async remove(...args) {
+    const opts = extractOptions(args);
+
+    let query = opts.query, justOne = opts.justOne;
+
+    switch (args.length) {
+    case 2:
+      justOne = args[1];
+      // fall through
+    case 1:
+      query = args[0];
+    }
+
+    const auth = extractAuthorization(opts);
+
+    if (auth) {
+      query = await this.secureQuery(query, opts.perm || 'delete', auth);
+
+      if (!query) {
+        // throw a security exception here ?  if we do this, also need to examine results from the remove() and potentially throw one there as well
+        return 0;
+      }
+    }
+
     return await this.db.remove(query, justOne);
   }
 
