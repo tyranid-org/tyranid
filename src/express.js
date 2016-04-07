@@ -392,7 +392,7 @@ export default function express(app, auth) {
   };
 
   Collection.prototype.idToUid = ${es5Fn(Collection.prototype.idToUid)};
-  Collection.prototype.isUid(uid) = ${es5Fn(Collection.prototype.isUid)};
+  Collection.prototype.isUid = ${es5Fn(Collection.prototype.isUid)};
 
   Collection.prototype.idToLabel = function(id) {
     if (this.isStatic()) {
