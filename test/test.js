@@ -694,7 +694,14 @@ describe('tyranid', function() {
           });
       });
 
-      it('should work with populate in options', async function() {
+      it('should work with findOne() populate in options', async function() {
+        const user = await User.findOne({ query: { 'name.first': 'John' }, populate: 'organization' });
+        expect(user).to.be.an.instanceof(User);
+        expect(user.organization$).to.be.an.instanceof(Organization);
+        expect(user.organization$.name).to.be.eql('Acme Unlimited');
+      });
+
+      it('should work with findAll() populate in options', async function() {
         const users = await User.findAll({ populate: 'organization' });
         verifyPeople(users);
       });

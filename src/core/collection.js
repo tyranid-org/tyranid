@@ -57,6 +57,11 @@ function extractProjection(opts) {
   return opts.fields || opts.project || opts.projection;
 }
 
+function isOptions(opts) {
+  // TODO:  this is a hack, need to figure out a better way
+  return opts && (opts.query || opts.populate || opts.skip || opts.limit);
+}
+
 function combineOpts(...sources) {
   const o = {};
   for (const source of sources) {
@@ -571,7 +576,7 @@ export default class Collection {
       opts = args[0];
 
       const v = opts.query;
-      if (v || opts.populate || opts.skip || opts.limit) {
+      if (isOptions(opts)) {
         const cursor = await this.find(v || {}, opts.projection, opts);
 
         const documents = await cursor.toArray();
@@ -594,15 +599,19 @@ export default class Collection {
     const collection = this,
           db         = collection.db;
 
-    let opts, query;
-    if (args.length === 1 && (opts = args[0]) && opts.query) {
-      query = opts.query;
-    } else if (args.length === 2) {
-      query = args[0];
-      opts = args[1];
+    let opts;
+    if (args.length && isOptions( (opts = args[args.length-1]) )) {
+      args.pop();
     } else {
-      query = args[0];
       opts = {};
+    }
+
+    switch (args.length) {
+    case 2:
+      opts.fields = args[1];
+      // fall through
+    case 1:
+      opts.query = args[0];
     }
 
     if (opts === undefined) {
@@ -615,16 +624,16 @@ export default class Collection {
     }
 
     const auth = extractAuthorization(opts);
+    let query = opts.query || {};
     if (auth) {
-      query = await this.secureQuery(args[0] || {}, opts.perm || 'view', auth);
+      query = await this.secureQuery(query, opts.perm || 'view', auth);
 
       if (!query) {
         return null;
       }
     }
 
-    let doc = await db.findOne(query, opts);
-
+    let doc = await db.findOne(query, projection, opts);
     if (doc) {
       doc = new collection(doc);
       await populate(this, opts, doc);
