@@ -574,16 +574,16 @@ export default class Collection {
       if (v) {
         const cursor = await this.find(v, opts.projection, opts);
 
-        return cursor.toArray();
+        const documents = await cursor.toArray();
+        populate(this, opts, documents);
+        return documents;
       }
     }
 
     const cursor = await this.find(...args);
 
     const documents = await cursor.toArray();
-
     populate(this, opts, documents);
-
     return documents;
   }
 
