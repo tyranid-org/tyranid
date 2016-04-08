@@ -749,13 +749,36 @@ export default class Collection {
 
     await denormalPopulate(collection, obj, opts);
 
+    const auth = extractAuthorization(opts);
+
     if (Array.isArray(obj)) {
       const parsedArr = await Promise.all(_.map(obj, el => parseInsertObj(collection, el)));
+
+      if (auth) {
+        const canInsertArr = await Promise.all(parsedArr.map(parsedObj =>
+          collection.canInsert(parsedObj, opts.perm || 'edit', auth)));
+
+        if (canInsertArr.some(val => !val)) {
+          // TODO:  throw a security exception here ?
+          return false;
+        }
+      }
+
       const rslt = await collection.db.insert(parsedArr);
 
       return rslt.ops;
     } else {
       const parsedObj = await parseInsertObj(collection, obj);
+
+      if (auth) {
+        const canInsert = await collection.canInsert(parsedObj, opts.perm || 'edit', auth);
+
+        if (!canInsert) {
+          // TODO:  throw a security exception here ?
+          return false;
+        }
+      }
+
       const rslt = await collection.db.insert(parsedObj);
 
       return rslt.ops[0];
@@ -789,7 +812,7 @@ export default class Collection {
 
     let query = { [def.primaryKey.field] : obj[def.primaryKey.field] };
     if (auth) {
-      query = await collection.secureQuery(query, opts.perm || 'edit', auth);
+      query = await this.secureQuery(query, opts.perm || 'edit', auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
