@@ -27,9 +27,33 @@ const {
   labelize
 } = Tyr;
 
+
+// Options parsing
+// ===============
+
+function isOptions(opts) {
+  // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
+  return opts && (opts.query || opts.fields || opts.populate || opts.skip || opts.limit);
+}
+
+function extractOptions(args) {
+  if (args.length && isOptions(args[args.length - 1])) {
+    return args.pop();
+  } else {
+    return {};
+  }
+}
+
+function combineOptions(...sources) {
+  const o = {};
+  for (const source of sources) {
+    _.assign(o, source);
+  }
+  return o;
+}
+
 /**
  * Extracts the authorization out of a mongodb options-style object.
- *
  */
 function extractAuthorization(opts) {
   if (!opts) {
@@ -54,28 +78,7 @@ function extractAuthorization(opts) {
 }
 
 function extractProjection(opts) {
-  return opts.fields || opts.project || opts.projection;
-}
-
-function isOptions(opts) {
-  // TODO:  this is a hack, need to figure out a better way
-  return opts && (opts.query || opts.fields || opts.populate || opts.skip || opts.limit);
-}
-
-function extractOptions(args) {
-  if (args.length && isOptions(args[args.length - 1])) {
-    return args.pop();
-  } else {
-    return {};
-  }
-}
-
-function combineOpts(...sources) {
-  const o = {};
-  for (const source of sources) {
-    _.assign(o, source);
-  }
-  return o;
+  return opts.fields || opts.project || opts.projectiot ;
 }
 
 async function populate(collection, opts, documents) {
@@ -84,6 +87,7 @@ async function populate(collection, opts, documents) {
     await collection.populate(populate, documents);
   }
 }
+
 
 // Document
 // ========
@@ -474,7 +478,7 @@ export default class Collection {
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      const opts = combineOpts(options, { query: { [this.def.primaryKey.field]: { $in: ids } } });
+      const opts = combineOptions(options, { query: { [this.def.primaryKey.field]: { $in: ids } } });
       return collection.findAll(opts);
     }
   }
@@ -600,7 +604,8 @@ export default class Collection {
   }
 
   /**
-   * Behaves like native mongodb's findOne() method except that the results are mapped to collection instances.
+   * Behaves like native mongodb's findOne() method except that the results are mapped to collection instances
+   * and that it takes a projection as an optional second parameter and supports an options object
    */
   async findOne(...args) {
     const collection = this,
@@ -610,7 +615,10 @@ export default class Collection {
 
     switch (args.length) {
     case 2:
-      opts.fields = args[1];
+      const f = args[1];
+      if (f) {
+        opts.fields = f;
+      }
       // fall through
     case 1:
       opts.query = args[0];
@@ -713,7 +721,7 @@ export default class Collection {
     await denormalPopulate(collection, obj, opts);
 
     if (Array.isArray(obj)) {
-      const arrOpts = combineOpts(opts, { denormalAlreadyDone: true });
+      const arrOpts = combineOptions(opts, { denormalAlreadyDone: true });
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
       const keyFieldName = collection.def.primaryKey.field,
@@ -728,7 +736,7 @@ export default class Collection {
         // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
         const update = _.omit(obj, '_id');
 
-        const famOpts = combineOpts(opts, {
+        const famOpts = combineOptions(opts, {
           query: { [keyFieldName]: keyValue },
           update: update,
           upsert: true,
@@ -738,7 +746,7 @@ export default class Collection {
         const result = await collection.findAndModify(famOpts);
         return result.value;
       } else {
-        const modOpts = combineOpts(opts, { denormalAlreadyDone: true });
+        const modOpts = combineOptions(opts, { denormalAlreadyDone: true });
         return collection.insert(obj, modOpts);
       }
     }
@@ -756,7 +764,7 @@ export default class Collection {
 
       if (auth) {
         const canInsertArr = await Promise.all(parsedArr.map(parsedObj =>
-          collection.canInsert(parsedObj, opts.perm || 'edit', auth)));
+          collection.canInsert(parsedObj, opts.perm || 'insert', auth)));
 
         if (canInsertArr.some(val => !val)) {
           // TODO:  throw a security exception here ?

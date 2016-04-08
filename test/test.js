@@ -426,6 +426,24 @@ describe('tyranid', function() {
         });
       });
 
+      it('should findOne() with projection', async function() {
+        const doc = await User.findOne({ 'name.first': 'An' }, { name: 1 });
+        expect(doc).to.be.an.instanceof(User);
+        expect(_.keys(doc)).to.eql(['_id', 'name']);
+      });
+
+      it('should findOne() with a null projection', async function() {
+        const doc = await User.findOne({ 'name.first': 'An' }, null);
+        expect(doc).to.be.an.instanceof(User);
+        expect(_.keys(doc).length).to.be.greaterThan(3);
+      });
+
+      it('should findOne() with a null projection and options', async function() {
+        const doc = await User.findOne({ 'name.first': 'An' }, null, { fields: { name: 1 } });
+        expect(doc).to.be.an.instanceof(User);
+        expect(_.keys(doc)).to.eql(['_id', 'name']);
+      });
+
       it('should findOne() with options', async function() {
         const doc = await User.findOne({ query: { 'name.first': 'An' }, fields: { name: 1 } });
         expect(doc).to.be.an.instanceof(User);
