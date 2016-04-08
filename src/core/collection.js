@@ -27,13 +27,15 @@ const {
   labelize
 } = Tyr;
 
+const OPTIONS = Tyr.options;
+
 
 // Options parsing
 // ===============
 
 function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
-  return opts && (opts.query || opts.fields || opts.populate || opts.skip || opts.limit);
+  return opts && (opts.query || opts.fields || opts.populate || opts.skip || opts.limit || opts.tyranid);
 }
 
 function extractOptions(args) {
@@ -566,7 +568,7 @@ export default class Collection {
 
     if (auth) {
       return Tyr.mapAwait(
-        collection.secureFindQuery(args[0], opts.perm || 'view', auth),
+        collection.secureFindQuery(args[0], opts.perm || OPTIONS.permissions.find, auth),
         securedQuery => {
           args[0] = securedQuery;
           return cursor();
@@ -636,7 +638,7 @@ export default class Collection {
     const auth = extractAuthorization(opts);
     let query = opts.query || {};
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || 'view', auth);
+      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.find, auth);
 
       if (!query) {
         return null;
@@ -662,7 +664,7 @@ export default class Collection {
           auth       = extractAuthorization(opts);
 
     if (auth) {
-      opts.query = await this.secureFindQuery(opts.query, 'edit', auth);
+      opts.query = await this.secureFindQuery(opts.query, opts.perm || OPTIONS.permissions.update, auth);
     }
 
     let update = opts.update;
@@ -764,7 +766,7 @@ export default class Collection {
 
       if (auth) {
         const canInsertArr = await Promise.all(parsedArr.map(parsedObj =>
-          collection.canInsert(parsedObj, opts.perm || 'insert', auth)));
+          collection.canInsert(parsedObj, opts.perm || OPTIONS.permissions.insert, auth)));
 
         if (canInsertArr.some(val => !val)) {
           // TODO:  throw a security exception here ?
@@ -779,7 +781,7 @@ export default class Collection {
       const parsedObj = await parseInsertObj(collection, obj);
 
       if (auth) {
-        const canInsert = await collection.canInsert(parsedObj, opts.perm || 'edit', auth);
+        const canInsert = await collection.canInsert(parsedObj, opts.perm || OPTIONS.permissions.insert, auth);
 
         if (!canInsert) {
           // TODO:  throw a security exception here ?
@@ -820,7 +822,7 @@ export default class Collection {
 
     let query = { [def.primaryKey.field] : obj[def.primaryKey.field] };
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || 'edit', auth);
+      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.update, auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
@@ -855,7 +857,7 @@ export default class Collection {
     let query = opts.query;
 
     if (auth) {
-      query = await collection.secureQuery(query, opts.perm || 'edit', auth);
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.update, auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
@@ -890,7 +892,7 @@ export default class Collection {
     const auth = extractAuthorization(opts);
 
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || 'delete', auth);
+      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.remove, auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the remove() and potentially throw one there as well

@@ -438,13 +438,20 @@ describe('tyranid', function() {
         expect(_.keys(doc).length).to.be.greaterThan(3);
       });
 
-      it('should findOne() with a null projection and options', async function() {
+      it('should findOne() with a null projection and options, 1', async function() {
         const doc = await User.findOne({ 'name.first': 'An' }, null, { fields: { name: 1 } });
         expect(doc).to.be.an.instanceof(User);
         expect(_.keys(doc)).to.eql(['_id', 'name']);
       });
 
-      it('should findOne() with options', async function() {
+      it('should findOne() with a null projection and options, 2', async function() {
+        const doc = await User.findOne({ 'name.first': 'John' }, null, { tyranid: { secure: false } });
+        expect(doc).to.be.an.instanceof(User);
+        expect(doc.name.first).to.eql('John');
+        expect(_.keys(doc).length).to.be.greaterThan(3);
+      });
+
+      it('should findOne() with just options', async function() {
         const doc = await User.findOne({ query: { 'name.first': 'An' }, fields: { name: 1 } });
         expect(doc).to.be.an.instanceof(User);
       });

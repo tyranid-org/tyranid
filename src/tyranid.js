@@ -105,7 +105,9 @@ _.assign(Tyr, {
     }
 
     // clear object but keep reference
-    for (const prop in options) delete options[prop];
+    for (const prop in options) {
+      delete options[prop];
+    }
 
     _.extend(options, opts);
 
@@ -122,6 +124,14 @@ _.assign(Tyr, {
 
     if (opts.validate) {
       this.validate(opts.validate);
+    }
+
+    // ensure permission defaults
+    const p = options.permissions = options.permissions || {};
+    for (const perm of ['find', 'insert', 'update', 'remove']) {
+      if (!p[perm]) {
+        p[perm] = perm;
+      }
     }
   },
 
