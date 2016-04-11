@@ -39,7 +39,7 @@ Collection.prototype.secureQuery = function(query, permissionType, authObj) {
   query = query || {};
 
   if (secure) {
-    return Tyr.mapAwait(secure.query(this, permissionType, authObj), q => Query.merge(query, q));
+    return Tyr.mapAwait(secure.query(this, permissionType, authObj), q => q ? Query.merge(query, q) : false);
   }
 
   return query;
