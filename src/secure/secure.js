@@ -45,7 +45,7 @@ Collection.prototype.secureQuery = function(query, permissionType, authObj) {
   return query;
 };
 
-Collection.prototype.secureFindQuery = async function(query, permissionType, authObj) {
+Collection.prototype.secureFindQuery = function(query, permissionType, authObj) {
   return Tyr.mapAwait(
     this.secureQuery(query, permissionType, authObj),
     // TODO: compare how fast this is compared to { _id: { $exists: false } }

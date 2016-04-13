@@ -35,14 +35,28 @@ const {
 
 const fakeSecure = {
   boot() {},
-  query(query, permission, auth) {
-    query.SECURED = {
-      permission,
-      auth: auth.$uid
-    };
+  query(collection, perm, auth) {
+    const query = {};
+    if (collection.name === 'Book') {
+      if (auth && auth.name.first === 'An') {
+        query.title = /Tyranid/;
+      }
+    } else {
+      query.SECURED = {
+        perm,
+        auth: auth.$uid
+      };
+    }
     return query;
+  },
+  canInsert(collection, doc, perm, auth) {
+    if (auth.name.first === 'An') {
+      return false;
+    }
+
+    return true;
   }
-}
+};
 
 
 chai.use(chaiAsPromised);
@@ -210,6 +224,7 @@ describe('tyranid', function() {
     //var Job2, Organization2, Department2, User2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
     var BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
+    var Book2Isbn = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
 
     before(async function() {
       // Test validate load models and byName
@@ -265,6 +280,9 @@ describe('tyranid', function() {
       await Book.db.remove({});
       await Book.db.insert([
         { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' },
+      ]);
+      await Book.db.insert([
+        { _id: 2, isbn: Book2Isbn, title: 'Home Gardening 101' },
       ]);
       await Task.db.remove({});
       await Task.db.insert([
@@ -393,9 +411,33 @@ describe('tyranid', function() {
         const user = await User.findOne({});
         const secured = await User.secureQuery({}, 'view', user);
         expect(secured.SECURED).to.deep.equal({
-          permission: 'view',
+          perm: 'view',
           auth: user.$uid
         });
+      });
+
+      it('should stop inserts when not authorized', async function() {
+        const anon = await User.findOne({ 'name.first': 'An' });
+        const book = new Book();
+        expect(await book.$insert({ auth: anon })).to.eql(false);
+      });
+
+      it('should support secured find()s', async function() {
+        const anon = await User.findOne({ 'name.first': 'An' });
+        let books = await Book.find({}, { title: 1 }, { auth: anon }).toArray();
+        expect(books.length).to.eql(1);
+        expect(books[0].title).to.eql('Tyranid User Guide');
+
+        const jane = await User.findOne({ 'name.first': 'Jane' });
+        books = await Book.find({}, { title: 1 }, { auth: jane }).toArray();
+        expect(books.length).to.eql(2);
+      });
+
+      it('should support secured find()s with a single options argument', async function() {
+        const anon = await User.findOne({ 'name.first': 'An' });
+        const books = await Book.find({ query: {}, fields: { title: 1 }, auth: anon }).toArray();
+        expect(books.length).to.eql(1);
+        expect(books[0].title).to.eql('Tyranid User Guide');
       });
     });
 
@@ -652,7 +694,7 @@ describe('tyranid', function() {
     describe('values', function() {
       var allString = [
         '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
-        'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 'u00'
+        'George Doe', 'Home Gardening 101', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 'u00'
       ];
 
       it( 'should support valuesFor()', function() {

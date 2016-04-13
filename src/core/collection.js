@@ -520,33 +520,50 @@ export default class Collection {
 
   find(...args) {
     const collection = this,
-          db         = collection.db,
-          projection = args[1],
-          // extract tyranid specific options,
-          opts       = args[2] || {},
-          auth       = extractAuthorization(opts);
+          opts       = extractOptions(args),
+          db         = collection.db;
 
-    if (projection) {
-      args[1] = parseProjection(collection, projection);
+    let query,
+        fields;
+    switch (args.length) {
+    case 2:
+      fields = args[1];
+      if (fields) {
+        fields = opts.fields = args[1];
+      }
+      // fall through
+
+    case 1:
+      query = args[0];
+      if (query) {
+        opts.query = query;
+      }
+      break;
+    case 0:
+      query = opts.query;
+      fields = opts.fields;
     }
 
+    if (fields) {
+      opts.fields = fields = parseProjection(collection, fields);
+    }
+
+    const auth = extractAuthorization(opts);
+
     function cursor() {
-      const cursor = db.find(...args);
+      const cursor = db.find(query, fields, opts);
 
-      const opts = args[2];
-      if (opts) {
-        let v;
-        if ( (v=opts.limit) ) {
-          cursor.limit(v);
-        }
+      let v;
+      if ( (v=opts.limit) ) {
+        cursor.limit(v);
+      }
 
-        if ( (v=opts.skip) ) {
-          cursor.skip(v);
-        }
+      if ( (v=opts.skip) ) {
+        cursor.skip(v);
+      }
 
-        if ( (v=opts.sort) ) {
-          cursor.sort(v);
-        }
+      if ( (v=opts.sort) ) {
+        cursor.sort(v);
       }
 
       hooker.hook(cursor, 'next', {
@@ -568,9 +585,9 @@ export default class Collection {
 
     if (auth) {
       return Tyr.mapAwait(
-        collection.secureFindQuery(args[0], opts.perm || OPTIONS.permissions.find, auth),
+        collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth),
         securedQuery => {
-          args[0] = securedQuery;
+          opts.query = query = securedQuery;
           return cursor();
         }
       );
