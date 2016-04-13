@@ -439,6 +439,13 @@ describe('tyranid', function() {
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
       });
+
+      it('should support secured find()s with a query and an options argument', async function() {
+        const anon = await User.findOne({ 'name.first': 'An' });
+        const books = await Book.find({}, { fields: { title: 1 }, auth: anon }).toArray();
+        expect(books.length).to.eql(1);
+        expect(books[0].title).to.eql('Tyranid User Guide');
+      });
     });
 
     describe('finding', function() {

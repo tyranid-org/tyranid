@@ -35,7 +35,9 @@ const OPTIONS = Tyr.options;
 
 function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
-  return opts && (opts.query || opts.fields || opts.populate || opts.skip || opts.limit || opts.tyranid || opts.auth || opts.perm);
+  return opts &&
+    ( (opts.query || opts.fields || opts.populate || opts.skip || opts.limit || opts.tyranid || opts.auth || opts.perm)
+     || !_.keys(opts).length);
 }
 
 function extractOptions(args) {
@@ -529,7 +531,7 @@ export default class Collection {
     case 2:
       fields = args[1];
       if (fields) {
-        fields = opts.fields = args[1];
+        opts.fields = args[1];
       }
       // fall through
 
@@ -540,9 +542,10 @@ export default class Collection {
       }
       break;
     case 0:
-      query = opts.query;
-      fields = opts.fields;
     }
+
+    query = opts.query;
+    fields = opts.fields;
 
     if (fields) {
       opts.fields = fields = parseProjection(collection, fields);
