@@ -446,6 +446,16 @@ describe('tyranid', function() {
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
       });
+
+      it('should support secured find()s with a empty query and an empty options argument', async function() {
+        const books = await Book.find({}, {}).toArray();
+        expect(books.length).to.eql(2);
+      });
+
+      it('should support secured find()s with a empty query, a null projection, and an empty options argument', async function() {
+        const books = await Book.find({}, null, {}).toArray();
+        expect(books.length).to.eql(2);
+      });
     });
 
     describe('finding', function() {
