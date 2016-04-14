@@ -1749,7 +1749,9 @@ describe('tyranid', function() {
             i4 = '444444444444444444444444';
 
       function testl(v1, v2, expected) {
-        expect(merge(v1, v2)).to.eql(expected);
+        const merged = merge(v1, v2);
+        //console.log('merged', merged);
+        expect(merged).to.eql(expected);
       }
 
       function test(v1, v2, expected) {
@@ -1853,6 +1855,45 @@ describe('tyranid', function() {
         test({ $and: [ { $or: [ { blogId: { $in: [ ObjectId('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ ObjectId('56fc2aacbb4c31a277f9a45b') ] } } ] } ] },
              {},
              { $and: [ { $or: [ { blogId: { $in: [ ObjectId('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ ObjectId('56fc2aacbb4c31a277f9a45b') ] } } ] } ] });
+      });
+
+      it('should merge $or\'s when there are sibling clauses present', () => {
+        testl(
+          {
+            $or: [
+              {
+                a: 3
+              }
+            ]
+          },
+          {
+            $or: [
+              {
+                b: 'test'
+              }
+            ],
+            _id: '5567f2ab387fa974fc6f3a70'
+          },
+          {
+            $and: [
+              {
+                $or: [
+                  {
+                    a: 3
+                  }
+                ]
+              },
+              {
+                $or: [
+                  {
+                    b: 'test'
+                  }
+                ]
+              }
+            ],
+            _id: '5567f2ab387fa974fc6f3a70'
+          }
+        );
       });
     });
 

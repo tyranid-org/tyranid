@@ -275,6 +275,7 @@ function merge(query1, query2) {
   }
 
   const query = {};
+  const ands = [];
 
   for (const n in query1) {
     const v1 = query1[n],
@@ -287,14 +288,19 @@ function merge(query1, query2) {
       query[n] = v2;
       continue;
     } else {
-      const v = mergeOpObject(v1, v2);
+      if (n !== '$or') {
+        const v = mergeOpObject(v1, v2);
 
-      if (v === false) {
-        return false;
-      } else if (v === null) {
-        return { $and: [ query1, query2 ] };
+        if (v === false) {
+          return false;
+        } else if (v === null) {
+          return { $and: [ query1, query2 ] };
+        } else {
+          query[n] = v;
+        }
       } else {
-        query[n] = v;
+        ands.push({ [n]: v1 });
+        ands.push({ [n]: v2 });
       }
     }
   }
@@ -306,6 +312,11 @@ function merge(query1, query2) {
     if (!v1) {
       query[n] = v2;
     }
+  }
+
+  if (ands.length) {
+    const qAnds = query.$and;
+    query.$and = qAnds ? union(qAnds, ands) : ands;
   }
 
   return query;
