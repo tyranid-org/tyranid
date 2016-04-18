@@ -6,12 +6,13 @@
     "declaration": false,
     "allowJs": true,
     "outDir": "./dist-es6",
-    "sourceMap": false
+    "sourceMap": true
   },
   "exclude": [
     "node_modules",
     "doc",
-    "dist",
+    "dist-es6",
+    "dist-node4",
     "typings"
   ]
 }
