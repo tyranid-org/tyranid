@@ -1,6 +1,6 @@
 
 import * as _            from 'lodash';
-import { ObjectId } from 'mongodb';
+import { ObjectID as ObjectId } from 'mongodb';
 
 import Tyr          from '../tyr';
 
@@ -85,7 +85,7 @@ function union(arr1, arr2) {
 //
 
 function mergeOpObject(v1, v2) {
-  const o = {};
+  const o = <any> {};
 
   const o1 = isOpObject(v1) ? v1 : { $eq: v1 },
         o2 = isOpObject(v2) ? v2 : { $eq: v2 };
@@ -274,7 +274,7 @@ function merge(query1, query2) {
     return mergeOpObject(query1, query2);
   }
 
-  const query = {};
+  const query = <any> {};
   const ands = [];
 
   for (const n in query1) {
@@ -326,6 +326,6 @@ const query = {
   merge
 };
 
-Tyr.query = query;
+(<any> Tyr).query = query;
 
 export default query;

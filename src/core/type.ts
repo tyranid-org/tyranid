@@ -8,7 +8,10 @@ import ValidationError from './validationError';
 
 export default class Type {
 
-  constructor(def) {
+  static byName: { [key: string]: Type };
+  name: string;
+
+  constructor(public def: any) {
     this.def = def;
     this.name = def.name;
     Type.validateType(this);
@@ -119,4 +122,4 @@ export default class Type {
 
 Type.byName = {};
 
-Tyr.Type = Type;
+(<any> Tyr).Type = Type;

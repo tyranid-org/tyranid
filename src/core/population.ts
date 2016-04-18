@@ -1,14 +1,14 @@
 
 import * as _ from 'lodash';
 import Tyr      from '../tyr';
-import NamePath from './namePath';
+import { default as NamePath, NamePathInstance } from './namePath';
 import { ObjectID as ObjectId } from 'mongodb';
 
 const $all = Tyr.$all;
 
 export default class Population {
 
-  constructor(public namePath: NamePath, public projection: any) {
+  constructor(public namePath: NamePathInstance, public projection: any) {
     if (!(namePath instanceof NamePath)) {
       throw new Error('parameter namePath is not an instanceof NamePath, got: ' + namePath);
     }

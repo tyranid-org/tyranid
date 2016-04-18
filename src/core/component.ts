@@ -7,6 +7,6 @@ const Component = {
 
 };
 
-Tyr.Component = Component;
+(<any> Tyr).Component = Component;
 
 export default Component;

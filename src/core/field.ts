@@ -1,14 +1,18 @@
-
 import * as _ from 'lodash';
-
-
 import Tyr      from '../tyr';
-import NamePath from './namePath';
+import { default as NamePath, NamePathInstance } from './namePath';
 
 
 export default class Field {
 
-  constructor(def) {
+  _spath: string;
+  path: string;
+  collection: any;
+  name: string;
+  _np: NamePathInstance;
+  parent: Field;
+
+  constructor(public def: any) {
     this.def = def;
   }
 
@@ -58,4 +62,4 @@ export default class Field {
   }
 }
 
-Tyr.Field = Field;
+(<any> Tyr).Field = Field;

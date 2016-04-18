@@ -9,7 +9,7 @@ type Field = any;
 type Collection = any;
 
 
-interface NamePath {
+export type NamePathInstance = {
   detail: Field;
   name: string;
   path: string[];
@@ -24,8 +24,8 @@ interface NamePath {
 }
 
 
-interface NamePathConstructor {
-  new (collection: any, pathName: any, skipArray: any): NamePath;
+export interface NamePathConstructor {
+  new (collection: any, pathName: any, skipArray?: any): NamePathInstance;
   _numberRegex: RegExp;
   _skipArray: Function;
   populateNameFor: Function;
@@ -40,7 +40,7 @@ interface NamePathConstructor {
  * @isomorphic
  */
 const NamePathConstructor = <NamePathConstructor> (<any> function NamePath(collection, pathName, skipArray) {
-  const thisPath = <NamePath> (<any> this);
+  const thisPath = <NamePathInstance> (<any> this);
 
 
   thisPath.col = collection;
