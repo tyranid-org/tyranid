@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import Tyr      from '../tyr';
 import { default as NamePath, NamePathInstance } from './namePath';
-
+import Type from './type';
 
 export default class Field {
 
@@ -11,6 +11,7 @@ export default class Field {
   name: string;
   _np: NamePathInstance;
   parent: Field;
+  type: Type;
 
   constructor(public def: any) {
     this.def = def;

@@ -1,8 +1,9 @@
-
+/// <reference path='../vendor.d.ts' />
 import * as _          from 'lodash';
 import * as hooker     from 'hooker';
 import * as faker      from 'faker';
-import { ObjectId } from 'mongodb';
+import { ObjectID as ObjectId } from 'mongodb';
+
 
 import Tyr        from '../tyr';
 import Component  from './component';
@@ -12,6 +13,7 @@ import Population from './population';
 import Populator  from './populator';
 import NamePath   from './namePath';
 import Field      from './field';
+import { Document, CollectionInstance } from '../interfaces';
 
 
 // variables shared between classes
@@ -27,7 +29,7 @@ const {
   labelize
 } = Tyr;
 
-const OPTIONS = Tyr.options;
+const OPTIONS = (<any> Tyr).options;
 
 
 // Options parsing
@@ -67,14 +69,14 @@ function extractAuthorization(opts) {
   const auth = opts.auth;
   if (auth) {
     delete opts.auth;
-    return auth === true ? Tyr.local.user : auth;
+    return auth === true ? (<any> Tyr).local.user : auth;
   }
 
   const tyrOpts = opts.tyranid;
   if (tyrOpts) {
     delete opts.tyranid;
     if (tyrOpts.secure) {
-      return tyrOpts.subject || tyrOpts.user || Tyr.local.user;
+      return tyrOpts.subject || tyrOpts.user || (<any> Tyr).local.user;
     }
   }
 
@@ -96,38 +98,46 @@ async function populate(collection, opts, documents) {
 // Document
 // ========
 
-const documentPrototype = Tyr.documentPrototype = {
+const documentPrototype = (<any> Tyr).documentPrototype = <any> {
 
   $clone() {
-    return new this.$model(_.cloneDeep(this));
+    const doc = <Document> (<any> this);
+    return new doc.$model(_.cloneDeep(doc));
   },
 
   $save(...args) {
-    return this.$model.save(this, ...args);
+    const doc = <Document> (<any> this);
+    return doc.$model.save.apply(doc.$model, [doc].concat(args));
   },
 
   $insert(...args) {
-    return this.$model.insert(this, ...args);
+    const doc = <Document> (<any> this);
+    return doc.$model.insert.apply(doc.$model, [doc].concat(args));
   },
 
   $update(...args) {
-    return this.$model.updateDoc(this, ...args);
+    const doc = <Document> (<any> this);
+    return doc.$model.updateDoc.apply(doc.$model, [doc].concat(args));
   },
 
   $remove() {
-    return this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true, ...arguments);
+    const doc = <Document> (<any> this);
+    return doc.$model.remove.apply(doc.$model, [{ [doc.$model.def.primaryKey.field]: doc.$id }, true].push(...arguments));
   },
 
   $toClient() {
-    return this.$model.toClient(this);
+    const doc = <Document> (<any> this);
+    return doc.$model.toClient(doc);
   },
 
   $populate(fields, denormal) {
-    return this.$model.populate(fields, this, denormal);
+    const doc = <Document> (<any> this);
+    return doc.$model.populate(fields, doc, denormal);
   },
 
   $validate() {
-    return ObjectType.validate(this.$model, this);
+    const doc = <Document> (<any> this);
+    return ObjectType.validate(doc.$model, doc);
   }
 
 };
@@ -136,7 +146,8 @@ function defineDocumentProperties(dp) {
   Object.defineProperties(dp, {
     $id: {
       get() {
-        return this[this.$model.def.primaryKey.field];
+        const doc = <Document> (<any> this);
+        return doc[doc.$model.def.primaryKey.field];
       },
       enumerable:   false,
       configurable: false
@@ -144,7 +155,8 @@ function defineDocumentProperties(dp) {
 
     $label: {
       get() {
-        return this.$model.labelFor(this);
+        const doc = <Document> (<any> this);
+        return doc.$model.labelFor(doc);
       },
       enumerable:   false,
       configurable: false
@@ -152,8 +164,9 @@ function defineDocumentProperties(dp) {
 
     $uid: {
       get() {
-        const model = this.$model;
-        return model.idToUid(this[model.def.primaryKey.field]);
+        const doc = <Document> (<any> this);
+        const model = doc.$model;
+        return model.idToUid(doc[model.def.primaryKey.field]);
       },
       enumerable:   false,
       configurable: false
@@ -203,7 +216,7 @@ function fakeField(field) {
     let i = 24,
         s = '';
     while(i--) s += faker.random.number(15).toString(16);
-    return ObjectId(s);
+    return <ObjectId> (<any> ObjectId)(s);
 
   case 'boolean':
     return faker.random.boolean();
@@ -216,7 +229,7 @@ function fakeField(field) {
       ? 'link.def.fields'
       : 'fields';
 
-    return _.reduce(_.get(field, key), (out, value, key) => {
+    return _.reduce(<any> _.get(field, key), (out, value, key) => {
       out[key] = fakeField(value);
       return out;
     }, {});
@@ -249,8 +262,8 @@ export default class Collection {
       throw new Error('The collection "id" should be three characters long.');
     }
 
-    if (Tyr.byId[colId]) {
-      throw new Error(`The collection id "${colId}" is already in use by ${Tyr.byId[colId].def.name}.`);
+    if ((<any> Tyr).byId[colId]) {
+      throw new Error(`The collection id "${colId}" is already in use by ${(<any> Tyr).byId[colId].def.name}.`);
     }
 
     //
@@ -260,7 +273,7 @@ export default class Collection {
     //       instances of instances of Collection are documents (collection instances)
     //
 
-    const dp = {};
+    const dp = <any> {};
     _.assign(dp, documentPrototype);
 
     // hack so that our custom functions have the proper name
@@ -315,7 +328,7 @@ export default class Collection {
       throw new Error('Invalid "primaryKey" parameter');
     }
 
-    const db = def.db || Tyr.options.db;
+    const db = def.db || (<any> Tyr).options.db;
 
     if (db) {
       CollectionInstance.db = db.collection(CollectionInstance.def.dbName);
@@ -323,9 +336,9 @@ export default class Collection {
 
 
     collections.push(CollectionInstance);
-    Tyr.components.push(CollectionInstance);
-    Tyr.byId[def.id] = CollectionInstance;
-    Tyr.byName[def.name] = CollectionInstance;
+    (<any> Tyr).components.push(CollectionInstance);
+    (<any> Tyr).byId[def.id] = CollectionInstance;
+    (<any> Tyr).byName[def.name] = CollectionInstance;
 
     for (const key in dp) {
       if (key.substring(0,1) === '$' && key !== '$label') {
@@ -355,7 +368,7 @@ export default class Collection {
 
       if (get || set) {
 
-        const prop = {
+        const prop = <any> {
           enumerable:   isDb !== undefined ? isDb : false,
           configurable: false
         };
@@ -406,12 +419,13 @@ export default class Collection {
   }
 
   get label() {
-    return _.result(this.def, 'label') || labelize(this.def.name);
+    const collection = <CollectionInstance> (<any> this);
+    return _.result(collection.def, 'label') || labelize(collection.def.name);
   }
 
-  async fake({ n, schemaOpts, seed } = {}) {
+  async fake({ n = undefined, schemaOpts = null, seed = null } = {}): Promise<Document | Document[]> {
     // get doc schema
-    const collection = this,
+    const collection = <CollectionInstance> (<any> this),
           schema = await collection.fieldsFor(schemaOpts);
 
     // seed if provided, else reset
@@ -428,16 +442,19 @@ export default class Collection {
 
   /** @isomorphic */
   idToUid(id) {
-    return this.id + id;
+    const collection = <CollectionInstance> (<any> this);
+    return collection.id + id;
   }
 
-  idToLabel(id) {
-    if (this.isStatic()) {
+  idToLabel(id): any {
+    const collection = <CollectionInstance> (<any> this);
+
+    if (collection.isStatic()) {
       if (!id) {
         return '';
       }
 
-      const doc = this.byIdIndex[id];
+      const doc = collection.byIdIndex[id];
       return doc ? doc.$label : 'Unknown';
     }
 
@@ -445,50 +462,53 @@ export default class Collection {
       return Promise.resolve('');
     }
 
-    const lf = this.labelField;
+    const lf = collection.labelField;
     if (lf.def.get || lf.def.getServer) {
       // if the label field is computed, we need to query the whole thing since we don't know what the computation requires
       // (TODO:  analyze functions to determine their dependencies)
 
-      return this.byId(id)
+      return collection.byId(id)
         .then(doc => { return doc ? doc.$label : 'Unknown'; });
     } else {
-      return this.findOne({ [this.def.primaryKey.field]: id }, { [lf.spath]: 1 })
+      return collection.findOne({ [collection.def.primaryKey.field]: id }, { [lf.spath]: 1 })
         .then(doc => doc ? doc.$label : 'Unknown');
     }
   }
 
   /** @isomorphic */
   isStatic() {
-    return this.def.values;
+    const collection = <CollectionInstance> (<any> this);
+    return collection.def.values;
   }
 
-  byId(id, options) {
-    if (this.isStatic()) {
-      return this.byIdIndex[id];
+  byId(id, options): any {
+    const collection = <CollectionInstance> (<any> this);
+
+    if (collection.isStatic()) {
+      return collection.byIdIndex[id];
 
     } else {
       if (typeof id === 'string') {
-        id = this.fields[this.def.primaryKey.field].type.fromString(id);
+        id = collection.fields[collection.def.primaryKey.field].type.fromString(id);
       }
 
-      return this.findOne({ [this.def.primaryKey.field]: id }, options);
+      return collection.findOne({ [collection.def.primaryKey.field]: id }, options);
     }
   }
 
   byIds(ids, options) {
-    const collection = this;
+    const collection = <CollectionInstance> (<any> this);
 
     if (collection.isStatic()) {
       return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
     } else {
-      const opts = combineOptions(options, { query: { [this.def.primaryKey.field]: { $in: ids } } });
+      const opts = combineOptions(options, { query: { [collection.def.primaryKey.field]: { $in: ids } } });
       return collection.findAll(opts);
     }
   }
 
-  byLabel(n, forcePromise) {
-    const collection = this,
+  byLabel(n, forcePromise): any {
+    const collection = <CollectionInstance> (<any> this),
           findName = collection.labelField.path,
           matchLower = n.toLowerCase();
 
@@ -508,7 +528,7 @@ export default class Collection {
 
   /** @isomorphic */
   labelFor(doc) {
-    const collection = this,
+    const collection = <CollectionInstance> (<any> this),
           labelField = collection.labelField;
 
     if (!labelField) {
@@ -521,7 +541,7 @@ export default class Collection {
   }
 
   find(...args) {
-    const collection = this,
+    const collection = <CollectionInstance> (<any> this),
           opts       = extractOptions(args),
           db         = collection.db;
 
@@ -587,7 +607,7 @@ export default class Collection {
     }
 
     if (auth) {
-      return Tyr.mapAwait(
+      return (<any> Tyr).mapAwait(
         collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth),
         securedQuery => {
           opts.query = query = securedQuery;
@@ -630,7 +650,7 @@ export default class Collection {
    * and that it takes a projection as an optional second parameter and supports an options object
    */
   async findOne(...args) {
-    const collection = this,
+    const collection = <CollectionInstance> (<any> this),
           db         = collection.db;
 
     let opts = extractOptions(args);
@@ -658,7 +678,7 @@ export default class Collection {
     const auth = extractAuthorization(opts);
     let query = opts.query || {};
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.find, auth);
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.find, auth);
 
       if (!query) {
         return null;
@@ -668,7 +688,7 @@ export default class Collection {
     let doc = await db.findOne(query, projection, opts);
     if (doc) {
       doc = new collection(doc);
-      await populate(this, opts, doc);
+      await populate(collection, opts, doc);
       return doc;
     }
 
@@ -679,12 +699,12 @@ export default class Collection {
    * Behaves like native mongodb's findAndModify() method except that the results are mapped to collection instances.
    */
   async findAndModify(opts) {
-    const collection = this,
+    const collection = <CollectionInstance> (<any> this),
           db         = collection.db,
           auth       = extractAuthorization(opts);
 
     if (auth) {
-      opts.query = await this.secureFindQuery(opts.query, opts.perm || OPTIONS.permissions.update, auth);
+      opts.query = await collection.secureFindQuery(opts.query, opts.perm || OPTIONS.permissions.update, auth);
     }
 
     let update = opts.update;
@@ -737,8 +757,8 @@ export default class Collection {
   }
 
 
-  async save(obj, opts) {
-    const collection = this;
+  async save(obj, opts): Promise<any> {
+    const collection = <CollectionInstance> (<any> this);
 
     await denormalPopulate(collection, obj, opts);
 
@@ -765,8 +785,8 @@ export default class Collection {
           new: true
         });
 
-        const result = await collection.findAndModify(famOpts);
-        return result.value;
+        const result = <any> (await collection.findAndModify(famOpts));
+        return <Document> result.value;
       } else {
         const modOpts = combineOptions(opts, { denormalAlreadyDone: true });
         return collection.insert(obj, modOpts);
@@ -775,7 +795,7 @@ export default class Collection {
   }
 
   async insert(obj, opts) {
-    const collection = this;
+    const collection = <CollectionInstance> (<any> this);
 
     await denormalPopulate(collection, obj, opts);
 
@@ -819,9 +839,11 @@ export default class Collection {
    * Updates a single document.  Used to implement document.$update() for example. @see update() for regular mongodb update()
    */
   async updateDoc(obj, ...args) {
-    const def    = this.def,
-          fields = this.fields;
-    const setObj = {};
+    const collection = <CollectionInstance> (<any> this);
+
+    const def    = collection.def,
+          fields = collection.fields;
+    const setObj = <any> {};
 
     _.each(fields, (field, name) => {
       const fieldDef = field.def;
@@ -842,7 +864,7 @@ export default class Collection {
 
     let query = { [def.primaryKey.field] : obj[def.primaryKey.field] };
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.update, auth);
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.update, auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
@@ -850,7 +872,7 @@ export default class Collection {
       }
     }
 
-    return this.db.update(
+    return collection.db.update(
       query,
       { $set: setObj }
     );
@@ -860,7 +882,7 @@ export default class Collection {
    * Behaves like native mongodb's update().
    */
   async update(...args) {
-    const collection = this;
+    const collection = <CollectionInstance> (<any> this);
 
     const opts = extractOptions(args);
 
@@ -897,6 +919,8 @@ export default class Collection {
    * Behaves like native mongodb's remove().
    */
   async remove(...args) {
+    const collection = <CollectionInstance> (<any> this);
+
     const opts = extractOptions(args);
 
     let query = opts.query, justOne = opts.justOne;
@@ -912,7 +936,7 @@ export default class Collection {
     const auth = extractAuthorization(opts);
 
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.remove, auth);
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.remove, auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the remove() and potentially throw one there as well
@@ -920,7 +944,7 @@ export default class Collection {
       }
     }
 
-    return await this.db.remove(query, justOne);
+    return await collection.db.remove(query, justOne);
   }
 
   /**
@@ -935,8 +959,10 @@ export default class Collection {
    * @return {Collection} self for chaining
    */
   plugin(fn, opts) {
-    fn(this, opts);
-    return this;
+    const collection = <CollectionInstance> (<any> this);
+
+    fn(collection, opts);
+    return collection;
   }
 
   /**
@@ -949,17 +975,19 @@ export default class Collection {
    * @return {Collection} self for chaining
    */
   pre(methods, cb) {
-    hooker.hook(this, methods, {
+    const collection = <CollectionInstance> (<any> this);
+
+    hooker.hook(collection, methods, {
       pre(...args) {
         const next = (...cbArgs) => {
           // hooker.filter() takes an args array (it uses Function.apply()
           // behind the scenes)
-          return hooker.filter(this, cbArgs);
+          return hooker.filter(collection, cbArgs);
         };
-        return cb.call(this, next, ...args);
+        return cb.call(collection, next, ...args);
       }
     });
-    return this;
+    return collection;
   }
 
   /**
@@ -972,15 +1000,17 @@ export default class Collection {
    * @return {Collection} self for chaining
    */
   post(methods, cb) {
-    hooker.hook(this, methods, {
+    const collection = <CollectionInstance> (<any> this);
+
+    hooker.hook(collection, methods, {
       post(result) {
         const next = (result) => {
           return hooker.override(result);
         };
-        return cb.call(this, next, result);
+        return cb.call(collection, next, result);
       }
     });
-    return this;
+    return collection;
   }
 
   /**
@@ -991,8 +1021,10 @@ export default class Collection {
    * @return {Collection} self for chaining
    */
   unhook(methods) {
-    hooker.unhook(this, methods);
-    return this;
+    const collection = <CollectionInstance> (<any> this);
+
+    hooker.unhook(collection, methods);
+    return collection;
   }
 
   /**
@@ -1007,7 +1039,7 @@ export default class Collection {
    * of documents.  This allows populate to be fed into a promise chain.
    */
   populate(fields, documents, denormal) {
-    const collection = this,
+    const collection = <CollectionInstance> (<any> this),
           population = Population.parse(collection, fields),
           populator  = new Populator(denormal);
 
@@ -1024,11 +1056,13 @@ export default class Collection {
   }
 
   fieldsBy(filter) {
-    return _.filter(this.paths, filter);
+    const collection = <CollectionInstance> (<any> this);
+
+    return _.filter(collection.paths, filter);
   }
 
   async valuesFor(fields) {
-    const collection = this;
+    const collection = <CollectionInstance> (<any> this);
 
     const fieldsObj = { _id: 0 };
 
@@ -1061,10 +1095,10 @@ export default class Collection {
    * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
    */
   fromClient(pojo, path) {
-    let collection = this,
+    let collection = <CollectionInstance> (<any> this),
         fields = collection.fields;
 
-    const namePath = path ? this.parsePath(path) : null;
+    const namePath = path ? collection.parsePath(path) : null;
 
     if (Array.isArray(pojo)) {
       return pojo.map(doc => collection.fromClient(doc, path));
@@ -1072,7 +1106,7 @@ export default class Collection {
 
     if (namePath) {
       const detail = namePath.detail;
-      collection = detail.def.id ? Tyr.byId[detail.def.id] : null;
+      collection = detail.def.id ? (<any> Tyr).byId[detail.def.id] : null;
       fields = detail.fields;
     }
 
@@ -1096,7 +1130,8 @@ export default class Collection {
   }
 
   fromClientQuery(query) {
-    const col = this;
+    const col = <CollectionInstance> (<any> this);
+
 
     function convertValue(field, value) {
       if (_.isArray(value)) {
@@ -1161,11 +1196,15 @@ export default class Collection {
    * This creates a new POJO out of a record instance.  Values are copied by reference (not deep-cloned!).
    */
   toClient(data) {
-    return toClient(this, data);
+    const collection = <CollectionInstance> (<any> this);
+
+    return toClient(collection, data);
   }
 
   parsePath(path) {
-    return new NamePath(this, path);
+    const collection = <CollectionInstance> (<any> this);
+
+    return new NamePath(collection, path);
   }
 
   createCompiler(collection, def, stage) {
@@ -1248,7 +1287,7 @@ export default class Collection {
             }
 
             field.link = type;
-            field.type = Type.byName.link;
+            field.type = <CollectionInstance> (<any> Type.byName).link;
 
             field.type.compile(compiler, field);
           }
@@ -1325,7 +1364,7 @@ export default class Collection {
   }
 
   compile(stage) {
-    const collection = this;
+    const collection = <CollectionInstance> (<any> this);
 
     const compiler = collection.createCompiler(collection, collection.def, stage);
     compiler.fields('', collection, collection.def.fields);
@@ -1340,7 +1379,7 @@ export default class Collection {
   }
 
   validateValues() {
-    const collection  = this,
+    const collection  = <CollectionInstance> (<any> this),
           def  = collection.def,
           rows = def.values;
 
@@ -1465,11 +1504,12 @@ export default class Collection {
   }
 
   addValue(doc) {
-    this.def.values.push(doc);
-    this.byIdIndex[doc.$id] = doc;
+    const collection = <CollectionInstance> (<any> this);
+    collection.def.values.push(doc);
+    collection.byIdIndex[doc.$id] = doc;
   }
 }
 
-Tyr.mixin(Collection, Component);
+(<any> Tyr).mixin(Collection, Component);
 
-Tyr.Collection = Collection;
+(<any> Tyr).Collection = Collection;
