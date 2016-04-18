@@ -6,13 +6,14 @@
   "scripts": {
     "test": "npm run mocha",
     "babel": "./node_modules/.bin/babel ./dist-es6 --out-dir ./dist-node4",
-    "build": "rm -rf ./dist-es6/ ./dist-node4/ && npm run tscompile && npm run babel && cp ./package.json ./dist-node4/",
+    "build": "rm -rf ./dist-es6/ ./dist-node4/ && npm run typings && npm run tscompile && npm run babel && cp ./package.json ./dist-node4/",
     "copy-typings": "cp -r ./typings ./dist-es6 && cp -r ./typings ./dist-node4",
     "docs": "node -e \"require('./doc/doc').default();\"",
     "mocha": "./node_modules/.bin/mocha --compilers js:babel-register ./dist-node4/test/test.js",
     "pretest": "npm run build",
     "prepublish": "npm test",
     "tscompile": "./node_modules/typescript/bin/tsc",
+    "typings": "rm -rf ./typings/ && ./node_modules/.bin/typings install",
     "lint": "./node_modules/.bin/eslint ./src/**/*.js ./test/**/*.js",
     "watch-babel": "./node_modules/.bin/babel --watch ./dist/es6 --out-dir ./dist/node4",
     "watch-tsc": "./node_modules/typescript/bin/tsc -w -d -p ./",
@@ -53,6 +54,7 @@
     "gulp-sourcemaps": "^1.5.2",
     "mocha": "^2.2.5",
     "typescript": "^1.9.0-dev.20160417",
+    "typings": "^0.7.12",
     "yargs": "^3.12.0"
   },
   "babel": {
