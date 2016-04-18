@@ -1,5 +1,5 @@
 
-import _   from 'lodash';
+import * as _   from 'lodash';
 
 import Tyr from '../tyr';
 
@@ -253,7 +253,7 @@ Units.parse = function(text) {
   return make(components);
 }
 
-Tyr.U = ::Units.parse;
+Tyr.U = Units.parse.bind(Units);
 
 
 //

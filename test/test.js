@@ -5,10 +5,10 @@
 
  */
 import Tyr            from '../src/tyranid';
-import chai           from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import mongodb        from 'mongodb';
-import _              from 'lodash';
+import * as chai           from 'chai';
+import * as chaiAsPromised from 'chai-as-promised';
+import * as mongodb        from 'mongodb';
+import * as _              from 'lodash';
 import Field          from '../src/core/field';
 import Type           from '../src/core/type';
 import UnitType       from '../src/unit/unitType';

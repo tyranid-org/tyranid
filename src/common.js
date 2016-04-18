@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import NamePath from './core/namePath';
@@ -125,7 +125,7 @@ export function toClient(col, data) {
         value = data[name];
       } else if( _.isFunction(fieldDef.get)) {
         // Have to set manually for POJO
-        value = data::fieldDef.get();
+        value = fieldDef.get.call(data);
       } else {
         throw new Error('Incorrect computed value definition: ' + name);
       }
