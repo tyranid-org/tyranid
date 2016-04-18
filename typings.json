@@ -1,0 +1,8 @@
+{
+  "ambientDependencies": {
+    "faker": "registry:dt/faker#0.0.0+20160406111603",
+    "lodash": "registry:dt/lodash#3.10.0+20160330154726",
+    "mongodb": "registry:dt/mongodb#2.1.0+20160328151449",
+    "node": "registry:dt/node#4.0.0+20160412142033"
+  }
+}

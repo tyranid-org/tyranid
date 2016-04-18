@@ -1,4 +1,6 @@
 *.swp
 node_modules/
-dist/*
+dist-es6/*
+dist-node4/*
 .DS_Store
+typings

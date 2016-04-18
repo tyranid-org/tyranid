@@ -1,9 +1,10 @@
 
 import Tyr from '../tyr';
+import Field from './field';
 
 export default class ValidationError {
 
-  constructor(field, reason) {
+  constructor(public field: Field, public reason: string) {
     this.field = field;
     this.reason = reason;
   }
@@ -17,4 +18,4 @@ export default class ValidationError {
   }
 }
 
-Tyr.ValidationError = ValidationError;
+(<any> Tyr).ValidationError = ValidationError;

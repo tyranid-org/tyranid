@@ -1,5 +1,5 @@
 
-import _   from 'lodash';
+import * as _   from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import Tyr        from './tyr';
@@ -686,7 +686,7 @@ export default function express(app, auth) {
 
 Tyr.express = express;
 
-express.middleware = ::local.express;
+express.middleware = local.express.bind(local);
 
 /**
  * @private ... clients should use Tyr.express()

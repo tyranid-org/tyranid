@@ -40,7 +40,7 @@ const ArrayType = new Type({
 
       const link = of.link;
       if (link) {
-        values = await Promise.all(values.map(async v => (await link.byLabel(v)).$id));
+        values = await Promise.all(values.map(async (v) => (await link.byLabel(v)).$id));
       }
 
       if (or) {

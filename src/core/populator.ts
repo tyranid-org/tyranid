@@ -1,11 +1,19 @@
-import _ from 'lodash';
-
+/// <reference path='../../typings/main.d.ts' />
+import * as _ from 'lodash';
 import Tyr from '../tyr';
 
 
 export default class Populator {
 
-  constructor(denormal) {
+  // declare typed property
+  cachesByColId: {
+    [key: string]: {
+      [key: string]: any
+    }
+  };
+
+  // declare denormal as a publicly accessible property of type boolean, also parameter
+  constructor(public denormal: boolean) {
     this.denormal = denormal;
     this.cachesByColId = {};
   }

@@ -4,19 +4,51 @@ const _ = require('lodash');
 
 const Tyr = require('../tyr').default;
 
+// will be replaced by real types later...
+type Field = any;
+type Collection = any;
+
+
+export type NamePathInstance = {
+  detail: Field;
+  name: string;
+  path: string[];
+  fields: Field[];
+  pathLabel: string;
+  tail: Field;
+  col: Collection;
+
+  pathName(idx: number): string;
+  uniq(obj: any): any[];
+  get(obj: any): any;
+}
+
+
+export interface NamePathConstructor {
+  new (collection: any, pathName: any, skipArray?: any): NamePathInstance;
+  _numberRegex: RegExp;
+  _skipArray: Function;
+  populateNameFor: Function;
+}
+
+
 /**
  * NOTE: This cannot be a ES6 class because it is isomorphic
  *
+    to preserve strong typing, cast to any and then back to NamePathConstructor interface
+
  * @isomorphic
  */
-function NamePath(collection, pathName, skipArray) {
+const NamePathConstructor = <NamePathConstructor> (<any> function NamePath(collection, pathName, skipArray) {
+  const thisPath = <NamePathInstance> (<any> this);
 
-  this.col = collection;
-  this.name = pathName;
 
-  const path       = this.path = pathName.length ? pathName.split('.') : [],
+  thisPath.col = collection;
+  thisPath.name = pathName;
+
+  const path       = thisPath.path = pathName.length ? pathName.split('.') : [],
         plen       = path.length,
-        pathFields = this.fields = new Array(plen);
+        pathFields = thisPath.fields = new Array(plen);
 
   let curCollection = collection;
   let at = collection;
@@ -39,14 +71,14 @@ function NamePath(collection, pathName, skipArray) {
       continue nextPath;
 
     } else {
-      if (name.match(NamePath._numberRegex) && pi && pathFields[pi-1].type.name === 'array') {
+      if (name.match(NamePathConstructor._numberRegex) && pi && pathFields[pi-1].type.name === 'array') {
         at = at.of;
         pathFields[pi++] = at;
         continue nextPath;
       }
 
       if (!at.fields) {
-        const aAt = NamePath._skipArray(at);
+        const aAt = NamePathConstructor._skipArray(at);
 
         if (aAt && aAt.fields && aAt.fields[name]) {
           at = aAt;
@@ -101,20 +133,20 @@ function NamePath(collection, pathName, skipArray) {
     }
 
     if (skipArray && (pi+1 >= plen || path[pi+1] !== '_')) {
-      at = NamePath._skipArray(at);
+      at = NamePathConstructor._skipArray(at);
     }
 
     if (!at) {
-      throw new Error('Cannot find field "' + this.pathName(pi) + '" in ' + collection.def.name);
+      throw new Error('Cannot find field "' + thisPath.pathName(pi) + '" in ' + collection.def.name);
     }
 
     pathFields[pi++] = at;
   }
-}
+});
 
-NamePath._numberRegex = /^[0-9]$/;
+NamePathConstructor._numberRegex = /^[0-9]$/;
 
-NamePath._skipArray = function(field) {
+NamePathConstructor._skipArray = function(field) {
   if (field && !field.type) {
     debugger;
   }
@@ -136,7 +168,7 @@ NamePath._skipArray = function(field) {
  *
  * @private
  */
-NamePath.populateNameFor = function(name, denormal) {
+NamePathConstructor.populateNameFor = function(name, denormal) {
   const l = name.length;
 
   if (denormal) {
@@ -148,29 +180,29 @@ NamePath.populateNameFor = function(name, denormal) {
   }
 };
 
-NamePath.prototype.pathName = function(pi) {
+NamePathConstructor.prototype.pathName = function(pi) {
   return pi <= 1 ?
     this.name :
     this.path.slice(0, pi).join('.') + ' in ' + this.name;
 };
 
-NamePath.prototype.toString = function() {
+NamePathConstructor.prototype.toString = function() {
   return this.col.def.name + ':' + this.name;
 };
 
-Object.defineProperty(NamePath.prototype, 'tail', {
+Object.defineProperty(NamePathConstructor.prototype, 'tail', {
   get: function() {
     return this.fields[this.fields.length-1];
   }
 });
 
-Object.defineProperty(NamePath.prototype, 'detail', {
+Object.defineProperty(NamePathConstructor.prototype, 'detail', {
   get: function() {
-    return NamePath._skipArray(this.fields[this.fields.length-1]);
+    return NamePathConstructor._skipArray(this.fields[this.fields.length-1]);
   }
 });
 
-NamePath.prototype.get = function(obj) {
+NamePathConstructor.prototype.get = function(obj) {
   const np     = this,
         path   = np.path,
         fields = np.fields,
@@ -184,7 +216,7 @@ NamePath.prototype.get = function(obj) {
       const name = path[pi];
       if (name === '_') {
         pi++;
-      } else if (name && name.match(NamePath._numberRegex)) {
+      } else if (name && name.match(NamePathConstructor._numberRegex)) {
         getInner(pi+1, obj[name]);
         return;
       }
@@ -223,12 +255,12 @@ NamePath.prototype.get = function(obj) {
   return values;
 };
 
-NamePath.prototype.uniq = function(obj) {
+NamePathConstructor.prototype.uniq = function(obj) {
   const val = this.get(obj);
   return _.isArray(val) ? _.uniq(val) : [ val ];
 };
 
-Object.defineProperty(NamePath.prototype, 'pathLabel', {
+Object.defineProperty(NamePathConstructor.prototype, 'pathLabel', {
   get: function() {
     const pf = this.fields;
     let i = 0,
@@ -254,5 +286,5 @@ Object.defineProperty(NamePath.prototype, 'pathLabel', {
   }
 });
 
-Tyr.NamePath = NamePath;
-export default NamePath;
+Tyr.NamePath = NamePathConstructor;
+export default NamePathConstructor;

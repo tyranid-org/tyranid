@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "noImplicitAny": false,
+    "declaration": false,
+    "allowJs": true,
+    "outDir": "./dist-es6",
+    "sourceMap": true
+  },
+  "exclude": [
+    "node_modules",
+    "doc",
+    "dist-es6",
+    "dist-node4",
+    "typings"
+  ]
+}
