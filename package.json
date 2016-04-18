@@ -12,12 +12,9 @@
     "mocha": "./node_modules/.bin/mocha --compilers js:babel-register ./dist-node4/test/test.js",
     "pretest": "npm run build",
     "prepublish": "npm test",
-    "tscompile": "./node_modules/typescript/bin/tsc",
+    "tscompile": "./node_modules/.bin/tsc",
     "typings": "rm -rf ./typings/ && ./node_modules/.bin/typings install",
-    "lint": "./node_modules/.bin/eslint ./src/**/*.js ./test/**/*.js",
-    "watch-babel": "./node_modules/.bin/babel --watch ./dist/es6 --out-dir ./dist/node4",
-    "watch-tsc": "./node_modules/typescript/bin/tsc -w -d -p ./",
-    "watch": "./node_modules/.bin/concurrently --kill-others 'npm run watch-babel' 'npm run watch-tsc'"
+    "lint": "./node_modules/.bin/eslint ./src/**/*.js ./test/**/*.js"
   },
   "repository": {
     "type": "git",
