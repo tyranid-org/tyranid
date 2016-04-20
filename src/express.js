@@ -1,22 +1,47 @@
 
-import _   from 'lodash';
+import _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
-import Tyr        from './tyr';
-import Collection from './core/collection';
-import Field      from './core/field';
-import NamePath   from './core/namePath';
-import Type       from './core/type';
-import local      from './local/local';
+const babel = require('babel-core');
+//import babel        from 'babel-core';
+
+
+import Tyr          from './tyr';
+import Collection   from './core/collection';
+import Field        from './core/field';
+import NamePath     from './core/namePath';
+import Type         from './core/type';
+import local        from './local/local';
 
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
 
+//let nextFnName = 1;
+function es5Fn(fn) {
+  let s = fn.toString();
+
+  //const name = fn.name;
+
+  //if (s.startsWith('function (')) {
+    //s = 'function ' + (name || '_fn' + nextFnName++) + ' (' + s.substring(10);
+  /*} else */
+  if (!s.startsWith('function')) {
+    s = 'function ' + s;
+  }
+
+  return s;
+}
+
+function translateValue(v) {
+  return _.isFunction(v) ? es5Fn(v) : v.toString();
+}
+
 function translateClass(cls) {
   const cname = cls.name;
   let s = '';
-  s += cls.toString() + '\n';
+
+  s += es5Fn(cls) + '\n';
 
   function translateObj(path, o) {
     const isfn = _.isFunction(o);
@@ -29,9 +54,9 @@ function translateClass(cls) {
 
       const value = desc.value;
       if (value) {
-        s += `${cname}${path}.${n} = ${value.toString()};\n`;
+        s += `${cname}${path}.${n} = ${translateValue(value)};\n`;
       } else if (desc.get) {
-        s += `Object.defineProperty(${cname}${path}, '${n}', {get:${desc.get.toString()},enumerable:${desc.enumerable}});\n`;
+        s += `Object.defineProperty(${cname}${path}, '${n}', {get:${translateValue(desc.get)},enumerable:${desc.enumerable}});\n`;
       }
     }
   }
@@ -40,17 +65,6 @@ function translateClass(cls) {
   translateObj('.prototype', cls.prototype);
 
   s += `Tyr.${cname} = ${cname};\n`;
-  return s;
-}
-
-function es5Fn(fn) {
-  let s = fn.toString();
-
-  if (!s.startsWith('function')) {
-    s = 'function ' + s;
-  }
-
-  //console.log('---\n', fn, '\n---');
   return s;
 }
 
@@ -670,6 +684,23 @@ export default function express(app, auth) {
   file += `
 })();
 `;
+
+  try {
+    file = babel.transform(file, {
+      sourceMaps: false,
+      compact: Tyr.options.minify !== undefined ? Tyr.options.minify : true,
+      presets: [
+        'stage-0',
+        'es2015'
+      ],
+      plugins: [
+        'transform-class-properties'
+      ]
+    }).code;
+  } catch (err) {
+    console.log(err.stack);
+    throw err;
+  }
 
   app.route('/api/tyranid')
     // we don't send insecure information in /api/tyranid, it is just source code

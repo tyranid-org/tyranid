@@ -16,6 +16,8 @@ import Unit           from '../src/unit/unit';
 import Units          from '../src/unit/units';
 import Role           from './models/role.js'; // require to get extra link in prototype chain
 
+const babel = require('babel-core');
+//import babel        from 'babel-core';
 
 const {
   ObjectId
@@ -1921,5 +1923,35 @@ describe('tyranid', function() {
         expect(links.length).to.be.eql(10);
       });
     });
+
+    if (false) {
+      describe('babel transform', function() {
+
+        try {
+          let s = `function foo(uid) {
+    const colId = uid.substring(0, 3);
+
+    const col = _tyr2.default.byId[colId];
+
+    if (!col) {
+      throw new Error('No collection found for id "' + colId + '"');
+    }
+
+    const strId = uid.substring(3);
+
+    const idType = col.fields[col.def.primaryKey.field].type;
+
+    return {
+      collection: col,
+      id: idType.fromString(strId)
+    };
+  }`;
+
+          s = babel.transform(s).code;
+        } catch (err) {
+          console.log(err.stack);
+        }
+      });
+    }
   });
 });
