@@ -1,9 +1,4 @@
-/*
-   collection.find() returns Promise<Cursor> not Cursor
 
-
-
- */
 import Tyr            from '../src/tyranid';
 import chai           from 'chai';
 import chaiAsPromised from 'chai-as-promised';

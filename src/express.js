@@ -273,12 +273,13 @@ export default function express(app, auth) {
       }
     };
     CollectionInstance.__proto__ = Collection.prototype;
-    Object.defineProperty(CollectionInstance, 'name', {
-      writable:  false,
-      enumerable: false,
-      configurable: true,
-      value: def.name
-    });
+    // cannot redefine this property in safari
+    //Object.defineProperty(CollectionInstance, 'name', {
+      //writable:  false,
+      //enumerable: false,
+      //configurable: true,
+      //value: def.name
+    //});
 
     var dp = Object.create(documentPrototype);
     dp.constructor = dp.$model = CollectionInstance;
