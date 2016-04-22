@@ -64,7 +64,7 @@ Tyr.parseUid = function(uid) {
 
   return {
     collection: col,
-    id: idType.fromString(strId)
+    id: idType.fromString ? idType.fromString(strId) : strId
   };
 }
 

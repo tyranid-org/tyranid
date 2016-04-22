@@ -698,6 +698,10 @@ export default function express(app, auth) {
         'transform-class-properties'
       ]
     }).code;
+
+    // unbastardize imports for the client
+    file = file.replace(/_tyr2.default/g, 'Tyr');
+    file = file.replace(/_lodash2.default/g, '_');
   } catch (err) {
     console.log(err.stack);
     throw err;
