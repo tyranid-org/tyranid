@@ -607,10 +607,10 @@ describe('tyranid', function() {
     });
 
     describe('documents', function() {
-      it('should support $clone() on instances', function() {
-        const orig  = Job.byLabel('Designer'),
+      it('should support $clone() on instances', async function() {
+        const orig  = await Book.byId(BookIsbn),
               clone = orig.$clone();
-        expect(clone.$label).to.eql('Designer');
+        expect(clone.$id).to.eql(BookIsbn);
         expect(clone.$model).to.equal(orig.$model);
         expect(clone).to.not.equal(orig);
       });

@@ -99,7 +99,9 @@ async function populate(collection, opts, documents) {
 const documentPrototype = Tyr.documentPrototype = {
 
   $clone() {
-    return new this.$model(_.cloneDeep(this));
+    // Amazingly, a seemingly do-nothing cloneDeep `customizer`
+    // seems to address https://github.com/lodash/lodash/issues/602
+    return new this.$model(_.cloneDeep(this, val => val));
   },
 
   $save(...args) {
