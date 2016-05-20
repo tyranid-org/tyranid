@@ -92,8 +92,27 @@ const Tyr = {
     const booleans = await Promise.all(array.map(el => predicate(el)));
     return array.some((el, idx) => booleans[idx]);
   },
-
 };
 
+class Timer {
+  constructor(name) {
+    this.name = name;
+    this.last = this.start = Date.now();
+    console.log(this.name + ': START');
+  }
+
+  lap(msg) {
+    const now = Date.now();
+    console.log(this.name + ': ' + msg + ' (' + (now - this.last) + 'ms)');
+    this.last = now;
+  }
+
+  end() {
+    const now = Date.now();
+    console.log(this.name + ': END (' + (now - this.start) + 'ms)');
+  }
+}
+
+Tyr.Timer = Timer;
 
 export default Tyr;

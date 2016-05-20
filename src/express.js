@@ -263,6 +263,8 @@ export default function express(app, auth) {
 
   ${translateClass(NamePath)}
 
+  ${Tyr.Timer.toString()}
+  Tyr.Timer = Timer;
 
 
   function Collection(def) {
