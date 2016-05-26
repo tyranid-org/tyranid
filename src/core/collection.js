@@ -645,7 +645,12 @@ export default class Collection {
       }
       // fall through
     case 1:
-      opts.query = args[0];
+      // Support direct ObjectId arg, which will always query against _id
+      if (args[0] instanceof ObjectId) {
+        opts.query = { _id: args[0] }
+      } else {
+        opts.query = args[0];
+      }
     }
 
     if (opts === undefined) {

@@ -482,6 +482,21 @@ describe('tyranid', function() {
         });
       });
 
+      it('should findOne() with direct ObjectId', function() {
+        return Role.findOne(AdministratorRoleId).then(function(doc) {
+          // Not instanceof check since Role is a class
+          expect(doc.$model).to.be.eql(Tyr.byName.role);
+        });
+      });
+
+      it('should findOne() with direct ObjectId + projection', function() {
+        return Role.findOne(AdministratorRoleId, { _id: false }).then(function(doc) {
+          expect(doc.$model).to.be.eql(Tyr.byName.role);
+          expect(doc._id).to.not.exist;
+          expect(doc.name).to.exist;
+        });
+      });
+
       it('should findOne() with projection', async function() {
         const doc = await User.findOne({ 'name.first': 'An' }, { name: 1 });
         expect(doc).to.be.an.instanceof(User);
