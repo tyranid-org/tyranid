@@ -1206,6 +1206,12 @@ describe('tyranid', function() {
         const user = await User.byId(4);
         expect(user.title).to.be.eql('Software Engineer');
       });
+
+      it( 'should update with `options` param', async () => {
+        await User.update({ _id: 4 }, { title: 'Software Engineer' }, { multi: false });
+        const user = await User.byId(4);
+        expect(user.title).to.be.eql('Software Engineer');
+      });
     });
 
     describe('remove', function() {
