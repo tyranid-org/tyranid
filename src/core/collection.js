@@ -36,16 +36,17 @@ const OPTIONS = Tyr.options;
 function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
   return opts &&
-    ( (opts.query !== undefined ||
+    ( (opts.auth !== undefined ||
        opts.fields !== undefined ||
-       opts.populate !== undefined ||
-       opts.skip !== undefined ||
        opts.limit !== undefined ||
-       opts.tyranid !== undefined ||
-       opts.auth !== undefined ||
-       opts.perm !== undefined ||
        opts.multi !== undefined ||
-       opts.upsert !== undefined)
+       opts.perm !== undefined ||
+       opts.populate !== undefined ||
+       opts.query !== undefined ||
+       opts.skip !== undefined ||
+       opts.tyranid !== undefined ||
+       opts.upsert !== undefined ||
+       opts.writeConcern !== undefined)
      || !_.keys(opts).length);
 }
 
