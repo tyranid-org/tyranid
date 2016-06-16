@@ -192,8 +192,6 @@ export default function express(app, auth) {
 
   file += `
 
-
-
   function Field(def) {
     this.def = def;
     this.type = Type.byName[def.is];
@@ -262,7 +260,12 @@ export default function express(app, auth) {
 
 
   ${translateClass(NamePath)}
+`;
 
+  // TODO:  add in a dev flag so that the timer class only gets generated if in dev mode
+  file += `
+  ${Tyr.Timer.toString()}
+  Tyr.Timer = Timer;
 
 
   function Collection(def) {

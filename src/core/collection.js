@@ -36,7 +36,17 @@ const OPTIONS = Tyr.options;
 function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
   return opts &&
-    ( (opts.query || opts.fields || opts.populate || opts.skip || opts.limit || opts.tyranid || opts.auth || opts.perm || opts.multi)
+    ( (opts.auth !== undefined ||
+       opts.fields !== undefined ||
+       opts.limit !== undefined ||
+       opts.multi !== undefined ||
+       opts.perm !== undefined ||
+       opts.populate !== undefined ||
+       opts.query !== undefined ||
+       opts.skip !== undefined ||
+       opts.tyranid !== undefined ||
+       opts.upsert !== undefined ||
+       opts.writeConcern !== undefined)
      || !_.keys(opts).length);
 }
 
@@ -645,7 +655,12 @@ export default class Collection {
       }
       // fall through
     case 1:
-      opts.query = args[0];
+      // Support direct ObjectId arg, which will always query against _id
+      if (args[0] instanceof ObjectId) {
+        opts.query = { _id: args[0] }
+      } else {
+        opts.query = args[0];
+      }
     }
 
     if (opts === undefined) {
