@@ -225,11 +225,12 @@ describe('tyranid', function() {
 
     before(async function() {
       // Test validate load models and byName
-      Tyr.validate([{
-        dir: __dirname + '/models',
+      Tyr.validate({
+        glob: __dirname + '/models/**/*.js'
+        //dir: __dirname + '/models',
         // note, we want fileMatch to match the "subdir" directory to test that tyranid ignores directories
-        fileMatch: '[a-z].*'
-      }]);
+        //fileMatch: '[a-z].*'
+      });
 
       Job = Tyr.byName.job;
       Organization = Tyr.byName.organization;

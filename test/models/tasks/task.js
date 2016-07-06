@@ -1,5 +1,5 @@
-import tyr from '../../src/tyranid';
-import User from './user';
+import tyr from '../../../src/tyranid';
+import User from '../user';
 
 var Department = {
   is: 'object',

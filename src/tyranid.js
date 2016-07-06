@@ -1,7 +1,8 @@
-import _  from 'lodash';
-import fs from 'fs';
+import _    from 'lodash';
+import fs   from 'fs';
+import glob from 'glob';
 
-import Tyr from './tyr';
+import Tyr  from './tyr';
 
 import './type/array';
 import './type/boolean';
@@ -139,22 +140,29 @@ _.assign(Tyr, {
   validate(opts) {
     if (opts && opts !== true) {
       function process(dirOpts) {
-        if (!dirOpts.dir) {
-          throw new Error('dir not specified in validate option.');
+        const globPattern = dirOpts.glob;
+        if (globPattern) {
+          for (const file of glob.sync(globPattern, {})) {
+            require(file);
+          }
+        } else {
+          if (!dirOpts.dir) {
+            throw new Error('dir not specified in validate option.');
+          }
+
+          const fileRe = dirOpts.fileMatch ? new RegExp(dirOpts.fileMatch) : undefined;
+
+          fs
+            .readdirSync(dirOpts.dir)
+            .filter(file => !fileRe || fileRe.test(file))
+            .forEach(file => {
+              const fileName = dirOpts.dir + '/' + file;
+
+              if (!fs.lstatSync(fileName).isDirectory()) {
+                require(fileName);
+              }
+            });
         }
-
-        const fileRe = dirOpts.fileMatch ? new RegExp(dirOpts.fileMatch) : undefined;
-
-        fs
-          .readdirSync(dirOpts.dir)
-          .filter(file => !fileRe || fileRe.test(file))
-          .forEach(file => {
-            const fileName = dirOpts.dir + '/' + file;
-
-            if (!fs.lstatSync(fileName).isDirectory()) {
-              require(fileName);
-            }
-          });
       }
 
       if (_.isArray(opts)) {
