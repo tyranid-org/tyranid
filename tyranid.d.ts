@@ -1,3 +1,6 @@
+/// <reference path="./typings/index.d.ts" />
+
+
 /**
  *  Type definitions for tyranid.js
  */
