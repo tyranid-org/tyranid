@@ -19,15 +19,19 @@ declare namespace Tyr {
   export type LabelType = string;
   export type IdType = mongodb.ObjectID;
   export type LabelList = { [labelField: string]: string }[];
-  export type TyranidClass<T> = {  new (...args: any[]): T; };
   export type BootStage = 'compile' | 'link' | 'post-link';
+
+
+  interface TyranidClass<T> {
+    new (...args: any[]): T;
+  }
 
 
 
   /**
    *  Generic tyranid document object.
    */
-  export interface Document {
+  interface Document {
     // arbitrary properties
     [key: string]: any;
 
@@ -128,30 +132,54 @@ declare namespace Tyr {
   export type TyranidCollectionCurriedMethodReturn = Function | Promise<Document | Document[]>;
 
   const $all: any;
-  const byId: { [key: string]: CollectionInstance };
-  const byName: { [key: string]: CollectionInstance };
-  const collections: CollectionInstance[];
+  const byId: TyranidCollectionsById;
+  const byName: TyranidCollectionsByName;
+  const collections: TyranidCollectionList;
   const documentPrototype: any;
   const secure: Secure;
+  const local: TyranidLocal;
+
+
+  interface TyranidCollectionList extends Array<CollectionInstance> {
+
+  }
+
+
+  interface TyranidCollectionsByName {
+    [key: string]: CollectionInstance;
+  }
+
+  interface TyranidCollectionsById {
+    [key: string]: CollectionInstance;
+  }
+
 
   interface Secure {
     query(collection: CollectionInstance, method: 'view' | 'update' | 'insert' | 'delete'): Promise<MongoQuery>;
   }
 
-  const local: {
+  interface TyranidLocal {
     user?: Document;
     req?: Express.Request;
     res?: Express.Response;
     define(propertyName: string): void;
-  };
+  }
 
 
-  export type TyranidConfigOptions = {
+  interface TyranidConfigOptions {
     db: mongodb.Db,
     consoleLogLevel?: 'ERROR',
     dbLogLevel?: 'TRACE',
-    secure?: Secure
-  };
+    secure?: Secure,
+    cls?: boolean,
+    validate?: { dir: string; fileMatch: string; }[],
+    permissions?: {
+      find: string,
+      insert: string,
+      update: string,
+      remove: string
+    }
+  }
 
 
   function U(text: string): Unit;
@@ -249,7 +277,11 @@ declare namespace Tyr {
   /**
    *  Tyranid field
    */
-  class Field {
+  interface FieldStatic {
+    new (...args: any[]): Field;
+  }
+
+  interface Field {
     collection: CollectionInstance;
     db: boolean;
     def: TyranidFieldDefinition;
@@ -269,8 +301,11 @@ declare namespace Tyr {
     labels(text?: string): LabelList;
   }
 
+  interface NamePathStatic {
+    new (...args: any[]): NamePath;
+  }
 
-  class NamePath {
+  interface NamePath {
     detail: Field;
     name: string;
     path: string[];
@@ -283,9 +318,12 @@ declare namespace Tyr {
     get(obj: any): any;
   }
 
-  class Type {
-    static byName: { [key: string]: Type };
+  interface TypeStatic {
+    new (...args: any[]): Type;
+    byName: { [key: string]: Type };
+  }
 
+  interface Type {
     name: string;
 
     compile(compiler: Compiler, path: string, field: Field): void;
@@ -321,7 +359,11 @@ declare namespace Tyr {
   /**
    *  Error thrown in validation failure
    */
-  class ValidationError {
+  interface ValidationErrorStatic {
+    new (...args: any[]): ValidationError
+  }
+
+  interface ValidationError {
     reason: string;
     field: Field;
     message: string;
@@ -333,7 +375,11 @@ declare namespace Tyr {
     new(doc: RawMongoDocument): UnitsDocument;
   }
 
-  class UnitsDocument extends Document {
+  interface UnitsDocumentStatic {
+    new (...args: any[]): UnitsDocument;
+  }
+
+  interface UnitsDocument extends Document {
     symbol: number;
     components: UnitDegree[];
     sid: string;
@@ -351,7 +397,12 @@ declare namespace Tyr {
   }
 
 
-  class UnitConversionError {
+  interface UnitConversionErrorStatic {
+    new (...args: any[]): UnitConversionError;
+  }
+
+
+  interface UnitConversionError {
     from: Units;
     fromValue: number;
     message: string;
@@ -364,7 +415,7 @@ declare namespace Tyr {
     new(doc: RawMongoDocument): UnitDegreeDocument;
   }
 
-  class UnitDegreeDocument extends Document {
+  interface UnitDegreeDocument extends Document {
     degree: number;
     unit: Unit;
   }
@@ -375,7 +426,7 @@ declare namespace Tyr {
   }
 
 
-  class UnitFactorDocument extends Document {
+  interface UnitFactorDocument extends Document {
     factor: number;
     prefix: string;
     symbol: string;
@@ -386,7 +437,7 @@ declare namespace Tyr {
     new(doc: RawMongoDocument): UnitFactorDocument;
   }
 
-  class UnitSystemDocument extends Document {
+  interface UnitSystemDocument extends Document {
     name: string;
   }
 
@@ -395,7 +446,7 @@ declare namespace Tyr {
     new(doc: RawMongoDocument): UnitTypeDocument;
   }
 
-  class UnitTypeDocument extends Document {
+  interface UnitTypeDocument extends Document {
     abbreviation: string;
     formula: string;
     normal: string;
@@ -404,7 +455,11 @@ declare namespace Tyr {
   }
 
 
-  class Log {
+  interface LogStatic {
+    new (...args: any[]): Log;
+  }
+
+  interface Log {
     trace(opts: any): void;
     log(opts: any): void;
     info(opts: any): void;
@@ -415,5 +470,11 @@ declare namespace Tyr {
   }
 
 
-  class Compiler {}
+  interface CompilerStatic {
+    new (...args: any[]): Compiler;
+  }
+
+  interface Compiler {
+
+  }
 }
