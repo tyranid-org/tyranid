@@ -1,3 +1,3 @@
 /// <reference path="../typings/index.d.ts" />
 
-import Tyr from '../';
+import * as Tyr from '../';

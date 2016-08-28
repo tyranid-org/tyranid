@@ -4,11 +4,10 @@
 import * as Express from 'express';
 import * as mongodb from 'mongodb';
 
-export default Tyr;
+export = Tyr;
 
 // declare properties of Tyr object
 declare namespace Tyr {
-
 
   export type RawMongoDocument = {
     [key: string]: any;
@@ -22,7 +21,7 @@ declare namespace Tyr {
   export type BootStage = 'compile' | 'link' | 'post-link';
 
 
-  interface TyranidClass<T> {
+  export interface TyranidClass<T> {
     new (...args: any[]): T;
   }
 
@@ -31,13 +30,13 @@ declare namespace Tyr {
   /**
    *  Generic tyranid document object.
    */
-  interface Document {
+  export interface Document {
     // arbitrary properties
     [key: string]: any;
 
     // universal properties
     $id: IdType;
-    $model: Tyr.CollectionInstance;
+    $model: CollectionInstance;
     $uid: string;
 
     // methods
@@ -47,7 +46,7 @@ declare namespace Tyr {
     $save(): Promise<Document>;
     $toClient(): RawMongoDocument;
     $update(): Promise<Document>;
-    $validate(): Tyr.ValidationError[];
+    $validate(): ValidationError[];
   }
 
 
@@ -131,34 +130,34 @@ declare namespace Tyr {
 
   export type TyranidCollectionCurriedMethodReturn = Function | Promise<Document | Document[]>;
 
-  const $all: any;
-  const byId: TyranidCollectionsById;
-  const byName: TyranidCollectionsByName;
-  const collections: TyranidCollectionList;
-  const documentPrototype: any;
-  const secure: Secure;
-  const local: TyranidLocal;
+  export const $all: any;
+  export const byId: TyranidCollectionsById;
+  export const byName: TyranidCollectionsByName;
+  export const collections: TyranidCollectionList;
+  export const documentPrototype: any;
+  export const secure: Secure;
+  export const local: TyranidLocal;
 
 
-  interface TyranidCollectionList extends Array<CollectionInstance> {
+  export interface TyranidCollectionList extends Array<CollectionInstance> {
 
   }
 
 
-  interface TyranidCollectionsByName {
+  export interface TyranidCollectionsByName {
     [key: string]: CollectionInstance;
   }
 
-  interface TyranidCollectionsById {
+  export interface TyranidCollectionsById {
     [key: string]: CollectionInstance;
   }
 
 
-  interface Secure {
+  export interface Secure {
     query(collection: CollectionInstance, method: 'view' | 'update' | 'insert' | 'delete'): Promise<MongoQuery>;
   }
 
-  interface TyranidLocal {
+  export interface TyranidLocal {
     user?: Document;
     req?: Express.Request;
     res?: Express.Response;
@@ -166,7 +165,7 @@ declare namespace Tyr {
   }
 
 
-  interface TyranidConfigOptions {
+  export interface TyranidConfigOptions {
     db: mongodb.Db,
     consoleLogLevel?: 'ERROR',
     dbLogLevel?: 'TRACE',
@@ -182,29 +181,29 @@ declare namespace Tyr {
   }
 
 
-  function U(text: string): Unit;
-  function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
-  function labelize(name: string): string;
-  function config(opts: TyranidConfigOptions): void;
-  function byUid(uid: string): Promise<Document>;
-  function byUids(uidList: string[], options?: any): Promise<Document[]>;
-  function trace(opts: any): void;
-  function log(opts: any): void;
-  function info(opts: any): void;
-  function warn(opts: any): void;
-  function error(opts: any): void;
-  function fatal(opts: any): void;
-  function express(app: Express.Application, auth?: (req: Express.Request, res: Express.Response, next: Function) => {}): void;
+  export function U(text: string): Unit;
+  export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
+  export function labelize(name: string): string;
+  export function config(opts: TyranidConfigOptions): void;
+  export function byUid(uid: string): Promise<Document>;
+  export function byUids(uidList: string[], options?: any): Promise<Document[]>;
+  export function trace(opts: any): void;
+  export function log(opts: any): void;
+  export function info(opts: any): void;
+  export function warn(opts: any): void;
+  export function error(opts: any): void;
+  export function fatal(opts: any): void;
+  export function express(app: Express.Application, auth?: (req: Express.Request, res: Express.Response, next: Function) => {}): void;
 
   export const Collection: Collection;
 
-  interface Collection {
+  export interface Collection {
     // Collection instance constructor
     new(def: TyranidCollectionDefinition): CollectionInstance;
   }
 
 
-  interface Component {
+  export interface Component {
     boot(stage: string, pass: number): string | string[];
     clientCode(code: string): string;
     compileCollection(compiler: Compiler, field: Collection): void;
@@ -215,7 +214,7 @@ declare namespace Tyr {
   /**
    *  Tyranid collection class
    */
-  interface CollectionInstance extends Component {
+  export interface CollectionInstance extends Component {
 
     // Collection instance constructor
     new(doc: RawMongoDocument): Document;
@@ -277,11 +276,11 @@ declare namespace Tyr {
   /**
    *  Tyranid field
    */
-  interface FieldStatic {
+  export interface FieldStatic {
     new (...args: any[]): Field;
   }
 
-  interface Field {
+  export interface Field {
     collection: CollectionInstance;
     db: boolean;
     def: TyranidFieldDefinition;
@@ -301,11 +300,11 @@ declare namespace Tyr {
     labels(text?: string): LabelList;
   }
 
-  interface NamePathStatic {
+  export interface NamePathStatic {
     new (...args: any[]): NamePath;
   }
 
-  interface NamePath {
+  export interface NamePath {
     detail: Field;
     name: string;
     path: string[];
@@ -318,12 +317,12 @@ declare namespace Tyr {
     get(obj: any): any;
   }
 
-  interface TypeStatic {
+  export interface TypeStatic {
     new (...args: any[]): Type;
     byName: { [key: string]: Type };
   }
 
-  interface Type {
+  export interface Type {
     name: string;
 
     compile(compiler: Compiler, path: string, field: Field): void;
@@ -338,7 +337,7 @@ declare namespace Tyr {
   }
 
 
-  interface Unit extends CollectionInstance {
+  export interface Unit extends CollectionInstance {
     parse(text: string): Unit;
 
     abbreviation: string;
@@ -359,27 +358,27 @@ declare namespace Tyr {
   /**
    *  Error thrown in validation failure
    */
-  interface ValidationErrorStatic {
+  export interface ValidationErrorStatic {
     new (...args: any[]): ValidationError
   }
 
-  interface ValidationError {
+  export interface ValidationError {
     reason: string;
     field: Field;
     message: string;
     tostring(): string;
   }
 
-  interface Units extends CollectionInstance {
+  export interface Units extends CollectionInstance {
     parse(text: string): Units;
     new(doc: RawMongoDocument): UnitsDocument;
   }
 
-  interface UnitsDocumentStatic {
+  export interface UnitsDocumentStatic {
     new (...args: any[]): UnitsDocument;
   }
 
-  interface UnitsDocument extends Document {
+  export interface UnitsDocument extends Document {
     symbol: number;
     components: UnitDegree[];
     sid: string;
@@ -397,12 +396,12 @@ declare namespace Tyr {
   }
 
 
-  interface UnitConversionErrorStatic {
+  export interface UnitConversionErrorStatic {
     new (...args: any[]): UnitConversionError;
   }
 
 
-  interface UnitConversionError {
+  export interface UnitConversionError {
     from: Units;
     fromValue: number;
     message: string;
@@ -411,42 +410,42 @@ declare namespace Tyr {
   }
 
 
-  interface UnitDegree extends CollectionInstance {
+  export interface UnitDegree extends CollectionInstance {
     new(doc: RawMongoDocument): UnitDegreeDocument;
   }
 
-  interface UnitDegreeDocument extends Document {
+  export interface UnitDegreeDocument extends Document {
     degree: number;
     unit: Unit;
   }
 
 
-  interface UnitFactor extends CollectionInstance {
+  export interface UnitFactor extends CollectionInstance {
     new(doc: RawMongoDocument): UnitFactorDocument;
   }
 
 
-  interface UnitFactorDocument extends Document {
+  export interface UnitFactorDocument extends Document {
     factor: number;
     prefix: string;
     symbol: string;
   }
 
 
-  interface UnitSystem extends CollectionInstance {
+  export interface UnitSystem extends CollectionInstance {
     new(doc: RawMongoDocument): UnitFactorDocument;
   }
 
-  interface UnitSystemDocument extends Document {
+  export interface UnitSystemDocument extends Document {
     name: string;
   }
 
 
-  interface UnitType extends CollectionInstance {
+  export interface UnitType extends CollectionInstance {
     new(doc: RawMongoDocument): UnitTypeDocument;
   }
 
-  interface UnitTypeDocument extends Document {
+  export interface UnitTypeDocument extends Document {
     abbreviation: string;
     formula: string;
     normal: string;
@@ -455,11 +454,11 @@ declare namespace Tyr {
   }
 
 
-  interface LogStatic {
+  export interface LogStatic {
     new (...args: any[]): Log;
   }
 
-  interface Log {
+  export interface Log {
     trace(opts: any): void;
     log(opts: any): void;
     info(opts: any): void;
@@ -470,11 +469,12 @@ declare namespace Tyr {
   }
 
 
-  interface CompilerStatic {
+  export interface CompilerStatic {
     new (...args: any[]): Compiler;
   }
 
-  interface Compiler {
+  export interface Compiler {
 
   }
 }
+
