@@ -183,7 +183,7 @@ declare namespace TyrStatic {
     }
 
 
-    export function U(text: string): Unit;
+    export function U(text: string): any;
     export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
     export function labelize(name: string): string;
     export function config(opts: TyranidConfigOptions): void;
@@ -208,8 +208,8 @@ declare namespace TyrStatic {
     export interface Component {
       boot(stage: string, pass: number): string | string[];
       clientCode(code: string): string;
-      compileCollection(compiler: Compiler, field: Collection): void;
-      compileField(compiler: Compiler, field: Field): void;
+      compileCollection(compiler: any, field: Collection): void;
+      compileField(compiler: any, field: Field): void;
     }
 
 
@@ -293,7 +293,7 @@ declare namespace TyrStatic {
       pathLabel: string;
       path: string;
       spath: string;
-      in: Units;
+      in: any;
       keys: Field;
       label: LabelType;
       link: CollectionInstance;
@@ -327,7 +327,7 @@ declare namespace TyrStatic {
     export interface Type {
       name: string;
 
-      compile(compiler: Compiler, path: string, field: Field): void;
+      compile(compiler: any, path: string, field: Field): void;
       fromString(str: string): any;
       fromClient(field: Field, value: any): any;
       format(field: Field, value: any): string;
@@ -337,25 +337,6 @@ declare namespace TyrStatic {
       toClient(field: Field, value: any): any;
       validate(field: Field, value: any): ValidationError;
     }
-
-
-    export interface Unit extends CollectionInstance {
-      parse(text: string): Unit;
-
-      abbreviation: string;
-      baseAdditive: number;
-      baseMultiplier: number;
-      factor: UnitFactor;
-      formula: string;
-      name: string;
-      sid: string;
-      type: UnitType;
-      system: UnitSystem;
-    }
-
-
-
-
 
     /**
      *  Error thrown in validation failure
@@ -371,113 +352,6 @@ declare namespace TyrStatic {
       tostring(): string;
     }
 
-    export interface Units extends CollectionInstance {
-      parse(text: string): Units;
-      new(doc: RawMongoDocument): UnitsDocument;
-    }
-
-    export interface UnitsDocumentStatic {
-      new (...args: any[]): UnitsDocument;
-    }
-
-    export interface UnitsDocument extends Document {
-      symbol: number;
-      components: UnitDegree[];
-      sid: string;
-      type: UnitType;
-
-      toString(): string;
-      add(value: number, addUnits: Units, addValue: number): number;
-      convert(value: number, to: Units): number;
-      divide(by: Units): Units;
-      invert(): Units;
-      isCompatibleWith(units: Units): boolean;
-      multiply(by: Units): Units;
-      normal(): Units;
-      subtract(value: number, subUnits: Units, subValue: number): number;
-    }
-
-
-    export interface UnitConversionErrorStatic {
-      new (...args: any[]): UnitConversionError;
-    }
-
-
-    export interface UnitConversionError {
-      from: Units;
-      fromValue: number;
-      message: string;
-      to: Units;
-      toString(): string;
-    }
-
-
-    export interface UnitDegree extends CollectionInstance {
-      new(doc: RawMongoDocument): UnitDegreeDocument;
-    }
-
-    export interface UnitDegreeDocument extends Document {
-      degree: number;
-      unit: Unit;
-    }
-
-
-    export interface UnitFactor extends CollectionInstance {
-      new(doc: RawMongoDocument): UnitFactorDocument;
-    }
-
-
-    export interface UnitFactorDocument extends Document {
-      factor: number;
-      prefix: string;
-      symbol: string;
-    }
-
-
-    export interface UnitSystem extends CollectionInstance {
-      new(doc: RawMongoDocument): UnitFactorDocument;
-    }
-
-    export interface UnitSystemDocument extends Document {
-      name: string;
-    }
-
-
-    export interface UnitType extends CollectionInstance {
-      new(doc: RawMongoDocument): UnitTypeDocument;
-    }
-
-    export interface UnitTypeDocument extends Document {
-      abbreviation: string;
-      formula: string;
-      normal: string;
-      note: string;
-      symbol: string;
-    }
-
-
-    export interface LogStatic {
-      new (...args: any[]): Log;
-    }
-
-    export interface Log {
-      trace(opts: any): void;
-      log(opts: any): void;
-      info(opts: any): void;
-      warn(opts: any): void;
-      error(opts: any): void;
-      fatal(opts: any): void;
-      addEvent(name: string, label: string, notes: string): void;
-    }
-
-
-    export interface CompilerStatic {
-      new (...args: any[]): Compiler;
-    }
-
-    export interface Compiler {
-
-    }
   }
 
 }
