@@ -70,7 +70,7 @@ declare namespace TyrStatic {
       [key: string]: any;
       id: string;
       name: string;
-      dbName: string;
+      dbName?: string;
       label?: LabelType;
       help?: string;
       note?: string;
@@ -95,20 +95,16 @@ declare namespace TyrStatic {
           fnServer: Function;
         }
       };
-      values?: string[][];
+      values?: any[][];
     }
 
 
-    /**
-     *  Configuration definition for tyranid field.
-     */
-    export type TyranidFieldDefinition = {
+    export interface TyranidFieldDefinitionRaw {
       [key: string]: any;
       is?: string;
       client?: boolean;
       db?: boolean;
       label?: LabelType;
-      pathLabel?: string;
       help?: string;
       note?: string;
       required?: boolean;
@@ -128,6 +124,14 @@ declare namespace TyrStatic {
       setClient?: Function;
       setServer?: Function;
       relate?: 'owns' | 'ownedBy' | 'associate';
+    }
+
+    /**
+     *  Configuration definition for tyranid field.
+     */
+    export interface TyranidFieldDefinition extends TyranidFieldDefinitionRaw {
+      def?: TyranidFieldDefinitionRaw,
+      pathLabel?: string;
     }
 
     export type TyranidCollectionCurriedMethodReturn = Function | Promise<Document | Document[]>;
