@@ -11,7 +11,14 @@ new Tyr.Collection({
   }
 });
 
-export default async function doc() {
+// run
+doc()
+  .catch(err => {
+    console.log(err.stack);
+    process.exit(1);
+  });
+
+async function doc() {
   global.ObjectId = mongodb.ObjectId;
 
   const db = await mongodb.MongoClient.connect('mongodb://localhost:27017/tyranid_test');

@@ -6,9 +6,18 @@
   "jsnext:main": "src/tyranid.js",
   "typings": "src/tyranid.d.ts",
   "scripts": {
-    "test": "gulp test && npm run tsc",
+
+    "test": "npm run mocha && npm run tsc",
+    "pretest": "npm run babel",
+    "prepublish": "npm run test",
+
+    "watch": "./node_modules/.bin/babel src --out-dir dist -q -w",
+    "babel": "./node_modules/.bin/babel src --out-dir dist -q",
+    "eslint": "./node_modules/.bin/eslint ./src ./test --ignore-pattern test/test-typings.js",
+    "mocha": "./node_modules/.bin/mocha './test/test.js' --read false --require 'babel-core/register'",
     "tsc": "./node_modules/.bin/tsc",
-    "prepublish": "gulp compile"
+    "docs": "./node_modules/.bin/babel-node ./doc/doc.js"
+
   },
   "repository": {
     "type": "git",
@@ -35,17 +44,13 @@
     "on-finished": "2.3.0"
   },
   "devDependencies": {
-    "babel-eslint": "5.0.0",
+    "babel-cli": "^6.14.0",
+    "babel-eslint": "^6.1.2",
     "babel-plugin-transform-class-properties": "6.6.0",
     "babel-preset-es2015-node4": "2.0.3",
     "babel-preset-stage-0": "6.5.0",
     "chai": "3.0.0",
     "chai-as-promised": "5.1.0",
-    "gulp": "3.9.0",
-    "gulp-babel": "6.1.2",
-    "gulp-eslint": "1.1.1",
-    "gulp-mocha": "2.1.1",
-    "gulp-sourcemaps": "1.5.2",
     "mocha": "2.2.5",
     "typescript": "2.0.2",
     "yargs": "3.12.0"
