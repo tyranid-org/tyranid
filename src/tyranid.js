@@ -2,7 +2,7 @@ import _    from 'lodash';
 import fs   from 'fs';
 import glob from 'glob';
 
-import Tyr  from './tyr';
+import Tyr from './tyr';
 
 import './type/array';
 import './type/boolean';
@@ -261,7 +261,6 @@ if (global.__TyranidGlobal) {
   );
 }
 
-global.__TyranidGlobal = Tyr;
-
+global.__TyranidGlobal = exports.Tyr = Tyr;
 
 export default Tyr;

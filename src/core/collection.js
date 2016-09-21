@@ -730,7 +730,7 @@ export default class Collection {
               $setOnInsert = await parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), setOnInsertSrc));
 
         if (replaceEntireDoc) {
-          update = $setOnInsert;
+          opts.update = update = $setOnInsert;
         } else {
           update.$setOnInsert = _.omit($setOnInsert, (v,k) => {
             return update.$set && update.$set[k] || v === undefined;
