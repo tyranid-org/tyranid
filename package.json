@@ -7,7 +7,7 @@
   "typings": "src/tyranid.d.ts",
   "scripts": {
     "test": "npm run mocha && npm run tsc",
-    "test-travis": "npm run pretest && npm run mocha && npm run tsc",
+    "test-travis": "npm run pretest && npm run mocha-coverage && npm run tsc",
     "pretest": "npm run babel",
     "prepublish": "npm run test",
     "watch": "babel src --out-dir dist -q -w",
