@@ -6,18 +6,18 @@
   "jsnext:main": "src/tyranid.js",
   "typings": "src/tyranid.d.ts",
   "scripts": {
-
     "test": "npm run mocha && npm run tsc",
+    "test-travis": "npm run pretest && npm run mocha && npm run tsc",
     "pretest": "npm run babel",
     "prepublish": "npm run test",
-
-    "watch": "./node_modules/.bin/babel src --out-dir dist -q -w",
-    "babel": "./node_modules/.bin/babel src --out-dir dist -q",
-    "eslint": "./node_modules/.bin/eslint ./src ./test --ignore-pattern test/test-typings.js",
-    "mocha": "./node_modules/.bin/mocha './test/test.js' --read false --require 'babel-core/register'",
-    "tsc": "./node_modules/.bin/tsc",
-    "docs": "./node_modules/.bin/babel-node ./doc/doc.js"
-
+    "watch": "babel src --out-dir dist -q -w",
+    "babel": "babel src --out-dir dist -q",
+    "eslint": "eslint ./src ./test --ignore-pattern test/test-typings.js",
+    "mocha": "mocha './test/test.js' --read false --require 'babel-core/register'",
+    "mocha-coverage": "nyc --require babel-core/register mocha './test/test.js' --read false",
+    "coverage": "./node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov && ./node_modules/.bin/codecov",
+    "tsc": "tsc",
+    "docs": "babel-node ./doc/doc.js"
   },
   "repository": {
     "type": "git",
@@ -51,7 +51,9 @@
     "babel-preset-stage-0": "6.5.0",
     "chai": "3.0.0",
     "chai-as-promised": "5.1.0",
+    "codecov": "1.0.1",
     "mocha": "2.2.5",
+    "nyc": "8.3.0",
     "typescript": "2.0.2",
     "yargs": "3.12.0"
   },
