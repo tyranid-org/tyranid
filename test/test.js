@@ -1339,20 +1339,21 @@ describe('tyranid', function() {
       });
 
       it('should support findAndModify() with complete doc replacement', function() {
-        return User.findAndModify({ query: { _id: 1003 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
+        return User.findAndModify({ query: { _id: 1003 }, update: { title: 'Good Boy', goldStars: 3 }, upsert: true, new: true }).then(function(result) {
           var user = result.value;
           expect(user.name).to.not.exist;
-          expect(user.goldStars).to.not.exist;
+          expect(user.goldStars).to.be.eql(3);
           expect(user.title).to.be.eql('Good Boy');
         });
       });
 
       it('should support findAndModify() upsert with complete doc replacement', function() {
-        return User.findAndModify({ query: { _id: 1004 }, update: { title: 'Good Boy' }, upsert: true, new: true }).then(function(result) {
+        return User.findAndModify({ query: { _id: 1004 }, update: { age: 24 }, upsert: true, new: true }).then(function(result) {
           var user = result.value;
           expect(user.name).to.not.exist;
-          expect(user.goldStars).to.not.exist;
-          expect(user.title).to.be.eql('Good Boy');
+          expect(user.goldStars).to.be.eql(0); // defaultValue
+          expect(user.age).to.be.eql(24);
+          expect(user.title).to.be.eql('Employee'); // defaultValue
         });
       });
 

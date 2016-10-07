@@ -1,5 +1,8 @@
 language: node_js
 
+script:
+  - npm run test-travis
+
 services:
   - mongodb
 
@@ -22,3 +25,6 @@ node_js:
   # please update this section to your needs!
   #notifications:
     #irc: "irc.freenode.org#travis"
+
+after_success:
+  - npm run coverage
