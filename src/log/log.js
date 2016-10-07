@@ -102,6 +102,11 @@ const Log = new Collection({
 // Server-side Logging Methods
 //
 
+function error(msg) {
+  console.log('Logging error: ' + msg);
+  throw new Error(msg);
+}
+
 async function log(level, ...opts) {
   const obj = {};
 
@@ -116,7 +121,7 @@ async function log(level, ...opts) {
     } else if (_.isObject(opt)) {
       _.assign(obj, opt);
     } else {
-      throw new Error(`Invalid option "${opt}"`);
+      error(`Invalid option "${opt}"`);
     }
   }
 
@@ -128,7 +133,7 @@ async function log(level, ...opts) {
 
   const event = obj.e;
   if (event && !LogEvent.byId(event)) {
-    throw new Error(`Invalid event type "${event}"`);
+    error(`Invalid event type "${event}"`);
   }
 
 

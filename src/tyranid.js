@@ -120,7 +120,10 @@ _.assign(Tyr, {
     const db = this.db = opts.db;
     Tyr.collections.forEach(collection => {
       if (!collection.db) {
-        collection.db = db.collection(collection.def.dbName);
+        const server = collection.server;
+        collection.db = server ?
+          this.servers[server] :
+          db.collection(collection.def.dbName);
       }
     });
 
