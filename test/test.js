@@ -10,6 +10,7 @@ import UnitType       from '../src/unit/unitType';
 import Unit           from '../src/unit/unit';
 import Units          from '../src/unit/units';
 import Role           from './models/role.js'; // require to get extra link in prototype chain
+import                     './models/user.js';
 
 const babel = require('babel-core');
 //import babel        from 'babel-core';
@@ -75,7 +76,8 @@ describe('tyranid', function() {
       db: db,
       consoleLogLevel: 'ERROR',
       dbLogLevel: 'TRACE',
-      secure: fakeSecure
+      secure: fakeSecure,
+      indexes: true
     });
     done(null, db);
   });

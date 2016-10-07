@@ -100,7 +100,7 @@ _.assign(Tyr, {
 
   version: require('../package.json').version,
 
-  config(opts) {
+  async config(opts) {
 
     if (!opts) {
       return options;
@@ -137,6 +137,10 @@ _.assign(Tyr, {
       if (!p[perm]) {
         p[perm] = perm;
       }
+    }
+
+    if (opts.indexes) {
+      await this.createIndexes();
     }
   },
 
@@ -240,6 +244,18 @@ _.assign(Tyr, {
 
     bootstrap('post-link');
   },
+
+
+  async createIndexes() {
+    for (const col of Tyr.collections) {
+      const indexes = col.def.indexes;
+
+      if (indexes) {
+        await col.db.createIndexes(indexes);
+      }
+    }
+  },
+
 
   /**
    * Mostly just used by tests, not rigorous.

@@ -30,6 +30,12 @@ Sibling.Friend = Friend;
 var User = new tyr.Collection({
   id: 'u00',
   name: 'user',
+  indexes: [
+      {
+        key: { 'name.first': 1, 'name.last': 1 },
+        name: 'firstLastName'
+      }
+  ],
   fields: {
     _id: { is: 'integer' },
 
