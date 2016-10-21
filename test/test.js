@@ -9,8 +9,9 @@ import Type           from '../src/core/type';
 import UnitType       from '../src/unit/unitType';
 import Unit           from '../src/unit/unit';
 import Units          from '../src/unit/units';
-import Role           from './models/role.js'; // require to get extra link in prototype chain
-import                     './models/user.js';
+import Role           from './models/role'; // require to get extra link in prototype chain
+import                     './models/user';
+import diff           from '../src/diff/diff';
 
 const babel = require('babel-core');
 //import babel        from 'babel-core';
@@ -1942,6 +1943,51 @@ describe('tyranid', function() {
         links = User.links({ relate: 'associate' });
         expect(links.length).to.be.eql(10);
       });
+    });
+
+    describe('diff', function() {
+      it('should diff simple objects', () => {
+        const tests = [
+          [ { a: 1, b: 2 }, { a: 1 },       { b: 0 }           ],
+          [ { a: 1, b: 2 }, {},             { a: 0, b: 0 }     ],
+          [ { a: 1, b: 2 }, { a: 2 },       { a: [ 2 ], b: 0 } ],
+          [ { a: 1, b: 2 }, { a: 2, b: 2 }, { a: [ 2 ] }       ]
+        ];
+
+        for (const test of tests) {
+          expect(diff.obj(test[0], test[1])).to.be.eql(test[2]);
+        }
+      });
+
+      it('should diff simple arrays', () => {
+        const tests = [
+          [ [],               [],           {}                             ],
+          [ [1,2,3],          [1,2,4],      { 2: [4] }                     ],
+          [ [1,2,3],          [1,2,3,4],    { 3: [4] }                     ],
+          [ [1,2,3],          [1],          { n: 1 }                       ],
+          [ [1,2,3],          [],           { n: 0 }                       ],
+          [ [1,2,3],          [3,2,1],      { 0: 2, 2: 0 }                 ],
+          [ [1,2,3],          [3,2,1,4],    { 0: 2, 2: 0, 3: [4] }         ],
+          [ [1,2,3,4,5],      [2,3,4,5],    { 0: [1, 4], n: 4 }            ],
+          [ [2,3,4,5],        [1,2,3,4,5],  { 0: [1], 1: [-1, 4] }         ],
+          [ [1,2,3,4,5,6],    [1,3,4,5],    { 1: [1, 3], n: 4 }            ],
+          [ [1,2,3,4,5,6],    [2,3,5,6],    { 0: [1, 2], 2: [2, 2], n: 4 } ]
+        ];
+
+        for (const test of tests) {
+          expect(diff.arr(test[0], test[1])).to.be.eql(test[2]);
+        }
+      });
+
+      //it('should diff complex objects', () => {
+        //const tests = [
+          //[ { a: [1,2] }, { a: [2,1] },     { b: ['diff', { 0: 1, 1: 2 }] } ],
+        //];
+
+        //for (const test of tests) {
+          //expect(diff.obj(test[0], test[1])).to.be.eql(test[2]);
+        //}
+      //});
     });
 
     if (false) {
