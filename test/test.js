@@ -1979,15 +1979,15 @@ describe('tyranid', function() {
         }
       });
 
-      //it('should diff complex objects', () => {
-        //const tests = [
-          //[ { a: [1,2] }, { a: [2,1] },     { b: ['diff', { 0: 1, 1: 2 }] } ],
-        //];
+      it('should diff complex objects', () => {
+        const tests = [
+          [ { a: [1,2] }, { a: [2,1] },     { a: [0, { 0: 1, 1: 0 }] } ],
+        ];
 
-        //for (const test of tests) {
-          //expect(diff.obj(test[0], test[1])).to.be.eql(test[2]);
-        //}
-      //});
+        for (const test of tests) {
+          expect(diff.obj(test[0], test[1])).to.be.eql(test[2]);
+        }
+      });
     });
 
     if (false) {

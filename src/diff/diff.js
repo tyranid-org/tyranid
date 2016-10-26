@@ -16,6 +16,8 @@ import _ from 'lodash';
  */
 
 
+const isArray = Array.isArray;
+
 /**
  * Returns the differences to transform a into b
  *
@@ -37,12 +39,13 @@ function objDiff(a, b) {
       if (bv === undefined) {
         diffs[prop] = 0;
       } else {
-        // TODO:  do a recursive difference of the underlying value
+        if (isArray(av) && isArray(bv)) {
+          diffs[prop] = [ 0, arrDiff(av, bv) ];
+        } else {
+          // TODO:  check for the case where av and bv are both objects
 
-        // how should this work?
-
-
-        diffs[prop] = [ bv ];
+          diffs[prop] = [ bv ];
+        }
       }
     }
   }
