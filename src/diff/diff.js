@@ -1,22 +1,19 @@
 
 import _ from 'lodash';
 
-/*
+const isArray = Array.isArray,
 
-    X. simple obj diff
+      T_ARRAY  = 0,
+      T_OBJECT = 1;
 
-    X. simple array diff
-
-       X. array run compression
-
-    /. composite differ that combines array/object differencing
-
-    /. patching that undos differencing
-
- */
+function badPatch() {
+  return new Error('Bad patch');
+}
 
 
-const isArray = Array.isArray;
+//
+// Objects
+//
 
 /**
  * Returns the differences to transform a into b
@@ -28,22 +25,28 @@ const isArray = Array.isArray;
  *
  *
  */
-function objDiff(a, b) {
+function diffObj(a, b) {
   const diffs = {};
 
   for (const prop in a) {
     const av = a[prop],
           bv = b[prop];
 
-    if (av !== bv) {
+    if (!_.isEqual(av, bv)) {
       if (bv === undefined) {
         diffs[prop] = 0;
       } else {
-        if (isArray(av) && isArray(bv)) {
-          diffs[prop] = [ 0, arrDiff(av, bv) ];
+        if (isArray(av)) {
+          if (isArray(bv)) {
+            diffs[prop] = [ T_ARRAY, diffArr(av, bv) ];
+          } else {
+            diffs[prop] = [ bv ];
+          }
+        } else if (isArray(bv)) {
+          diffs[prop] = [ bv ];
+        } else if (_.isObject(av) && _.isObject(bv)) {
+          diffs[prop] = [ T_OBJECT, diffObj(av, bv) ];
         } else {
-          // TODO:  check for the case where av and bv are both objects
-
           diffs[prop] = [ bv ];
         }
       }
@@ -61,51 +64,57 @@ function objDiff(a, b) {
   return diffs;
 }
 
+function patchObj(a, patch) {
+
+  for (const prop in patch) {
+    const pv = patch[prop];
+
+    if (pv === 0) {
+      delete a[prop];
+      continue;
+    } else if (_.isArray(pv)) {
+      switch (pv.length) {
+      case 1:
+        a[prop] = _.cloneDeep(pv[0]);
+        continue;
+
+      case 2:
+        const [ type, ipatch ] = pv;
+
+        switch (type) {
+        case T_ARRAY:
+          patchArr(a[prop], ipatch);
+          continue;
+
+        case T_OBJECT:
+          patchObj(a[prop], ipatch);
+          continue;
+        }
+
+        throw badPatch();
+      }
+    }
+
+    throw badPatch();
+  }
+}
+
+
+//
+// Arrays
+//
+
 // this value works because "$" properties cannot be stored in mongo
 const USED = { $used_: 0 };
 
 /*
+   Generates a patch of the format:
 
-    [1, 2, 3]       => [1, 3]       = { 2: 1 }                         OR { 1: -1 }
-    [1, 2, 3, 4, 5] => [2, 3, 4, 5] = { 0: 1, 1: 2, 2: 3, 3: 4, n: 4 } OR { 0: -1 }
-
-    transform:
-
-    {
-      0: 1,
-      1: 2,
-      2: 3,
-      3: 4,
-      n: 4
-    }
-
-    into:
-
-    {
-      0: { s: 1, n: 4 },
-      n: 4                 // should be able to detect that this was missing ?
-    }
-
-    ---
-
-    {
-      0: 1,
-      1: 2,
-      2: 3,
-      3: 4,
-      4: 0
-    }
-
-    {
-      0: { s: 1, n: 4 },
-      4: 0
-    }
-
-
-
+    [1, 2, 3]       => [1, 3]       = { 2: 1 }
+    [1, 2, 3, 4, 5] => [2, 3, 4, 5] = { 0: [ 1, 4 ], n: 4 }
 
  */
-function arrDiff(a, b) {
+function diffArr(a, b) {
 
   const alen = a.length,
         blen = b.length,
@@ -145,6 +154,25 @@ function arrDiff(a, b) {
   // compress runs
   let offset, runLen = 0, bi = 0;
 
+  /*
+    transform things like:
+
+    {
+      0: 1,
+      1: 2,
+      2: 3,
+      3: 4,
+      n: 4
+    }
+
+    into things like:
+
+    {
+      0: [ 1, 4 ],   // targetIndex: [ offset, runLength ]
+      n: 4
+    }
+
+   */
   function compressRun() {
     if (runLen > 1 && offset) {
       let ri = bi - runLen;
@@ -174,11 +202,61 @@ function arrDiff(a, b) {
   return diff;
 }
 
+function patchArr(a, patch) {
+  const orig = _.clone(a);
+  let n;
+
+  for (const pn in patch) {
+    const pi = parseInt(pn),
+          pv = patch[pn];
+
+    if (isNaN(pi)) {
+      if (pn === 'n') {
+        n = pv;
+      } else {
+        throw badPatch();
+      }
+    } else {
+      if (isArray(pv)) {
+        switch (pv.length) {
+        case 1:
+          a[pi] = _.cloneDeep(pv[0]);
+          continue;
+
+        case 2:
+          const [ offset, len ] = pv;
+          const plen = pi + len;
+
+          for (let i = pi; i < plen; i++) {
+            a[i] = orig[i + offset];
+          }
+
+          continue;
+        }
+
+        throw badPatch();
+      }
+
+      const fi = parseInt(pv);
+
+      if (isNaN(fi)) {
+        throw badPatch();
+
+      } else {
+        a[pi] = orig[fi];
+      }
+    }
+  }
+
+  if (n !== undefined) {
+    a.length = n;
+  }
+}
 
 // /* eslint eqeqeq: 0 */
 /* eslint-disable */
 /*
-export function arrDiff(a, b) {
+export function diffArr(a, b) {
 
   var as = {};
   var bs = {};
@@ -232,6 +310,9 @@ export function arrDiff(a, b) {
 //}
 
 export default {
-  obj: objDiff,
-  arr: arrDiff
+  diffObj,
+  patchObj,
+
+  diffArr,
+  patchArr
 };

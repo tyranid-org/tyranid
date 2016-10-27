@@ -1946,46 +1946,74 @@ describe('tyranid', function() {
     });
 
     describe('diff', function() {
-      it('should diff simple objects', () => {
-        const tests = [
-          [ { a: 1, b: 2 }, { a: 1 },       { b: 0 }           ],
-          [ { a: 1, b: 2 }, {},             { a: 0, b: 0 }     ],
-          [ { a: 1, b: 2 }, { a: 2 },       { a: [ 2 ], b: 0 } ],
-          [ { a: 1, b: 2 }, { a: 2, b: 2 }, { a: [ 2 ] }       ]
-        ];
+      const simpleObjTests = [
+        [ { a: 1, b: 2 }, { a: 1 },       { b: 0 }           ],
+        [ { a: 1, b: 2 }, {},             { a: 0, b: 0 }     ],
+        [ { a: 1, b: 2 }, { a: 2 },       { a: [ 2 ], b: 0 } ],
+        [ { a: 1, b: 2 }, { a: 2, b: 2 }, { a: [ 2 ] }       ]
+      ];
 
-        for (const test of tests) {
-          expect(diff.obj(test[0], test[1])).to.be.eql(test[2]);
+      const simpleArrTests = [
+        [ [],               [],           {}                             ],
+        [ [1,2,3],          [1,2,4],      { 2: [4] }                     ],
+        [ [1,2,3],          [1,2,3,4],    { 3: [4] }                     ],
+        [ [1,2,3],          [1],          { n: 1 }                       ],
+        [ [1,2,3],          [],           { n: 0 }                       ],
+        [ [1,2,3],          [3,2,1],      { 0: 2, 2: 0 }                 ],
+        [ [1,2,3],          [3,2,1,4],    { 0: 2, 2: 0, 3: [4] }         ],
+        [ [1,2,3,4,5],      [2,3,4,5],    { 0: [1, 4], n: 4 }            ],
+        [ [2,3,4,5],        [1,2,3,4,5],  { 0: [1], 1: [-1, 4] }         ],
+        [ [1,2,3,4,5,6],    [1,3,4,5],    { 1: [1, 3], n: 4 }            ],
+        [ [1,2,3,4,5,6],    [2,3,5,6],    { 0: [1, 2], 2: [2, 2], n: 4 } ]
+      ];
+
+      const complexObjTests = [
+        [ { a: [1,2] },          { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }] }       ],
+        [ { a: [1,2], b: 3 },    { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }], b: 0 } ],
+        [ { a: [1,2] },          { a: [] },             { a: [0, { n: 0 }] }             ],
+        [ { a: [1,2] },          { a: [1,2] },          {}                               ],
+        [ { a: { b: 1, c: 1 } }, { a: { a: 1, b: 1 } }, { a: [ 1, { a: [ 1 ], c: 0 } ] } ],
+      ];
+
+      it('should diff simple objects', () => {
+        for (const test of simpleObjTests) {
+          expect(diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
         }
       });
 
       it('should diff simple arrays', () => {
-        const tests = [
-          [ [],               [],           {}                             ],
-          [ [1,2,3],          [1,2,4],      { 2: [4] }                     ],
-          [ [1,2,3],          [1,2,3,4],    { 3: [4] }                     ],
-          [ [1,2,3],          [1],          { n: 1 }                       ],
-          [ [1,2,3],          [],           { n: 0 }                       ],
-          [ [1,2,3],          [3,2,1],      { 0: 2, 2: 0 }                 ],
-          [ [1,2,3],          [3,2,1,4],    { 0: 2, 2: 0, 3: [4] }         ],
-          [ [1,2,3,4,5],      [2,3,4,5],    { 0: [1, 4], n: 4 }            ],
-          [ [2,3,4,5],        [1,2,3,4,5],  { 0: [1], 1: [-1, 4] }         ],
-          [ [1,2,3,4,5,6],    [1,3,4,5],    { 1: [1, 3], n: 4 }            ],
-          [ [1,2,3,4,5,6],    [2,3,5,6],    { 0: [1, 2], 2: [2, 2], n: 4 } ]
-        ];
-
-        for (const test of tests) {
-          expect(diff.arr(test[0], test[1])).to.be.eql(test[2]);
+        for (const test of simpleArrTests) {
+          expect(diff.diffArr(test[0], test[1])).to.be.eql(test[2]);
         }
       });
 
       it('should diff complex objects', () => {
-        const tests = [
-          [ { a: [1,2] }, { a: [2,1] },     { a: [0, { 0: 1, 1: 0 }] } ],
-        ];
+        for (const test of complexObjTests) {
+          expect(diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
+        }
+      });
 
-        for (const test of tests) {
-          expect(diff.obj(test[0], test[1])).to.be.eql(test[2]);
+      it('should patch simple objects', () => {
+        for (const test of simpleObjTests) {
+          const po = _.cloneDeep(test[0]);
+          diff.patchObj(po, test[2]);
+          expect(po).to.be.eql(test[1]);
+        }
+      });
+
+      it('should patch simple arrays', () => {
+        for (const test of simpleArrTests) {
+          const po = _.cloneDeep(test[0]);
+          diff.patchArr(po, test[2]);
+          expect(po).to.be.eql(test[1]);
+        }
+      });
+
+      it('should patch complex objects', () => {
+        for (const test of complexObjTests) {
+          const po = _.cloneDeep(test[0]);
+          diff.patchObj(po, test[2]);
+          expect(po).to.be.eql(test[1]);
         }
       });
     });
