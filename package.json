@@ -52,6 +52,7 @@
     "chai": "3.0.0",
     "chai-as-promised": "5.1.0",
     "codecov": "1.0.1",
+    "eslint": "3.9.0",
     "mocha": "2.2.5",
     "nyc": "8.3.0",
     "typescript": "2.0.2",
