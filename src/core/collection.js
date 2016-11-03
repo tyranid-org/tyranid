@@ -682,7 +682,7 @@ export default class Collection {
       }
     }
 
-    let doc = await db.findOne(query, projection, opts);
+    let doc = await db.findOne(query, projection, _.omit(opts, ['query', 'fields']));
     if (doc) {
       doc = new collection(doc);
       await populate(this, opts, doc);

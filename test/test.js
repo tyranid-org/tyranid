@@ -1945,7 +1945,7 @@ describe('tyranid', function() {
       });
     });
 
-    describe('diff', function() {
+    describe('diff & patch', function() {
       const simpleObjTests = [
         [ { a: 1, b: 2 }, { a: 1 },       { b: 0 }           ],
         [ { a: 1, b: 2 }, {},             { a: 0, b: 0 }     ],
