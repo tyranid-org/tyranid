@@ -12,6 +12,7 @@ import Units          from '../src/unit/units';
 import Role           from './models/role'; // require to get extra link in prototype chain
 import                     './models/user';
 import diff           from '../src/diff/diff';
+import historical     from '../src/historical/historical';
 
 const babel = require('babel-core');
 //import babel        from 'babel-core';
@@ -1975,6 +1976,15 @@ describe('tyranid', function() {
         [ { a: { b: 1, c: 1 } }, { a: { a: 1, b: 1 } }, { a: [ 1, { a: [ 1 ], c: 0 } ] } ],
       ];
 
+      const propsObjTests = [
+        [ { a: [1,2] },          { a: [2,1] },          {},                               {} ],
+        [ { a: [1,2] },          { a: [2,1] },          {},                               { c: 1 } ],
+        [ { a: [1,2] },          { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
+        [ { a: [1,2], b: 3 },    { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
+        [ { a: [1,2], b: 3 },    { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }], b: 0 }, { a: 1, b: 1 } ],
+        [ { a: { b: 1, c: 1 } }, { a: { a: 1, b: 1 } }, { a: [ 1, { a: [ 1 ], c: 0 } ] }, { a: 1 } ],
+      ];
+
       it('should diff simple objects', () => {
         for (const test of simpleObjTests) {
           expect(diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
@@ -1990,6 +2000,12 @@ describe('tyranid', function() {
       it('should diff complex objects', () => {
         for (const test of complexObjTests) {
           expect(diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
+        }
+      });
+
+      it('should diff objects with selected props', () => {
+        for (const test of propsObjTests) {
+          expect(diff.diffObj(test[0], test[1], test[3])).to.be.eql(test[2]);
         }
       });
 
@@ -2015,6 +2031,83 @@ describe('tyranid', function() {
           diff.patchObj(po, test[2]);
           expect(po).to.be.eql(test[1]);
         }
+      });
+    });
+
+    describe('historical', function() {
+      it('should create _historicalFields hash', () => {
+        expect(User._historicalFields.age).to.eql(User.fields.age);
+      });
+
+      it('should create preserveInitialValues()', () => {
+        const u = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+        historical.preserveInitialValues(User, u);
+        expect(u.$orig.age).to.eql(u.age);
+        expect(u.$orig.name).to.be.undefined;
+      });
+
+      it('should create snapshot()s', () => {
+        const u = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+        historical.preserveInitialValues(User, u);
+        u.age = 6;
+        historical.snapshot(User, u);
+        expect(u._history[0].p).to.eql({ age: [5] });
+      });
+
+      function user1() {
+        const u = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+        historical.preserveInitialValues(User, u);
+        u.age = 6;
+        historical.snapshot(User, u, { o: new Date('5-Oct-2016').getTime() });
+        u.age = 7;
+        historical.snapshot(User, u, { o: new Date('10-Oct-2016').getTime() });
+
+        return u;
+      }
+
+      it('should support asOf()', () => {
+        let u = user1();
+        expect(u.age).to.eql(7);
+
+        historical.asOf(User, u, new Date('8-Oct-2016').getTime());
+        expect(u.age).to.eql(6);
+
+        u = user1();
+        u.$asOf(new Date('8-Oct-2015'));
+        expect(u.age).to.eql(5);
+      });
+
+      it('should preserveInitialValues() automatically on records read from the db', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+        await amy.$save();
+
+        amy = await User.byId(2001);
+
+        expect(amy.$orig).to.eql({ age: 36 });
+
+        await User.remove({ _id: 2001 });
+      });
+
+      it('$save() should store _history', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        expect(amy._history).to.be.undefined;
+
+        amy.age = 37;
+
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        expect(amy._history[0].p).to.eql({ age: [ 36 ] });
+
+        await User.remove({ _id: 2001 });
       });
     });
 

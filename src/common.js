@@ -30,6 +30,10 @@ export async function parseInsertObj(col, obj) {
     insertObj[name] = obj[name];
   });
 
+  if (def.historical && obj._history) {
+    insertObj._history = obj._history;
+  }
+
   _.each(fields, function(field, name) {
     const fieldDef = field.def;
 

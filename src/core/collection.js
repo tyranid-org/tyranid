@@ -13,6 +13,8 @@ import Populator  from './populator';
 import NamePath   from './namePath';
 import Field      from './field';
 
+import historical from '../historical/historical';
+
 
 // variables shared between classes
 import {
@@ -107,6 +109,10 @@ async function populate(collection, opts, documents) {
 // ========
 
 const documentPrototype = Tyr.documentPrototype = {
+
+  $asOf(date) {
+    historical.asOf(this.$model, this, date);
+  },
 
   $clone() {
     // Amazingly, a seemingly do-nothing cloneDeep `customizer`
@@ -278,6 +284,7 @@ export default class Collection {
     // hack so that our custom functions have the proper name
     let CollectionInstance;
     const lodash = _; // eval only takes in local variables into its scope
+
     eval(`CollectionInstance = function ${lodash.capitalize(def.name)}(data) {
       this.__proto__ = dp;
 
@@ -293,9 +300,7 @@ export default class Collection {
         }
       }
 
-      if (data) {
-        lodash.assign(this, data);
-      }
+      CollectionInstance._wrap(this, data);
     }`);
 
     dp.constructor = dp.$model = CollectionInstance;
@@ -415,6 +420,17 @@ export default class Collection {
     CollectionInstance.validateValues();
 
     return CollectionInstance;
+  }
+
+  _wrap(doc, pojo) {
+
+    if (pojo) {
+      _.assign(doc, pojo);
+
+      if (pojo._id && this.def.historical) {
+        historical.preserveInitialValues(this, doc);
+      }
+    }
   }
 
   get label() {
@@ -763,6 +779,10 @@ export default class Collection {
       const arrOpts = combineOptions(opts, { denormalAlreadyDone: true });
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
+      if (collection.def.historical) {
+        historical.snapshot(collection, obj);
+      }
+
       const keyFieldName = collection.def.primaryKey.field,
             keyValue = obj[keyFieldName];
 
@@ -1353,6 +1373,12 @@ export default class Collection {
 
     if (collection.def.enum && !collection.labelField) {
       throw new Error(`Some string field must have the label property set if the collection "${collection.def.name}" is an enumeration.`);
+    }
+
+    if (stage === 'link') {
+      if (collection.def.historical) {
+        historical.link(collection);
+      }
     }
   }
 

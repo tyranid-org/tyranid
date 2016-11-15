@@ -30,6 +30,7 @@ Sibling.Friend = Friend;
 var User = new tyr.Collection({
   id: 'u00',
   name: 'user',
+  historical: true,
   indexes: [
       {
         key: { 'name.first': 1, 'name.last': 1 },
@@ -52,7 +53,7 @@ var User = new tyr.Collection({
 
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
     job:       { link: 'job' },
-    age:       { is: 'integer', in: 'year' },
+    age:       { is: 'integer', in: 'year', historical: true },
     roles:     { is: 'array', of: RoleStatus },
 
     bag:       { is: 'object' },

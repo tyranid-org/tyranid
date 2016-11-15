@@ -25,10 +25,18 @@ function badPatch() {
  *
  *
  */
-function diffObj(a, b) {
+function diffObj(a, b, props) {
   const diffs = {};
 
+  // TODO:  maybe implement two versions of this algo, one if props is present, one if it isn't,
+  //        because it's probably faster to outerloop props if it is present
+
   for (const prop in a) {
+    if (   !a.hasOwnProperty(prop)
+        || (props && !props[prop])) {
+      continue;
+    }
+
     const av = a[prop],
           bv = b[prop];
 
@@ -54,6 +62,11 @@ function diffObj(a, b) {
   }
 
   for (const prop in b) {
+    if (   !b.hasOwnProperty(prop)
+        || (props && !props[prop])) {
+      continue;
+    }
+
     if (!(prop in a)) {
       const bv = b[prop];
 
