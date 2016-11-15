@@ -852,41 +852,14 @@ export default class Collection {
    * Updates a single document.  Used to implement document.$update() for example. @see update() for regular mongodb update()
    */
   async updateDoc(obj, ...args) {
-    const def    = this.def,
-          fields = this.fields;
-    const setObj = {};
+    const keyFieldName = this.def.primaryKey.field;
 
-    _.each(fields, (field, name) => {
-      const fieldDef = field.def;
-
-      if (fieldDef.db !== false) {
-        if (obj[name] !== undefined && name !== '_id' && name !== def.primaryKey.field) {
-          setObj[name] = obj[name];
-        }
-      }
-    });
-
-    if (def.timestamps) {
-      setObj.updatedAt = new Date();
-    }
-
-    const opts = extractOptions(args),
-          auth = extractAuthorization(opts);
-
-    let query = { [def.primaryKey.field] : obj[def.primaryKey.field] };
-    if (auth) {
-      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.update, auth);
-
-      if (!query) {
-        // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
-        return false;
-      }
-    }
-
-    return this.db.update(
-      query,
-      { $set: setObj }
-    );
+    await this.findAndModify(combineOptions(extractOptions(args), {
+      query: { [keyFieldName]: obj[keyFieldName] },
+      update: { $set: _.omit(obj, '_id') },
+      upsert: true,
+      new: true
+    }));
   }
 
   /**

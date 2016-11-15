@@ -1186,22 +1186,51 @@ describe('tyranid', function() {
       });
     });
 
-    describe('$update', function() {
-      it( 'should update shallow', function() {
-        return User.byId(1)
-          .then( function(savedUser) {
-            var clientUser =  { _id: 1, organization: 2 };
-            var user = User.fromClient(clientUser);
+    describe('$update()', function() {
+      it( 'should update shallow', async () => {
+        const savedUser = await User.byId(1);
+        const clientUser =  { _id: 1, organization: 2 };
+        const user = User.fromClient(clientUser);
 
-            return user.$update()
-              .then(function() {
-                return User.byId(1);
-              })
-              .then(function(newUser) {
-                savedUser.$save();
-                expect(newUser.title).to.be.eql('Developer');
-              });
-          });
+        await user.$update();
+        const newUser = await User.byId(1);
+
+        await savedUser.$save();
+        expect(newUser.title).to.be.eql('Developer');
+      });
+
+      it( 'should not replace', async () => {
+        let dale = new User({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });
+        await dale.$save();
+        dale = await User.byId(2001);
+
+        delete dale.name;
+        dale.age = 32;
+        await dale.$update();
+
+        dale = await User.byId(2001);
+
+        await User.remove({ _id: 2001 });
+
+        expect(dale.name.first).to.eql('Dale');
+      });
+    });
+
+    describe('$save()', function() {
+      it( 'should replace', async () => {
+        let dale = new User({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });
+        await dale.$save();
+        dale = await User.byId(2001);
+
+        delete dale.name;
+        dale.age = 32;
+        await dale.$save();
+
+        dale = await User.byId(2001);
+
+        await User.remove({ _id: 2001 });
+
+        expect(dale.name).to.be.undefined;
       });
     });
 
@@ -1224,7 +1253,7 @@ describe('tyranid', function() {
         const dale = new User({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });
         await dale.$save();
         await User.remove({ _id: 2001 });
-        expect(await User.db.findOne({ _id: 2001 })).to.be.null;
+        expect(await User.byId(2001)).to.be.null;
       });
     });
 
