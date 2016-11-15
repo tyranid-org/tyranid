@@ -120,6 +120,14 @@ const documentPrototype = Tyr.documentPrototype = {
     return new this.$model(_.cloneDeep(this, val => val));
   },
 
+  $copy(obj) {
+    _.assignWith(
+      this,
+      obj,
+      (tVal, oVal, key) => key === '$orig' || key === '_history' ? tVal : oVal
+    );
+  },
+
   $save(...args) {
     return this.$model.save(this, ...args);
   },
@@ -725,12 +733,7 @@ export default class Collection {
     if (update) {
       // Check for whether update param is all field:value expressions.
       // If so, we should replace the entire doc (per Mongo api docs)
-      let replaceEntireDoc = true;
-
-      // Use Array.prototype.every() since it can break early
-      Object.keys(update).every(el => {
-        return (replaceEntireDoc = !el.startsWith('$'));
-      });
+      const replaceEntireDoc = Object.keys(update).every(key => !key.startsWith('$'));
 
       if (collection.def.timestamps) {
         if (replaceEntireDoc) {
@@ -787,22 +790,15 @@ export default class Collection {
             keyValue = obj[keyFieldName];
 
       if (keyValue) {
-        if (collection.def.timestamps) {
-          obj.updatedAt = new Date();
-        }
-
-        // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
-        // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
-        const update = _.omit(obj, '_id');
-
-        const famOpts = combineOptions(opts, {
+        const result = await collection.findAndModify(combineOptions(opts, {
           query: { [keyFieldName]: keyValue },
-          update: update,
+          // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
+          // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
+          update: _.omit(obj, '_id'),
           upsert: true,
           new: true
-        });
+        }));
 
-        const result = await collection.findAndModify(famOpts);
         return result.value;
       } else {
         const modOpts = combineOptions(opts, { denormalAlreadyDone: true });
