@@ -120,12 +120,18 @@ const documentPrototype = Tyr.documentPrototype = {
     return new this.$model(_.cloneDeep(this, val => val));
   },
 
-  $copy(obj) {
-    _.assignWith(
-      this,
-      obj,
-      (tVal, oVal, key) => key === '$orig' || key === '_history' ? tVal : oVal
-    );
+  $copy(obj, keys) {
+    if (keys) {
+      for (const key of keys) {
+        this[key] = obj[key];
+      }
+    } else {
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key) && key !== '_history') {
+          this[key] = obj[key];
+        }
+      }
+    }
   },
 
   $save(...args) {
@@ -790,6 +796,7 @@ export default class Collection {
             keyValue = obj[keyFieldName];
 
       if (keyValue) {
+        // using REPLACE semantics with findAndModify() here
         const result = await collection.findAndModify(combineOptions(opts, {
           query: { [keyFieldName]: keyValue },
           // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
@@ -854,6 +861,7 @@ export default class Collection {
   async updateDoc(obj, ...args) {
     const keyFieldName = this.def.primaryKey.field;
 
+    // using UPDATE semantics with findAndModify() here
     await this.findAndModify(combineOptions(extractOptions(args), {
       query: { [keyFieldName]: obj[keyFieldName] },
       update: { $set: _.omit(obj, '_id') },
