@@ -51,6 +51,15 @@ var User = new tyr.Collection({
       }
     },
 
+    address: {
+      is: 'object',
+      historical: true,
+      fields: {
+        street: { is: 'string' },
+        zip:    { is: 'integer' }
+      }
+    },
+
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
     job:       { link: 'job' },
     age:       { is: 'integer', in: 'year', historical: true },

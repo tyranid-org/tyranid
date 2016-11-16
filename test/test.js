@@ -353,7 +353,7 @@ describe('tyranid', function() {
         expect(
           User.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'ageAppropriateSecret', 'siblings.name', 'title']
+          ['fullName', 'name.first', 'name.last', 'address.street', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
 
@@ -387,12 +387,12 @@ describe('tyranid', function() {
 
       it( 'should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(16);
+        expect(_.values(fields).length).to.be.eql(17);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(15);
+        expect(_.values(fields).length).to.be.eql(16);
       });
 
       it( 'should set dyn fields on insert for matching objects', async () => {
@@ -2051,20 +2051,22 @@ describe('tyranid', function() {
       ];
 
       const complexObjTests = [
-        [ { a: [1,2] },          { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }] }       ],
-        [ { a: [1,2], b: 3 },    { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }], b: 0 } ],
-        [ { a: [1,2] },          { a: [] },             { a: [0, { n: 0 }] }             ],
-        [ { a: [1,2] },          { a: [1,2] },          {}                               ],
-        [ { a: { b: 1, c: 1 } }, { a: { a: 1, b: 1 } }, { a: [ 1, { a: [ 1 ], c: 0 } ] } ],
+        [ { a: [1,2] },           { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }] }       ],
+        [ { a: [1,2], b: 3 },     { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }], b: 0 } ],
+        [ { a: [1,2] },           { a: [] },              { a: [0, { n: 0 }] }             ],
+        [ { a: [1,2] },           { a: [1,2] },           {}                               ],
+        [ { a: { b: 1, c: 1 } },  { a: { a: 1, b: 1 } },  { a: [1, { a: [1], c: 0 }] }     ],
+        [ { a: { b: { c: 1 } } }, { a: { d: { c: 1 } } }, { a: [1,{b:0,d:[{c:1}]}] }       ],
+        [ { a: { b: { c: 1 } } }, { a: { b: { d: 1 } } }, { a: [1,{b:[1,{c:0,d:[1]}]}] }   ]
       ];
 
       const propsObjTests = [
-        [ { a: [1,2] },          { a: [2,1] },          {},                               {} ],
-        [ { a: [1,2] },          { a: [2,1] },          {},                               { c: 1 } ],
-        [ { a: [1,2] },          { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
-        [ { a: [1,2], b: 3 },    { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
-        [ { a: [1,2], b: 3 },    { a: [2,1] },          { a: [0, { 0: 1, 1: 0 }], b: 0 }, { a: 1, b: 1 } ],
-        [ { a: { b: 1, c: 1 } }, { a: { a: 1, b: 1 } }, { a: [ 1, { a: [ 1 ], c: 0 } ] }, { a: 1 } ],
+        [ { a: [1,2] },           { a: [2,1] },           {},                               {} ],
+        [ { a: [1,2] },           { a: [2,1] },           {},                               { c: 1 } ],
+        [ { a: [1,2] },           { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
+        [ { a: [1,2], b: 3 },     { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
+        [ { a: [1,2], b: 3 },     { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }], b: 0 }, { a: 1, b: 1 } ],
+        [ { a: { b: 1, c: 1 } },  { a: { a: 1, b: 1 } },  { a: [ 1, { a: [ 1 ], c: 0 } ] }, { a: 1 } ],
       ];
 
       it('should diff simple objects', () => {
@@ -2081,6 +2083,7 @@ describe('tyranid', function() {
 
       it('should diff complex objects', () => {
         for (const test of complexObjTests) {
+          //console.log(JSON.stringify(diff.diffObj(test[0], test[1])));
           expect(diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
         }
       });
@@ -2188,6 +2191,25 @@ describe('tyranid', function() {
         amy = await User.byId(2001);
 
         expect(amy._history[0].p).to.eql({ age: [ 36 ] });
+
+        await User.remove({ _id: 2001 });
+      });
+
+      it('historical differencing should take into account nested modifications', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, address: { street: '123 Mayberry' } });
+
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        expect(amy._history).to.be.undefined;
+
+        amy.address.street = '123 Juneberry';
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        expect(amy._history[0].p).to.eql({'address':[1,{'street':['123 Mayberry']}]});
 
         await User.remove({ _id: 2001 });
       });

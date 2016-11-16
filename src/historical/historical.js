@@ -3,6 +3,8 @@ import _    from 'lodash';
 
 import diff from '../diff/diff';
 
+import Tyr from '../tyr';
+
 
 function link(collection) {
   const _historicalFields = {};
@@ -24,7 +26,7 @@ function preserveInitialValues(collection, doc) {
           v = doc[n];
 
     if (v !== undefined) {
-      orig[n] = v;
+      orig[n] = Tyr.cloneDeep(v);
     }
   });
 
