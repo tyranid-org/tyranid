@@ -1,5 +1,6 @@
 
-import _ from 'lodash';
+import _   from 'lodash';
+import Tyr from '../tyr';
 
 const isArray = Array.isArray,
 
