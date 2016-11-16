@@ -41,10 +41,6 @@ function diffObj(a, b, props) {
     const av = a[prop],
           bv = b[prop];
 
-    if (prop === 'userId') {
-      console.log('diff userId', av, bv, Tyr.isEqual(av, bv));
-    }
-
     if (!Tyr.isEqual(av, bv)) {
       if (bv === undefined) {
         diffs[prop] = 0;
