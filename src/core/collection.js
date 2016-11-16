@@ -122,13 +122,32 @@ const documentPrototype = Tyr.documentPrototype = {
 
   $copy(obj, keys) {
     if (keys) {
-      for (const key of keys) {
-        this[key] = obj[key];
+      if (keys === Tyr.$all) {
+        _.each(this.$model.fields, field => {
+          const key = field.name,
+                v   = obj[key];
+
+          if (v !== undefined) {
+            this[key] = v;
+          } else {
+            delete this[key];
+          }
+        });
+      } else {
+        for (const key of keys) {
+          this[key] = obj[key];
+        }
       }
     } else {
       for (const key in obj) {
         if (obj.hasOwnProperty(key) && key !== '_history') {
-          this[key] = obj[key];
+          const v = obj[key];
+
+          if (v !== undefined) {
+            this[key] = v;
+          } else {
+            delete this[key];
+          }
         }
       }
     }
@@ -148,6 +167,10 @@ const documentPrototype = Tyr.documentPrototype = {
 
   $remove() {
     return this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true, ...arguments);
+  },
+
+  $replace(obj) {
+    this.$copy(obj, Tyr.$all);
   },
 
   $toClient() {

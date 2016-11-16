@@ -1,5 +1,15 @@
 
-import _ from 'lodash';
+import _            from 'lodash';
+import { ObjectId } from 'mongodb';
+
+
+function cloneCustomizer(obj) {
+  if (obj instanceof ObjectId) {
+    return obj;
+  }
+
+  //return undefined;
+}
 
 const Tyr = {
   options: {},
@@ -92,6 +102,11 @@ const Tyr = {
     const booleans = await Promise.all(array.map(el => predicate(el)));
     return array.some((el, idx) => booleans[idx]);
   },
+
+  cloneDeep(obj) {
+    // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
+    return _.cloneDeepWith ? _.cloneDeepWith(obj, cloneCustomizer) : _.cloneDeep(obj, cloneCustomizer);
+  }
 };
 
 class Timer {

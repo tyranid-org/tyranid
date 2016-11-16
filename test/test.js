@@ -211,8 +211,8 @@ describe('tyranid', function() {
           name: 'test',
           fields: {
             _id: { is: 'mongoid' },
-            one: _.cloneDeep(Meta),
-            two: _.cloneDeep(Meta)
+            one: Tyr.cloneDeep(Meta),
+            two: Tyr.cloneDeep(Meta)
           }
         });
       }).to.not.throw();
@@ -1975,12 +1975,65 @@ describe('tyranid', function() {
       });
     });
 
+    // oid1 and oid2 are equals() but not ===
+    const oid1 = new ObjectId('5567f2a6387fa9723c6f3a45'),
+          oid2 = new ObjectId('5567f2a6387fa9723c6f3a45');
+
+    describe('Tyr.cloneDeep()', function() {
+      it('should handle ObjectIds', () => {
+        const o = { a: 1, b: oid1 };
+
+        expect(o).to.not.eql(_.cloneDeep(o));
+        expect(o).to.eql(Tyr.cloneDeep(o));
+      });
+    });
+
+    describe('$copy() and $replace()', function() {
+
+      it('should copy and not remove existing values', () => {
+        const u = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+
+        u.$copy({ age: 6 });
+
+        expect(u.name.first).to.eql('Amy');
+        expect(u.age).to.eql(6);
+      });
+
+      it('should copy and remove existing values when passed an array of properties', () => {
+        const u = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+
+        u.$copy({ age: 6 }, [ 'age', 'name' ]);
+
+        expect(u.name).to.be.undefined;
+        expect(u.age).to.eql(6);
+      });
+
+      it('should handle Tyr.$all', () => {
+        const u = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+
+        u.$copy({ age: 6 }, Tyr.$all);
+
+        expect(u.name).to.be.undefined;
+        expect(u.age).to.eql(6);
+      });
+
+      it('should handle replace', () => {
+        const u = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+
+        u.$replace({ age: 6 });
+
+        expect(u.name).to.be.undefined;
+        expect(u.age).to.eql(6);
+      });
+    });
+
     describe('diff & patch', function() {
       const simpleObjTests = [
         [ { a: 1, b: 2 }, { a: 1 },       { b: 0 }           ],
         [ { a: 1, b: 2 }, {},             { a: 0, b: 0 }     ],
         [ { a: 1, b: 2 }, { a: 2 },       { a: [ 2 ], b: 0 } ],
-        [ { a: 1, b: 2 }, { a: 2, b: 2 }, { a: [ 2 ] }       ]
+        [ { a: 1, b: 2 }, { a: 2, b: 2 }, { a: [ 2 ] }       ],
+        [ { a: oid1 },    { a: oid2 },    {}                 ]
       ];
 
       const simpleArrTests = [
@@ -2040,7 +2093,7 @@ describe('tyranid', function() {
 
       it('should patch simple objects', () => {
         for (const test of simpleObjTests) {
-          const po = _.cloneDeep(test[0]);
+          const po = Tyr.cloneDeep(test[0]);
           diff.patchObj(po, test[2]);
           expect(po).to.be.eql(test[1]);
         }
@@ -2048,7 +2101,7 @@ describe('tyranid', function() {
 
       it('should patch simple arrays', () => {
         for (const test of simpleArrTests) {
-          const po = _.cloneDeep(test[0]);
+          const po = Tyr.cloneDeep(test[0]);
           diff.patchArr(po, test[2]);
           expect(po).to.be.eql(test[1]);
         }
@@ -2056,7 +2109,7 @@ describe('tyranid', function() {
 
       it('should patch complex objects', () => {
         for (const test of complexObjTests) {
-          const po = _.cloneDeep(test[0]);
+          const po = Tyr.cloneDeep(test[0]);
           diff.patchObj(po, test[2]);
           expect(po).to.be.eql(test[1]);
         }
