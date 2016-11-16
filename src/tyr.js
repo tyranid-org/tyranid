@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 
 
 function equalCustomizer(a, b) {
-  if (a.constructor.name === 'ObjectId' && b.constructor.name === 'ObjectId') {
+  if (a.constructor.name === 'ObjectID' && b.constructor.name === 'ObjectID') {
     return a.equals(b);
   }
 
@@ -12,7 +12,8 @@ function equalCustomizer(a, b) {
 }
 
 function cloneCustomizer(obj) {
-  if (obj instanceof ObjectId) {
+  // cannot use instanceof because multiple versions of MongoDB driver are probably being used
+  if (obj.constructor.name === 'ObjectID') {
     return obj;
   }
 
