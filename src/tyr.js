@@ -3,6 +3,14 @@ import _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
 
+function equalCustomizer(a, b) {
+  if (a.constructor.name === 'ObjectId' && b.constructor.name === 'ObjectId') {
+    return a.equals(b);
+  }
+
+  //return undefined;
+}
+
 function cloneCustomizer(obj) {
   if (obj instanceof ObjectId) {
     return obj;
@@ -10,6 +18,7 @@ function cloneCustomizer(obj) {
 
   //return undefined;
 }
+
 
 const Tyr = {
   options: {},
@@ -101,6 +110,11 @@ const Tyr = {
   async someAsync(array, predicate) {
     const booleans = await Promise.all(array.map(el => predicate(el)));
     return array.some((el, idx) => booleans[idx]);
+  },
+
+  isEqual(a, b) {
+    // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
+    return _.isEqualWith ? _.isEqualWith(a, b, equalCustomizer) : _.isEqual(a, b, equalCustomizer);
   },
 
   cloneDeep(obj) {

@@ -40,7 +40,7 @@ function diffObj(a, b, props) {
     const av = a[prop],
           bv = b[prop];
 
-    if (!_.isEqual(av, bv)) {
+    if (!Tyr.isEqual(av, bv)) {
       if (bv === undefined) {
         diffs[prop] = 0;
       } else {
@@ -140,7 +140,7 @@ function diffArr(a, b) {
     const bv = b[bi];
 
     // if the same object is in same place, skip to next one
-    if (bi < alen && _.isEqual(bv, a[bi])) {
+    if (bi < alen && Tyr.isEqual(bv, a[bi])) {
       a[bi] = USED; // remove this value from consideration in future checks
       continue;
     }
