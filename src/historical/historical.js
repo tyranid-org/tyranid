@@ -87,6 +87,12 @@ function asOf(collection, doc, date) {
 
     diff.patchObj(doc, h.p);
   }
+
+  Object.defineProperty(doc, '$historical', {
+    enumerable:   false,
+    configurable: false,
+    value:        true
+  });
 }
 
 

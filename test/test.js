@@ -62,6 +62,24 @@ const fakeSecure = {
 chai.use(chaiAsPromised);
 chai.should();
 
+async function expectAsyncToThrow(promise, regex) {
+  let failed = false;
+
+  try {
+    await promise;
+    failed = true;
+  } catch (e) {
+    if (!e.message.match(regex)) {
+      assert(false, `threw "${e.message}", expected to throw ` + regex);
+    }
+  }
+
+  if (failed) {
+    assert(false, 'expected to throw ' + regex);
+  }
+}
+
+
 function round5(v) {
   return parseFloat(v.toFixed(5));
 }
@@ -2175,7 +2193,7 @@ describe('tyranid', function() {
         await User.remove({ _id: 2001 });
       });
 
-      it('$save() should store _history', async () => {
+      it('should _history for $save()', async () => {
         await User.remove({ _id: 2001 });
 
         let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
@@ -2193,6 +2211,25 @@ describe('tyranid', function() {
         expect(amy._history[0].p).to.eql({ age: [ 36 ] });
 
         await User.remove({ _id: 2001 });
+      });
+
+      it('should prevent $save()s on $historical documents', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        amy.age = 37;
+
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        amy.$asOf(new Date('8-Oct-2015'));
+        expect(amy.$historical).to.be.true;
+
+        await expectAsyncToThrow(amy.$save(), /read-only.*historical/);
       });
 
       it('historical differencing should take into account nested modifications', async () => {

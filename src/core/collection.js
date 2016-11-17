@@ -812,7 +812,11 @@ export default class Collection {
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
       if (collection.def.historical) {
-        historical.snapshot(collection, obj);
+        if (obj.$historical) {
+          throw new Error('Document is read-only due to $historical');
+        } else {
+          historical.snapshot(collection, obj);
+        }
       }
 
       const keyFieldName = collection.def.primaryKey.field,
