@@ -76,6 +76,10 @@ function asOf(collection, doc, date) {
     date = date.getTime();
   }
 
+  if (doc.$historical) {
+    throw new Error('Cannot $asOf() an already-historical document');
+  }
+
   const history = doc._history;
 
   for (let hi = history.length - 1; hi >= 0; hi--) {

@@ -13,7 +13,7 @@ function equalCustomizer(a, b) {
 
 function cloneCustomizer(obj) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
-  if (obj.constructor.name === 'ObjectID') {
+  if (obj && obj.constructor.name === 'ObjectID') {
     return obj;
   }
 
