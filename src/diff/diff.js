@@ -4,6 +4,9 @@ import Tyr from '../tyr';
 
 const isArray = Array.isArray,
 
+      O_DELETE = 0,
+      O_TRUNCATE_ARRAY_BY_1 = 1,
+
       T_ARRAY  = 0,
       T_OBJECT = 1;
 
@@ -12,20 +15,15 @@ function badPatch() {
 }
 
 
+// ***
+// *** NOTE:  The patch format and all the methods are documented at http://tyranid.org/diff
+// ***
+
+
 //
 // Objects
 //
 
-/**
- * Returns the differences to transform a into b
- *
- * {
- *   <prop>: 0            // prop was removed
- *   <prop>: [ <value> ]  // prop changed to <value>
- * }
- *
- *
- */
 function diffObj(a, b, props) {
   const diffs = {};
 
@@ -43,7 +41,7 @@ function diffObj(a, b, props) {
 
     if (!Tyr.isEqual(av, bv)) {
       if (bv === undefined) {
-        diffs[prop] = 0;
+        diffs[prop] = O_DELETE;
       } else {
         if (isArray(av)) {
           if (isArray(bv)) {
@@ -80,12 +78,41 @@ function diffObj(a, b, props) {
 
 function patchObj(a, patch) {
 
-  for (const prop in patch) {
+  for (let prop in patch) {
     const pv = patch[prop];
 
-    if (pv === 0) {
+    if (pv === O_DELETE) {
       delete a[prop];
       continue;
+    } else if (pv === O_TRUNCATE_ARRAY_BY_1) {
+      let arr;
+
+      if (prop.indexOf('|')) {
+        prop = Tyr.NamePath.decode(prop);
+      }
+
+      if (prop.indexOf('.') < 0) {
+        arr = a[prop];
+      } else {
+        const collection = a.$model;
+        if (!collection) {
+          throw new Error('the patched document must be a tyranid document (not a pojo) for this type of patch');
+        }
+
+        arr = collection.parsePath(prop).get(a);
+      }
+
+      if (!_.isArray(arr)) {
+        throw new Error('the value at path in the patch is not an array');
+      }
+
+      if (!arr.length) {
+        throw new Error('the array at path in the patch is already empty');
+      }
+
+      arr.length--;
+      continue;
+
     } else if (_.isArray(pv)) {
       switch (pv.length) {
       case 1:
@@ -121,13 +148,6 @@ function patchObj(a, patch) {
 // this value works because "$" properties cannot be stored in mongo
 const USED = { $used_: 0 };
 
-/*
-   Generates a patch of the format:
-
-    [1, 2, 3]       => [1, 3]       = { 2: 1 }
-    [1, 2, 3, 4, 5] => [2, 3, 4, 5] = { 0: [ 1, 4 ], n: 4 }
-
- */
 function diffArr(a, b) {
 
   const alen = a.length,
@@ -267,66 +287,15 @@ function patchArr(a, patch) {
   }
 }
 
-// /* eslint eqeqeq: 0 */
-/* eslint-disable */
-/*
-export function diffArr(a, b) {
 
-  var as = {};
-  var bs = {};
-
-  for ( var i = 0; i < a.length; i++ ) {
-    if ( as[ a[i] ] == null )
-      as[ a[i] ] = { rows: [], b: null };
-    as[ a[i] ].rows.push( i );
-  }
-
-  for ( var i = 0; i < b.length; i++ ) {
-    if ( bs[ b[i] ] == null )
-      bs[ b[i] ] = { rows: [], a: null };
-    bs[ b[i] ].rows.push( i );
-  }
-
-  console.log('\nas', as, '\n\nbs', bs);
-
-  for ( var i in as ) {
-    if ( as[i].rows.length == 1 && typeof(bs[i]) !== 'undefined' && bs[i].rows.length == 1 ) {
-      console.log('here');
-      a[ as[i].rows[0] ] = { text: a[ as[i].rows[0] ], row: bs[i].rows[0] };
-      b[ bs[i].rows[0] ] = { text: b[ bs[i].rows[0] ], row: as[i].rows[0] };
-    }
-  }
-
-  for ( var i = 0; i < a.length - 1; i++ ) {
-    if ( a[i].text != null && a[i+1].text == null && a[i].row + 1 < b.length && b[ a[i].row + 1 ].text == null &&
-         a[i+1] == b[ a[i].row + 1 ] ) {
-      a[i+1] = { text: a[i+1], row: a[i].row + 1 };
-      b[a[i].row+1] = { text: b[a[i].row+1], row: i + 1 };
-    }
-  }
-
-  for ( var i = a.length - 1; i > 0; i-- ) {
-    if ( a[i].text != null && a[i-1].text == null && a[i].row > 0 && b[ a[i].row - 1 ].text == null &&
-         a[i-1] == b[ a[i].row - 1 ] ) {
-      a[i-1] = { text: a[i-1], row: a[i].row - 1 };
-      b[a[i].row-1] = { text: b[a[i].row-1], row: i - 1 };
-    }
-  }
-
-  console.log('\na', a, '\n\nb', b);
-  return { b: b, a: a };
-}
-*/
-/* eslint eqeqeq: 1 */
-
-//export function patch(a, delta) {
-
-//}
-
-export default {
+const ns = {
   diffObj,
   patchObj,
 
   diffArr,
   patchArr
 };
+
+Tyr.diff = ns;
+
+export default ns;

@@ -126,6 +126,14 @@ NamePath._skipArray = function(field) {
   return field;
 };
 
+NamePath.decode = function(path) {
+  return path.replace(/\|/g, '.');
+};
+
+NamePath.encode = function(path) {
+  return path.replace(/\./g, '|');
+};
+
 
 /**
  * TODO:  make this a configurable Tyranid option as to how populated entries should be named
@@ -189,9 +197,13 @@ NamePath.prototype.get = function(obj) {
         return;
       }
 
-      arrayInPath = true;
-      for (let ai=0, alen=obj.length; ai<alen; ai++ ) {
-        getInner(pi, obj[ai]);
+      if (pi === plen) {
+        values.push(obj);
+      } else {
+        arrayInPath = true;
+        for (let ai=0, alen=obj.length; ai<alen; ai++ ) {
+          getInner(pi, obj[ai]);
+        }
       }
     } else if (pi === plen) {
       values.push(obj);

@@ -1,19 +1,20 @@
 
-import _          from 'lodash';
-import hooker     from 'hooker';
-import faker      from 'faker';
+import _            from 'lodash';
+import hooker       from 'hooker';
+import faker        from 'faker';
 import { ObjectId } from 'mongodb';
 
-import Tyr        from '../tyr';
-import Component  from './component';
-import Type       from './type';
-import ObjectType from '../type/object';
-import Population from './population';
-import Populator  from './populator';
-import NamePath   from './namePath';
-import Field      from './field';
+import Tyr          from '../tyr';
+import Component    from './component';
+import Type         from './type';
+import ObjectType   from '../type/object';
+import Population   from './population';
+import Populator    from './populator';
+import NamePath     from './namePath';
+import Field        from './field';
+import SecureError  from '../secure/secureError';
 
-import historical from '../historical/historical';
+import historical   from '../historical/historical';
 
 
 // variables shared between classes
@@ -932,6 +933,32 @@ export default class Collection {
     }
 
     return await collection.db.update(query, update, opts);
+  }
+
+  async push(id, path, value, ...args) {
+    const collection = this,
+          opts       = extractOptions(args),
+          auth       = extractAuthorization(opts),
+
+          query      = { _id: id };
+
+    if (auth) {
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.update, auth);
+
+      if (!query) {
+        throw new SecureError();
+      }
+    }
+
+    await collection.db.update(
+      query,
+      {
+        $push: {
+          [path]: value,
+          _history: historical.snapshotPush(path)
+        }
+      }
+    );
   }
 
   /**

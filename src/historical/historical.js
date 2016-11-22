@@ -70,6 +70,13 @@ function snapshot(collection, doc, patchProps) {
   preserveInitialValues(collection, doc);
 }
 
+function snapshotPush(path) {
+  return {
+    o: new Date().getTime(),
+    p: { [Tyr.NamePath.encode(path)]: 1 }
+  };
+}
+
 function asOf(collection, doc, date) {
 
   if (date instanceof Date) {
@@ -104,5 +111,6 @@ export default {
   asOf,
   link,
   preserveInitialValues,
-  snapshot
+  snapshot,
+  snapshotPush
 };

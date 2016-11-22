@@ -46,8 +46,9 @@ var User = new tyr.Collection({
       is: 'object',
       required: true,
       fields: {
-        first: { is: 'string', label: 'First Name', required: true },
-        last:  { is: 'string', label: 'Last Name', pathLabel: 'Last' }
+        first:    { is: 'string', label: 'First Name', required: true },
+        last:     { is: 'string', label: 'Last Name', pathLabel: 'Last' },
+        suffices: { is: 'array', of: 'string' }
       }
     },
 

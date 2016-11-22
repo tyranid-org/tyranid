@@ -11,7 +11,6 @@ import Unit           from '../src/unit/unit';
 import Units          from '../src/unit/units';
 import Role           from './models/role'; // require to get extra link in prototype chain
 import                     './models/user';
-import diff           from '../src/diff/diff';
 import historical     from '../src/historical/historical';
 
 const babel = require('babel-core');
@@ -371,7 +370,7 @@ describe('tyranid', function() {
         expect(
           User.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'address.street', 'ageAppropriateSecret', 'siblings.name', 'title']
+          ['fullName', 'name.first', 'name.last', 'name.suffices', 'address.street', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
 
@@ -2089,33 +2088,33 @@ describe('tyranid', function() {
 
       it('should diff simple objects', () => {
         for (const test of simpleObjTests) {
-          expect(diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
+          expect(Tyr.diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
         }
       });
 
       it('should diff simple arrays', () => {
         for (const test of simpleArrTests) {
-          expect(diff.diffArr(test[0], test[1])).to.be.eql(test[2]);
+          expect(Tyr.diff.diffArr(test[0], test[1])).to.be.eql(test[2]);
         }
       });
 
       it('should diff complex objects', () => {
         for (const test of complexObjTests) {
           //console.log(JSON.stringify(diff.diffObj(test[0], test[1])));
-          expect(diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
+          expect(Tyr.diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
         }
       });
 
       it('should diff objects with selected props', () => {
         for (const test of propsObjTests) {
-          expect(diff.diffObj(test[0], test[1], test[3])).to.be.eql(test[2]);
+          expect(Tyr.diff.diffObj(test[0], test[1], test[3])).to.be.eql(test[2]);
         }
       });
 
       it('should patch simple objects', () => {
         for (const test of simpleObjTests) {
           const po = Tyr.cloneDeep(test[0]);
-          diff.patchObj(po, test[2]);
+          Tyr.diff.patchObj(po, test[2]);
           expect(po).to.be.eql(test[1]);
         }
       });
@@ -2123,7 +2122,7 @@ describe('tyranid', function() {
       it('should patch simple arrays', () => {
         for (const test of simpleArrTests) {
           const po = Tyr.cloneDeep(test[0]);
-          diff.patchArr(po, test[2]);
+          Tyr.diff.patchArr(po, test[2]);
           expect(po).to.be.eql(test[1]);
         }
       });
@@ -2131,9 +2130,26 @@ describe('tyranid', function() {
       it('should patch complex objects', () => {
         for (const test of complexObjTests) {
           const po = Tyr.cloneDeep(test[0]);
-          diff.patchObj(po, test[2]);
+          Tyr.diff.patchObj(po, test[2]);
           expect(po).to.be.eql(test[1]);
         }
+      });
+
+      it('should support patching O_TRUNCATE_ARRAY_BY_1 with simple paths', () => {
+        const u = new User({ siblings: [ { name: 'Jan' }, { name: 'Frederick' } ] });
+
+        Tyr.diff.patchObj(u, { siblings: 1 });
+
+        expect(u.siblings.length).to.eql(1);
+      });
+
+      it('should support patching O_TRUNCATE_ARRAY_BY_1 with composite paths', () => {
+        const u = new User({ name: { first: 'Jan', suffices: [ 'Sr', 'The Awesome' ] } });
+
+        Tyr.diff.patchObj(u, { 'name.suffices': 1 });
+
+        expect(u.name.suffices.length).to.eql(1);
+        expect(u.name.suffices[0]).to.eql('Sr');
       });
     });
 
@@ -2209,6 +2225,26 @@ describe('tyranid', function() {
         amy = await User.byId(2001);
 
         expect(amy._history[0].p).to.eql({ age: [ 36 ] });
+
+        await User.remove({ _id: 2001 });
+      });
+
+      it('should support push()', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+
+        await amy.$save();
+
+        await User.push(2001, 'name.suffices', 'The Awesome');
+
+        amy = await User.byId(2001);
+
+        expect(amy._history[0].p).to.eql({ 'name|suffices': 1 });
+
+        amy.$asOf(new Date('2000-10-1'));
+
+        expect(amy.name.suffices.length).to.eql(0);
 
         await User.remove({ _id: 2001 });
       });

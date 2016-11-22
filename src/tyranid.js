@@ -30,6 +30,7 @@ import './core/query';
 
 import './log/log';
 
+import './diff/diff';
 import './secure/secure';
 
 import './unit/unitSystem';
