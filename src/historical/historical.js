@@ -18,10 +18,19 @@ function link(collection) {
   collection._historicalFields = _historicalFields;
 }
 
-function preserveInitialValues(collection, doc) {
-  const orig = {};
+function preserveInitialValues(collection, doc, props) {
+  let orig = doc.$orig;
 
-  _.each(collection._historicalFields, field => {
+  if (!orig) {
+    doc.$orig = orig = {};
+
+    Object.defineProperty(doc, '$orig', {
+      enumerable:   false,
+      configurable: false
+    });
+  }
+
+  _.each(props || collection._historicalFields, field => {
     const n = field.name,
           v = doc[n];
 
@@ -29,32 +38,33 @@ function preserveInitialValues(collection, doc) {
       orig[n] = Tyr.cloneDeep(v);
     }
   });
-
-  doc.$orig = orig;
-
-  Object.defineProperty(doc, '$orig', {
-    enumerable:   false,
-    configurable: false
-  });
 }
 
-function snapshot(collection, doc, patchProps) {
+function snapshot(collection, doc, patchProps, diffProps, historyPresent) {
   const $orig = doc.$orig;
 
   if (!$orig) {
     return;
   }
 
-  const p = diff.diffObj(doc, doc.$orig, collection._historicalFields);
+  let _diffProps;
+  if (diffProps) {
+    _diffProps = {};
+
+    _.each(collection._historicalFields, (field, key) => {
+      if (diffProps[key]) {
+        _diffProps[key] = field;
+      }
+    });
+  } else {
+    _diffProps = collection._historicalFields;
+  }
+
+  const p = diff.diffObj(doc, doc.$orig, _diffProps);
   if (_.isEmpty(p) && _.isEmpty(patchProps)) {
     // TODO:  do we need some way of looking at the patch props and seeing it contains something that is useful in its own right to store?
     //        (for example, like a user comment?)
-    return;
-  }
-
-  let arr = doc._history;
-  if (!arr) {
-    doc._history = arr = [];
+    return;// undefined; ... undefined means there was no snapshot needed
   }
 
   const so = {
@@ -66,8 +76,17 @@ function snapshot(collection, doc, patchProps) {
     _.assign(so, patchProps);
   }
 
-  arr.push(so);
-  preserveInitialValues(collection, doc);
+  if (historyPresent !== false) {
+    let arr = doc._history;
+    if (!arr) {
+      doc._history = arr = [];
+    }
+
+    arr.push(so);
+  }
+
+  preserveInitialValues(collection, doc, _diffProps);
+  return so;
 }
 
 function snapshotPush(path) {

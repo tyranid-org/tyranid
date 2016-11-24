@@ -887,15 +887,61 @@ export default class Collection {
    * Updates a single document.  Used to implement document.$update() for example. @see update() for regular mongodb update()
    */
   async updateDoc(obj, ...args) {
-    const keyFieldName = this.def.primaryKey.field;
+    const collection   = this,
+          keyFieldName = collection.def.primaryKey.field;
 
-    // using UPDATE semantics with findAndModify() here
-    await this.findAndModify(combineOptions(extractOptions(args), {
+    const opts = combineOptions(extractOptions(args), {
       query: { [keyFieldName]: obj[keyFieldName] },
-      update: { $set: _.omit(obj, '_id') },
       upsert: true,
       new: true
-    }));
+    });
+
+    let update,
+        updateFields;
+
+    if (opts.fields) {
+      update = {};
+      updateFields = {};
+
+      _.each(opts.fields, (field, key) => {
+        update[key] = obj[key];
+        updateFields[key] = 1;
+      });
+
+    } else {
+      update = updateFields = _.omit(obj, '_id');
+    }
+
+    opts.update = { $set: update };
+
+    if (collection.def.historical) {
+      if (obj.$historical) {
+        throw new Error('Document is read-only due to $historical');
+      }
+
+      // They might have read in the object without the _history var to reduce read-times.
+      //
+      // If so, we will do a direct $push onto the _history array.
+      const historyPresent = !!obj._history;
+
+      const snapshot = historical.snapshot(
+        collection,
+        obj,
+        null /* TODO:  pass in snapshot-opts like author from opts somehow */,
+        updateFields,
+        historyPresent
+      );
+
+      if (snapshot) {
+        if (historyPresent) {
+          update._history = obj._history;
+        } else {
+          opts.update.$push = { _history: snapshot };
+        }
+      }
+    }
+
+    await collection.update(opts);
   }
 
   /**

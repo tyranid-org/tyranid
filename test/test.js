@@ -2249,6 +2249,45 @@ describe('tyranid', function() {
         await User.remove({ _id: 2001 });
       });
 
+      it('should support historical $update()', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+
+        await amy.$save();
+
+        amy.age = 37;
+
+        await amy.$update();
+
+        amy = await User.byId(2001);
+        expect(amy.age).to.eql(37);
+        expect(amy._history.length).to.eql(1);
+
+        await User.remove({ _id: 2001 });
+      });
+
+      it('should support historical $update() with partial data', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+
+        await amy.$save();
+
+        amy = await User.byId(2001, { fields: { age: 1 } });
+        amy.age = 37;
+        expect(amy._history).to.be.undefined;
+        amy.$update();
+
+        amy = await User.byId(2001);
+        expect(amy.age).to.eql(37);
+        expect(amy._history.length).to.eql(1);
+
+        await User.remove({ _id: 2001 });
+      });
+
+      //amy = await User.byId(2001, { fields: { _history: 0 } });
+
       it('should prevent $save()s on $historical documents', async () => {
         await User.remove({ _id: 2001 });
 
