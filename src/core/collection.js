@@ -1000,14 +1000,11 @@ export default class Collection {
       [path]: value
     };
 
-    if (collection.historical) {
+    if (collection.def.historical) {
       pv._history = historical.snapshotPush(path);
     }
 
-    await collection.db.update(
-      query,
-      { $push: pv }
-    );
+    await collection.db.update(query, { $push: pv });
   }
 
   /**
