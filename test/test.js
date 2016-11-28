@@ -2252,6 +2252,22 @@ describe('tyranid', function() {
         await User.remove({ _id: 2001 });
       });
 
+      it('should support pull()', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell', suffices: [ 'The Awesome', 'Sr', 'The Nice' ] }, age: 36 });
+
+        await amy.$save();
+
+        await User.pull(2001, 'name.suffices', v => v === 'Sr');
+
+        amy = await User.byId(2001);
+
+        console.log(amy._history);
+        console.log(amy._history);
+        expect(amy.name.suffices).to.eql([ 'The Awesome', 'The Nice' ]);
+      });
+
       it('should support historical $update()', async () => {
         await User.remove({ _id: 2001 });
 

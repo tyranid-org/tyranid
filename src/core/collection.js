@@ -997,6 +997,23 @@ export default class Collection {
     return await collection.db.update(query, update, opts);
   }
 
+  async pull(id, path, predicate, ...args) {
+    const collection = this,
+          opts       = extractOptions(args);
+
+    const qOpts = Tyr.cloneDeep(opts);
+    qOpts.fields = { [path]: 1 };
+
+    const doc = collection.byId(id, qOpts);
+
+    const arr = collection.parsePath(path).get(doc);
+
+    if (arr) {
+      _.remove(arr, predicate);
+      await doc.$update(opts);
+    }
+  }
+
   async push(id, path, value, ...args) {
     const collection = this,
           opts       = extractOptions(args),
