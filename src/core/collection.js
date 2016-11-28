@@ -105,6 +105,25 @@ async function populate(collection, opts, documents) {
   }
 }
 
+function hasMongoUpdateOperator(update) {
+  for (const key in update) {
+    if (key.startsWith('$') && update.hasOwnProperty(key)) {
+      return true;
+    }
+  }
+}
+
+function timestampsUpdate(opts, collection, update) {
+  if (collection.def.timestamps && opts.timestamps !== false) {
+    if (hasMongoUpdateOperator(update)) {
+      update.$set = update.$set || {};
+      update.$set.updatedAt = new Date();
+    } else {
+      update.updatedAt = new Date();
+    }
+  }
+}
+
 
 // Document
 // ========
@@ -765,7 +784,7 @@ export default class Collection {
       // If so, we should replace the entire doc (per Mongo api docs)
       const replaceEntireDoc = Object.keys(update).every(key => !key.startsWith('$'));
 
-      if (collection.def.timestamps) {
+      if (collection.def.timestamps && opts.timestamps !== false) {
         if (replaceEntireDoc) {
           update.updatedAt = new Date();
         } else {
@@ -973,10 +992,7 @@ export default class Collection {
       }
     }
 
-    if (collection.def.timestamps) {
-      update.$set = update.$set || {};
-      update.$set.updatedAt = new Date();
-    }
+    timestampsUpdate(opts, collection, update);
 
     return await collection.db.update(query, update, opts);
   }
@@ -1004,7 +1020,11 @@ export default class Collection {
       pv._history = historical.snapshotPush(path);
     }
 
-    await collection.db.update(query, { $push: pv });
+    const update = { $push: pv };
+
+    timestampsUpdate(opts, collection, update);
+
+    await collection.db.update(query, update);
   }
 
   /**

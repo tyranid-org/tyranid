@@ -2230,6 +2230,8 @@ describe('tyranid', function() {
       });
 
       it('should support push()', async () => {
+        const startTime = new Date();
+
         await User.remove({ _id: 2001 });
 
         let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
@@ -2241,6 +2243,7 @@ describe('tyranid', function() {
         amy = await User.byId(2001);
 
         expect(amy._history[0].p).to.eql({ 'name|suffices': 1 });
+        expect(amy.updatedAt.getTime()).to.be.at.least(startTime.getTime());
 
         amy.$asOf(new Date('2000-10-1'));
 
