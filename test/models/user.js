@@ -58,7 +58,8 @@ var User = new tyr.Collection({
       historical: true,
       fields: {
         street: { is: 'string' },
-        zip:    { is: 'integer' }
+        zip:    { is: 'integer' },
+        notes:  { is: 'array', of: 'string' }
       }
     },
 

@@ -999,14 +999,17 @@ export default class Collection {
 
   async pull(id, path, predicate, ...args) {
     const collection = this,
-          opts       = extractOptions(args);
+          opts       = extractOptions(args),
+
+          np         = collection.parsePath(path);
+
 
     const qOpts = Tyr.cloneDeep(opts);
-    qOpts.fields = { [path]: 1 };
+    qOpts.fields = { [ np.path[0] ]: 1 };
 
-    const doc = collection.byId(id, qOpts);
+    const doc = await collection.byId(id, qOpts);
 
-    const arr = collection.parsePath(path).get(doc);
+    const arr = np.get(doc);
 
     if (arr) {
       _.remove(arr, predicate);
@@ -1033,7 +1036,7 @@ export default class Collection {
       [path]: value
     };
 
-    if (collection.def.historical) {
+    if (collection.def.historical && collection.parsePath(path).isHistorical()) {
       pv._history = historical.snapshotPush(path);
     }
 

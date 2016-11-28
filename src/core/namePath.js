@@ -178,6 +178,13 @@ Object.defineProperty(NamePath.prototype, 'detail', {
   }
 });
 
+NamePath.prototype.isHistorical = function() {
+  const fields = this.fields;
+
+  // only the top-most field can be marked "historical"
+  return fields.length && fields[0].def.historical;
+};
+
 NamePath.prototype.get = function(obj) {
   const np     = this,
         path   = np.path,

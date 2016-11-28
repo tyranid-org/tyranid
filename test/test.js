@@ -370,7 +370,7 @@ describe('tyranid', function() {
         expect(
           User.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'name.suffices', 'address.street', 'ageAppropriateSecret', 'siblings.name', 'title']
+          ['fullName', 'name.first', 'name.last', 'name.suffices', 'address.street', 'address.notes', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
 
@@ -2230,11 +2230,11 @@ describe('tyranid', function() {
       });
 
       it('should support push()', async () => {
-        const startTime = new Date();
+        let startTime = new Date();
 
         await User.remove({ _id: 2001 });
 
-        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36, address: {} });
 
         await amy.$save();
 
@@ -2242,12 +2242,21 @@ describe('tyranid', function() {
 
         amy = await User.byId(2001);
 
-        expect(amy._history[0].p).to.eql({ 'name|suffices': 1 });
+        expect(amy._history).to.be.undefined; // "name" isn't historical
+        expect(amy.updatedAt.getTime()).to.be.at.least(startTime.getTime()); // but should still update timestamps
+
+        startTime = amy.updatedAt;
+
+        await User.push(2001, 'address.notes', 'note 1');
+
+        amy = await User.byId(2001);
+
+        expect(amy._history[0].p).to.eql({ 'address|notes': 1 });
         expect(amy.updatedAt.getTime()).to.be.at.least(startTime.getTime());
 
         amy.$asOf(new Date('2000-10-1'));
 
-        expect(amy.name.suffices.length).to.eql(0);
+        expect(amy.address.notes.length).to.eql(0);
 
         await User.remove({ _id: 2001 });
       });
@@ -2255,7 +2264,14 @@ describe('tyranid', function() {
       it('should support pull()', async () => {
         await User.remove({ _id: 2001 });
 
-        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell', suffices: [ 'The Awesome', 'Sr', 'The Nice' ] }, age: 36 });
+        let amy = new User({
+          _id: 2001,
+          name: { first: 'Amy', last: 'Tell', suffices: [ 'The Awesome', 'Sr', 'The Nice' ] },
+          address: {
+            notes: [ 'one', 'two', 'three' ]
+          },
+          age: 36
+        });
 
         await amy.$save();
 
@@ -2263,9 +2279,15 @@ describe('tyranid', function() {
 
         amy = await User.byId(2001);
 
-        console.log(amy._history);
-        console.log(amy._history);
+        expect(amy._history).to.be.undefined; // name isn't historical
         expect(amy.name.suffices).to.eql([ 'The Awesome', 'The Nice' ]);
+
+        await User.pull(2001, 'address.notes', v => v === 'two');
+
+        amy = await User.byId(2001);
+
+        expect(amy._history.length).to.eql(1);
+        expect(amy.address.notes).to.eql([ 'one', 'three' ]);
       });
 
       it('should support historical $update()', async () => {
