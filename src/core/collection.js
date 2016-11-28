@@ -996,14 +996,17 @@ export default class Collection {
       }
     }
 
+    const pv = {
+      [path]: value
+    };
+
+    if (collection.historical) {
+      pv._history = historical.snapshotPush(path);
+    }
+
     await collection.db.update(
       query,
-      {
-        $push: {
-          [path]: value,
-          _history: historical.snapshotPush(path)
-        }
-      }
+      { $push: pv }
     );
   }
 
