@@ -89,11 +89,18 @@ function snapshot(collection, doc, patchProps, diffProps, historyPresent) {
   return so;
 }
 
-function snapshotPush(path) {
-  return {
+function snapshotPush(path, patchProps) {
+
+  const snapshot = {
     o: new Date().getTime(),
     p: { [Tyr.NamePath.encode(path)]: 1 }
   };
+
+  if (patchProps) {
+    _.assign(snapshot, patchProps);
+  }
+
+  return snapshot;
 }
 
 function asOf(collection, doc, date) {
@@ -125,11 +132,36 @@ function asOf(collection, doc, date) {
   });
 }
 
+function patchPropsFromOpts(opts) {
+  let patchProps;// = undefined;
+
+  if (opts) {
+    const author = opts.author || opts.auth;
+    if (author) {
+      patchProps = patchProps || {};
+
+      if (_.isString(author)) {
+        patchProps.a = author;
+      } else if (author.$uid) {
+        patchProps.a = author.$uid();
+      }
+    }
+
+    if (opts.comment) {
+      patchProps = patchProps || {};
+      patchProps.c = opts.comment;
+    }
+  }
+
+  return patchProps;
+}
+
 
 export default {
   asOf,
   link,
   preserveInitialValues,
   snapshot,
-  snapshotPush
+  snapshotPush,
+  patchPropsFromOpts
 };

@@ -40,6 +40,8 @@ function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
   return opts &&
     ( (opts.auth !== undefined ||
+       opts.author !== undefined ||
+       opts.comment !== undefined ||
        opts.fields !== undefined ||
        opts.historical !== undefined ||
        opts.limit !== undefined ||
@@ -840,7 +842,7 @@ export default class Collection {
         if (obj.$historical) {
           throw new Error('Document is read-only due to $historical');
         } else {
-          historical.snapshot(collection, obj);
+          historical.snapshot(collection, obj, historical.patchPropsFromOpts(opts));
         }
       }
 
@@ -951,7 +953,7 @@ export default class Collection {
       const snapshot = historical.snapshot(
         collection,
         obj,
-        null /* TODO:  pass in snapshot-opts like author from opts somehow */,
+        historical.patchPropsFromOpts(opts),
         updateFields,
         historyPresent
       );
@@ -1065,7 +1067,7 @@ export default class Collection {
     };
 
     if (collection.def.historical && collection.parsePath(path).isHistorical()) {
-      pv._history = historical.snapshotPush(path);
+      pv._history = historical.snapshotPush(path, historical.patchPropsFromOpts(opts));
     }
 
     const update = { $push: pv };

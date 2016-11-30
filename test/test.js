@@ -2346,6 +2346,24 @@ describe('tyranid', function() {
         await User.remove({ _id: 2001 });
       });
 
+      it('should support author and comment', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+        await amy.$save();
+
+        amy = await User.byId(2001, { fields: { age: 1 } });
+        amy.age = 37;
+        amy.$update({ author: 'u001', comment: 'age was wrong' });
+
+        amy = await User.byId(2001);
+        expect(amy._history.length).to.eql(1);
+        expect(amy._history[0].a).to.eql('u001');
+        expect(amy._history[0].c).to.eql('age was wrong');
+
+        await User.remove({ _id: 2001 });
+      });
+
       //amy = await User.byId(2001, { fields: { _history: 0 } });
 
       it('should prevent $save()s on $historical documents', async () => {
