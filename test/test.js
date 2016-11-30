@@ -564,7 +564,7 @@ describe('tyranid', function() {
       });
 
       it('should findAndModify()', function() {
-        return User.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true }).then(function(result) {
+        return User.findAndModify({ query: { _id: 1 }, update: { $set: { age: 32 } }, new: true, historical: false }).then(function(result) {
           var user = result.value;
           expect(user).to.be.an.instanceof(User);
           expect(user.age).to.be.eql(32);
@@ -1407,6 +1407,21 @@ describe('tyranid', function() {
         });
       });
 
+      it( 'should update the existing updatedAt in-line on $update()', async () => {
+        const startAt = new Date();
+        const dale = new User({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });
+        await dale.$save();
+
+        const updatedAt = dale.updatedAt;
+
+        dale.age = 32;
+        await dale.$update();
+
+        expect(dale.updatedAt).to.not.eql(updatedAt);
+        expect(dale.updatedAt.getTime()).to.be.at.least(startAt.getTime());
+
+        await User.remove({ _id: 2001 });
+      });
     });
 
     describe('computed properties', function() {
@@ -1739,6 +1754,10 @@ describe('tyranid', function() {
 
     describe('logging', function() {
       const LogLevel = Tyr.byName.tyrLogLevel;
+
+      beforeEach(async function() {
+        await Log.db.remove({});
+      });
 
       afterEach(async function() {
         await Log.db.remove({});

@@ -41,6 +41,7 @@ function isOptions(opts) {
   return opts &&
     ( (opts.auth !== undefined ||
        opts.fields !== undefined ||
+       opts.historical !== undefined ||
        opts.limit !== undefined ||
        opts.multi !== undefined ||
        opts.perm !== undefined ||
@@ -779,6 +780,10 @@ export default class Collection {
 
     let update = opts.update;
 
+    if (collection.def.historical && opts.historical !== false) {
+      Tyr.warn('findAndModify() used on historical collection', new Error());
+    }
+
     if (update) {
       // Check for whether update param is all field:value expressions.
       // If so, we should replace the entire doc (per Mongo api docs)
@@ -960,7 +965,26 @@ export default class Collection {
       }
     }
 
-    await collection.update(opts);
+    const auth  = extractAuthorization(opts);
+    let query = opts.query;
+
+    if (auth) {
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.update, auth);
+
+      if (!query) {
+        // throw a security exception here ?  if we do this, also need to examine results from the update() and potentially throw one there as well
+        return false;
+      }
+    }
+
+    timestampsUpdate(opts, collection, update);
+
+    if (obj.updatedAt || updateFields.updatedAt) {
+      // return the updated updatedAt date in the original object
+      obj.updatedAt = update.updatedAt;
+    }
+
+    return await collection.db.update(query, opts.update, opts);
   }
 
   /**
@@ -977,6 +1001,10 @@ export default class Collection {
       // fall through
     case 1:
       opts.query = args[0];
+    }
+
+    if (collection.def.historical && opts.historical !== false) {
+      Tyr.warn('update() (not $update()) used on historical collection', new Error());
     }
 
     const update = opts.update,
