@@ -108,6 +108,62 @@ describe('tyranid', function() {
     }, 500);
   });
 
+  describe('lodash-like methods', () => {
+    const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
+          oid1_ = new ObjectId('55bb8ecff71d45b995ff8c83'),
+          oid2  = new ObjectId('5567f2a8387fa974fc6f3a5a'),
+          oid2_ = new ObjectId('5567f2a8387fa974fc6f3a5a'),
+          oid3  = new ObjectId('aaa7f2a8387fa9abdc6f3ced'),
+          oid3_ = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
+
+    it('should support isEqual with OIDs', () => {
+      expect(
+        Tyr.isEqual(
+          [oid1, oid2, oid3],
+          [oid1_, oid2_, oid3_]
+        )
+      ).to.be.true;
+    });
+
+    it('should support indexOf with OIDs', () => {
+      expect(
+        Tyr.indexOf([oid1, oid2, oid3], oid2_)
+      ).to.eql(1);
+
+      expect(
+        Tyr.indexOf([oid1, oid2], oid3_)
+      ).to.eql(-1);
+    });
+
+    it('should support addToSet', () => {
+      const a = [ oid1, oid2 ];
+
+      Tyr.addToSet(a, oid2_);
+
+      expect(a.length).to.eql(2);
+
+      Tyr.addToSet(a, oid3 );
+
+      expect(
+        Tyr.isEqual(
+          a,
+          [oid1, oid2, oid3_]
+        )
+      ).to.be.true;
+    });
+
+    it('should support pullAll', () => {
+      const a = [oid1, oid2, oid3];
+      Tyr.pullAll(a, oid2_);
+
+      expect(Tyr.isEqual(a, [oid1, oid3])).to.be.true;
+
+      Tyr.pullAll(a, 3);
+
+      expect(Tyr.isEqual(a, [oid1, oid3])).to.be.true;
+    });
+  });
+
   describe( 'schema validation', function() {
     afterEach(() => {
       Tyr.forget('t00');

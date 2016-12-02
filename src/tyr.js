@@ -113,6 +113,10 @@ const Tyr = {
     return array.some((el, idx) => booleans[idx]);
   },
 
+  //
+  // lodash-like methods
+  //
+
   isEqual(a, b) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
     return _.isEqualWith ? _.isEqualWith(a, b, equalCustomizer) : _.isEqual(a, b, equalCustomizer);
@@ -121,6 +125,45 @@ const Tyr = {
   cloneDeep(obj) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
     return _.cloneDeepWith ? _.cloneDeepWith(obj, cloneCustomizer) : _.cloneDeep(obj, cloneCustomizer);
+  },
+
+  indexOf(array, value) {
+    const an = array.length;
+
+    for (let ai = 0; ai < an; ai++) {
+      if (Tyr.isEqual(array[ai], value)) {
+        return ai;
+      }
+    }
+
+    return -1;
+  },
+
+  addToSet(array, ...values) {
+    for (const v of values) {
+      const ai = Tyr.indexOf(array, v);
+
+      if (ai < 0) {
+        array.push(v);
+      }
+    }
+  },
+
+  pullAll(array, ...values) {
+    const an  = array.length;
+    let tai = 0;
+
+    for (let sai = 0; sai < an; sai++) {
+      const asv = array[sai];
+
+      if (Tyr.indexOf(values, asv) >= 0) {
+        sai;
+      } else {
+        array[tai++] = asv;
+      }
+    }
+
+    array.length = tai;
   }
 };
 
