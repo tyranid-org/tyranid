@@ -1187,13 +1187,26 @@ describe('tyranid', function() {
       });
     });
 
-    describe('insert', function() {
-      it('should generate an _id if Type.generatePrimaryKeyVal() defined', function() {
-        var r = new Role();
-        return r.$insert()
-          .then(function(newRole) {
-            expect(newRole._id).to.be.an.instanceOf(ObjectId);
-          });
+    describe('insert', () => {
+      it('should set _id on the inserted document', async () => {
+        try {
+          await Location.db.remove({});
+
+          const l = new Location({ name: 'Test Location' });
+
+          await l.$insert();
+
+          // some checks here to make sure that we're properly returning the new ObjectId
+          expect(l._id).to.be.instanceof(ObjectId);
+        } finally {
+          await Location.db.remove({});
+        }
+      });
+
+      it('should generate an _id if Type.generatePrimaryKeyVal() defined', async () => {
+        const r = new Role();
+        const newRole = await r.$insert();
+        expect(newRole._id).to.be.an.instanceOf(ObjectId);
       });
 
       it('should generate a custom primaryKey if Type.generatePrimaryKeyVal() defined', function() {

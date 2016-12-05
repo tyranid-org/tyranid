@@ -905,7 +905,9 @@ export default class Collection {
 
       const rslt = await collection.db.insert(parsedObj);
 
-      return rslt.ops[0];
+      const doc = rslt.ops[0];
+      obj._id = doc._id;
+      return doc;
     }
   }
 
