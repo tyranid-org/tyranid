@@ -1196,7 +1196,6 @@ describe('tyranid', function() {
 
           await l.$insert();
 
-          // some checks here to make sure that we're properly returning the new ObjectId
           expect(l._id).to.be.instanceof(ObjectId);
         } finally {
           await Location.db.remove({});
@@ -1317,6 +1316,20 @@ describe('tyranid', function() {
         await User.remove({ _id: 2001 });
 
         expect(dale.name).to.be.undefined;
+      });
+
+      it('should set _id on new documents', async () => {
+        try {
+          await Location.db.remove({});
+
+          const l = new Location({ name: 'Test Location' });
+
+          await l.$save();
+
+          expect(l._id).to.be.instanceof(ObjectId);
+        } finally {
+          await Location.db.remove({});
+        }
       });
     });
 
