@@ -1299,6 +1299,21 @@ describe('tyranid', function() {
 
         expect(dale.name.first).to.eql('Dale');
       });
+
+      it( 'should upsert', async () => {
+
+        await Role.db.remove({ name: 'foo' });
+
+        let foo = new Role({ name: 'foo' });
+        await foo.$update();
+        expect(foo._id).to.exist;
+
+        foo = await Role.findOne({ name: 'foo' });
+
+        expect(foo).to.exist;
+
+        await Role.db.remove({ name: 'foo' });
+      });
     });
 
     describe('$save()', function() {

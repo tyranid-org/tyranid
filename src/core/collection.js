@@ -965,6 +965,11 @@ export default class Collection {
     const collection   = this,
           keyFieldName = collection.def.primaryKey.field;
 
+    if (!obj[keyFieldName]) {
+      // TODO:  maybe look at upsert on opts?  we're effectively assuming we always want to upsert
+      return collection.insert(obj, ...args);
+    }
+
     const opts = combineOptions(extractOptions(args), {
       query: { [keyFieldName]: obj[keyFieldName] },
       upsert: true,
