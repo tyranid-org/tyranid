@@ -114,17 +114,45 @@ function hasMongoUpdateOperator(update) {
       return true;
     }
   }
+
+  //return undefined;
 }
 
-function timestampsUpdate(opts, collection, update) {
+function timestampsUpdate(opts, collection, update, doc) {
   if (collection.def.timestamps && opts.timestamps !== false) {
+    const updatedAt = new Date();
+
     if (hasMongoUpdateOperator(update)) {
       update.$set = update.$set || {};
-      update.$set.updatedAt = new Date();
+      update.$set.updatedAt = updatedAt;
     } else {
-      update.updatedAt = new Date();
+      update.updatedAt = updatedAt;
+    }
+
+    if (doc) {
+      doc.updatedAt = updatedAt;
     }
   }
+}
+
+function extractUpdateFields(doc, opts) {
+  const updateFields = {};
+  if (opts.fields) {
+    _.each(opts.fields, (field, key) => {
+      if (field) {
+        updateFields[key] = 1;
+      }
+    });
+
+  } else {
+    _.each(doc, (field, key) => {
+      if (key !== '_id') {
+        updateFields[key] = 1;
+      }
+    });
+  }
+
+  return updateFields;
 }
 
 
@@ -174,6 +202,25 @@ const documentPrototype = Tyr.documentPrototype = {
         }
       }
     }
+  },
+
+  $snapshot(updateHistory, ...args) {
+    const collection = this.$model;
+
+    if (!collection.def.historical) {
+      throw new Error('Document is not historical');
+    }
+
+    const opts = extractOptions(args),
+          updateFields = extractUpdateFields(this, opts);
+
+    return historical.snapshot(
+      collection,
+      this,
+      historical.patchPropsFromOpts(opts),
+      updateFields,
+      updateHistory
+    );
   },
 
   $save(...args) {
@@ -924,21 +971,14 @@ export default class Collection {
       new: true
     });
 
-    let update,
-        updateFields;
 
-    if (opts.fields) {
-      update = {};
-      updateFields = {};
+    const updateFields = extractUpdateFields(obj, opts),
+          update = {};
 
-      _.each(opts.fields, (field, key) => {
-        update[key] = obj[key];
-        updateFields[key] = 1;
-      });
+    _.each(updateFields, (field, key) => {
+      update[key] = obj[key];
+    });
 
-    } else {
-      update = updateFields = _.omit(obj, '_id');
-    }
 
     opts.update = { $set: update };
 
@@ -981,12 +1021,7 @@ export default class Collection {
       }
     }
 
-    timestampsUpdate(opts, collection, update);
-
-    if (obj.updatedAt || updateFields.updatedAt) {
-      // return the updated updatedAt date in the original object
-      obj.updatedAt = update.updatedAt;
-    }
+    timestampsUpdate(opts, collection, update, obj);
 
     return await collection.db.update(query, opts.update, opts);
   }
