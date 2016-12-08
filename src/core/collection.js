@@ -966,8 +966,10 @@ export default class Collection {
           keyFieldName = collection.def.primaryKey.field;
 
     if (!obj[keyFieldName]) {
-      // TODO:  maybe look at upsert on opts?  we're effectively assuming we always want to upsert
+      // TODO:  maybe look at upsert on opts?  we're effectively assuming we always want to upsert, i.e.:
+      //if (opts.upsert !== false) {
       return collection.insert(obj, ...args);
+      //}
     }
 
     const opts = combineOptions(extractOptions(args), {
