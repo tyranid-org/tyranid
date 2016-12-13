@@ -12,9 +12,13 @@ import Units          from '../src/unit/units';
 import Role           from './models/role'; // require to get extra link in prototype chain
 import                     './models/user';
 import historical     from '../src/historical/historical';
+import { generateClientLibrary } from '../src/express';
+import * as jsdom from 'jsdom';
+import * as fs from 'fs';
 
-const babel = require('babel-core');
-//import babel        from 'babel-core';
+const jquerySource = fs.readFileSync('./node_modules/jquery/dist/jquery.min.js', 'utf-8');
+const lodashSource = fs.readFileSync('./node_modules/lodash/index.js', 'utf-8');
+
 
 const {
   ObjectId
@@ -2502,34 +2506,39 @@ describe('tyranid', function() {
       });
     });
 
-    if (false) {
-      describe('babel transform', function() {
 
-        try {
-          let s = `function foo(uid) {
-    const colId = uid.substring(0, 3);
+    /**
+     * 
+     * tests of code generated for express route
+     * 
+     */
+    describe('Client code generation', () => {
+      
+      it('Should include all collections', async () => {
+        const code = generateClientLibrary();
 
-    const col = _tyr2.default.byId[colId];
+        await new Promise((res, rej) => {
+          jsdom.env({
+            html: '<div></div>',
+            src: [jquerySource, lodashSource, code],
+            done(err, window) {
+              if (err) return rej(err);
+              const window$Tyr = window.Tyr;
 
-    if (!col) {
-      throw new Error('No collection found for id "' + colId + '"');
-    }
+              // expect that the server side tyr collections
+              // are all in the client side tyr
+              Tyr.collections.forEach(col => {
+                if (!(col.def.client === false) && 
+                    !(col.def.name in window$Tyr.byName)) {
+                  throw new Error(`Collection ${col.def.name} not present in client`);
+                }
+              });
 
-    const strId = uid.substring(3);
-
-    const idType = col.fields[col.def.primaryKey.field].type;
-
-    return {
-      collection: col,
-      id: idType.fromString(strId)
-    };
-  }`;
-
-          s = babel.transform(s).code;
-        } catch (err) {
-          console.log(err.stack);
-        }
+              res();
+            }
+          });
+        });
       });
-    }
+    });
   });
 });

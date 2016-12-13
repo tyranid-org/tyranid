@@ -68,27 +68,27 @@ function translateClass(cls) {
   return s;
 }
 
-export default function express(app, auth) {
 
-  //app.use(local.express);
-
-
-  /*
-   *     /api/tyranid
-   */
-
-  // TODO:  exposing this as a dynamic API call right now, but this could also be exposed as a
-  //        gulp/build task which creates this file at build time.  This would allow this API
-  //        call to be eliminated and for the file to be bundled using the client applications
-  //        bundling process.  This would also allow splitting up the constant source code into
-  //        its own file and also permit using ES6/ES7/etc.
-  //
-  //        NOTE that if it is exposed as a build task, then dynamic schema metadata will still
-  //        need to be handled!
-
+// TODO:  exposing this as a dynamic API call right now, but this could also be exposed as a
+//        gulp/build task which creates this file at build time.  This would allow this API
+//        call to be eliminated and for the file to be bundled using the client applications
+//        bundling process.  This would also allow splitting up the constant source code into
+//        its own file and also permit using ES6/ES7/etc.
+//
+//        NOTE that if it is exposed as a build task, then dynamic schema metadata will still
+//        need to be handled!
+export function generateClientLibrary() {
   // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
-(function() {
+(function(window) {
+  // check for existance of clientside deps
+  var $ = window.jQuery || window.$;
+  var _ = window.lodash || window._;
+
+  if (!$) throw new Error("jQuery not available to Tyranid client");
+  if (!_) throw new Error("Lodash not available to Tyranid client ");
+
+
   var Tyr = window.Tyr = {
         $all: '$all',
         collections: [],
@@ -686,7 +686,7 @@ export default function express(app, auth) {
   });
 
   file += `
-})();
+})(typeof window !== 'undefined' ? window : this);
 `;
 
   try {
@@ -705,11 +705,20 @@ export default function express(app, auth) {
     // unbastardize imports for the client
     file = file.replace(/_tyr2.default/g, 'Tyr');
     file = file.replace(/_lodash2.default/g, '_');
+    
+    return file;
   } catch (err) {
     console.log(err.stack);
     throw err;
-  }
+  }  
+}
 
+
+export default function express(app, auth) {
+
+  const file = generateClientLibrary();
+
+  //app.use(local.express);
   app.route('/api/tyranid')
     // we don't send insecure information in /api/tyranid, it is just source code
     //.all(auth)
