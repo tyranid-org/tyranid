@@ -4,7 +4,7 @@ import _            from 'lodash';
 
 function equalCustomizer(a, b) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
-  if (a.constructor.name === 'ObjectID' && b.constructor.name === 'ObjectID') {
+  if (a && b && a.constructor.name === 'ObjectID' && b.constructor.name === 'ObjectID') {
     return a.equals(b);
   }
 
