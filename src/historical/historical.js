@@ -105,6 +105,10 @@ function snapshotPush(path, patchProps) {
 
 function asOf(collection, doc, date) {
 
+  if (!collection.def.historical) {
+    throw new Error(`Collection "${collection.def.name}" is not historical, cannot $asOf()`);
+  }
+
   if (date instanceof Date) {
     date = date.getTime();
   }
@@ -114,22 +118,23 @@ function asOf(collection, doc, date) {
   }
 
   const history = doc._history;
+  if (doc._history) {
+    for (let hi = history.length - 1; hi >= 0; hi--) {
+      const h = history[hi];
 
-  for (let hi = history.length - 1; hi >= 0; hi--) {
-    const h = history[hi];
+      if (h.o < date) {
+        break;
+      }
 
-    if (h.o < date) {
-      break;
+      diff.patchObj(doc, h.p);
     }
 
-    diff.patchObj(doc, h.p);
+    Object.defineProperty(doc, '$historical', {
+      enumerable:   false,
+      configurable: false,
+      value:        true
+    });
   }
-
-  Object.defineProperty(doc, '$historical', {
-    enumerable:   false,
-    configurable: false,
-    value:        true
-  });
 }
 
 function patchPropsFromOpts(opts) {
