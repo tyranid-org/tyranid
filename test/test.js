@@ -2316,6 +2316,21 @@ describe('tyranid', function() {
         expect(u.age).to.eql(5);
       });
 
+      /*
+      it('should support asOf() with partial data', () => {
+        let u = user1();
+        expect(u.age).to.eql(7);
+
+        delete u.age;
+        historical.asOf(User, u, new Date('8-Oct-2016').getTime(), { fields: { name: 1 } });
+        expect(u.age).to.eql(6);
+
+        u = user1();
+        u.$asOf(new Date('8-Oct-2015'));
+        expect(u.age).to.eql(5);
+      });
+      */
+
       it('should preserveInitialValues() automatically on records read from the db', async () => {
         await User.remove({ _id: 2001 });
 
@@ -2508,12 +2523,12 @@ describe('tyranid', function() {
 
 
     /**
-     * 
+     *
      * tests of code generated for express route
-     * 
+     *
      */
     describe('Client code generation', () => {
-      
+
       it('Should include all collections', async () => {
         const code = generateClientLibrary();
 
@@ -2528,7 +2543,7 @@ describe('tyranid', function() {
               // expect that the server side tyr collections
               // are all in the client side tyr
               Tyr.collections.forEach(col => {
-                if (!(col.def.client === false) && 
+                if (!(col.def.client === false) &&
                     !(col.def.name in window$Tyr.byName)) {
                   throw new Error(`Collection ${col.def.name} not present in client`);
                 }
