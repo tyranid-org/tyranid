@@ -103,7 +103,7 @@ function snapshotPush(path, patchProps) {
   return snapshot;
 }
 
-function asOf(collection, doc, date) {
+function asOf(collection, doc, date, props) {
 
   if (!collection.def.historical) {
     throw new Error(`Collection "${collection.def.name}" is not historical, cannot $asOf()`);
@@ -126,7 +126,7 @@ function asOf(collection, doc, date) {
         break;
       }
 
-      diff.patchObj(doc, h.p);
+      diff.patchObj(doc, h.p, props);
     }
 
     Object.defineProperty(doc, '$historical', {

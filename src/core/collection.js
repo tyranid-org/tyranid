@@ -161,8 +161,8 @@ function extractUpdateFields(doc, opts) {
 
 const documentPrototype = Tyr.documentPrototype = {
 
-  $asOf(date) {
-    historical.asOf(this.$model, this, date);
+  $asOf(date, props) {
+    historical.asOf(this.$model, this, date, props);
   },
 
   $clone() {

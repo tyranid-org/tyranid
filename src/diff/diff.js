@@ -76,9 +76,13 @@ function diffObj(a, b, props) {
   return diffs;
 }
 
-function patchObj(a, patch) {
+function patchObj(a, patch, props) {
 
   for (let prop in patch) {
+    if (props && !props[prop]) {
+      continue;
+    }
+
     const pv = patch[prop];
 
     if (pv === O_DELETE) {

@@ -2316,20 +2316,19 @@ describe('tyranid', function() {
         expect(u.age).to.eql(5);
       });
 
-      /*
       it('should support asOf() with partial data', () => {
         let u = user1();
         expect(u.age).to.eql(7);
 
         delete u.age;
-        historical.asOf(User, u, new Date('8-Oct-2016').getTime(), { fields: { name: 1 } });
-        expect(u.age).to.eql(6);
+        historical.asOf(User, u, new Date('8-Oct-2016').getTime(), { name: 1 });
+        expect(u.age).to.be.undefined;
 
         u = user1();
-        u.$asOf(new Date('8-Oct-2015'));
-        expect(u.age).to.eql(5);
+        delete u.age;
+        u.$asOf(new Date('8-Oct-2015'), { name: 1 });
+        expect(u.age).to.be.undefined;
       });
-      */
 
       it('should preserveInitialValues() automatically on records read from the db', async () => {
         await User.remove({ _id: 2001 });
