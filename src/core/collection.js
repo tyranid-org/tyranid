@@ -1236,8 +1236,8 @@ export default class Collection {
    */
   populate(fields, documents, denormal) {
     const collection = this,
-          population = Population.parse(collection, fields),
-          populator  = new Populator(denormal);
+          populator  = new Populator(denormal),
+          population = Population.parse(populator, collection, fields);
 
     async function populatorFunc(documents) {
       const isArray = documents && Array.isArray(documents);

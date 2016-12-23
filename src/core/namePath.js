@@ -4,6 +4,9 @@ const _ = require('lodash');
 
 const Tyr = require('../tyr').default;
 
+const PATH_REGEX = /\._/g;
+
+
 /**
  * NOTE: This cannot be a ES6 class because it is isomorphic
  *
@@ -272,6 +275,17 @@ Object.defineProperty(NamePath.prototype, 'pathLabel', {
     return label;
   }
 });
+
+Object.defineProperty(NamePath.prototype, 'spath', {
+  get: function() {
+    let sp = this._spath;
+    if (!sp) {
+      sp = this._spath = this.name.replace(PATH_REGEX, '');
+    }
+    return sp;
+  }
+});
+
 
 Tyr.NamePath = NamePath;
 export default NamePath;

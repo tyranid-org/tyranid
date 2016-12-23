@@ -33,10 +33,10 @@ var User = new tyr.Collection({
   historical: true,
   timestamps: true,
   indexes: [
-      {
-        key: { 'name.first': 1, 'name.last': 1 },
-        name: 'firstLastName'
-      }
+    {
+      key: { 'name.first': 1, 'name.last': 1 },
+      name: 'firstLastName'
+    }
   ],
   fields: {
     _id: { is: 'integer' },

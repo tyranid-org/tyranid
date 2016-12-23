@@ -975,6 +975,18 @@ describe('tyranid', function() {
             });
           });
       });
+
+      it( 'should do restricted projection', async () => {
+        let department = await Department.byId(1);
+        await department.$populate({ creator: { name: 1 } });
+        expect(_.keys(department.creator$).length).to.be.eql(2);
+        expect(department.creator$._id).to.eql(2);
+        expect(department.creator$.name).to.be.defined;
+
+        department = await Department.byId(1);
+        await department.$populate({ creator: { age: 1, name: 1 } });
+        expect(_.keys(department.creator$)).to.eql(['_id', 'name', 'age']);
+      });
     });
 
     describe('NamePath', function() {
@@ -2030,15 +2042,17 @@ describe('tyranid', function() {
       });
 
       it('should work with $or and $ands together', () => {
-        testl({ $or: [ { blog: 1 }, { org: 1 } ], $and: [ { a1: 1 }, { b1: 1 } ] },
-              { $or: [ { foo: 1  }, { bar: 2 } ], $and: [ { c1: 1 }            ] },
-              { $and: [
-                  { $or: [ { blog: 1 }, { org: 1 } ] },
-                  { $or: [ { foo: 1  }, { bar: 2 } ] },
-                  { a1: 1 },
-                  { b1: 1 },
-                  { c1: 1 },
-              ] });
+        testl(
+          { $or: [ { blog: 1 }, { org: 1 } ], $and: [ { a1: 1 }, { b1: 1 } ] },
+          { $or: [ { foo: 1  }, { bar: 2 } ], $and: [ { c1: 1 }            ] },
+          { $and: [
+            { $or: [ { blog: 1 }, { org: 1 } ] },
+            { $or: [ { foo: 1  }, { bar: 2 } ] },
+            { a1: 1 },
+            { b1: 1 },
+            { c1: 1 },
+          ] }
+        );
       });
 
       it('should work with nested $and/$or', () => {

@@ -20,7 +20,7 @@ export default class Population {
   }
 
 
-  static parse(rootCollection, fields) {
+  static parse(populator, rootCollection, fields) {
     if (_.isString(fields)) {
       // process the really simple format -- a simple path name
       fields = [ fields ];
@@ -74,6 +74,8 @@ export default class Population {
           }
         });
 
+        populator.cacheFor(collection.id).project(projection);
+
         return projection;
       };
 
@@ -103,16 +105,11 @@ export default class Population {
   async populate(populator, documents) {
     const population = this;
 
-    population.projection.forEach(function(population) {
+    population.projection.forEach(population => {
       if (population instanceof Population && !population.isSimple()) {
         populator.addIds(population, documents);
       }
     });
-
-    // TODO:  PROJECTION-
-    //        need to look at the projection and figure out some way to tell queryMissingIds which fields to query
-    //        it should also do some sort of superset analysis across the population tree
-    //        (i.e. if one population on org needs name and another needs permissions, we need to query name + permissions
 
     // wait for population of missing ids
     await populator.queryMissingIds();
@@ -149,7 +146,7 @@ export default class Population {
           } else if (!obj) {
             return obj;
           } else {
-            obj = cache[obj.toString()];
+            obj = cache.values[obj.toString()];
             if (nestedDocs) {
               nestedDocs.push(obj);
             }

@@ -5,8 +5,6 @@ import _ from 'lodash';
 import Tyr      from '../tyr';
 import NamePath from './namePath';
 
-const PATH_REGEX = /\._/g;
-
 
 export default class Field {
 
@@ -27,11 +25,7 @@ export default class Field {
   }
 
   get spath() {
-    let sp = this._spath;
-    if (!sp) {
-      sp = this._spath = this.path.replace(PATH_REGEX, '');
-    }
-    return sp;
+    return this.namePath.spath;
   }
 
   get db() {
