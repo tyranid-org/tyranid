@@ -705,12 +705,12 @@ export function generateClientLibrary() {
     // unbastardize imports for the client
     file = file.replace(/_tyr2.default/g, 'Tyr');
     file = file.replace(/_lodash2.default/g, '_');
-    
+
     return file;
   } catch (err) {
     console.log(err.stack);
     throw err;
-  }  
+  }
 }
 
 
@@ -747,7 +747,7 @@ Collection.prototype.express = function(app, auth) {
     const name = col.def.name;
 
 
-    if (express.rest || (express.get || express.put)) {
+    if (express.rest || (express.get || express.put || express.array)) {
 
       /*
        *     /api/NAME
@@ -842,6 +842,67 @@ Collection.prototype.express = function(app, auth) {
       }
 
       //.put(users.update);
+
+
+      /*
+       *     /api/NAME/:id/FIELD_PATH/slice
+       *
+       *     body {
+       *       skip: <int>,
+       *       limit: <int>,
+       *       sort: object
+       *     }
+       *
+       *     Gets a slice of an embedded array
+       */
+
+      if (express.rest || express.slice) {
+        _.each(col.paths, field => {
+          if (field.type.name === 'array') {
+            r = app.route('/api/' + name + '/:id/' + field.path + '/slice');
+            r.all(auth);
+            r.get(async (req, res) => {
+              try {
+                const doc = await col.byId(
+                  req.params.id,
+                  {
+                    auth: req.user,
+                    fields: {
+                      [field.spath]: 1
+                    }
+                  }
+                );
+
+                const arr = field.get(doc);
+                // sort TODO: array according to sort
+
+                // setting the array back here so that $toClient() has less work to do
+                field.set(arr.slice(skip, skip + limit));
+
+                res.json(field.get(doc.$toClient()));
+
+                /*
+                    TODO:
+
+                      client-(and server-?)side method:
+
+                        doc.$slice({
+                          path: *, sort: *, skip: *, limit: *
+                        })
+
+                      can we use NamePath in array sorter ... no
+
+                      verify undefined comparisons in array.sort
+
+                 */
+              } catch(err) {
+                console.log(err.stack);
+                res.sendStatus(500);
+              }
+            });
+          }
+        });
+      }
 
 
       /*
