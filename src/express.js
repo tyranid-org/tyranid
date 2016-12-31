@@ -133,6 +133,31 @@ export function generateClientLibrary() {
 
     $save: function() {
       return this.$model.save(this);
+    },
+
+    $slice: function(path, opts) {
+      var doc = this,
+          col = doc.$model;
+
+      return ajax({
+        url: '/api/' + col.def.name + '/' + id + '/' + path + '/slice'
+      }).then(function(arr) {
+        var np = col.paths[path].namePath,
+            docArr = np.get(doc),
+            begin = opts.skip || 0,
+            end = opts.limit ? Math.min(begin + opts.limit, arr.length) : arr.length;
+
+        if (!docArr) {
+          docArr = [];
+          np.set(doc, docArr);
+        }
+
+        for (let i = begin; i < end; i++) {
+          docArr[i] = arr[i];
+        }
+      }).catch(function(err) {
+        console.log(err);
+      });
     }
   };
 
@@ -873,28 +898,9 @@ Collection.prototype.express = function(app, auth) {
                   }
                 );
 
-                const arr = field.get(doc);
-                // sort TODO: array according to sort
-
-                // setting the array back here so that $toClient() has less work to do
-                field.set(arr.slice(skip, skip + limit));
+                doc.$slice(field.path, req.body);
 
                 res.json(field.get(doc.$toClient()));
-
-                /*
-                    TODO:
-
-                      client-(and server-?)side method:
-
-                        doc.$slice({
-                          path: *, sort: *, skip: *, limit: *
-                        })
-
-                      can we use NamePath in array sorter ... no
-
-                      verify undefined comparisons in array.sort
-
-                 */
               } catch(err) {
                 console.log(err.stack);
                 res.sendStatus(500);
