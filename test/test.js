@@ -301,6 +301,7 @@ describe('tyranid', function() {
         TyrSchema, TyrSchemaType;
     //var Job2, Organization2, Department2, User2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
+    var UserRoleId = new ObjectId('55bb7ecfe71d45b923ff8c83');
     var BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
     var Book2Isbn = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
 
@@ -334,7 +335,8 @@ describe('tyranid', function() {
       ]);
       await Role.db.remove({});
       await Role.db.insert([
-        { _id: AdministratorRoleId, name: 'Administrator' }
+        { _id: AdministratorRoleId, name: 'Administrator' },
+        { _id: UserRoleId,          name: 'User' }
       ]);
       await User.db.remove({});
       await User.db.insert([
@@ -345,7 +347,10 @@ describe('tyranid', function() {
         ],
           age: 35,
           ageAppropriateSecret: 'Eats at Chipotle way to much...',
-          roles: [ { role: AdministratorRoleId, active: true } ]
+          roles: [
+            { role: AdministratorRoleId, active: true },
+            { role: UserRoleId,          active: true }
+          ]
         },
         { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
             { name: 'Jill Doe', friends: [ { user: 1 }, { user: 2 } ] },
@@ -805,7 +810,8 @@ describe('tyranid', function() {
     describe('values', function() {
       var allString = [
         '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
-        'George Doe', 'Home Gardening 101', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...', 'Tom Doe', 'Tyranid User Guide', 'u00'
+        'George Doe', 'Home Gardening 101', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...',
+        'Tom Doe', 'Tyranid User Guide', 'User', 'u00'
       ];
 
       it( 'should support valuesFor()', function() {
@@ -1058,6 +1064,62 @@ describe('tyranid', function() {
 
         np = Department.parsePath('cubicles.old3.size');
         expect(np.get(obj)).to.eql(170);
+      });
+
+      it('should support set', async () => {
+        const u = await User.byId(3),
+              np = u.$model.paths['name.first'].namePath;
+
+        np.set(u, 'Molly');
+
+        expect(u.name.first).to.eql('Molly');
+      });
+
+      it('should support set with arrays', async () => {
+        const u = new User({
+          name: {
+            first: 'Joseph',
+            suffices: [ 'Dr.', 'Mr.', 'Crazy' ]
+          },
+          siblings: [
+            { name: 'Tom Doe' },
+            { name: 'Mia Doe' },
+            { name: 'George Doe' }
+          ]
+        });
+
+        let np = u.$model.paths['name.suffices._'].namePath;
+        np.set(u, 'Super');
+        expect(u.name.suffices).to.eql(['Super', 'Super', 'Super']);
+
+        np = u.$model.paths['name.suffices'].namePath;
+        np.set(u, 'Super');
+        expect(u.name.suffices).to.eql('Super');
+
+        np = u.$model.paths['siblings._.name'].namePath;
+        np.set(u, 'Thor');
+        expect(u.siblings).to.eql([
+          { name: 'Thor' },
+          { name: 'Thor' },
+          { name: 'Thor' }
+        ]);
+      });
+
+      it('should support relative NamePaths', async () => {
+        const u = await User.byId(3);
+
+        const nameNp = User.paths.name.namePath,
+              firstNp = nameNp.parsePath('first');
+        expect(firstNp.toString()).to.eql('user:name/first');
+
+        const name = nameNp.get(u);
+        expect(name.first).to.eql('Jane');
+
+        const first = firstNp.get(name);
+        expect(first).to.eql('Jane');
+
+        firstNp.set(name, 'Janet');
+        expect(nameNp.get(u).first).to.eql('Janet');
       });
     });
 
@@ -2531,6 +2593,88 @@ describe('tyranid', function() {
         expect(amy._history[0].p).to.eql({'address':[1,{'street':['123 Mayberry']}]});
 
         await User.remove({ _id: 2001 });
+      });
+    });
+
+    describe('arraySort', function() {
+      it('should take a mongo sort-style object', () => {
+        const myArray = [ { b: 1 }, { b: 'alpha' }, {}, { b: 'alpha', c: 2 } ];
+        Tyr.arraySort(myArray, { b: 1, c: -1 });
+        expect(myArray).to.eql(
+          [ {}, { b: 1 }, { b: 'alpha', c: 2 }, { b: 'alpha' } ]
+        );
+      });
+
+      it('should sort heterogenous values like mongo', () => {
+        const myArray = [
+          { a: 1 },
+          {},
+          { a: 'alpha' },
+          { a: { c: 'foo' } },
+          { a: { a: 'bar' } },
+          { a: {} },
+          { a: 3 },
+          { a: new Date('2016-12-1') },
+          { a: null },
+        ];
+        Tyr.arraySort(myArray, { a: 1 });
+        expect(myArray).to.eql([
+          {},
+          { a: null },
+          { a: 1 },
+          { a: 3 },
+          { a: 'alpha' },
+          { a: {} },
+          { a: { a: 'bar' } },
+          { a: { c: 'foo' } },
+          { a: new Date('2016-12-1') },
+        ]);
+      });
+    });
+
+    describe('$slice', () => {
+      it('support an empty options array', async () => {
+        const u = await User.byId(3, { fields: { name: 1 } });
+        expect(u.siblings).to.be.undefined;
+
+        await u.$slice('siblings');
+        expect(u.siblings.length).to.eql(2);
+      });
+
+      it('support skip and limit', async () => {
+        const u = await User.byId(3, { fields: { name: 1 } });
+        await u.$slice('siblings', { skip: 1, limit: 1 });
+        expect(u.siblings[0]).to.be.undefined;
+        expect(u.siblings[1].name).to.eql('Bill Doe');
+        expect(u.siblings.length).to.eql(2);
+      });
+
+      it('support sort', async () => {
+        const u = await User.byId(3, { fields: { name: 1 } });
+        await u.$slice('siblings', { skip: 1, limit: 1, sort: { name: 1 } });
+        expect(u.siblings[0]).to.be.undefined;
+        expect(u.siblings[1].name).to.eql('Jill Doe');
+        expect(u.siblings.length).to.eql(2);
+      });
+
+      it('support where', async () => {
+        const u = await User.byId(3, { fields: { name: 1 } });
+        await u.$slice('siblings', { where: v => v.name.startsWith('Jill') });
+        expect(u.siblings[0].name).to.eql('Jill Doe');
+        expect(u.siblings.length).to.eql(1);
+      });
+
+      it('support population', async () => {
+        const u = await User.byId(2, { fields: { name: 1 } });
+
+        await u.$slice('roles');
+        expect(u.roles.length).to.eql(2);
+
+        delete u.roles;
+        await u.$slice('roles', { populate: { role: $all } });
+        expect(u.roles.length).to.eql(2);
+        expect(u.roles[0].role$.name).to.eql('Administrator');
+        expect(u.roles[1].role$.name).to.eql('User');
       });
     });
 

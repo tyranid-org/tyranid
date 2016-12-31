@@ -1,6 +1,10 @@
 
-import Tyr from '../tyr';
-import Type from '../core/type';
+import _          from 'lodash';
+
+import Tyr        from '../tyr';
+import Type       from '../core/type';
+import Population from '../core/population';
+import Populator  from '../core/populator';
 
 
 const ArrayType = new Type({
@@ -119,14 +123,36 @@ function mongoCompare(a, b) {
     return 1;
   }
 
-  if (_.isObject(a)) {
-    if (_.isObject(b)) {
-      // TODO:  need to iterate through both arrays at the same time
+  if (_.isObject(a) && !_.isDate(a)) {
+    if (_.isObject(b) && !_.isDate(b)) {
+      if (_.isEmpty(a)) {
+        return _.isEmpty(b) ? 0 : -1;
+      } else if (_.isEmpty(b)) {
+        return 1;
+      }
 
+      for (const key of _.union(_.keys(a), _.keys(b)).sort()) {
+        const av = a[key],
+              bv = b[key];
+
+        if (av === undefined) {
+          return 1;
+        } else if (bv === undefined) {
+          return -1;
+        }
+
+        const v = mongoCompare(av, bv);
+
+        if (v) {
+          return v;
+        }
+      }
+
+      return 0;
     }
 
     return -1;
-  } else if (_.isObject(b)) {
+  } else if (_.isObject(b) && !_.isDate(b)) {
     return 1;
   }
 
@@ -140,31 +166,35 @@ function mongoCompare(a, b) {
     return 1;
   }
 
+  // TODO:  what other cases are not being handled?
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  }
 
-  // TODO:  what here ?  etc.
+  return 0;
 }
 
-function neg1(a, b, key) {
-  return -1 * mongoCompare(a[key], b[key]);
+Tyr.mongoCompare = mongoCompare;
+
+function inverseMongoCompare(a, b) {
+  return -1 * mongoCompare(a, b);
 }
 
-function pos1(a, b, key) {
-  return mongoCompare(a[key], b[key]);
-}
 
-
-Tyr.prototype.arraySort = function(array, sortObj) {
+Tyr.arraySort = function(array, sortObj) {
   const sortProps = [];
 
   for (const key in sortObj) {
-    if (array.isOwnProperty(key)) {
+    if (sortObj.hasOwnProperty(key)) {
       // TODO:  use NamePath here to deal with compound property names?
       const v = sortObj[key];
 
       if (v > 0) {
-        sortProps.push({ key, fn: pos1 });
-      } else if (v < 1) {
-        sortProps.push({ key, fn: neg1 });
+        sortProps.push({ key, fn: mongoCompare });
+      } else if (v < 0) {
+        sortProps.push({ key, fn: inverseMongoCompare });
       //} else {
         // ignore
       }
@@ -177,10 +207,50 @@ Tyr.prototype.arraySort = function(array, sortObj) {
       if (v) {
         return v;
       }
-
-      return 0;
     }
+
+    return 0;
   });
+
+  return array;
+};
+
+Tyr._slice = async function(doc, path, opts) {
+  const col   = doc.$model,
+        field = col.paths[path],
+        np    = field.namePath;
+
+  const { skip, limit, sort, where, populate } = opts || {};
+
+  const arrDoc = await col.byId(doc.$id, { fields: { [path]: 1 } });
+  let arr = np.get(arrDoc);
+
+  if (populate) {
+    const populator  = new Populator(false /* TODO: ??? */),
+          population = Population.parse(populator, np, populate);
+
+    await population.populate(populator, arr);
+  }
+
+  if (where) {
+    arr = arr.filter(where);
+  }
+
+  if (sort) {
+    Tyr.arraySort(arr, sort);
+  }
+
+  let docArr = np.get(doc);
+  if (!docArr) {
+    docArr = [];
+    np.set(doc, docArr);
+  }
+
+  const begin = skip || 0,
+        end = limit ? Math.min(begin + limit, arr.length) : arr.length;
+  for (let i = begin; i < end; i++) {
+    docArr[i] = arr[i];
+  }
 };
 
 export default ArrayType;

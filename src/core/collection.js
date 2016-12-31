@@ -243,6 +243,10 @@ const documentPrototype = Tyr.documentPrototype = {
     this.$copy(obj, Tyr.$all);
   },
 
+  $slice(path, options) {
+    return Tyr._slice(this, path, options);
+  },
+
   $toClient() {
     return this.$model.toClient(this);
   },
@@ -527,6 +531,10 @@ export default class Collection {
     CollectionInstance.validateValues();
 
     return CollectionInstance;
+  }
+
+  toString() {
+    return this.def.name;
   }
 
   _wrap(doc, pojo) {

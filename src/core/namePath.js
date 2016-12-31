@@ -12,17 +12,20 @@ const PATH_REGEX = /\._/g;
  *
  * @isomorphic
  */
-function NamePath(collection, pathName, skipArray) {
+function NamePath(base, pathName, skipArray) {
 
-  this.col = collection;
+  this.base = base;
   this.name = pathName;
+
+  if (base instanceof NamePath) {
+    base = base.tail;
+  }
 
   const path       = this.path = pathName.length ? pathName.split('.') : [],
         plen       = path.length,
         pathFields = this.fields = new Array(plen);
 
-  let curCollection = collection;
-  let at = collection;
+  let at = base;
 
   let pi = 0,
       denormal;
@@ -34,7 +37,7 @@ function NamePath(collection, pathName, skipArray) {
 
     if (name === '_') {
       if (!at.of) {
-        throw new Error(`"${name} in ${pathName} on the collection "${curCollection.def.name}" is not an array or map.`);
+        throw new Error(`"${name}" in "${pathName}" is not an array or map.`);
       }
 
       at = at.of;
@@ -58,7 +61,7 @@ function NamePath(collection, pathName, skipArray) {
         } else {
           if (!def.keys) {
             throw new Error(
-              `"${name}" in "${pathName}" is not contained within the collection "${curCollection.def.name}"` +
+              `"${name}" in "${pathName}" is not valid` +
               (at.link ? '" (maybe need advanced population syntax)' : '')
             );
           }
@@ -97,7 +100,6 @@ function NamePath(collection, pathName, skipArray) {
           at = _at;
           pathFields[pi++] = at;
           at = at.link;
-          curCollection = at;
           continue nextPath;
         }
       }
@@ -108,7 +110,7 @@ function NamePath(collection, pathName, skipArray) {
     }
 
     if (!at) {
-      throw new Error('Cannot find field "' + this.pathName(pi) + '" in ' + collection.def.name);
+      throw new Error(`Cannot find field "${this.pathName(pi)}"`);
     }
 
     pathFields[pi++] = at;
@@ -119,7 +121,7 @@ NamePath._numberRegex = /^[0-9]$/;
 
 NamePath._skipArray = function(field) {
   if (field && !field.type) {
-    debugger;
+    throw new Error('field missing type');
   }
 
   while (field && field.type.def.name === 'array') {
@@ -127,6 +129,10 @@ NamePath._skipArray = function(field) {
   }
 
   return field;
+};
+
+NamePath.prototype.parsePath = function(path, skipArray) {
+  return new NamePath(this, path, skipArray);
 };
 
 NamePath.decode = function(path) {
@@ -166,7 +172,12 @@ NamePath.prototype.pathName = function(pi) {
 };
 
 NamePath.prototype.toString = function() {
-  return this.col.def.name + ':' + this.name;
+  return (
+    (this.base instanceof Tyr.Collection
+      ? (this.base.def.name + ':')
+      : (this.base.toString() + '/'))
+    + this.name
+  );
 };
 
 Object.defineProperty(NamePath.prototype, 'tail', {
@@ -244,6 +255,56 @@ NamePath.prototype.get = function(obj) {
 
   return values;
 };
+
+NamePath.prototype.set = function(obj, value) {
+  const np     = this,
+        path   = np.path,
+        fields = np.fields,
+        plen   = path.length;
+
+  function walk(pi, obj) {
+    if (pi === plen - 1) {
+      if (Array.isArray(obj)) {
+        for (let i=0; i<obj.length; i++) {
+          obj[i] = value;
+        }
+      } else if (_.isObject(obj)) {
+        obj[path[pi]] = value;
+      } else {
+        throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
+      }
+
+    } else {
+      if (Array.isArray(obj)) {
+        const name = path[pi];
+        if (name === '_') {
+          pi++;
+        } else if (name && name.match(NamePath._numberRegex)) {
+          walk(pi+1, obj[name]);
+          return;
+        }
+
+        for (const v of obj) {
+          walk(pi, v);
+        }
+      } else if (!_.isObject(obj)) {
+        throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
+      } else {
+        if (pi && fields[pi-1].type.name === 'object' && path[pi] === '_') {
+          pi++;
+          for (const v of obj) {
+            walk(pi, v);
+          }
+        } else {
+          walk(pi+1, obj[path[pi]]);
+        }
+      }
+    }
+  }
+
+  walk(0, obj);
+};
+
 
 NamePath.prototype.uniq = function(obj) {
   const val = this.get(obj);

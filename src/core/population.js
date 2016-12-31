@@ -20,7 +20,16 @@ export default class Population {
   }
 
 
-  static parse(populator, rootCollection, fields) {
+  static parse(populator, base, fields) {
+    const rootCollection = base; // TODO:  need to eliminate this
+    let namePath;
+
+    if (base instanceof NamePath) {
+      namePath = base;
+    } else {
+      namePath = base.parsePath('');
+    }
+
     if (_.isString(fields)) {
       // process the really simple format -- a simple path name
       fields = [ fields ];
@@ -29,13 +38,13 @@ export default class Population {
     if (Array.isArray(fields)) {
       // process simplified array of pathnames format
       return new Population(
-        rootCollection.parsePath(''),
+        namePath,
         fields.map(function(field) {
           if (!_.isString(field)) {
             throw new Error('The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.');
           }
 
-          return new Population( rootCollection.parsePath(field), [ $all ] );
+          return new Population(base.parsePath(field), [ $all ]);
         })
       );
     }
@@ -43,14 +52,14 @@ export default class Population {
     if (_.isObject(fields)) {
       // process advanced object format which supports nested populations and projections
 
-      const parseProjection = function(collection, fields) {
+      const parseProjection = function(base, fields) {
         const projection = [];
 
         _.each(fields, function(value, key) {
           if (key === $all) {
             projection.push($all);
           } else {
-            const namePath = collection.parsePath(key);
+            const namePath = base.parsePath(key);
 
             if (value === 0 || value === false) {
               projection.push(new Population(namePath, false));
@@ -60,13 +69,13 @@ export default class Population {
               const link = namePath.detail.link;
 
               if (!link) {
-                throw new Error('Cannot populate ' + collection.def.name + '.' + namePath + ' -- it is not a link');
+                throw new Error('Cannot populate ' + base.toString() + '.' + namePath + ' -- it is not a link');
               }
 
               if (value === $all) {
                 projection.push(new Population(namePath, $all));
               } else if (!_.isObject(value)) {
-                throw new Error('Invalid populate syntax at ' + collection.def.name + '.' + namePath + ': ' + value);
+                throw new Error('Invalid populate syntax at ' + base.toString() + '.' + namePath + ': ' + value);
               } else {
                 projection.push(new Population(namePath, parseProjection(Tyr.byId[link.id], value)));
               }
@@ -74,12 +83,14 @@ export default class Population {
           }
         });
 
-        populator.cacheFor(collection.id).project(projection);
+        if (base instanceof Tyr.Collection) {
+          populator.cacheFor(base.id).project(projection);
+        }
 
         return projection;
       };
 
-      return new Population(rootCollection.parsePath(''), parseProjection(rootCollection, fields));
+      return new Population(base.parsePath(''), parseProjection(rootCollection, fields));
     }
 
     throw new Error('missing opts.fields option to populate()');
