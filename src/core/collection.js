@@ -912,7 +912,8 @@ export default class Collection {
           // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
           update: _.omit(obj, '_id'),
           upsert: true,
-          new: true
+          new: true,
+          historical: false
         }));
 
         return result.value;

@@ -78,6 +78,9 @@ const ArrayType = new Type({
  *   strings, then
  *   objects, then
  *   dates.
+ *
+ * TODO:  there is still some cases to support still ... see:
+ *        https://docs.mongodb.com/manual/reference/method/cursor.sort/#cursor.sort
  */
 function mongoCompare(a, b) {
 
