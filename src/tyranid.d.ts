@@ -231,7 +231,7 @@ declare namespace Tyranid {
       defaultValue?: any;
       of?: FieldDefinition;
       fields?: FieldsObject;
-      keys?: string;
+      keys?: FieldDefinition;
       denormal?: any;
       link?: string;
       where?: any;
@@ -362,7 +362,7 @@ declare namespace Tyranid {
       populate(fields: any, documents?: T | T[], denormal?: boolean): CollectionCurriedMethodReturn;
 
       // mongodb methods
-      remove(opts: BaseQueryOptions): Promise<void>;
+      remove(opts: LookupQueryOptions & { query: MongoQuery }): Promise<void>;
       save(opts: ModificationQueryOptions): Promise<T>;
       update(opts: UpdateQueryOptions & { query: MongoQuery }): Promise<T[]>;
       updateDoc(doc: MaybeRawDocument): Promise<T>;
