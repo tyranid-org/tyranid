@@ -4,28 +4,67 @@
 import * as Express from 'express';
 import * as mongodb from 'mongodb';
 
-export = TyrStatic;
+export = Tyranid;
 
-declare namespace TyrStatic {
+declare namespace Tyranid {
 
   // declare properties of Tyr object
   export namespace Tyr {
+
+    export const Field: FieldStatic;
+    export const Type: TypeStatic;
+    export const NamePath: NamePathStatic;
+    export const Collection: CollectionStatic;
+    export const $all: any;
+    export const byId: CollectionsById;
+    export const byName: CollectionsByName;
+    export const collections: GenericCollection[];
+    export const documentPrototype: any;
+    export const secure: Secure;
+    export const local: Local;
+    export const query: QueryStatic;
+
+
+    export function U(text: string): any;
+    export function parseUid(uid: string): { collection: GenericCollection, id: IdType };
+    export function labelize(name: string): string;
+    export function config(opts: ConfigOptions): void;
+    export function byUid(uid: string, options?: LookupQueryOptions): Promise<Document | null>;
+    export function byUids(uidList: string[], options?: LookupQueryOptions): Promise<Document[]>;
+    export function trace(opts: any): void;
+    export function log(opts: any): void;
+    export function info(opts: any): void;
+    export function warn(opts: any): void;
+    export function error(opts: any): void;
+    export function fatal(opts: any): void;
+    export function express(app: Express.Application, auth?: (req: Express.Request, res: Express.Response, next: Function) => {}): void;
+
+
+    export interface Cursor<T> extends mongodb.Cursor {
+      next(): Promise<T>;
+      next(cb: mongodb.MongoCallback<T>): void;
+      toArray(): Promise<T[]>;
+    }
+
 
     export type RawMongoDocument = {
       [key: string]: any;
     }
 
     export type MongoQuery = RawMongoDocument;
-    export type TyranidOrRawDocument = Document | RawMongoDocument;
+    export type MaybeRawDocument = Document | RawMongoDocument;
     export type LabelType = string;
     export type IdType = mongodb.ObjectID;
     export type LabelList = { [labelField: string]: string }[];
     export type BootStage = 'compile' | 'link' | 'post-link';
 
 
-    export interface TyranidClass<T> {
+    export interface Class<T> {
       new (...args: any[]): T;
     }
+
+
+    export interface GenericCollection extends CollectionInstance<Tyr.Document> {}
 
 
 
@@ -38,7 +77,7 @@ declare namespace TyrStatic {
 
       // universal properties
       $id: IdType;
-      $model: CollectionInstance;
+      $model: CollectionInstance<this>;
       $uid: string;
 
       // methods
@@ -52,21 +91,102 @@ declare namespace TyrStatic {
     }
 
 
+    export interface LookupQueryOptions extends BaseQueryOptions {
+
+      /**
+       * The standard MongoDB-style fields object that specifies the projection.
+       */
+      fields?: { [key: string]: number };
+
+      /**
+       * The population fields to populate.
+       */
+      populate?: PopulationOption;
+
+    }
+
+
+    export interface UpdateQueryOptions extends ModificationQueryOptions {
+
+      /**
+       * The standard MongoDB-style update object. 'insert' for inserts, etc.)
+       * but you can override it with this option.
+       */
+      update: any;
+
+    }
+
+
+
+    export interface ModificationQueryOptions extends BaseQueryOptions {
+
+      /**
+       * Indicates if timestamps should be updated.
+       * Defaults to the timestamps setting on the collection.
+       */
+      timestamps?: boolean;
+
+    }
+
+
+    /**
+     * Options passed to database methods
+     */
+    export interface BaseQueryOptions {
+
+      /**
+       * An authorization object (a user, group, role, etc.) to pass to a Secure
+       * plug-in. Can also be "true" to auto-detect the current user.
+       */
+      auth?: Tyr.Document;
+
+      /**
+       * The permission to use when an auth object is specified.
+       * Usually perm is inferred ('view' for finds, 'delete' for removes, ...)
+       */
+      perm?: string;
+
+      /**
+       * The maximum number of documents to retrieve.
+       */
+      limit?: number;
+
+      /**
+       * The number of documents to skip.
+       */
+      skip?: number;
+
+      /**
+       * The standard MongoDB-style sort object.
+       */
+      sort?: { [key: string]: number };
+
+    }
+
+
+    /**
+     * Fields to populate in a document
+     */
+    export type PopulationOption
+      = string
+      | string[]
+      | { [key: string]: PopulationOption };
+
 
 
 
     /**
      *  Hash of strings -> fields
      */
-    export type TyranidFieldsObject = {
-      [fieldName: string]: TyranidFieldDefinition;
+    export type FieldsObject = {
+      [fieldName: string]: FieldDefinition;
     }
 
 
     /**
      *  TyranidCollectionDefinition options for tyranid collection
      */
-    export type TyranidCollectionDefinition = {
+    export type CollectionDefinition = {
       [key: string]: any;
       id: string;
       name: string;
@@ -87,7 +207,7 @@ declare namespace TyrStatic {
         post?: boolean;
         put?: boolean;
       };
-      fields?: TyranidFieldsObject;
+      fields?: FieldsObject;
       methods?: {
         [methodName: string]: {
           fn: Function;
@@ -99,7 +219,7 @@ declare namespace TyrStatic {
     }
 
 
-    export interface TyranidFieldDefinitionRaw {
+    export interface FieldDefinitionRaw {
       [key: string]: any;
       is?: string;
       client?: boolean;
@@ -109,9 +229,9 @@ declare namespace TyrStatic {
       note?: string;
       required?: boolean;
       defaultValue?: any;
-      of?: TyranidFieldDefinition;
-      fields?: TyranidFieldsObject;
-      keys?: TyranidFieldDefinition;
+      of?: FieldDefinition;
+      fields?: FieldsObject;
+      keys?: string;
       denormal?: any;
       link?: string;
       where?: any;
@@ -129,41 +249,33 @@ declare namespace TyrStatic {
     /**
      *  Configuration definition for tyranid field.
      */
-    export interface TyranidFieldDefinition extends TyranidFieldDefinitionRaw {
-      def?: TyranidFieldDefinitionRaw,
+    export interface FieldDefinition extends FieldDefinitionRaw {
+      def?: FieldDefinitionRaw,
       pathLabel?: string;
     }
 
-    export type TyranidCollectionCurriedMethodReturn = Function | Promise<Document | Document[]>;
-
-    export const $all: any;
-    export const byId: TyranidCollectionsById;
-    export const byName: TyranidCollectionsByName;
-    export const collections: TyranidCollectionList;
-    export const documentPrototype: any;
-    export const secure: Secure;
-    export const local: TyranidLocal;
+    export type CollectionCurriedMethodReturn
+      = Function
+      | Promise<Document | Document[]>;
 
 
-    export interface TyranidCollectionList extends Array<CollectionInstance> {
-
+    export interface CollectionsByName {
+      [key: string]: GenericCollection;
     }
 
-
-    export interface TyranidCollectionsByName {
-      [key: string]: CollectionInstance;
-    }
-
-    export interface TyranidCollectionsById {
-      [key: string]: CollectionInstance;
+    export interface CollectionsById {
+      [key: string]: GenericCollection;
     }
 
 
     export interface Secure {
-      query(collection: CollectionInstance, method: 'view' | 'update' | 'insert' | 'delete'): Promise<MongoQuery>;
+      query(
+        collection: GenericCollection,
+        method: 'view' | 'update' | 'insert' | 'delete'
+      ): Promise<MongoQuery>;
     }
 
-    export interface TyranidLocal {
+    export interface Local {
       user?: Document;
       req?: Express.Request;
       res?: Express.Response;
@@ -171,7 +283,7 @@ declare namespace TyrStatic {
     }
 
 
-    export interface TyranidConfigOptions {
+    export interface ConfigOptions {
       db: mongodb.Db,
       consoleLogLevel?: 'ERROR',
       dbLogLevel?: 'TRACE',
@@ -187,136 +299,120 @@ declare namespace TyrStatic {
     }
 
 
-    export function U(text: string): any;
-    export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
-    export function labelize(name: string): string;
-    export function config(opts: TyranidConfigOptions): void;
-    export function byUid(uid: string): Promise<Document>;
-    export function byUids(uidList: string[], options?: any): Promise<Document[]>;
-    export function trace(opts: any): void;
-    export function log(opts: any): void;
-    export function info(opts: any): void;
-    export function warn(opts: any): void;
-    export function error(opts: any): void;
-    export function fatal(opts: any): void;
-    export function express(app: Express.Application, auth?: (req: Express.Request, res: Express.Response, next: Function) => {}): void;
-
-    export const Collection: Collection;
-
-    export interface Collection {
+    export interface CollectionStatic {
       // Collection instance constructor
-      new(def: TyranidCollectionDefinition): CollectionInstance;
+      new(def: CollectionDefinition): GenericCollection;
     }
 
 
     export interface Component {
       boot(stage: string, pass: number): string | string[];
       clientCode(code: string): string;
-      compileCollection(compiler: any, field: Collection): void;
-      compileField(compiler: any, field: Field): void;
+      compileCollection(compiler: any, field: CollectionStatic): void;
+      compileField(compiler: any, field: FieldInstance): void;
     }
 
 
     /**
      *  Tyranid collection class
      */
-    export interface CollectionInstance extends Component {
+    export interface CollectionInstance<T extends Tyr.Document> extends Component {
 
       // Collection instance constructor
-      new(doc: RawMongoDocument): Document;
+      new(doc: RawMongoDocument): T;
 
-      fields: { [key: string]: Field };
+      fields: { [key: string]: FieldInstance };
       label: LabelType;
-      labelField: Field;
-      paths: { [key: string]: Field };
-      def: TyranidCollectionDefinition;
+      labelField: FieldInstance;
+      paths: { [key: string]: FieldInstance };
+      def: CollectionDefinition;
       db: mongodb.Collection;
 
       secureQuery(query: MongoQuery, perm: string, auth: Document): Promise<MongoQuery>;
 
-      byId(id: IdType): Promise<Document>;
-      byIds(ids: IdType[], projection?: any, options?: any): Promise<Document[]>;
-      byLabel(label: LabelType): Promise<Document>;
+      byId(id: IdType, options?: LookupQueryOptions): Promise<T | null>;
+      byIds(ids: IdType[], projection?: any, options?: LookupQueryOptions): Promise<T[]>;
+      byLabel(label: LabelType): Promise<T | null>;
 
-      fieldsBy(filter: (field: Field) => boolean): Field[];
-      fieldsFor(obj: any): Promise<Field[]>;
+      fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
+      fieldsFor(obj: any): Promise<FieldInstance[]>;
       idToUid(id: string): string;
 
-      fake(options: { n?: number, schemaOpts?: any, seed?: number }): Promise<Document>;
+      fake(options: { n?: number, schemaOpts?: any, seed?: number }): Promise<T>;
 
-      find(...args: any[]): Promise<Document[]>;
-      findAll(...args: any[]): Promise<Document[]>;
-      findOne(...args: any[]): Promise<Document>;
-      findAndModify(...args: any[]): Promise<Document>;
+      find(opts: LookupQueryOptions & { query: RawMongoDocument }): Cursor<T>;
+      findAll(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T[]>;
+      findOne(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T | null>;
+      findAndModify(opts: LookupQueryOptions & { query: RawMongoDocument } & UpdateQueryOptions): Promise<T | null>;
 
-      fromClient(doc: RawMongoDocument, path?: string): Document;
+      fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;
-      toClient(doc: Document): RawMongoDocument;
+      toClient(doc: Document | Document[]): RawMongoDocument;
 
       idToLabel(id: string): Promise<string>;
-      insert(doc: TyranidOrRawDocument): Promise<Document>;
+      insert(doc: MaybeRawDocument): Promise<T>;
       isStatic(): boolean;
 
-      links(opts: any): Field[];
+      links(opts: any): FieldInstance[];
 
-      labelFor(doc: TyranidOrRawDocument): string;
+      labelFor(doc: MaybeRawDocument): string;
       labels(text: string): LabelList;
-      mixin(def: TyranidFieldDefinition): void;
-      parsePath(text: string): NamePath;
-      populate(fields: any, documents?: Document | Document[], denormal?: boolean): TyranidCollectionCurriedMethodReturn;
+      mixin(def: FieldDefinition): void;
+      parsePath(text: string): NamePathInstance;
+      populate(fields: any, documents?: T | T[], denormal?: boolean): CollectionCurriedMethodReturn;
 
       // mongodb methods
-      remove(id: string | MongoQuery, justOne?: boolean): Promise<void>;
-      save(doc: TyranidOrRawDocument | TyranidOrRawDocument[]): Promise<Document>;
-      update(query: MongoQuery, update: MongoQuery, opts: MongoQuery): Promise<Document[]>;
-      updateDoc(doc: TyranidOrRawDocument): Promise<Document>;
-      valuesFor(fields: Field[]): any[];
+      remove(opts: BaseQueryOptions): Promise<void>;
+      save(opts: ModificationQueryOptions): Promise<T>;
+      update(opts: UpdateQueryOptions & { query: MongoQuery }): Promise<T[]>;
+      updateDoc(doc: MaybeRawDocument): Promise<T>;
+      valuesFor(fields: FieldInstance[]): any[];
 
       // hook methods
       boot(stage: string, pass: number): string | string[];
-      plugin(fn: Function, opts: any): CollectionInstance;
-      pre(methods: string | string[], cb: Function): CollectionInstance;
-      unhook(methods: string | string[]): CollectionInstance;
+      plugin(fn: Function, opts: any): CollectionInstance<T>;
+      pre(methods: string | string[], cb: Function): CollectionInstance<T>;
+      unhook(methods: string | string[]): CollectionInstance<T>;
     }
 
     /**
      *  Tyranid field
      */
     export interface FieldStatic {
-      new (...args: any[]): Field;
+      new (...args: any[]): FieldInstance;
     }
 
-    export interface Field {
-      collection: CollectionInstance;
+    export interface FieldInstance {
+      collection: GenericCollection;
       db: boolean;
-      def: TyranidFieldDefinition;
+      def: FieldDefinition;
       name: string;
-      namePath: NamePath;
-      of: Field;
-      parent: Field;
+      namePath: NamePathInstance;
+      of: FieldInstance;
+      parent: FieldInstance;
       pathLabel: string;
       path: string;
       spath: string;
       in: any;
-      keys: Field;
+      keys: FieldInstance;
       label: LabelType;
-      link: CollectionInstance;
-      type: Type;
+      link: GenericCollection;
+      type: TypeInstance;
 
       labels(text?: string): LabelList;
     }
 
     export interface NamePathStatic {
-      new (...args: any[]): NamePath;
+      new (...args: any[]): NamePathInstance;
     }
 
-    export interface NamePath {
-      detail: Field;
+    export interface NamePathInstance {
+      detail: FieldInstance;
       name: string;
       path: string[];
-      fields: Field[];
+      fields: FieldInstance[];
       pathLabel: string;
-      tail: Field;
+      tail: FieldInstance;
 
       pathName(idx: number): string;
       uniq(obj: any): any[];
@@ -324,22 +420,22 @@ declare namespace TyrStatic {
     }
 
     export interface TypeStatic {
-      new (...args: any[]): Type;
-      byName: { [key: string]: Type };
+      new (...args: any[]): TypeInstance;
+      byName: { [key: string]: TypeInstance };
     }
 
-    export interface Type {
+    export interface TypeInstance {
       name: string;
 
-      compile(compiler: any, path: string, field: Field): void;
+      compile(compiler: any, path: string, field: FieldInstance): void;
       fromString(str: string): any;
-      fromClient(field: Field, value: any): any;
-      format(field: Field, value: any): string;
-      matches(namePath: NamePath, where: any, doc: TyranidOrRawDocument): boolean;
-      query(namePath: NamePath, where: any, query: MongoQuery): Promise<void>;
-      sortValue(namePath: NamePath, value: any): any;
-      toClient(field: Field, value: any): any;
-      validate(field: Field, value: any): ValidationError;
+      fromClient(field: FieldInstance, value: any): any;
+      format(field: FieldInstance, value: any): string;
+      matches(namePath: NamePathInstance, where: any, doc: MaybeRawDocument): boolean;
+      query(namePath: NamePathInstance, where: any, query: MongoQuery): Promise<void>;
+      sortValue(namePath: NamePathInstance, value: any): any;
+      toClient(field: FieldInstance, value: any): any;
+      validate(field: FieldInstance, value: any): ValidationError;
     }
 
     /**
@@ -351,10 +447,16 @@ declare namespace TyrStatic {
 
     export interface ValidationError {
       reason: string;
-      field: Field;
+      field: FieldInstance;
       message: string;
       tostring(): string;
     }
+
+
+    export interface QueryStatic {
+      merge(a: MongoQuery, b: MongoQuery): MongoQuery;
+    }
+
 
   }
 
