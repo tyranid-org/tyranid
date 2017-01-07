@@ -118,6 +118,28 @@ declare namespace Tyranid {
 
 
 
+    export interface FindAndModifyOptions extends UpdateQueryOptions, LookupQueryOptions {
+
+      /**
+       * raw mongodb query
+       */
+      query: MongoQuery;
+
+      /**
+       * whether or not to return a new document in findAndModify
+       */
+      new?: boolean;
+
+
+      /**
+       * whether or not to insert the document if it doesn't exist
+       */
+      upsert?: boolean;
+
+    }
+
+
+
     export interface ModificationQueryOptions extends BaseQueryOptions {
 
       /**
@@ -138,7 +160,7 @@ declare namespace Tyranid {
        * An authorization object (a user, group, role, etc.) to pass to a Secure
        * plug-in. Can also be "true" to auto-detect the current user.
        */
-      auth?: Tyr.Document;
+      auth?: Tyr.Document | null;
 
       /**
        * The permission to use when an auth object is specified.
@@ -343,7 +365,7 @@ declare namespace Tyranid {
       find(opts: LookupQueryOptions & { query: RawMongoDocument }): Cursor<T>;
       findAll(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T[]>;
       findOne(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T | null>;
-      findAndModify(opts: LookupQueryOptions & { query: RawMongoDocument } & UpdateQueryOptions): Promise<T | null>;
+      findAndModify(opts: FindAndModifyOptions): Promise<T | null>;
 
       fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;
@@ -363,7 +385,7 @@ declare namespace Tyranid {
 
       // mongodb methods
       remove(opts: LookupQueryOptions & { query: MongoQuery }): Promise<void>;
-      save(opts: ModificationQueryOptions): Promise<T>;
+      save(rawDoc: any, opts?: ModificationQueryOptions): Promise<T>;
       update(opts: UpdateQueryOptions & { query: MongoQuery }): Promise<T[]>;
       updateDoc(doc: MaybeRawDocument): Promise<T>;
       valuesFor(fields: FieldInstance[]): any[];
