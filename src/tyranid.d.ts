@@ -81,12 +81,12 @@ declare namespace Tyranid {
       $uid: string;
 
       // methods
-      $clone(): Document;
-      $insert(): Promise<Document>;
-      $populate(fields: any, denormal?: boolean): Promise<Document>;
-      $save(): Promise<Document>;
+      $clone(): this;
+      $insert(): Promise<this>;
+      $populate(fields: any, denormal?: boolean): Promise<this>;
+      $save(): Promise<this>;
       $toClient(): RawMongoDocument;
-      $update(): Promise<Document>;
+      $update(): Promise<this>;
       $validate(): ValidationError[];
     }
 
