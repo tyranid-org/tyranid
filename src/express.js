@@ -96,6 +96,9 @@ export function generateClientLibrary() {
       },
       byName = {};
 
+  // add a named self reference to mirror the server
+  Tyr.Tyr = Tyr;
+
   // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest directly
   function ajax(opts) {
     var deferred = $.ajax(opts);
