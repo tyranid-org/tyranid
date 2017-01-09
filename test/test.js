@@ -2697,6 +2697,10 @@ describe('tyranid', function() {
               if (err) return rej(err);
               const window$Tyr = window.Tyr;
 
+              if (window$Tyr !== window$Tyr.Tyr) {
+                throw new Error(`no named Tyr export on client`);
+              }
+
               // expect that the server side tyr collections
               // are all in the client side tyr
               Tyr.collections.forEach(col => {
