@@ -206,9 +206,39 @@ declare namespace Tyranid {
 
 
     /**
+     * field used for doc.$id
+     */
+    export interface PrimaryKeyField {
+      field: string;
+      defaultMatchIdOnInsert?: boolean;
+    }
+
+
+    /**
+     * collection.def
+     */
+    export interface CollectionDefinitionHydrated {
+      // always available on collection
+      primaryKey: PrimaryKeyField;
+      id: string;
+      name: string;
+      fields: { [key: string]: FieldInstance };
+      dbName?: string;
+      label?: LabelType;
+      help?: string;
+      note?: string;
+      enum?: boolean;
+      client?: boolean;
+      timestamps?: boolean;
+      values?: any[][];
+      db?: mongodb.Db;
+    }
+
+
+    /**
      *  TyranidCollectionDefinition options for tyranid collection
      */
-    export type CollectionDefinition = {
+    export interface CollectionDefinition {
       [key: string]: any;
       id: string;
       name: string;
@@ -218,10 +248,7 @@ declare namespace Tyranid {
       note?: string;
       enum?: boolean;
       client?: boolean;
-      primaryKey?: {
-        field: string;
-        defaultMatchIdOnInsert?: boolean;
-      };
+      primaryKey?: PrimaryKeyField;
       timestamps?: boolean;
       express?: {
         rest?: boolean;
@@ -347,7 +374,7 @@ declare namespace Tyranid {
       label: LabelType;
       labelField: FieldInstance;
       paths: { [key: string]: FieldInstance };
-      def: CollectionDefinition;
+      def: CollectionDefinitionHydrated;
       db: mongodb.Collection;
 
       secureQuery(query: MongoQuery, perm: string, auth: Document): Promise<MongoQuery>;
@@ -358,7 +385,7 @@ declare namespace Tyranid {
 
       fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
       fieldsFor(obj: any): Promise<FieldInstance[]>;
-      idToUid(id: string): string;
+      idToUid(id: string | mongodb.ObjectID): string;
 
       fake(options: { n?: number, schemaOpts?: any, seed?: number }): Promise<T>;
 
@@ -392,7 +419,7 @@ declare namespace Tyranid {
 
       // hook methods
       boot(stage: string, pass: number): string | string[];
-      plugin(fn: Function, opts: any): CollectionInstance<T>;
+      plugin(fn: Function, opts?: any): CollectionInstance<T>;
       pre(methods: string | string[], cb: Function): CollectionInstance<T>;
       unhook(methods: string | string[]): CollectionInstance<T>;
     }
@@ -405,21 +432,23 @@ declare namespace Tyranid {
     }
 
     export interface FieldInstance {
+
       collection: GenericCollection;
       db: boolean;
       def: FieldDefinition;
       name: string;
       namePath: NamePathInstance;
-      of: FieldInstance;
-      parent: FieldInstance;
+      of?: FieldInstance;
+      parent?: FieldInstance;
       pathLabel: string;
       path: string;
       spath: string;
       in: any;
-      keys: FieldInstance;
+      keys?: FieldInstance;
       label: LabelType;
-      link: GenericCollection;
+      link?: GenericCollection;
       type: TypeInstance;
+      fields?: { [key: string]: FieldInstance };
 
       labels(text?: string): LabelList;
     }
