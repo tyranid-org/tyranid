@@ -389,7 +389,7 @@ declare namespace Tyranid {
 
       fake(options: { n?: number, schemaOpts?: any, seed?: number }): Promise<T>;
 
-      find(opts: LookupQueryOptions & { query: RawMongoDocument }): Cursor<T>;
+      find(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<Cursor<T>>;
       findAll(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T[]>;
       findOne(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T | null>;
       findAndModify(opts: FindAndModifyOptions): Promise<T | null>;
