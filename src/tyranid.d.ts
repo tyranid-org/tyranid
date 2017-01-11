@@ -23,6 +23,8 @@ declare namespace Tyranid {
     export const secure: Secure;
     export const local: Local;
     export const query: QueryStatic;
+    export const options: ConfigOptions;
+    export const db: mongodb.Db;
 
 
     export function U(text: string): any;
@@ -79,8 +81,10 @@ declare namespace Tyranid {
       $id: IdType;
       $model: CollectionInstance<this>;
       $uid: string;
+      $label: string;
 
       // methods
+      $remove(): Promise<void>;
       $clone(): this;
       $insert(): Promise<this>;
       $populate(fields: any, denormal?: boolean): Promise<this>;
@@ -332,18 +336,36 @@ declare namespace Tyranid {
     }
 
 
+
+    export type ValidationPattern
+      = FileMatchValidationPattern
+      | GlobValidationPattern;
+
+
+    export interface FileMatchValidationPattern {
+      dir: string;
+      fileMatch: string;
+    }
+
+    export interface GlobValidationPattern {
+      glob: string;
+    }
+
+
     export interface ConfigOptions {
-      db: mongodb.Db,
-      consoleLogLevel?: 'ERROR',
-      dbLogLevel?: 'TRACE',
-      secure?: Secure,
-      cls?: boolean,
-      validate?: { dir: string; fileMatch: string; }[],
+      db: mongodb.Db;
+      consoleLogLevel?: 'ERROR';
+      dbLogLevel?: 'TRACE';
+      secure?: Secure;
+      cls?: boolean;
+      validate?: ValidationPattern[];
+      indexes?: boolean;
+      minify?: boolean;
       permissions?: {
-        find: string,
-        insert: string,
-        update: string,
-        remove: string
+        find: string;
+        insert: string;
+        update: string;
+        remove: string;
       }
     }
 
