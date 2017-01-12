@@ -90,7 +90,7 @@ declare namespace Tyranid {
       $populate(fields: any, denormal?: boolean): Promise<this>;
       $save(): Promise<this>;
       $toClient(): RawMongoDocument;
-      $update(): Promise<this>;
+      $update(fields?: any): Promise<this>;
       $validate(): ValidationError[];
     }
 
@@ -401,8 +401,8 @@ declare namespace Tyranid {
 
       secureQuery(query: MongoQuery, perm: string, auth: Document): Promise<MongoQuery>;
 
-      byId(id: IdType, options?: LookupQueryOptions): Promise<T | null>;
-      byIds(ids: IdType[], projection?: any, options?: LookupQueryOptions): Promise<T[]>;
+      byId(id: IdType | string, options?: LookupQueryOptions): Promise<T | null>;
+      byIds(ids: (IdType | string)[], projection?: any, options?: LookupQueryOptions): Promise<T[]>;
       byLabel(label: LabelType): Promise<T | null>;
 
       fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
@@ -414,7 +414,7 @@ declare namespace Tyranid {
       find(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<Cursor<T>>;
       findAll(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T[]>;
       findOne(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T | null>;
-      findAndModify(opts: FindAndModifyOptions): Promise<T | null>;
+      findAndModify(opts: FindAndModifyOptions): Promise<{ value: T } | null>;
 
       fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;

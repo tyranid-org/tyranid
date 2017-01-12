@@ -8,9 +8,9 @@
   dependencies:
     "@types/node" "*"
 
-"@types/express@4.0.33":
-  version "4.0.33"
-  resolved "https://registry.yarnpkg.com/@types/express/-/express-4.0.33.tgz#9212b6c67e02e09ee9f80740ded04306050739ab"
+"@types/express@4.0.34":
+  version "4.0.34"
+  resolved "https://registry.yarnpkg.com/@types/express/-/express-4.0.34.tgz#cdc0afd69d70d2295b81b3aa47f26f672afcde1c"
   dependencies:
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
@@ -19,9 +19,9 @@
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-0.0.29.tgz#fbcfd330573b912ef59eeee14602bface630754b"
 
-"@types/mongodb@2.1.33":
-  version "2.1.33"
-  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-2.1.33.tgz#60dc56da1e1d97a29f48cbccd11f26278ecab6c3"
+"@types/mongodb@2.1.36":
+  version "2.1.36"
+  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-2.1.36.tgz#20a2ff69131ba4dff96ffbd7b578c1d90b86616b"
   dependencies:
     "@types/node" "*"
 
