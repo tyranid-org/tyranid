@@ -296,6 +296,20 @@ export function generateClientLibrary() {
   Tyr.Timer = Timer;
 
 
+  function setPrototypeOf(obj, proto) {
+    if ('__proto__' in {}) {
+      obj.__proto__ = proto;
+    } else {
+      for (var prop in proto) {
+        if (proto.hasOwnProperty(prop)) {
+          obj[prop] = proto[prop];
+        }
+      }
+    }
+
+    return obj;
+  }
+
   function Collection(def) {
 
     var CollectionInstance = function(data) {
@@ -303,7 +317,7 @@ export function generateClientLibrary() {
         _.assign(this, data);
       }
     };
-    CollectionInstance.__proto__ = Collection.prototype;
+    setPrototypeOf(CollectionInstance, Collection.prototype);
     // cannot redefine this property in safari
     //Object.defineProperty(CollectionInstance, 'name', {
       //writable:  false,
