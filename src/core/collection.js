@@ -50,6 +50,7 @@ function isOptions(opts) {
        opts.populate !== undefined ||
        opts.query !== undefined ||
        opts.skip !== undefined ||
+       opts.timestamps !== undefined ||
        opts.tyranid !== undefined ||
        opts.upsert !== undefined ||
        opts.writeConcern !== undefined)
