@@ -181,6 +181,14 @@ export function generateClientLibrary() {
       configurable: false
     },
 
+    $tyr: {
+      get: function() {
+        return Tyr;
+      },
+      enumerable:   false,
+      configurable: false
+    },
+
     $uid: {
       get: function() {
         var model = this.$model;

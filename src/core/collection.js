@@ -280,6 +280,14 @@ function defineDocumentProperties(dp) {
       configurable: false
     },
 
+    $tyr: {
+      get() {
+        return Tyr;
+      },
+      enumerable:   false,
+      configurable: false
+    },
+
     $uid: {
       get() {
         const model = this.$model;

@@ -722,6 +722,10 @@ describe('tyranid', function() {
         expect(Job.byLabel('Software Lead').$id).to.be.eql(2);
       });
 
+      it('should support $tyr on instances', function() {
+        expect(Job.byLabel('Designer').$tyr).to.be.eql(Tyr);
+      });
+
       it('should support $uid on instances', function() {
         expect(Job.byLabel('Designer').$uid).to.be.eql('j003');
         expect(Job.byLabel('Software Lead').$uid).to.be.eql('j002');
