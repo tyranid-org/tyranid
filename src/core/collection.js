@@ -19,9 +19,14 @@ import historical   from '../historical/historical';
 
 // variables shared between classes
 import {
-  escapeRegex      ,
-  parseInsertObj   ,
-  parseProjection  ,
+  combineOptions       ,
+  escapeRegex          ,
+  extractAuthorization ,
+  extractProjection    ,
+  extractOptions       ,
+  isOptions            ,
+  parseInsertObj       ,
+  parseProjection      ,
   toClient
 } from '../common';
 
@@ -33,73 +38,7 @@ const {
 const OPTIONS = Tyr.options;
 
 
-// Options parsing
-// ===============
 
-function isOptions(opts) {
-  // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
-  return opts &&
-    ( (opts.auth !== undefined ||
-       opts.author !== undefined ||
-       opts.comment !== undefined ||
-       opts.fields !== undefined ||
-       opts.historical !== undefined ||
-       opts.limit !== undefined ||
-       opts.multi !== undefined ||
-       opts.perm !== undefined ||
-       opts.populate !== undefined ||
-       opts.query !== undefined ||
-       opts.skip !== undefined ||
-       opts.tyranid !== undefined ||
-       opts.upsert !== undefined ||
-       opts.writeConcern !== undefined)
-     || !_.keys(opts).length);
-}
-
-function extractOptions(args) {
-  if (args.length && isOptions(args[args.length - 1])) {
-    return args.pop();
-  } else {
-    return {};
-  }
-}
-
-function combineOptions(...sources) {
-  const o = {};
-  for (const source of sources) {
-    _.assign(o, source);
-  }
-  return o;
-}
-
-/**
- * Extracts the authorization out of a mongodb options-style object.
- */
-function extractAuthorization(opts) {
-  if (!opts) {
-    return undefined;
-  }
-
-  const auth = opts.auth;
-  if (auth) {
-    delete opts.auth;
-    return auth === true ? Tyr.local.user : auth;
-  }
-
-  const tyrOpts = opts.tyranid;
-  if (tyrOpts) {
-    delete opts.tyranid;
-    if (tyrOpts.secure) {
-      return tyrOpts.subject || tyrOpts.user || Tyr.local.user;
-    }
-  }
-
-  //return undefined;
-}
-
-function extractProjection(opts) {
-  return opts.fields || opts.project || opts.projectiot ;
-}
 
 async function populate(collection, opts, documents) {
   let populate;
@@ -211,7 +150,7 @@ const documentPrototype = Tyr.documentPrototype = {
       throw new Error('Document is not historical');
     }
 
-    const opts = extractOptions(args),
+    const opts = extractOptions(collection, args),
           updateFields = extractUpdateFields(this, opts);
 
     return historical.snapshot(
@@ -247,8 +186,8 @@ const documentPrototype = Tyr.documentPrototype = {
     return Tyr._slice(this, path, options);
   },
 
-  $toClient() {
-    return this.$model.toClient(this);
+  $toClient(opts) {
+    return this.$model.toClient(this, opts);
   },
 
   $populate(fields, denormal) {
@@ -274,6 +213,14 @@ function defineDocumentProperties(dp) {
     $label: {
       get() {
         return this.$model.labelFor(this);
+      },
+      enumerable:   false,
+      configurable: false
+    },
+
+    $tyr: {
+      get() {
+        return Tyr;
       },
       enumerable:   false,
       configurable: false
@@ -665,7 +612,7 @@ export default class Collection {
 
   find(...args) {
     const collection = this,
-          opts       = extractOptions(args),
+          opts       = extractOptions(collection, args),
           db         = collection.db;
 
     let query,
@@ -776,7 +723,7 @@ export default class Collection {
     const collection = this,
           db         = collection.db;
 
-    let opts = extractOptions(args);
+    let opts = extractOptions(collection, args);
 
     switch (args.length) {
     case 2:
@@ -981,7 +928,7 @@ export default class Collection {
       //}
     }
 
-    const opts = combineOptions(extractOptions(args), {
+    const opts = combineOptions(extractOptions(collection, args), {
       query: { [keyFieldName]: obj[keyFieldName] },
       upsert: true,
       new: true
@@ -1048,7 +995,7 @@ export default class Collection {
   async update(...args) {
     const collection = this;
 
-    const opts = extractOptions(args);
+    const opts = extractOptions(collection, args);
 
     switch (args.length) {
     case 2:
@@ -1082,7 +1029,7 @@ export default class Collection {
 
   async pull(id, path, predicate, ...args) {
     const collection = this,
-          opts       = extractOptions(args),
+          opts       = extractOptions(collection, args),
 
           np         = collection.parsePath(path);
 
@@ -1102,7 +1049,7 @@ export default class Collection {
 
   async push(id, path, value, ...args) {
     const collection = this,
-          opts       = extractOptions(args),
+          opts       = extractOptions(collection, args),
           auth       = extractAuthorization(opts),
 
           query      = { _id: id };
@@ -1134,7 +1081,8 @@ export default class Collection {
    * Behaves like native mongodb's remove().
    */
   async remove(...args) {
-    const opts = extractOptions(args);
+    const collection = this,
+          opts       = extractOptions(collection, args);
 
     let query = opts.query, justOne = opts.justOne;
 
@@ -1149,7 +1097,7 @@ export default class Collection {
     const auth = extractAuthorization(opts);
 
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.remove, auth);
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.remove, auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the remove() and potentially throw one there as well
@@ -1157,7 +1105,7 @@ export default class Collection {
       }
     }
 
-    return await this.db.remove(query, justOne);
+    return await collection.db.remove(query, justOne);
   }
 
   /**
@@ -1397,8 +1345,8 @@ export default class Collection {
   /**
    * This creates a new POJO out of a record instance.  Values are copied by reference (not deep-cloned!).
    */
-  toClient(data) {
-    return toClient(this, data);
+  toClient(data, opts) {
+    return toClient(this, data, opts);
   }
 
   parsePath(path) {

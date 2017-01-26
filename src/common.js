@@ -1,11 +1,14 @@
-import _ from 'lodash';
+
+import _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
-import NamePath from './core/namePath';
+import projection   from './core/projection';
+import Tyr          from './tyr';
+import NamePath     from './core/namePath';
+
 
 
 export const metaRegex         = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
-
 
 export function setFalse(v) {
   return v !== undefined && !v;
@@ -18,6 +21,100 @@ export function escapeRegex(str) {
 export function pathAdd(path, add) {
   return path ? path + '.' + add : add;
 }
+
+
+// Options parsing
+// ===============
+
+export function isOptions(opts) {
+  // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
+  return opts &&
+    ( (opts.auth !== undefined ||
+       opts.author !== undefined ||
+       opts.comment !== undefined ||
+       opts.fields !== undefined ||
+       opts.historical !== undefined ||
+       opts.limit !== undefined ||
+       opts.multi !== undefined ||
+       opts.perm !== undefined ||
+       opts.populate !== undefined ||
+       opts.query !== undefined ||
+       opts.skip !== undefined ||
+       opts.timestamps !== undefined ||
+       opts.tyranid !== undefined ||
+       opts.upsert !== undefined ||
+       opts.writeConcern !== undefined)
+     || !_.keys(opts).length);
+}
+
+export function processOptions(collection, opts) {
+
+  if (opts) {
+    const fields = opts.fields;
+
+    if (fields) {
+      const f = projection.resolve(collection.def.projections, fields);
+
+      if (f !== fields) {
+        const newOpts = {};
+        _.assign(newOpts, opts);
+        newOpts.fields = f;
+        return newOpts;
+      }
+    }
+
+    return opts;
+  } else {
+    return {};
+  }
+}
+
+export function extractOptions(collection, args) {
+  if (args.length && isOptions(args[args.length - 1])) {
+    return processOptions(collection, args.pop());
+  } else {
+    return {};
+  }
+}
+
+export function combineOptions(...sources) {
+  const o = {};
+  for (const source of sources) {
+    _.assign(o, source);
+  }
+  return o;
+}
+
+/**
+ * Extracts the authorization out of a mongodb options-style object.
+ */
+export function extractAuthorization(opts) {
+  if (!opts) {
+    return undefined;
+  }
+
+  const auth = opts.auth;
+  if (auth) {
+    delete opts.auth;
+    return auth === true ? Tyr.local.user : auth;
+  }
+
+  const tyrOpts = opts.tyranid;
+  if (tyrOpts) {
+    delete opts.tyranid;
+    if (tyrOpts.secure) {
+      return tyrOpts.subject || tyrOpts.user || Tyr.local.user;
+    }
+  }
+
+  //return undefined;
+}
+
+export function extractProjection(opts) {
+  return opts.fields || opts.project || opts.projectiot ;
+}
+
+
 
 export async function parseInsertObj(col, obj) {
   const def       = col.def,
@@ -83,32 +180,49 @@ export function parseProjection(col, obj) {
   return projection;
 }
 
-export function toClient(col, data) {
+export function toClient(col, data, opts) {
 
   if (Array.isArray(data)) {
-    return data.map(function(doc) {
-      return toClient(col, doc);
-    });
+    return data.map(doc => toClient(col, doc, opts));
   }
 
+  opts = processOptions(col, opts);
+  const proj = opts.fields;
+
+  // fields is only for top-level objects, we do not want to recursively pass it down into embedded documents
+  const dOpts = proj ? _.omit(opts, 'fields') : opts;
+
   const obj = {};
+
+  function projected(key) {
+    if (!proj) {
+      return true;
+    }
+
+    const v = proj[key];
+    return v === undefined ? key === '_id' : v;
+  }
 
   const fields = col ? col.fields : null;
   _.each(data, function(v, k) {
     let field;
 
+    if (!projected(k)) {
+      return;
+    }
+
     if (fields && (field=fields[k])) {
-      v = field.type.toClient(field, v, data);
+      v = field.type.toClient(field, v, data, dOpts);
 
       if (v !== undefined) {
         obj[k] = v;
       }
     } else if (v && v.$toClient) {
-      obj[k] = v.$toClient();
+      obj[k] = v.$toClient(dOpts);
     } else if (Array.isArray(v)) {
       // TODO:  we can figure out the type of k using metadata to make this work for the case when
       //        we have an array of pojos instead of instances
-      obj[k] = toClient(null, v);
+      obj[k] = toClient(null, v, dOpts);
     } else if (v && ObjectId.isValid(v.toString())) {
       obj[k] = v.toString();
     } else {
@@ -124,6 +238,10 @@ export function toClient(col, data) {
     let  value, client;
     const fieldDef = field.def;
     if (fieldDef.get && (client = fieldDef.client)) {
+      if (!projected(name)) {
+        return;
+      }
+
       if (name in data) {
         // Property will have been set on CollectionInstances
         value = data[name];
@@ -138,6 +256,16 @@ export function toClient(col, data) {
       }
     }
   });
+
+  const toClientFn = col.def.toClient;
+  if (toClientFn) {
+    toClientFn.call(obj, opts);
+  }
+
+  const postFn = opts.post;
+  if (postFn) {
+    postFn.call(obj, opts);
+  }
 
   return obj;
 }

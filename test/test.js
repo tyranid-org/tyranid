@@ -12,6 +12,7 @@ import Units          from '../src/unit/units';
 import Role           from './models/role'; // require to get extra link in prototype chain
 import                     './models/user';
 import historical     from '../src/historical/historical';
+import projection     from '../src/core/projection';
 import { generateClientLibrary } from '../src/express';
 import * as jsdom from 'jsdom';
 import * as fs from 'fs';
@@ -165,6 +166,24 @@ describe('tyranid', function() {
       Tyr.pullAll(a, 3);
 
       expect(Tyr.isEqual(a, [oid1, oid3])).to.be.true;
+    });
+  });
+
+  describe('projection utilities', () => {
+    it('should support projection lookups', () => {
+      expect(
+        projection.resolve({ default: { a: 1, b: 1 } }, 'default')
+      ).to.eql(
+        { a: 1, b: 1 }
+      );
+    });
+
+    it('should merge projections', () => {
+      expect(
+        projection.resolve({ default: { a: 1, b: 1 } }, ['default', { c: 1 }])
+      ).to.eql(
+        { a: 1, b: 1, c: 1 }
+      );
     });
   });
 
@@ -657,6 +676,16 @@ describe('tyranid', function() {
           expect(doc.isbn).to.be.eql(BookIsbn);
         });
       });
+
+      it('should support predefined projections', async () => {
+        const u = await User.byId(4, { fields: 'nameAndAge' });
+        expect(_.keys(u).length).to.eql(3);
+      });
+
+      it('should support projection merging', async () => {
+        const u = await User.byId(4, { fields: ['nameAndAge', { organization: 1 }] });
+        expect(_.keys(u).length).to.eql(4);
+      });
     });
 
     describe('projections', function() {
@@ -720,6 +749,10 @@ describe('tyranid', function() {
       it('should support $id on instances', function() {
         expect(Job.byLabel('Designer').$id).to.be.eql(3);
         expect(Job.byLabel('Software Lead').$id).to.be.eql(2);
+      });
+
+      it('should support $tyr on instances', function() {
+        expect(Job.byLabel('Designer').$tyr).to.be.eql(Tyr);
       });
 
       it('should support $uid on instances', function() {
@@ -1428,13 +1461,13 @@ describe('tyranid', function() {
 
     describe('update', function() {
       it( 'should update', async () => {
-        await User.update({ _id: 4 }, { title: 'Software Engineer' });
+        await User.update({ _id: 4 }, { $set: { title: 'Software Engineer' } });
         const user = await User.byId(4);
         expect(user.title).to.be.eql('Software Engineer');
       });
 
       it( 'should update with `options` param', async () => {
-        await User.update({ _id: 4 }, { title: 'Software Engineer' }, { multi: false });
+        await User.update({ _id: 4 }, { $set: { title: 'Software Engineer' } }, { multi: false });
         const user = await User.byId(4);
         expect(user.title).to.be.eql('Software Engineer');
       });
@@ -1596,6 +1629,34 @@ describe('tyranid', function() {
         expect(dale.updatedAt.getTime()).to.be.at.least(startAt.getTime());
 
         await User.remove({ _id: 2001 });
+      });
+    });
+
+    describe('toClient', function() {
+      it( 'should support call post-processing functions', () => {
+        const user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
+        user.foo = 'bar';
+        user.bar = 'foo';
+        const userc = user.$toClient();
+
+        expect(userc.foo).to.be.undefined;
+        expect(userc.bar).to.eql('foo');
+      });
+
+      it( '_id should be included by default with fields', async () => {
+        const user = await User.byId(4);
+        const userc = user.$toClient({ fields: { name: 1 } });
+
+        expect(_.keys(userc).length).to.eql(2);
+        expect(userc._id).to.eql(4);
+      });
+
+      it( '_id should be excluded if requested', async () => {
+        const user = await User.byId(4);
+        const userc = user.$toClient({ fields: { _id: 0, name: 1 } });
+
+        expect(_.keys(userc).length).to.eql(1);
+        expect(userc._id).to.be.undefined;
       });
     });
 

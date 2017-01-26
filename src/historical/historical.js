@@ -148,7 +148,7 @@ function patchPropsFromOpts(opts) {
       if (_.isString(author)) {
         patchProps.a = author;
       } else if (author.$uid) {
-        patchProps.a = author.$uid();
+        patchProps.a = author.$uid;
       }
     }
 
