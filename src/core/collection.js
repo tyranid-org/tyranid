@@ -8,6 +8,7 @@ import Tyr          from '../tyr';
 import Component    from './component';
 import Type         from './type';
 import ObjectType   from '../type/object';
+import projection   from './projection';
 import Population   from './population';
 import Populator    from './populator';
 import NamePath     from './namePath';
@@ -57,9 +58,23 @@ function isOptions(opts) {
      || !_.keys(opts).length);
 }
 
-function extractOptions(args) {
+function extractOptions(collection, args) {
   if (args.length && isOptions(args[args.length - 1])) {
-    return args.pop();
+    const a = args.pop(),
+          fields = a.fields;
+
+    if (fields) {
+      const f = projection.resolve(collection.def.projections, fields);
+
+      if (f !== fields) {
+        const a2 = {};
+        _.assign(a2, a);
+        a2.fields = f;
+        return a2;
+      }
+    }
+
+    return a;
   } else {
     return {};
   }
@@ -212,7 +227,7 @@ const documentPrototype = Tyr.documentPrototype = {
       throw new Error('Document is not historical');
     }
 
-    const opts = extractOptions(args),
+    const opts = extractOptions(collection, args),
           updateFields = extractUpdateFields(this, opts);
 
     return historical.snapshot(
@@ -674,7 +689,7 @@ export default class Collection {
 
   find(...args) {
     const collection = this,
-          opts       = extractOptions(args),
+          opts       = extractOptions(collection, args),
           db         = collection.db;
 
     let query,
@@ -785,7 +800,7 @@ export default class Collection {
     const collection = this,
           db         = collection.db;
 
-    let opts = extractOptions(args);
+    let opts = extractOptions(collection, args);
 
     switch (args.length) {
     case 2:
@@ -990,7 +1005,7 @@ export default class Collection {
       //}
     }
 
-    const opts = combineOptions(extractOptions(args), {
+    const opts = combineOptions(extractOptions(collection, args), {
       query: { [keyFieldName]: obj[keyFieldName] },
       upsert: true,
       new: true
@@ -1057,7 +1072,7 @@ export default class Collection {
   async update(...args) {
     const collection = this;
 
-    const opts = extractOptions(args);
+    const opts = extractOptions(collection, args);
 
     switch (args.length) {
     case 2:
@@ -1091,7 +1106,7 @@ export default class Collection {
 
   async pull(id, path, predicate, ...args) {
     const collection = this,
-          opts       = extractOptions(args),
+          opts       = extractOptions(collection, args),
 
           np         = collection.parsePath(path);
 
@@ -1111,7 +1126,7 @@ export default class Collection {
 
   async push(id, path, value, ...args) {
     const collection = this,
-          opts       = extractOptions(args),
+          opts       = extractOptions(collection, args),
           auth       = extractAuthorization(opts),
 
           query      = { _id: id };
@@ -1143,7 +1158,8 @@ export default class Collection {
    * Behaves like native mongodb's remove().
    */
   async remove(...args) {
-    const opts = extractOptions(args);
+    const collection = this,
+          opts       = extractOptions(collection, args);
 
     let query = opts.query, justOne = opts.justOne;
 
@@ -1158,7 +1174,7 @@ export default class Collection {
     const auth = extractAuthorization(opts);
 
     if (auth) {
-      query = await this.secureQuery(query, opts.perm || OPTIONS.permissions.remove, auth);
+      query = await collection.secureQuery(query, opts.perm || OPTIONS.permissions.remove, auth);
 
       if (!query) {
         // throw a security exception here ?  if we do this, also need to examine results from the remove() and potentially throw one there as well
@@ -1166,7 +1182,7 @@ export default class Collection {
       }
     }
 
-    return await this.db.remove(query, justOne);
+    return await collection.db.remove(query, justOne);
   }
 
   /**

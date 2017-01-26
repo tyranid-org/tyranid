@@ -82,6 +82,12 @@ var User = new tyr.Collection({
   },
   methods: {
     canDrink: { is: 'boolean', fn: function() { return this.age >= 21; } }
+  },
+  projections: {
+    nameAndAge: {
+      name: 1,
+      age: 1
+    }
   }
 });
 

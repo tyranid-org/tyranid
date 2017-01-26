@@ -12,6 +12,7 @@ import Units          from '../src/unit/units';
 import Role           from './models/role'; // require to get extra link in prototype chain
 import                     './models/user';
 import historical     from '../src/historical/historical';
+import projection     from '../src/core/projection';
 import { generateClientLibrary } from '../src/express';
 import * as jsdom from 'jsdom';
 import * as fs from 'fs';
@@ -165,6 +166,24 @@ describe('tyranid', function() {
       Tyr.pullAll(a, 3);
 
       expect(Tyr.isEqual(a, [oid1, oid3])).to.be.true;
+    });
+  });
+
+  describe('projection utilities', () => {
+    it('should support projection lookups', () => {
+      expect(
+        projection.resolve({ default: { a: 1, b: 1 } }, 'default')
+      ).to.eql(
+        { a: 1, b: 1 }
+      );
+    });
+
+    it('should merge projections', () => {
+      expect(
+        projection.resolve({ default: { a: 1, b: 1 } }, ['default', { c: 1 }])
+      ).to.eql(
+        { a: 1, b: 1, c: 1 }
+      );
     });
   });
 
@@ -656,6 +675,16 @@ describe('tyranid', function() {
           expect(doc._id).to.be.eql(1);
           expect(doc.isbn).to.be.eql(BookIsbn);
         });
+      });
+
+      it('should support predefined projections', async () => {
+        const u = await User.byId(4, { fields: 'nameAndAge' });
+        expect(_.keys(u).length).to.eql(3);
+      });
+
+      it('should support projection merging', async () => {
+        const u = await User.byId(4, { fields: ['nameAndAge', { organization: 1 }] });
+        expect(_.keys(u).length).to.eql(4);
       });
     });
 
