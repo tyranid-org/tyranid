@@ -8,7 +8,6 @@ import Tyr          from '../tyr';
 import Component    from './component';
 import Type         from './type';
 import ObjectType   from '../type/object';
-import projection   from './projection';
 import Population   from './population';
 import Populator    from './populator';
 import NamePath     from './namePath';
@@ -20,9 +19,14 @@ import historical   from '../historical/historical';
 
 // variables shared between classes
 import {
-  escapeRegex      ,
-  parseInsertObj   ,
-  parseProjection  ,
+  combineOptions       ,
+  escapeRegex          ,
+  extractAuthorization ,
+  extractProjection    ,
+  extractOptions       ,
+  isOptions            ,
+  parseInsertObj       ,
+  parseProjection      ,
   toClient
 } from '../common';
 
@@ -34,88 +38,7 @@ const {
 const OPTIONS = Tyr.options;
 
 
-// Options parsing
-// ===============
 
-function isOptions(opts) {
-  // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
-  return opts &&
-    ( (opts.auth !== undefined ||
-       opts.author !== undefined ||
-       opts.comment !== undefined ||
-       opts.fields !== undefined ||
-       opts.historical !== undefined ||
-       opts.limit !== undefined ||
-       opts.multi !== undefined ||
-       opts.perm !== undefined ||
-       opts.populate !== undefined ||
-       opts.query !== undefined ||
-       opts.skip !== undefined ||
-       opts.timestamps !== undefined ||
-       opts.tyranid !== undefined ||
-       opts.upsert !== undefined ||
-       opts.writeConcern !== undefined)
-     || !_.keys(opts).length);
-}
-
-function extractOptions(collection, args) {
-  if (args.length && isOptions(args[args.length - 1])) {
-    const a = args.pop(),
-          fields = a.fields;
-
-    if (fields) {
-      const f = projection.resolve(collection.def.projections, fields);
-
-      if (f !== fields) {
-        const a2 = {};
-        _.assign(a2, a);
-        a2.fields = f;
-        return a2;
-      }
-    }
-
-    return a;
-  } else {
-    return {};
-  }
-}
-
-function combineOptions(...sources) {
-  const o = {};
-  for (const source of sources) {
-    _.assign(o, source);
-  }
-  return o;
-}
-
-/**
- * Extracts the authorization out of a mongodb options-style object.
- */
-function extractAuthorization(opts) {
-  if (!opts) {
-    return undefined;
-  }
-
-  const auth = opts.auth;
-  if (auth) {
-    delete opts.auth;
-    return auth === true ? Tyr.local.user : auth;
-  }
-
-  const tyrOpts = opts.tyranid;
-  if (tyrOpts) {
-    delete opts.tyranid;
-    if (tyrOpts.secure) {
-      return tyrOpts.subject || tyrOpts.user || Tyr.local.user;
-    }
-  }
-
-  //return undefined;
-}
-
-function extractProjection(opts) {
-  return opts.fields || opts.project || opts.projectiot ;
-}
 
 async function populate(collection, opts, documents) {
   let populate;
@@ -263,8 +186,8 @@ const documentPrototype = Tyr.documentPrototype = {
     return Tyr._slice(this, path, options);
   },
 
-  $toClient() {
-    return this.$model.toClient(this);
+  $toClient(opts) {
+    return this.$model.toClient(this, opts);
   },
 
   $populate(fields, denormal) {
@@ -1422,8 +1345,8 @@ export default class Collection {
   /**
    * This creates a new POJO out of a record instance.  Values are copied by reference (not deep-cloned!).
    */
-  toClient(data) {
-    return toClient(this, data);
+  toClient(data, opts) {
+    return toClient(this, data, opts);
   }
 
   parsePath(path) {

@@ -88,6 +88,11 @@ var User = new tyr.Collection({
       name: 1,
       age: 1
     }
+  },
+  toClient: function() {
+    if (this.foo) {
+      delete this.foo;
+    }
   }
 });
 

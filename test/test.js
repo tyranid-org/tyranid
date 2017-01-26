@@ -1461,13 +1461,13 @@ describe('tyranid', function() {
 
     describe('update', function() {
       it( 'should update', async () => {
-        await User.update({ _id: 4 }, { title: 'Software Engineer' });
+        await User.update({ _id: 4 }, { $set: { title: 'Software Engineer' } });
         const user = await User.byId(4);
         expect(user.title).to.be.eql('Software Engineer');
       });
 
       it( 'should update with `options` param', async () => {
-        await User.update({ _id: 4 }, { title: 'Software Engineer' }, { multi: false });
+        await User.update({ _id: 4 }, { $set: { title: 'Software Engineer' } }, { multi: false });
         const user = await User.byId(4);
         expect(user.title).to.be.eql('Software Engineer');
       });
@@ -1629,6 +1629,34 @@ describe('tyranid', function() {
         expect(dale.updatedAt.getTime()).to.be.at.least(startAt.getTime());
 
         await User.remove({ _id: 2001 });
+      });
+    });
+
+    describe('toClient', function() {
+      it( 'should support call post-processing functions', () => {
+        const user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
+        user.foo = 'bar';
+        user.bar = 'foo';
+        const userc = user.$toClient();
+
+        expect(userc.foo).to.be.undefined;
+        expect(userc.bar).to.eql('foo');
+      });
+
+      it( '_id should be included by default with fields', async () => {
+        const user = await User.byId(4);
+        const userc = user.$toClient({ fields: { name: 1 } });
+
+        expect(_.keys(userc).length).to.eql(2);
+        expect(userc._id).to.eql(4);
+      });
+
+      it( '_id should be excluded if requested', async () => {
+        const user = await User.byId(4);
+        const userc = user.$toClient({ fields: { _id: 0, name: 1 } });
+
+        expect(_.keys(userc).length).to.eql(1);
+        expect(userc._id).to.be.undefined;
       });
     });
 
