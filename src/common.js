@@ -257,7 +257,7 @@ export function toClient(col, data, opts) {
     }
   });
 
-  const toClientFn = col.def.toClient;
+  const toClientFn = col && col.def && col.def.toClient;
   if (toClientFn) {
     toClientFn.call(obj, opts);
   }
