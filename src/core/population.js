@@ -1,9 +1,10 @@
 
-import _ from 'lodash';
+import _                  from 'lodash';
 
-import Tyr      from '../tyr';
-import NamePath from './namePath';
-import { ObjectId } from 'mongodb';
+import Tyr                from '../tyr';
+import NamePath           from './namePath';
+import { ObjectId }       from 'mongodb';
+import projectionFns      from './projection';
 
 const $all = Tyr.$all;
 
@@ -30,6 +31,11 @@ export default class Population {
       namePath = base.parsePath('');
     }
 
+    // TODO:  deprecate the old string and array population options so we can do:
+    //if (true && base instanceof Tyr.Collection) {
+    //  fields = projectionFns.resolve(base.def.projections, value);
+    //} else {
+    // Step 2 would be to eliminate the separate "population" option and just have "fields" perform combined projection/population duties
     if (_.isString(fields)) {
       // process the really simple format -- a simple path name
       fields = [ fields ];
@@ -48,6 +54,7 @@ export default class Population {
         })
       );
     }
+    //}
 
     if (_.isObject(fields)) {
       // process advanced object format which supports nested populations and projections
@@ -74,10 +81,16 @@ export default class Population {
 
               if (value === $all) {
                 projection.push(new Population(namePath, $all));
-              } else if (!_.isObject(value)) {
-                throw new Error('Invalid populate syntax at ' + base.toString() + '.' + namePath + ': ' + value);
               } else {
-                projection.push(new Population(namePath, parseProjection(Tyr.byId[link.id], value)));
+                const linkCol = Tyr.byId[link.id];
+
+                value = projectionFns.resolve(linkCol.def.projections, value);
+
+                if (!_.isObject(value)) {
+                  throw new Error('Invalid populate syntax at ' + base.toString() + '.' + namePath + ': ' + value);
+                }
+
+                projection.push(new Population(namePath, parseProjection(linkCol, value)));
               }
             }
           }

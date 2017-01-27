@@ -1026,6 +1026,19 @@ describe('tyranid', function() {
         await department.$populate({ creator: { age: 1, name: 1 } });
         expect(_.keys(department.creator$)).to.eql(['_id', 'name', 'age']);
       });
+
+      it( 'should support predefined projections', async () => {
+        let department = await Department.byId(1);
+        await department.$populate({ creator: 'nameAndAge' });
+        expect(_.keys(department.creator$).length).to.be.eql(3);
+        expect(department.creator$._id).to.eql(2);
+        expect(department.creator$.name).to.be.defined;
+        expect(department.creator$.age).to.be.defined;
+
+        department = await Department.byId(1);
+        await department.$populate({ creator: ['nameAndAge', { homepage: 1 }] });
+        expect(_.keys(department.creator$)).to.eql(['_id', 'name', 'homepage', 'age']);
+      });
     });
 
     describe('NamePath', function() {

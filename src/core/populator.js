@@ -9,6 +9,7 @@ class Cache {
 
   constructor(colId) {
     this.colId = colId;
+    this.col = Tyr.byId[colId];
 
     this.fields = {};
 
