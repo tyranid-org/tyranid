@@ -2,7 +2,7 @@
 // can't be import due to client-side
 const _ = require('lodash');
 
-import { setFalse }    from '../common';
+import { evaluateClient } from '../common';
 import Tyr             from '../tyr';
 import ValidationError from './validationError';
 
@@ -71,27 +71,16 @@ export default class Type {
     return f ? f(field, value) : value;
   }
 
-  toClient(field, value, data) {
+  toClient(field, value, doc, opts, proj) {
+    const def = this.def;
 
-    const def = this.def,
-          dClient = def.client,
-          fClient = field.def.client;
-
-    if (_.isFunction(dClient) && !dClient.call(data, value)) {
-      return undefined;
-    }
-
-    if (_.isFunction(fClient) && !fClient.call(data, value)) {
-      return undefined;
-    }
-
-    if (setFalse(dClient) || setFalse(fClient)) {
+    if (!evaluateClient(def.client, field.name, doc, value, opts, proj) ||
+        !evaluateClient(field.def.client, field.name, doc, value, opts, proj)) {
       return undefined;
     }
 
     const f = def.toClient;
     return f ? f(field, value) : value;
-
   }
 
   static validateType(type) {

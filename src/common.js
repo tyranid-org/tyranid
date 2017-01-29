@@ -180,10 +180,43 @@ export function parseProjection(col, obj) {
   return projection;
 }
 
-export function toClient(col, data, opts) {
+export function evaluateClient(client, key, doc, value, opts, proj) {
+  if (_.isFunction(client)) {
+    client = client.call(doc, value, opts, proj);
 
-  if (Array.isArray(data)) {
-    return data.map(doc => toClient(col, doc, opts));
+    // non-truthy from a function means no
+    if (!client) {
+      client = false;
+    }
+  }
+
+  switch (client) {
+  case false:
+  case 0:
+  case 'never':
+    return false;
+
+  case 'conditional':
+    if (!proj || !proj[key]) {
+      return false;
+    }
+    // fall through
+
+  case true: 
+  case 1:
+  case 'default': 
+  case undefined:
+    return true;
+
+  default:
+    throw new Error(`Invalid client value: ${value}\n\nMust be one of 'never', 'conditional', 'default', true (or 1), false (or 0), or undefined`);
+  }
+}
+
+export function toClient(col, doc, opts) {
+
+  if (Array.isArray(doc)) {
+    return doc.map(doc2 => toClient(col, doc2, opts));
   }
 
   opts = processOptions(col, opts);
@@ -204,7 +237,7 @@ export function toClient(col, data, opts) {
   }
 
   const fields = col ? col.fields : null;
-  _.each(data, function(v, k) {
+  _.each(doc, function(v, k) {
     let field;
 
     if (!projected(k)) {
@@ -212,7 +245,7 @@ export function toClient(col, data, opts) {
     }
 
     if (fields && (field=fields[k])) {
-      v = field.type.toClient(field, v, data, dOpts);
+      v = field.type.toClient(field, v, doc, opts, proj);
 
       if (v !== undefined) {
         obj[k] = v;
@@ -235,26 +268,34 @@ export function toClient(col, data, opts) {
 
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   _.each(fields, function(field, name) {
-    let  value, client;
-    const fieldDef = field.def;
-    if (fieldDef.get && (client = fieldDef.client)) {
-      if (!projected(name)) {
-        return;
-      }
-
-      if (name in data) {
-        // Property will have been set on CollectionInstances
-        value = data[name];
-      } else if( _.isFunction(fieldDef.get)) {
-        // Have to set manually for POJO
-        value = data::fieldDef.get();
-      } else {
-        throw new Error('Incorrect computed value definition: ' + name);
-      }
-      if ( !_.isFunction(client) || client.call(data, value) ) {
-        obj[name] = value;
-      }
+    const fieldDef = field.def,
+          getFn = fieldDef.get;
+    if (!getFn) {
+      return;
     }
+
+    if (!evaluateClient(
+          fieldDef.client, name, doc,
+          // we don't pass in the value in this case because in order to do that we'd need to calculate it which might be costly
+          undefined,
+          opts, proj
+        ) ||
+        !projected(name)) {
+      return;
+    }
+
+    let value;
+    if (name in doc) {
+      // Property will have been set on CollectionInstances
+      value = doc[name];
+    } else if( _.isFunction(getFn)) {
+      // Have to set manually for POJO
+      value = getFn.call(doc);
+    } else {
+      throw new Error('Incorrect computed value definition: ' + name);
+    }
+
+    obj[name] = value;
   });
 
   const toClientFn = col && col.def && col.def.toClient;

@@ -46,6 +46,7 @@ var User = new tyr.Collection({
     name: {
       is: 'object',
       required: true,
+      client: 'default',
       fields: {
         first:    { is: 'string', label: 'First Name', required: true },
         last:     { is: 'string', label: 'Last Name', pathLabel: 'Last' },
@@ -69,6 +70,10 @@ var User = new tyr.Collection({
     roles:     { is: 'array', of: RoleStatus },
 
     bag:       { is: 'object' },
+
+    ssn:       { is: 'string', client: 'conditional' },
+
+    favoriteColor: { is: 'string', client: (value, opts, proj) => proj && proj.favoriteColor },
 
     ageAppropriateSecret: { is: 'string', client: function() { return this.age > 30; } },
 

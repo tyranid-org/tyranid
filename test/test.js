@@ -454,7 +454,7 @@ describe('tyranid', function() {
         expect(
           User.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'name.suffices', 'address.street', 'address.notes', 'ageAppropriateSecret', 'siblings.name', 'title']
+          ['fullName', 'name.first', 'name.last', 'name.suffices', 'address.street', 'address.notes', 'ssn', 'favoriteColor', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
 
@@ -488,12 +488,12 @@ describe('tyranid', function() {
 
       it( 'should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(17);
+        expect(_.values(fields).length).to.be.eql(19);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(16);
+        expect(_.values(fields).length).to.be.eql(18);
       });
 
       it( 'should set dyn fields on insert for matching objects', async () => {
@@ -1670,6 +1670,20 @@ describe('tyranid', function() {
 
         expect(_.keys(userc).length).to.eql(1);
         expect(userc._id).to.be.undefined;
+      });
+
+      it( 'should support conditional toClient values', () => {
+        let user = new User({ _id: 222, name: { first: 'Some', last: 'User' }, ssn: '111-23-1232', favoriteColor: 'blue' });
+        let userc = user.$toClient();
+        expect(_.keys(userc)).to.eql(['_id', 'name', 'fullName']);
+
+        user = new User({ _id: 222, name: { first: 'Some', last: 'User' }, ssn: '111-23-1232', favoriteColor: 'blue' });
+        userc = user.$toClient({ fields: { name: 1, ssn: 1 } });
+        expect(_.keys(userc)).to.eql(['_id', 'name', 'ssn']);
+
+        user = new User({ _id: 222, name: { first: 'Some', last: 'User' }, ssn: '111-23-1232', favoriteColor: 'blue' });
+        userc = user.$toClient({ fields: { name: 1, ssn: 1, favoriteColor: 1 } });
+        expect(_.keys(userc)).to.eql(['_id', 'name', 'ssn', 'favoriteColor']);
       });
     });
 
