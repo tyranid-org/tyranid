@@ -45,6 +45,8 @@ export default class Type {
   }
 
   fromClient(field, value) {
+    // TODO:  should we be looking at field.def.client here ? ... see common.js:evaluateClient()
+
     const f = this.def.fromClient;
     return f ? f(field, value) : value;
   }
