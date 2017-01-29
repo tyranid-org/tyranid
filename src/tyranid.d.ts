@@ -121,8 +121,7 @@ declare namespace Tyranid {
       $update(fields?: any): Promise<this>;
       $validate(): ValidationError[];
       $replace(replacements: any): Promise<this>;
-      // this was throwing a typescript error
-      //$copy(replacements: any, props?: (keyof this)[]): Promise<this>;
+      $copy(replacements: any, props?: (keyof this)[]): Promise<this>;
       $slice(prop: string, opts?: BaseQueryOptions): Promise<this>;
 
       createdAt?: Date;
