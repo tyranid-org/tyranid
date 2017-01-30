@@ -111,4 +111,46 @@ Collection.prototype.links = function(search) {
   return links;
 };
 
+Collection.prototype.references = async function(opts) {
+  const refs = [];
+
+  const fields = opts.idsOnly ? { _id: 1 } : undefined;
+
+  let exclude = opts.exclude || [];
+  if (!Array.isArray(exclude)) {
+    exclude = [ exclude ];
+  }
+
+  let match = opts.ids || opts.id;
+  if (Array.isArray(match)) {
+    if (match.length > 1) {
+      match = { $in: match };
+    } else {
+      match = match[0];
+    }
+  }
+
+  for (const col of Tyr.collections) {
+    if (exclude.indexOf(col) >= 0) {
+      continue;
+    }
+
+    const queries = [];
+
+    _.each(col.paths, field => {
+      if (field.link === this) {
+        queries.push({ [field.spath]: match });
+      }
+    });
+
+    if (queries.length) {
+      const query = queries.length > 1 ? { $or: queries } : queries[0];
+      //console.log(col.name, '=', query);
+      refs.push(...await col.findAll({ query, fields }));
+    }
+  }
+
+  return refs;
+};
+
 export default LinkType;
