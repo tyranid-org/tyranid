@@ -121,7 +121,7 @@ declare namespace Tyranid {
       $update(fields?: any): Promise<this>;
       $validate(): ValidationError[];
       $replace(replacements: any): Promise<this>;
-      $copy(replacements: any, props?: (keyof this)[]): Promise<this>;
+      $copy(replacements: any, props?: (keyof this)[]): this;
       $slice(prop: string, opts?: BaseQueryOptions): Promise<this>;
 
       createdAt?: Date;
@@ -489,6 +489,8 @@ declare namespace Tyranid {
 
       push(id: IdType | string | number, path: string, prop: any): Promise<void>;
       pull(id: IdType | string | number, path: string, fn: (p: any) => boolean): Promise<void>;
+
+      references(opts: { id?: any, ids?: any, idsOnly?: boolean, exclude?: CollectionInstance<Tyr.Document>[] }): Promise<Tyr.Document[]>;
 
       // mongodb methods
       remove(opts: LookupQueryOptions & { query: MongoQuery }): Promise<void>;
