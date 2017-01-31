@@ -802,8 +802,7 @@ Collection.prototype.express = function(app, auth) {
       /*
        *     /api/NAME
        */
-
-      console.log('adding route: ' + name);
+      Tyr.info('adding route: ' + name);
       let r = app.route('/api/' + name);
       r.all(auth);
 
