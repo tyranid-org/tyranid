@@ -2774,17 +2774,17 @@ describe('tyranid', function() {
 
       it('find an array of references', async () => {
         const refs = await User.references({ ids: [1, 3] });
-        expect(refs.length).to.eql(4);
+        expect(refs.length).to.eql(5);
       });
 
       it('should support exclude', async () => {
         const refs = await User.references({ ids: [1, 3], exclude: Tyr.byName.organization });
-        expect(refs.length).to.eql(3);
+        expect(refs.length).to.eql(4);
       });
 
       it('should support idsOnly', async () => {
         const refs = await User.references({ ids: [1, 3], idsOnly: true });
-        expect(refs.length).to.eql(4);
+        expect(refs.length).to.eql(5);
         for (const r of refs) {
           expect(_.keys(r)).to.eql(['_id']);
         }

@@ -112,7 +112,14 @@ Collection.prototype.links = function(search) {
 };
 
 Collection.prototype.references = async function(opts) {
-  const refs = [];
+  const thisCol = this,
+        refs = [];
+
+  let ids = opts.ids || opts.id;
+  if (!Array.isArray(ids)) {
+    ids = [ ids ];
+  }
+
 
   const fields = opts.idsOnly ? { _id: 1 } : undefined;
 
@@ -121,14 +128,10 @@ Collection.prototype.references = async function(opts) {
     exclude = [ exclude ];
   }
 
-  let match = opts.ids || opts.id;
-  if (Array.isArray(match)) {
-    if (match.length > 1) {
-      match = { $in: match };
-    } else {
-      match = match[0];
-    }
-  }
+  const makeMatch = values => values.length > 1 ? { $in: values } : values[0];
+
+  const idMatch = makeMatch(ids);
+  let uidMatch;
 
   for (const col of Tyr.collections) {
     if (exclude.indexOf(col) >= 0) {
@@ -139,7 +142,13 @@ Collection.prototype.references = async function(opts) {
 
     _.each(col.paths, field => {
       if (field.link === this) {
-        queries.push({ [field.spath]: match });
+        queries.push({ [field.spath]: idMatch });
+      } else if (field.type.name === 'uid') {
+        if (!uidMatch) {
+          uidMatch = makeMatch(ids.map(id => thisCol.idToUid(id)));
+        }
+
+        queries.push({ [field.spath]: uidMatch });
       }
     });
 
