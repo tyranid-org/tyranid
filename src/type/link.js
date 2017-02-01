@@ -117,9 +117,12 @@ Collection.prototype.references = async function(opts) {
 
   let ids = opts.ids || opts.id;
   if (!Array.isArray(ids)) {
-    ids = [ ids ];
+    ids = ids ? [ ids ] : [];
   }
 
+  if (!ids.length) {
+    return refs;
+  }
 
   const fields = opts.idsOnly ? { _id: 1 } : undefined;
 
