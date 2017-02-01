@@ -1,6 +1,6 @@
 {
   "name": "tyranid",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/tyranid.js",
   "jsnext:main": "src/tyranid.js",
@@ -13,8 +13,8 @@
     "watch": "babel src --out-dir dist -q -w",
     "babel": "babel src --out-dir dist -q",
     "eslint": "eslint ./src ./test --ignore-pattern test/test-typings.js",
-    "mocha": "mocha './test/test.js' --read false --require 'babel-core/register'",
-    "mocha-coverage": "nyc --require babel-core/register mocha './test/test.js' --read false",
+    "mocha": "mocha \"./test/test.js\" --read false --require \"babel-core/register\"",
+    "mocha-coverage": "nyc --require babel-core/register mocha \"./test/test.js\" --read false",
     "coverage": "./node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov && ./node_modules/.bin/codecov",
     "tsc": "tsc",
     "docs": "babel-node ./doc/doc.js"

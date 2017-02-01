@@ -47,7 +47,9 @@ declare namespace Tyranid {
     export function trace(opts: any): Promise<void>;
     export function log(opts: any): Promise<void>;
     export function info(id: number, message: string): Promise<void>;
+    export function info(opts: any): Promise<void>;
     export function warn(message: string, err?: Error): Promise<void>;
+    export function warn(opts: any): Promise<void>;
     export function error(opts: any): Promise<void>;
     export function fatal(opts: any): Promise<void>;
     export function express(app: Express.Application, auth?: (req: Express.Request, res: Express.Response, next: Function) => {}): void;
