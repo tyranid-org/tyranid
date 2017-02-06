@@ -29,7 +29,8 @@ export function pathAdd(path, add) {
 export function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
   return opts &&
-    ( (opts.auth !== undefined ||
+    ( (opts.asOf !== undefined ||
+       opts.auth !== undefined ||
        opts.author !== undefined ||
        opts.comment !== undefined ||
        opts.fields !== undefined ||

@@ -1,6 +1,7 @@
-import _ from 'lodash';
+import _          from 'lodash';
 
-import Tyr from '../tyr';
+import Tyr        from '../tyr';
+import historical from '../historical/historical';
 
 const $all = Tyr.$all;
 
@@ -48,8 +49,9 @@ class Cache {
 
 export default class Populator {
 
-  constructor(denormal) {
+  constructor(denormal, opts) {
     this.denormal = denormal;
+    this.opts = opts || {};
     this.cachesByColId = {};
   }
 
@@ -87,6 +89,7 @@ export default class Populator {
   }
 
   async queryMissingIds() {
+    const asOf = this.opts.asOf;
 
     return await Promise.all(_.map(this.cachesByColId, async (cache, colId) => {
       const collection = Tyr.byId[colId],
@@ -105,16 +108,22 @@ export default class Populator {
 
       if (!ids.length) return;
 
-      const opts = {},
-            fields = cache.fields;
+      const opts = {};
+      let fields = cache.fields;
 
       if (fields && !fields.$all && !_.isEmpty(fields)) {
         opts.fields = fields;
+      } else {
+        fields = undefined;
       }
 
       const linkDocs = await collection.byIds(ids, opts);
 
       linkDocs.forEach(doc => {
+        if (asOf) {
+          historical.asOf(collection, doc, asOf, fields);
+        }
+
         cache.values[doc[primaryKeyField]] = doc;
       });
 

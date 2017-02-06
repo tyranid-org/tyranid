@@ -2682,6 +2682,49 @@ describe('tyranid', function() {
 
         await User.remove({ _id: 2001 });
       });
+
+      it('should support asOf on query methods', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        amy.age = 37;
+        await amy.$save();
+
+        const oAmy = await User.byId(amy._id, { asOf: new Date('8-Oct-2015') });
+        expect(oAmy.$historical).to.be.true;
+        expect(oAmy.age).to.eql(36);
+      });
+
+      it('should support asOf with populated documents', async () => {
+        await User.remove({ _id: 2001 });
+        await Organization.remove({ _id: 2001 });
+
+        let cc = new Organization({ _id: 2001, name: 'Concrete Crackers', owner: 2001 });
+        await cc.$save();
+        cc = await Organization.byId(2001);
+        cc.name = 'Concrete R Us';
+        await cc.$save();
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36, organization: 2001 });
+        await amy.$save();
+        amy = await User.byId(2001);
+        amy.age = 37;
+        await amy.$save();
+
+        const oAmy = await User.byId(amy._id, {
+          asOf: new Date('8-Oct-2015'),
+          populate: { organization: $all }
+        });
+        expect(oAmy.$historical).to.be.true;
+        expect(oAmy.age).to.eql(36);
+        const oCc = oAmy.organization$;
+        expect(oCc.$historical).to.be.true;
+        expect(oCc.name).to.eql('Concrete Crackers');
+      });
     });
 
     describe('arraySort', function() {
