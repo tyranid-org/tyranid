@@ -123,6 +123,10 @@ const documentPrototype = Tyr.documentPrototype = {
     return new this.$model(_.cloneDeep(this, val => val));
   },
 
+  $cloneDeep() {
+    return new this.$model(Tyr.cloneDeep(this));
+  },
+
   $copy(obj, keys) {
     if (keys) {
       if (keys === Tyr.$all) {

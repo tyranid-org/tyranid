@@ -746,6 +746,18 @@ describe('tyranid', function() {
         expect(clone).to.not.equal(orig);
       });
 
+      it('should support $cloneDeep() on instances', async function() {
+        const orig  = await Book.byId(BookIsbn);
+        orig.nested = { a: 1 };
+
+        const clone = orig.$cloneDeep();
+        expect(clone.$id).to.eql(BookIsbn);
+        expect(clone.$model).to.equal(orig.$model);
+        expect(clone).to.not.equal(orig);
+        expect(clone.nested).to.eql({ a: 1 });
+        expect(clone.nested).to.not.equal(orig.nested);
+      });
+
       it('should support $id on instances', function() {
         expect(Job.byLabel('Designer').$id).to.be.eql(3);
         expect(Job.byLabel('Software Lead').$id).to.be.eql(2);
