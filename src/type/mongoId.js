@@ -27,7 +27,7 @@ export const MongoIdType = new Type({
       return ObjectId(str);
     }
 
-    //return undefined;
+    return value;
   },
   toClient(field, value) {
     return value ? value.toString() : value;

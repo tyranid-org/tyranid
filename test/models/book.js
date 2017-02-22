@@ -6,6 +6,7 @@ var Book = new tyr.Collection({
   fields: {
     _id: { is: 'integer' },
     isbn: { is: 'mongoid' }, // Pretend ISBNs are ObjectIds
+    serial: { is: 'mongoid' }, // Pretend serial #s are ObjectIds
     title: { is: 'string' },
     description: { is: 'string' },
     pages: { is: 'integer' }
