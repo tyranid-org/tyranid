@@ -1219,11 +1219,13 @@ describe('tyranid', function() {
     describe('client', function() {
       it('should fromClient', function() {
         var title = 'Browsers';
-        var bookObj = { title, isbn: '5614c2f00000000000000000' };
+        var bookObj = { title, isbn: '5614c2f00000000000000000', serial: null };
         var book = Book.fromClient(bookObj);
         expect(book).to.be.an.instanceof(Book);
         expect(book.title).to.be.eql(title);
         expect(book.isbn).to.be.an.instanceof(ObjectId);
+        expect(book.serial).to.be.null;
+        expect(book.description).to.not.exist;
       });
 
       it('should fromClient array objects', function() {
