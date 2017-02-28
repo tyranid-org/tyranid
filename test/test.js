@@ -746,6 +746,18 @@ describe('tyranid', function() {
         expect(clone).to.not.equal(orig);
       });
 
+      it('should support $cloneDeep() on instances', async function() {
+        const orig  = await Book.byId(BookIsbn);
+        orig.nested = { a: 1 };
+
+        const clone = orig.$cloneDeep();
+        expect(clone.$id).to.eql(BookIsbn);
+        expect(clone.$model).to.equal(orig.$model);
+        expect(clone).to.not.equal(orig);
+        expect(clone.nested).to.eql({ a: 1 });
+        expect(clone.nested).to.not.equal(orig.nested);
+      });
+
       it('should support $id on instances', function() {
         expect(Job.byLabel('Designer').$id).to.be.eql(3);
         expect(Job.byLabel('Software Lead').$id).to.be.eql(2);
@@ -1207,11 +1219,13 @@ describe('tyranid', function() {
     describe('client', function() {
       it('should fromClient', function() {
         var title = 'Browsers';
-        var bookObj = { title, isbn: '5614c2f00000000000000000' };
+        var bookObj = { title, isbn: '5614c2f00000000000000000', serial: null };
         var book = Book.fromClient(bookObj);
         expect(book).to.be.an.instanceof(Book);
         expect(book.title).to.be.eql(title);
         expect(book.isbn).to.be.an.instanceof(ObjectId);
+        expect(book.serial).to.be.null;
+        expect(book.description).to.not.exist;
       });
 
       it('should fromClient array objects', function() {
@@ -2682,6 +2696,49 @@ describe('tyranid', function() {
 
         await User.remove({ _id: 2001 });
       });
+
+      it('should support asOf on query methods', async () => {
+        await User.remove({ _id: 2001 });
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+
+        await amy.$save();
+        amy = await User.byId(2001);
+
+        amy.age = 37;
+        await amy.$save();
+
+        const oAmy = await User.byId(amy._id, { asOf: new Date('8-Oct-2015') });
+        expect(oAmy.$historical).to.be.true;
+        expect(oAmy.age).to.eql(36);
+      });
+
+      it('should support asOf with populated documents', async () => {
+        await User.remove({ _id: 2001 });
+        await Organization.remove({ _id: 2001 });
+
+        let cc = new Organization({ _id: 2001, name: 'Concrete Crackers', owner: 2001 });
+        await cc.$save();
+        cc = await Organization.byId(2001);
+        cc.name = 'Concrete R Us';
+        await cc.$save();
+
+        let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36, organization: 2001 });
+        await amy.$save();
+        amy = await User.byId(2001);
+        amy.age = 37;
+        await amy.$save();
+
+        const oAmy = await User.byId(amy._id, {
+          asOf: new Date('8-Oct-2015'),
+          populate: { organization: $all }
+        });
+        expect(oAmy.$historical).to.be.true;
+        expect(oAmy.age).to.eql(36);
+        const oCc = oAmy.organization$;
+        expect(oCc.$historical).to.be.true;
+        expect(oCc.name).to.eql('Concrete Crackers');
+      });
     });
 
     describe('arraySort', function() {
@@ -2774,17 +2831,17 @@ describe('tyranid', function() {
 
       it('find an array of references', async () => {
         const refs = await User.references({ ids: [1, 3] });
-        expect(refs.length).to.eql(4);
+        expect(refs.length).to.eql(5);
       });
 
       it('should support exclude', async () => {
         const refs = await User.references({ ids: [1, 3], exclude: Tyr.byName.organization });
-        expect(refs.length).to.eql(3);
+        expect(refs.length).to.eql(4);
       });
 
       it('should support idsOnly', async () => {
         const refs = await User.references({ ids: [1, 3], idsOnly: true });
-        expect(refs.length).to.eql(4);
+        expect(refs.length).to.eql(5);
         for (const r of refs) {
           expect(_.keys(r)).to.eql(['_id']);
         }

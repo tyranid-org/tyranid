@@ -40,10 +40,23 @@ const OPTIONS = Tyr.options;
 
 
 
-async function populate(collection, opts, documents) {
-  let populate;
-  if (opts && (populate = opts.populate)) {
-    await collection.populate(populate, documents);
+async function postFind(collection, opts, documents) {
+  if (opts) {
+    const asOf = opts.asOf;
+    if (asOf) {
+      if (Array.isArray(documents)) {
+        for (const document of documents) {
+          historical.asOf(collection, document, asOf, opts.fields);
+        }
+      } else {
+        historical.asOf(collection, documents, asOf, opts.fields);
+      }
+    }
+
+    const populate = opts.populate;
+    if (populate) {
+      await collection.populate(populate, documents, false /* denormal */, opts);
+    }
   }
 }
 
@@ -108,6 +121,10 @@ const documentPrototype = Tyr.documentPrototype = {
     // Amazingly, a seemingly do-nothing cloneDeep `customizer`
     // seems to address https://github.com/lodash/lodash/issues/602
     return new this.$model(_.cloneDeep(this, val => val));
+  },
+
+  $cloneDeep() {
+    return new this.$model(Tyr.cloneDeep(this));
   },
 
   $copy(obj, keys) {
@@ -703,7 +720,7 @@ export default class Collection {
         const cursor = await this.find(v || {}, opts.projection, opts);
 
         const documents = await cursor.toArray();
-        await populate(this, opts, documents);
+        await postFind(this, opts, documents);
         return documents;
       }
     }
@@ -711,7 +728,7 @@ export default class Collection {
     const cursor = await this.find(...args);
 
     const documents = await cursor.toArray();
-    await populate(this, opts, documents);
+    await postFind(this, opts, documents);
     return documents;
   }
 
@@ -763,7 +780,7 @@ export default class Collection {
     let doc = await db.findOne(query, projection, _.omit(opts, ['query', 'fields']));
     if (doc) {
       doc = new collection(doc);
-      await populate(this, opts, doc);
+      await postFind(this, opts, doc);
       return doc;
     }
 
@@ -1191,9 +1208,9 @@ export default class Collection {
    * If documents is not provided, this function will return a curried version of this function that takes a single array
    * of documents.  This allows populate to be fed into a promise chain.
    */
-  populate(fields, documents, denormal) {
+  populate(fields, documents, denormal, opts) {
     const collection = this,
-          populator  = new Populator(denormal),
+          populator  = new Populator(denormal, opts),
           population = Population.parse(populator, collection, fields);
 
     async function populatorFunc(documents) {
