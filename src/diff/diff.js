@@ -111,7 +111,8 @@ function patchObj(a, patch, props) {
       }
 
       if (!arr.length) {
-        throw new Error('the array at path in the patch is already empty');
+        Tyr.warn({ e: 'historical', m: `the array at path "${prop}" in the patch is already empty` }, new Error());
+        continue;
       }
 
       arr.length--;

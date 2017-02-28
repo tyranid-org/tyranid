@@ -66,8 +66,9 @@ const LogEvent = new Collection({
     notes: { is: 'string' }
   },
   values: [
-    [ '_id',  'label',   'notes'         ],
-    [ 'http', 'HTTP',    'HTTP Requests' ]
+    [ '_id',  'label',            'notes'               ],
+    [ 'http', 'HTTP',             'HTTP Requests'       ],
+    [ 'historical', 'Historical', 'Historical Problems' ]
   ]
 });
 
