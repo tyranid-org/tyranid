@@ -92,6 +92,14 @@ function prec5(v) {
   return parseFloat(v.toPrecision(5));
 }
 
+// oidX and oidX_ are equals() but not ===
+const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
+      oid1_ = new ObjectId('55bb8ecff71d45b995ff8c83'),
+      oid2  = new ObjectId('5567f2a8387fa974fc6f3a5a'),
+      oid2_ = new ObjectId('5567f2a8387fa974fc6f3a5a'),
+      oid3  = new ObjectId('aaa7f2a8387fa9abdc6f3ced'),
+      oid3_ = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
+
 describe('tyranid', function() {
   var db = null;
   before(async function(done) {
@@ -114,13 +122,6 @@ describe('tyranid', function() {
   });
 
   describe('lodash-like methods', () => {
-    const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
-          oid1_ = new ObjectId('55bb8ecff71d45b995ff8c83'),
-          oid2  = new ObjectId('5567f2a8387fa974fc6f3a5a'),
-          oid2_ = new ObjectId('5567f2a8387fa974fc6f3a5a'),
-          oid3  = new ObjectId('aaa7f2a8387fa9abdc6f3ced'),
-          oid3_ = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
-
     it('should support isEqual with OIDs', () => {
       expect(
         Tyr.isEqual(
@@ -2290,10 +2291,6 @@ describe('tyranid', function() {
       });
     });
 
-    // oid1 and oid2 are equals() but not ===
-    const oid1 = new ObjectId('5567f2a6387fa9723c6f3a45'),
-          oid2 = new ObjectId('5567f2a6387fa9723c6f3a45');
-
     describe('Tyr.cloneDeep()', function() {
       it('should handle ObjectIds', () => {
         const o = { a: 1, b: oid1 };
@@ -2342,13 +2339,42 @@ describe('tyranid', function() {
       });
     });
 
+    describe('isObject', function() {
+      it('test if something is an object', () => {
+        const tests = [
+          [ 1,        false ],
+          [ {},       true ],
+          [ oid1,     false ],
+          [ { a: 1 }, true ]
+        ];
+
+        for (const test of tests) {
+          expect(Tyr.isObject(test[0])).to.be.eql(test[1]);
+        }
+      });
+    });
+
+    describe('parseBson', function() {
+      it('pass through regular values but parse bson objects', () => {
+        const tests = [
+          [ 1,                                            1    ],
+          [ { _bsontype: 'ObjectID', id: 'Ugò¨8©tüo:Z' }, oid2 ]
+        ];
+
+        for (const test of tests) {
+          expect(Tyr.parseBson(test[0])).to.be.eql(test[1]);
+        }
+      });
+    });
+
     describe('diff & patch', function() {
       const simpleObjTests = [
         [ { a: 1, b: 2 }, { a: 1 },       { b: 0 }           ],
         [ { a: 1, b: 2 }, {},             { a: 0, b: 0 }     ],
         [ { a: 1, b: 2 }, { a: 2 },       { a: [ 2 ], b: 0 } ],
         [ { a: 1, b: 2 }, { a: 2, b: 2 }, { a: [ 2 ] }       ],
-        [ { a: oid1 },    { a: oid2 },    {}                 ]
+        [ { a: oid1 },    { a: oid1_ },   {}                 ],
+        [ { a: oid1 },    { a: oid2 },    { a: [ oid2 ] }    ]
       ];
 
       const simpleArrTests = [

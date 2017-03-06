@@ -1,5 +1,6 @@
 
 import _            from 'lodash';
+import { ObjectId } from 'mongodb';
 
 
 function equalCustomizer(a, b) {
@@ -18,6 +19,18 @@ function cloneCustomizer(obj) {
   }
 
   //return undefined;
+}
+
+function convertStrToHex(str) {
+  let hex, i;
+
+  let result = '';
+  for (i=0; i<str.length; i++) {
+    hex = str.charCodeAt(i).toString(16);
+    result += ('0'+hex).slice(-2);
+  }
+
+  return result
 }
 
 
@@ -122,9 +135,29 @@ const Tyr = {
     return _.isEqualWith ? _.isEqualWith(a, b, equalCustomizer) : _.isEqual(a, b, equalCustomizer);
   },
 
+  isObject(value) {
+    // want to treat ObjectIds as primitive values in most places
+    return _.isObject(value) && value.constructor.name !== 'ObjectID';
+  },
+
   cloneDeep(obj) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
     return _.cloneDeepWith ? _.cloneDeepWith(obj, cloneCustomizer) : _.cloneDeep(obj, cloneCustomizer);
+  },
+
+  parseBson(value) {
+    let bsontype;
+
+    if (_.isObject(value) && (bsontype = value._bsontype)) {
+      switch (bsontype) {
+      case 'ObjectID':
+        return new ObjectId(convertStrToHex(value.id));
+
+      // fall through
+      }
+    }
+
+    return value;
   },
 
   indexOf(array, value) {

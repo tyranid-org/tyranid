@@ -2,6 +2,7 @@
 import _   from 'lodash';
 import Tyr from '../tyr';
 
+
 const isArray = Array.isArray,
 
       O_DELETE = 0,
@@ -13,7 +14,6 @@ const isArray = Array.isArray,
 function badPatch() {
   return new Error('Bad patch');
 }
-
 
 // ***
 // *** NOTE:  The patch format and all the methods are documented at http://tyranid.org/diff
@@ -51,7 +51,7 @@ function diffObj(a, b, props) {
           }
         } else if (isArray(bv)) {
           diffs[prop] = [ bv ];
-        } else if (_.isObject(av) && _.isObject(bv)) {
+        } else if (Tyr.isObject(av) && Tyr.isObject(bv)) {
           diffs[prop] = [ T_OBJECT, diffObj(av, bv) ];
         } else {
           diffs[prop] = [ bv ];
@@ -121,7 +121,8 @@ function patchObj(a, patch, props) {
     } else if (_.isArray(pv)) {
       switch (pv.length) {
       case 1:
-        a[prop] = _.cloneDeep(pv[0]);
+        // these parseBson() calls are due to invalid bson data present due to earlier bug
+        a[prop] = Tyr.cloneDeep(Tyr.parseBson(pv[0]));
         continue;
 
       case 2:
@@ -259,7 +260,7 @@ function patchArr(a, patch) {
       if (isArray(pv)) {
         switch (pv.length) {
         case 1:
-          a[pi] = _.cloneDeep(pv[0]);
+          a[pi] = Tyr.cloneDeep(Tyr.parseBson(pv[0]));
           continue;
 
         case 2:
