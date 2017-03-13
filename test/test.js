@@ -2866,6 +2866,8 @@ describe('tyranid', function() {
               if (err) return rej(err);
               const window$Tyr = window.Tyr;
 
+              window$Tyr.init();
+
               if (window$Tyr !== window$Tyr.Tyr) {
                 throw new Error(`no named Tyr export on client`);
               }
