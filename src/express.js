@@ -81,6 +81,13 @@ export function generateClientLibrary() {
   // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
 (function(window) {
+  var Tyr = window.Tyr = {};
+
+  // add a named self reference to mirror the server
+  Tyr.Tyr = Tyr;
+
+  Tyr.init = function() { //... begin Tyr.init();
+
   // check for existance of clientside deps
   var $ = window.jQuery || window.$;
   var _ = window.lodash || window._;
@@ -89,15 +96,13 @@ export function generateClientLibrary() {
   if (!_) throw new Error("Lodash not available to Tyranid client ");
 
 
-  var Tyr = window.Tyr = {
-        $all: '$all',
-        collections: [],
-        byId: {}
-      },
-      byName = {};
+  _.assign(Tyr, {
+    $all: '$all',
+    collections: [],
+    byId: {}
+  });
 
-  // add a named self reference to mirror the server
-  Tyr.Tyr = Tyr;
+  var byName = {};
 
   // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest directly
   function ajax(opts) {
@@ -736,6 +741,7 @@ export function generateClientLibrary() {
   });
 
   file += `
+};//... end Tyr.init();
 })(typeof window !== 'undefined' ? window : this);
 `;
 
