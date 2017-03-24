@@ -114,19 +114,19 @@ _.assign(Tyr, {
 
     _.extend(options, opts);
 
-    if (!opts.db) {
-      throw new Error('Missing "db" in config.');
+    if (opts.db) {
+      const db = this.db = opts.db;
+      Tyr.collections.forEach(collection => {
+        if (!collection.db) {
+          const server = collection.server;
+          collection.db = server ?
+            this.servers[server] :
+            db.collection(collection.def.dbName);
+        }
+      });
+    } else {
+      console.warn('******** no `db` property passed to config, boostraping Tyranid without database! ********');
     }
-
-    const db = this.db = opts.db;
-    Tyr.collections.forEach(collection => {
-      if (!collection.db) {
-        const server = collection.server;
-        collection.db = server ?
-          this.servers[server] :
-          db.collection(collection.def.dbName);
-      }
-    });
 
     if (opts.validate) {
       this.validate(opts.validate);
@@ -140,7 +140,7 @@ _.assign(Tyr, {
       }
     }
 
-    if (opts.indexes) {
+    if (opts.indexes && opts.db) {
       await this.createIndexes();
     }
   },
