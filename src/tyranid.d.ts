@@ -402,7 +402,7 @@ declare namespace Tyranid {
 
 
     export interface ConfigOptions {
-      db: mongodb.Db;
+      db?: mongodb.Db;
       consoleLogLevel?: 'ERROR';
       dbLogLevel?: 'TRACE';
       secure?: Secure;
