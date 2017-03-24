@@ -101,7 +101,8 @@ describe('tyranid', function() {
       consoleLogLevel: 'ERROR',
       dbLogLevel: 'TRACE',
       secure: fakeSecure,
-      indexes: true
+      indexes: true,
+      minify: true
     });
     done(null, db);
   });
@@ -2857,6 +2858,8 @@ describe('tyranid', function() {
 
       it('Should include all collections', async () => {
         const code = generateClientLibrary();
+
+        console.log(code);
 
         await new Promise((res, rej) => {
           jsdom.env({
