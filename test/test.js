@@ -101,7 +101,8 @@ describe('tyranid', function() {
       consoleLogLevel: 'ERROR',
       dbLogLevel: 'TRACE',
       secure: fakeSecure,
-      indexes: true
+      indexes: true,
+      minify: true
     });
     done(null, db);
   });

@@ -1,6 +1,7 @@
 
 import _            from 'lodash';
 import { ObjectId } from 'mongodb';
+import * as uglify from 'uglify-js';
 
 const babel = require('babel-core');
 //import babel        from 'babel-core';
@@ -758,11 +759,20 @@ export function generateClientLibrary() {
       ]
     }).code;
 
+
+    /**
+     * wrap in additional iife to allow for minification
+     * of babel helpers
+     */
+    file = `;(function(){${file}})();`;
+
     // unbastardize imports for the client
     file = file.replace(/_tyr2.default/g, 'Tyr');
     file = file.replace(/_lodash2.default/g, '_');
 
-    return file;
+    return Tyr.options.minify
+      ? uglify.minify(file, { fromString: true }).code
+      : file;
   } catch (err) {
     console.log(err.stack);
     throw err;
