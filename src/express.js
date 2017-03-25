@@ -785,15 +785,23 @@ export function generateClientLibrary() {
 }
 
 
+
 export default function express(app, auth) {
 
-  const file = generateClientLibrary();
+  /**
+   * If we have already generated the client bundle,
+   * as part of a build task, we don't need to expose
+   * a separate endpoint or generate the bundle.
+   */
+  if (!Tyr.options.pregenerateClient) {
+    const file = generateClientLibrary();
 
-  //app.use(local.express);
-  app.route('/api/tyranid')
-    // we don't send insecure information in /api/tyranid, it is just source code
-    //.all(auth)
-    .get(async (req, res) => res.send(file));
+    //app.use(local.express);
+    app.route('/api/tyranid')
+      // we don't send insecure information in /api/tyranid, it is just source code
+      //.all(auth)
+      .get(async (req, res) => res.send(file));
+  }
 
   Tyr.collections.forEach(col => col.express(app, auth));
   Tyr.components.forEach(comp => {

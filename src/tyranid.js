@@ -39,7 +39,7 @@ import './unit/unitType';
 import './unit/unit';
 import './unit/units';
 
-import './express';
+import { generateClientLibrary } from './express';
 
 import /*Schema from */ './schema';
 
@@ -100,6 +100,8 @@ const options = Tyr.options;
 _.assign(Tyr, {
 
   version: require('../package.json').version,
+
+  generateClientLibrary,
 
   async config(opts) {
 

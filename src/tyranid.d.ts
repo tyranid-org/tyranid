@@ -54,6 +54,7 @@ declare namespace Tyranid {
     export function fatal(opts: any): Promise<void>;
     export function express(app: Express.Application, auth?: (req: Express.Request, res: Express.Response, next: Function) => {}): void;
     export function valuesBy(predicate: (field: FieldInstance) => boolean): Promise<any[]>;
+    export function generateClientLibrary(): string;
 
     export function validate(opts?: {
       glob?: string
@@ -408,6 +409,7 @@ declare namespace Tyranid {
       secure?: Secure;
       cls?: boolean;
       validate?: ValidationPattern[];
+      pregenerateClient?: boolean;
       indexes?: boolean;
       minify?: boolean;
       permissions?: {
