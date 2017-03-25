@@ -81,21 +81,29 @@ function translateClass(cls) {
 export function generateClientLibrary() {
   // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
-(function(window) {
-  var Tyr = window.Tyr = {};
-
-  // add a named self reference to mirror the server
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery', 'lodash'], factory);
+  } else if (typeof module === 'object' && module.exports) {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like environments that support module.exports,
+    // like Node.
+    module.exports = factory(require('jquery'), require('lodash'));
+  } else {
+    // Browser globals (root is window)
+    root.Tyr = factory(root.jQuery, root._);
+  }
+})((typeof window !== 'undefined' ? window : this), function($, _) {
+  var Tyr = { init: init };
   Tyr.Tyr = Tyr;
 
-  Tyr.init = function() { //... begin Tyr.init();
+  return Tyr;
 
-  // check for existance of clientside deps
-  var $ = window.jQuery || window.$;
-  var _ = window.lodash || window._;
+  function init() { //... begin Tyr.init();
 
   if (!$) throw new Error("jQuery not available to Tyranid client");
   if (!_) throw new Error("Lodash not available to Tyranid client ");
-
 
   _.assign(Tyr, {
     $all: '$all',
@@ -742,8 +750,8 @@ export function generateClientLibrary() {
   });
 
   file += `
-};//... end Tyr.init();
-})(typeof window !== 'undefined' ? window : this);
+}//... end Tyr.init();
+});
 `;
 
   try {
