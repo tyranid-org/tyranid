@@ -172,7 +172,9 @@ export function parseProjection(col, obj) {
   const def        = col.def,
         projection = Object.assign({}, obj);
 
-  if (projection[def.primaryKey.field] === undefined) {
+  if (projection[def.primaryKey.field] === undefined &&
+      // if an exclusion is present, don't add an inclusion
+      _.find(projection, v => !v) === undefined) {
     projection[def.primaryKey.field] = 1;
   }
 

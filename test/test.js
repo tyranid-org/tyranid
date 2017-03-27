@@ -687,6 +687,14 @@ describe('tyranid', function() {
         const u = await User.byId(4, { fields: ['nameAndAge', { organization: 1 }] });
         expect(_.keys(u).length).to.eql(4);
       });
+
+      it('should support support exclusions', async () => {
+        const u = await User.findOne({
+          query: { _id: 4 },
+          fields: { organization: 0 }
+        });
+        expect(u.organization).to.be.undefined;
+      });
     });
 
     describe('projections', function() {
