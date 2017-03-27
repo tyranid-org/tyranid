@@ -2673,7 +2673,7 @@ describe('tyranid', function() {
 
         amy = await User.byId(2001, { fields: { age: 1 } });
         amy.age = 37;
-        amy.$update({ author: 'u001', comment: 'age was wrong' });
+        await amy.$update({ author: 'u001', comment: 'age was wrong' });
 
         amy = await User.byId(2001);
         expect(amy._history.length).to.eql(1);
@@ -2891,6 +2891,8 @@ describe('tyranid', function() {
             done(err, window) {
               if (err) return rej(err);
               const window$Tyr = window.Tyr;
+
+              window$Tyr.init();
 
               if (window$Tyr !== window$Tyr.Tyr) {
                 throw new Error(`no named Tyr export on client`);

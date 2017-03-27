@@ -1,6 +1,7 @@
 
 import _            from 'lodash';
 import { ObjectId } from 'mongodb';
+import * as uglify from 'uglify-js';
 
 const babel = require('babel-core');
 //import babel        from 'babel-core';
@@ -80,24 +81,34 @@ function translateClass(cls) {
 export function generateClientLibrary() {
   // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
-(function(window) {
-  // check for existance of clientside deps
-  var $ = window.jQuery || window.$;
-  var _ = window.lodash || window._;
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like environments that support module.exports,
+    // like Node.
+    module.exports = factory(require('jquery'), require('lodash'));
+  } else {
+    // Browser globals (root is window)
+    root.Tyr = factory(root.jQuery, root._);
+  }
+})((typeof window !== 'undefined' ? window : this), function($, _) {
+  var Tyr = { init: init };
+  Tyr.Tyr = Tyr;
+
+  return Tyr;
+
+  function init() { //... begin Tyr.init();
 
   if (!$) throw new Error("jQuery not available to Tyranid client");
   if (!_) throw new Error("Lodash not available to Tyranid client ");
 
+  _.assign(Tyr, {
+    $all: '$all',
+    collections: [],
+    byId: {}
+  });
 
-  var Tyr = window.Tyr = {
-        $all: '$all',
-        collections: [],
-        byId: {}
-      },
-      byName = {};
-
-  // add a named self reference to mirror the server
-  Tyr.Tyr = Tyr;
+  var byName = {};
 
   // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest directly
   function ajax(opts) {
@@ -736,7 +747,8 @@ export function generateClientLibrary() {
   });
 
   file += `
-})(typeof window !== 'undefined' ? window : this);
+}//... end Tyr.init();
+});
 `;
 
   try {
@@ -752,11 +764,20 @@ export function generateClientLibrary() {
       ]
     }).code;
 
+
+    /**
+     * wrap in additional iife to allow for minification
+     * of babel helpers
+     */
+    file = `;(function(){${file}})();`;
+
     // unbastardize imports for the client
     file = file.replace(/_tyr2.default/g, 'Tyr');
     file = file.replace(/_lodash2.default/g, '_');
 
-    return file;
+    return Tyr.options.minify
+      ? uglify.minify(file, { fromString: true }).code
+      : file;
   } catch (err) {
     console.log(err.stack);
     throw err;
@@ -764,15 +785,23 @@ export function generateClientLibrary() {
 }
 
 
+
 export default function express(app, auth) {
 
-  const file = generateClientLibrary();
+  /**
+   * If we have already generated the client bundle,
+   * as part of a build task, we don't need to expose
+   * a separate endpoint or generate the bundle.
+   */
+  if (!Tyr.options.pregenerateClient) {
+    const file = generateClientLibrary();
 
-  //app.use(local.express);
-  app.route('/api/tyranid')
-    // we don't send insecure information in /api/tyranid, it is just source code
-    //.all(auth)
-    .get(async (req, res) => res.send(file));
+    //app.use(local.express);
+    app.route('/api/tyranid')
+      // we don't send insecure information in /api/tyranid, it is just source code
+      //.all(auth)
+      .get(async (req, res) => res.send(file));
+  }
 
   Tyr.collections.forEach(col => col.express(app, auth));
   Tyr.components.forEach(comp => {
