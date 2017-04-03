@@ -23,6 +23,7 @@ import Type from './core/type';
 
 import './core/component';
 import './core/collection';
+import './core/event';
 import './core/field';
 import './core/validationError';
 import './core/namePath';

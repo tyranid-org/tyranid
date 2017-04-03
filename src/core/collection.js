@@ -191,7 +191,8 @@ const documentPrototype = Tyr.documentPrototype = {
     return this.$model.updateDoc(this, ...args);
   },
 
-  $remove() {
+  async $remove() {
+    await Tyr.Event.fire(this.$model, 'remove', () => ({ doc: this }));
     return this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true, ...arguments);
   },
 
