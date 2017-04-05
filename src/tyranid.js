@@ -263,10 +263,9 @@ _.assign(Tyr, {
           } else {
             const ni = indexes.find(i => i.name === ei.name);
 
-            if (!ni) {
+            if (!ni || !_.eq(ni.key, ei.key)) {
               await col.db.dropIndex(ei.name);
             }
-
           }
         }
         await col.db.createIndexes(indexes);
