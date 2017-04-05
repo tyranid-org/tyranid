@@ -255,6 +255,20 @@ _.assign(Tyr, {
       const indexes = col.def.indexes;
 
       if (indexes) {
+        const existingIndexes = await col.db.indexes();
+
+        for (const ei of existingIndexes) {
+          if (ei.name === '_id_') {
+            // ignore the default _id key
+          } else {
+            const ni = indexes.find(i => i.name === ei.name);
+
+            if (!ni) {
+              await col.db.dropIndex(ei.name);
+            }
+
+          }
+        }
         await col.db.createIndexes(indexes);
       }
     }

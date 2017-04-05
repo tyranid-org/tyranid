@@ -34,7 +34,7 @@ var User = new tyr.Collection({
   timestamps: true,
   indexes: [
     {
-      key: { 'name.first': 1, 'name.last': 1 },
+      key: { 'name.last': 1, 'name.first': 1 },
       name: 'firstLastName'
     }
   ],
@@ -63,6 +63,8 @@ var User = new tyr.Collection({
         notes:  { is: 'array', of: 'string' }
       }
     },
+
+    oldName:   { is: 'string', deprecated: 'use name.first and name.last' },
 
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
     job:       { link: 'job' },

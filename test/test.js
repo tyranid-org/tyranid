@@ -455,7 +455,7 @@ describe('tyranid', function() {
         expect(
           User.fieldsBy(field => field.type.def.name === 'string').map(field => field.spath)
         ).to.eql(
-          ['fullName', 'name.first', 'name.last', 'name.suffices', 'address.street', 'address.notes', 'ssn', 'favoriteColor', 'ageAppropriateSecret', 'siblings.name', 'title']
+          ['fullName', 'name.first', 'name.last', 'name.suffices', 'address.street', 'address.notes', 'oldName', 'ssn', 'favoriteColor', 'ageAppropriateSecret', 'siblings.name', 'title']
         );
       });
 
@@ -489,12 +489,12 @@ describe('tyranid', function() {
 
       it( 'should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(19);
+        expect(_.values(fields).length).to.be.eql(20);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(18);
+        expect(_.values(fields).length).to.be.eql(19);
       });
 
       it( 'should set dyn fields on insert for matching objects', async () => {
