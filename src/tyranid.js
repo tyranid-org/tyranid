@@ -254,8 +254,18 @@ _.assign(Tyr, {
     for (const col of Tyr.collections) {
       const indexes = col.def.indexes;
 
-      if (indexes) {
-        const existingIndexes = await col.db.indexes();
+      if (indexes && col.db) {
+        let existingIndexes;
+
+        try {
+          existingIndexes = await col.db.indexes();
+        } catch (err) {
+          if (/no collection/.test(err.message)) {
+            continue;
+          } else {
+            throw err;
+          }
+        }
 
         for (const ei of existingIndexes) {
           if (ei.name === '_id_') {
