@@ -4,16 +4,18 @@ import Tyr from '../tyr';
 import Collection from './collection';
 
 
-Collection.prototype.on = function(eventName, handler) {
+Collection.prototype.on = function(opts) {
+
+  const { type, handler } = opts;
 
   let events = this.events;
   if (!events) {
     events = this.events = {};
   }
 
-  let handlers = events[eventName];
+  let handlers = events[type];
   if (!handlers) {
-    handlers = events[eventName] = [];
+    handlers = events[type] = [];
   }
 
   handlers.push(handler);

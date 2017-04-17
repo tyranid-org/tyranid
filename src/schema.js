@@ -40,14 +40,16 @@ const Schema = new Collection({
 
 let schemaCache;
 
-// TODO:  add some sort of event bus so we can notify when schema has been changed?
-Collection.prototype.invalidateSchemaCache = function() {
-  schemaCache = null;
-}
+Schema.on({
+  type: 'change',
+  handler: (/*event*/) => {
+    // TODO:  analyze the event and only invalidate part of the schema ?
+    schemaCache = null
+  }
+});
 
 Collection.prototype.fieldsFor = async function(obj) {
 
-  // TODO:  schema invalidation
   if (!schemaCache) {
     schemaCache = await (await Schema.db.find()).toArray();
 

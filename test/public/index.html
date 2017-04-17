@@ -1,0 +1,47 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <base href="/">
+  <title>Tyranid Client Test</title>
+
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+  <style>
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .main {
+      margin: 16px;
+      padding: 0 16px;
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+    }
+  </style>
+
+  <body>
+    <div class="main">
+      <h1>Tyranid Test Client</h1>
+
+      <p>Access the browser console to interact with the tyranid client.</p>
+
+      <p>The Tyranid test model is loaded.</p>
+
+      <p>For example:</p>
+
+      <pre style="padding:10px; border: 1px solid #666; background: #eee;">
+> Tyr.byName.user.fields.name
+</pre>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.9.3/lodash.min.js"></script>
+
+    <script src="/api/tyranid"></script>
+    <script>Tyr.init();</script>
+    
+  </body>
+</html>

@@ -18,6 +18,140 @@ import local        from './local/local';
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
 
+class Serializer {
+  constructor(path, depth, json) {
+    this.file = '';
+    this.path = path;
+    this.depth = depth || 0;
+    this.json = json;
+  }
+
+  newline() {
+    let depth = this.depth;
+    this.file += '\n';
+    while (depth--) {
+      this.file += '  ';
+    }
+  }
+
+  commaToNewline() {
+    let depth = this.depth;
+    this.file = this.file.replace(/,$/, '\n'); // overwrite trailing comma
+    while (depth--) {
+      this.file += '  ';
+    }
+  }
+
+  k(key) {
+    return this.json ? '"' + key + '"' : key;
+  }
+
+  field(field) {
+    this.file += ': {';
+    this.depth++;
+
+    const def = field.def;
+
+    this.newline();
+    this.file += this.k('is') + ': "';
+    this.file += field.type.name;
+    this.file += '",';
+
+    this.newline();
+    this.file += this.k('label') + ': "';
+    this.file += field.label;
+    this.file += '",';
+
+    if (field.link) {
+      this.newline();
+      this.file += 'link: "';
+      this.file += field.link.def.name;
+      this.file += '",';
+    }
+
+    const denormal = def.denormal;
+    if (denormal) {
+      this.newline();
+      this.file += 'denormal: ' + JSON.stringify(denormal) + ',';
+    }
+
+    const of = field.of;
+    if (of) {
+      this.newline();
+      this.file += 'of';
+      this.field(of);
+    }
+
+    var get = def.getClient || def.get;
+    if (get) {
+      this.newline();
+      this.file += 'get: ' + es5Fn(get) + ',';
+    }
+
+    if (def.db) {
+      this.newline();
+      this.file += 'db: ' + def.db + ',';
+    }
+
+    var set = def.setClient || def.set;
+    if (set) {
+      this.newline();
+      this.file += 'set: ' + es5Fn(set) + ',';
+    }
+    if (field.fields) {
+      this.fields(field.fields);
+    }
+
+    this.depth--;
+    this.commaToNewline();
+    this.file += '}';
+  }
+
+  fields(fields) {
+    this.newline();
+    this.file += this.k('fields') + ': {';
+
+    this.depth++;
+    var first = true;
+    _.each(fields, field => {
+      if (field.def.client !== false) {
+        if (first) {
+          first = false;
+        } else {
+          this.file += ',';
+        }
+        this.newline();
+        this.file += this.k(field.name);
+        this.field(field);
+      }
+    });
+    this.depth--;
+    this.newline();
+    this.file += '},';
+  }
+
+  methods(methods) {
+    this.newline();
+    this.file += 'methods: {';
+
+    this.depth++;
+    _.each(methods, method => {
+      if (method.fnClient || method.fn) {
+        this.newline();
+        this.file += method.name + ': {';
+        this.depth++;
+        this.newline();
+        this.file += 'fn: ' + es5Fn(method.fnClient || method.fn);
+        this.depth--;
+        this.file += '},';
+      }
+    });
+    this.depth--;
+    this.newline();
+    this.file += '}';
+  }
+}
+
 //let nextFnName = 1;
 function es5Fn(fn) {
   let s = fn.toString();
@@ -110,7 +244,7 @@ export function generateClientLibrary() {
 
   var byName = {};
 
-  // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest directly
+  // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest or fetch directly
   function ajax(opts) {
     var deferred = $.ajax(opts);
 
@@ -576,124 +710,31 @@ export function generateClientLibrary() {
     });
   };
 
+  Collection.prototype.customFields = function() {
+    return ajax({
+      url: '/api/' + this.def.name + '/custom',
+      method: 'get'
+    }).then(function(def) {
+      def = JSON.parse(def);
+      var fields = def.fields;
+
+      _.each(fields, function(fieldDef, fieldName) {
+        var field = new Field(fieldDef);
+        field.name = name;
+        fields[fieldName] = field;
+      });
+
+      return fields;
+
+    }).catch(function(err) {
+      console.log(err);
+    });
+  };
+
   Tyr.Collection = Collection;
   var def;
 `;
 
-  class Serializer {
-    constructor(path, depth) {
-      this.file = '';
-      this.path = path;
-      this.depth = depth || 0;
-    }
-
-    newline() {
-      let depth = this.depth;
-      this.file += '\n';
-      while (depth--) {
-        this.file += '  ';
-      }
-    }
-
-    field(field) {
-      this.file += ': {';
-      this.depth++;
-
-      const def = field.def;
-
-      this.newline();
-      this.file += 'is: "';
-      this.file += field.type.name;
-      this.file += '",';
-
-      this.newline();
-      this.file += 'label: "';
-      this.file += field.label;
-      this.file += '",';
-
-      if (field.link) {
-        this.newline();
-        this.file += 'link: "';
-        this.file += field.link.def.name;
-        this.file += '",';
-      }
-
-      const denormal = def.denormal;
-      if (denormal) {
-        this.newline();
-        this.file += 'denormal: ' + JSON.stringify(denormal) + ',';
-      }
-
-      const of = field.of;
-      if (of) {
-        this.newline();
-        this.file += 'of';
-        this.field(of);
-      }
-
-      var get = def.getClient || def.get;
-      if (get) {
-        this.newline();
-        this.file += 'get: ' + es5Fn(get) + ',';
-      }
-
-      if (def.db) {
-        this.newline();
-        this.file += 'db: ' + def.db + ',';
-      }
-
-      var set = def.setClient || def.set;
-      if (set) {
-        this.newline();
-        this.file += 'set: ' + es5Fn(set) + ',';
-      }
-      if (field.fields) {
-        this.fields(field.fields);
-      }
-
-      this.depth--;
-      this.newline();
-      this.file += '},';
-    }
-
-    fields(fields) {
-      this.newline();
-      this.file += 'fields: {';
-
-      this.depth++;
-      _.each(fields, field => {
-        if (field.def.client !== false) {
-          this.newline();
-          this.file += field.name;
-          this.field(field);
-        }
-      });
-      this.depth--;
-      this.newline();
-      this.file += '},';
-    }
-
-    methods(methods) {
-      this.newline();
-      this.file += 'methods: {';
-
-      this.depth++;
-      _.each(methods, method => {
-        if (method.fnClient || method.fn) {
-          this.newline();
-          this.file += method.name + ': {';
-          this.depth++;
-          this.newline();
-          this.file += 'fn: ' + es5Fn(method.fnClient || method.fn);
-          this.depth--;
-          this.file += '},';
-        }
-      });
-      this.depth--;
-      this.newline();
-      this.file += '}';
-    }
-  }
 
   Tyr.collections.forEach(col => {
     const def = col.def;
@@ -786,14 +827,14 @@ export function generateClientLibrary() {
 
 
 
-export default function express(app, auth) {
+export default function express(app, auth, opts) {
 
   /**
    * If we have already generated the client bundle,
    * as part of a build task, we don't need to expose
    * a separate endpoint or generate the bundle.
    */
-  if (!Tyr.options.pregenerateClient) {
+  if (!Tyr.options.pregenerateClient && !opts || !opts.noClient) {
     const file = generateClientLibrary();
 
     //app.use(local.express);
@@ -889,6 +930,23 @@ Collection.prototype.express = function(app, auth) {
             console.log(err.stack);
             res.sendStatus(500);
           }
+        });
+      }
+
+
+      /*
+       *     /api/NAME/custom
+       */
+
+      r = app.route('/api/' + name + '/custom');
+      r.all(auth);
+
+      if (express.rest || express.fields) {
+        r.get(async (req, res) => {
+          const fields = _.filter(await col.fieldsFor(req.user), f => f.def.custom);
+          const ser = new Serializer('.', 2, true);
+          ser.fields(fields);
+          res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
         });
       }
 

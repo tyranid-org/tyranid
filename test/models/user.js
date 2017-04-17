@@ -38,6 +38,9 @@ var User = new tyr.Collection({
       name: 'firstLastName'
     }
   ],
+  express: {
+    rest: true
+  },
   fields: {
     _id: { is: 'integer' },
 

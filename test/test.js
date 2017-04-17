@@ -1,15 +1,20 @@
 
 import Tyr            from '../src/tyranid';
 import chai           from 'chai';
+import fetch          from 'node-fetch';
 import chaiAsPromised from 'chai-as-promised';
 import mongodb        from 'mongodb';
+import express        from 'express';
 import _              from 'lodash';
+
 import Field          from '../src/core/field';
 import Type           from '../src/core/type';
 import UnitType       from '../src/unit/unitType';
 import Unit           from '../src/unit/unit';
 import Units          from '../src/unit/units';
 import Role           from './models/role'; // require to get extra link in prototype chain
+import initModel      from './model';
+
 import                     './models/user';
 import historical     from '../src/historical/historical';
 import projection     from '../src/core/projection';
@@ -20,6 +25,7 @@ import * as fs from 'fs';
 const jquerySource = fs.readFileSync('./node_modules/jquery/dist/jquery.min.js', 'utf-8');
 const lodashSource = fs.readFileSync('./node_modules/lodash/index.js', 'utf-8');
 
+const expressPort = 6783; // random #
 
 const {
   ObjectId
@@ -317,13 +323,10 @@ describe('tyranid', function() {
   });
 
   describe('with model', function() {
-    var Job, Organization, Department, User, Task, Book, Location,
-        TyrSchema, TyrSchemaType;
+    var Job, Organization, Department, User, Task, Book, Location;
     //var Job2, Organization2, Department2, User2;
     var AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
-    var UserRoleId = new ObjectId('55bb7ecfe71d45b923ff8c83');
     var BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
-    var Book2Isbn = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
 
     before(async function() {
       // Test validate load models and byName
@@ -341,73 +344,8 @@ describe('tyranid', function() {
       Task = Tyr.byName.task;
       Book = Tyr.byName.book;
       Location = Tyr.byName.location;
-      TyrSchema = Tyr.byName.tyrSchema;
-      TyrSchemaType = Tyr.byName.tyrSchemaType;
 
-      await Organization.db.remove({});
-      await Organization.db.insert([
-        { _id: 1, name: 'Acme Unlimited' },
-        { _id: 2, name: '123 Construction', owner: 3 },
-      ]);
-      await Department.db.remove({});
-      await Department.db.insert([
-        { _id: 1, name: 'Engineering', creator: 2, head: 3, permissions: { members: [ 2, 3 ] } }
-      ]);
-      await Role.db.remove({});
-      await Role.db.insert([
-        { _id: AdministratorRoleId, name: 'Administrator' },
-        { _id: UserRoleId,          name: 'User' }
-      ]);
-      await User.db.remove({});
-      await User.db.insert([
-        { _id: 1, organization: 1, department: 1, name: { first: 'An', last: 'Anon' }, title: 'Developer' },
-        { _id: 2, organization: 1, name: { first: 'John', last: 'Doe' }, homepage: 'https://www.tyranid.org', siblings: [
-          { name: 'Tom Doe', bestFriend: 1, friends: [ { user: 3 }, { user: 1 } ] },
-          { name: 'George Doe', friends: [ { user: 1 }, { user: 3 } ] }
-        ],
-          age: 35,
-          ageAppropriateSecret: 'Eats at Chipotle way to much...',
-          roles: [
-            { role: AdministratorRoleId, active: true },
-            { role: UserRoleId,          active: true }
-          ]
-        },
-        { _id: 3, organization: 2, name: { first: 'Jane', last: 'Doe' }, siblings: [
-            { name: 'Jill Doe', friends: [ { user: 1 }, { user: 2 } ] },
-            { name: 'Bill Doe', friends: [ { user: 2 }, { user: 3 } ] }
-        ],
-          age: 20,
-          ageAppropriateSecret: 'Not a fan of construction companies...'
-        },
-        { _id: 4, organization: 2, name: { first: 'Jill', last: 'Doe' }, age: 20 }
-      ]);
-      await Book.db.remove({});
-      await Book.db.insert([
-        { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' },
-      ]);
-      await Book.db.insert([
-        { _id: 2, isbn: Book2Isbn, title: 'Home Gardening 101' },
-      ]);
-      await Task.db.remove({});
-      await Task.db.insert([
-        { _id: 1, title: 'Write instance validation tests', assigneeUid: User.idToUid(1), manual: BookIsbn },
-      ]);
-      await TyrSchema.db.remove({});
-      await TyrSchema.db.insert([
-        {
-          collection: User.id,
-          match: {
-            organization: 1
-          },
-          type: TyrSchemaType.PARTIAL._id,
-          def: {
-            fields: {
-              acmeX: { is: 'integer' }
-            }
-          }
-        }
-      ]);
-      await Log.db.remove({});
+      await initModel();
     });
 
     describe('fields', function() {
@@ -489,7 +427,7 @@ describe('tyranid', function() {
 
       it( 'should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(20);
+        expect(_.values(fields).length).to.be.eql(21);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
@@ -2885,14 +2823,14 @@ describe('tyranid', function() {
     describe('events', () => {
 
       it('should allow you to register events and unregister', async () => {
-        const dereg = User.on('remove', (/*event*/) => {});
+        const dereg = User.on({ type: 'remove', handler: (/*event*/) => {}});
         dereg();
       });
 
       it('should allow you to cancel removes', async () => {
-        const dereg = User.on('remove', (/*event*/) => {
+        const dereg = User.on({ type: 'remove', handler: (/*event*/) => {
           throw new Error('stop');
-        });
+        }});
 
         let u1;
         try {
@@ -2912,6 +2850,44 @@ describe('tyranid', function() {
 
         u1 = await User.byId(2001);
         expect(u1).to.be.null;
+      });
+    });
+
+    describe('express', () => {
+      const urlPrefix = 'http://localhost:' + expressPort;
+
+      before(async function(done) {
+        const app = express(),
+              user = await User.byId(1);
+
+        Tyr.express(
+          app,
+          (req, res, next) => {
+            req.user = user; // "log in" user 1
+            return next();
+          },
+          { noClient: true }
+        );
+
+        app.listen(expressPort, () => {
+          //console.log('Express listening on port ' + expressPort)
+          done(null, db);
+        });
+      });
+
+      it('should not expose /custom route on non-express collections', async () => {
+        const result = await fetch(urlPrefix + '/api/role/custom');
+        expect(result.status).to.eql(404);
+      });
+
+      it('should support fields', async () => {
+        let result = await fetch(urlPrefix + '/api/user/custom');
+        let json = await result.json();
+        expect(_.keys(json.fields)).to.eql(['acmeY']);
+
+        result = await fetch(urlPrefix + '/api/organization/custom');
+        json = await result.json();
+        expect(_.keys(json.fields)).to.eql([]);
       });
     });
 
