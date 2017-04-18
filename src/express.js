@@ -834,7 +834,7 @@ export default function express(app, auth, opts) {
    * as part of a build task, we don't need to expose
    * a separate endpoint or generate the bundle.
    */
-  if (!Tyr.options.pregenerateClient && !opts || !opts.noClient) {
+  if (!Tyr.options.pregenerateClient && (!opts || !opts.noClient)) {
     const file = generateClientLibrary();
 
     //app.use(local.express);
