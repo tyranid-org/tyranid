@@ -117,10 +117,11 @@ export default class Populator {
         fields = undefined;
       }
 
-      const linkDocs = await collection.byIds(ids, opts);
+      const linkDocs = await collection.byIds(ids, opts),
+            isHistorical = collection.def.historical;
 
       linkDocs.forEach(doc => {
-        if (asOf) {
+        if (asOf && isHistorical) {
           historical.asOf(collection, doc, asOf, fields);
         }
 
