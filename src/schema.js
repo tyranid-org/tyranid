@@ -48,6 +48,10 @@ Schema.on({
   }
 });
 
+Collection.prototype.invalidateSchemaCache = function() {
+  schemaCache = null;
+};
+
 Collection.prototype.fieldsFor = async function(obj) {
 
   if (!schemaCache) {
