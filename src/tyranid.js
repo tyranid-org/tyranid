@@ -260,7 +260,7 @@ _.assign(Tyr, {
         try {
           existingIndexes = await col.db.indexes();
         } catch (err) {
-          if (/no collection/.test(err.message)) {
+          if (/no (collection|database)/.test(err.message)) {
             continue;
           } else {
             throw err;
