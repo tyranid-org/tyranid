@@ -53,6 +53,7 @@ Collection.prototype.invalidateSchemaCache = function() {
 };
 
 Collection.prototype.fieldsFor = async function(obj) {
+  let missing = false;
 
   if (!schemaCache) {
     schemaCache = await (await Schema.db.find()).toArray();
@@ -60,6 +61,11 @@ Collection.prototype.fieldsFor = async function(obj) {
     schemaCache.forEach(schema => {
       const collection = Tyr.byId[schema.collection],
             def        = schema.def;
+
+      if (!collection) {
+        missing = true;
+        return;
+      }
 
       // TODO:  this is affecting Collection.fields and Collection.paths ...
       //        maybe pass in a "dynamic" flag to createCompiler() to not set those?
@@ -81,6 +87,10 @@ Collection.prototype.fieldsFor = async function(obj) {
       });
     }
   });
+
+  if (missing) {
+    schemaCache = null;
+  }
 
   return fields;
 };
