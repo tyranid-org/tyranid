@@ -711,8 +711,14 @@ export function generateClientLibrary() {
   };
 
   Collection.prototype.customFields = function() {
+    var col = this,
+        cf = col._customFields;
+    if (cf) {
+      return Promise.resolve(cf);
+    }
+
     return ajax({
-      url: '/api/' + this.def.name + '/custom',
+      url: '/api/' + col.def.name + '/custom',
       method: 'get'
     }).then(function(def) {
       def = JSON.parse(def);
@@ -724,6 +730,7 @@ export function generateClientLibrary() {
         fields[fieldName] = field;
       });
 
+      col._customFields = fields;
       return fields;
 
     }).catch(function(err) {
@@ -867,7 +874,7 @@ Collection.prototype.express = function(app, auth) {
     const name = col.def.name;
 
 
-    if (express.rest || (express.get || express.put || express.array)) {
+    if (express.rest || (express.get || express.put || express.array || express.fields)) {
 
       /*
        *     /api/NAME
