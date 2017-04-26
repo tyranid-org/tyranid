@@ -75,6 +75,11 @@ class Serializer {
       this.file += 'denormal: ' + JSON.stringify(denormal) + ',';
     }
 
+    if (def.multiline) {
+      this.newline();
+      this.file += 'multiline: true,';
+    }
+
     const of = field.of;
     if (of) {
       this.newline();

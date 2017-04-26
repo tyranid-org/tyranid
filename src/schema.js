@@ -28,7 +28,7 @@ const Schema = new Collection({
   client: false,
   fields: {
     _id:        { is:   'mongoid' },
-    collection: { is:   'string' },
+    collection: { is:   'string' }, // this is the collection id, i.e. t01
     type:       { link: 'tyrSchemaType' },
     match:      { is:   'object' },
     def:        { is:   'object' },
