@@ -77,7 +77,7 @@ class Serializer {
 
     if (def.multiline) {
       this.newline();
-      this.file += 'multiline: true,';
+      this.file += this.k('multiline') + ': true,';
     }
 
     const of = field.of;
