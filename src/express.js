@@ -80,6 +80,12 @@ class Serializer {
       this.file += this.k('multiline') + ': true,';
     }
 
+    const order = def.order;
+    if (order) {
+      this.newline();
+      this.file += this.k('order') + ': ' + JSON.stringify(order) + ',';
+    }
+
     const of = field.of;
     if (of) {
       this.newline();
