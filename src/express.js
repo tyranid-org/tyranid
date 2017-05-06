@@ -86,6 +86,12 @@ class Serializer {
       this.file += this.k('order') + ': ' + JSON.stringify(order) + ',';
     }
 
+    const custom = def.custom;
+    if (custom) {
+      this.newline();
+      this.file += this.k('custom') + ': ' + JSON.stringify(custom) + ',';
+    }
+
     const of = field.of;
     if (of) {
       this.newline();
