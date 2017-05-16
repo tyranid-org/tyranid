@@ -2602,7 +2602,7 @@ describe('tyranid', function() {
         amy = await User.byId(2001, { fields: { age: 1 } });
         amy.age = 37;
         expect(amy._history).to.be.undefined;
-        amy.$update();
+        await amy.$update();
 
         amy = await User.byId(2001);
         expect(amy.age).to.eql(37);

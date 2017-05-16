@@ -869,6 +869,8 @@ export default class Collection {
       const keyFieldName = collection.def.primaryKey.field,
             keyValue = obj[keyFieldName];
 
+      await Tyr.Event.fire(collection, 'change', () => ({ doc: obj }));
+
       if (keyValue) {
         // using REPLACE semantics with findAndModify() here
         const result = await collection.findAndModify(combineOptions(opts, {
@@ -1004,6 +1006,7 @@ export default class Collection {
 
     timestampsUpdate(opts, collection, update, obj);
 
+    await Tyr.Event.fire(collection, 'change', () => ({ doc: obj }));
     return await collection.db.update(query, opts.update, opts);
   }
 
