@@ -44,6 +44,8 @@ Schema.on({
   type: 'change',
   handler: (/*event*/) => {
     // TODO:  analyze the event and only invalidate part of the schema ?
+
+    // TODO:  this doesn't work yet because this needs to be a post-, not a pre-, handler and events don't support post yet
     schemaCache = null
   }
 });
