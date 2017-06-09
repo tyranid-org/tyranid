@@ -74,7 +74,7 @@ Collection.prototype.fieldsFor = async function(obj) {
       this.createCompiler(collection, def, 'compile').fields('', collection, def.fields);
       this.createCompiler(collection, def, 'link').fields('', collection, def.fields);
 
-      schema.objMatcher = _.matches(schema.match);
+      schema.objMatcher = Tyr.isCompliant(schema.match);
     });
   }
 

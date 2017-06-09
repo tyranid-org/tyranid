@@ -200,6 +200,81 @@ const Tyr = {
   }
 };
 
+
+/*
+ * --- Matching
+ */
+
+/**
+ * This is similar to what _.matches() provides but it will also perform array intersections on top of it
+ * 
+ * @param s the specificiation
+ * @param v the value
+ */
+const isCompliant = Tyr.isCompliant = function(s, v) {
+
+  if (arguments.length === 1) {
+    return v2 => isCompliant(s, v2);
+  }
+
+  if (Object.is(s, v)) {
+    return true;
+
+  } else if (Array.isArray(s)) {
+    if (Array.isArray(v)) {
+      for (let i = 0; i < s.length; i++) {
+        if (!isCompliant(s[i], v[i])) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    for (let i = 0; i < s.length; i++) {
+      if (isCompliant(s[i], v)) {
+        return true;
+      }
+    }
+
+    return false;
+
+  } else if (Array.isArray(v)) {
+    for (let i = 0; i < v.length; i++) {
+      if (isCompliant(s, v[i])) {
+        return true;
+      }
+    }
+
+    return false;
+  } else if (_.isObject(s)) {
+    if (!_.isObject(v)) {
+      return false;
+    }
+
+    for (const prop in s) {
+      if (s.hasOwnProperty(prop)) {
+        if (!isCompliant(s[prop], v[prop])) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+
+  } else if (_.isObject(v)) {
+    return false;
+
+  }
+
+  return false;
+};
+
+
+//
+// *** Timer
+//
+
 class Timer {
   constructor(name) {
     this.name = name;

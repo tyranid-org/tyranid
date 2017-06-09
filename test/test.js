@@ -174,6 +174,31 @@ describe('tyranid', function() {
 
       expect(Tyr.isEqual(a, [oid1, oid3])).to.be.true;
     });
+
+    it('should support isCompliant', () => {
+      const tests = [
+        [ undefined,         undefined,                true ],
+        [ undefined,         null,                     false ],
+        [ 2,                 2,                        true ],
+        [ { group: 1 },      { group: 1 },             true ],
+        [ { group: 1 },      { group: 2 },             false ],
+        [ { group: 1 },      { group: 1, another: 3 }, true ],
+        [ { group: 1 },      {},                       false ],
+        [ { group: [1, 2] }, { group: 1 },             true ],
+        [ { group: [1, 2] }, { group: [1, 2] },        true ],
+        [ { group: [1, 2] }, { group: 3 },             false ],
+      ];
+
+      for (const testCase of tests) {
+        expect(
+          Tyr.isCompliant(testCase[0], testCase[1])
+        ).to.equal(testCase[2]);
+
+        expect(
+          Tyr.isCompliant(testCase[0])(testCase[1])
+        ).to.equal(testCase[2]);
+      }
+    });
   });
 
   describe('projection utilities', () => {
