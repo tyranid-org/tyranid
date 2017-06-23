@@ -727,7 +727,7 @@ export function generateClientLibrary() {
     });
   };
 
-  Collection.prototype.customFields = function() {
+  Collection.prototype.customFields = function(objMatch) {
     var col = this,
         cf = col._customFields;
     if (cf) {
@@ -735,8 +735,9 @@ export function generateClientLibrary() {
     }
 
     return ajax({
+      type: 'POST',
       url: '/api/' + col.def.name + '/custom',
-      method: 'get'
+      data: objMatch
     }).then(function(def) {
       def = JSON.parse(def);
       var fields = def.fields;
@@ -966,11 +967,16 @@ Collection.prototype.express = function(app, auth) {
       r.all(auth);
 
       if (express.rest || express.fields) {
-        r.get(async (req, res) => {
-          const fields = _.filter(await col.fieldsFor(req.user), f => f.def.custom);
-          const ser = new Serializer('.', 2, true);
-          ser.fields(fields);
-          res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
+        r.post(async (req, res) => {
+          try {
+            const fields = _.filter(await col.fieldsFor(req.body || req.user), f => f.def.custom);
+            const ser = new Serializer('.', 2, true);
+            ser.fields(fields);
+            res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
+          } catch (err) {
+            console.log(err.stack);
+            res.sendStatus(500);
+          }
         });
       }
 

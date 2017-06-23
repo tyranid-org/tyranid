@@ -5,6 +5,7 @@ import fetch          from 'node-fetch';
 import chaiAsPromised from 'chai-as-promised';
 import mongodb        from 'mongodb';
 import express        from 'express';
+import bodyParser     from 'body-parser';
 import _              from 'lodash';
 
 import Field          from '../src/core/field';
@@ -2885,6 +2886,8 @@ describe('tyranid', function() {
         const app = express(),
               user = await User.byId(1);
 
+        app.use(bodyParser.json());
+
         Tyr.express(
           app,
           (req, res, next) => {
@@ -2906,11 +2909,24 @@ describe('tyranid', function() {
       });
 
       it('should support fields', async () => {
-        let result = await fetch(urlPrefix + '/api/user/custom');
+        let result = await fetch(urlPrefix + '/api/user/custom', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ organization: 1 })
+        });
         let json = await result.json();
         expect(_.keys(json.fields)).to.eql(['acmeY']);
 
-        result = await fetch(urlPrefix + '/api/organization/custom');
+        result = await fetch(urlPrefix + '/api/organization/custom', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({foo: 1})
+        });
+
         json = await result.json();
         expect(_.keys(json.fields)).to.eql([]);
       });
