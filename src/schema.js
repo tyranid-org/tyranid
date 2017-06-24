@@ -3,6 +3,7 @@ import _ from 'lodash';
 
 import Tyr        from './tyr';
 import Collection from './core/collection';
+import Field      from './core/field';
 
 export const SchemaType = new Collection({
   id: '_t0',
@@ -54,13 +55,45 @@ Collection.prototype.invalidateSchemaCache = function() {
   schemaCache = null;
 };
 
+function schemaCloneCustomizer(obj) {
+  if (obj instanceof Field) {
+    const ofield = obj,
+          cfield = new Field(ofield.def);
+
+    for (const name in ofield) {
+      if (ofield.hasOwnProperty(name)) {
+        const v = ofield[name];
+
+        switch (name) {
+        case 'collection':
+        case 'parent':
+        case 'type':
+          cfield[name] = v;
+          break;
+        default:
+          cfield[name] = cloneSchema(v);
+        }
+      }
+    }
+
+    return cfield;
+  }
+
+  //return undefined;
+}
+
+function cloneSchema(obj) {
+  // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
+  return _.cloneDeepWith ? _.cloneDeepWith(obj, schemaCloneCustomizer) : _.cloneDeep(obj, schemaCloneCustomizer);
+}
+
 function mergeSchema(fields, name, field) {
   let existingField = fields[name];
 
   if (existingField) {
 
     if (existingField.def.is === 'object' && field.def.is === 'object') {
-      existingField = fields[name] = _.cloneDeep(existingField);
+      existingField = fields[name] = cloneSchema(existingField);
       const existingFields = existingField.def.fields;
 
       _.each(field.def.fields, (nestedField, nestedName) => {

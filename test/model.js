@@ -97,7 +97,7 @@ export default async function initModel() {
             is: 'object',
             custom: true,
             fields: {
-              nested1: { is: 'integer' },
+              nested1: { is: 'integer', label: 'Nested 1' },
             }
           }
         }
@@ -117,7 +117,7 @@ export default async function initModel() {
             is: 'object',
             custom: true,
             fields: {
-              nested2: { is: 'integer' },
+              nested2: { is: 'integer', label: 'Nested 2' },
             }
           }
         }

@@ -2922,6 +2922,8 @@ describe('tyranid', function() {
         // should also merge nested fields
         expect(_.keys(json.fields.custom.fields)).to.eql(['nested1', 'nested2']);
 
+        expect(json.fields.custom.fields.nested1.label).to.eql('Nested 1');
+
         result = await fetch(urlPrefix + '/api/organization/custom', {
           method: 'POST',
           headers: {
