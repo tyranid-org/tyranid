@@ -453,7 +453,7 @@ describe('tyranid', function() {
 
       it( 'should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(21);
+        expect(_.values(fields).length).to.be.eql(22);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
@@ -2917,14 +2917,17 @@ describe('tyranid', function() {
           body: JSON.stringify({ organization: 1 })
         });
         let json = await result.json();
-        expect(_.keys(json.fields)).to.eql(['acmeY']);
+        expect(_.keys(json.fields)).to.eql(['acmeY', 'custom']);
+
+        // should also merge nested fields
+        expect(_.keys(json.fields.custom.fields)).to.eql(['nested1', 'nested2']);
 
         result = await fetch(urlPrefix + '/api/organization/custom', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({foo: 1})
+          body: JSON.stringify({ foo: 1 })
         });
 
         json = await result.json();

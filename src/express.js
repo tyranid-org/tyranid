@@ -737,9 +737,10 @@ export function generateClientLibrary() {
     return ajax({
       type: 'POST',
       url: '/api/' + col.def.name + '/custom',
-      data: objMatch
+      data: JSON.parse(JSON.stringify(objMatch)), // convert document to pojo
+      dataType: 'json'
     }).then(function(def) {
-      def = JSON.parse(def);
+      //def = JSON.parse(def);
       var fields = def.fields;
 
       _.each(fields, function(fieldDef, fieldName) {
@@ -969,7 +970,14 @@ Collection.prototype.express = function(app, auth) {
       if (express.rest || express.fields) {
         r.post(async (req, res) => {
           try {
-            const fields = _.filter(await col.fieldsFor(req.body || req.user), f => f.def.custom);
+            let obj = req.body;
+            if (obj) {
+              obj = col.fromClient(obj);
+            } else {
+              obj = req.user;
+            }
+
+            const fields = _.filter(await col.fieldsFor(obj), f => f.def.custom);
             const ser = new Serializer('.', 2, true);
             ser.fields(fields);
             res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');

@@ -54,6 +54,30 @@ Collection.prototype.invalidateSchemaCache = function() {
   schemaCache = null;
 };
 
+function mergeSchema(fields, name, field) {
+  let existingField = fields[name];
+
+  if (existingField) {
+
+    if (existingField.def.is === 'object' && field.def.is === 'object') {
+      existingField = fields[name] = _.cloneDeep(existingField);
+      const existingFields = existingField.def.fields;
+
+      _.each(field.def.fields, (nestedField, nestedName) => {
+        mergeSchema(existingFields, nestedName, nestedField);
+      });
+
+      existingField.fields = { ...existingField.fields, ...field.fields };
+      return true;
+    }
+
+    // couldn't merge, fall through and let latest match override, maybe issue a warning here?
+  }
+
+  fields[name] = field;
+  return false;
+}
+
 Collection.prototype.fieldsFor = async function(obj) {
   let missing = false;
 
@@ -85,7 +109,7 @@ Collection.prototype.fieldsFor = async function(obj) {
   schemaCache.forEach(schema => {
     if (schema.collection === this.id && schema.objMatcher(obj)) {
       _.each(schema.def.fields, (field, name) => {
-        fields[name] = field;
+        mergeSchema(fields, name, field);
       });
     }
   });

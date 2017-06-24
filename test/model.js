@@ -92,7 +92,34 @@ export default async function initModel() {
       def: {
         fields: {
           acmeX: { is: 'integer' },
-          acmeY: { is: 'integer', custom: true }
+          acmeY: { is: 'integer', custom: true },
+          custom: {
+            is: 'object',
+            custom: true,
+            fields: {
+              nested1: { is: 'integer' },
+            }
+          }
+        }
+      }
+    }
+  ]);
+  await TyrSchema.db.insert([
+    {
+      collection: User.id,
+      match: {
+        organization: 1
+      },
+      type: TyrSchemaType.PARTIAL._id,
+      def: {
+        fields: {
+          custom: {
+            is: 'object',
+            custom: true,
+            fields: {
+              nested2: { is: 'integer' },
+            }
+          }
         }
       }
     }

@@ -217,7 +217,7 @@ const isCompliant = Tyr.isCompliant = function(s, v) {
     return v2 => isCompliant(s, v2);
   }
 
-  if (Object.is(s, v)) {
+  if (Tyr.isEqual(s, v)) {
     return true;
 
   } else if (Array.isArray(s)) {
