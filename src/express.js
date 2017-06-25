@@ -731,7 +731,10 @@ export function generateClientLibrary() {
     var col = this,
         cf = col._customFields;
     if (cf) {
-      return Promise.resolve(cf);
+      // we cannot use this cache because we're using the document as a match instead of the user now ...
+      // we could do the objMatcher logic on the client instead of the server, then we could cache all
+      // fields for a custom collection and filter them on the client, saving this extra server call
+      //return Promise.resolve(cf);
     }
 
     return ajax({
