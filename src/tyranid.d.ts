@@ -406,6 +406,7 @@ declare namespace Tyranid {
       db?: mongodb.Db;
       consoleLogLevel?: 'ERROR';
       dbLogLevel?: 'TRACE';
+      logOverride?: (obj: any) => void;
       secure?: Secure;
       cls?: boolean;
       validate?: ValidationPattern[];
