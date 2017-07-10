@@ -109,6 +109,14 @@ function error(msg) {
 }
 
 async function log(level, ...opts) {
+  const config = Tyr.options,
+        externalLogger = config.externalLogger,
+        externalLogLevel = externalLogger && (('externalLogLevel' in config) ? config.externalLogLevel : (config.logLevel || LogLevel.INFO)),
+        consoleLogLevel = ('consoleLogLevel' in config) ? config.consoleLogLevel : (config.logLevel || LogLevel.INFO),
+        dbLogLevel      = ('dbLogLevel' in config) ? config.dbLogLevel : (config.logLevel || LogLevel.INFO);
+
+  if (!dbLogLevel && !consoleLogLevel && !externalLogLevel) return;
+
   const obj = {};
 
   for (const opt of opts) {
@@ -191,10 +199,7 @@ async function log(level, ...opts) {
     }
   }
 
-  const config = Tyr.options,
-        logOverride = config.logOverride,
-        consoleLogLevel = ('consoleLogLevel' in config) ? config.consoleLogLevel : (config.logLevel || LogLevel.INFO),
-        dbLogLevel      = config.dbLogLevel      || config.logLevel || LogLevel.INFO;
+
 
   if (consoleLogLevel && level._id >= consoleLogLevel._id) {
     let str = (level._id >= LogLevel.WARN ? chalk.red(level.code) : level.code);
@@ -223,8 +228,11 @@ async function log(level, ...opts) {
     }
   }
 
-  if (level._id >= dbLogLevel._id) {
-    if (logOverride) return logOverride(obj);
+  if (externalLogger && externalLogLevel && level._id >= externalLogLevel._id) {
+    return externalLogger(obj);
+  }
+
+  if (dbLogLevel && level._id >= dbLogLevel._id) {
     return Log.db.save(obj);
   }
 };
