@@ -193,10 +193,10 @@ async function log(level, ...opts) {
 
   const config = Tyr.options,
         logOverride = config.logOverride,
-        consoleLogLevel = config.consoleLogLevel || config.logLevel || LogLevel.INFO,
+        consoleLogLevel = ('consoleLogLevel' in config) ? config.consoleLogLevel : (config.logLevel || LogLevel.INFO),
         dbLogLevel      = config.dbLogLevel      || config.logLevel || LogLevel.INFO;
 
-  if (level._id >= consoleLogLevel._id) {
+  if (consoleLogLevel && level._id >= consoleLogLevel._id) {
     let str = (level._id >= LogLevel.WARN ? chalk.red(level.code) : level.code);
     str +=' ' + chalk.yellow(moment(obj.on).format('YYYY.M.D HH:mm:ss'));
     if (obj.e) {

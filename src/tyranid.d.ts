@@ -401,11 +401,12 @@ declare namespace Tyranid {
       glob: string;
     }
 
+    export type LogLevel = 'TRACE' | 'LOG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
     export interface ConfigOptions {
       db?: mongodb.Db;
-      consoleLogLevel?: 'ERROR';
-      dbLogLevel?: 'TRACE';
+      consoleLogLevel?: LogLevel;
+      dbLogLevel?: LogLevel;
       logOverride?: (obj: any) => void;
       secure?: Secure;
       cls?: boolean;
