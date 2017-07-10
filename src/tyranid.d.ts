@@ -405,7 +405,7 @@ declare namespace Tyranid {
 
     export interface ConfigOptions {
       db?: mongodb.Db;
-      consoleLogLevel?: LogLevel;
+      consoleLogLevel?: LogLevel | false;
       dbLogLevel?: LogLevel;
       logOverride?: (obj: any) => void | Promise<void>;
       secure?: Secure;
