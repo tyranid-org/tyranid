@@ -24,12 +24,12 @@ declare namespace Tyranid {
     export const Field: FieldStatic;
     export const Type: TypeStatic;
     export const NamePath: NamePathStatic;
-    export const Log: GenericCollection;
+    export const Log: CollectionInstance;
     export const Collection: CollectionStatic;
     export const $all: any;
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
-    export const collections: GenericCollection[];
+    export const collections: CollectionInstance[];
     export const documentPrototype: any;
     export const secure: Secure;
     export const local: Local;
@@ -39,7 +39,7 @@ declare namespace Tyranid {
 
 
     export function U(text: string | TemplateStringsArray | number): any;
-    export function parseUid(uid: string): { collection: GenericCollection, id: IdType };
+    export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
     export function labelize(name: string): string;
     export function config(opts: ConfigOptions): void;
     export function byUid(uid: string, options?: LookupQueryOptions): Promise<Document | null>;
@@ -96,18 +96,12 @@ declare namespace Tyranid {
       new (...args: any[]): T;
     }
 
-
-    export interface GenericCollection extends CollectionInstance<Tyr.Document> {}
-
-
+    type RawDocument<Base> = { [K in (keyof Base)]: Base[K]; }
 
     /**
      *  Generic tyranid document object.
      */
     export interface Document {
-      // arbitrary properties
-      [key: string]: any;
-
       // universal properties
       $id: IdType;
       $model: CollectionInstance<this>;
@@ -360,22 +354,22 @@ declare namespace Tyranid {
 
 
     export interface CollectionsByName {
-      [key: string]: GenericCollection;
+      [key: string]: CollectionInstance;
     }
 
     export interface CollectionsById {
-      [key: string]: GenericCollection;
+      [key: string]: CollectionInstance;
     }
 
 
     export interface Secure {
       boot(state: BootStage): void;
       query(
-        collection: GenericCollection,
+        collection: CollectionInstance,
         method: 'view' | 'update' | 'insert' | 'delete',
         auth?: Tyr.Document
       ): Promise<MongoQuery>;
-      canInsert?: (collection: GenericCollection, doc: Tyr.Document, perm: string, auth: Tyr.Document) => Promise<boolean> | boolean;
+      canInsert?: (collection: CollectionInstance, doc: Tyr.Document, perm: string, auth: Tyr.Document) => Promise<boolean> | boolean;
     }
 
     export interface Local {
@@ -426,7 +420,7 @@ declare namespace Tyranid {
 
     export interface CollectionStatic {
       // Collection instance constructor
-      new(def: CollectionDefinition): GenericCollection;
+      new<T extends Document = Document>(def: CollectionDefinition): CollectionInstance<T>;
     }
 
 
@@ -441,7 +435,7 @@ declare namespace Tyranid {
     /**
      *  Tyranid collection class
      */
-    export interface CollectionInstance<T extends Tyr.Document> extends Component {
+    export interface CollectionInstance<T extends Tyr.Document = Tyr.Document> extends Component {
 
       // Collection instance constructor
       new(doc?: RawMongoDocument): T;
@@ -524,7 +518,7 @@ declare namespace Tyranid {
 
     export interface FieldInstance {
 
-      collection: GenericCollection;
+      collection: CollectionInstance;
       db: boolean;
       def: FieldDefinition;
       name: string;
@@ -537,7 +531,7 @@ declare namespace Tyranid {
       in: any;
       keys?: FieldInstance;
       label: LabelType | (() => string);
-      link?: GenericCollection;
+      link?: CollectionInstance;
       type: TypeInstance;
       fields?: { [key: string]: FieldInstance };
 
