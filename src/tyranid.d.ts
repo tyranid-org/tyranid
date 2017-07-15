@@ -368,7 +368,7 @@ declare namespace Tyranid {
         collection: CollectionInstance,
         method: 'view' | 'update' | 'insert' | 'delete',
         auth?: Tyr.Document
-      ): Promise<MongoQuery>;
+      ): Promise<MongoQuery | boolean>;
       canInsert?: (collection: CollectionInstance, doc: Tyr.Document, perm: string, auth: Tyr.Document) => Promise<boolean> | boolean;
     }
 
