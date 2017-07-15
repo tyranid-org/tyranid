@@ -111,9 +111,9 @@ function error(msg) {
 async function log(level, ...opts) {
   const config = Tyr.options,
         externalLogger = config.externalLogger,
-        externalLogLevel = externalLogger && (('externalLogLevel' in config) ? config.externalLogLevel : (config.logLevel || LogLevel.INFO)),
-        consoleLogLevel = ('consoleLogLevel' in config) ? config.consoleLogLevel : (config.logLevel || LogLevel.INFO),
-        dbLogLevel      = ('dbLogLevel' in config) ? config.dbLogLevel : (config.logLevel || LogLevel.INFO);
+        externalLogLevel = externalLogger && getLogLevel('externalLogLevel', config),
+        consoleLogLevel = getLogLevel('consoleLogLevel', config),
+        dbLogLevel = getLogLevel('dbLogLevel', config);
 
   if (!dbLogLevel && !consoleLogLevel && !externalLogLevel) return;
 
@@ -271,6 +271,16 @@ Log.addEvent = function(name, label, notes) {
 
   LogEvent.addValue(new LogEvent({ _id: name, label: label || name, notes: notes }));
 };
+
+
+function getLogLevel(propName, config) {
+  let level = ((propName in config) ? config[propName] : (config.logLevel || LogLevel.INFO))
+  if (typeof level === 'string') {
+    level = LogLevel.byId(level);
+  }
+
+  return level;
+}
 
 
 //
