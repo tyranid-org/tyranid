@@ -111,9 +111,9 @@ function error(msg) {
 async function log(level, ...opts) {
   const config = Tyr.options,
         externalLogger = config.externalLogger,
-        externalLogLevel = externalLogger && getLogLevel('externalLogLevel'),
-        consoleLogLevel = getLogLevel('consoleLogLevel'),
-        dbLogLevel = getLogLevel('dbLogLevel');
+        externalLogLevel = externalLogger && getLogLevel('externalLogLevel', config),
+        consoleLogLevel = getLogLevel('consoleLogLevel', config),
+        dbLogLevel = getLogLevel('dbLogLevel', config);
 
   if (!dbLogLevel && !consoleLogLevel && !externalLogLevel) return;
 
