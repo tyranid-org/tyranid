@@ -113,16 +113,14 @@ declare namespace Tyranid {
       $clone(): this;
       $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
       $populate(fields: any, denormal?: boolean): Promise<this>;
-      $save(): Promise<this>;
+      $save(opts?: { timestamps?: boolean }): Promise<this>;
       $toClient(opts?: LookupQueryOptions): RawMongoDocument;
       $update(fields?: any): Promise<this>;
       $validate(): ValidationError[];
       $replace(replacements: any): Promise<this>;
       $copy(replacements: any, props?: (keyof this)[]): this;
       $slice(prop: string, opts?: BaseQueryOptions): Promise<this>;
-
-      createdAt?: Date;
-      updatedAt?: Date;
+      $asOf(time: Date, fields?: any): void;
     }
 
 
