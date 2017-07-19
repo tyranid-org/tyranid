@@ -1,7 +1,6 @@
 
 import Tyr from '../tyr';
 
-
 let initialized = false,
     cls,
     ns,
@@ -49,7 +48,7 @@ function init() {
   Tyr.local = local;
 
   initialized = true;
-};
+}
 
 Object.defineProperty(Tyr, 'local', {
   value: function() {

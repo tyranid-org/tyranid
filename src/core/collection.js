@@ -1,7 +1,7 @@
 
-import _            from 'lodash';
-import hooker       from 'hooker';
-import faker        from 'faker';
+import * as _            from 'lodash';
+import * as hooker       from 'hooker';
+import * as faker        from 'faker';
 import { ObjectId } from 'mongodb';
 
 import Tyr          from '../tyr';
@@ -15,7 +15,6 @@ import Field        from './field';
 import SecureError  from '../secure/secureError';
 
 import historical   from '../historical/historical';
-
 
 // variables shared between classes
 import {
@@ -36,9 +35,6 @@ const {
 } = Tyr;
 
 const OPTIONS = Tyr.options;
-
-
-
 
 async function postFind(collection, opts, documents) {
   if (opts) {
@@ -106,7 +102,6 @@ function extractUpdateFields(doc, opts) {
 
   return updateFields;
 }
-
 
 // Document
 // ========
@@ -255,13 +250,10 @@ function defineDocumentProperties(dp) {
   });
 }
 
-
 function denormalPopulate(collection, obj, opts) {
   const denormal = (!opts || !opts.denormalAlreadyDone) && collection.denormal;
   return denormal ? collection.populate(denormal, obj, true) : Promise.resolve();
 }
-
-
 
 /**
  * Recurse into schema and populate fake document
@@ -296,7 +288,7 @@ function fakeField(field) {
   case 'mongoid':
     let i = 24,
         s = '';
-    while(i--) s += faker.random.number(15).toString(16);
+    while (i--) s += faker.random.number(15).toString(16);
     return ObjectId(s);
 
   case 'boolean':
@@ -320,7 +312,6 @@ function fakeField(field) {
   }
 }
 
-
 function fakeDocument(schema) {
   const doc = {};
   _.each(schema, (field, name) => {
@@ -328,7 +319,6 @@ function fakeDocument(schema) {
   });
   return doc;
 }
-
 
 export default class Collection {
 
@@ -361,6 +351,7 @@ export default class Collection {
     let CollectionInstance;
     const lodash = _; // eval only takes in local variables into its scope
 
+    /* tslint:disable no-eval */
     eval(`CollectionInstance = function ${lodash.capitalize(def.name)}(data) {
       this.__proto__ = dp;
 
@@ -378,6 +369,7 @@ export default class Collection {
 
       CollectionInstance._wrap(this, data);
     }`);
+    /* tslint:enable no-eval */
 
     dp.constructor = dp.$model = CollectionInstance;
     dp.__proto__ = CollectionInstance.prototype;
@@ -400,11 +392,11 @@ export default class Collection {
       def.primaryKey = {
         field: '_id'
       };
-    } else if(_.isString(def.primaryKey)) {
+    } else if (_.isString(def.primaryKey)) {
       def.primaryKey = {
         field: def.primaryKey
       };
-    } else if(!_.isObject(def.primaryKey)) {
+    } else if (!_.isObject(def.primaryKey)) {
       throw new Error('Invalid "primaryKey" parameter');
     }
 
@@ -414,14 +406,13 @@ export default class Collection {
       CollectionInstance.db = db.collection(CollectionInstance.def.dbName);
     }
 
-
     collections.push(CollectionInstance);
     Tyr.components.push(CollectionInstance);
     Tyr.byId[def.id] = CollectionInstance;
     Tyr.byName[def.name] = CollectionInstance;
 
     for (const key in dp) {
-      if (key.substring(0,1) === '$' && key !== '$label') {
+      if (key.substring(0, 1) === '$' && key !== '$label') {
         Object.defineProperty(dp, key, {
           enumerable:   false,
           writable:     false,
@@ -665,15 +656,15 @@ export default class Collection {
       const cursor = db.find(query, fields, opts);
 
       let v;
-      if ( (v=opts.limit) ) {
+      if ( (v = opts.limit) ) {
         cursor.limit(v);
       }
 
-      if ( (v=opts.skip) ) {
+      if ( (v = opts.skip) ) {
         cursor.skip(v);
       }
 
-      if ( (v=opts.sort) ) {
+      if ( (v = opts.sort) ) {
         cursor.sort(v);
       }
 
@@ -753,7 +744,7 @@ export default class Collection {
     case 1:
       // Support direct ObjectId arg, which will always query against _id
       if (args[0] instanceof ObjectId) {
-        opts.query = { _id: args[0] }
+        opts.query = { _id: args[0] };
       } else {
         opts.query = args[0];
       }
@@ -827,7 +818,7 @@ export default class Collection {
         if (replaceEntireDoc) {
           opts.update = update = $setOnInsert;
         } else {
-          update.$setOnInsert = _.omit($setOnInsert, (v,k) => {
+          update.$setOnInsert = _.omit($setOnInsert, (v, k) => {
             return update.$set && update.$set[k] || v === undefined;
           });
         }
@@ -847,7 +838,6 @@ export default class Collection {
 
     return result;
   }
-
 
   async save(obj, opts) {
     const collection = this;
@@ -954,14 +944,12 @@ export default class Collection {
       new: true
     });
 
-
     const updateFields = extractUpdateFields(obj, opts),
           update = {};
 
     _.each(updateFields, (field, key) => {
       update[key] = obj[key];
     });
-
 
     opts.update = { $set: update };
 
@@ -1053,7 +1041,6 @@ export default class Collection {
           opts       = extractOptions(collection, args),
 
           np         = collection.parsePath(path);
-
 
     const qOpts = Tyr.cloneDeep(opts);
     qOpts.fields = { [ np.path[0] ]: 1 };
@@ -1162,7 +1149,7 @@ export default class Collection {
           // behind the scenes)
           return hooker.filter(this, cbArgs);
         };
-        return this::cb(next, ...args);
+        return cb.call(this, next, ...args);
       }
     });
     return this;
@@ -1183,7 +1170,7 @@ export default class Collection {
         const next = (result) => {
           return hooker.override(result);
         };
-        return this::cb(next, result);
+        return cb.call(this, next, result);
       }
     });
     return this;
@@ -1432,7 +1419,7 @@ export default class Collection {
         field.path = path;
         collection.paths[path] = field;
         const lastDot = path.lastIndexOf('.');
-        const fieldName = lastDot > -1 ? path.substring(lastDot+1) : path;
+        const fieldName = lastDot > -1 ? path.substring(lastDot + 1) : path;
         field.name = fieldName;
 
         let type;
@@ -1564,7 +1551,7 @@ export default class Collection {
       throw new Error('Expected values for collection ' + def.name + ' to be an array');
     }
 
-    const rlen = rows.length
+    const rlen = rows.length;
     let ri;
 
     if (!rlen) {
@@ -1574,7 +1561,7 @@ export default class Collection {
     if (Array.isArray(rows[0])) {
       // array format
 
-      for (ri=0; ri<rlen; ri++) {
+      for (ri = 0; ri < rlen; ri++) {
         if (!Array.isArray(rows[ri])) {
           throw new Error('Expected value on row ' + ri + ' to be an array for collection ' + def.name);
         }
@@ -1602,7 +1589,7 @@ export default class Collection {
       }
 
       const headerFields = new Array(hlen);
-      for (hi=0; hi<hlen; hi++) {
+      for (hi = 0; hi < hlen; hi++) {
         name = header[hi];
 
         if (!_.isString(name)) {
@@ -1617,16 +1604,16 @@ export default class Collection {
         headerFields[hi] = field;
       }
 
-      for (ri=1; ri<rlen; ri++) {
+      for (ri = 1; ri < rlen; ri++) {
         const orow = rows[ri],
               nrow = {};
         let v;
 
-        if (orow.length !== hlen && orow.length !== hlen+1) {
+        if (orow.length !== hlen && orow.length !== hlen + 1) {
           throw new Error('Incorrect number of values on row ' + ri + ' in collection ' + def.name);
         }
 
-        for (hi=0; hi<hlen; hi++) {
+        for (hi = 0; hi < hlen; hi++) {
           v = orow[hi];
           nrow[header[hi]] = parseValue(headerFields[hi], v);
         }
@@ -1662,7 +1649,7 @@ export default class Collection {
     } else {
       // object format
 
-      for (ri=0; ri<rlen; ri++) {
+      for (ri = 0; ri < rlen; ri++) {
         if (!_.isObject(rows[ri])) {
           throw new Error('Expected value on row ' + ri + ' to be an object for collection ' + def.name);
         }

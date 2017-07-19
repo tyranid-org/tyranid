@@ -1,12 +1,10 @@
 
-import _            from 'lodash';
+import * as _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import projection   from './core/projection';
 import Tyr          from './tyr';
 import NamePath     from './core/namePath';
-
-
 
 export const metaRegex         = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
@@ -21,7 +19,6 @@ export function escapeRegex(str) {
 export function pathAdd(path, add) {
   return path ? path + '.' + add : add;
 }
-
 
 // Options parsing
 // ===============
@@ -115,8 +112,6 @@ export function extractProjection(opts) {
   return opts.fields || opts.project || opts.projectiot ;
 }
 
-
-
 export async function parseInsertObj(col, obj) {
   const def       = col.def,
         fields    = await col.fieldsFor(obj),
@@ -205,9 +200,9 @@ export function evaluateClient(client, key, doc, value, opts, proj) {
     }
     // fall through
 
-  case true: 
+  case true:
   case 1:
-  case 'default': 
+  case 'default':
   case undefined:
     return true;
 
@@ -247,7 +242,7 @@ export function toClient(col, doc, opts) {
       return;
     }
 
-    if (fields && (field=fields[k])) {
+    if (fields && (field = fields[k])) {
       v = field.type.toClient(field, v, doc, opts, proj);
 
       if (v !== undefined) {
@@ -291,7 +286,7 @@ export function toClient(col, doc, opts) {
     if (name in doc) {
       // Property will have been set on CollectionInstances
       value = doc[name];
-    } else if( _.isFunction(getFn)) {
+    } else if ( _.isFunction(getFn)) {
       // Have to set manually for POJO
       value = getFn.call(doc);
     } else {

@@ -1,10 +1,10 @@
 
-import os         from 'os';
+import * as os         from 'os';
 
-import _          from 'lodash';
-import util       from 'util';
-import moment     from 'moment';
-import chalk      from 'chalk';
+import * as _          from 'lodash';
+import * as util       from 'util';
+import * as moment     from 'moment';
+import * as chalk      from 'chalk';
 
 //import onHeaders  from 'on-headers';
 import onFinished from 'on-finished';
@@ -12,7 +12,6 @@ import onFinished from 'on-finished';
 import Tyr from '../tyr';
 import Collection from '../core/collection';
 import UserAgent from './userAgent';
-
 
 /*
     TODO:
@@ -98,7 +97,6 @@ const Log = new Collection({
   },
 });
 
-
 //
 // Server-side Logging Methods
 //
@@ -144,7 +142,6 @@ async function log(level, ...opts) {
   if (event && !LogEvent.byId(event)) {
     error(`Invalid event type "${event}"`);
   }
-
 
   obj.on = new Date();
   obj.hn = os.hostname();
@@ -199,11 +196,9 @@ async function log(level, ...opts) {
     }
   }
 
-
-
   if (consoleLogLevel && level._id >= consoleLogLevel._id) {
     let str = (level._id >= LogLevel.WARN ? chalk.red(level.code) : level.code);
-    str +=' ' + chalk.yellow(moment(obj.on).format('YYYY.M.D HH:mm:ss'));
+    str += ' ' + chalk.yellow(moment(obj.on).format('YYYY.M.D HH:mm:ss'));
     if (obj.e) {
       str += '|' + obj.e;
     }
@@ -235,7 +230,7 @@ async function log(level, ...opts) {
   if (dbLogLevel && level._id >= dbLogLevel._id) {
     return Log.db.save(obj);
   }
-};
+}
 
 Log.trace = function() {
   return log(LogLevel.TRACE, ...arguments);
@@ -272,16 +267,14 @@ Log.addEvent = function(name, label, notes) {
   LogEvent.addValue(new LogEvent({ _id: name, label: label || name, notes: notes }));
 };
 
-
 function getLogLevel(propName, config) {
-  let level = ((propName in config) ? config[propName] : (config.logLevel || LogLevel.INFO))
+  let level = ((propName in config) ? config[propName] : (config.logLevel || LogLevel.INFO));
   if (typeof level === 'string') {
     level = LogLevel.byId(level);
   }
 
   return level;
 }
-
 
 //
 // Express Request Logging (adapted from morgan)
@@ -308,8 +301,7 @@ Log.request = function(req, res) {
       res:  res
     });
   });
-}
-
+};
 
 //
 // Express Routing
@@ -331,7 +323,6 @@ Log.routes = function(app, auth) {
       }
     });
 };
-
 
 //
 // Client
@@ -414,9 +405,7 @@ Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
 `;
 
   return file;
-}
-
-
+};
 
 //
 // Tyranid Namespacing
@@ -424,12 +413,12 @@ Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
 
 _.assign(Tyr, {
   Log,
-  trace:  ::Log.trace,
-  log:    ::Log.log,
-  info:   ::Log.info,
-  warn:   ::Log.warn,
-  error:  ::Log.error,
-  fatal:  ::Log.fatal,
+  trace:  Log.trace.bind(Log),
+  log:    Log.log.bind(Log),
+  info:   Log.info.bind(Log),
+  warn:   Log.warn.bind(Log),
+  error:  Log.error.bind(Log),
+  fatal:  Log.fatal.bind(Log),
 });
 
 export default Log;

@@ -1,9 +1,6 @@
-
-const moment = require('moment'); // moment
-
+import * as moment from 'moment';
 import Type from '../core/type';
 import ValidationError from '../core/validationError';
-
 
 const DateType = new Type({
   name: 'date',

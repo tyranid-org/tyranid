@@ -1,7 +1,6 @@
 
-import _   from 'lodash';
+import * as _   from 'lodash';
 import Tyr from '../tyr';
-
 
 const isArray = Array.isArray,
 
@@ -18,7 +17,6 @@ function badPatch() {
 // ***
 // *** NOTE:  The patch format and all the methods are documented at http://tyranid.org/diff
 // ***
-
 
 //
 // Objects
@@ -146,7 +144,6 @@ function patchObj(a, patch, props) {
   }
 }
 
-
 //
 // Arrays
 //
@@ -163,7 +160,7 @@ function diffArr(a, b) {
 
   a = _.clone(a);
 
-  for (let bi=0; bi<blen; bi++) {
+  for (let bi = 0; bi < blen; bi++) {
     const bv = b[bi];
 
     // if the same object is in same place, skip to next one
@@ -184,12 +181,10 @@ function diffArr(a, b) {
     diff[bi] = [ bv ];
   }
 
-
   if (blen < alen) {
     // truncate the array
     diff.n = blen;
   }
-
 
   // compress runs
   let offset, runLen = 0, bi = 0;
@@ -217,13 +212,13 @@ function diffArr(a, b) {
     if (runLen > 1 && offset) {
       let ri = bi - runLen;
       diff[ri] = [ offset, runLen ];
-      for (ri++; ri<bi; ri++) {
+      for (ri++; ri < bi; ri++) {
         delete diff[ri];
       }
     }
   }
 
-  for (; bi<blen; bi++) {
+  for (; bi < blen; bi++) {
     const bv = diff[bi];
     const cOffset = Number.isInteger(bv) ? bv - bi : undefined;
 
@@ -247,7 +242,7 @@ function patchArr(a, patch) {
   let n;
 
   for (const pn in patch) {
-    const pi = parseInt(pn),
+    const pi = parseInt(pn, 10),
           pv = patch[pn];
 
     if (isNaN(pi)) {
@@ -277,7 +272,7 @@ function patchArr(a, patch) {
         throw badPatch();
       }
 
-      const fi = parseInt(pv);
+      const fi = parseInt(pv, 10);
 
       if (isNaN(fi)) {
         throw badPatch();
@@ -292,7 +287,6 @@ function patchArr(a, patch) {
     a.length = n;
   }
 }
-
 
 const ns = {
   diffObj,

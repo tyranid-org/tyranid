@@ -1,7 +1,7 @@
 
-import path      from 'path';
-import mongodb   from 'mongodb';
-import express   from 'express';
+import * as path      from 'path';
+import * as mongodb   from 'mongodb';
+import * as express   from 'express';
 import Tyr       from '../src/tyranid';
 
 import initModel from './model';

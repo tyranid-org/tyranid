@@ -1,12 +1,12 @@
 
 import Tyr            from '../src/tyranid';
-import chai           from 'chai';
-import fetch          from 'node-fetch';
-import chaiAsPromised from 'chai-as-promised';
-import mongodb        from 'mongodb';
-import express        from 'express';
-import bodyParser     from 'body-parser';
-import _              from 'lodash';
+import * as chai           from 'chai';
+import * as fetch          from 'node-fetch';
+import * as chaiAsPromised from 'chai-as-promised';
+import * as mongodb        from 'mongodb';
+import * as express        from 'express';
+import * as bodyParser     from 'body-parser';
+import * as _              from 'lodash';
 
 import Field          from '../src/core/field';
 import Type           from '../src/core/type';
@@ -43,7 +43,6 @@ const {
   assert
 } = chai;
 
-
 const fakeSecure = {
   boot() {},
   query(collection, perm, auth) {
@@ -69,7 +68,6 @@ const fakeSecure = {
   }
 };
 
-
 chai.use(chaiAsPromised);
 chai.should();
 
@@ -89,7 +87,6 @@ async function expectAsyncToThrow(promise, regex) {
     assert(false, 'expected to throw ' + regex);
   }
 }
-
 
 function round5(v) {
   return parseFloat(v.toFixed(5));
@@ -427,8 +424,8 @@ describe('tyranid', function() {
         const cursor = await Role.search('Admin');
         return cursor.toArray().then(function(docs) {
           expect(docs[0].name).to.equal('Administrator');
-        })
-      })
+        });
+      });
     });
 
     describe('mixin schemas', () => {
@@ -539,7 +536,7 @@ describe('tyranid', function() {
       });
 
       it('should return a cursor', async function() {
-        const docs = await (await User.find()).skip(2).limit(2).sort({'name.first':-1}).toArray();
+        const docs = await (await User.find()).skip(2).limit(2).sort({'name.first': -1}).toArray();
         expect(docs.length).to.be.eql(2);
         expect(docs[0].name.first).to.be.eql('Jane');
         expect(docs[1].name.first).to.be.eql('An');
@@ -674,7 +671,7 @@ describe('tyranid', function() {
       });
 
       it('should return custom primaryKey if not specified in projection', function() {
-        return Book.findAll({isbn:BookIsbn},{_id:1}).then(function(docs) {
+        return Book.findAll({isbn: BookIsbn}, {_id: 1}).then(function(docs) {
           expect(docs.length).to.be.eql(1);
           expect(docs[0].title).to.not.exist;
           expect(docs[0].isbn).to.be.eql(BookIsbn);
@@ -682,16 +679,16 @@ describe('tyranid', function() {
       });
 
       it('should not include custom primaryKey if specifically excluded', function() {
-        return Book.findOne({isbn:BookIsbn},{isbn:0}).then(function(doc) {
+        return Book.findOne({isbn: BookIsbn}, {isbn: 0}).then(function(doc) {
           expect(doc.isbn).to.not.exist;
         });
       });
 
       it('should work with findAndModify `fields` param', function() {
         return Book.findAndModify({
-          query: { isbn:BookIsbn },
+          query: { isbn: BookIsbn },
           update: { $set: { fakeProp: 'fake' } },
-          fields: { title:1 }
+          fields: { title: 1 }
         }).then(function(doc) {
           expect(doc.value.isbn).to.be.eql(BookIsbn);
         });
@@ -908,7 +905,7 @@ describe('tyranid', function() {
       });
 
       it('should work with custom primaryKey', function() {
-        return Task.findOne({_id:1})
+        return Task.findOne({_id: 1})
           .then(Task.populate('manual'))
           .then(function(task) {
             expect(task.manual$).to.be.an.instanceof(Book);
@@ -1218,9 +1215,9 @@ describe('tyranid', function() {
         User.findAll({ age: { $exists: true } })
           .then(function(users) {
             var clientData = User.toClient(users);
-            expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...')
+            expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...');
             expect(clientData[1]).ageAppropriateSecret.to.be.eql(undefined);
-          })
+          });
       });
 
       it('should copy dynamic objects', function() {
@@ -1981,7 +1978,7 @@ describe('tyranid', function() {
               EP = 1.0,
               mP = EP, // EP == mP
               m  = U`mP`.convert(mP, U`kg`),
-              E  = m*c*c;
+              E  = m * c * c;
 
         expect(prec5(m)).to.eql(2.1765e-8);
         expect(prec5(E)).to.eql(1.9561E9);
@@ -2055,7 +2052,7 @@ describe('tyranid', function() {
         return Tyr.info(3, 'test')
           .then(() => assert(false, 'no exception thrown'))
           .catch(err => {
-            expect(err.message).to.match(/Invalid option "3"/)
+            expect(err.message).to.match(/Invalid option "3"/);
           });
       });
 
@@ -2063,7 +2060,7 @@ describe('tyranid', function() {
         return Tyr.warn({ m: 'test', e: 'bad_event' })
           .then(() => assert(false, 'no exception thrown'))
           .catch(err => {
-            expect(err.message).to.match(/Invalid event.*"bad_event"/)
+            expect(err.message).to.match(/Invalid event.*"bad_event"/);
           });
       });
 
@@ -2351,34 +2348,34 @@ describe('tyranid', function() {
 
       const simpleArrTests = [
         [ [],               [],           {}                             ],
-        [ [1,2,3],          [1,2,4],      { 2: [4] }                     ],
-        [ [1,2,3],          [1,2,3,4],    { 3: [4] }                     ],
-        [ [1,2,3],          [1],          { n: 1 }                       ],
-        [ [1,2,3],          [],           { n: 0 }                       ],
-        [ [1,2,3],          [3,2,1],      { 0: 2, 2: 0 }                 ],
-        [ [1,2,3],          [3,2,1,4],    { 0: 2, 2: 0, 3: [4] }         ],
-        [ [1,2,3,4,5],      [2,3,4,5],    { 0: [1, 4], n: 4 }            ],
-        [ [2,3,4,5],        [1,2,3,4,5],  { 0: [1], 1: [-1, 4] }         ],
-        [ [1,2,3,4,5,6],    [1,3,4,5],    { 1: [1, 3], n: 4 }            ],
-        [ [1,2,3,4,5,6],    [2,3,5,6],    { 0: [1, 2], 2: [2, 2], n: 4 } ]
+        [ [1, 2, 3],          [1, 2, 4],      { 2: [4] }                     ],
+        [ [1, 2, 3],          [1, 2, 3, 4],    { 3: [4] }                     ],
+        [ [1, 2, 3],          [1],          { n: 1 }                       ],
+        [ [1, 2, 3],          [],           { n: 0 }                       ],
+        [ [1, 2, 3],          [3, 2, 1],      { 0: 2, 2: 0 }                 ],
+        [ [1, 2, 3],          [3, 2, 1, 4],    { 0: 2, 2: 0, 3: [4] }         ],
+        [ [1, 2, 3, 4, 5],      [2, 3, 4, 5],    { 0: [1, 4], n: 4 }            ],
+        [ [2, 3, 4, 5],        [1, 2, 3, 4, 5],  { 0: [1], 1: [-1, 4] }         ],
+        [ [1, 2, 3, 4, 5, 6],    [1, 3, 4, 5],    { 1: [1, 3], n: 4 }            ],
+        [ [1, 2, 3, 4, 5, 6],    [2, 3, 5, 6],    { 0: [1, 2], 2: [2, 2], n: 4 } ]
       ];
 
       const complexObjTests = [
-        [ { a: [1,2] },           { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }] }       ],
-        [ { a: [1,2], b: 3 },     { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }], b: 0 } ],
-        [ { a: [1,2] },           { a: [] },              { a: [0, { n: 0 }] }             ],
-        [ { a: [1,2] },           { a: [1,2] },           {}                               ],
+        [ { a: [1, 2] },           { a: [2, 1] },           { a: [0, { 0: 1, 1: 0 }] }       ],
+        [ { a: [1, 2], b: 3 },     { a: [2, 1] },           { a: [0, { 0: 1, 1: 0 }], b: 0 } ],
+        [ { a: [1, 2] },           { a: [] },              { a: [0, { n: 0 }] }             ],
+        [ { a: [1, 2] },           { a: [1, 2] },           {}                               ],
         [ { a: { b: 1, c: 1 } },  { a: { a: 1, b: 1 } },  { a: [1, { a: [1], c: 0 }] }     ],
-        [ { a: { b: { c: 1 } } }, { a: { d: { c: 1 } } }, { a: [1,{b:0,d:[{c:1}]}] }       ],
-        [ { a: { b: { c: 1 } } }, { a: { b: { d: 1 } } }, { a: [1,{b:[1,{c:0,d:[1]}]}] }   ]
+        [ { a: { b: { c: 1 } } }, { a: { d: { c: 1 } } }, { a: [1, {b: 0, d: [{c: 1}]}] }       ],
+        [ { a: { b: { c: 1 } } }, { a: { b: { d: 1 } } }, { a: [1, {b: [1, {c: 0, d: [1]}]}] }   ]
       ];
 
       const propsObjTests = [
-        [ { a: [1,2] },           { a: [2,1] },           {},                               {} ],
-        [ { a: [1,2] },           { a: [2,1] },           {},                               { c: 1 } ],
-        [ { a: [1,2] },           { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
-        [ { a: [1,2], b: 3 },     { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
-        [ { a: [1,2], b: 3 },     { a: [2,1] },           { a: [0, { 0: 1, 1: 0 }], b: 0 }, { a: 1, b: 1 } ],
+        [ { a: [1, 2] },           { a: [2, 1] },           {},                               {} ],
+        [ { a: [1, 2] },           { a: [2, 1] },           {},                               { c: 1 } ],
+        [ { a: [1, 2] },           { a: [2, 1] },           { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
+        [ { a: [1, 2], b: 3 },     { a: [2, 1] },           { a: [0, { 0: 1, 1: 0 }] },       { a: 1 } ],
+        [ { a: [1, 2], b: 3 },     { a: [2, 1] },           { a: [0, { 0: 1, 1: 0 }], b: 0 }, { a: 1, b: 1 } ],
         [ { a: { b: 1, c: 1 } },  { a: { a: 1, b: 1 } },  { a: [ 1, { a: [ 1 ], c: 0 } ] }, { a: 1 } ],
       ];
 
@@ -2690,7 +2687,7 @@ describe('tyranid', function() {
         await amy.$save();
         amy = await User.byId(2001);
 
-        expect(amy._history[0].p).to.eql({'address':[1,{'street':['123 Mayberry']}]});
+        expect(amy._history[0].p).to.eql({'address': [1, {'street': ['123 Mayberry']}]});
 
         await User.remove({ _id: 2001 });
       });
@@ -2954,7 +2951,6 @@ describe('tyranid', function() {
             done(err, window) {
               if (err) return rej(err);
               const window$Tyr = window.Tyr;
-
               window$Tyr.init();
 
               if (window$Tyr !== window$Tyr.Tyr) {

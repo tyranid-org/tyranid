@@ -1,6 +1,5 @@
 import Tyr from '../../src/tyranid';
-import _ from 'lodash';
-
+import * as _ from 'lodash';
 
 export default class Role extends new Tyr.Collection({
   id: 'r00',

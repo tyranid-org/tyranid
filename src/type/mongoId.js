@@ -3,7 +3,6 @@ import { ObjectId } from 'mongodb';
 
 import Type from '../core/type';
 
-
 export const MongoIdType = new Type({
   name: 'mongoid',
   generatePrimaryKeyVal() {

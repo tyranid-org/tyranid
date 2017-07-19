@@ -4,7 +4,6 @@ import Collection from '../core/collection';
 
 import * as U from './unitUtil';
 
-
 const UnitType = new Collection({
   id: '_u1',
   name: 'unitType',
@@ -91,7 +90,6 @@ const UnitType = new Collection({
 
 const bySid = {};
 
-
 //
 // UnitTypeDegree
 //
@@ -123,7 +121,6 @@ function sortByDegreeThenAbbrev(ud1, ud2) {
   return ud1.type.abbreviation.localeCompare(ud2.type.abbreviation);
 }
 
-
 //
 // UnitType Parsing
 //
@@ -142,7 +139,6 @@ function parse(text) {
       pos = 0,
       nextComp = 0;
 
-
   //console.log(`parsing unit ${text}:`);
   while (pos < len) {
     let ch = text.charCodeAt(pos);
@@ -155,7 +151,7 @@ function parse(text) {
     }
 
     let s = pos;
-    for (; pos<len; pos++) {
+    for (; pos < len; pos++) {
       ch = text.charCodeAt(pos);
 
       if (!U.isLetter(ch)) {
@@ -169,16 +165,16 @@ function parse(text) {
       throw new Error(`Unknown unit type "${name}" in "${text}"`);
     }
 
-    if (pos<len && text.charCodeAt(pos) === U.caret) {
+    if (pos < len && text.charCodeAt(pos) === U.caret) {
       pos++;
     }
 
     s = pos;
-    if (pos<len && text.charCodeAt(pos) === U.minus) {
+    if (pos < len && text.charCodeAt(pos) === U.minus) {
       pos++;
     }
 
-    while (pos<len && U.isDigit(text.charCodeAt(pos))) {
+    while (pos < len && U.isDigit(text.charCodeAt(pos))) {
       pos++;
     }
 
@@ -197,7 +193,7 @@ function parse(text) {
     degree *= multiplier;
 
     let ci = 0;
-    for (; ci<nextComp; ci++) {
+    for (; ci < nextComp; ci++) {
       const comp = components[ci];
 
       if (comp.unitType === unitType) {
@@ -231,13 +227,13 @@ function parseComponents(components) {
     sid: sid,
     components: components
   };
-};
+}
 
 function addComponent(components, component) {
   const type = component.type,
         degree = component.degree;
 
-  for (let i=0; i<components.length; i++) {
+  for (let i = 0; i < components.length; i++) {
     const ci = components[i];
     if (ci.type === type) {
       ci.degree += degree;
@@ -249,7 +245,7 @@ function addComponent(components, component) {
 }
 
 function baseify(components) {
-  for (let i=0; i<components.length; ) {
+  for (let i = 0; i < components.length; ) {
     const ci = components[i],
           cti = ci.type;
 
@@ -273,7 +269,7 @@ UnitType.byComponents = function(components) {
   let ut = bySid[parsed.sid];
 
   if (!ut) {
-    ut = new UnitType()
+    ut = new UnitType();
     ut.sid = parsed.sid;
     ut.components = parsed.components;
     bySid[parsed.sid] = ut;
@@ -296,7 +292,7 @@ UnitType.parse = function(text) {
   ut = bySid[parsed.sid];
 
   if (!ut) {
-    ut = new UnitType()
+    ut = new UnitType();
     ut.sid = parsed.sid;
     ut.components = parsed.components;
     bySid[parsed.sid] = ut;
@@ -304,7 +300,7 @@ UnitType.parse = function(text) {
 
   bySid[text] = ut;
   return ut;
-}
+};
 
 UnitType.boot = function(stage, pass) {
   if (stage === 'compile' && pass === 1) {
@@ -333,7 +329,7 @@ UnitType.boot = function(stage, pass) {
       }
     }
   }
-}
+};
 
 Tyr.UnitType = UnitType;
 export default UnitType;

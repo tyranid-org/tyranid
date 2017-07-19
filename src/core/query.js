@@ -1,9 +1,8 @@
 
-import _            from 'lodash';
+import * as _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import Tyr          from '../tyr';
-
 
 //
 // Detection and Validation
@@ -36,14 +35,13 @@ function validateInArray(arr) {
   return true;
 }
 
-
 //
 // ObjectId-safe Operations
 //
 
 // _.include() doesn't work with ObjectIds
 function includes(arr, v) {
-  for (let i=0, len=arr.length; i<len; i++) {
+  for (let i = 0, len = arr.length; i < len; i++) {
     const av = arr[i];
 
     if (_.isEqual(av, v)) {
@@ -79,7 +77,6 @@ function union(arr1, arr2) {
   return arr;
 }
 
-
 //
 // Merging
 //
@@ -89,7 +86,6 @@ function mergeOpObject(v1, v2) {
 
   const o1 = isOpObject(v1) ? v1 : { $eq: v1 },
         o2 = isOpObject(v2) ? v2 : { $eq: v2 };
-
 
   //
   // Merge into single object
@@ -116,7 +112,6 @@ function mergeOpObject(v1, v2) {
   for (const op in o1) {
     const v1 = o1[op],
           v2 = o2[op];
-
 
     if (v1 === undefined) {
       o[op] = v2;
@@ -320,7 +315,7 @@ function merge(query1, query2) {
   }
 
   return query;
-};
+}
 
 const query = {
   merge

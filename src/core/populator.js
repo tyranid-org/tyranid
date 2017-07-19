@@ -1,10 +1,9 @@
-import _          from 'lodash';
+import * as _          from 'lodash';
 
 import Tyr        from '../tyr';
 import historical from '../historical/historical';
 
 const $all = Tyr.$all;
-
 
 class Cache {
 
@@ -45,7 +44,7 @@ class Cache {
       }
     }
   }
-};
+}
 
 export default class Populator {
 

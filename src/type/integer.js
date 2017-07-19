@@ -3,7 +3,6 @@ import Tyr from '../tyr';
 import Type from '../core/type';
 import ValidationError from '../core/validationError';
 
-
 const IntegerType = new Type({
   name: 'integer',
 

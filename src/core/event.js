@@ -1,8 +1,6 @@
 
-
 import Tyr from '../tyr';
 import Collection from './collection';
-
 
 Collection.prototype.on = function(opts) {
 
@@ -26,7 +24,7 @@ Collection.prototype.on = function(opts) {
     if (idx >= 0) {
       handlers.splice(idx, 1);
     }
-  }
+  };
 };
 
 const Event = Tyr.Event = function Event(type) {
@@ -35,8 +33,7 @@ const Event = Tyr.Event = function Event(type) {
 
 Event.prototype.preventDefault = function() {
   this.canceled = true;
-}
-
+};
 
 /** @private */
 Event.fire = async function(obj, type, eventGen) {
@@ -67,6 +64,6 @@ Event.fire = async function(obj, type, eventGen) {
       }
     }
   }
-}
+};
 
 export default Event;

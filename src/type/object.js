@@ -1,9 +1,6 @@
-
-const _ = require('lodash'); // client-side
-
+import * as _ from 'lodash';
 import Type from '../core/type';
 import ValidationError from '../core/validationError';
-
 
 const ObjectType = new Type({
   name: 'object',

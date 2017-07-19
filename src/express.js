@@ -1,11 +1,8 @@
 
-import _            from 'lodash';
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
-
-const babel = require('babel-core');
-//import babel        from 'babel-core';
-
+import * as ts from 'typescript';
 
 import Tyr          from './tyr';
 import Collection   from './core/collection';
@@ -13,7 +10,6 @@ import Field        from './core/field';
 import NamePath     from './core/namePath';
 import Type         from './core/type';
 import local        from './local/local';
-
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -219,7 +215,6 @@ function translateClass(cls) {
   s += `Tyr.${cname} = ${cname};\n`;
   return s;
 }
-
 
 // TODO:  exposing this as a dynamic API call right now, but this could also be exposed as a
 //        gulp/build task which creates this file at build time.  This would allow this API
@@ -764,7 +759,6 @@ export function generateClientLibrary() {
   var def;
 `;
 
-
   Tyr.collections.forEach(col => {
     const def = col.def;
 
@@ -775,7 +769,7 @@ export function generateClientLibrary() {
   def = {
     id: ${JSON.stringify(def.id)},
     primaryKey: ${JSON.stringify(def.primaryKey)},
-    name: '${name}',`
+    name: '${name}',`;
 
       const ser = new Serializer('.', 2);
       ser.fields(col.fields);
@@ -822,18 +816,7 @@ export function generateClientLibrary() {
 `;
 
   try {
-    file = babel.transform(file, {
-      sourceMaps: false,
-      compact: Tyr.options.minify !== undefined ? Tyr.options.minify : true,
-      presets: [
-        'stage-0',
-        'es2015'
-      ],
-      plugins: [
-        'transform-class-properties'
-      ]
-    }).code;
-
+    file = compile(file);
 
     /**
      * wrap in additional iife to allow for minification
@@ -842,8 +825,8 @@ export function generateClientLibrary() {
     file = `;(function(){${file}})();`;
 
     // unbastardize imports for the client
-    file = file.replace(/_tyr2.default/g, 'Tyr');
-    file = file.replace(/_lodash2.default/g, '_');
+    file = file.replace(/tyr_1.default/g, 'Tyr');
+    file = file.replace(/lodash_1.default/g, '_');
 
     return Tyr.options.minify
       ? uglify.minify(file, { fromString: true }).code
@@ -854,7 +837,22 @@ export function generateClientLibrary() {
   }
 }
 
+function compile(code) {
+  const result = ts.transpileModule(code, {
+    compilerOptions: {
+      module: ts.ModuleKind.None,
+      target: ts.ScriptTarget.ES5
+    }
+  });
 
+  result.diagnostics.forEach(diagnostic => {
+    const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+    console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+  });
+
+  return result.outputText;
+}
 
 export default function express(app, auth, opts) {
 
@@ -879,11 +877,11 @@ export default function express(app, auth, opts) {
       comp.routes(app, auth);
     }
   });
-};
+}
 
 Tyr.express = express;
 
-express.middleware = ::local.express;
+express.middleware = local.express.bind(local);
 
 /**
  * @private ... clients should use Tyr.express()
@@ -894,7 +892,6 @@ Collection.prototype.express = function(app, auth) {
 
   if (express) {
     const name = col.def.name;
-
 
     if (express.rest || (express.get || express.put || express.array || express.fields)) {
 
@@ -962,7 +959,6 @@ Collection.prototype.express = function(app, auth) {
         });
       }
 
-
       /*
        *     /api/NAME/custom
        */
@@ -991,7 +987,6 @@ Collection.prototype.express = function(app, auth) {
         });
       }
 
-
       /*
        *     /api/NAME/:id
        */
@@ -1011,7 +1006,7 @@ Collection.prototype.express = function(app, auth) {
           try {
             await col.db.remove({ query: { _id: ObjectId(req.params.id) }, auth: req.user });
             res.sendStatus(200);
-          } catch(err) {
+          } catch (err) {
             console.log(err.stack);
             res.sendStatus(500);
           }
@@ -1019,7 +1014,6 @@ Collection.prototype.express = function(app, auth) {
       }
 
       //.put(users.update);
-
 
       /*
        *     /api/NAME/:id/FIELD_PATH/slice
@@ -1053,7 +1047,7 @@ Collection.prototype.express = function(app, auth) {
                 doc.$slice(field.path, req.body);
 
                 res.json(field.get(doc.$toClient()));
-              } catch(err) {
+              } catch (err) {
                 console.log(err.stack);
                 res.sendStatus(500);
               }
@@ -1061,7 +1055,6 @@ Collection.prototype.express = function(app, auth) {
           }
         });
       }
-
 
       /*
        *     /api/NAME/label/:search
@@ -1078,13 +1071,12 @@ Collection.prototype.express = function(app, auth) {
 
             const results = await col.findAll({ query, fields: { [col.labelField.path]: 1 }, auth: req.user });
             res.json(results.map(r => r.$toClient()));
-          } catch(err) {
+          } catch (err) {
             console.log(err.stack);
             res.sendStatus(500);
           }
         });
       }
-
 
       /*
        *     /api/NAME/FIELD_PATH/label/:search
@@ -1112,7 +1104,7 @@ Collection.prototype.express = function(app, auth) {
 
                 const results = await to.findAll({ query, fields: { [to.labelField.path]: 1 }, auth: req.user });
                 res.json(results.map(r => r.$toClient()));
-              } catch(err) {
+              } catch (err) {
                 console.log(err.stack);
                 res.sendStatus(500);
               }

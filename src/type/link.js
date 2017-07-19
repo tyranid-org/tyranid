@@ -1,11 +1,9 @@
-
-const _ = require('lodash'); // client-side
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import Tyr        from '../tyr';
 import Type       from '../core/type';
 import Collection from '../core/collection';
-
 
 const LinkType = new Type({
   name: 'link',

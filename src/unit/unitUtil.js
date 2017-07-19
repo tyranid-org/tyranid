@@ -22,7 +22,7 @@ export function countComponents(components) {
   let c = 0,
       identifier = false;
 
-  for (let i=0; i<len; i++) {
+  for (let i = 0; i < len; i++) {
     const ch = components.charCodeAt(i);
 
     if (isLetter(ch)) {
@@ -45,7 +45,7 @@ export function countComponents(components) {
 }
 
 export function compact(components) {
-  for (let i=0; i<components.length; ) {
+  for (let i = 0; i < components.length; ) {
     const c = components[i];
 
     if (!c.degree) {
@@ -57,7 +57,7 @@ export function compact(components) {
 }
 
 export function merge(name, components) {
-  for (let i=0; i<components.length; ) {
+  for (let i = 0; i < components.length; ) {
     const ci = components[i];
 
     if (!ci.degree) {

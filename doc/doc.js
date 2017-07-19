@@ -1,6 +1,6 @@
-import Tyr from '../src/tyranid';
-import mongodb from 'mongodb';
-import fs from 'fs';
+import Tyr from '../';
+import * as mongodb from 'mongodb';
+import * as fs from 'fs';
 
 // hack to make tyranid link ... TODO:  need to provide a base User collection that people can mixin()
 new Tyr.Collection({
