@@ -839,7 +839,7 @@ describe('tyranid', function() {
       });
 
       it( 'should support Tyranid.valuesBy()', function() {
-        return Tyr.valuesBy(field => field.type.def.name === 'string').then(function(values) {
+        return Tyr.valuesBy(field => field.collection.name !== 'TyrInstance' && field.type.def.name === 'string').then(function(values) {
           return values.sort();
         }).should.eventually.eql(allString);
       });
