@@ -234,7 +234,7 @@ async function log(level, ...opts) {
   }
 
   return result;
-};
+}
 
 Log.trace = function() {
   return log(LogLevel.TRACE, ...arguments);

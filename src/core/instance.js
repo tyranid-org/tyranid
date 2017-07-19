@@ -5,7 +5,6 @@ import moment from 'moment';
 import Tyr from '../tyr';
 import Collection from './collection';
 
-
 const Instance = new Collection({
   id: '_t2',
   name: 'tyrInstance',
@@ -17,7 +16,6 @@ const Instance = new Collection({
 });
 
 let compiled = false;
-
 
 Instance.boot = async function(stage/*, pass*/) {
 
@@ -38,9 +36,9 @@ Instance.boot = async function(stage/*, pass*/) {
     heartbeat();
 
     setInterval(heartbeat, 15 * 60 * 1000 /* 15 minutes */);
-    
+
     compiled = true;
   }
-}
+};
 
 export default Instance;
