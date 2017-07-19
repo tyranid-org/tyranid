@@ -2947,6 +2947,8 @@ describe('tyranid', function() {
       it('Should include all collections', async () => {
         const code = generateClientLibrary();
 
+        fs.writeFileSync('./test.js', code);
+
         await new Promise((res, rej) => {
           jsdom.env({
             html: '<div></div>',
@@ -2954,7 +2956,6 @@ describe('tyranid', function() {
             done(err, window) {
               if (err) return rej(err);
               const window$Tyr = window.Tyr;
-
               window$Tyr.init();
 
               if (window$Tyr !== window$Tyr.Tyr) {

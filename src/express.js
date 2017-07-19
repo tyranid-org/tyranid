@@ -1,7 +1,8 @@
 
-import * as _            from 'lodash';
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
+import * as ts from 'typescript';
 
 const babel = require('babel-core');
 //import babel        from 'babel-core';
@@ -822,18 +823,7 @@ export function generateClientLibrary() {
 `;
 
   try {
-    file = babel.transform(file, {
-      sourceMaps: false,
-      compact: Tyr.options.minify !== undefined ? Tyr.options.minify : true,
-      presets: [
-        'stage-0',
-        'es2015'
-      ],
-      plugins: [
-        'transform-class-properties'
-      ]
-    }).code;
-
+    file = compile(file);
 
     /**
      * wrap in additional iife to allow for minification
@@ -842,8 +832,8 @@ export function generateClientLibrary() {
     file = `;(function(){${file}})();`;
 
     // unbastardize imports for the client
-    file = file.replace(/_tyr2.default/g, 'Tyr');
-    file = file.replace(/_lodash2.default/g, '_');
+    file = file.replace(/tyr_1.default/g, 'Tyr');
+    file = file.replace(/lodash_1.default/g, '_');
 
     return Tyr.options.minify
       ? uglify.minify(file, { fromString: true }).code
@@ -852,6 +842,24 @@ export function generateClientLibrary() {
     console.log(err.stack);
     throw err;
   }
+}
+
+
+function compile(code) {
+  const result = ts.transpileModule(code, {
+    compilerOptions: {
+      module: ts.ModuleKind.None,
+      target: ts.ScriptTarget.ES5
+    }
+  });
+
+  result.diagnostics.forEach(diagnostic => {
+    const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+    console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+  });
+
+  return result.outputText;
 }
 
 
