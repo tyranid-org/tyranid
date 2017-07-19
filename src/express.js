@@ -4,10 +4,6 @@ import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
 import * as ts from 'typescript';
 
-const babel = require('babel-core');
-//import babel        from 'babel-core';
-
-
 import Tyr          from './tyr';
 import Collection   from './core/collection';
 import Field        from './core/field';
