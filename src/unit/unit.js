@@ -2,7 +2,6 @@
 import Tyr from '../tyr';
 import Collection from '../core/collection';
 
-
 const Unit = new Collection({
   id: '_u2',
   name: 'unit',
@@ -187,7 +186,7 @@ Unit.boot = function(stage, pass) {
   }
 
   return bootNeeded;
-}
+};
 
 Unit.parse = function(name) {
   const UnitFactor = Tyr.UnitFactor;

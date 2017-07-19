@@ -1,6 +1,4 @@
-
-// can't be import due to client-side
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 import { evaluateClient } from '../common';
 import Tyr             from '../tyr';

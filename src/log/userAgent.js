@@ -1,7 +1,6 @@
 
 import Tyr from '../tyr';
 
-
 const UserAgent = new Tyr.Collection({
   id: '_u4',
   name: 'tyrUserAgent',
@@ -27,6 +26,6 @@ UserAgent.by = async function(uaString) {
 
   byString[uaString] = ua;
   return ua;
-}
+};
 
 export default UserAgent;

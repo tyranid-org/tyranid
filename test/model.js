@@ -1,5 +1,5 @@
 
-import mongodb   from 'mongodb';
+import * as mongodb   from 'mongodb';
 
 import Tyr       from '../src/tyranid';
 

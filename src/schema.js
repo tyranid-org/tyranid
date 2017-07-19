@@ -1,5 +1,5 @@
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 import Tyr        from './tyr';
 import Collection from './core/collection';
@@ -22,7 +22,6 @@ export const SchemaType = new Collection({
   ]
 });
 
-
 const Schema = new Collection({
   id: '_t1',
   name: 'tyrSchema',
@@ -38,7 +37,6 @@ const Schema = new Collection({
   timestamps: true
 });
 
-
 let schemaCache;
 
 Schema.on({
@@ -47,7 +45,7 @@ Schema.on({
     // TODO:  analyze the event and only invalidate part of the schema ?
 
     // TODO:  this doesn't work yet because this needs to be a post-, not a pre-, handler and events don't support post yet
-    schemaCache = null
+    schemaCache = null;
   }
 });
 
@@ -181,7 +179,6 @@ export default Schema;
    /. write tests
 
    /. write documentation
-
 
 {
   _id: 1111111,

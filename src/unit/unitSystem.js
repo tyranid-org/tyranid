@@ -2,7 +2,6 @@
 import Tyr from '../tyr';
 import Collection from '../core/collection';
 
-
 const UnitSystem = new Collection({
   id: '_u0',
   name: 'unitSystem',

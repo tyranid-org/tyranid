@@ -1,10 +1,8 @@
 
-import _ from 'lodash';
-
+import * as _ from 'lodash';
 
 import Tyr      from '../tyr';
 import NamePath from './namePath';
-
 
 export default class Field {
 

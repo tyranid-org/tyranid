@@ -4,7 +4,6 @@
 import * as Express from 'express';
 import * as mongodb from 'mongodb';
 
-
 /**
  *
  * TODO:
@@ -12,7 +11,6 @@ import * as mongodb from 'mongodb';
  *  - Units are not a real collection and need separate typings
  *
  */
-
 
 export = Tyranid;
 
@@ -36,7 +34,6 @@ declare namespace Tyranid {
     export const query: QueryStatic;
     export const options: ConfigOptions;
     export const db: mongodb.Db;
-
 
     export function U(text: string | TemplateStringsArray | number): any;
     export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
@@ -72,15 +69,13 @@ declare namespace Tyranid {
 
     export function forget(id: string): void;
 
-
     export interface Cursor<T> extends mongodb.Cursor {
       next(): Promise<T>;
       next(cb: mongodb.MongoCallback<T>): void;
       toArray(): Promise<T[]>;
     }
 
-
-    export type RawMongoDocument = {
+    export interface RawMongoDocument {
       [key: string]: any;
     }
 
@@ -88,15 +83,14 @@ declare namespace Tyranid {
     export type MaybeRawDocument = Document | RawMongoDocument;
     export type LabelType = string;
     export type IdType = mongodb.ObjectID;
-    export type LabelList = { [labelField: string]: string }[];
+    export type LabelList = Array<{ [labelField: string]: string }>;
     export type BootStage = 'compile' | 'link' | 'post-link';
-
 
     export interface Class<T> {
       new (...args: any[]): T;
     }
 
-    type RawDocument<Base> = { [K in (keyof Base)]: Base[K]; }
+    type RawDocument<Base> = { [K in (keyof Base)]: Base[K]; };
 
     /**
      *  Generic tyranid document object.
@@ -118,18 +112,17 @@ declare namespace Tyranid {
       $update(fields?: any): Promise<this>;
       $validate(): ValidationError[];
       $replace(replacements: any): Promise<this>;
-      $copy(replacements: any, props?: (keyof this)[]): this;
+      $copy(replacements: any, props?: Array<keyof this>): this;
       $slice(prop: string, opts?: BaseQueryOptions): Promise<this>;
       $asOf(time: Date, fields?: any): void;
     }
-
 
     export interface LookupQueryOptions extends BaseQueryOptions {
 
       /**
        * The standard MongoDB-style fields object that specifies the projection.
        */
-      fields?: { [key: string]: number } | string | (string | { [key: string]: number })[];
+      fields?: { [key: string]: number } | string | Array<string | { [key: string]: number }>;
 
       /**
        * The population fields to populate.
@@ -137,7 +130,6 @@ declare namespace Tyranid {
       populate?: PopulationOption;
 
     }
-
 
     export interface UpdateQueryOptions extends ModificationQueryOptions {
 
@@ -153,8 +145,6 @@ declare namespace Tyranid {
       multi?: boolean;
     }
 
-
-
     export interface FindAndModifyOptions extends UpdateQueryOptions, LookupQueryOptions {
 
       /**
@@ -167,15 +157,12 @@ declare namespace Tyranid {
        */
       new?: boolean;
 
-
       /**
        * whether or not to insert the document if it doesn't exist
        */
       upsert?: boolean;
 
     }
-
-
 
     export interface ModificationQueryOptions extends BaseQueryOptions {
 
@@ -186,7 +173,6 @@ declare namespace Tyranid {
       timestamps?: boolean;
 
     }
-
 
     /**
      * Options passed to database methods
@@ -220,13 +206,11 @@ declare namespace Tyranid {
        */
       sort?: { [key: string]: number };
 
-
       /**
        * Return the historical version of the doc
        */
       historical?: boolean;
     }
-
 
     /**
      * Fields to populate in a document
@@ -236,16 +220,12 @@ declare namespace Tyranid {
       | string[]
       | { [key: string]: PopulationOption };
 
-
-
-
     /**
      *  Hash of strings -> fields
      */
-    export type FieldsObject = {
+    export interface FieldsObject {
       [fieldName: string]: FieldDefinition;
     }
-
 
     /**
      * field used for doc.$id
@@ -254,7 +234,6 @@ declare namespace Tyranid {
       field: string;
       defaultMatchIdOnInsert?: boolean;
     }
-
 
     /**
      * collection.def
@@ -275,7 +254,6 @@ declare namespace Tyranid {
       values?: any[][];
       db?: mongodb.Db;
     }
-
 
     /**
      *  TyranidCollectionDefinition options for tyranid collection
@@ -310,7 +288,6 @@ declare namespace Tyranid {
       values?: any[][];
     }
 
-
     export interface FieldDefinitionRaw {
       [key: string]: any;
       is?: string;
@@ -342,14 +319,13 @@ declare namespace Tyranid {
      *  Configuration definition for tyranid field.
      */
     export interface FieldDefinition extends FieldDefinitionRaw {
-      def?: FieldDefinitionRaw,
+      def?: FieldDefinitionRaw;
       pathLabel?: string;
     }
 
     export type CollectionCurriedMethodReturn
       = Function
       | Promise<Document | Document[]>;
-
 
     export interface CollectionsByName {
       [key: string]: CollectionInstance;
@@ -359,15 +335,14 @@ declare namespace Tyranid {
       [key: string]: CollectionInstance;
     }
 
-
     export interface Secure {
+      canInsert?: (collection: CollectionInstance, doc: Tyr.Document, perm: string, auth: Tyr.Document) => Promise<boolean> | boolean;
       boot(state: BootStage): void;
       query(
         collection: CollectionInstance,
         method: 'view' | 'update' | 'insert' | 'delete',
         auth?: Tyr.Document
       ): Promise<MongoQuery | boolean>;
-      canInsert?: (collection: CollectionInstance, doc: Tyr.Document, perm: string, auth: Tyr.Document) => Promise<boolean> | boolean;
     }
 
     export interface Local {
@@ -377,12 +352,9 @@ declare namespace Tyranid {
       define(propertyName: string): void;
     }
 
-
-
     export type ValidationPattern
       = FileMatchValidationPattern
       | GlobValidationPattern;
-
 
     export interface FileMatchValidationPattern {
       dir: string;
@@ -412,15 +384,13 @@ declare namespace Tyranid {
         insert: string;
         update: string;
         remove: string;
-      }
+      };
     }
-
 
     export interface CollectionStatic {
       // Collection instance constructor
       new<T extends Document = Document>(def: CollectionDefinition): CollectionInstance<T>;
     }
-
 
     export interface Component {
       boot(stage: string, pass: number): string | string[];
@@ -429,14 +399,10 @@ declare namespace Tyranid {
       compileField(compiler: any, field: FieldInstance): void;
     }
 
-
     /**
      *  Tyranid collection class
      */
     export interface CollectionInstance<T extends Tyr.Document = Tyr.Document> extends Component {
-
-      // Collection instance constructor
-      new(doc?: RawMongoDocument): T;
 
       fields: { [key: string]: FieldInstance };
       label: LabelType;
@@ -446,10 +412,13 @@ declare namespace Tyranid {
       db: mongodb.Collection;
       id: string;
 
+      // Collection instance constructor
+      new(doc?: RawMongoDocument): T;
+
       secureQuery(query: MongoQuery, perm: string, auth: Document): Promise<MongoQuery>;
 
       byId(id: IdType | string | number, options?: LookupQueryOptions): Promise<T | null>;
-      byIds(ids: (IdType| number | string)[], projection?: any, options?: LookupQueryOptions): Promise<T[]>;
+      byIds(ids: Array<IdType| number | string>, projection?: any, options?: LookupQueryOptions): Promise<T[]>;
       byLabel(label: LabelType, forcePromise?: boolean): Promise<T | null>;
 
       isUid(str: string): boolean;
@@ -471,7 +440,7 @@ declare namespace Tyranid {
       toClient(doc: Document | Document[] | RawMongoDocument | RawMongoDocument[]): RawMongoDocument;
 
       idToLabel(id: any): Promise<string>;
-      insert<I, A extends Array<I>>(docs: A): Promise<T[]>;
+      insert<I, A extends I[]>(docs: A): Promise<T[]>;
       insert<I>(doc: I): Promise<T>;
       isStatic(): boolean;
 
@@ -489,7 +458,7 @@ declare namespace Tyranid {
       push(id: IdType | string | number, path: string, prop: any): Promise<void>;
       pull(id: IdType | string | number, path: string, fn: (p: any) => boolean): Promise<void>;
 
-      references(opts: { id?: any, ids?: any, idsOnly?: boolean, exclude?: CollectionInstance<Tyr.Document>[] }): Promise<Tyr.Document[]>;
+      references(opts: { id?: any, ids?: any, idsOnly?: boolean, exclude?: Array<CollectionInstance<Tyr.Document>> }): Promise<Tyr.Document[]>;
 
       // mongodb methods
       remove(opts: LookupQueryOptions & { query: MongoQuery }): Promise<void>;
@@ -555,19 +524,18 @@ declare namespace Tyranid {
       set<D extends Tyr.Document>(obj: D, prop: string): void;
     }
 
-
     export interface UnitsStatic {
-      new (sid: string, components: { degree: any, unit: any }[]): UnitsInstance;
+      new (sid: string, components: Array<{ degree: any, unit: any }>): UnitsInstance;
     }
 
     export interface UnitsInstance {
 
     }
 
-
     export interface TypeStatic {
-      new (...args: any[]): TypeInstance;
       byName: { [key: string]: TypeInstance };
+
+      new (...args: any[]): TypeInstance;
     }
 
     export interface TypeDefinition {
@@ -592,7 +560,7 @@ declare namespace Tyranid {
      *  Error thrown in validation failure
      */
     export interface ValidationErrorStatic {
-      new (...args: any[]): ValidationError
+      new (...args: any[]): ValidationError;
     }
 
     export interface ValidationError {
@@ -602,11 +570,9 @@ declare namespace Tyranid {
       tostring(): string;
     }
 
-
     export interface QueryStatic {
       merge(a: MongoQuery, b: MongoQuery): MongoQuery;
     }
-
 
   }
 

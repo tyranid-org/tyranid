@@ -1,6 +1,6 @@
-import _    from 'lodash';
-import fs   from 'fs';
-import glob from 'glob';
+import * as _    from 'lodash';
+import * as fs   from 'fs';
+import * as glob from 'glob';
 
 import Tyr from './tyr';
 
@@ -47,7 +47,6 @@ import /*Schema from */ './schema';
 
 const options = Tyr.options;
 
-
 /*
 
    TODO:
@@ -69,7 +68,6 @@ const options = Tyr.options;
    * database integrity analysis (find orphans, bad links, etc.)
 
    * pre-calc aggregation
-
 
   Collection Schema BNF:
 
@@ -103,7 +101,7 @@ const bootstrappedComponents = [];
 
 _.assign(Tyr, {
 
-  version: require('../package.json').version,
+  version: require('../../package.json').version,
 
   generateClientLibrary,
 
@@ -200,9 +198,9 @@ _.assign(Tyr, {
       const bootstrapping = Tyr.components.filter(col => col.boot && !_.includes(bootstrappedComponents, col));
       let reasons;
 
-      for (let pass=1; bootstrapping.length && pass < 100; pass++) {
+      for (let pass = 1; bootstrapping.length && pass < 100; pass++) {
         reasons = [];
-        for (let i=0; i<bootstrapping.length; ) {
+        for (let i = 0; i < bootstrapping.length; ) {
           let thisReasons = await bootstrapping[i].boot(stage, pass);
           if (thisReasons && !_.isArray(thisReasons)) {
             thisReasons = [ thisReasons ];
@@ -258,7 +256,6 @@ _.assign(Tyr, {
     await bootstrap('post-link');
   },
 
-
   async createIndexes() {
     for (const col of Tyr.collections) {
       const indexes = col.def.indexes;
@@ -291,7 +288,6 @@ _.assign(Tyr, {
       }
     }
   },
-
 
   /**
    * Mostly just used by tests, not rigorous.

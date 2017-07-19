@@ -1,9 +1,7 @@
 
 import Tyr from '../tyr';
 
-
 const Component = {
-
 
 };
 
