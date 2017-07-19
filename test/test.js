@@ -2947,8 +2947,6 @@ describe('tyranid', function() {
       it('Should include all collections', async () => {
         const code = generateClientLibrary();
 
-        fs.writeFileSync('./test.js', code);
-
         await new Promise((res, rej) => {
           jsdom.env({
             html: '<div></div>',
