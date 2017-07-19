@@ -1,6 +1,6 @@
 
 import * as os from 'os';
-import moment from 'moment';
+import * as moment from 'moment';
 
 import Tyr from '../tyr';
 import Collection from './collection';

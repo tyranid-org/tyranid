@@ -1471,7 +1471,7 @@ export default class Collection {
           }
 
         } else {
-          throw compiler.err(path, 'Unknown field definition');
+          throw compiler.err(path, 'Unknown field definition: ' + fieldDef);
         }
 
         if (fieldDef.denormal) {

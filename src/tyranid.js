@@ -297,7 +297,8 @@ _.assign(Tyr, {
     const col = Tyr.byId[collectionId];
 
     if (col) {
-      _.remove(Tyr.collections, col => col.id === collectionId);
+      _.remove(Tyr.collections,        col  => col.id  === collectionId);
+      _.remove(bootstrappedComponents, comp => comp.id === collectionId);
       delete Tyr.byId[collectionId];
       delete Type.byName[col.def.name];
     }
