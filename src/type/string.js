@@ -1,6 +1,4 @@
-
-const _ = require('lodash'); // client-side
-
+import * as _ from 'lodash';
 import Type from '../core/type';
 
 

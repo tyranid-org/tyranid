@@ -1,12 +1,12 @@
 
 import Tyr            from '../src/tyranid';
-import chai           from 'chai';
-import fetch          from 'node-fetch';
-import chaiAsPromised from 'chai-as-promised';
-import mongodb        from 'mongodb';
-import express        from 'express';
-import bodyParser     from 'body-parser';
-import _              from 'lodash';
+import * as chai           from 'chai';
+import * as fetch          from 'node-fetch';
+import * as chaiAsPromised from 'chai-as-promised';
+import * as mongodb        from 'mongodb';
+import * as express        from 'express';
+import * as bodyParser     from 'body-parser';
+import * as _              from 'lodash';
 
 import Field          from '../src/core/field';
 import Type           from '../src/core/type';

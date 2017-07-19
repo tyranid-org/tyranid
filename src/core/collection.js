@@ -1,7 +1,7 @@
 
-import _            from 'lodash';
-import hooker       from 'hooker';
-import faker        from 'faker';
+import * as _            from 'lodash';
+import * as hooker       from 'hooker';
+import * as faker        from 'faker';
 import { ObjectId } from 'mongodb';
 
 import Tyr          from '../tyr';
@@ -1162,7 +1162,7 @@ export default class Collection {
           // behind the scenes)
           return hooker.filter(this, cbArgs);
         };
-        return this::cb(next, ...args);
+        return cb.call(this, next, ...args);
       }
     });
     return this;
@@ -1183,7 +1183,7 @@ export default class Collection {
         const next = (result) => {
           return hooker.override(result);
         };
-        return this::cb(next, result);
+        return cb.call(this, next, result);
       }
     });
     return this;

@@ -1,6 +1,6 @@
-import _    from 'lodash';
-import fs   from 'fs';
-import glob from 'glob';
+import * as _    from 'lodash';
+import * as fs   from 'fs';
+import * as glob from 'glob';
 
 import Tyr from './tyr';
 
@@ -100,7 +100,7 @@ const options = Tyr.options;
 
 _.assign(Tyr, {
 
-  version: require('../package.json').version,
+  version: require('../../package.json').version,
 
   generateClientLibrary,
 

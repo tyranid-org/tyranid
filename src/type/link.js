@@ -1,5 +1,4 @@
-
-const _ = require('lodash'); // client-side
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import Tyr        from '../tyr';

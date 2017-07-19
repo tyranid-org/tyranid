@@ -1,6 +1,4 @@
-
-const _ = require('lodash'); // client-side
-
+import * as _ from 'lodash';
 import Tyr        from '../tyr';
 import Collection from '../core/collection';
 import Type       from '../core/type';

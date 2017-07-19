@@ -1,5 +1,5 @@
 
-import _            from 'lodash';
+import * as _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import projection   from './core/projection';
@@ -205,9 +205,9 @@ export function evaluateClient(client, key, doc, value, opts, proj) {
     }
     // fall through
 
-  case true: 
+  case true:
   case 1:
-  case 'default': 
+  case 'default':
   case undefined:
     return true;
 

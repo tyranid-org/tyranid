@@ -1,10 +1,10 @@
 
-import os         from 'os';
+import * as os         from 'os';
 
-import _          from 'lodash';
-import util       from 'util';
-import moment     from 'moment';
-import chalk      from 'chalk';
+import * as _          from 'lodash';
+import * as util       from 'util';
+import * as moment     from 'moment';
+import * as chalk      from 'chalk';
 
 //import onHeaders  from 'on-headers';
 import onFinished from 'on-finished';
@@ -424,12 +424,12 @@ Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
 
 _.assign(Tyr, {
   Log,
-  trace:  ::Log.trace,
-  log:    ::Log.log,
-  info:   ::Log.info,
-  warn:   ::Log.warn,
-  error:  ::Log.error,
-  fatal:  ::Log.fatal,
+  trace:  Log.trace.bind(Log),
+  log:    Log.log.bind(Log),
+  info:   Log.info.bind(Log),
+  warn:   Log.warn.bind(Log),
+  error:  Log.error.bind(Log),
+  fatal:  Log.fatal.bind(Log),
 });
 
 export default Log;

@@ -1,5 +1,5 @@
 
-import _            from 'lodash';
+import * as _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
 
@@ -207,7 +207,7 @@ const Tyr = {
 
 /**
  * This is similar to what _.matches() provides but it will also perform array intersections on top of it
- * 
+ *
  * @param s the specificiation
  * @param v the value
  */

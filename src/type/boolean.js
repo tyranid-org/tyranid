@@ -1,4 +1,3 @@
-
 import Type from '../core/type';
 
 

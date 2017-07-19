@@ -1,5 +1,5 @@
 
-import _            from 'lodash';
+import * as _            from 'lodash';
 import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
 
@@ -883,7 +883,7 @@ export default function express(app, auth, opts) {
 
 Tyr.express = express;
 
-express.middleware = ::local.express;
+express.middleware = local.express.bind(local);
 
 /**
  * @private ... clients should use Tyr.express()
