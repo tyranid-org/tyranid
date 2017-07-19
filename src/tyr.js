@@ -2,7 +2,6 @@
 import * as _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
-
 function equalCustomizer(a, b) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
   if (a && b && a.constructor.name === 'ObjectID' && b.constructor.name === 'ObjectID') {
@@ -25,14 +24,13 @@ function convertStrToHex(str) {
   let hex, i;
 
   let result = '';
-  for (i=0; i<str.length; i++) {
+  for (i = 0; i < str.length; i++) {
     hex = str.charCodeAt(i).toString(16);
-    result += ('0'+hex).slice(-2);
+    result += ('0' + hex).slice(-2);
   }
 
-  return result
+  return result;
 }
-
 
 const Tyr = {
   options: {},
@@ -66,7 +64,6 @@ const Tyr = {
     }
   },
 
-
   //
   // async/await/promise utilities
   //
@@ -98,7 +95,7 @@ const Tyr = {
   },
 
   async findIndexAsync(array, predicate) {
-    for (let i=0, len=array.length; i<len; i++) {
+    for (let i = 0, len = array.length; i < len; i++) {
       if (await predicate(array[i])) {
         return i;
       }
@@ -200,7 +197,6 @@ const Tyr = {
   }
 };
 
-
 /*
  * --- Matching
  */
@@ -269,7 +265,6 @@ const isCompliant = Tyr.isCompliant = function(s, v) {
 
   return false;
 };
-
 
 //
 // *** Timer

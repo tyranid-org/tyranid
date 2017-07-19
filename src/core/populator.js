@@ -5,7 +5,6 @@ import historical from '../historical/historical';
 
 const $all = Tyr.$all;
 
-
 class Cache {
 
   constructor(colId) {
@@ -45,7 +44,7 @@ class Cache {
       }
     }
   }
-};
+}
 
 export default class Populator {
 

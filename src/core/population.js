@@ -10,7 +10,6 @@ const $all = Tyr.$all;
 
 export default class Population {
 
-
   constructor(namePath, projection) {
     if (!(namePath instanceof NamePath)) {
       throw new Error('parameter namePath is not an instanceof NamePath, got: ' + namePath);
@@ -19,7 +18,6 @@ export default class Population {
     this.namePath = namePath;
     this.projection = projection;
   }
-
 
   static parse(populator, base, fields) {
     const rootCollection = base; // TODO:  need to eliminate this
@@ -122,7 +120,6 @@ export default class Population {
     }
   }
 
-
   /*
    * TODO:  should we mark populated values as enumerable: false ?
    */
@@ -160,7 +157,7 @@ export default class Population {
           if (Array.isArray(obj)) {
             const arr = new Array(obj.length);
 
-            for (let ai=0, alen=obj.length; ai<alen; ai++ ) {
+            for (let ai = 0, alen = obj.length; ai < alen; ai++ ) {
               arr[ai] = mapIdsToObjects(obj[ai]);
             }
 
@@ -182,7 +179,7 @@ export default class Population {
           const name = path[pi];
 
           if (Array.isArray(obj)) {
-            for (let ai=0, alen=obj.length; ai<alen; ai++ ){
+            for (let ai = 0, alen = obj.length; ai < alen; ai++) {
               walkToEndOfPath(pi, obj[ai]);
             }
           } else if (obj === undefined || obj === null) {
@@ -193,7 +190,7 @@ export default class Population {
           } else if (!_.isObject(obj)) {
             throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
           } else {
-            walkToEndOfPath(pi+1, obj[path[pi]]);
+            walkToEndOfPath(pi + 1, obj[path[pi]]);
           }
         }
 
@@ -205,7 +202,7 @@ export default class Population {
       } else {
         return Promise.resolve();
       }
-    }
+    };
 
     // wait for resolution of all
     return await Promise.all(population.projection.map(populateIds));

@@ -1,6 +1,5 @@
 import Type from '../core/type';
 
-
 const BooleanType = new Type({
   name: 'boolean',
 

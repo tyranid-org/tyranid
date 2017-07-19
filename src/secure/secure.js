@@ -5,9 +5,7 @@ import Component  from '../core/component';
 import Collection from '../core/collection';
 import Query      from '../core/query';
 
-
 const Secure = {
-
 
 };
 

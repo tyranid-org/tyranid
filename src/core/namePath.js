@@ -6,7 +6,6 @@ const Tyr = require('../tyr').default;
 
 const PATH_REGEX = /\._/g;
 
-
 /**
  * NOTE: This cannot be a ES6 class because it is isomorphic
  *
@@ -31,7 +30,7 @@ function NamePath(base, pathName, skipArray) {
       denormal;
 
   nextPath:
-  while (pi<plen) {
+  while (pi < plen) {
     const name = path[pi];
     let def  = at.def;
 
@@ -45,7 +44,7 @@ function NamePath(base, pathName, skipArray) {
       continue nextPath;
 
     } else {
-      if (name.match(NamePath._numberRegex) && pi && pathFields[pi-1].type.name === 'array') {
+      if (name.match(NamePath._numberRegex) && pi && pathFields[pi - 1].type.name === 'array') {
         at = at.of;
         pathFields[pi++] = at;
         continue nextPath;
@@ -79,7 +78,7 @@ function NamePath(base, pathName, skipArray) {
       at = f[name];
       if (!at && name.length > 1 && name.endsWith('_')) {
         // does this name match a denormalized entry?
-        const _name = name.substring(0, name.length-1);
+        const _name = name.substring(0, name.length - 1);
 
         while /* if */ (_name) {
           const _at = parentAt.fields[_name];
@@ -105,7 +104,7 @@ function NamePath(base, pathName, skipArray) {
       }
     }
 
-    if (skipArray && (pi+1 >= plen || path[pi+1] !== '_')) {
+    if (skipArray && (pi + 1 >= plen || path[pi + 1] !== '_')) {
       at = NamePath._skipArray(at);
     }
 
@@ -143,7 +142,6 @@ NamePath.encode = function(path) {
   return path.replace(/\./g, '|');
 };
 
-
 /**
  * TODO:  make this a configurable Tyranid option as to how populated entries should be named
  *
@@ -158,8 +156,8 @@ NamePath.populateNameFor = function(name, denormal) {
 
   if (denormal) {
     return name + '_';
-  } else if (name.substring(l-2) === 'Id') {
-    return name.substring(0, l-2);
+  } else if (name.substring(l - 2) === 'Id') {
+    return name.substring(0, l - 2);
   } else {
     return name + '$';
   }
@@ -182,13 +180,13 @@ NamePath.prototype.toString = function() {
 
 Object.defineProperty(NamePath.prototype, 'tail', {
   get: function() {
-    return this.fields[this.fields.length-1];
+    return this.fields[this.fields.length - 1];
   }
 });
 
 Object.defineProperty(NamePath.prototype, 'detail', {
   get: function() {
-    return NamePath._skipArray(this.fields[this.fields.length-1]);
+    return NamePath._skipArray(this.fields[this.fields.length - 1]);
   }
 });
 
@@ -214,7 +212,7 @@ NamePath.prototype.get = function(obj) {
       if (name === '_') {
         pi++;
       } else if (name && name.match(NamePath._numberRegex)) {
-        getInner(pi+1, obj[name]);
+        getInner(pi + 1, obj[name]);
         return;
       }
 
@@ -222,7 +220,7 @@ NamePath.prototype.get = function(obj) {
         values.push(obj);
       } else {
         arrayInPath = true;
-        for (let ai=0, alen=obj.length; ai<alen; ai++ ) {
+        for (let ai = 0, alen = obj.length; ai < alen; ai++ ) {
           getInner(pi, obj[ai]);
         }
       }
@@ -233,12 +231,12 @@ NamePath.prototype.get = function(obj) {
     } else if (!_.isObject(obj)) {
       throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
     } else {
-      if (pi && fields[pi-1].type.name === 'object' && path[pi] === '_') {
+      if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {
         arrayInPath = true;
         pi++;
         _.each(obj, v => getInner(pi, v));
       } else {
-        getInner(pi+1, obj[path[pi]]);
+        getInner(pi + 1, obj[path[pi]]);
       }
     }
   }
@@ -265,7 +263,7 @@ NamePath.prototype.set = function(obj, value) {
   function walk(pi, obj) {
     if (pi === plen - 1) {
       if (Array.isArray(obj)) {
-        for (let i=0; i<obj.length; i++) {
+        for (let i = 0; i < obj.length; i++) {
           obj[i] = value;
         }
       } else if (_.isObject(obj)) {
@@ -280,7 +278,7 @@ NamePath.prototype.set = function(obj, value) {
         if (name === '_') {
           pi++;
         } else if (name && name.match(NamePath._numberRegex)) {
-          walk(pi+1, obj[name]);
+          walk(pi + 1, obj[name]);
           return;
         }
 
@@ -290,13 +288,13 @@ NamePath.prototype.set = function(obj, value) {
       } else if (!_.isObject(obj)) {
         throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
       } else {
-        if (pi && fields[pi-1].type.name === 'object' && path[pi] === '_') {
+        if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {
           pi++;
           for (const v of obj) {
             walk(pi, v);
           }
         } else {
-          walk(pi+1, obj[path[pi]]);
+          walk(pi + 1, obj[path[pi]]);
         }
       }
     }
@@ -304,7 +302,6 @@ NamePath.prototype.set = function(obj, value) {
 
   walk(0, obj);
 };
-
 
 NamePath.prototype.uniq = function(obj) {
   const val = this.get(obj);
@@ -316,7 +313,7 @@ Object.defineProperty(NamePath.prototype, 'pathLabel', {
     const pf = this.fields;
     let i = 0,
         label = '';
-    while (i<pf.length-1) {
+    while (i < pf.length - 1) {
       const f = pf[i++];
 
       const l = f.pathLabel || f.label;
@@ -346,7 +343,6 @@ Object.defineProperty(NamePath.prototype, 'spath', {
     return sp;
   }
 });
-
 
 Tyr.NamePath = NamePath;
 export default NamePath;

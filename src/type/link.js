@@ -5,7 +5,6 @@ import Tyr        from '../tyr';
 import Type       from '../core/type';
 import Collection from '../core/collection';
 
-
 const LinkType = new Type({
   name: 'link',
 

@@ -1,7 +1,6 @@
 
 import * as _ from 'lodash';
 
-
 //import Tyr      from '../tyr';
 
 function resolve(projections, fields) {

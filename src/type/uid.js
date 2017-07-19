@@ -3,7 +3,6 @@ import Tyr        from '../tyr';
 import Collection from '../core/collection';
 import Type       from '../core/type';
 
-
 function validateUidCollection(validator, path, collection) {
   const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
 
@@ -40,11 +39,9 @@ const UidType = new Type({
   }
 });
 
-
 Collection.prototype.isUid = function(uid) {
   return uid && uid.substring(0, 3) === this.id;
-}
-
+};
 
 /** @isomorphic */
 Tyr.parseUid = function(uid) {
@@ -64,13 +61,13 @@ Tyr.parseUid = function(uid) {
     collection: col,
     id: idType.fromString ? idType.fromString(strId) : strId
   };
-}
+};
 
 /** @isomorphic */
 Tyr.byUid = function(uid, opts) {
   const p = Tyr.parseUid(uid);
   return p.collection.byId(p.id, opts);
-}
+};
 
 Tyr.byUids = async function(uids, opts) {
   const byColId = {};
@@ -99,6 +96,5 @@ Tyr.byUids = async function(uids, opts) {
 
   return uids.map(uid => docsByUid[uid]);
 };
-
 
 export default UidType;

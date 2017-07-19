@@ -5,8 +5,6 @@ import Tyr from '../tyr';
 
 import * as Uu from './unitUtil';
 
-
-
 //
 //  Unit Degrees
 //
@@ -20,7 +18,7 @@ class UnitDegree {
 
 function sortByAbbrev(ud1, ud2) {
   return ud1.unit.abbreviation.localeCompare(ud2.unit.abbreviation);
-};
+}
 
 function sortByDegreeThenAbbrev(ud1, ud2) {
   let d1 = ud1.degree;
@@ -42,7 +40,6 @@ function sortByDegreeThenAbbrev(ud1, ud2) {
   return ud1.unit.abbreviation.localeCompare(ud2.unit.abbreviation);
 }
 
-
 //
 //  Base Analysis
 //
@@ -54,8 +51,7 @@ function addBase(next, base, add, degree) {
     if (units) {
       next = addBase(next, base, units.base.components, degree * ud.degree);
     } else {
-      let i = 0;
-      for ( ; i<next; i++) {
+      for (var i = 0; i < next; i++) {
         const bud = base[i];
 
         if (bud.unit === ud.unit) {
@@ -84,7 +80,6 @@ function deriveBase(components) {
   base.sort(sortByAbbrev);
   return make(base);
 }
-
 
 //
 //  Units
@@ -124,10 +119,9 @@ class Units {
   isCompatibleWith(units) {
     return this.type === units.type;
   }
-};
+}
 
 const bySid = {};
-
 
 //
 //  Unit Parsing
@@ -153,7 +147,6 @@ function make(unitDegrees) {
   return units;
 }
 
-
 Units.parse = function(text) {
 
   if (!text) {
@@ -178,7 +171,6 @@ Units.parse = function(text) {
       pos = 0,
       nextComp = 0;
 
-
   //console.log(`parsing unit ${text}:`);
   while (pos < len) {
     let ch = text.charCodeAt(pos);
@@ -191,7 +183,7 @@ Units.parse = function(text) {
     }
 
     let s = pos;
-    for (; pos<len; pos++) {
+    for (; pos < len; pos++) {
       ch = text.charCodeAt(pos);
 
       if (!Uu.isLetter(ch)) {
@@ -205,16 +197,16 @@ Units.parse = function(text) {
       throw new Error(`Unknown unit "${name}" in "${text}"`);
     }
 
-    if (pos<len && text.charCodeAt(pos) === Uu.caret) {
+    if (pos < len && text.charCodeAt(pos) === Uu.caret) {
       pos++;
     }
 
     s = pos;
-    if (pos<len && text.charCodeAt(pos) === Uu.minus) {
+    if (pos < len && text.charCodeAt(pos) === Uu.minus) {
       pos++;
     }
 
-    while (pos<len && Uu.isDigit(text.charCodeAt(pos))) {
+    while (pos < len && Uu.isDigit(text.charCodeAt(pos))) {
       pos++;
     }
 
@@ -233,7 +225,7 @@ Units.parse = function(text) {
     degree *= multiplier;
 
     let ci = 0;
-    for (; ci<nextComp; ci++) {
+    for (; ci < nextComp; ci++) {
       const comp = components[ci];
 
       if (comp.unit === unit) {
@@ -251,10 +243,9 @@ Units.parse = function(text) {
 
   components.length = nextComp;
   return make(components);
-}
+};
 
 Tyr.U = Units.parse.bind(Units);
-
 
 //
 //  Unit Conversion
@@ -301,7 +292,7 @@ Units.prototype.convert = function(value, targetUnit) {
 
   OUTER:
   if (conversion !== INCOMPATIBLE) {
-    for (;;) {
+    while (true) {
       // example:  5 m/s to x ft/s
 
       const sbc = this.base.components;
@@ -317,7 +308,7 @@ Units.prototype.convert = function(value, targetUnit) {
 
       //console.log(`s=${sbc.length} t=${tbc.length}`);
 
-      for (;;) {
+      while (true) {
         if (spos >= sbc.length || tpos >= tbc.length) {
           break;
         }
@@ -364,7 +355,7 @@ Units.prototype.convert = function(value, targetUnit) {
 
         let temperatures = 0;
         let additive = 0;
-        for (let i=0; i<next; i++) {
+        for (let i = 0; i < next; i++) {
           const ud = difference[i];
           const u = ud.unit;
 
@@ -396,13 +387,12 @@ Units.prototype.convert = function(value, targetUnit) {
             to = difference[0].unit;
           }
 
-
           // Step 1:  convert to Kelvin to normalize it
 
           if (from === Unit.CELSIUS) {
             value = value + 273.15;
           } else if (from === Unit.FAHRENHEIT) {
-            value = ( ( value - 32) * 5/9 ) + 273.15;
+            value = ( ( value - 32) * 5 / 9 ) + 273.15;
           }
 
           // Step 2:  convert from Kelvin to the target temperature if it's not Kelvin
@@ -410,7 +400,7 @@ Units.prototype.convert = function(value, targetUnit) {
           if (to === Unit.CELSIUS) {
             value -= 273.15;
           } else if (to === Unit.FAHRENHEIT) {
-            value = ( ( value - 273.15 ) * 9/5 ) + 32;
+            value = ( ( value - 273.15 ) * 9 / 5 ) + 32;
           }
 
           conversion = MANUAL;
@@ -420,7 +410,7 @@ Units.prototype.convert = function(value, targetUnit) {
 
       //console.log( "next=" + next );
       let multiplier = 1.0;
-      for (let i=0; i<next; i++) {
+      for (let i = 0; i < next; i++) {
         const ud = difference[i];
 
         //console.log(`${i}: ${ud.unit.abbreviation} ==> ${ud.degree}  mult: ${ud.unit.baseMultiplier}`);
@@ -444,7 +434,6 @@ Units.prototype.convert = function(value, targetUnit) {
   return value;
 };
 
-
 //
 //  Unit Arithmetic
 //
@@ -457,7 +446,7 @@ Units.prototype.add = function(value, addUnit, addValue) {
 Units.prototype.subtract = function(value, subUnit, subValue) {
   subValue = subUnit.convert(subValue, this);
   return value - subValue;
-}
+};
 
 function multAdd(len, components, addComponents, mult) {
 
@@ -466,7 +455,7 @@ function multAdd(len, components, addComponents, mult) {
           addDegree = addComp.degree * mult;
     let ci = 0;
 
-    for (; ci<len; ci++) {
+    for (; ci < len; ci++) {
       const comp = components[ci];
 
       if (comp.unit === addUnit) {
@@ -508,11 +497,11 @@ function mult(name, units, by) {
 
 Units.prototype.multiply = function(byUnits) {
   return mult('multipliers', this, byUnits);
-}
+};
 
 Units.prototype.divide = function(byUnits) {
   return mult('divisors', this, byUnits);
-}
+};
 
 Units.prototype.invert = function() {
   let inversion = this.inversion;
@@ -525,8 +514,7 @@ Units.prototype.invert = function() {
   }
 
   return inversion;
-}
-
+};
 
 //
 // Normals
@@ -544,8 +532,7 @@ Units.prototype.normal = function() {
   }
 
   return normal;
-}
-
+};
 
 //
 // Units formatting
@@ -582,8 +569,7 @@ Units.prototype.toString = function() {
   }
 
   return str;
-}
-
+};
 
 for (const prop of ['convert', 'add', 'subtract', 'multiply', 'divide', 'invert', 'normal', 'toString']) {
   Object.defineProperty(Units.prototype, prop, { enumerable: false });

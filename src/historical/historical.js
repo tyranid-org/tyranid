@@ -5,7 +5,6 @@ import diff from '../diff/diff';
 
 import Tyr from '../tyr';
 
-
 function link(collection) {
   const _historicalFields = {};
 
@@ -64,7 +63,7 @@ function snapshot(collection, doc, patchProps, diffProps, historyPresent) {
   if (_.isEmpty(p) && _.isEmpty(patchProps)) {
     // TODO:  do we need some way of looking at the patch props and seeing it contains something that is useful in its own right to store?
     //        (for example, like a user comment?)
-    return;// undefined; ... undefined means there was no snapshot needed
+    return; // undefined; ... undefined means there was no snapshot needed
   }
 
   const so = {
@@ -138,7 +137,7 @@ function asOf(collection, doc, date, props) {
 }
 
 function patchPropsFromOpts(opts) {
-  let patchProps;// = undefined;
+  let patchProps; // = undefined;
 
   if (opts) {
     const author = opts.author || opts.auth;
@@ -160,7 +159,6 @@ function patchPropsFromOpts(opts) {
 
   return patchProps;
 }
-
 
 export default {
   asOf,

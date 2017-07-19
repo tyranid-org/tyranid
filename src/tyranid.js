@@ -46,7 +46,6 @@ import /*Schema from */ './schema';
 
 const options = Tyr.options;
 
-
 /*
 
    TODO:
@@ -68,7 +67,6 @@ const options = Tyr.options;
    * database integrity analysis (find orphans, bad links, etc.)
 
    * pre-calc aggregation
-
 
   Collection Schema BNF:
 
@@ -195,9 +193,9 @@ _.assign(Tyr, {
       const bootstrapping = Tyr.components.filter(col => col.boot);
       let reasons;
 
-      for (let pass=1; bootstrapping.length && pass < 100; pass++) {
+      for (let pass = 1; bootstrapping.length && pass < 100; pass++) {
         reasons = [];
-        for (let i=0; i<bootstrapping.length; ) {
+        for (let i = 0; i < bootstrapping.length; ) {
           let thisReasons = bootstrapping[i].boot(stage, pass);
           if (thisReasons && !_.isArray(thisReasons)) {
             thisReasons = [ thisReasons ];
@@ -249,7 +247,6 @@ _.assign(Tyr, {
     bootstrap('post-link');
   },
 
-
   async createIndexes() {
     for (const col of Tyr.collections) {
       const indexes = col.def.indexes;
@@ -282,7 +279,6 @@ _.assign(Tyr, {
       }
     }
   },
-
 
   /**
    * Mostly just used by tests, not rigorous.

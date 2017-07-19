@@ -6,7 +6,6 @@ import Type       from '../core/type';
 import Population from '../core/population';
 import Populator  from '../core/populator';
 
-
 const ArrayType = new Type({
   name: 'array',
 
@@ -31,7 +30,7 @@ const ArrayType = new Type({
       return;
     }
 
-    let values = where.filter($=> $ !== '- None -');
+    let values = where.filter($ => $ !== '- None -');
     let or;
 
     if (values.length !== where.length) {
@@ -64,7 +63,6 @@ const ArrayType = new Type({
     return (value && value.length) || 0;
   }
 });
-
 
 //
 // Array sorting
@@ -184,7 +182,6 @@ Tyr.mongoCompare = mongoCompare;
 function inverseMongoCompare(a, b) {
   return -1 * mongoCompare(a, b);
 }
-
 
 Tyr.arraySort = function(array, sortObj) {
   const sortProps = [];

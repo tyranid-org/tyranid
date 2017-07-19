@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import Type from '../core/type';
 
-
 const StringType = new Type({
   name: 'string',
 
