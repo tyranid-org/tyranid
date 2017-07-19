@@ -228,13 +228,17 @@ async function log(level, ...opts) {
     }
   }
 
+  let result;
+
   if (externalLogger && externalLogLevel && level._id >= externalLogLevel._id) {
-    return externalLogger(obj);
+    result = externalLogger(obj);
   }
 
   if (dbLogLevel && level._id >= dbLogLevel._id) {
-    return Log.db.save(obj);
+    result = Log.db.save(obj);
   }
+
+  return result;
 };
 
 Log.trace = function() {

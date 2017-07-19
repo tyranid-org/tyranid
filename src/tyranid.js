@@ -25,6 +25,7 @@ import './core/component';
 import './core/collection';
 import './core/event';
 import './core/field';
+import './core/instance';
 import './core/validationError';
 import './core/namePath';
 import './core/query';
@@ -98,6 +99,8 @@ const options = Tyr.options;
 
 */
 
+const bootstrappedComponents = [];
+
 _.assign(Tyr, {
 
   version: require('../package.json').version,
@@ -132,6 +135,7 @@ _.assign(Tyr, {
     }
 
     if (opts.validate) {
+      console.warn('*** opts.validate');
       this.validate(opts.validate);
     }
 
@@ -148,7 +152,8 @@ _.assign(Tyr, {
     }
   },
 
-  validate(opts) {
+  async validate(opts) {
+
     if (opts && opts !== true) {
       function process(dirOpts) {
         const globPattern = dirOpts.glob;
@@ -191,14 +196,14 @@ _.assign(Tyr, {
       Tyr.components.push(secure);
     }
 
-    function bootstrap(stage) {
-      const bootstrapping = Tyr.components.filter(col => col.boot);
+    async function bootstrap(stage) {
+      const bootstrapping = Tyr.components.filter(col => col.boot && !_.includes(bootstrappedComponents, col));
       let reasons;
 
       for (let pass=1; bootstrapping.length && pass < 100; pass++) {
         reasons = [];
         for (let i=0; i<bootstrapping.length; ) {
-          let thisReasons = bootstrapping[i].boot(stage, pass);
+          let thisReasons = await bootstrapping[i].boot(stage, pass);
           if (thisReasons && !_.isArray(thisReasons)) {
             thisReasons = [ thisReasons ];
           }
@@ -207,6 +212,10 @@ _.assign(Tyr, {
             reasons.push(...thisReasons);
             i++;
           } else {
+            if (stage === 'post-link') {
+              bootstrappedComponents.push(bootstrapping[i]);
+            }
+
             bootstrapping.splice(i, 1);
           }
         }
@@ -220,33 +229,33 @@ _.assign(Tyr, {
           '\n\nReasons:\n' +
           reasons.map(r => '  ' + r).join('\n'));
       }
-
-      function parseLogLevel(name) {
-        const ll = options[name];
-        if (_.isString(ll)) {
-          options[name] = Tyr.byName.tyrLogLevel.byLabel(ll);
-
-          if (!options[name]) {
-            throw new Error(`Unknown ${name}: "${ll}".`);
-          }
-        }
-      }
-
-      parseLogLevel('logLevel');
-      parseLogLevel('clientLogLevel');
-      parseLogLevel('consoleLogLevel');
-      parseLogLevel('dbLogLevel');
     }
 
-    bootstrap('compile');
+    await bootstrap('compile');
+
+    function parseLogLevel(name) {
+      const ll = options[name];
+      if (_.isString(ll)) {
+        options[name] = Tyr.byName.tyrLogLevel.byLabel(ll);
+
+        if (!options[name]) {
+          throw new Error(`Unknown ${name}: "${ll}".`);
+        }
+      }
+    }
+
+    parseLogLevel('logLevel');
+    parseLogLevel('clientLogLevel');
+    parseLogLevel('consoleLogLevel');
+    parseLogLevel('dbLogLevel');
 
     for (const col of Tyr.collections) {
       col.compile('link');
     }
 
-    bootstrap('link');
+    await bootstrap('link');
 
-    bootstrap('post-link');
+    await bootstrap('post-link');
   },
 
 

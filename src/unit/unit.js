@@ -157,7 +157,7 @@ function register(unit) {
 }
 
 let bootNeeded = 'UnitType needs to be booted';
-Unit.boot = function(/*stage, pass*/) {
+Unit.boot = function(stage, pass) {
   const UnitType = Tyr.UnitType,
         UnitSystem = Tyr.UnitSystem;
 
