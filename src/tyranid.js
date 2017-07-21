@@ -133,8 +133,7 @@ _.assign(Tyr, {
     }
 
     if (opts.validate) {
-      console.warn('*** opts.validate');
-      this.validate(opts.validate);
+      await this.validate(opts.validate);
     }
 
     // ensure permission defaults
