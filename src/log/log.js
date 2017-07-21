@@ -7,7 +7,7 @@ import * as moment     from 'moment';
 import * as chalk      from 'chalk';
 
 //import onHeaders  from 'on-headers';
-import onFinished from 'on-finished';
+import * as onFinished from 'on-finished';
 
 import Tyr from '../tyr';
 import Collection from '../core/collection';
