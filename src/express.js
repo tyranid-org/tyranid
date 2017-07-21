@@ -442,7 +442,7 @@ export function generateClientLibrary() {
     }
 
     return ajax({
-      url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (text || '')
+      url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (search || '')
     //}).then(function(docs) {
       //return docs.map(function(doc) { return new col(doc); });
     }).catch(function(err) {
