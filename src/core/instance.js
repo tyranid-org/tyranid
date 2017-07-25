@@ -19,7 +19,7 @@ let compiled = false;
 
 Instance.boot = async function(stage/*, pass*/) {
 
-  if (Instance.db) {
+  if (!Instance.db) {
     console.log(`bootstrapping without database, skipping instance boot...`);
     return;
   }
