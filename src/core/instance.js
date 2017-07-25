@@ -19,6 +19,11 @@ let compiled = false;
 
 Instance.boot = async function(stage/*, pass*/) {
 
+  if (Instance.db) {
+    console.log(`bootstrapping without database, skipping instance boot...`);
+    return;
+  }
+
   if (!compiled && stage === 'compile') {
     const old = moment().subtract(30, 'minutes');
 
