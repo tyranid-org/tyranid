@@ -1,5 +1,12 @@
 *.swp
 node_modules/
-dist/test
+dist
+!dist/src
 src
 !src/tyranid.d.ts
+test
+doc
+.travis.yml
+tsconfig.json
+tslint.json
+yarn.lock
