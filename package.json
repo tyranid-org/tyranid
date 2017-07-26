@@ -37,7 +37,7 @@
     "hooker": "0.2.3",
     "lodash": "3.9.3",
     "moment": "2.11.2",
-    "mongodb": "2.1.4",
+    "mongodb": "2.2.30",
     "on-finished": "2.3.0",
     "uglify-js": "2.8.16",
     "typescript": "2.4.1"

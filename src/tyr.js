@@ -148,7 +148,11 @@ const Tyr = {
     if (_.isObject(value) && (bsontype = value._bsontype)) {
       switch (bsontype) {
       case 'ObjectID':
-        return new ObjectId(convertStrToHex(value.id));
+        // 2.2 driver stores id as Buffer compared to string for 2.1
+        // See http://mongodb.github.io/node-mongodb-native/2.2/api/ObjectID.html#generate
+        // and http://mongodb.github.io/node-mongodb-native/2.1/api/ObjectID.html#generate
+        // and linked sources
+        return new ObjectId(value.id instanceof Buffer ? value.id : convertStrToHex(value.id));
 
       // fall through
       }
