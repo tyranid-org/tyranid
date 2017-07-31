@@ -4,7 +4,7 @@ import Collection from './collection';
 
 Collection.prototype.on = function(opts) {
 
-  const { type, handler } = opts;
+  const { type } = opts;
 
   let events = this.events;
   if (!events) {
@@ -16,10 +16,10 @@ Collection.prototype.on = function(opts) {
     handlers = events[type] = [];
   }
 
-  handlers.push(handler);
+  handlers.push(opts);
 
   return function() {
-    const idx = handlers.indexOf(handler);
+    const idx = handlers.indexOf(opts);
 
     if (idx >= 0) {
       handlers.splice(idx, 1);
@@ -27,43 +27,73 @@ Collection.prototype.on = function(opts) {
   };
 };
 
-const Event = Tyr.Event = function Event(type) {
-  this.type = type;
-};
+class EventCancelError {
 
-Event.prototype.preventDefault = function() {
-  this.canceled = true;
-};
+  constructor() {
+  }
 
-/** @private */
-Event.fire = async function(obj, type, eventGen) {
-  const events = obj.events;
+  get message() {
+    return 'Cancel from event handler';
+  }
 
-  if (events) {
-    const handlers = events[type];
+  toString() {
+    return this.message();
+  }
+}
 
-    if (handlers && handlers.length) {
-      const event = new Event(eventGen());
-      event.type = type;
+Tyr.EventCancelError = EventCancelError;
 
-      for (const handler of handlers) {
-        try {
-          const rslt = await handler(event);
+export default class Event {
 
-          if (rslt === false) {
-            event.preventDefault();
+  constructor(data) {
+    Object.assign(this, data);
+  }
+
+  preventDefault() {
+    this.canceled = true;
+  }
+
+  get documents() {
+    if (this.document) {
+      return Promise.resolve(this.document);
+    } else if (this.query) {
+      return this.collection.findAll({ query: this.query });
+    }
+  }
+
+  /** @private */
+  static async fire(event) {
+    const events = event.collection.events;
+
+    if (events) {
+      const handlers = events[event.type];
+
+      if (handlers && handlers.length) {
+        for (const onOpts of handlers) {
+          const when = onOpts.when || 'pre';
+
+          if (when === event.when || when === 'both') {
+            try {
+              const rslt = await onOpts.handler(event);
+
+              if (rslt === false) {
+                event.preventDefault();
+              }
+            } catch (err) {
+              event.preventDefault();
+              throw err;
+            }
+
+            if (event.canceled) {
+              throw new EventCancelError();
+            }
           }
-        } catch (err) {
-          event.preventDefault();
-          throw err;
-        }
-
-        if (event.canceled) {
-          throw new Error('event canceled');
         }
       }
     }
   }
-};
+}
+
+Tyr.Event = Event;
 
 export default Event;

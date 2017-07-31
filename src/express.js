@@ -285,6 +285,7 @@ export function generateClientLibrary() {
 
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
+  Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
 
   const documentPrototype = Tyr.documentPrototype = {
     $clone: function() {
@@ -497,6 +498,8 @@ export function generateClientLibrary() {
 
     CollectionInstance.def = def;
     CollectionInstance.id = def.id;
+    CollectionInstance.label = def.label;
+    delete def.label;
 
     lock(dp);
 
@@ -769,7 +772,8 @@ export function generateClientLibrary() {
   def = {
     id: ${JSON.stringify(def.id)},
     primaryKey: ${JSON.stringify(def.primaryKey)},
-    name: '${name}',`;
+    name: '${name}',
+    label: '${col.label}',`;
 
       const ser = new Serializer('.', 2);
       ser.fields(col.fields);

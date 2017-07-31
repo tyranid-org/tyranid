@@ -656,6 +656,26 @@ describe('tyranid', function() {
       });
     });
 
+    describe('strings', () => {
+      it('should support support labelize', async () => {
+        for (const test of [
+          [ 'cat', 'Cat' ],
+          [ 'latestProjection', 'Latest Projection' ]
+        ]) {
+          expect(Tyr.labelize(test[0])).to.eql(test[1]);
+        }
+      });
+
+      it('should support support pluralize', async () => {
+        for (const test of [
+          [ 'cat', 'cats' ],
+          [ 'quiz', 'quizzes' ]
+        ]) {
+          expect(Tyr.pluralize(test[0])).to.eql(test[1]);
+        }
+      });
+    });
+
     describe('projections', function() {
       it('should support projections returning a cursor out of find (not a promise of a cursor)', async function() {
         const docs = await User.db.find({ 'name.first': 'An'}).limit(1).toArray();
@@ -2955,6 +2975,9 @@ describe('tyranid', function() {
                 throw new Error(`no named Tyr export on client`);
               }
 
+              // TODO:  need to refactor the following so that we can run the (some of) the same tests we run
+              //        on the server on the client
+
               // expect that the server side tyr collections
               // are all in the client side tyr
               Tyr.collections.forEach(col => {
@@ -2963,6 +2986,10 @@ describe('tyranid', function() {
                   throw new Error(`Collection ${col.def.name} not present in client`);
                 }
               });
+
+              if (Tyr.pluralize('daisy') !== 'daisies') {
+                throw new Error('Tyr.pluralize not working on client');
+              }
 
               res();
             }

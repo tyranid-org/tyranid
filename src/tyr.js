@@ -48,6 +48,25 @@ const Tyr = {
     return _.startCase(name);
   },
 
+  pluralize(name) {
+    // TODO:  use lodash inflection or something similar
+    if (name.match(/(ch|s|sh|x)$/)) {
+      return name + 'es';
+    } else if (name.match(/z$/)) {
+      return name + 'zes';
+    } else if (name.match(/[b-df-hj-np-tv-z]y$/)) {
+      return name.substring(0, name.length - 1) + 'ies';
+    //} else if (name.match(/[b-df-hj-np-tv-z]o$/)) {
+      // works for potato, volcano, etc. but not photo ... prob need lodash-inflection to fix this up
+      //return name + 's';
+    } else if (name.match(/is$/)) {
+      return name.substring(0, name.length - 2) + 'es';
+    } else {
+      // TODO:  lots of other problems
+      return name + 's';
+    }
+  },
+
   async valuesBy(filter) {
     const getValues = c => c.valuesFor(c.fieldsBy(filter));
     const arrs = await Promise.all(Tyr.collections.map(getValues));
