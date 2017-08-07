@@ -47,6 +47,7 @@ export default class Event {
 
   constructor(data) {
     Object.assign(this, data);
+    this.on = new Date();
   }
 
   preventDefault() {
@@ -63,6 +64,16 @@ export default class Event {
 
   /** @private */
   static async fire(event) {
+
+    Event.handle(event);
+
+    if (event.broadcast) {
+      Instance.broadcastEvent(event);
+    }
+  }
+
+  /** @private */
+  static async handle(event) {
     const events = event.collection.events;
 
     if (events) {
