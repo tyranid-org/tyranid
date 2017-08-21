@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
 import * as ts from 'typescript';
+import * as socketIo from 'socket.io';
 
 import Tyr          from './tyr';
 import Collection   from './core/collection';
@@ -758,6 +759,16 @@ export function generateClientLibrary() {
     });
   };
 
+  Collection.prototype.subscribe = function(query) {
+    return ajax({
+      url: '/api/' + this.def.name + '/subscribe',
+      data: query
+    }).catch(function(err) {
+      console.log(err);
+    });
+  };
+
+
   Tyr.Collection = Collection;
   var def;
 `;
@@ -858,14 +869,22 @@ function compile(code) {
   return result.outputText;
 }
 
-export default function express(app, auth, opts) {
+export default function connect(app, auth, opts) {
+  // supports deprecated express() options
+  if (!auth && !opts) {
+    opts = app;
+    app = opts.app;
+    auth = opts.auth;
+  } else if (!opts) {
+    opts = { app, auth };
+  }
 
   /**
    * If we have already generated the client bundle,
    * as part of a build task, we don't need to expose
    * a separate endpoint or generate the bundle.
    */
-  if (!Tyr.options.pregenerateClient && (!opts || !opts.noClient)) {
+  if (app && !Tyr.options.pregenerateClient && !opts.noClient) {
     const file = generateClientLibrary();
 
     //app.use(local.express);
@@ -875,26 +894,40 @@ export default function express(app, auth, opts) {
       .get(async (req, res) => res.send(file));
   }
 
-  Tyr.collections.forEach(col => col.express(app, auth));
-  Tyr.components.forEach(comp => {
-    if (comp.routes) {
-      comp.routes(app, auth);
-    }
-  });
+  Tyr.collections.forEach(col => col.connect(opts));
+
+  if (app) {
+    Tyr.components.forEach(comp => {
+      if (comp.routes) {
+        comp.routes(app, auth);
+      }
+    });
+  }
+
+  const http = opts.http;
+  if (http) {
+    const io = Tyr.socketIo = socketIo(http);
+
+    io.on('connection', socket => {
+      console.log('socket.io connection');
+    });
+  }
 }
 
-Tyr.express = express;
+Tyr.connect = Tyr.express /* deprecated */ = connect;
 
-express.middleware = local.express.bind(local);
+connect.middleware = local.express.bind(local);
 
 /**
  * @private ... clients should use Tyr.express()
+ *
+ * auth is deprecated, use opts.auth instead
  */
-Collection.prototype.express = function(app, auth) {
+Collection.prototype.connect = function({ app, auth, http }) {
   const col     = this,
         express = col.def.express;
 
-  if (express) {
+  if (express && app) {
     const name = col.def.name;
 
     if (express.rest || (express.get || express.put || express.array || express.fields)) {
@@ -992,6 +1025,27 @@ Collection.prototype.express = function(app, auth) {
       }
 
       /*
+       *     /api/NAME/subscribe
+       */
+
+      r = app.route('/api/' + name + '/subscribe');
+      r.all(auth);
+
+      if (express.rest || express.get) {
+        r.get(async (req, res) => {
+          const query = req.query;
+
+          try {
+            await col.subscribe(col.fromClientQuery(query));
+            res.sendStatus(200);
+          } catch (err) {
+            console.log(err.stack);
+            res.sendStatus(500);
+          }
+        });
+      }
+
+      /*
        *     /api/NAME/:id
        */
 
@@ -1008,6 +1062,7 @@ Collection.prototype.express = function(app, auth) {
       if (express.rest || express.delete) {
         r.delete(async (req, res) => {
           try {
+            // TODO:  use col.fromClientQuery() like in col.findAll({ query: col.fromClientQuery(query), auth: req.user })
             await col.db.remove({ query: { _id: ObjectId(req.params.id) }, auth: req.user });
             res.sendStatus(200);
           } catch (err) {

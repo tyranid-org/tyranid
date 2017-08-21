@@ -43,6 +43,32 @@ const Tyr = {
 
   $all: '$all',
 
+
+  async valuesBy(filter) {
+    const getValues = c => c.valuesFor(c.fieldsBy(filter));
+    const arrs = await Promise.all(Tyr.collections.map(getValues));
+    return _.union.apply(null, arrs);
+  },
+
+  mixin(target, mixin) {
+    for (const name in mixin) {
+      if (name === 'prototype') {
+        _.extend(target.prototype, mixin.prototype);
+      } else {
+        target[name] = mixin[name];
+      }
+    }
+  },
+
+  isValidObjectIdStr(str) {
+    return /^[a-fA-F0-9]{24}$/.test(str);
+  },
+
+
+  //
+  // string methods
+  //
+
   labelize(name) {
     // TODO:  more cases to be added here later on
     return _.startCase(name);
@@ -67,21 +93,6 @@ const Tyr = {
     }
   },
 
-  async valuesBy(filter) {
-    const getValues = c => c.valuesFor(c.fieldsBy(filter));
-    const arrs = await Promise.all(Tyr.collections.map(getValues));
-    return _.union.apply(null, arrs);
-  },
-
-  mixin(target, mixin) {
-    for (const name in mixin) {
-      if (name === 'prototype') {
-        _.extend(target.prototype, mixin.prototype);
-      } else {
-        target[name] = mixin[name];
-      }
-    }
-  },
 
   //
   // async/await/promise utilities
@@ -141,6 +152,7 @@ const Tyr = {
     const booleans = await Promise.all(array.map(el => predicate(el)));
     return array.some((el, idx) => booleans[idx]);
   },
+
 
   //
   // lodash-like methods
@@ -220,6 +232,7 @@ const Tyr = {
   }
 };
 
+
 /*
  * --- Matching
  */
@@ -288,6 +301,7 @@ const isCompliant = Tyr.isCompliant = function(s, v) {
 
   return false;
 };
+
 
 //
 // *** Timer

@@ -3,6 +3,7 @@ import * as _            from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import Tyr          from '../tyr';
+import Collection   from './collection';
 
 //
 // Detection and Validation
@@ -316,6 +317,69 @@ function merge(query1, query2) {
 
   return query;
 }
+
+Collection.prototype.fromClientQuery = function(query) {
+  const col = this;
+
+  function convertValue(field, value) {
+    if (_.isArray(value)) {
+      return value.map(v => field.type.fromClient(field, v));
+    } else {
+      return field.type.fromClient(field, value);
+    }
+  }
+
+  function convert(path, client) {
+
+    let field;
+    if (path) {
+      field = col.paths[path];
+
+      if (!field) {
+        throw new Error('unknown path: ' + path);
+      }
+    }
+
+    if (_.isArray(client) || !_.isObject(client)) {
+      return convertValue(field, client);
+    }
+
+    const server = {};
+    _.each(client, (v, n) => {
+      switch (n) {
+      case '$and':
+      case '$or':
+        if (_.isArray(v)) {
+          server[n] = v.map(cv => convert(path, cv));
+        } else {
+          server[n] = convert(path, v);
+        }
+        break;
+      case '$in':
+      case '$eq':
+      case '$ne':
+      case '$gt':
+      case '$lt':
+        server[n] = convertValue(field, v);
+        break;
+      case '$exists':
+        server[n] = v;
+        break;
+      default:
+        if (_.isArray(v)) {
+          server[n] = convertValue(field, v);
+        } else {
+          server[n] = convert(path ? path + '.' + n : n, v);
+        }
+      }
+    });
+
+    return server;
+  }
+
+  return convert('', query);
+}
+
 
 const query = {
   merge

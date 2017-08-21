@@ -2,6 +2,7 @@
 import { ObjectId } from 'mongodb';
 
 import Type from '../core/type';
+import Tyr  from '../tyr';
 
 export const MongoIdType = new Type({
   name: 'mongoid',
@@ -19,7 +20,7 @@ export const MongoIdType = new Type({
     if (value) {
       const str = value.toString();
       // we don't want to accept 12-byte strings from the client
-      if (str.length !== 24) {
+      if (!Tyr.isValidObjectIdStr(str)) {
         throw new Error(`Invalid ObjectId for field ${field.name}`);
       }
 

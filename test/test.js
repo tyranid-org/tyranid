@@ -125,6 +125,24 @@ describe('tyranid', function() {
     }, 500);
   });
 
+  describe('ObjectId utilities', () => {
+    it('should support isValidObjectId()', () => {
+      const tests = [
+        [ 3,                          false ],
+        [ new ObjectId().toString(),  true  ],
+        [ '599a2e1453ceg2d33e99938c', false ],
+        [ '599a2e145 ceg2d33e99938c', false ],
+        [ '599a2e145ceg2d33e99938c',  false ],
+        [ '599a2e1453ce22d33e99938c', true  ]
+      ];
+
+      for (const test of tests) {
+        const [ value, expected ] = test;
+        expect(Tyr.isValidObjectIdStr(value)).to.eql(expected);
+      }
+    });
+  });
+
   describe('lodash-like methods', () => {
     it('should support isEqual with OIDs', () => {
       expect(
@@ -2256,12 +2274,12 @@ describe('tyranid', function() {
     describe('collection.links()', function() {
       it('should work with no options', () => {
         const links = User.links();
-        expect(links.length).to.be.eql(11);
+        expect(links.length).to.be.eql(12);
       });
 
       it('should work with incoming', () => {
         const links = User.links({ direction: 'incoming' });
-        expect(links.length).to.be.eql(5);
+        expect(links.length).to.be.eql(6);
       });
 
       it('should work with outgoing', () => {
@@ -2274,7 +2292,7 @@ describe('tyranid', function() {
         expect(links.length).to.be.eql(1);
 
         links = User.links({ relate: 'associate' });
-        expect(links.length).to.be.eql(10);
+        expect(links.length).to.be.eql(11);
       });
     });
 
@@ -2873,6 +2891,7 @@ describe('tyranid', function() {
           throw new Error('stop');
         }});
 
+
         let u1;
         try {
           u1 = new User({ _id: 2001, name: { first: 'User', last: 'One' } });
@@ -2897,30 +2916,37 @@ describe('tyranid', function() {
     describe('express', () => {
       const urlPrefix = 'http://localhost:' + expressPort;
 
-      before(async function(done) {
+      before(async done => {
         const app = express(),
               user = await User.byId(1);
 
         app.use(bodyParser.json());
 
-        Tyr.express(
+        Tyr.connect({
           app,
-          (req, res, next) => {
+          auth: (req, res, next) => {
             req.user = user; // "log in" user 1
             return next();
           },
-          { noClient: true }
-        );
+          noClient: true
+        });
 
-        app.listen(expressPort, () => {
+        const http = app.listen(expressPort, () => {
           //console.log('Express listening on port ' + expressPort)
           done(null, db);
         });
+
+        Tyr.connect({ http });
       });
 
       it('should not expose /custom route on non-express collections', async () => {
         const result = await fetch(urlPrefix + '/api/role/custom');
         expect(result.status).to.eql(404);
+      });
+
+      it('should expose socket.io', async () => {
+        const result = await fetch(urlPrefix + '/socket.io/socket.io.js');
+        expect(result.status).to.eql(200);
       });
 
       it('should support fields', async () => {

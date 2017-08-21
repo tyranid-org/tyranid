@@ -26,6 +26,7 @@ import './core/collection';
 import './core/event';
 import './core/field';
 import './core/instance';
+import './core/subscription';
 import './core/validationError';
 import './core/namePath';
 import './core/query';

@@ -65,7 +65,7 @@ export default class Event {
   /** @private */
   static async fire(event) {
 
-    Event.handle(event);
+    await Event.handle(event);
 
     if (event.broadcast) {
       Instance.broadcastEvent(event);
@@ -86,6 +86,9 @@ export default class Event {
           if (when === event.when || when === 'both') {
             try {
               const rslt = await onOpts.handler(event);
+              //if (rslt.then) {
+                //await rslt;
+              //}
 
               if (rslt === false) {
                 event.preventDefault();

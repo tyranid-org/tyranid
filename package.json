@@ -39,8 +39,9 @@
     "moment": "2.11.2",
     "mongodb": "2.2.30",
     "on-finished": "2.3.0",
-    "uglify-js": "2.8.16",
-    "typescript": "2.4.1"
+    "socket.io": "^2.0.3",
+    "typescript": "2.4.1",
+    "uglify-js": "2.8.16"
   },
   "devDependencies": {
     "body-parser": "1.17.2",

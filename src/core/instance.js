@@ -5,8 +5,6 @@ import * as moment from 'moment';
 import Tyr from '../tyr';
 import Collection from './collection';
 
-
-
 let thisInstanceId;
 
 const Instance = new Collection({
@@ -23,6 +21,7 @@ Instance.prototype.fireEvent = function(event) {
   const edb = Tyr.db.collection(this._id + '-event');
 
   delete event._id;
+  event.when = new Date();
   edb.save(event);
 };
 
@@ -59,7 +58,6 @@ Instance.boot = async function(stage/*, pass*/) {
 
     const instanceId = thisInstanceId = Tyr.instanceId = os.hostname().replace(/[-\.:]/g, '_');
 
-
     // Heartbeat
 
     function heartbeat() {
@@ -73,7 +71,6 @@ Instance.boot = async function(stage/*, pass*/) {
 
     setInterval(heartbeat, 15 * 60 * 1000 /* 15 minutes */);
 
-
     // Instance Event Queue
 
     eventdb = await Tyr.db.createCollection(
@@ -85,17 +82,17 @@ Instance.boot = async function(stage/*, pass*/) {
       }
     );
 
-    // current need is for non-durable events, might expand this later on
-    await eventdb.remove({});
-
     const eventStream = eventdb.find(
-      {}, //filter
+      {
+        // current need is for non-durable events, might expand this later on
+        when: { $gte: new Date() }
+      },
       {
         tailable: true,
         awaitdata: true,
         numberOfRetries: -1
       }
-    ).sort({ $natural: -1 }).stream();
+    ).stream();
 
     eventStream.on('data', event => Event.handle(new Event(event)));
 
