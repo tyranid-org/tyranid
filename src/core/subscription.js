@@ -23,6 +23,34 @@ const Subscription = new Collection({
   }
 });
 
+const subHandlers = {};
+
+async function parseSubscriptions() {
+  const subs = await Subscription.findAll({
+    query: {
+      i: Tyr.instanceId
+    }
+  });
+
+  for (const sub of subs) {
+    const colId = sub.c,
+          col   = Tyr.byId[colId];
+
+    if (!subHandlers[colId]) {
+      subHandlers[colId] = col.on({
+        type: 'changed',
+        handler: event => {
+          const { document, query } = event;
+          // TODO:  check to see if this matches any of the existing queries 
+        }
+      });
+    }
+    
+
+
+  }
+}
+
 Collection.prototype.subscribe = async function(query, user) {
 
   const queryStr = JSON.stringify(query);
