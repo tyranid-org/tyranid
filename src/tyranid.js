@@ -282,13 +282,11 @@ _.assign(Tyr, {
           }
         }
 
-        const names = indexes.map(toName);
-
         for (const ei of existingIndexes) {
           if (ei.name === '_id_') {
             // ignore the default _id key
           } else {
-            if (!names.find(n => n === ei.name)) {
+            if (!indexes.find(i => _.eq(i.key, ei.key) || toName(i) === ei.name)) {
               await col.db.dropIndex(ei.name);
             }
           }
