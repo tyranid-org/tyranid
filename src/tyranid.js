@@ -257,6 +257,21 @@ _.assign(Tyr, {
   },
 
   async createIndexes() {
+    const toName = index => {
+      if ( index.name ) {
+        return index.name;
+      }
+      let ret = "";
+      const key = index.key;
+      for (const k in key) {
+        if (ret.length) {
+          ret += '_';
+        }
+        ret += k + '_' + key[k];
+      }
+      return ret;
+    };
+
     for (const col of Tyr.collections) {
       const indexes = col.def.indexes;
 
@@ -273,13 +288,13 @@ _.assign(Tyr, {
           }
         }
 
+        const names = indexes.map(toName);
+
         for (const ei of existingIndexes) {
           if (ei.name === '_id_') {
             // ignore the default _id key
           } else {
-            const ni = indexes.find(i => i.name === ei.name);
-
-            if (!ni || !_.eq(ni.key, ei.key)) {
+            if (!names.find(n => n === ei.name)) {
               await col.db.dropIndex(ei.name);
             }
           }
