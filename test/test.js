@@ -2271,6 +2271,61 @@ describe('tyranid', function() {
       });
     });
 
+    describe('query intersection', () => {
+      const intersection = Tyr.query.intersection,
+            i1 = '111111111111111111111111',
+            i2 = '222222222222222222222222',
+            i3 = '333333333333333333333333';
+
+      function test(v1, v2, expected) {
+        expect(intersection(v1, v2)).to.eql(expected);
+      }
+
+      it('should intersect empty queries', () => {
+        test(null, null, undefined);
+        test(null, {}, undefined);
+        test({}, {}, {});
+        test({ foo: 1 }, null, undefined);
+        test({ foo: 1 }, {}, { foo: 1 });
+      });
+
+      it('should intersect simple queries', () => {
+        test({ a: 1 }, { b: 1 }, { a: 1, b: 1 });
+        test({ a: 1 }, { a: 1 }, { a: 1 });
+        test({ a: 1 }, { a: 2 }, undefined);
+      });
+
+      it('should intersect queries that have arrays', () => {
+        test({ a: [1, 2] }, { a: 1 }, undefined);
+        test({ a: [ObjectId(i1), ObjectId(i2)] }, { a: ObjectId(i1) }, undefined);
+        test({ a: [1, 2, 3] }, { a: [1, 2] }, undefined);
+        test({ a: [1, 2, 3] }, { a: [4, 5] }, undefined);
+      });
+
+      it('should intersect queries that use $in', () => {
+        test({ a: { $in: [1, 2] } }, { a: 1 }, { a: 1 });
+        test({ a: { $in: [ObjectId(i1), ObjectId(i2)] } }, { a: ObjectId(i1) }, { a: ObjectId(i1) });
+        test({ a: { $in: [1, 2, 3] } }, { a: { $in: [1, 2] } }, { a: { $in: [1, 2] } });
+        test({ a: { $in: [ObjectId(i1), ObjectId(i2), ObjectId(i3)] } }, { a: { $in: [ObjectId(i1), ObjectId(i2)] } }, { a: { $in: [ObjectId(i1), ObjectId(i2)] } });
+        test({ a: { $in: [1, 2, 3] } }, { a: { $in: [4, 5] } }, undefined);
+      });
+
+      it('should support comparison operators', () => {
+        test({ a: { $lt: 2 } }, { a: 1 }, { a: 1 });
+        test({ a: { $gt: 2 } }, { a: 1 }, undefined);
+        test({ a: { $lt: 2 } }, { a: { $gt: 0 } }, { a: { $lt: 2, $gt: 0 } });
+      });
+
+      it('should support logical operators', () => {
+        test(
+          { $or: [ { blog: 1 }, { org: 1 } ] },
+          { $and: [ { a1: 1 }, { b1: 1 } ] },
+          { $or: [ { blog: 1 }, { org: 1 } ],
+            $and: [ { a1: 1 }, { b1: 1 } ] }
+        );
+      });
+    });
+
     describe('collection.links()', function() {
       it('should work with no options', () => {
         const links = User.links();
@@ -2890,7 +2945,6 @@ describe('tyranid', function() {
         const dereg = User.on({ type: 'remove', handler: (/*event*/) => {
           throw new Error('stop');
         }});
-
 
         let u1;
         try {

@@ -5,6 +5,7 @@ import * as moment from 'moment';
 import Tyr from '../tyr';
 import Collection from './collection';
 
+import * as query from './query';
 
 const Subscription = new Collection({
   id: '_t3',
@@ -23,33 +24,114 @@ const Subscription = new Collection({
   }
 });
 
-const subHandlers = {};
-
-async function parseSubscriptions() {
-  const subs = await Subscription.findAll({
-    query: {
-      i: Tyr.instanceId
+/*
+interface LocalListener {
+  [collectionId: string]: {
+    changeHandler: Event => void,
+    queries: {
+      [queryStr: string]: {
+        queryObj: MongoDBQuery,
+        instances: {
+          [instanceId: string]: boolean
+        }
+      }
     }
-  });
+  }
+}
+*/
+
+const localListeners /*: LocalListener*/ = {};
+
+async function parseSubscriptions(subscription) {
+  const subs = subscription ? [ subscription ] : await Subscription.findAll({});
 
   for (const sub of subs) {
     const colId = sub.c,
           col   = Tyr.byId[colId];
 
-    if (!subHandlers[colId]) {
-      subHandlers[colId] = col.on({
+    let listener = localListeners[colId];
+
+    if (!localListeners[colId]) {
+      const changeHandler = col.on({
         type: 'changed',
-        handler: event => {
+        handler: async event => {
           const { document, query } = event;
-          // TODO:  check to see if this matches any of the existing queries 
+
+          for (const queryDef of listener.queries) {
+            let refinedQuery = query,
+                matched;
+
+            if (document) {
+              if (!query.matches(queryDef.queryObj, document)) continue;
+              refinedQuery = undefined;
+
+            } else /*if (query)*/ {
+              refinedQuery = query.intersection(queryDef.queryObj, query);
+              if (!refinedQuery) continue;
+
+            }
+
+            if (matched) {
+              for (const instanceId of queryDef.instances) {
+                const event = new Tyr.Event({
+                  collection: Subscription.id,
+                  query: refinedQuery,
+                  document,
+                  type: 'subscriptionEvent',
+                  when: 'pre',
+                  instanceId: instanceId
+                });
+
+                if (instanceId === Tyr.instanceId) {
+                  handleSubscriptionEvent(event);
+                } else {
+                  await Tyr.Event.fire(event);
+                }
+              }
+            }
+          }
         }
       });
+
+      listener = localListeners[colId] = {
+        changeHandler,
+        queries
+      };
     }
-    
 
+    const queryStr = subscription.q;
 
+    let queryDef = listener.queries[queryStr];
+    if (!queryDef) {
+      queryDef = listener.queries[queryStr] = {
+        queryObj: JSON.parse(queryStr),
+        instances: {}
+      };
+    }
+
+    queryDef.instances[subscription.i] = true;
   }
 }
+
+Subscription.on({
+  type: 'subscribe',
+  async handler(event) {
+    const { subscription } = event;
+
+    await parseSubscriptions(subscription);
+  }
+});
+
+//let bootNeeded = 'Subscription needs to be booted';
+Subscription.boot = async function(/*stage, pass*/) {
+
+  //if (bootNeeded) {
+    await parseSubscriptions();
+    //bootNeeded = undefined;
+  //}
+
+    return undefined; //bootNeeded;
+};
 
 Collection.prototype.subscribe = async function(query, user) {
 
@@ -77,21 +159,25 @@ Collection.prototype.subscribe = async function(query, user) {
     await Tyr.Event.fire(
       new Tyr.Event({
         collection: this.$model,
-        type: 'subscriptionsUpdated',
+        type: 'subscribe',
         when: 'pre',
         broadcast: true,
         subscription
       })
     );
   }
+};
+
+async function handleSubscriptionEvent(event) {
+  const documents = await event.documents;
+
+  // TODO:  send down updated documents to affected subscribers
 }
 
 Subscription.on({
-  type: 'subscriptionsUpdated',
+  type: 'subscriptionEvent',
   handler(event) {
-    const { subscription } = event;
-
-    // TODO:  update local subscription list
+    handleSubscriptionEvent(event);
   }
 });
 

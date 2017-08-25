@@ -62,13 +62,25 @@ export default class Event {
     }
   }
 
-  /** @private */
   static async fire(event) {
+    event.date = new Date();
 
-    await Event.handle(event);
+    const instanceId = event.instanceId !== Tyr.instanceId ? event.instanceId : undefined;
 
-    if (event.broadcast) {
-      Instance.broadcastEvent(event);
+    if (!instanceId) {
+      await Event.handle(event);
+
+      if (!event.broadcast) return;
+    }
+
+    const instances = await Instance.findAll({
+      _id: instanceId || { $ne: Tyr.instanceId },
+      lastAliveOn: { $gte: moment().subtract(30, 'minutes').toDate() }
+    });
+
+    for (const instance of instances) {
+      delete event._id;
+      Tyr.db.collection(instance._id + '-event').save(event);
     }
   }
 

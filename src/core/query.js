@@ -39,13 +39,15 @@ function validateInArray(arr) {
 //
 // ObjectId-safe Operations
 //
+// TODO:  move this stuff into Tyr ?
+//
 
 // _.include() doesn't work with ObjectIds
-function includes(arr, v) {
+function arrayIncludes(arr, v) {
   for (let i = 0, len = arr.length; i < len; i++) {
     const av = arr[i];
 
-    if (_.isEqual(av, v)) {
+    if (Tyr.isEqual(av, v)) {
       return true;
     }
   }
@@ -53,16 +55,16 @@ function includes(arr, v) {
   return false;
 }
 
-// _.intersection doesn't work with ObjectIds, TODO: replace with _.intersectionWith(..., _.isEqual) when lodash upgraded
-function intersection(arr1, arr2) {
+// _.intersection doesn't work with ObjectIds, TODO: replace with _.intersectionWith(..., Tyr.isEqual) when lodash upgraded
+function arrayIntersection(arr1, arr2) {
   if (_.isEqual(arr1, arr2)) {
     return arr1;
   }
 
-  return arr1.filter(v => includes(arr2, v));
+  return arr1.filter(v => arrayIncludes(arr2, v));
 }
 
-// _.union doesn't work with ObjectIds, TODO: replace with _.unionWith(..., _.isEqual) when lodash upgraded
+// _.union doesn't work with ObjectIds, TODO: replace with _.unionWith(..., Tyr.isEqual) when lodash upgraded
 function union(arr1, arr2) {
   if (_.isEqual(arr1, arr2)) {
     return arr1;
@@ -70,7 +72,7 @@ function union(arr1, arr2) {
 
   const arr = arr1.slice();
   for (const v of arr2) {
-    if (!includes(arr, v)) {
+    if (!arrayIncludes(arr, v)) {
       arr.push(v);
     }
   }
@@ -79,7 +81,7 @@ function union(arr1, arr2) {
 }
 
 //
-// Merging
+// Query Merging
 //
 
 function mergeOpObject(v1, v2) {
@@ -124,7 +126,7 @@ function mergeOpObject(v1, v2) {
         validateInArray(v1);
         validateInArray(v2);
 
-        const iarr = intersection(v1, v2);
+        const iarr = arrayIntersection(v1, v2);
         switch (iarr.length) {
         case 0:  return false;
         default: o.$in = iarr;
@@ -145,7 +147,7 @@ function mergeOpObject(v1, v2) {
         break;
 
       case '$eq':
-        if (_.isEqual(v1, v2)) {
+        if (Tyr.isEqual(v1, v2)) {
           o.$eq = v1;
         } else {
           return false;
@@ -154,7 +156,7 @@ function mergeOpObject(v1, v2) {
         break;
 
       case '$ne':
-        if (_.isEqual(v1, v2)) {
+        if (Tyr.isEqual(v1, v2)) {
           o.$ne = v1;
         } else {
           addToNin([ v1, v2 ]);
@@ -221,7 +223,7 @@ function simplifyOpObject(o) {
     validateInArray(inv);
 
     if (eqv) {
-      if (!includes(inv, eqv)) {
+      if (!arrayIncludes(inv, eqv)) {
         return false;
       } else {
         delete o.$in;
@@ -237,7 +239,7 @@ function simplifyOpObject(o) {
   }
 
   if (eqv && nev) {
-    if (_.isEqual(eqv, nev)) {
+    if (Tyr.isEqual(eqv, nev)) {
       return false;
     }
 
@@ -262,7 +264,7 @@ function merge(query1, query2) {
     return query1;
   }
 
-  if (_.isEqual(query1, query2)) {
+  if (Tyr.isEqual(query1, query2)) {
     return simplify(query1);
   }
 
@@ -277,7 +279,7 @@ function merge(query1, query2) {
     const v1 = query1[n],
           v2 = query2[n];
 
-    if (!v2 || _.isEqual(v1, v2)) {
+    if (!v2 || Tyr.isEqual(v1, v2)) {
       query[n] = simplify(v1);
       continue;
     } else if (!v1) {
@@ -317,6 +319,144 @@ function merge(query1, query2) {
 
   return query;
 }
+
+//
+// Query Intersection
+//
+
+const NO_MATCH = '_no-match';
+
+function _queryIntersection(a, b) {
+  if (!a || !b) {
+    throw NO_MATCH;
+  }
+
+  if (Tyr.isEqual(a, b)) {
+    return a;
+  }
+
+  if (isOpObject(a) && isValue(b)) {
+    b = { $eq: b };
+  } else if (isOpObject(b) && isValue(a)) {
+    a = { $eq: a };
+  }
+
+  if (isValue(a) || isValue(b) || Array.isArray(a) || Array.isArray(b)) {
+    throw NO_MATCH;
+  }
+
+  const obj = {};
+
+  for (const n in a) {
+    const av = a[n],
+          bv = b[n];
+
+    if (av === undefined) {
+      obj[n] = bv;
+    } else if (bv === undefined) {
+      obj[n] = av;
+    } else {
+      switch (n) {
+        case '$in':
+          if (Array.isArray(av)) {
+            if (Array.isArray(bv)) {
+              const rslt = arrayIntersection(av, bv);
+              if (!rslt.length) throw NO_MATCH;
+              obj[n] = rslt;
+            } else if (arrayIncludes(av, bv)) {
+              obj[n] = bv;
+            } else {
+              throw NO_MATCH;
+            }
+          }
+
+          break;
+
+        default:
+          obj[n] = _queryIntersection(av, bv);
+      }
+    }
+  }
+
+  for (const n in b) {
+    if (a[n] === undefined) {
+      obj[n] = b[n];
+    }
+  }
+
+  // simplification
+
+  if (obj.$eq) {
+    if (obj.$in) {
+      if (arrayIncludes(obj.$in, obj.$eq)) {
+        delete obj.$in;
+      } else {
+        throw NO_MATCH;
+      }
+    }
+
+    if (obj.$lt) {
+      if (obj.$eq < obj.$lt) {
+        delete obj.$lt;
+      } else {
+        throw NO_MATCH;
+      }
+    }
+
+    if (obj.$gt) {
+      if (obj.$eq > obj.$gt) {
+        delete obj.$gt;
+      } else {
+        throw NO_MATCH;
+      }
+    }
+  }
+
+  const objKeys = _.keys(obj);
+  if (objKeys.length === 1) {
+    switch (objKeys[0]) {
+      case '$in':
+        if (!Array.isArray(obj.$in)) {
+          return obj.$in;
+        }
+
+        break;
+      case '$eq':
+        return obj.$eq;
+
+        break;
+    }
+  }
+
+  return obj;
+}
+
+function queryIntersection(a, b) {
+  try {
+    return _queryIntersection(a, b);
+  } catch (err) {
+    if (err === NO_MATCH) {
+      return undefined;
+    }
+
+    throw err;
+  }
+}
+
+//
+// Query Matching
+//
+
+function queryMatches(query, doc) {
+  // TODO:  implement this
+  //        maybe https://github.com/Automattic/mongo-query ?
+
+  return false;
+}
+
+//
+// fromClient Query Conversion
+//
 
 Collection.prototype.fromClientQuery = function(query) {
   const col = this;
@@ -378,11 +518,12 @@ Collection.prototype.fromClientQuery = function(query) {
   }
 
   return convert('', query);
-}
-
+};
 
 const query = {
-  merge
+  merge,
+  intersection: queryIntersection,
+  matches: queryMatches
 };
 
 Tyr.query = query;

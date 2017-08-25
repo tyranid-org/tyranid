@@ -17,29 +17,6 @@ const Instance = new Collection({
   }
 });
 
-Instance.prototype.fireEvent = function(event) {
-  const edb = Tyr.db.collection(this._id + '-event');
-
-  delete event._id;
-  event.when = new Date();
-  edb.save(event);
-};
-
-Instance.broadcastEvent = async function(event) {
-  const cutoff = moment().subtract(30, 'minutes').toDate();
-
-  const instances = await Instance.findAll({
-    query: {
-      _id: { $ne: thisInstanceId },
-      lastAliveOn: { $gte: cutoff }
-    }
-  });
-
-  for (const instance of instances) {
-    instance.fireEvent(event);
-  }
-};
-
 let compiled = false;
 
 let eventdb;
