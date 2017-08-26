@@ -447,12 +447,59 @@ function queryIntersection(a, b) {
 // Query Matching
 //
 
-function queryMatches(query, doc) {
-  // TODO:  implement this
-  //        maybe https://github.com/Automattic/mongo-query ?
+function valueMatches(match, value) {
 
-  return false;
+  if (isValue(match)) {
+    return Tyr.isEqual(match, value);
+  }
+
+  for (const op in match) {
+    if (!op.startsWith('$')) {
+      if (!valueMatches(match[op], value[op])) {
+        return false;
+      }
+    } else {
+      switch (op) {
+        case '$eq':
+
+        case '$in':
+
+        default:
+          throw new Error('op ' + op + ' not supported (yet)');
+      }
+    }
+  }
+
+  return true;
 }
+
+function queryMatches(query, doc) {
+
+  for (const name in query) {
+    if (name.startsWith('$')) {
+      switch (name) {
+        //case '$and':
+          // TODO
+          //break;
+
+        //case '$or':
+          // TODO
+          //break;
+
+        default:
+          throw new Error('op ' + op + ' not supported (yet)');
+      }
+    } else {
+
+      if (!valueMatches(query[name], doc[name])) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 
 //
 // fromClient Query Conversion

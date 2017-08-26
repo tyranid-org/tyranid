@@ -116,9 +116,7 @@ async function parseSubscriptions(subscription) {
 Subscription.on({
   type: 'subscribe',
   async handler(event) {
-    const { subscription } = event;
-
-    await parseSubscriptions(subscription);
+    await parseSubscriptions(event.subscription);
   }
 });
 
@@ -130,7 +128,7 @@ Subscription.boot = async function(/*stage, pass*/) {
     //bootNeeded = undefined;
   //}
 
-    return undefined; //bootNeeded;
+  return undefined;//bootNeeded;
 };
 
 Collection.prototype.subscribe = async function(query, user) {
@@ -176,9 +174,7 @@ async function handleSubscriptionEvent(event) {
 
 Subscription.on({
   type: 'subscriptionEvent',
-  handler(event) {
-    handleSubscriptionEvent(event);
-  }
+  handler: handleSubscriptionEvent
 });
 
 export default Subscription;
