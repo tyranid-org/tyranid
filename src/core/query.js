@@ -461,8 +461,16 @@ function valueMatches(match, value) {
     } else {
       switch (op) {
         case '$eq':
+          if (!Tyr.isEqual(match.$eq, value)) {
+            return false;
+          }
+          break;
 
         case '$in':
+          if (!arrayIncludes(match.$in, value)) {
+            return false;
+          }
+          break;
 
         default:
           throw new Error('op ' + op + ' not supported (yet)');
@@ -478,16 +486,20 @@ function queryMatches(query, doc) {
   for (const name in query) {
     if (name.startsWith('$')) {
       switch (name) {
-        //case '$and':
-          // TODO
-          //break;
+        case '$and':
+          if (!query.$and.every(q => queryMatches(q, doc))) {
+            return false;
+          }
+          break;
 
-        //case '$or':
-          // TODO
-          //break;
+        case '$or':
+          if (!query.$or.some(q => queryMatches(q, doc))) {
+            return false;
+          }
+          break;
 
         default:
-          throw new Error('op ' + op + ' not supported (yet)');
+          throw new Error('op ' + name + ' not supported (yet)');
       }
     } else {
 

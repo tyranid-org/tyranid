@@ -237,6 +237,36 @@ export function add() {
         test({ foo: 1 },         { foo: 1 },         true);
         test({ foo: 1, bar: 2 }, { foo: 1 },         false);
         test({ foo: 1, bar: 2 }, { foo: 1, bar: 2 }, true);
+        test({ foo: [1, 2]},     { foo: 1 },         false);
+        test({ foo: [1, 2]},     { foo: [1] },       false);
+        test({ foo: [1, 2]},     { foo: [1, 2] },    true);
+      });
+
+      it('should work with $in', () => {
+        test({ foo: { $in: [1, 2] } },         { foo: 1 },           true);
+        test({ foo: { $in: [1, 2] } },         { foo: 3 },           false);
+        test({ foo: { $in: [1, 2] } },         {},                   false);
+        test({ foo: { $in: [ObjectId(i1)] } }, { foo: ObjectId(i1)}, true);
+      });
+
+      it('should work with $eq', () => {
+        test({ foo: { $eq: 1 } },              { foo: 1 },           true);
+        test({ foo: { $eq: 1 } },              { foo: 3 },           false);
+        test({ foo: { $eq: ObjectId(i1) } },   { foo: ObjectId(i1)}, true);
+      });
+
+      it('should work with $or', () => {
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { foo: 1 },           true);
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { bar: 1 },           true);
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, {},                   false);
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { bar: 2 },           false);
+      });
+
+      it('should work with $and', () => {
+        test({ $and: [ { foo: 1 }, { bar: 1 } ] }, { foo: 1 },           false);
+        test({ $and: [ { foo: 1 }, { bar: 1 } ] }, { bar: 1 },           false);
+        test({ $and: [ { foo: 1 }, { bar: 1 } ] }, {},                   false);
+        test({ $and: [ { foo: 1 }, { bar: 1 } ] }, { foo: 1, bar: 1 },   true);
       });
     });
 
