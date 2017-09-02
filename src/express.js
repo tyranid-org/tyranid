@@ -321,6 +321,10 @@ export function generateClientLibrary() {
         console.log(err);
       });
     }
+
+    $share() {
+      this.$model.indexById[this._id] = this;
+    }
   };
 
   Object.defineProperties(documentPrototype, {
@@ -500,6 +504,7 @@ export function generateClientLibrary() {
     CollectionInstance.def = def;
     CollectionInstance.id = def.id;
     CollectionInstance.label = def.label;
+    CollectionInstance.byIdIndex = {};
     delete def.label;
 
     lock(dp);
@@ -511,7 +516,7 @@ export function generateClientLibrary() {
         return new CollectionInstance(v);
       });
 
-      var byIdIndex = CollectionInstance.byIdIndex = {};
+      var byIdIndex = CollectionInstance.byIdIndex;
       vals.forEach(function(v) {
         CollectionInstance[_.snakeCase(v.name).toUpperCase()] = v;
         byIdIndex[v._id] = v;
@@ -759,15 +764,34 @@ export function generateClientLibrary() {
     });
   };
 
-  Collection.prototype.subscribe = function(query) {
-    return ajax({
-      url: '/api/' + this.def.name + '/subscribe',
-      data: query
-    }).catch(function(err) {
-      console.log(err);
-    });
-  };
+  if (window.io) {
+    Collection.prototype.subscribe = function(query) {
+      return ajax({
+        url: '/api/' + this.def.name + '/subscribe',
+        data: query
+      }).catch(function(err) {
+        console.log(err);
+      });
+    };
 
+    Tyr.socket = window.io();
+
+    Tyr.socket.on('subscriptionEvent', function(data) {
+      // TODO:  update local data
+      var col = Tyr.byId[data.colId];
+
+      _.each(data.docs, function(doc) {
+        var doc = col.byIdIndex[doc._id];
+
+        if (!doc) {
+          doc = new col(doc);
+          col.byIdIndex[doc._id] = doc;
+        } else {
+          _.assign(doc, data);
+        }
+      });
+    });
+  }
 
   Tyr.Collection = Collection;
   var def;
@@ -869,6 +893,8 @@ function compile(code) {
   return result.outputText;
 }
 
+//const sockets = {};
+
 export default function connect(app, auth, opts) {
   // supports deprecated express() options
   if (!auth && !opts) {
@@ -906,10 +932,13 @@ export default function connect(app, auth, opts) {
 
   const http = opts.http;
   if (http) {
-    const io = Tyr.socketIo = socketIo(http);
+    const io = Tyr.io = Tyr.socketIo = socketIo(http);
 
     io.on('connection', socket => {
-      console.log('socket.io connection');
+
+      socket.on('disconnect', () => {
+        // TODO:  cancel subscriptions
+      });
     });
   }
 }

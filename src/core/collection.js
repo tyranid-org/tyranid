@@ -613,7 +613,7 @@ export default class Collection {
           labelField = collection.labelField;
 
     if (!labelField) {
-      throw new Error('No labelField defined for collection ' + collection.name);
+      throw new Error('No labelField defined for collection ' + collection.def.name);
     }
 
     // TODO:  have this use parsePath() to walk the object in case the label is stored in an embedded object
@@ -850,7 +850,7 @@ export default class Collection {
       const arrOpts = combineOptions(opts, { denormalAlreadyDone: true });
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
-      if (collection.def.historical) {
+      if (collection.def.historical && (!opts || opts.historical !== false)) {
         if (obj.$historical) {
           throw new Error('Document is read-only due to $historical');
         } else {
@@ -959,7 +959,7 @@ export default class Collection {
 
     opts.update = { $set: update };
 
-    if (collection.def.historical) {
+    if (collection.def.historical && opts.historical !== false) {
       if (obj.$historical) {
         throw new Error('Document is read-only due to $historical');
       }
@@ -1085,7 +1085,7 @@ export default class Collection {
       [path]: value
     };
 
-    if (collection.def.historical && collection.parsePath(path).isHistorical()) {
+    if (collection.def.historical && opts.historical !== false && collection.parsePath(path).isHistorical()) {
       pv._history = historical.snapshotPush(path, historical.patchPropsFromOpts(opts));
     }
 

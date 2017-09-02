@@ -512,7 +512,6 @@ function queryMatches(query, doc) {
   return true;
 }
 
-
 //
 // fromClient Query Conversion
 //

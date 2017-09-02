@@ -46,6 +46,15 @@ Tyr.EventCancelError = EventCancelError;
 export default class Event {
 
   constructor(data) {
+    // collection is a computed property
+    if (data.collection) {
+      if (!data.collectionId) {
+        data.collectionId = data.collection.id;
+      }
+
+      delete data.collection;
+    }
+
     Object.assign(this, data);
     this.on = new Date();
   }
@@ -54,11 +63,19 @@ export default class Event {
     this.canceled = true;
   }
 
+  get collection() {
+    return Tyr.byId[this.collectionId];
+  }
+
+  get dataCollection() {
+    return this.dataCollectionId ? Tyr.byId[this.dataCollectionId] : this.collection;
+  }
+
   get documents() {
     if (this.document) {
       return Promise.resolve(this.document);
     } else if (this.query) {
-      return this.collection.findAll({ query: this.query });
+      return this.dataCollection.findAll({ query: this.query });
     }
   }
 

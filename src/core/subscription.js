@@ -74,7 +74,8 @@ async function parseSubscriptions(subscription) {
             if (matched) {
               for (const instanceId of queryDef.instances) {
                 const event = new Tyr.Event({
-                  collection: Subscription.id,
+                  collection: Subscription,
+                  dataCollectionId: event.collectionId,
                   query: refinedQuery,
                   document,
                   type: 'subscriptionEvent',
@@ -125,10 +126,11 @@ Subscription.boot = async function(/*stage, pass*/) {
 
   //if (bootNeeded) {
     await parseSubscriptions();
+
     //bootNeeded = undefined;
   //}
 
-  return undefined;//bootNeeded;
+    return undefined; //bootNeeded;
 };
 
 Collection.prototype.subscribe = async function(query, user) {
@@ -167,9 +169,18 @@ Collection.prototype.subscribe = async function(query, user) {
 };
 
 async function handleSubscriptionEvent(event) {
-  const documents = await event.documents;
+  const col = event.dataCollection,
+        listener = localListeners[col.id];
 
-  // TODO:  send down updated documents to affected subscribers
+  if (listener) {
+    const documents = await event.documents;
+
+    // TODO:  send down updated documents only the affected subscribers
+    Tyr.io.emit('subscriptionEvent', {
+      colId: event.dataCollectionId,
+      docs: documents.map(doc => doc.$toClient())
+    });
+  }
 }
 
 Subscription.on({
