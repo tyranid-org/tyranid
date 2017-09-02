@@ -30,6 +30,8 @@ const IntegerType = new Type({
       if (v.toString() !== value) {
         throw new Error(`Invalid integer on field ${field.name}: ${value}`);
       }
+
+      return v;
     } else {
       return value;
     }

@@ -1010,7 +1010,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.put) {
         r.put(async function(req, res) {
           try {
+            console.log('req.body', req.body);
             const doc = col.fromClient(req.body);
+            console.log('fromCliented', doc);
 
             if (doc._id) {
               const existingDoc = await col.findOne({ query: { _id: doc._id }, auth: req.user });

@@ -1213,9 +1213,11 @@ describe('tyranid', function() {
       });
 
       it('should fromClient array objects', function() {
-        var userObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true } ] };
+        var userObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true, duration: '5' } ] };
         var user = User.fromClient(userObj);
         expect(user.roles[0].role).to.be.an.instanceof(ObjectId);
+        expect(user.roles[0].active).to.eql(true);
+        expect(user.roles[0].duration).to.eql(5);
       });
 
       it('should deep fromClient', function() {

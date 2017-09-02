@@ -21,7 +21,8 @@ var RoleStatus = {
   is: 'object',
   fields: {
     role:       { link: 'role' },
-    active:     { is: 'boolean' }
+    active:     { is: 'boolean' },
+    duration:   { is: 'integer' }
   }
 };
 
