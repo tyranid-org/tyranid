@@ -719,14 +719,19 @@ export function generateClientLibrary() {
     })
   };
 
-  // TODO:  support query instead of just an id?
-  Collection.prototype.remove = function(id) {
-    var col  = this;
-
-    return ajax({
-      url: '/api/' + col.def.name + '/' + id,
-      method: 'delete'
-    }).catch(function(err) {
+  Collection.prototype.remove = function(idOrQuery) {
+    return ajax(
+      (typeof idOrQuery === 'string') ?
+      {
+        url: '/api/' + this.def.name + '/' + idOrQuery,
+        method: 'delete'
+      } :
+      {
+        url: '/api/' + this.def.name,
+        data: idOrQuery,
+        method: 'delete'
+      }
+    ).catch(function(err) {
       console.log(err);
     });
   };
@@ -1025,6 +1030,18 @@ Collection.prototype.connect = function({ app, auth, http }) {
         });
       }
 
+      if (express.rest || express.delete) {
+        r.delete(async (req, res) => {
+          try {
+            await col.remove({ query: col.fromClientQuery(req.query), auth: req.user });
+            res.sendStatus(200);
+          } catch (err) {
+            console.log(err.stack);
+            res.sendStatus(500);
+          }
+        });
+      }
+
       /*
        *     /api/NAME/custom
        */
@@ -1091,8 +1108,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.delete) {
         r.delete(async (req, res) => {
           try {
-            // TODO:  use col.fromClientQuery() like in col.findAll({ query: col.fromClientQuery(query), auth: req.user })
-            await col.db.remove({ query: { _id: ObjectId(req.params.id) }, auth: req.user });
+            await col.remove({ query: { _id: ObjectId(req.params.id) }, auth: req.user });
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);
