@@ -844,6 +844,12 @@ export default class Collection {
   async save(obj, opts) {
     const collection = this;
 
+    if (!(obj instanceof collection)) {
+      // save off an actual collection instance, not just a pojo,
+      // so that any computed db properties will get generated
+      obj = new collection(obj);
+    }
+
     await denormalPopulate(collection, obj, opts);
 
     if (Array.isArray(obj)) {
