@@ -854,6 +854,7 @@ export default class Collection {
 
     if (Array.isArray(obj)) {
       const arrOpts = combineOptions(opts, { denormalAlreadyDone: true });
+      // TODO:  use bulkops
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
       if (collection.def.historical && (!opts || opts.historical !== false)) {
@@ -913,7 +914,7 @@ export default class Collection {
         }
       }
 
-      const rslt = await collection.db.insert(parsedArr);
+      const rslt = await collection.db.insertMany(parsedArr);
 
       return rslt.ops;
     } else {
