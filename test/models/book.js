@@ -13,7 +13,9 @@ var Book = new tyr.Collection({
     domain: { is: 'string' }
   },
   primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true },
-  fromClient: function(opts) { this.domain = 'custom'; },
+  fromClient(opts) { this.domain = 'custom'; },
+  //fromClient: function(opts) { this.domain = 'custom'; },
+  //fromClient: opts => { this.domain = 'custom'; },
 });
 
 export default Book;

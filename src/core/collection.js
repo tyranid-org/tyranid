@@ -37,8 +37,7 @@ const {
 const OPTIONS = Tyr.options;
 
 function isArrow(fn) {
-  // TOOD:  this is mostly reliable, but not 100% ... a more reliable test would be to utilize toString() but that is much slower
-  return !fn.prototype;
+  return /^[a-zA-Z0-9,_\s]*=>/.test(fn.toString());
 }
 
 async function postFind(collection, opts, documents) {
