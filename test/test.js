@@ -1213,9 +1213,15 @@ describe('tyranid', function() {
       });
 
       it('should fromClient array objects', function() {
-        var userObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: true, duration: '5' } ] };
+        // note we're also testing that it does fromString conversions by passing in active and duration as string
+        var userObj = { _id: 1, roles: [ { role: AdministratorRoleId.toString(), active: 'true', duration: '5' } ] };
         var user = User.fromClient(userObj);
         expect(user.roles[0].role).to.be.an.instanceof(ObjectId);
+        expect(user.roles[0].active).to.eql(true);
+        expect(user.roles[0].duration).to.eql(5);
+
+        userObj = { _id: 1, roles: [ { active: 1, duration: 5 } ] };
+        user = User.fromClient(userObj);
         expect(user.roles[0].active).to.eql(true);
         expect(user.roles[0].duration).to.eql(5);
       });
