@@ -990,7 +990,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.post) {
         r.post(async function(req, res) {
           try {
-            const doc = col.fromClient(req.body);
+            const doc = col.fromClient(req.body, undefined, { req });
 
             if (doc._id) {
               res.status(403).send('Use put for updates');
@@ -1010,7 +1010,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.put) {
         r.put(async function(req, res) {
           try {
-            const doc = col.fromClient(req.body);
+            const doc = col.fromClient(req.body, undefined, { req });
 
             if (doc._id) {
               const existingDoc = await col.findOne({ query: { _id: doc._id }, auth: req.user });
@@ -1054,7 +1054,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             let obj = req.body;
             if (obj) {
-              obj = col.fromClient(obj);
+              obj = col.fromClient(obj, undefined, { req });
             } else {
               obj = req.user;
             }

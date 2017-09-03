@@ -9,9 +9,11 @@ var Book = new tyr.Collection({
     serial: { is: 'mongoid' }, // Pretend serial #s are ObjectIds
     title: { is: 'string' },
     description: { is: 'string' },
-    pages: { is: 'integer' }
+    pages: { is: 'integer' },
+    domain: { is: 'string' }
   },
-  primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true }
+  primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true },
+  fromClient: function(opts) { this.domain = 'custom'; },
 });
 
 export default Book;

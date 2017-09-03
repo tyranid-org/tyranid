@@ -36,6 +36,11 @@ const {
 
 const OPTIONS = Tyr.options;
 
+function isArrow(fn) {
+  // TOOD:  this is mostly reliable, but not 100% ... a more reliable test would be to utilize toString() but that is much slower
+  return !fn.prototype;
+}
+
 async function postFind(collection, opts, documents) {
   if (opts) {
     const asOf = opts.asOf;
@@ -1271,7 +1276,7 @@ export default class Collection {
   /**
    * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
    */
-  fromClient(pojo, path) {
+  fromClient(pojo, path, opts) {
     let collection = this,
         fields = collection.fields;
 
@@ -1303,7 +1308,18 @@ export default class Collection {
       }
     });
 
-    return collection ? new collection(obj) : obj;
+    if (collection) {
+      const doc = new collection(obj);
+
+      const fromClientFn = collection.def && collection.def.fromClient;
+      if (fromClientFn) {
+        fromClientFn.call(doc, opts);
+      }
+
+      return doc;
+    } else {
+      return obj;
+    }
   }
 
   /**
@@ -1439,6 +1455,11 @@ export default class Collection {
           denormal[path] = fieldDef.denormal;
         }
 
+        for (const fnName of ['get', 'set', 'getClient', 'setClient', 'getServer', 'setServer']) {
+          if (fieldDef[fnName] && isArrow(fieldDef[fnName])) {
+            throw compiler.err(path, `"${fnName}" is an arrow function; use a regular function so the document can be passed as "this"`);
+          }
+        }
       },
 
       fields(path, parent, defFields) {
@@ -1485,6 +1506,12 @@ export default class Collection {
 
     if (collection.def.enum && !collection.labelField) {
       throw new Error(`Some string field must have the label property set if the collection "${collection.def.name}" is an enumeration.`);
+    }
+
+    for (const fnName of ['fromClient', 'toClient']) {
+      if (collection.def[fnName] && isArrow(collection.def[fnName])) {
+        throw new Error(`Collection "${collection.def.name}" has a "${fnName}" arrow function; use a regular function so the document can be passed as "this"`);
+      }
     }
 
     if (stage === 'link') {

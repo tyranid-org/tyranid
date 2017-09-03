@@ -1226,6 +1226,12 @@ describe('tyranid', function() {
         expect(user.roles[0].duration).to.eql(5);
       });
 
+      it('should support fromClient collection hooks', function() {
+        var bookObj = { title: 'Browsers', isbn: '5614c2f00000000000000000', serial: null };
+        var book = Book.fromClient(bookObj);
+        expect(book.domain).to.equal('custom');
+      });
+
       it('should deep fromClient', function() {
         var friendObj = { birthDate: '03-07-1969' };
         var friend = User.fromClient(friendObj, 'siblings.friends');
