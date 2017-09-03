@@ -7,6 +7,7 @@ import Tyr from './tyr';
 import './type/array';
 import './type/boolean';
 import './type/date';
+import './type/datetime';
 import './type/double';
 import './type/email';
 import './type/image';
@@ -16,6 +17,7 @@ import './type/mongoId';
 import './type/object';
 import './type/password';
 import './type/string';
+import './type/time';
 import './type/uid';
 import './type/url';
 
