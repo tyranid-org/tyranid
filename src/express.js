@@ -931,7 +931,7 @@ export default function connect(app, auth, opts) {
     Tyr.components.forEach(comp => {
       if (comp.routes) {
         comp.routes(app, auth);
-      } else if (comp.def.routes) {
+      } else if (comp.def && comp.def.routes) {
         comp.def.routes.call(comp, app, auth);
       }
     });
