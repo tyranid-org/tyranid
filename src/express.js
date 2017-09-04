@@ -672,12 +672,12 @@ export function generateClientLibrary() {
     }
   };
 
-  Collection.prototype.findAll = function(query) {
+  Collection.prototype.findAll = function(opts) {
     var col  = this;
 
     return ajax({
       url: '/api/' + col.def.name,
-      data: query
+      data: opts
     }).then(function(docs) {
       return docs.map(function(doc) { return new col(doc); });
     }).catch(function(err) {
@@ -931,6 +931,8 @@ export default function connect(app, auth, opts) {
     Tyr.components.forEach(comp => {
       if (comp.routes) {
         comp.routes(app, auth);
+      } else if (comp.def && comp.def.routes) {
+        comp.def.routes.apply(comp, app, auth);
       }
     });
   }
