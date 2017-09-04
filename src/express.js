@@ -977,10 +977,15 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
       if (express.rest || express.get) {
         r.get(async (req, res) => {
-          const query = req.query;
-
           try {
-            const docs = await col.findAll({ query: col.fromClientQuery(query), auth: req.user });
+            const rOpts = req.query;
+
+            const opts = {
+              query: rOpts.query ? col.fromClientQuery(rOpts.query) : {},
+              auth: req.user
+            };
+
+            const docs = await col.findAll(opts);
             return res.json(col.toClient(docs));
           } catch (err) {
             console.log(err.stack);
