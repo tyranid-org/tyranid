@@ -2,6 +2,7 @@
 import Tyr from '../tyr';
 import Collection from './collection';
 
+/** @isomorphic */
 Collection.prototype.on = function(opts) {
 
   const { type } = opts;
@@ -73,7 +74,7 @@ export default class Event {
 
   get documents() {
     if (this.document) {
-      return Promise.resolve(this.document);
+      return Promise.resolve([ this.document ]);
     } else if (this.query) {
       return this.dataCollection.findAll({ query: this.query });
     }

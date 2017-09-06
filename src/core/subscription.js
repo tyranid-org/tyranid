@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import Tyr from '../tyr';
 import Collection from './collection';
 
-import * as query from './query';
+import Query from './query';
 
 const Subscription = new Collection({
   id: '_t3',
@@ -33,6 +33,9 @@ interface LocalListener {
         queryObj: MongoDBQuery,
         instances: {
           [instanceId: string]: boolean
+        },
+        users: {
+          [userId: string]: boolean
         }
       }
     }
@@ -40,10 +43,15 @@ interface LocalListener {
 }
 */
 
-const localListeners /*: LocalListener*/ = {};
+let localListeners /*: LocalListener*/ = {};
 
 async function parseSubscriptions(subscription) {
   const subs = subscription ? [ subscription ] : await Subscription.findAll({});
+
+  if (!subscription) {
+    // if we're reparsing all subs, clear out existing data
+    localListeners = {};
+  }
 
   for (const sub of subs) {
     const colId = sub.c,
@@ -53,41 +61,39 @@ async function parseSubscriptions(subscription) {
 
     if (!localListeners[colId]) {
       const changeHandler = col.on({
-        type: 'changed',
+        type: 'change',
         handler: async event => {
           const { document, query } = event;
 
-          for (const queryDef of listener.queries) {
-            let refinedQuery = query,
-                matched;
+          for (const queryStr in listener.queries) {
+            const queryDef = listener.queries[queryStr];
+            let refinedQuery = query;
 
             if (document) {
-              if (!query.matches(queryDef.queryObj, document)) continue;
+              if (!Query.matches(queryDef.queryObj, document)) continue;
               refinedQuery = undefined;
 
             } else /*if (query)*/ {
-              refinedQuery = query.intersection(queryDef.queryObj, query);
+              refinedQuery = Query.intersection(queryDef.queryObj, query);
               if (!refinedQuery) continue;
 
             }
 
-            if (matched) {
-              for (const instanceId of queryDef.instances) {
-                const event = new Tyr.Event({
-                  collection: Subscription,
-                  dataCollectionId: event.collectionId,
-                  query: refinedQuery,
-                  document,
-                  type: 'subscriptionEvent',
-                  when: 'pre',
-                  instanceId: instanceId
-                });
+            for (const instanceId in queryDef.instances) {
+              const event = new Tyr.Event({
+                collection: Subscription,
+                dataCollectionId: colId,
+                query: refinedQuery,
+                document,
+                type: 'subscriptionEvent',
+                when: 'pre',
+                instanceId: instanceId
+              });
 
-                if (instanceId === Tyr.instanceId) {
-                  handleSubscriptionEvent(event);
-                } else {
-                  await Tyr.Event.fire(event);
-                }
+              if (instanceId === Tyr.instanceId) {
+                handleSubscriptionEvent(event);
+              } else {
+                await Tyr.Event.fire(event);
               }
             }
           }
@@ -96,21 +102,23 @@ async function parseSubscriptions(subscription) {
 
       listener = localListeners[colId] = {
         changeHandler,
-        queries
+        queries: {}
       };
     }
 
-    const queryStr = subscription.q;
+    const queryStr = sub.q;
 
     let queryDef = listener.queries[queryStr];
     if (!queryDef) {
       queryDef = listener.queries[queryStr] = {
         queryObj: JSON.parse(queryStr),
-        instances: {}
+        instances: {},
+        users: {}
       };
     }
 
-    queryDef.instances[subscription.i] = true;
+    queryDef.instances[sub.i] = true;
+    queryDef.users[sub.u] = true;
   }
 }
 
@@ -121,9 +129,18 @@ Subscription.on({
   }
 });
 
-//let bootNeeded = 'Subscription needs to be booted';
-Subscription.boot = async function(/*stage, pass*/) {
+Subscription.on({
+  type: 'unsubscribe',
+  async handler(event) {
+    // TODO:  pass in user and only unsubscribe the user rather than reparsing?
+    await parseSubscriptions();
+  }
+});
 
+//let bootNeeded = 'Subscription needs to be booted';
+Subscription.boot = async function(stage, pass) {
+
+  if (stage === 'link') {
   //if (bootNeeded) {
     await parseSubscriptions();
 
@@ -131,13 +148,13 @@ Subscription.boot = async function(/*stage, pass*/) {
   //}
 
     return undefined; //bootNeeded;
+  }
 };
 
 Collection.prototype.subscribe = async function(query, user) {
-
   const queryStr = JSON.stringify(query);
 
-  const subscription = await Subscription.find({
+  const subscription = await Subscription.findOne({
     query: {
       u: user._id,
       c: this.id,
@@ -168,18 +185,64 @@ Collection.prototype.subscribe = async function(query, user) {
   }
 };
 
+Subscription.unsubscribe = async function(user) {
+  const rslts = await Subscription.remove({
+    query: {
+      u: user._id
+    }
+  });
+
+  if (rslts.result.n) {
+    await Tyr.Event.fire(
+      new Tyr.Event({
+        collection: this.$model,
+        type: 'unsubscribe',
+        when: 'pre',
+        broadcast: true
+      })
+    );
+  }
+};
+
 async function handleSubscriptionEvent(event) {
   const col = event.dataCollection,
-        listener = localListeners[col.id];
+        listener = localListeners[col.id],
+        mQuery = event.query,
+        mDoc = event.document;
 
   if (listener) {
     const documents = await event.documents;
 
-    // TODO:  send down updated documents only the affected subscribers
-    Tyr.io.emit('subscriptionEvent', {
-      colId: event.dataCollectionId,
-      docs: documents.map(doc => doc.$toClient())
-    });
+    const userIds = {};
+
+    for (const queryStr in listener.queries) {
+      const queryDef = listener.queries[queryStr];
+
+      if (mQuery) {
+        if (Query.intersection(queryDef.query, mQuery)) {
+          for (const userId in queryDef.users) {
+            userIds[userId] = true;
+          }
+        }
+      } else { // if mDoc
+        if (Query.matches(queryDef.query, mDoc)) {
+          for (const userId in queryDef.users) {
+            userIds[userId] = true;
+          }
+        }
+      }
+    }
+
+    const sockets = Tyr.io.sockets.sockets;
+    for (const socketId in sockets) {
+      const socket = sockets[socketId];
+      if (userIds[socket.userId]) {
+        socket.emit('subscriptionEvent', {
+          colId: event.dataCollectionId,
+          docs: documents.map(doc => doc.$toClient())
+        });
+      }
+    }
   }
 }
 

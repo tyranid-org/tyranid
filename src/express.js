@@ -769,6 +769,54 @@ export function generateClientLibrary() {
     });
   };
 
+  function fireDocUpdate(doc, type) {
+    const collection = doc.$model,
+          events = collection.events;
+
+    if (events) {
+      const handlers = events[type];
+
+      if (handlers) {
+        const event = {
+          collection: collection,
+          document: doc,
+          type: type
+        };
+
+        for (const handlerOpts of handlers) {
+          handlerOpts.handler(event);
+        }
+      }
+    }
+  }
+
+  Collection.prototype.cache = function(doc) {
+    const existing = this.byIdIndex[doc._id];
+
+    if (existing) {
+      Object.assign(existing, doc);
+      fireDocUpdate(existing, 'change');
+      return existing;
+    } else {
+      if (!(doc instanceof this)) {
+        doc = new this(doc);
+      }
+
+      this.byIdIndex[doc._id] = doc;
+      let values = this.values;
+      if (this.values) {
+        this.values.push(doc);
+      } else {
+        this.values = [ doc ];
+      }
+
+      fireDocUpdate(doc, 'change');
+      return doc;
+    }
+  };
+
+  Collection.prototype.on = ${es5Fn(Collection.prototype.on)};
+
   if (window.io) {
     Collection.prototype.subscribe = function(query) {
       return ajax({
@@ -782,18 +830,10 @@ export function generateClientLibrary() {
     Tyr.socket = window.io();
 
     Tyr.socket.on('subscriptionEvent', function(data) {
-      // TODO:  update local data
       var col = Tyr.byId[data.colId];
 
       _.each(data.docs, function(doc) {
-        var doc = col.byIdIndex[doc._id];
-
-        if (!doc) {
-          doc = new col(doc);
-          col.byIdIndex[doc._id] = doc;
-        } else {
-          _.assign(doc, data);
-        }
+        col.cache(doc);
       });
     });
   }
@@ -910,6 +950,10 @@ export default function connect(app, auth, opts) {
     opts = { app, auth };
   }
 
+  if (opts.store) {
+    Tyr.sessions = opts.store;
+  }
+
   /**
    * If we have already generated the client bundle,
    * as part of a build task, we don't need to expose
@@ -928,6 +972,8 @@ export default function connect(app, auth, opts) {
   Tyr.collections.forEach(col => col.connect(opts));
 
   if (app) {
+    Tyr.app = app;
+
     Tyr.components.forEach(comp => {
       if (comp.routes) {
         comp.routes(app, auth);
@@ -942,9 +988,26 @@ export default function connect(app, auth, opts) {
     const io = Tyr.io = Tyr.socketIo = socketIo(http);
 
     io.on('connection', socket => {
+      //console.log('*** connected', socket);
+
+      //console.log('*** client', socket.client);
+      //console.log('*** headers', socket.client.request.headers);
+
+      const rawSessionId = /connect.sid\=([^;]+)/g.exec(socket.client.request.headers.cookie);
+      if (rawSessionId && rawSessionId.length) {
+        const sessionId = unescape(rawSessionId[1]).split('.')[0].slice(2);
+
+        Tyr.sessions.get(sessionId, async (error, session) => {
+          const userIdStr = session.passport.user;
+          if (userIdStr) {
+            socket.userId = ObjectId(userIdStr);
+          }
+        });
+      }
 
       socket.on('disconnect', () => {
-        // TODO:  cancel subscriptions
+        Tyr.byName.tyrSubscription.unsubscribe(socket.userId);
+        socket.userId = null;
       });
     });
   }
@@ -1089,7 +1152,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           const query = req.query;
 
           try {
-            await col.subscribe(col.fromClientQuery(query));
+            await col.subscribe(col.fromClientQuery(query), req.user);
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);
