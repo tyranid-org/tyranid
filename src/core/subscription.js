@@ -140,7 +140,7 @@ Subscription.on({
 //let bootNeeded = 'Subscription needs to be booted';
 Subscription.boot = async function(stage, pass) {
 
-  if (stage === 'link') {
+  if (stage === 'link' && Tyr.db) {
   //if (bootNeeded) {
     await parseSubscriptions();
 
