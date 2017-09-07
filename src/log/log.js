@@ -32,6 +32,36 @@ import UserAgent from './userAgent';
 
  */
 
+function has$(q) {
+
+  if (_.isObject(q)) {
+    for (const p in q) {
+      if (p.startsWith('$') || has$(q[p])) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function adapt$(q) {
+
+  if (has$(q)) {
+    const qc = {};
+
+    for (const p in q) {
+      if (q.hasOwnProperty(p)) {
+        qc[p.startsWith('$') ? '_' + p : p] = adapt$(q[p]);
+      }
+    }
+
+    return qc;
+  }
+
+  return q;
+}
+
 const LogLevel = new Collection({
   id: '_l1',
   name: 'tyrLogLevel',
@@ -183,7 +213,7 @@ async function log(level, ...opts) {
       m:  req.method,
       ip: req.headers['X-Forwarded-For'] || req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
       ua: ua._id,
-      q:  req.query
+      q:  adapt$(req.query)
     };
 
     const sid = req.cookies && req.cookies['connect.sid'];
