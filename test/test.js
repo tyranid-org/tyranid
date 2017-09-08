@@ -834,6 +834,22 @@ describe('tyranid', function() {
           });
         });
       });
+
+      it('should save arrays', async () => {
+        try {
+          await Role.save([
+            new Role({ name: 'A-1' }),
+            new Role({ name: 'A-2' }),
+            new Role({ name: 'A-3' })
+          ]);
+
+          const roles = await Role.findAll({ query: { name: /^A-/ } });
+
+          expect(roles.length).to.eql(3);
+        } finally {
+          await Role.db.remove({ name: /^A-/ });
+        }
+      });
     });
 
     describe('values', function() {
@@ -1534,7 +1550,7 @@ describe('tyranid', function() {
         });
       });
 
-      it( 'should set createdAt', function() {
+      it('should set createdAt', function() {
         User.def.timestamps = true;
         User.save({ name: { first: 'Jacob' } }).then(function(user) {
           return User.db.remove({ _id: user._id }).then(function() {

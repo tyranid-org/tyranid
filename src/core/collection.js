@@ -765,12 +765,6 @@ export default class Collection {
   async save(obj, opts) {
     const collection = this;
 
-    if (!(obj instanceof collection)) {
-      // save off an actual collection instance, not just a pojo,
-      // so that any computed db properties will get generated
-      obj = new collection(obj);
-    }
-
     await denormalPopulate(collection, obj, opts);
 
     if (Array.isArray(obj)) {
@@ -778,6 +772,12 @@ export default class Collection {
       // TODO:  use bulkops
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
+      if (!(obj instanceof collection)) {
+        // save off an actual collection instance, not just a pojo,
+        // so that any computed db properties will get generated
+        obj = new collection(obj);
+      }
+
       if (collection.def.historical && (!opts || opts.historical !== false)) {
         if (obj.$historical) {
           throw new Error('Document is read-only due to $historical');
