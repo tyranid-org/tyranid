@@ -377,7 +377,8 @@ async function syncIndexes(col) {
     );
 
     await Promise.all(remove.map(i => col.db.dropIndex(i)));
-    await col.db.createIndexes(create);
+
+    if (create.length) await col.db.createIndexes(create);
   }
 
 }
