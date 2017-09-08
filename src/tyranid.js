@@ -376,7 +376,7 @@ async function syncIndexes(col) {
       !keep.some(k => k === i)
     );
 
-    await Promise.all(remove.map(i => col.db.dropIndex(i)));
+    await Promise.all(remove.map(i => col.db.dropIndex(i.key)));
 
     if (create.length) await col.db.createIndexes(create);
   }
