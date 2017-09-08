@@ -371,7 +371,11 @@ async function syncIndexes(col) {
       }
     }
 
-    const remove = existingIndexes.filter(i => !keep.some(k => k === i));
+    const remove = existingIndexes.filter(i =>
+      !alwaysInclude.has(toName(i)) &&
+      !keep.some(k => k === i)
+    );
+
     await Promise.all(remove.map(i => col.db.dropIndex(i)));
     await col.db.createIndexes(create);
   }
