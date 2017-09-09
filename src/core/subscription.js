@@ -111,7 +111,7 @@ async function parseSubscriptions(subscription) {
     let queryDef = listener.queries[queryStr];
     if (!queryDef) {
       queryDef = listener.queries[queryStr] = {
-        queryObj: JSON.parse(queryStr),
+        queryObj: col.fromClientQuery(JSON.parse(queryStr)),
         instances: {},
         users: {}
       };

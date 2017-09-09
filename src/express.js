@@ -503,11 +503,17 @@ export function generateClientLibrary() {
 
   function Collection(def) {
 
-    var CollectionInstance = function(data) {
+    eval(\`var CollectionInstance = function \${_.capitalize(def.name)}(data) {
       if (data) {
         _.assign(this, data);
       }
-    };
+    };\`);
+    //var CollectionInstance = function(data) {
+      //if (data) {
+        //_.assign(this, data);
+      //}
+    //};
+
     setPrototypeOf(CollectionInstance, Collection.prototype);
     // cannot redefine this property in safari
     //Object.defineProperty(CollectionInstance, 'name', {

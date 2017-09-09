@@ -8,6 +8,8 @@ const {
   ObjectId
 } = mongodb;
 
+const O = ObjectId;
+
 const {
   expect,
   assert
@@ -55,7 +57,7 @@ export function add() {
       });
 
       it('should detect equal ObjectIds', () => {
-        expect(merge({ org: ObjectId(i1) }, { org: ObjectId(i1) })).to.eql({ org: ObjectId(i1) });
+        expect(merge({ org: O(i1) }, { org: O(i1) })).to.eql({ org: O(i1) });
       });
 
       it('should work with $eq', () => {
@@ -85,12 +87,12 @@ export function add() {
       });
 
       it('should work with ObjectIds and $in/$nin', () => {
-        test({ org: ObjectId(i1) }, { org: { $in: [ObjectId(i1), ObjectId(i2)] } }, { org: ObjectId(i1) });
-        test({ org: { $in: [ObjectId(i2), ObjectId(i3)] } }, { org: { $in: [ObjectId(i1), ObjectId(i2)] } }, { org: ObjectId(i2) });
-        test({ org: { $in: [ObjectId(i2), ObjectId(i3), ObjectId(i4)] } }, { org: { $in: [ObjectId(i1), ObjectId(i2), ObjectId(i4)] } }, { org: { $in: [ObjectId(i2), ObjectId(i4)] } });
-        test({ org: { $in: [ObjectId(i2)] } }, { org: ObjectId(i3) }, false);
-        test({ org: { $in: [ObjectId(i2)] } }, { org: { $in: [ObjectId(i3)] } }, false);
-        testl({ org: { $nin: [ObjectId(i2)] } }, { org: { $nin: [ObjectId(i3)] } }, { org: { $nin: [ ObjectId(i2), ObjectId(i3) ] } });
+        test({ org: O(i1) }, { org: { $in: [O(i1), O(i2)] } }, { org: O(i1) });
+        test({ org: { $in: [O(i2), O(i3)] } }, { org: { $in: [O(i1), O(i2)] } }, { org: O(i2) });
+        test({ org: { $in: [O(i2), O(i3), O(i4)] } }, { org: { $in: [O(i1), O(i2), O(i4)] } }, { org: { $in: [O(i2), O(i4)] } });
+        test({ org: { $in: [O(i2)] } }, { org: O(i3) }, false);
+        test({ org: { $in: [O(i2)] } }, { org: { $in: [O(i3)] } }, false);
+        testl({ org: { $nin: [O(i2)] } }, { org: { $nin: [O(i3)] } }, { org: { $nin: [ O(i2), O(i3) ] } });
       });
 
       it('should merge compatible comparisons', () => {
@@ -98,7 +100,7 @@ export function add() {
       });
 
       it('should work with composite queries', () => {
-        test({ org: { $in: [ObjectId(i2)] }, name: 'Foo' }, { org: { $in: [ObjectId(i3)] } }, false);
+        test({ org: { $in: [O(i2)] }, name: 'Foo' }, { org: { $in: [O(i3)] } }, false);
         test({ org: 1, name: 'Foo' }, { org: { $in: [1, 2] } }, { org: 1, name: 'Foo' });
         test({ org: { $in: [1, 2], $eq: 2 } }, { org: 2 }, { org: 2 });
       });
@@ -128,9 +130,9 @@ export function add() {
       });
 
       it('should work with nested $and/$or', () => {
-        test({ $and: [ { $or: [ { blogId: { $in: [ ObjectId('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ ObjectId('56fc2aacbb4c31a277f9a45b') ] } } ] } ] },
+        test({ $and: [ { $or: [ { blogId: { $in: [ O('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ O('56fc2aacbb4c31a277f9a45b') ] } } ] } ] },
               {},
-              { $and: [ { $or: [ { blogId: { $in: [ ObjectId('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ ObjectId('56fc2aacbb4c31a277f9a45b') ] } } ] } ] });
+              { $and: [ { $or: [ { blogId: { $in: [ O('56fc2aacbb4c31a277f9a454') ] } } ] }, { $and: [ { _id: { $nin: [ O('56fc2aacbb4c31a277f9a45b') ] } } ] } ] });
       });
 
       it('should merge $or\'s when there are sibling clauses present', () => {
@@ -194,22 +196,22 @@ export function add() {
 
       it('should intersect queries that have arrays', () => {
         test({ a: [1, 2] }, { a: 1 }, undefined);
-        test({ a: [ObjectId(i1), ObjectId(i2)] }, { a: ObjectId(i1) }, undefined);
+        test({ a: [O(i1), O(i2)] }, { a: O(i1) }, undefined);
         test({ a: [1, 2, 3] }, { a: [1, 2] }, undefined);
         test({ a: [1, 2, 3] }, { a: [4, 5] }, undefined);
       });
 
       it('should intersect queries that use $in', () => {
-        test({ a: { $in: [1, 2] } }, { a: 1 }, { a: 1 });
-        test({ a: { $in: [ObjectId(i1), ObjectId(i2)] } }, { a: ObjectId(i1) }, { a: ObjectId(i1) });
-        test({ a: { $in: [1, 2, 3] } }, { a: { $in: [1, 2] } }, { a: { $in: [1, 2] } });
-        test({ a: { $in: [ObjectId(i1), ObjectId(i2), ObjectId(i3)] } }, { a: { $in: [ObjectId(i1), ObjectId(i2)] } }, { a: { $in: [ObjectId(i1), ObjectId(i2)] } });
-        test({ a: { $in: [1, 2, 3] } }, { a: { $in: [4, 5] } }, undefined);
+        test({ a: { $in: [1, 2] } },                { a: 1 },                       { a: 1 });
+        test({ a: { $in: [O(i1), O(i2)] } },        { a: O(i1) },                   { a: O(i1) });
+        test({ a: { $in: [1, 2, 3] } },             { a: { $in: [1, 2] } },         { a: { $in: [1, 2] } });
+        test({ a: { $in: [O(i1), O(i2), O(i3)] } }, { a: { $in: [O(i1), O(i2)] } }, { a: { $in: [O(i1), O(i2)] } });
+        test({ a: { $in: [1, 2, 3] } },             { a: { $in: [4, 5] } },         undefined);
       });
 
       it('should support comparison operators', () => {
-        test({ a: { $lt: 2 } }, { a: 1 }, { a: 1 });
-        test({ a: { $gt: 2 } }, { a: 1 }, undefined);
+        test({ a: { $lt: 2 } }, { a: 1 },          { a: 1 });
+        test({ a: { $gt: 2 } }, { a: 1 },          undefined);
         test({ a: { $lt: 2 } }, { a: { $gt: 0 } }, { a: { $lt: 2, $gt: 0 } });
       });
 
@@ -233,33 +235,34 @@ export function add() {
       });
 
       it('should work with simple queries', () => {
-        test({ foo: 2 },         { foo: 1 },         false);
-        test({ foo: 1 },         { foo: 1 },         true);
-        test({ foo: 1, bar: 2 }, { foo: 1 },         false);
-        test({ foo: 1, bar: 2 }, { foo: 1, bar: 2 }, true);
-        test({ foo: [1, 2]},     { foo: 1 },         false);
-        test({ foo: [1, 2]},     { foo: [1] },       false);
-        test({ foo: [1, 2]},     { foo: [1, 2] },    true);
+        test({ foo: 2 },            { foo: 1 },            false);
+        test({ foo: 1 },            { foo: 1 },            true);
+        test({ foo: 1, bar: 2 },    { foo: 1 },            false);
+        test({ foo: 1, bar: 2 },    { foo: 1, bar: 2 },    true);
+        test({ foo: [1, 2]},        { foo: 1 },            false);
+        test({ foo: [1, 2]},        { foo: [1] },          false);
+        test({ foo: [1, 2]},        { foo: [1, 2] },       true);
+        test({ _id: O(i1) },        { _id: O(i1) },        true);
       });
 
       it('should work with $in', () => {
-        test({ foo: { $in: [1, 2] } },         { foo: 1 },           true);
-        test({ foo: { $in: [1, 2] } },         { foo: 3 },           false);
-        test({ foo: { $in: [1, 2] } },         {},                   false);
-        test({ foo: { $in: [ObjectId(i1)] } }, { foo: ObjectId(i1)}, true);
+        test({ foo: { $in: [1, 2] } },  { foo: 1 },    true);
+        test({ foo: { $in: [1, 2] } },  { foo: 3 },    false);
+        test({ foo: { $in: [1, 2] } },  {},            false);
+        test({ foo: { $in: [O(i1)] } }, { foo: O(i1)}, true);
       });
 
       it('should work with $eq', () => {
-        test({ foo: { $eq: 1 } },              { foo: 1 },           true);
-        test({ foo: { $eq: 1 } },              { foo: 3 },           false);
-        test({ foo: { $eq: ObjectId(i1) } },   { foo: ObjectId(i1)}, true);
+        test({ foo: { $eq: 1 } },       { foo: 1 },    true);
+        test({ foo: { $eq: 1 } },       { foo: 3 },    false);
+        test({ foo: { $eq: O(i1) } },   { foo: O(i1)}, true);
       });
 
       it('should work with $or', () => {
-        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { foo: 1 },           true);
-        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { bar: 1 },           true);
-        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, {},                   false);
-        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { bar: 2 },           false);
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { foo: 1 },  true);
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { bar: 1 },  true);
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, {},          false);
+        test({ $or: [ { foo: 1 }, { bar: 1 } ] }, { bar: 2 },  false);
       });
 
       it('should work with $and', () => {
@@ -286,7 +289,7 @@ export function add() {
         };
         var serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.title).to.be.eql(title);
-        expect(serverQuery.isbn).to.be.an.instanceof(ObjectId);
+        expect(serverQuery.isbn).to.be.an.instanceof(O);
       });
 
       it( 'should variation 2', function() {
@@ -295,8 +298,8 @@ export function add() {
         };
         var serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.isbn.$in.length).to.be.eql(2);
-        expect(serverQuery.isbn.$in[0]).to.be.an.instanceof(ObjectId);
-        expect(serverQuery.isbn.$in[1]).to.be.an.instanceof(ObjectId);
+        expect(serverQuery.isbn.$in[0]).to.be.an.instanceof(O);
+        expect(serverQuery.isbn.$in[1]).to.be.an.instanceof(O);
       });
 
       it( 'should variation 3', function() {
@@ -306,7 +309,7 @@ export function add() {
         };
         var serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.title.$exists).to.be.eql(true);
-        expect(serverQuery.isbn.$ne).to.be.an.instanceof(ObjectId);
+        expect(serverQuery.isbn.$ne).to.be.an.instanceof(O);
       });
 
       it( 'should variation 4', function() {
@@ -319,7 +322,7 @@ export function add() {
         var serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.$or[0].title.$exists).to.be.eql(true);
         expect(serverQuery.$or[1].isbn.$in.length).to.be.eql(1);
-        expect(serverQuery.$or[1].isbn.$in[0]).to.be.an.instanceof(ObjectId);
+        expect(serverQuery.$or[1].isbn.$in[0]).to.be.an.instanceof(O);
       });
 
       it( 'should variation 5', function() {
