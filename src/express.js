@@ -15,6 +15,16 @@ import local        from './local/local';
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
 
+function stringify(v) {
+
+  if (v instanceof RegExp) {
+    // mongo's format
+    return JSON.stringify({ $regex: v.source, $options: v.flags });
+  }
+
+  return JSON.stringify(v);
+}
+
 class Serializer {
   constructor(path, depth, json) {
     this.file = '';
@@ -66,27 +76,31 @@ class Serializer {
       this.file += '",';
     }
 
-    const denormal = def.denormal;
-    if (denormal) {
-      this.newline();
-      this.file += 'denormal: ' + JSON.stringify(denormal) + ',';
-    }
-
     if (def.multiline) {
       this.newline();
       this.file += this.k('multiline') + ': true,';
     }
 
-    const order = def.order;
-    if (order) {
-      this.newline();
-      this.file += this.k('order') + ': ' + JSON.stringify(order) + ',';
-    }
-
-    const custom = def.custom;
-    if (custom) {
-      this.newline();
-      this.file += this.k('custom') + ': ' + JSON.stringify(custom) + ',';
+    for (const field of [
+      'cardinality',
+      'custom',
+      'denormal',
+      'granularity',
+      'min',
+      'minlength',
+      'max',
+      'maxlength',
+      'order',
+      'pattern',
+      'placeholder',
+      'required',
+      'step'
+    ]) {
+      const v = def[field];
+      if (v !== undefined) {
+        this.newline();
+        this.file += this.k(field) + ': ' + stringify(v) + ',';
+      }
     }
 
     const of = field.of;
@@ -364,7 +378,9 @@ export function generateClientLibrary() {
 
   lock(documentPrototype);
 
-
+  function refineJson(v) {
+    return _.isObject(v) && v.$regex ? RegExp(v.$regex, v.$options) : v;
+  }
 
   function Type(def) {
     var name = def.name;
@@ -394,6 +410,10 @@ export function generateClientLibrary() {
   function Field(def) {
     this.def = def;
     this.type = Type.byName[def.is];
+
+    if (def.pattern) {
+      def.pattern = refineJson(def.pattern);
+    }
   }
   Tyr.Field = Field;
 
