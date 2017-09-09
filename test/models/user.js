@@ -4,7 +4,8 @@ var Friend = {
   is: 'object',
   fields: {
     user: { link: 'user' },
-    birthDate: { is: 'date' }
+    birthDate: { is: 'date' },
+    age: { is: 'integer' }
   }
 };
 
@@ -13,7 +14,8 @@ var Sibling = {
   fields: {
     name:       { is: 'string' },
     bestFriend: { link: 'user' },
-    friends:    { is: 'array',  of: Friend }
+    friends:    { is: 'array',  of: Friend },
+    scores:     { is: 'array', of: 'double' }
   }
 };
 

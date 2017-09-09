@@ -14,6 +14,28 @@ const DoubleType = new Type({
     }
   },
 
+  fromString(s) {
+    return parseFloat(s);
+  },
+
+  fromClient(field, value) {
+    if (typeof value === 'string') {
+      if (!value.length) {
+        return undefined;
+      }
+
+      const v = parseFloat(value);
+
+      if (v.toString() !== value) {
+        throw new Error(`Invalid double on field ${field.name}: ${value}`);
+      }
+
+      return v;
+    } else {
+      return value;
+    }
+  },
+
   format(field, value) {
     if (_.isNumber(value) && value !== Math.round(value)) {
       value = value.toFixed(2);

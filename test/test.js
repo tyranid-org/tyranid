@@ -1242,6 +1242,28 @@ describe('tyranid', function() {
         expect(user.roles[0].duration).to.eql(5);
       });
 
+      it('should fromClient deeply nested objects', function() {
+        // note we're also testing that it does fromString conversions by passing in active and duration as string
+        var userObj = {
+          _id: 1,
+          siblings: [
+            {
+              name: 'Sasha',
+              friends: [
+                { age: '25' }
+              ],
+              scores: [
+                '2.3'
+              ]
+            }
+          ]
+        };
+
+        var user = User.fromClient(userObj);
+        expect(user.siblings[0].friends[0].age).to.eql(25);
+        expect(user.siblings[0].scores[0]).to.eql(2.3);
+      });
+
       it('should support fromClient collection hooks', function() {
         var bookObj = { title: 'Browsers', isbn: '5614c2f00000000000000000', serial: null };
         var book = Book.fromClient(bookObj);

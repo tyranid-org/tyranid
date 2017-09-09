@@ -1,5 +1,6 @@
 
 import * as os from 'os';
+import * as process from 'process';
 import * as moment from 'moment';
 
 import Tyr from '../tyr';
@@ -33,7 +34,7 @@ Instance.boot = async function(stage/*, pass*/) {
 
     await Instance.db.remove({ lastAliveOn: { $lt: old.toDate() } });
 
-    const instanceId = thisInstanceId = Tyr.instanceId = os.hostname().replace(/[-\.:]/g, '_');
+    const instanceId = thisInstanceId = Tyr.instanceId = os.hostname().replace(/[-\.:]/g, '_') + '_' + process.pid;
 
     // Heartbeat
 

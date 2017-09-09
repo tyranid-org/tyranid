@@ -1,6 +1,9 @@
 
+import * as moment from 'moment';
+
 import Tyr from '../tyr';
 import Collection from './collection';
+import Instance from './instance';
 
 /** @isomorphic */
 Collection.prototype.on = function(opts) {
