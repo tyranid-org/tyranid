@@ -57,7 +57,6 @@ Instance.boot = async function(stage/*, pass*/) {
       }
     }
 
-
     const instanceId = thisInstanceId = Tyr.instanceId = os.hostname().replace(/[-\.:]/g, '_') + '_' + process.pid;
     //con sole.log('*** instanceId:', instanceId);
 
@@ -132,7 +131,7 @@ Instance.boot = async function(stage/*, pass*/) {
           }
         }
 
-        Event.handle(event)
+        Event.handle(event);
       }
     });
 

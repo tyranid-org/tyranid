@@ -705,7 +705,7 @@ export function generateClientLibrary() {
       url: '/api/' + col.def.name,
       data: opts
     }).then(function(docs) {
-      return docs.map(function(doc) { return new col(doc); });
+      return docs && docs.map(function(doc) { return new col(doc); });
     }).catch(function(err) {
       console.log(err);
     });
@@ -880,6 +880,11 @@ export function generateClientLibrary() {
     primaryKey: ${JSON.stringify(def.primaryKey)},
     name: '${name}',
     label: '${col.label}',`;
+
+      if (col.def.enum) {
+        file += `
+    enum: true;`;
+      }
 
       const ser = new Serializer('.', 2);
       ser.fields(col.fields);

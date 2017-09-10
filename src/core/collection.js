@@ -482,7 +482,8 @@ export default class Collection {
 
   /** @isomorphic */
   isStatic() {
-    return this.def.values;
+    //return !!this.def.values;
+    return !!this.def.enum;
   }
 
   byId(id, options) {
