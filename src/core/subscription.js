@@ -47,6 +47,7 @@ let localListeners /*: LocalListener*/ = {};
 
 async function parseSubscriptions(subscription) {
   const subs = subscription ? [ subscription ] : await Subscription.findAll({});
+  //con sole.log(Tyr.instanceId + ' *** parseSubscriptions, ' + subs.length + ' subs');
 
   if (!subscription) {
     // if we're reparsing all subs, clear out existing data
@@ -63,6 +64,7 @@ async function parseSubscriptions(subscription) {
       const changeHandler = col.on({
         type: 'change',
         handler: async event => {
+          //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:', event);
           const { document, query } = event;
 
           for (const queryStr in listener.queries) {
@@ -79,6 +81,8 @@ async function parseSubscriptions(subscription) {
 
             }
 
+            //con sole.log(Tyr.instanceId + ' *** matched');
+            //con sole.log(Tyr.instanceId + ' *** queryDef.instances', queryDef.instances);
             for (const instanceId in queryDef.instances) {
               const event = new Tyr.Event({
                 collection: Subscription,
@@ -152,6 +156,7 @@ Subscription.boot = async function(stage, pass) {
 };
 
 Collection.prototype.subscribe = async function(query, user) {
+  //con sole.log(Tyr.instanceId + ' *** subscribe:', query, user);
   const queryStr = JSON.stringify(query);
 
   const subscription = await Subscription.findOne({
@@ -162,7 +167,11 @@ Collection.prototype.subscribe = async function(query, user) {
     }
   });
 
-  if (!subscription) {
+  if (!subscription || subscription.i !== Tyr.instanceId) {
+    if (subscription) {
+      await subscription.$remove();
+    }
+
     const s = new Subscription({
       u: user._id,
       c: this.id,
@@ -175,11 +184,11 @@ Collection.prototype.subscribe = async function(query, user) {
 
     await Tyr.Event.fire(
       new Tyr.Event({
-        collection: this.$model,
+        collection: Subscription,
         type: 'subscribe',
         when: 'pre',
         broadcast: true,
-        subscription
+        subscription: s
       })
     );
   }
@@ -195,7 +204,7 @@ Subscription.unsubscribe = async function(user) {
   if (rslts.result.n) {
     await Tyr.Event.fire(
       new Tyr.Event({
-        collection: this.$model,
+        collection: Subscription,
         type: 'unsubscribe',
         when: 'pre',
         broadcast: true
@@ -205,14 +214,13 @@ Subscription.unsubscribe = async function(user) {
 };
 
 async function handleSubscriptionEvent(event) {
+  //con sole.log(Tyr.instanceId + ' *** handleSubscriptionEvent:', event);
   const col = event.dataCollection,
         listener = localListeners[col.id],
         mQuery = event.query,
         mDoc = event.document;
 
   if (listener) {
-    const documents = await event.documents;
-
     const userIds = {};
 
     for (const queryStr in listener.queries) {
@@ -233,6 +241,7 @@ async function handleSubscriptionEvent(event) {
       }
     }
 
+    const documents = await event.documents;
     const sockets = Tyr.io.sockets.sockets;
     for (const socketId in sockets) {
       const socket = sockets[socketId];

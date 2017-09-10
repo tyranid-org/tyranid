@@ -50,16 +50,19 @@ Tyr.EventCancelError = EventCancelError;
 export default class Event {
 
   constructor(data) {
-    // collection is a computed property
-    if (data.collection) {
-      if (!data.collectionId) {
-        data.collectionId = data.collection.id;
-      }
+    for (const p in data) {
+      const v = data[p];
 
-      delete data.collection;
+      if (p === 'collection') {
+        // collection is a computed property
+        if (!data.collectionId && v) {
+          this.collectionId = v.id;
+        }
+      } else {
+        this[p] = v;
+      }
     }
 
-    Object.assign(this, data);
     this.on = new Date();
   }
 
@@ -99,14 +102,16 @@ export default class Event {
       lastAliveOn: { $gte: moment().subtract(30, 'minutes').toDate() }
     });
 
+    //con sole.log(Tyr.instanceId + ' *** broadcasting to ', instances.map(i => i._id));
     for (const instance of instances) {
       delete event._id;
-      Tyr.db.collection(instance._id + '-event').save(event);
+      Tyr.db.collection(instance._id + '_event').save(event);
     }
   }
 
   /** @private */
   static async handle(event) {
+    //con sole.log(Tyr.instanceId + ' *** handle:', event);
     const events = event.collection.events;
 
     if (events) {

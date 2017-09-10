@@ -25,16 +25,41 @@ let eventdb;
 Instance.boot = async function(stage/*, pass*/) {
 
   if (!Instance.db) {
-    console.log(`bootstrapping without database, skipping instance boot...`);
+    console.log('bootstrapping without database, skipping instance boot...');
     return;
   }
 
   if (!compiled && stage === 'compile') {
     const old = moment().subtract(30, 'minutes');
 
-    await Instance.db.remove({ lastAliveOn: { $lt: old.toDate() } });
+    const oldInstances = await Instance.db.find({ lastAliveOn: { $lt: old.toDate() } }).toArray();
+    //con sole.log('*** oldInstances', oldInstances);
+    for (const instance of oldInstances) {
+      const id = instance._id,
+            ic = Tyr.db.collection(id + '_event');
+
+      try {
+        await ic.drop();
+      } catch (err) {
+        if (!err.toString().match('ns not found')) {
+          console.log(err);
+        }
+      }
+    }
+
+    await Instance.db.remove({ _id: { $in: oldInstances.map(i => i._id) } });
+
+    try {
+      await Tyr.db.collection('tyrSubscription').remove({ i: { $in: oldInstances.map(i => i._id) } });
+    } catch (err) {
+      if (!err.toString().match('ns not found')) {
+        console.log(err);
+      }
+    }
+
 
     const instanceId = thisInstanceId = Tyr.instanceId = os.hostname().replace(/[-\.:]/g, '_') + '_' + process.pid;
+    //con sole.log('*** instanceId:', instanceId);
 
     // Heartbeat
 
@@ -52,7 +77,7 @@ Instance.boot = async function(stage/*, pass*/) {
     // Instance Event Queue
 
     eventdb = await Tyr.db.createCollection(
-      instanceId + '-event',
+      instanceId + '_event',
       {
         capped: true,
         size: 1000000,
@@ -60,19 +85,56 @@ Instance.boot = async function(stage/*, pass*/) {
       }
     );
 
+    const now = new Date();
+
+    // tailable cursors won't await an empty collection, save a guard
+    await eventdb.save({ date: now, guard: true });
+
+    /*
     const eventStream = eventdb.find(
       {
         // current need is for non-durable events, might expand this later on
-        when: { $gte: new Date() }
-      },
-      {
-        tailable: true,
-        awaitdata: true,
-        numberOfRetries: -1
+        date: { $gte: now }
       }
-    ).stream();
+    )
+      .addCursorFlag('tailable', true)
+      .addCursorFlag('awaitData', true)
+      .addCursorFlag('noCursorTimeout', true)
+      .sort({ $natural: -1 })
+      .stream();
+    */
+    const eventStream = eventdb.find({
+      date: { $gte: now }
+    }, {
+      tailable: true,
 
-    eventStream.on('data', event => Event.handle(new Event(event)));
+      awaitData: true,
+      awaitdata: true,
+      await_data: true,
+
+      timeout: false,
+      numberOfRetries: Number.MAX_VALUE
+    }).stream();
+
+    eventStream.on('data', event => {
+      //con sole.log(instanceId + ' *** event on capped collection:', event);
+      if (!event.guard) { // ignore guard event
+        const Event = Tyr.Event;
+        event = new Event(event);
+
+        // if the event contains an inline document, we need to wrap it
+        const doc = event.document;
+        if (doc) {
+          const docCol = event.dataCollection;
+
+          if (docCol && !(doc instanceof docCol)) {
+            event.document = new docCol(doc);
+          }
+        }
+
+        Event.handle(event)
+      }
+    });
 
     compiled = true;
   }
