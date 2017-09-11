@@ -208,4 +208,21 @@ export default class Population {
     return await Promise.all(population.projection.map(populateIds));
   }
 
+  static fromClient(population) {
+    for (const k in population) {
+      const v = population[k];
+
+      if (_.isObject(v)) {
+        population[k] = Population.fromClient(v);
+
+      } else {
+        const i = parseInt(v, 10);
+        if (!isNaN(i)) {
+          population[k] = i;
+        }
+      }
+    }
+
+    return population;
+  }
 }

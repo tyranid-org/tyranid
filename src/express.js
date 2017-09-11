@@ -9,6 +9,7 @@ import Tyr          from './tyr';
 import Collection   from './core/collection';
 import Field        from './core/field';
 import NamePath     from './core/namePath';
+import Population   from './core/population';
 import Type         from './core/type';
 import local        from './local/local';
 
@@ -698,6 +699,22 @@ export function generateClientLibrary() {
     }
   };
 
+  Collection.prototype.findOne = function(opts) {
+    var col = this;
+
+    opts = _.assign({}, opts);
+    opts.limit = 1;
+
+    return ajax({
+      url: '/api/' + col.def.name,
+      data: opts
+    }).then(function(docs) {
+      return docs && docs.length ? new col(docs[0]) : null;
+    }).catch(function(err) {
+      console.log(err);
+    });
+  };
+
   Collection.prototype.findAll = function(opts) {
     var col  = this;
 
@@ -1078,6 +1095,18 @@ Collection.prototype.connect = function({ app, auth, http }) {
               query: rOpts.query ? col.fromClientQuery(rOpts.query) : {},
               auth: req.user
             };
+
+            if (rOpts.populate) {
+              opts.populate = Population.fromClient(rOpts.populate);
+            }
+
+            if (rOpts.limit) {
+              opts.limit = parseInt(rOpts.limit, 10);
+            }
+
+            if (rOpts.skip) {
+              opts.skip = parseInt(rOpts.skip, 10);
+            }
 
             const docs = await col.findAll(opts);
             return res.json(col.toClient(docs));
