@@ -302,7 +302,7 @@ export default class Collection {
             enumerable:   false,
             writable:     false,
             configurable: false,
-            value: documentPrototype[key]
+            value:        documentPrototype[key]
           });
         }
       }

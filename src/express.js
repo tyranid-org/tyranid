@@ -85,6 +85,7 @@ class Serializer {
     for (const field of [
       'cardinality',
       'custom',
+      'defaultValue',
       'denormal',
       'granularity',
       'min',
@@ -507,6 +508,22 @@ export function generateClientLibrary() {
     eval(\`var CollectionInstance = function \${_.capitalize(def.name)}(data) {
       if (data) {
         _.assign(this, data);
+      }
+
+      const paths = this.$model.paths;
+      for (const fk in paths) {
+        const field = paths[fk],
+              dv = field.def.defaultValue;
+
+        if (dv !== undefined) {
+          const np = field.namePath;
+
+          const v = np.get(this);
+
+          if (v === undefined) {
+            np.set(this, dv);
+          }
+        }
       }
     };\`);
     //var CollectionInstance = function(data) {
