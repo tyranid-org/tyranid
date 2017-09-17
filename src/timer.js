@@ -1,8 +1,6 @@
 
 import Tyr from './tyr';
 
-
-
 class Timer {
   timers = {};
 
@@ -37,7 +35,7 @@ class Timer {
   start(name) {
     const data = this.data(name);
     if (data.start) {
-      throw `Cannot start() timer "${data.name}" -- already running`;
+      throw new Error(`Cannot start() timer "${data.name}" -- already running`);
     }
 
     data.start = Date.now();
@@ -48,7 +46,7 @@ class Timer {
     const now = Date.now();
 
     if (!data.start) {
-      throw `Cannot stop() timer "${data.name}" -- it is not running`;
+      throw new Error(`Cannot stop() timer "${data.name}" -- it is not running`);
     }
 
     data.elapsed += now - data.start;
@@ -86,7 +84,7 @@ class Timer {
       if (keys.length > 1) {
         s += '  ';
       }
-        
+
       s += `${name}: ${this.elapsed(name)}ms`;
     }
 
