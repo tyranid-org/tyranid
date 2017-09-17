@@ -266,15 +266,15 @@ export default class Collection {
 
     const colId = def.id;
     if (!colId) {
-      throw new Error('The "id" for the collection was not specified.');
+      throw new Error(`Collection ${def.name} The "id" for the collection was not specified.`);
     }
 
     if (colId.length !== 3) {
-      throw new Error('The collection "id" should be three characters long.');
+      throw new Error(`Collection ${def.name}: The collection "id" should be three characters long.`);
     }
 
     if (Tyr.byId[colId]) {
-      throw new Error(`The collection id "${colId}" is already in use by ${Tyr.byId[colId].def.name}.`);
+      throw new Error(`Collection ${def.name}: The collection id "${colId}" is already in use by ${Tyr.byId[colId].def.name}.`);
     }
 
     //

@@ -34,6 +34,7 @@ import './core/namePath';
 import './core/query';
 
 import './fake';
+import './timer';
 
 import './log/log';
 
