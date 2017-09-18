@@ -379,9 +379,15 @@ async function syncIndexes(col) {
 
     await Promise.all(remove.map(i => col.db.dropIndex(i.key)));
 
-    if (create.length) await col.db.createIndexes(create);
+    if (create.length) {
+      try {
+        await col.db.createIndexes(create);
+      } catch (err) {
+        console.error(`Problem when creating indexes on collection "${col.def.name}":\n\n`, create, '\n');
+        throw err;
+      }
+    }
   }
-
 }
 
 function toName(index) {
