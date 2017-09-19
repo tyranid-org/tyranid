@@ -861,7 +861,7 @@ describe('tyranid', function() {
       ];
 
       it( 'should support valuesFor()', function() {
-        User.valuesFor(User.fieldsBy(field => field.type.def.name === 'string')).then(function(values) {
+        return User.valuesFor(User.fieldsBy(field => field.type.def.name === 'string')).then(function(values) {
           return values.sort();
         }).should.eventually.eql(allString);
       });
@@ -1121,11 +1121,11 @@ describe('tyranid', function() {
       });
 
       it('should allow parametric client flags', function() {
-        User.findAll({ age: { $exists: true } })
+        return User.findAll({ age: { $exists: true } })
           .then(function(users) {
             var clientData = User.toClient(users);
-            expect(clientData[0]).ageAppropriateSecret.to.be.eql('Eats at Chipotle way to much...');
-            expect(clientData[1]).ageAppropriateSecret.to.be.eql(undefined);
+            expect(clientData[0].ageAppropriateSecret).to.be.eql('Eats at Chipotle way to much...');
+            expect(clientData[1].ageAppropriateSecret).to.be.eql(undefined);
           });
       });
 
@@ -1425,20 +1425,31 @@ describe('tyranid', function() {
     describe('timestamps', function() {
       it( 'should set updatedAt', function() {
         User.def.timestamps = true;
-        User.byId(1).then(function(user) {
+        let updatedAt;
+        return User.byId(1).then(function(user) {
           user.age = 33;
           user.$update().then(function() {
             expect(user.updatedAt).to.exist;
+            ({ updatedAt } = user);
+            user.age = 34;
+            return user.$update();
+          }).then(function() {
+            expect(user.updatedAt).to.not.equal(updatedAt);
           });
         });
       });
 
       it('should set createdAt', function() {
         User.def.timestamps = true;
-        User.save({ name: { first: 'Jacob' } }).then(function(user) {
-          return User.db.remove({ _id: user._id }).then(function() {
-            expect(user.createdAt).to.exist;
-            expect(user.updatedAt).to.exist;
+        return User.save({ _id: 123454321, name: { first: 'Jacob' } }).then(function(user) {
+          let {createdAt, updatedAt} = user;
+          expect(user.createdAt).to.exist;
+          expect(user.updatedAt).to.exist;
+          user.age = 99;
+          return user.$update().then(function() {
+            expect(user.createdAt).to.equal(createdAt);
+            expect(user.updatedAt).to.not.equal(updatedAt);
+            return User.db.remove({ _id: user._id });
           });
         });
       });
