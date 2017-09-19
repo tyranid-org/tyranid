@@ -1276,9 +1276,16 @@ describe('tyranid', function() {
     });
 
     describe('byIds()', () => {
+      it( 'should not be parallel by default', async () => {
+        const users = await User.byIds([1, 1, 2, 99999, 1]);
+
+        expect(users.length).to.eql(2);
+      });
+
       it( 'should support parallel option', async () => {
         const users = await User.byIds([1, 1, 2, 99999, 1], { parallel: true });
 
+        expect(users.length).to.eql(5);
         expect(users[0] === users[1]).to.be.true;
         expect(users[0] === users[2]).to.be.false;
         expect(users[3]).to.be.null;

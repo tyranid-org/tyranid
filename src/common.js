@@ -34,6 +34,7 @@ export function isOptions(opts) {
        opts.historical !== undefined ||
        opts.limit !== undefined ||
        opts.multi !== undefined ||
+       opts.parallel !== undefined ||
        opts.perm !== undefined ||
        opts.populate !== undefined ||
        opts.query !== undefined ||
