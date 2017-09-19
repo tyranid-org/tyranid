@@ -1275,6 +1275,17 @@ describe('tyranid', function() {
       });
     });
 
+    describe('byIds()', () => {
+      it( 'should support parallel option', async () => {
+        const users = await User.byIds([1, 1, 2, 99999, 1], { parallel: true });
+
+        expect(users[0] === users[1]).to.be.true;
+        expect(users[0] === users[2]).to.be.false;
+        expect(users[3]).to.be.null;
+        expect(users[0] === users[4]).to.be.true;
+      });
+    });
+
     describe('$save()', function() {
       it( 'should replace', async () => {
         let dale = new User({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 });

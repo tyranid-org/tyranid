@@ -499,14 +499,32 @@ export default class Collection {
     }
   }
 
-  byIds(ids, options) {
+  async byIds(ids, options) {
     const collection = this;
 
     if (collection.isStatic()) {
-      return Promise.resolve(ids.map(id => collection.byIdIndex[id]));
+      return ids.map(id => collection.byIdIndex[id]);
     } else {
       const opts = combineOptions(options, { query: { [this.def.primaryKey.field]: { $in: ids } } });
-      return collection.findAll(opts);
+
+      const docs = await collection.findAll(opts);
+
+      if (opts.parallel) {
+        // ensure that byIds creates a parallel array to ids
+        return ids.map(id => {
+          for (let di = 0; di < docs.length; di++) {
+            const d = docs[di];
+
+            if (Tyr.isEqual(d._id, id)) {
+              return d;
+            }
+          }
+
+          return null;
+        });
+      } else {
+        return docs;
+      }
     }
   }
 
