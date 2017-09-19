@@ -854,22 +854,28 @@ describe('tyranid', function() {
     });
 
     describe('values', function() {
-      var allString = [
-        '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
-        'George Doe', 'Home Gardening 101', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...',
-        'Tom Doe', 'Tyranid User Guide', 'User', 'u00'
-      ];
-
       it( 'should support valuesFor()', function() {
+        var userStrings = [
+          'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...',
+          'George Doe', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...',
+          'Tom Doe'
+        ];
+
         return User.valuesFor(User.fieldsBy(field => field.type.def.name === 'string')).then(function(values) {
           return values.sort();
-        }).should.eventually.eql(allString);
+        }).should.eventually.eql(userStrings);
       });
 
       it( 'should support Tyranid.valuesBy()', function() {
+        var allStrings = [
+          '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
+          'George Doe', 'Home Gardening 101', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...',
+          'Tom Doe', 'Tyranid User Guide', 'User', 'u00'
+        ];
+
         return Tyr.valuesBy(field => field.collection.name !== 'TyrInstance' && field.type.def.name === 'string').then(function(values) {
           return values.sort();
-        }).should.eventually.eql(allString);
+        }).should.eventually.eql(allStrings);
       });
     });
 
