@@ -157,7 +157,10 @@ export async function parseInsertObj(col, obj) {
 
   if (def.timestamps) {
     const now = new Date();
-    insertObj.createdAt = now;
+    // Don't overwrite createdAt in case we are coming from an upsert update.
+    // Note it still has to a defined field on the collection.
+    // https://github.com/tyranid-org/tyranid/issues/94
+    insertObj.createdAt = insertObj.createdAt || now;
     insertObj.updatedAt = now;
   }
 

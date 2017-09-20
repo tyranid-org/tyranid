@@ -91,7 +91,8 @@ var User = new tyr.Collection({
     organization: { link: 'organization', denormal: { name: 1, owner: { name: 1 } } },
     department: { link: 'department' },
     homepage: { is: 'url' },
-    goldStars: { is: 'integer', defaultValue: function() { return 0; } }
+    goldStars: { is: 'integer', defaultValue: function() { return 0; } },
+    createdAt: { is: 'date' }
   },
   methods: {
     canDrink: { is: 'boolean', fn: function() { return this.age >= 21; } }
