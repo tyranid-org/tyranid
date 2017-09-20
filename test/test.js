@@ -453,12 +453,12 @@ describe('tyranid', function() {
 
       it( 'should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(22);
+        expect(_.values(fields).length).to.be.eql(23);
       });
 
       it( 'should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(19);
+        expect(_.values(fields).length).to.be.eql(20);
       });
 
       it( 'should set dyn fields on insert for matching objects', async () => {
@@ -1597,8 +1597,10 @@ describe('tyranid', function() {
       });
 
       it('should support findAndModify() with complete doc replacement', function() {
-        return User.findAndModify({ query: { _id: 1003 }, update: { title: 'Good Boy', goldStars: 3 }, upsert: true, new: true }).then(function(result) {
+        const createdAt = new Date('Jan 9 1986');
+        return User.findAndModify({ query: { _id: 1003 }, update: { title: 'Good Boy', goldStars: 3, createdAt }, upsert: true, new: true }).then(function(result) {
           var user = result.value;
+          expect(user.createdAt).to.be.eql(createdAt);
           expect(user.name).to.not.exist;
           expect(user.goldStars).to.be.eql(3);
           expect(user.title).to.be.eql('Good Boy');
