@@ -1127,12 +1127,15 @@ describe('tyranid', function() {
       });
 
       it('should allow parametric client flags', function() {
-        return User.findAll({ age: { $exists: true } })
-          .then(function(users) {
-            var clientData = User.toClient(users);
-            expect(clientData[0].ageAppropriateSecret).to.be.eql('Eats at Chipotle way to much...');
-            expect(clientData[1].ageAppropriateSecret).to.be.eql(undefined);
-          });
+        return User.findAll({
+          query: { age: { $exists: true } },
+          sort: { _id: 1}
+        })
+        .then(function(users) {
+          var clientData = User.toClient(users);
+          expect(clientData[1].ageAppropriateSecret).to.be.eql('Eats at Chipotle way to much...');
+          expect(clientData[0].ageAppropriateSecret).to.be.eql(undefined);
+        });
       });
 
       it('should copy dynamic objects', function() {
