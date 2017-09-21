@@ -20,6 +20,23 @@ Collection.prototype.on = function(opts) {
     handlers = events[type] = [];
   }
 
+  if (!opts.when) {
+    switch (opts.type) {
+    case 'find':
+      opts.when = 'post';
+      break;
+    default:
+      opts.when = 'pre';
+    }
+  } else {
+    switch (opts.type) {
+    case 'find':
+      if (opts.when === 'pre') {
+        throw new Error(`"find" event does not support "when: pre"`);
+      }
+    }
+  }
+
   handlers.push(opts);
 
   return function() {
@@ -81,20 +98,24 @@ export default class Event {
   get documents() {
     if (this.document) {
       return Promise.resolve([ this.document ]);
+    } else if (this._documents) {
+      return Promise.resolve(this._documents);
     } else if (this.query) {
       return this.dataCollection.findAll({ query: this.query });
     }
   }
 
   static async fire(event) {
-    event.date = new Date();
-
     const instanceId = event.instanceId !== Tyr.instanceId ? event.instanceId : undefined;
 
     if (!instanceId) {
       await Event.handle(event);
 
       if (!event.broadcast) return;
+    }
+
+    if (!event.date) {
+      event.date = new Date();
     }
 
     const instances = await Instance.findAll({
@@ -112,7 +133,8 @@ export default class Event {
   /** @private */
   static async handle(event) {
     //con sole.log(Tyr.instanceId + ' *** handle:', event);
-    const events = event.collection.events;
+    const collection = event.collection || Tyr.byId[event.collectionId],
+          events = collection.events;
 
     if (events) {
       const handlers = events[event.type];
@@ -123,6 +145,11 @@ export default class Event {
 
           if (when === event.when || when === 'both') {
             try {
+              // NOTE:  we wrap the event at the latest possible moment to avoid creating unnecessary Event objects
+              if (!(event instanceof Event)) {
+                event = new Event(event);
+              }
+
               const rslt = await onOpts.handler(event);
               //if (rslt.then) {
                 //await rslt;

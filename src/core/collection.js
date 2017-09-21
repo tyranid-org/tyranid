@@ -56,6 +56,8 @@ async function postFind(collection, opts, documents) {
     if (populate) {
       await collection.populate(populate, documents, false /* denormal */, opts);
     }
+
+    await Tyr.Event.fire({ collection, type: 'find', when: 'post', _documents: documents });
   }
 }
 
@@ -190,9 +192,9 @@ const documentPrototype = Tyr.documentPrototype = {
   },
 
   async $remove() {
-    await Tyr.Event.fire(new Tyr.Event({ collection: this.$model, type: 'remove', when: 'pre', document: this }));
+    await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'pre', document: this });
     const rslt = await this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true, ...arguments);
-    await Tyr.Event.fire(new Tyr.Event({ collection: this.$model, type: 'remove', when: 'post', document: this }));
+    await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'post', document: this });
     return rslt;
   },
 
@@ -828,7 +830,7 @@ export default class Collection {
       const keyFieldName = collection.def.primaryKey.field,
             keyValue = obj[keyFieldName];
 
-      await Tyr.Event.fire(new Tyr.Event({ collection, type: 'change', when: 'pre', document: obj }));
+      await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: obj });
 
       let rslt;
       if (keyValue) {
@@ -849,7 +851,7 @@ export default class Collection {
         rslt = await collection.insert(obj, modOpts);
       }
 
-      await Tyr.Event.fire(new Tyr.Event({ collection, type: 'change', when: 'post', document: obj }));
+      await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: obj });
       return rslt;
     }
   }
@@ -967,9 +969,9 @@ export default class Collection {
 
     timestampsUpdate(opts, collection, update, obj);
 
-    await Tyr.Event.fire(new Tyr.Event({ collection, type: 'change', when: 'pre', document: obj }));
+    await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: obj });
     const rslt = await collection.db.update(query, opts.update, opts);
-    await Tyr.Event.fire(new Tyr.Event({ collection, type: 'change', when: 'post', document: obj }));
+    await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: obj });
     return rslt;
   }
 
@@ -1008,9 +1010,9 @@ export default class Collection {
 
     timestampsUpdate(opts, collection, update);
 
-    await Tyr.Event.fire(new Tyr.Event({ collection, type: 'change', when: 'pre', query }));
+    await Tyr.Event.fire({ collection, type: 'change', when: 'pre', query });
     const rslt = await collection.db.update(query, update, opts);
-    await Tyr.Event.fire(new Tyr.Event({ collection, type: 'change', when: 'post', query }));
+    await Tyr.Event.fire({ collection, type: 'change', when: 'post', query });
     return rslt;
   }
 

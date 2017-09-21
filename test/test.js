@@ -1633,6 +1633,7 @@ describe('tyranid', function() {
     describe('hooks and plugins', function() {
       it( 'should support pre hooks', function() {
         Book.pre('insert', (next, obj, ...otherArgs) => {
+          console.log('HOOKS');
           // Following is specific to this test, verifying args passed correctly
           expect(obj.pages).to.be.eql(5);
 

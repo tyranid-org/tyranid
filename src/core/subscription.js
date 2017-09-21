@@ -182,15 +182,13 @@ Collection.prototype.subscribe = async function(query, user) {
 
     await s.$save();
 
-    await Tyr.Event.fire(
-      new Tyr.Event({
-        collection: Subscription,
-        type: 'subscribe',
-        when: 'pre',
-        broadcast: true,
-        subscription: s
-      })
-    );
+    await Tyr.Event.fire({
+      collection: Subscription,
+      type: 'subscribe',
+      when: 'pre',
+      broadcast: true,
+      subscription: s
+    });
   }
 };
 
@@ -202,14 +200,12 @@ Subscription.unsubscribe = async function(user) {
   });
 
   if (rslts.result.n) {
-    await Tyr.Event.fire(
-      new Tyr.Event({
-        collection: Subscription,
-        type: 'unsubscribe',
-        when: 'pre',
-        broadcast: true
-      })
-    );
+    await Tyr.Event.fire({
+      collection: Subscription,
+      type: 'unsubscribe',
+      when: 'pre',
+      broadcast: true
+    });
   }
 };
 
