@@ -12,6 +12,7 @@ import NamePath     from './core/namePath';
 import Population   from './core/population';
 import Type         from './core/type';
 import local        from './local/local';
+import BooleanType  from './type/boolean';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -725,23 +726,30 @@ export function generateClientLibrary() {
     return ajax({
       url: '/api/' + col.def.name,
       data: opts
-    }).then(function(docs) {
-      return docs && docs.length ? new col(docs[0]) : null;
-    }).catch(function(err) {
-      console.log(err);
-    });
+    }).then(docs => docs && docs.length ? new col(docs[0]) : null);
   };
 
   Collection.prototype.findAll = function(opts) {
-    var col  = this;
+    const col = this;
 
     return ajax({
       url: '/api/' + col.def.name,
       data: opts
-    }).then(function(docs) {
-      return docs && docs.map(function(doc) { return new col(doc); });
-    }).catch(function(err) {
-      console.log(err);
+    }).then(rslt => {
+      if (Array.isArray(rslt)) {
+        return rslt.map(doc => new col(doc));
+      } else if (_.isObject(rslt)) {
+        const docs = rslt.docs;
+        docs.count = rslt.count;
+        return docs;
+      }
+    });
+  };
+
+  Collection.prototype.count = function(opts) {
+    return ajax({
+      url: '/api/' + this.def.name + '/count',
+      data: opts
     });
   };
 
@@ -1125,8 +1133,21 @@ Collection.prototype.connect = function({ app, auth, http }) {
               opts.skip = parseInt(rOpts.skip, 10);
             }
 
-            const docs = await col.findAll(opts);
-            return res.json(col.toClient(docs));
+            if (rOpts.count) {
+              opts.count = BooleanType.fromString(rOpts.count);
+            }
+
+            const docs = await col.findAll(opts),
+                  cDocs = col.toClient(docs);
+
+            if (opts.count) {
+              res.json({
+                count: docs.count,
+                docs: cDocs
+              });
+            } else {
+              return res.json(cDocs);
+            }
           } catch (err) {
             console.log(err.stack);
             res.sendStatus(500);
@@ -1182,6 +1203,26 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             await col.remove({ query: col.fromClientQuery(req.query), auth: req.user });
             res.sendStatus(200);
+          } catch (err) {
+            console.log(err.stack);
+            res.sendStatus(500);
+          }
+        });
+      }
+
+      /*
+       *     /api/NAME/count
+       */
+
+      r = app.route('/api/' + name + '/count');
+      r.all(auth);
+
+      if (express.rest || express.get) {
+        r.get(async (req, res) => {
+          try {
+            return res.json(
+              await col.count({ query: col.fromClientQuery(req.query), auth: req.user })
+            );
           } catch (err) {
             console.log(err.stack);
             res.sendStatus(500);

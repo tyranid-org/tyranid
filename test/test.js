@@ -653,6 +653,33 @@ describe('tyranid', function() {
       });
     });
 
+    describe('counting', () => {
+      it('should support collection.count()', async () => {
+        expect(await User.count({ query: { _id: { $in: [1, 2, 3, 4] } } })).to.eql(4);
+      });
+
+      it('should support the findAll count option', async () => {
+        const docs = await User.findAll({
+          query: { _id: { $in: [1, 2, 3, 4] } },
+          limit: 1,
+          count: true
+        });
+
+        expect(docs.length).to.eql(1);
+        expect(docs.count).to.eql(4);
+      });
+
+      it('should not count unless requested', async () => {
+        const docs = await User.findAll({
+          query: { _id: { $in: [1, 2, 3, 4] } },
+          limit: 1
+        });
+
+        expect(docs.length).to.eql(1);
+        expect(docs.count).to.undefined;
+      });
+    });
+
     describe('strings', () => {
       it('should support support labelize', async () => {
         for (const test of [

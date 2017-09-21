@@ -646,23 +646,27 @@ export default class Collection {
   async findAll(...args) {
     let opts;
 
+    let cursor;
     if (args.length === 1) {
       opts = args[0];
 
       const v = opts.query;
       if (isOptions(opts)) {
-        const cursor = await this.find(v || {}, opts.projection, opts);
-
-        const documents = await cursor.toArray();
-        await postFind(this, opts, documents);
-        return documents;
+        cursor = await this.find(v || {}, opts.projection, opts);
       }
     }
 
-    const cursor = await this.find(...args);
+    if (!cursor) {
+      cursor = await this.find(...args);
+    }
 
     const documents = await cursor.toArray();
     await postFind(this, opts, documents);
+
+    if (opts && opts.count) {
+      documents.count = await cursor.count();
+    }
+
     return documents;
   }
 
@@ -779,6 +783,22 @@ export default class Collection {
     }
 
     return result;
+  }
+
+  count(opts) {
+    const collection = this,
+          db         = collection.db,
+          query      = opts.query,
+          auth       = extractAuthorization(opts);
+
+    if (auth) {
+      return Tyr.mapAwait(
+        collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth),
+        securedQuery => db.count(securedQuery)
+      );
+    }
+
+    return db.count(query);
   }
 
   async save(obj, opts) {
