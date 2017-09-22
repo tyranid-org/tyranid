@@ -199,7 +199,7 @@ const documentPrototype = Tyr.documentPrototype = {
 
   async $remove() {
     await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'pre', document: this });
-    const rslt = await this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, true, ...arguments);
+    const rslt = await this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, '$remove', ...arguments);
     await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'post', document: this });
     return rslt;
   },
@@ -1114,7 +1114,13 @@ export default class Collection {
       }
     }
 
+    if (justOne !== '$remove') {
+      await Tyr.Event.fire({ collection, type: 'remove', when: 'pre', query });
+    }
     return await collection.db.remove(query, justOne);
+    if (justOne !== '$remove') {
+      await Tyr.Event.fire({ collection, type: 'remove', when: 'post', query });
+    }
   }
 
   /**

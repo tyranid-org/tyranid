@@ -1,5 +1,8 @@
 
-import Tyr from '../tyr';
+import * as _               from 'lodash';
+import * as stableStringify from 'json-stable-stringify';
+
+import Tyr                  from '../tyr';
 
 async function syncIndexes(col) {
   const indexes = col.def.indexes;

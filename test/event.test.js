@@ -27,7 +27,7 @@ export function add() {
       dereg();
     });
 
-    it('should allow you to cancel removes', async () => {
+    it('should allow you to cancel removes on $remove()', async () => {
       const dereg = User.on({ type: 'remove', handler(/*event*/) {
         throw new Error('stop');
       }});
@@ -47,6 +47,31 @@ export function add() {
       expect(u1).to.be.defined;
 
       await u1.$remove();
+
+      u1 = await User.byId(2001);
+      expect(u1).to.be.null;
+    });
+
+    it('should allow you to cancel removes on Collection.remove()', async () => {
+      const dereg = User.on({ type: 'remove', handler(/*event*/) {
+        throw new Error('stop');
+      }});
+
+      let u1;
+      try {
+        u1 = new User({ _id: 2001, name: { first: 'User', last: 'One' } });
+        await u1.$save();
+
+        await User.remove({ query: { _id: 2001 } });
+      } catch (err) {
+      } finally {
+        dereg();
+      }
+
+      u1 = await User.byId(2001);
+      expect(u1).to.be.defined;
+
+      await User.remove({ query: { _id: 2001 } });
 
       u1 = await User.byId(2001);
       expect(u1).to.be.null;

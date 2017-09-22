@@ -1,7 +1,6 @@
 import * as _    from 'lodash';
 import * as fs   from 'fs';
 import * as glob from 'glob';
-import * as stableStringify from 'json-stable-stringify';
 import Tyr from './tyr';
 
 import './type/array';
