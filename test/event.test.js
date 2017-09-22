@@ -123,7 +123,7 @@ export function add() {
 
     it('should do something with findAndModify()', async () => {
       let dereg;
-      
+
       try {
         await Book.save([
           { title: 'event-number-1' },
