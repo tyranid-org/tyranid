@@ -484,12 +484,12 @@ describe('tyranid', function() {
 
       it('should support secured find()s', async function() {
         const anon = await User.findOne({ 'name.first': 'An' });
-        let books = await Book.find({}, { title: 1 }, { auth: anon }).toArray();
+        let books = await Book.find({ fields: { title: 1 }, auth: anon }).toArray();
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
 
         const jane = await User.findOne({ 'name.first': 'Jane' });
-        books = await Book.find({}, { title: 1 }, { auth: jane }).toArray();
+        books = await Book.find({ fields: { title: 1 }, auth: jane }).toArray();
         expect(books.length).to.eql(2);
       });
 
@@ -502,18 +502,13 @@ describe('tyranid', function() {
 
       it('should support secured find()s with a query and an options argument', async function() {
         const anon = await User.findOne({ 'name.first': 'An' });
-        const books = await Book.find({}, { fields: { title: 1 }, auth: anon }).toArray();
+        const books = await Book.find({ fields: { title: 1 }, auth: anon }).toArray();
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
       });
 
-      it('should support secured find()s with a empty query and an empty options argument', async function() {
-        const books = await Book.find({}, {}).toArray();
-        expect(books.length).to.eql(2);
-      });
-
-      it('should support secured find()s with a empty query, a null projection, and an empty options argument', async function() {
-        const books = await Book.find({}, null, {}).toArray();
+      it('should support secured find()s with a empty query / empty options argument', async function() {
+        const books = await Book.find({}).toArray();
         expect(books.length).to.eql(2);
       });
     });
@@ -525,7 +520,7 @@ describe('tyranid', function() {
       });
 
       it('should find wrapped objects', async function() {
-        const docs = await (await User.find({'name.first': 'An'})).toArray();
+        const docs = await (await User.find({ query: {'name.first': 'An'} })).toArray();
         expect(docs.length).to.be.eql(1);
         expect(docs[0]).to.be.an.instanceof(User);
       });
@@ -591,7 +586,7 @@ describe('tyranid', function() {
       });
 
       it('should findAll()', function() {
-        return User.findAll({'name.first': 'An'}).then(function(docs) {
+        return User.findAll({ query: { 'name.first': 'An' } }).then(function(docs) {
           expect(docs.length).to.be.eql(1);
           expect(docs[0]).to.be.an.instanceof(User);
         });
@@ -713,7 +708,7 @@ describe('tyranid', function() {
       });
 
       it('should return custom primaryKey if not specified in projection', function() {
-        return Book.findAll({isbn: BookIsbn}, {_id: 1}).then(function(docs) {
+        return Book.findAll({ query: { isbn: BookIsbn }, fields: { _id: 1 } }).then(function(docs) {
           expect(docs.length).to.be.eql(1);
           expect(docs[0].title).to.not.exist;
           expect(docs[0].isbn).to.be.eql(BookIsbn);
@@ -843,7 +838,7 @@ describe('tyranid', function() {
         var book = new Book({ isbn: newIsbn, title: 'Datamodeling for Dummies' });
 
         return book.$save().then(function() {
-          return Book.findAll({ isbn: newIsbn }).then(function(docs) {
+          return Book.findAll({ query: { isbn: newIsbn } }).then(function(docs) {
             expect(docs.length).to.eql(1);
             expect(docs[0].title).to.eql('Datamodeling for Dummies');
           });
@@ -854,7 +849,7 @@ describe('tyranid', function() {
         var book = new Book({ isbn: newIsbn, description: 'Lovely' });
 
         return book.$save().then(function() {
-          return Book.findAll({ isbn: newIsbn }).then(function(docs) {
+          return Book.findAll({ query: { isbn: newIsbn } }).then(function(docs) {
             expect(docs.length).to.eql(1);
             expect(docs[0].description).to.eql('Lovely');
             // $save should replace entire doc
@@ -1240,7 +1235,7 @@ describe('tyranid', function() {
           new User({ _id: 1002, organization: 1, department: 1, name: { first: 'Second', last: 'User' }, title: 'Developer' })
         ];
         return User.insert(users)
-          .then(function(newPeople) {
+          .then(newPeople => {
             expect(newPeople).to.be.instanceof(Array);
             expect(newPeople.length).to.be.eql(2);
             expect(newPeople[1].name.first).to.be.eql('Second');
@@ -1257,7 +1252,7 @@ describe('tyranid', function() {
           // some checks here to make sure that we're properly returning the new ObjectId
           expect(l._id).to.be.instanceof(ObjectId);
 
-          const locs = await Location.findAll({ name: 'Test Location' });
+          const locs = await Location.findAll({ query: { name: 'Test Location' } });
           expect(locs.length).to.eql(1);
           expect(locs[0]._id).to.eql(l._id);
         } finally {
@@ -1633,7 +1628,6 @@ describe('tyranid', function() {
     describe('hooks and plugins', function() {
       it( 'should support pre hooks', function() {
         Book.pre('insert', (next, obj, ...otherArgs) => {
-          console.log('HOOKS');
           // Following is specific to this test, verifying args passed correctly
           expect(obj.pages).to.be.eql(5);
 

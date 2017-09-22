@@ -40,10 +40,12 @@ function isArrow(fn) {
 }
 
 async function postFind(collection, opts, documents) {
+  const array = Array.isArray(documents);
+
   if (opts) {
     const asOf = opts.asOf;
     if (asOf) {
-      if (Array.isArray(documents)) {
+      if (array) {
         for (const document of documents) {
           historical.asOf(collection, document, asOf, opts.fields);
         }
@@ -56,8 +58,12 @@ async function postFind(collection, opts, documents) {
     if (populate) {
       await collection.populate(populate, documents, false /* denormal */, opts);
     }
+  }
 
+  if (array) {
     await Tyr.Event.fire({ collection, type: 'find', when: 'post', _documents: documents });
+  } else {
+    await Tyr.Event.fire({ collection, type: 'find', when: 'post', document: documents });
   }
 }
 
@@ -568,6 +574,10 @@ export default class Collection {
           opts       = extractOptions(collection, args),
           db         = collection.db;
 
+    if (args.length && (args.length !== 1 || (!isOptions(args[0]) && _.keys(args[0]).length))) {
+      console.warn(`*** ${this.name}.find/findAll(<query>, <fields>?, <opts>?) is deprecated ... use ${this.name}.find/findAll(<opts>)`);
+    }
+
     let query,
         fields;
     switch (args.length) {
@@ -612,21 +622,32 @@ export default class Collection {
         cursor.sort(v);
       }
 
-      hooker.hook(cursor, 'next', {
-        post(promise) {
-          const modified = promise.then(doc => doc ? new collection(doc) : null);
-          return hooker.override(modified);
+      return Object.create(cursor, {
+        next: {
+          async value() {
+            let doc = await cursor.next();
+
+            if (doc) {
+              doc = new collection(doc);
+              await postFind(collection, opts, doc);
+            }
+
+            return doc;
+          }
+        },
+        toArray: {
+          async value() {
+            let docs = await cursor.toArray();
+
+            if (docs.length) {
+              docs = docs.map(doc => new collection(doc));
+              await postFind(collection, opts, docs);
+            }
+
+            return docs;
+          }
         }
       });
-
-      hooker.hook(cursor, 'toArray', {
-        post(promise) {
-          const modified = promise.then(docs => docs.map(doc => doc ? new collection(doc) : null));
-          return hooker.override(modified);
-        }
-      });
-
-      return cursor;
     }
 
     if (auth) {
@@ -646,26 +667,12 @@ export default class Collection {
    * A short-cut to do find() + toArray()
    */
   async findAll(...args) {
-    let opts;
 
-    let cursor;
-    if (args.length === 1) {
-      opts = args[0];
+    // TODO:  should probably rewrite this to not use find() since can avoid creation of a tyranid cursor
+    const cursor = await this.find(...args),
+          documents = await cursor.toArray();
 
-      const v = opts.query;
-      if (isOptions(opts)) {
-        cursor = await this.find(v || {}, opts.projection, opts);
-      }
-    }
-
-    if (!cursor) {
-      cursor = await this.find(...args);
-    }
-
-    const documents = await cursor.toArray();
-    await postFind(this, opts, documents);
-
-    if (opts && opts.count) {
+    if (args.length && args[0].count) {
       documents.count = await cursor.count();
     }
 
@@ -778,10 +785,14 @@ export default class Collection {
       opts.fields = parseProjection(collection, opts.fields);
     }
 
+    await Tyr.Event.fire({ collection, type: 'change', when: 'pre', query: opts.query, update: opts.update });
     const result = await db.findAndModify(opts.query, opts.sort, opts.update, opts);
 
     if (result && result.value) {
       result.value = new collection(result.value);
+      await Tyr.Event.fire({ collection, type: 'change', when: 'post', query: opts.query, update: opts.update });
+    } else {
+      await Tyr.Event.fire({ collection, type: 'change', when: 'post', query: opts.query, update: opts.update });
     }
 
     return result;
@@ -830,10 +841,10 @@ export default class Collection {
       const keyFieldName = collection.def.primaryKey.field,
             keyValue = obj[keyFieldName];
 
-      await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: obj });
-
       let rslt;
       if (keyValue) {
+        await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: obj });
+
         // using REPLACE semantics with findAndModify() here
         const result = await collection.findAndModify(combineOptions(opts, {
           query: { [keyFieldName]: keyValue },
@@ -845,13 +856,16 @@ export default class Collection {
           historical: false
         }));
 
+        await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: obj });
+
         rslt = result.value;
       } else {
+
         const modOpts = combineOptions(opts, { denormalAlreadyDone: true });
+
         rslt = await collection.insert(obj, modOpts);
       }
 
-      await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: obj });
       return rslt;
     }
   }
@@ -876,9 +890,12 @@ export default class Collection {
         }
       }
 
+      await Tyr.Event.fire({ collection, type: 'change', when: 'pre', _documents: parsedArr });
       const rslt = await collection.db.insertMany(parsedArr);
 
-      return rslt.ops;
+      const docs = rslt.ops;
+      await Tyr.Event.fire({ collection, type: 'change', when: 'post', _documents: docs });
+      return docs;
     } else {
       const parsedObj = await parseInsertObj(collection, obj);
 
@@ -891,10 +908,14 @@ export default class Collection {
         }
       }
 
+      await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: parsedObj });
       const rslt = await collection.db.insert(parsedObj);
 
       const doc = rslt.ops[0];
       obj._id = doc._id;
+
+      await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: doc });
+
       return doc;
     }
   }

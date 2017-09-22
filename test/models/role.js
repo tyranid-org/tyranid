@@ -11,6 +11,6 @@ export default class Role extends new Tyr.Collection({
 }) {
 
   static async search(text) {
-    return this.find({ name: new RegExp(_.escapeRegExp(text)) });
+    return this.find({ query: { name: new RegExp(_.escapeRegExp(text)) } });
   }
 }

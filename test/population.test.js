@@ -110,7 +110,7 @@ export function add() {
       });
 
       it( 'should deep populate array link links', function() {
-        return User.findAll({ _id: 2 })
+        return User.findAll({ query: { _id: 2 } })
           .then(User.populate({ organization: $all, 'siblings.bestFriend': { $all: 1, organization: $all } }))
           .then(function(users) {
             expect(users[0].siblings[0].bestFriend$.organization$.name).to.be.eql('Acme Unlimited');
