@@ -265,34 +265,39 @@ function defineDocumentProperties(dp) {
 
 async function preSave(collection, obj, opts) {
   if (!opts || !opts.preSaveAlreadyDone) {
-    const vFields = collection.validatedFields;
+    const vFields = collection.validatedFields,
+          denormal = collection.denormal;
+    let promises, pi = 0;
 
     if (vFields.length) {
-      let arr, vPos = 0;
-
       if (Array.isArray(obj)) {
-        arr = new Array(obj.length * vFields.length);
+        promises = new Array(obj.length * vFields.length + (denormal ? 1 : 0));
 
         for (const doc of obj) {
           for (const vField of vFields) {
-            arr[vPos++] = vField.validate(doc);
+            promises[pi++] = vField.validate(doc);
           }
         }
       } else {
-        arr = new Array(vFields.length);
+        promises = new Array(vFields.length + (denormal ? 1 : 0));
 
         for (const vField of vFields) {
-          arr[vPos++] = vField.validate(obj);
+          promises[pi++] = vField.validate(obj);
         }
       }
+    } else {
+      if (!denormal) {
+        return;
+      }
 
-      await Promise.all(arr);
+      promises = new Array(1);
     }
 
-    const denormal = collection.denormal;
     if (denormal) {
-      await collection.populate(denormal, obj, true);
+      promises[pi++] = collection.populate(denormal, obj, true);
     }
+
+    await Promise.all(promises);
   }
 }
 
