@@ -1,18 +1,19 @@
 
-import * as _ from 'lodash';
-import { ObjectId } from 'mongodb';
-import * as uglify from 'uglify-js';
-import * as ts from 'typescript';
-import * as socketIo from 'socket.io';
+import * as _          from 'lodash';
+import { ObjectId }    from 'mongodb';
+import * as uglify     from 'uglify-js';
+import * as ts         from 'typescript';
+import * as socketIo   from 'socket.io';
 
-import Tyr          from './tyr';
-import Collection   from './core/collection';
-import Field        from './core/field';
-import NamePath     from './core/namePath';
-import Population   from './core/population';
-import Type         from './core/type';
-import local        from './local/local';
-import BooleanType  from './type/boolean';
+import Tyr             from './tyr';
+import Collection      from './core/collection';
+import Field           from './core/field';
+import NamePath        from './core/namePath';
+import Population      from './core/population';
+import ValidationError from './core/validationError';
+import Type            from './core/type';
+import local           from './local/local';
+import BooleanType     from './type/boolean';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -78,9 +79,14 @@ class Serializer {
       this.file += '",';
     }
 
-    if (def.multiline) {
-      this.newline();
-      this.file += this.k('multiline') + ': true,';
+    for (const field of [
+      'multiline',
+      'validate'
+    ]) {
+      if (def[field]) {
+        this.newline();
+        this.file += this.k(field) + ': true,';
+      }
     }
 
     for (const field of [
@@ -474,12 +480,25 @@ export function generateClientLibrary() {
       url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (search || '')
     //}).then(function(docs) {
       //return docs.map(function(doc) { return new col(doc); });
-    }).catch(function(err) {
-      console.log(err);
     });
   };
 
+  ${ValidationError.toString()}
+  Tyr.ValidationError = ValidationError;
 
+  Field.prototype.validate = function(doc) {
+    if (this.def.validate) {
+      return ajax({
+        url: '/api/' + this.collection.def.name + '/' + this.path + '/validate/'
+        method: 'put',
+        data: doc
+      }).then(function(result) {
+        if (result) {
+          throw new ValidationError(this, result);
+        }
+      });
+    }
+  }
 
   ${translateClass(NamePath)}
 `;
@@ -1372,6 +1391,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
       /*
        *     /api/NAME/FIELD_PATH/label/:search
+       *     /api/NAME/FIELD_PATH/validate
        */
 
       if (express.rest || express.get) {
@@ -1399,6 +1419,25 @@ Collection.prototype.connect = function({ app, auth, http }) {
               } catch (err) {
                 console.log(err.stack);
                 res.sendStatus(500);
+              }
+            });
+          }
+
+          const validateFn = field.def.validate;
+          if (validateFn) {
+            r = app.route('/api/' + name + '/' + field.path + '/validate');
+            r.all(auth);
+            r.put(async (req, res) => {
+              try {
+                await field.validate(col.fromClient(req.body, undefined, { req }));
+                res.json('');
+              } catch (err) {
+                if (err instanceof ValidationError) {
+                  res.json(err.reason);
+                } else {
+                  console.log(err.stack);
+                  res.sendStatus(500);
+                }
               }
             });
           }

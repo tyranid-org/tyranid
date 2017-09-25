@@ -263,9 +263,37 @@ function defineDocumentProperties(dp) {
   });
 }
 
-function denormalPopulate(collection, obj, opts) {
-  const denormal = (!opts || !opts.denormalAlreadyDone) && collection.denormal;
-  return denormal ? collection.populate(denormal, obj, true) : Promise.resolve();
+async function preSave(collection, obj, opts) {
+  if (!opts || !opts.preSaveAlreadyDone) {
+    const vFields = collection.validatedFields;
+
+    if (vFields.length) {
+      let arr, vPos = 0;
+
+      if (Array.isArray(obj)) {
+        arr = new Array(obj.length * vFields.length);
+
+        for (const doc of obj) {
+          for (const vField of vFields) {
+            arr[vPos++] = vField.validate(doc);
+          }
+        }
+      } else {
+        arr = new Array(vFields.length);
+
+        for (const vField of vFields) {
+          arr[vPos++] = vField.validate(obj);
+        }
+      }
+
+      await Promise.all(arr);
+    }
+
+    const denormal = collection.denormal;
+    if (denormal) {
+      await collection.populate(denormal, obj, true);
+    }
+  }
 }
 
 export default class Collection {
@@ -814,13 +842,29 @@ export default class Collection {
     return db.count(query);
   }
 
+  async exists(opts) {
+    const collection = this,
+          db         = collection.db,
+          query      = opts.query,
+          auth       = extractAuthorization(opts);
+
+    if (auth) {
+      return Tyr.mapAwait(
+        collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth),
+        async securedQuery => !!(await db.findOne(securedQuery, { _id: 1 }))
+      );
+    }
+
+    return !!(await db.findOne(query, { _id: 1 }));
+  }
+
   async save(obj, opts) {
     const collection = this;
 
-    await denormalPopulate(collection, obj, opts);
+    await preSave(collection, obj, opts);
 
     if (Array.isArray(obj)) {
-      const arrOpts = combineOptions(opts, { denormalAlreadyDone: true });
+      const arrOpts = combineOptions(opts, { preSaveAlreadyDone: true });
       // TODO:  use bulkops
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
     } else {
@@ -861,7 +905,7 @@ export default class Collection {
         rslt = result.value;
       } else {
 
-        const modOpts = combineOptions(opts, { denormalAlreadyDone: true });
+        const modOpts = combineOptions(opts, { preSaveAlreadyDone: true });
 
         rslt = await collection.insert(obj, modOpts);
       }
@@ -873,7 +917,7 @@ export default class Collection {
   async insert(obj, opts) {
     const collection = this;
 
-    await denormalPopulate(collection, obj, opts);
+    await preSave(collection, obj, opts);
 
     const auth = extractAuthorization(opts);
 
@@ -1439,7 +1483,7 @@ export default class Collection {
           denormal[path] = fieldDef.denormal;
         }
 
-        for (const fnName of ['get', 'set', 'getClient', 'setClient', 'getServer', 'setServer']) {
+        for (const fnName of ['get', 'set', 'getClient', 'setClient', 'getServer', 'setServer', 'validate']) {
           if (fieldDef[fnName] && isArrow(fieldDef[fnName])) {
             throw compiler.err(path, `"${fnName}" is an arrow function; use a regular function so the document can be passed as "this"`);
           }
@@ -1501,6 +1545,16 @@ export default class Collection {
     if (stage === 'link') {
       if (collection.def.historical) {
         historical.link(collection);
+      }
+
+      const validatedFields = collection.validatedFields = [],
+            paths = collection.paths;
+      for (const fieldName in paths) {
+        const field = paths[fieldName];
+
+        if (field.def.validate) {
+          validatedFields.push(field);
+        }
       }
     }
   }

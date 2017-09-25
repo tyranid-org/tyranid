@@ -1,8 +1,9 @@
 
-import * as _ from 'lodash';
+import * as _          from 'lodash';
 
-import Tyr      from '../tyr';
-import NamePath from './namePath';
+import Tyr             from '../tyr';
+import NamePath        from './namePath';
+import ValidationError from './validationError';
 
 export default class Field {
 
@@ -48,6 +49,18 @@ export default class Field {
 
   get pathLabel() {
     return this._calcPathLabel();
+  }
+
+  async validate(doc) {
+    const validateFn = this.def.validate;
+
+    if (validateFn) {
+      const reason = await validateFn.apply(doc, this);
+
+      if (reason) {
+        throw new ValidationError(this, reason);
+      }
+    }
   }
 }
 

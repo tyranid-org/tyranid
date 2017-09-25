@@ -675,6 +675,13 @@ describe('tyranid', function() {
       });
     });
 
+    describe('exists', () => {
+      it('should support collection.exists()', async () => {
+        expect(await User.exists({ query: { _id: 1 } })).to.equal(true);
+        expect(await User.exists({ query: { _id: 'cat' } })).to.equal(false);
+      });
+    });
+
     describe('strings', () => {
       it('should support support labelize', async () => {
         for (const test of [
@@ -1441,15 +1448,42 @@ describe('tyranid', function() {
 
     describe('validation', function() {
 
-      it( 'should return no validation errors on a valid data', function() {
+      it('should return no validation errors on a valid data', function() {
         var user = new User({ name: { first: 'Jane' }, age: 5 });
 
         expect(user.$validate().length).to.be.eql(0);
       });
 
-      it( 'should return validate errors on invalid data', function() {
+      it('should return validate errors on invalid data', function() {
         var user = new User({ age: 5.1 });
         expect(user.$validate().length).to.be.eql(2);
+      });
+
+      it('should support Field.validate()', async () => {
+        const book = new Book({ pages: 2000 });
+
+        await Book.fields.pages.validate(book);
+
+        book.pages = 15000;
+
+        try {
+          await Book.fields.pages.validate(book);
+          throw new Error('said an invalid book was valid');
+        } catch (err) {
+          expect(/too big for the library/.test(err.reason)).to.eql(true);
+        }
+      });
+
+      it('should validate on saves', async () => {
+        const book = new Book({ pages: 15000 });
+
+        try {
+          await book.$save();
+          await Book.remove({ query: { pages: 15000 } });
+          throw new Error('saved an invalid book');
+        } catch (err) {
+          expect(/too big for the library/.test(err.reason)).to.eql(true);
+        }
       });
     });
 

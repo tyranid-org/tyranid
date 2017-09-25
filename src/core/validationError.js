@@ -1,9 +1,10 @@
 
 import Tyr from '../tyr';
 
-export default class ValidationError {
+export default class ValidationError extends Error {
 
   constructor(field, reason) {
+    super(reason);
     this.field = field;
     this.reason = reason;
   }
@@ -11,10 +12,8 @@ export default class ValidationError {
   get message() {
     return 'The value at ' + this.field.path + ' ' + this.reason;
   }
-
-  toString() {
-    return this.message;
-  }
 }
 
 Tyr.ValidationError = ValidationError;
+
+export default ValidationError;
