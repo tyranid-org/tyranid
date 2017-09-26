@@ -9,7 +9,7 @@ import                './models/user';
 
 const { ObjectId } = mongodb;
 
-let Organization, Department, User, Task, Book,
+let Organization, Department, User, Phantom, Task, Book,
     TyrSchema, TyrSchemaType;
 const AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
 const UserRoleId = new ObjectId('55bb7ecfe71d45b923ff8c83');
@@ -32,6 +32,7 @@ export default async function initModel() {
   Book = Tyr.byName.book;
   TyrSchema = Tyr.byName.tyrSchema;
   TyrSchemaType = Tyr.byName.tyrSchemaType;
+  Phantom = Tyr.byName.phantom;
 
   await Organization.db.remove({});
   await Organization.db.insert([

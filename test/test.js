@@ -14,6 +14,7 @@ import Field                     from '../src/core/field';
 import Type                      from '../src/core/type';
 import Unit                      from '../src/unit/unit';
 import Role                      from './models/role'; // require to get extra link in prototype chain
+import Phantom                   from './models/phantom.model';
 import initModel                 from './model';
 
 import                                './models/user';
@@ -1656,6 +1657,18 @@ describe('tyranid', function() {
         var user = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
         var clientUser = User.toClient(user);
         expect(clientUser.fullName).to.be.eql('Jane Smith');
+      });
+    });
+
+    describe('phantom collections', () => {
+      it('should let you query from phantom collections', async () => {
+        const docs = await Phantom.findAll({});
+        expect(docs.length).to.equal(0);
+      });
+
+      it('should let you query from phantom collections', async () => {
+        const doc = await Phantom.findOne({});
+        expect(doc).to.equal(null);
       });
     });
 
