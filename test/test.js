@@ -443,23 +443,23 @@ describe('tyranid', function() {
         return User.db.remove({ _id: dynUserId });
       });
 
-      it( 'should support matching fieldsFor()', async () => {
+      it('should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(23);
+        expect(_.values(fields).length).to.be.eql(24);
       });
 
-      it( 'should support unmatching fieldsFor()', async () => {
+      it('should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(20);
+        expect(_.values(fields).length).to.be.eql(21);
       });
 
-      it( 'should set dyn fields on insert for matching objects', async () => {
+      it('should set dyn fields on insert for matching objects', async () => {
         return User.insert({ _id: dynUserId, organization: 1, name: { first: 'Dynamic', last: 'Schema' }, acmeX: 999 }).then(p => {
           expect(p.acmeX).to.be.eql(999);
         });
       });
 
-      it( 'should NOT set dyn fields on insert for unmatching objects', async () => {
+      it('should NOT set dyn fields on insert for unmatching objects', async () => {
         return User.insert({ _id: dynUserId, organization: 2, name: { first: 'Not', last: 'Dynamic' }, acmeX: 999 }).then(p => {
           expect(p.acmeX).to.not.exist;
         });

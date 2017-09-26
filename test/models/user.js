@@ -92,7 +92,9 @@ var User = new tyr.Collection({
     department: { link: 'department' },
     homepage: { is: 'url' },
     goldStars: { is: 'integer', defaultValue: function() { return 0; } },
-    createdAt: { is: 'date' }
+    createdAt: { is: 'date' },
+
+    other: { is: 'object' }
   },
   methods: {
     canDrink: { is: 'boolean', fn: function() { return this.age >= 21; } }
