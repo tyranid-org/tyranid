@@ -14,6 +14,7 @@ import ValidationError from './core/validationError';
 import Type            from './core/type';
 import local           from './local/local';
 import BooleanType     from './type/boolean';
+import LinkType        from './type/link';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -454,7 +455,7 @@ export function generateClientLibrary() {
     }
   });
 
-  Field.prototype.labels = function(search) {
+  Field.prototype.labels = function(doc, search) {
     const to = this.link;
     if (to.isStatic() ) {
       var values = to.def.values;
@@ -478,8 +479,8 @@ export function generateClientLibrary() {
 
     return ajax({
       url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (search || '')
-    //}).then(function(docs) {
-      //return docs.map(function(doc) { return new col(doc); });
+      method: 'put',
+      data: doc
     });
   };
 
@@ -1400,19 +1401,17 @@ Collection.prototype.connect = function({ app, auth, http }) {
           if (to && to.labelField) {
             r = app.route('/api/' + name + '/' + field.path + '/label/:search?');
             r.all(auth);
-            r.get(async (req, res) => {
+            r.put(async (req, res) => {
               try {
-                const query = {};
+                const doc = col.fromClient(req.body, undefined, { req }),
+                      query = {},
+                      search = req.params.search;
 
-                const search = req.params.search;
                 if (search) {
                   query[to.labelField.path] = new RegExp(search, 'i');
                 }
 
-                const where = field.def.where;
-                if (where) {
-                  _.assign(query, where);
-                }
+                LinkType.applyWhere(field, doc, query);
 
                 const results = await to.findAll({ query, fields: { [to.labelField.path]: 1 }, auth: req.user });
                 res.json(results.map(r => r.$toClient()));

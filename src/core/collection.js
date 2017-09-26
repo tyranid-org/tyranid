@@ -61,9 +61,9 @@ async function postFind(collection, opts, documents) {
   }
 
   if (array) {
-    await Tyr.Event.fire({ collection, type: 'find', when: 'post', _documents: documents });
+    await Tyr.Event.fire({ collection, type: 'find', when: 'post', _documents: documents, opts });
   } else {
-    await Tyr.Event.fire({ collection, type: 'find', when: 'post', document: documents });
+    await Tyr.Event.fire({ collection, type: 'find', when: 'post', document: documents, opts });
   }
 }
 
@@ -818,14 +818,20 @@ export default class Collection {
       opts.fields = parseProjection(collection, opts.fields);
     }
 
-    await Tyr.Event.fire({ collection, type: 'change', when: 'pre', query: opts.query, update: opts.update });
+    if (!opts.eventAlreadyDone) {
+      await Tyr.Event.fire({ collection, type: 'update', when: 'pre', opts });
+    }
     const result = await db.findAndModify(opts.query, opts.sort, opts.update, opts);
 
     if (result && result.value) {
       result.value = new collection(result.value);
-      await Tyr.Event.fire({ collection, type: 'change', when: 'post', query: opts.query, update: opts.update });
+      if (!opts.eventAlreadyDone) {
+        await Tyr.Event.fire({ collection, type: 'update', when: 'post', opts });
+      }
     } else {
-      await Tyr.Event.fire({ collection, type: 'change', when: 'post', query: opts.query, update: opts.update });
+      if (!opts.eventAlreadyDone) {
+        await Tyr.Event.fire({ collection, type: 'update', when: 'post', opts });
+      }
     }
 
     return result;
@@ -892,7 +898,7 @@ export default class Collection {
 
       let rslt;
       if (keyValue) {
-        await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: obj });
+        await Tyr.Event.fire({ collection, type: 'update', when: 'pre', document: obj, opts });
 
         // using REPLACE semantics with findAndModify() here
         const result = await collection.findAndModify(combineOptions(opts, {
@@ -902,10 +908,11 @@ export default class Collection {
           update: _.omit(obj, '_id'),
           upsert: true,
           new: true,
-          historical: false
+          historical: false,
+          eventAlreadyDone: true
         }));
 
-        await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: obj });
+        await Tyr.Event.fire({ collection, type: 'update', when: 'post', document: obj, opts });
 
         rslt = result.value;
       } else {
@@ -939,11 +946,11 @@ export default class Collection {
         }
       }
 
-      await Tyr.Event.fire({ collection, type: 'change', when: 'pre', _documents: parsedArr });
+      await Tyr.Event.fire({ collection, type: 'insert', when: 'pre', _documents: parsedArr, opts });
       const rslt = await collection.db.insertMany(parsedArr);
 
       const docs = rslt.ops;
-      await Tyr.Event.fire({ collection, type: 'change', when: 'post', _documents: docs });
+      await Tyr.Event.fire({ collection, type: 'insert', when: 'post', _documents: docs, opts });
       return docs;
     } else {
       const parsedObj = await parseInsertObj(collection, obj);
@@ -957,13 +964,13 @@ export default class Collection {
         }
       }
 
-      await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: parsedObj });
+      await Tyr.Event.fire({ collection, type: 'insert', when: 'pre', document: parsedObj, opts });
       const rslt = await collection.db.insert(parsedObj);
 
       const doc = rslt.ops[0];
       obj._id = doc._id;
 
-      await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: doc });
+      await Tyr.Event.fire({ collection, type: 'insert', when: 'post', document: doc, opts });
 
       return doc;
     }
@@ -1039,9 +1046,9 @@ export default class Collection {
 
     timestampsUpdate(opts, collection, update, obj);
 
-    await Tyr.Event.fire({ collection, type: 'change', when: 'pre', document: obj });
+    await Tyr.Event.fire({ collection, type: 'update', when: 'pre', document: obj, opts });
     const rslt = await collection.db.update(query, opts.update, opts);
-    await Tyr.Event.fire({ collection, type: 'change', when: 'post', document: obj });
+    await Tyr.Event.fire({ collection, type: 'update', when: 'post', document: obj, opts });
     return rslt;
   }
 
@@ -1080,9 +1087,9 @@ export default class Collection {
 
     timestampsUpdate(opts, collection, update);
 
-    await Tyr.Event.fire({ collection, type: 'change', when: 'pre', query });
+    await Tyr.Event.fire({ collection, type: 'update', when: 'pre', query, opts });
     const rslt = await collection.db.update(query, update, opts);
-    await Tyr.Event.fire({ collection, type: 'change', when: 'post', query });
+    await Tyr.Event.fire({ collection, type: 'update', when: 'post', query, opts });
     return rslt;
   }
 
@@ -1164,11 +1171,11 @@ export default class Collection {
     }
 
     if (justOne !== '$remove') {
-      await Tyr.Event.fire({ collection, type: 'remove', when: 'pre', query });
+      await Tyr.Event.fire({ collection, type: 'remove', when: 'pre', query, opts });
     }
     return await collection.db.remove(query, justOne);
     if (justOne !== '$remove') {
-      await Tyr.Event.fire({ collection, type: 'remove', when: 'post', query });
+      await Tyr.Event.fire({ collection, type: 'remove', when: 'post', query, opts });
     }
   }
 
@@ -1488,7 +1495,7 @@ export default class Collection {
           denormal[path] = fieldDef.denormal;
         }
 
-        for (const fnName of ['get', 'set', 'getClient', 'setClient', 'getServer', 'setServer', 'validate']) {
+        for (const fnName of ['get', 'set', 'getClient', 'setClient', 'getServer', 'setServer', 'validate', 'where']) {
           if (fieldDef[fnName] && isArrow(fieldDef[fnName])) {
             throw compiler.err(path, `"${fnName}" is an arrow function; use a regular function so the document can be passed as "this"`);
           }

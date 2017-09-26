@@ -54,6 +54,21 @@ const LinkType = new Type({
   }
 });
 
+LinkType.applyWhere = async function(field, doc, query) {
+  const where = field.def.where;
+  if (where) {
+    if (typeof where === 'function') {
+      const rslt = await where.call(doc);
+
+      if (_.isObject(rslt)) {
+        _.assign(query, where);
+      }
+    } else {
+      _.assign(query, where);
+    }
+  }
+};
+
 Collection.prototype.links = function(search) {
   search = search || {};
 

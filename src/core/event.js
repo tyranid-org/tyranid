@@ -10,40 +10,63 @@ Collection.prototype.on = function(opts) {
 
   const { type } = opts;
 
+  let types;
+  switch (type) {
+    case 'change':
+      types = ['insert', 'update'];
+      break;
+    default:
+      types = [type];
+  }
+
   let events = this.events;
   if (!events) {
     events = this.events = {};
   }
 
-  let handlers = events[type];
-  if (!handlers) {
-    handlers = events[type] = [];
-  }
+  const optsArr = [];
 
-  if (!opts.when) {
-    switch (opts.type) {
-    case 'find':
-      opts.when = 'post';
-      break;
-    default:
-      opts.when = 'pre';
+  for (const type of types) {
+    if (optsArr.length) {
+      opts = Object.assign({}, opts);
     }
-  } else {
-    switch (opts.type) {
-    case 'find':
-      if (opts.when === 'pre') {
-        throw new Error(`"find" event does not support "when: pre"`);
+
+    opts.type = type;
+    optsArr.push(opts);
+
+    let handlers = events[type];
+    if (!handlers) {
+      handlers = events[type] = [];
+    }
+
+    if (!opts.when) {
+      switch (type) {
+      case 'find':
+        opts.when = 'post';
+        break;
+      default:
+        opts.when = 'pre';
+      }
+    } else {
+      switch (type) {
+      case 'find':
+        if (opts.when === 'pre') {
+          throw new Error(`"find" event does not support "when: pre"`);
+        }
       }
     }
+
+    handlers.push(opts);
   }
 
-  handlers.push(opts);
-
   return function() {
-    const idx = handlers.indexOf(opts);
+    for (const opts of optsArr) {
+      const handlers = events[opts.type],
+            idx = handlers.indexOf(opts);
 
-    if (idx >= 0) {
-      handlers.splice(idx, 1);
+      if (idx >= 0) {
+        handlers.splice(idx, 1);
+      }
     }
   };
 };
@@ -78,6 +101,19 @@ export default class Event {
       } else {
         this[p] = v;
       }
+    }
+
+    let opts = data.opts;
+    if (!opts) {
+      opts = this.opts = {};
+    }
+
+    if (opts.query && !this.query) {
+      this.query = opts.query;
+    }
+
+    if (opts.update && !this.update) {
+      this.update = opts.update;
     }
 
     this.on = new Date();

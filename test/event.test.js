@@ -146,7 +146,49 @@ export function add() {
       }
     });
 
-    it('should do something with findAndModify()', async () => {
+    it('should work with distinction between insert, update, and change', async () => {
+      let insertInvoked = 0,
+          updateInvoked = 0,
+          changeInvoked = 0;
+
+      const dereg1 = Book.on({
+        type: 'insert',
+        async handler(event) {
+          insertInvoked++;
+        }
+      });
+
+      const dereg2 = Book.on({
+        type: 'update',
+        async handler(event) {
+          updateInvoked++;
+        }
+      });
+
+      const dereg3 = Book.on({
+        type: 'change',
+        async handler(event) {
+          changeInvoked++;
+        }
+      });
+
+      try {
+        const book = await Book.save({ title: 'event-number-1' });
+        expect([insertInvoked, updateInvoked, changeInvoked]).to.eql([1, 0, 1]);
+
+        book.pages = 1;
+        await book.$save();
+        expect([insertInvoked, updateInvoked, changeInvoked]).to.eql([1, 1, 2]);
+
+      } finally {
+        dereg1();
+        dereg2();
+        dereg3();
+        await Book.remove({ title: /event-number/ });
+      }
+    });
+
+    it('should work with findAndModify()', async () => {
       let dereg;
 
       try {
