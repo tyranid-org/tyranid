@@ -287,7 +287,12 @@ _.assign(Tyr, {
             // ignore the default _id key
           } else {
             if (!indexes.find(i => _.eq(i.key, ei.key) || toName(i) === ei.name)) {
-              await col.db.dropIndex(ei.name);
+              try {
+                await col.db.dropIndex(ei.name);
+              } catch (err) {
+                // 0.1.x has a bug where it will drop from non-existent collections, ignore it for now
+                console.log(err);
+              }
             }
           }
         }
