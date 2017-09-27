@@ -367,7 +367,7 @@ describe('tyranid', function() {
       await initModel();
     });
 
-    describe('fields', function() {
+    describe('fields', () => {
       it('should support fields object', function() {
         expect(User.paths['name.first']).to.be.instanceof(Field);
         expect(User.paths['roles._.role']).to.be.instanceof(Field);
@@ -403,6 +403,14 @@ describe('tyranid', function() {
       it('should support "of"', function() {
         expect(Department.paths['checkouts'].of).to.be.instanceof(Field);
         expect(Department.paths['checkouts'].of.type.name).to.eql('double');
+      });
+    });
+
+    describe('optional links', () => {
+      it('should prune optional links to missing collections', () => {
+        expect(User.fields.lochNess).to.be.undefined;
+        expect(User.paths.lochNess).to.be.undefined;
+        expect(User.def.fields.lochNess).to.be.undefined;
       });
     });
 

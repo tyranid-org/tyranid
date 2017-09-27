@@ -94,7 +94,9 @@ var User = new tyr.Collection({
     goldStars: { is: 'integer', defaultValue: function() { return 0; } },
     createdAt: { is: 'date' },
 
-    other: { is: 'object' }
+    other: { is: 'object' },
+
+    lochNess: { link: 'lochNess?' }
   },
   methods: {
     canDrink: { is: 'boolean', fn: function() { return this.age >= 21; } }

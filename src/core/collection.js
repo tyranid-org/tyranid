@@ -1435,21 +1435,25 @@ export default class Collection {
         field.name = fieldName;
 
         let type;
-        if (fieldDef.link) {
+        let linkDef = fieldDef.link;
+        if (linkDef) {
+          if (_.isString(linkDef)) {
+            if (linkDef.endsWith('?')) {
+              linkDef = linkDef.substring(0, linkDef.length - 1);
+            }
 
-          if (_.isString(fieldDef.link)) {
-            type = Type.byName[fieldDef.link];
+            type = Type.byName[linkDef];
           } else {
-            type = fieldDef.link;
+            type = linkDef;
           }
 
           if (type || stage === 'link') {
             if (!type) {
-              throw compiler.err(path, 'Unknown type ' + fieldDef.link);
+              throw compiler.err(path, 'Unknown type ' + linkDef);
             }
 
             if (!(type instanceof Collection)) {
-              throw compiler.err(path, 'Links must link to a collection, instead linked to ' + fieldDef.link);
+              throw compiler.err(path, 'Links must link to a collection, instead linked to ' + linkDef);
             }
 
             field.link = type;
@@ -1511,7 +1515,7 @@ export default class Collection {
           throw compiler.err(path, '"fields" should be an object, got: ' + defFields);
         }
 
-        _.each(_.keys(defFields), function(name) {
+        _.each(_.keys(defFields), name => {
           let field = defFields[name];
 
           if (_.isString(field)) {
@@ -1520,6 +1524,27 @@ export default class Collection {
 
           if (!(field instanceof Field)) {
             field = defFields[name] = new Field(field);
+          }
+
+          // if it is an optional link to a collection that does not exist, prune it from the definition
+          let link;
+          if (stage === 'link' && (link = field.def.link) && _.isString(link) && link.endsWith('?') && !Type.byName[link.substring(0, link.length - 1)]) {
+            delete defFields[name];
+
+            const paths = collection.paths;
+            for (const name in paths) {
+              if (paths[name] === field) {
+                delete paths[name];
+              }
+            }
+
+            const fields = collection.fields;
+            for (const name in fields) {
+              if (fields[name] === field) {
+                delete fields[name];
+              }
+            }
+            return;
           }
 
           const parentFields = parent.fields = parent.fields || {};

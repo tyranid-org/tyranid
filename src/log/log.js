@@ -110,7 +110,7 @@ const Log = new Collection({
     l:     { link: 'tyrLogLevel',  label: 'Level'       },
     e:     { link: 'tyrLogEvent',  label: 'Event'       },
     m:     { is: 'string',         label: 'Message'     },
-    u:     { link: 'user',         label: 'User'        },
+    u:     { link: 'user?',        label: 'User'        },
     st:    { is: 'string',         label: 'Stack Trace' },
     on:    { is: 'date',           label: 'On'          },
     du:    { is: 'integer',        label: 'Duration',   in: 'ns' },
@@ -178,16 +178,11 @@ async function log(level, ...opts) {
 
   const local = Tyr.local;
   let req   = local.req,
-      res   = local.res,
-      user  = local.user;
+      res   = local.res;
 
   if (obj.req) {
     req = obj.req;
     delete obj.req;
-
-    if (!obj.user && req.user) {
-      user = req.user;
-    }
   }
 
   if (obj.res) {
@@ -195,13 +190,20 @@ async function log(level, ...opts) {
     delete obj.res;
   }
 
-  if (obj.user) {
-    user = obj.user;
-    delete obj.user;
-  }
+  if (Log.fields.u) {
+    let user;
+    if (obj.user) {
+      user = obj.user;
+      delete obj.user;
+    } else if (req && req.user) {
+      user = req.user;
+    } else {
+      user = local.user;
+    }
 
-  if (user) {
-    obj.u = user.$id;
+    if (user) {
+      obj.u = user.$id;
+    }
   }
 
   let r;
