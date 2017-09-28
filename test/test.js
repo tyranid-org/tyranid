@@ -861,6 +861,16 @@ describe('tyranid', function() {
         });
       });
 
+      it('objects returned by save() should have their _id set', async () => {
+        var book = new Book({ isbn: newIsbn, title: 'Datamodeling for Dummies' });
+
+        await book.$save();
+
+        expect(book._id).to.be.defined;
+
+        await book.$remove();
+      });
+
       it('should save existing objects', function() {
         var book = new Book({ isbn: newIsbn, description: 'Lovely' });
 
@@ -1627,26 +1637,32 @@ describe('tyranid', function() {
       });
     });
 
-    describe('computed properties', function() {
+    describe('computed properties', () => {
 
-      it( 'should support computed properties', function() {
-        var user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
+      it('should support computed properties', () => {
+        const user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
         expect(user.fullName).to.be.eql('Jane Smith');
       });
 
-      it( 'should work with CollectionInstance.toClient()', function() {
-        var user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
+      it('should work with CollectionInstance.toClient()', () => {
+        const user = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 }).$toClient();
         expect(user.fullName).to.be.eql('Jane Smith');
       });
 
-      it( 'should work with POJO toClient()', function() {
-        var user = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
-        var clientUser = User.toClient(user);
+      it('should work with POJO toClient()', () => {
+        const user = { name: { first: 'Jane', last: 'Smith' }, age: 5 };
+        const clientUser = User.toClient(user);
         expect(clientUser.fullName).to.be.eql('Jane Smith');
       });
+
+      it('should be defined from finds', async () => {
+        const user = await User.byId(1);
+        expect(user.fullName).to.be.eql('An Anon');
+      });
+
     });
 
-    describe('methods', function() {
+    describe('methods', () => {
 
       it( 'should support methods', function() {
         var child = new User({ name: { first: 'Jane', last: 'Smith' }, age: 5 });
@@ -1843,7 +1859,6 @@ describe('tyranid', function() {
         expect(logs[0].m).to.be.eql('a test');
         expect(logs[0].e).to.be.eql('myEvent');
       });
-
     });
 
     describe('collection.links()', function() {
