@@ -16,12 +16,13 @@ before_install:
 
 before_script:
   - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
+  - "mongo localhost:27017 --eval 'db.getCollectionNames()'"
   - "npm install -g npm@5"
   - "npm install -g yarn@1.0.2"
   - "npm install -g gulp"
 
 node_js:
-  - "8"
+  - "8.1.4"
 
 after_success:
   - npm run coverage
