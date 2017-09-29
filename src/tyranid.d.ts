@@ -466,14 +466,6 @@ declare namespace Tyranid {
       update(opts: UpdateQueryOptions & { query: MongoQuery }): Promise<T[]>;
       updateDoc(doc: MaybeRawDocument): Promise<T>;
       valuesFor(fields: FieldInstance[]): Promise<any[]>;
-
-      // hook methods
-      boot(stage: string, pass: number): string | string[];
-      plugin<O>(fn: (col: this, opts: O) => any, opts?: O): this;
-      pre(methods: string | string[], cb: (next: <M extends T>(modified: M, ...args: any[]) => any, obj: T, ...otherArgs: any[]) => any): this;
-      post(methods: string | string[], cb: (next: <M extends T>(modified: Promise<M>, ...args: any[]) => any, promise: Promise<T>) => any): this;
-      unhook(methods: string | string[]): this;
-
     }
 
     /**

@@ -22,6 +22,7 @@ import projection                from '../src/core/projection';
 import { generateClientLibrary } from '../src/express';
 
 import * as testEvent            from './event.test';
+import * as testFake             from './fake.test';
 import * as testQuery            from './query.test';
 import * as testDiff             from './diff.test';
 import * as testHistorical       from './historical.test';
@@ -1696,88 +1697,6 @@ describe('tyranid', function() {
       });
     });
 
-    describe('hooks and plugins', function() {
-      it( 'should support pre hooks', function() {
-        Book.pre('insert', (next, obj, ...otherArgs) => {
-          // Following is specific to this test, verifying args passed correctly
-          expect(obj.pages).to.be.eql(5);
-
-          // Add 2 pages for for front and back cover
-          obj.pages += 2;
-          return next(obj, ...otherArgs);
-        });
-
-        var b = new Book({ pages: 5 });
-        return b.$insert()
-          .then(function(newBook) {
-            expect(newBook.pages).to.be.eql(7);
-          });
-      });
-
-      it( 'should support post hooks', function() {
-        Book.post('insert', (next, promise) => {
-          const modified = promise.then(newBook => {
-            // Add 2 more pages
-            newBook.pages += 2;
-            return newBook;
-          });
-          return next(modified);
-        });
-
-        var b = new Book({ pages: 5 });
-        return b.$insert()
-          .then(function(newBook) {
-            expect(newBook.pages).to.be.eql(9);
-          });
-      });
-
-      it( 'should unhook', function() {
-        Book.unhook('insert');
-        Book.unhook('insert');
-        var b = new Book({ pages: 5 });
-        return b.$insert()
-          .then(function(newBook) {
-            expect(newBook.pages).to.be.eql(5);
-          });
-      });
-
-      it( 'should support plugins', function() {
-        Book.plugin(function(collection, options) {
-          expect(collection).to.be.eql(Book);
-          expect(options.testOption).to.be.eql('test');
-
-          Book.def.timestamps = true;
-        }, { testOption: 'test' });
-
-        var b = new Book({ pages: 5 });
-        return b.$insert()
-          .then(function(newBook) {
-            expect(newBook.createdAt).to.exist;
-            expect(newBook.updatedAt).to.exist;
-          });
-      });
-
-      describe( 'Fake data generation', function() {
-
-        const seed = 100;
-
-        it('faker: should successfully create valid document', async () => {
-          const fakeDoc = await User.fake({ seed });
-          expect(fakeDoc, 'Fake document should be valid instance of user').to.be.instanceOf(User);
-          fakeDoc.$validate();
-        });
-
-        it('faker: should produce same document given same seed', async () => {
-          const fakeDoc1 = JSON.stringify(await User.fake({ seed }), null, 2),
-                fakeDoc2 = JSON.stringify(await User.fake({ seed }), null, 2);
-
-          expect(fakeDoc2).to.deep.equal(fakeDoc1);
-        });
-
-      });
-
-    });
-
     describe('types', () => {
       it('should support Type.byName', () => {
         expect(Type.byName.integer).to.exist;
@@ -2181,6 +2100,7 @@ describe('tyranid', function() {
     });
 
     testEvent.add();
+    testFake.add();
     testQuery.add();
     testDiff.add();
     testHistorical.add();

@@ -1,6 +1,5 @@
 
 import * as _            from 'lodash';
-import * as hooker       from 'hooker';
 import { ObjectId } from 'mongodb';
 
 import Tyr          from '../tyr';
@@ -1177,78 +1176,6 @@ export default class Collection {
     if (justOne !== '$remove') {
       await Tyr.Event.fire({ collection, type: 'remove', when: 'post', query, opts });
     }
-  }
-
-  /**
-   * Register a plugin for this Collection. Similar API to Mongoose plugins:
-   * http://mongoosejs.com/docs/plugins.html
-   *
-   * Note that the hooks API *does* differ from Mongoose's
-   *
-   * @see hook
-   * @param  {Function} fn plugin callback
-   * @param  {Object} [opts]
-   * @return {Collection} self for chaining
-   */
-  plugin(fn, opts) {
-    fn(this, opts);
-    return this;
-  }
-
-  /**
-   * Add a pre hook
-   *
-   * @param {string|Array} methods method name or array of method names to add pre hook
-   * @param {Function(next, ...args)} cb hook callback
-   * @param {Function} cb.next if modifying arguments, return next(modifiedArgs)
-   * @param {Array} cb.args original method args
-   * @return {Collection} self for chaining
-   */
-  pre(methods, cb) {
-    hooker.hook(this, methods, {
-      pre(...args) {
-        const next = (...cbArgs) => {
-          // hooker.filter() takes an args array (it uses Function.apply()
-          // behind the scenes)
-          return hooker.filter(this, cbArgs);
-        };
-        return cb.call(this, next, ...args);
-      }
-    });
-    return this;
-  }
-
-  /**
-   * Add a post hook
-   *
-   * @param {string|Array} methods method name or array of method names to add post hook
-   * @param {Function(next, result)} cb hook callback
-   * @param {Function} cb.next if modifying result, return next(modifiedResult)
-   * @param {Array} cb.result original method result
-   * @return {Collection} self for chaining
-   */
-  post(methods, cb) {
-    hooker.hook(this, methods, {
-      post(result) {
-        const next = (result) => {
-          return hooker.override(result);
-        };
-        return cb.call(this, next, result);
-      }
-    });
-    return this;
-  }
-
-  /**
-   * Remove hooks for a particular method. Needs to
-   * be called once per pre/post() call.
-   *
-   * @param  {tring|Array} [methods] Method or methods. Unhooks all methods if unspecified.
-   * @return {Collection} self for chaining
-   */
-  unhook(methods) {
-    hooker.unhook(this, methods);
-    return this;
   }
 
   /**
