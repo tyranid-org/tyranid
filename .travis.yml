@@ -12,6 +12,7 @@ before_install:
   - "sudo apt-get update"
   - "sudo apt-get install mongodb-org-server"
   - "npm install -g npm@5"
+  - "npm install -g yarn@1.0.2"
 
 
 before_script:
