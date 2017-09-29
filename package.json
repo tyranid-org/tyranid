@@ -23,7 +23,7 @@
     "url": "https://github.com/tyranid-org/tyranid"
   },
   "engine": {
-    "node": ">=6.9.1"
+    "node": ">=8.1.4"
   },
   "author": "",
   "license": "Apache-2.0",
