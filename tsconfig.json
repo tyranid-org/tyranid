@@ -1,11 +1,18 @@
 {
   "compilerOptions": {
+    "target": "es2017",
     "module": "commonjs",
-    "target": "es6",
     "strict": true,
-    "sourceMap": true,
     "allowJs": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "noLib": false,
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "jsx": "react",
+    "sourceMap": true
   },
   "include": [
     "src",
