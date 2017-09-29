@@ -8,15 +8,23 @@ services:
 
 before_install:
   - "sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10"
-  - "echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list"
-  - "sudo apt-get update"
-  - "sudo apt-get install mongodb-org-server"
+  - curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.4.1.tgz -O -#
+  - tar -xzvf mongodb-linux-x86_64-ubuntu1204-3.4.1.tgz
+  - mkdir -p mongo/db
+  - mkdir -p mongo/log
+  - sudo ./mongodb-linux-x86_64-ubuntu1204-3.4.1/bin/mongod --dbpath=./mongo/db --fork --logpath=./mongo/log/test.log
+  - sleep 5
   - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
 
 before_script:
 
 script:
-  - npm run test-travis
+  - #npm run test-travis
 
 after_success:
   - npm run coverage
+
+cache:
+  yarn: true
+  files:
+    - mongodb-linux-x86_64-ubuntu1204-3.4.1.tgz
