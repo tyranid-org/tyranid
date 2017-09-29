@@ -15,6 +15,7 @@ before_install:
 
 
 before_script:
+  - echo 'before script'
   - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
   - "mongo localhost:27017 --eval 'db.getCollectionNames()'"
   - "npm install -g npm@5"
