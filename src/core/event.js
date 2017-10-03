@@ -154,6 +154,12 @@ export default class Event {
       event.date = new Date();
     }
 
+    const collection = event.collection;
+    if (collection) {
+      event.collectionId = collection.id;
+      delete event.collection;
+    }
+
     const instances = await Instance.findAll({
       _id: instanceId || { $ne: Tyr.instanceId },
       lastAliveOn: { $gte: moment().subtract(30, 'minutes').toDate() }
@@ -169,8 +175,14 @@ export default class Event {
   /** @private */
   static async handle(event) {
     //con sole.log(Tyr.instanceId + ' *** handle:', event);
-    const collection = event.collection || Tyr.byId[event.collectionId],
-          events = collection.events;
+    const collection = event.collection || Tyr.byId[event.collectionId];
+
+    if (!collection) {
+      console.warn('*** no collection for event', event);
+      return;
+    }
+
+    const events = collection.events;
 
     if (events) {
       const handlers = events[event.type];

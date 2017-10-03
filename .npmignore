@@ -4,4 +4,7 @@ doc
 .travis.yml
 tsconfig.json
 tslint.json
+tyranid-gracl
+tyranid-org.github.com
+tyranid-typings
 yarn.lock

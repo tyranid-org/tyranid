@@ -317,6 +317,12 @@ export function generateClientLibrary() {
       return new this.$model(_.cloneDeep(this));
     },
 
+    $remove: function() {
+      if (this._id) {
+        return this.$model.remove({ _id: this._id });
+      }
+    },
+
     $save: function() {
       return this.$model.save(this);
     },
@@ -883,7 +889,7 @@ export function generateClientLibrary() {
 
     if (existing) {
       Object.assign(existing, doc);
-      fireDocUpdate(existing, 'change');
+      fireDocUpdate(existing, 'insert');
       return existing;
     } else {
       if (!(doc instanceof this)) {
@@ -898,7 +904,7 @@ export function generateClientLibrary() {
         this.values = [ doc ];
       }
 
-      fireDocUpdate(doc, 'change');
+      fireDocUpdate(doc, 'update');
       return doc;
     }
   };
