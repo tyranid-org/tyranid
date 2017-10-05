@@ -508,6 +508,10 @@ export function generateClientLibrary() {
   }
 
   ${translateClass(NamePath)}
+
+  Collection.prototype.parsePath = function(path) {
+    return new NamePath(this, path);
+  };
 `;
 
   // TODO:  add in a dev flag so that the timer class only gets generated if in dev mode

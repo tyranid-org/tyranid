@@ -19,21 +19,23 @@ declare namespace Tyranid {
   // declare properties of Tyr object
   export namespace Tyr {
 
-    export const Field: FieldStatic;
-    export const Type: TypeStatic;
-    export const NamePath: NamePathStatic;
-    export const Log: CollectionInstance;
     export const Collection: CollectionStatic;
+    export const Event: EventStatic;
+    export const Field: FieldStatic;
+    export const Log: CollectionInstance;
+    export const NamePath: NamePathStatic;
+    export const Type: TypeStatic;
+
     export const $all: any;
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
     export const collections: CollectionInstance[];
-    export const documentPrototype: any;
-    export const secure: Secure;
-    export const local: Local;
-    export const query: QueryStatic;
-    export const options: ConfigOptions;
     export const db: mongodb.Db;
+    export const documentPrototype: any;
+    export const local: Local;
+    export const options: ConfigOptions;
+    export const query: QueryStatic;
+    export const secure: Secure;
 
     export function U(text: string | TemplateStringsArray | number): any;
     export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
@@ -171,7 +173,9 @@ declare namespace Tyranid {
        * Defaults to the timestamps setting on the collection.
        */
       timestamps?: boolean;
+    }
 
+    export interface AllQueryOptions extends FindAndModifyOptions, ModificationQueryOptions, UpdateQueryOptions, LookupQueryOptions {
     }
 
     /**
@@ -286,33 +290,58 @@ declare namespace Tyranid {
         }
       };
       values?: any[][];
+      fromClient: (opts: object) => void;
+      toClient: (opts: object) => void;
     }
 
     export interface FieldDefinitionRaw {
       [key: string]: any;
       is?: string;
       client?: boolean | (() => boolean);
+      custom?: boolean;
       db?: boolean;
+      historical?: boolean;
+      defaultValue?: any;
+
       label?: LabelType | (() => string);
       help?: string;
+      placeholder?: string;
+
+      deprecated?: boolean;
       note?: string;
+
       required?: boolean;
-      defaultValue?: any;
-      of?: FieldDefinition;
+      validate?: (field: FieldInstance) => Promise<string | undefined>;
+
+      of?: FieldDefinition | string[] | string;
+      cardinality?: string;
+
       fields?: FieldsObject;
       keys?: FieldDefinition;
+
       denormal?: any;
       link?: string;
+      relate?: 'owns' | 'ownedBy' | 'associate';
       where?: any;
+
       in?: string;
+      min?: number;
+      max?: number;
+      step?: number;
+
       labelField?: boolean;
+      pattern?: RegExp;
+      minlength?: number;
+      maxlength?: number;
+
+      granularity?: string;
+
       get?: Function;
       getClient?: Function;
       getServer?: Function;
       set?: Function;
       setClient?: Function;
       setServer?: Function;
-      relate?: 'owns' | 'ownedBy' | 'associate';
     }
 
     /**
@@ -421,7 +450,9 @@ declare namespace Tyranid {
       byIds(ids: Array<IdType| number | string>, projection?: any, options?: LookupQueryOptions): Promise<T[]>;
       byLabel(label: LabelType, forcePromise?: boolean): Promise<T | null>;
 
-      isUid(str: string): boolean;
+      count(opts: BaseQueryOptions): Promise<number>;
+
+      exists(opts: BaseQueryOptions): Promise<boolean>;
 
       fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
       fieldsFor(obj: any): Promise<FieldInstance[]>;
@@ -444,11 +475,16 @@ declare namespace Tyranid {
       insert<I>(doc: I): Promise<T>;
       isStatic(): boolean;
 
+      isUid(str: string): boolean;
+
       links(opts?: any): FieldInstance[];
 
       labelFor(doc: MaybeRawDocument): string;
       labels(text: string): LabelList;
       mixin(def: FieldDefinition): void;
+
+      on(opts: EventOnOptions): () => void;
+
       parsePath(text: string): NamePathInstance;
 
       populate<R>(fields: string | string[] | { [key: string]: any }): (docs: R) => Promise<R>;
@@ -459,6 +495,8 @@ declare namespace Tyranid {
       pull(id: IdType | string | number, path: string, fn: (p: any) => boolean): Promise<void>;
 
       references(opts: { id?: any, ids?: any, idsOnly?: boolean, exclude?: Array<CollectionInstance<Tyr.Document>> }): Promise<Tyr.Document[]>;
+
+      subscribe(query: MongoQuery, cancel?: boolean): void;
 
       // mongodb methods
       remove(opts: LookupQueryOptions & { query: MongoQuery }): Promise<void>;
@@ -524,6 +562,54 @@ declare namespace Tyranid {
 
     }
 
+    export interface EventOnOptions {
+      type: string;
+      handler: (event: EventDefinition | Event) => Promise<boolean>;
+      when?: 'pre' | 'post';
+    }
+
+    export interface EventStatic {
+      fire(event: Event | EventDefinition): void;
+    }
+
+    export interface EventDefinition {
+      broadcast?: boolean;
+      collectionId?: string;
+      collection?: CollectionInstance;
+      dataCollectionId?: string;
+      dataCollection?: CollectionInstance;
+      date?: Date;
+      document?: Document;
+      documents?: Document[];
+      fieldValue?: any;
+      instanceId?: string;
+      opts?: AllQueryOptions;
+      query?: any;
+      type: string;
+      update?: any;
+      when?: 'pre' | 'post';
+    }
+
+    export interface EventInstance {
+      broadcast?: boolean;
+      collectionId: string;
+      collection: CollectionInstance;
+      dataCollectionId: string;
+      dataCollection: CollectionInstance;
+      date: Date;
+      document?: Document;
+      documents: Promise<Document[]>;
+      fieldValue?: any;
+      instanceId?: string;
+      opts?: AllQueryOptions;
+      query?: any;
+      type: string;
+      update?: any;
+      when: 'pre' | 'post';
+
+      preventDefault(): void;
+    }
+
     export interface TypeStatic {
       byName: { [key: string]: TypeInstance };
 
@@ -567,5 +653,4 @@ declare namespace Tyranid {
     }
 
   }
-
 }
