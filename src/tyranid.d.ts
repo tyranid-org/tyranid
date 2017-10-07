@@ -418,7 +418,7 @@ declare namespace Tyranid {
       required?: boolean;
       validate?: (field: FieldInstance) => Promise<string | undefined>;
 
-      of?: FieldDefinition | string[] | string;
+      of?: FieldDefinition;
       cardinality?: string;
 
       fields?: FieldsObject;

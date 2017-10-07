@@ -355,6 +355,18 @@ export function generateClientLibrary() {
     $share() {
       this.$model.indexById[this._id] = this;
     }
+
+    $toPlain() {
+      const doc = this,
+            plain = {};
+
+      const fields = doc.$model.fields;
+      for (const fieldName in fields) {
+        plain[fieldName] = doc[fieldName];
+      }
+
+      return plain;
+    }
   };
 
   Object.defineProperties(documentPrototype, {
