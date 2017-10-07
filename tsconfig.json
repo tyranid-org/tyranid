@@ -8,8 +8,7 @@
     "noLib": false,
     "allowSyntheticDefaultImports": true,
     "lib": [
-      "es2017",
-      "dom"
+      "es2017"
     ],
     "jsx": "react",
     "sourceMap": true

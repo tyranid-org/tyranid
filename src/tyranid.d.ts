@@ -672,7 +672,7 @@ declare namespace Tyranid {
 
     export interface EventOnOptions {
       type: string;
-      handler: (event: EventDefinition | Event) => Promise<boolean>;
+      handler: (event: EventDefinition | EventInstance) => Promise<boolean>;
       when?: 'pre' | 'post';
     }
 
