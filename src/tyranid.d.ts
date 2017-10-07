@@ -395,8 +395,8 @@ declare namespace Tyranid {
         }
       };
       values?: any[][];
-      fromClient: (opts: object) => void;
-      toClient: (opts: object) => void;
+      fromClient?: (opts: object) => void;
+      toClient?: (opts: object) => void;
     }
 
     export interface FieldDefinitionRaw {
