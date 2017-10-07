@@ -362,7 +362,11 @@ export function generateClientLibrary() {
 
       const fields = doc.$model.fields;
       for (const fieldName in fields) {
-        plain[fieldName] = doc[fieldName];
+        const v = doc[fieldName];
+
+        if (v !== undefined) {
+          plain[fieldName] = doc[fieldName];
+        }
       }
 
       return plain;
