@@ -63,7 +63,8 @@
         "no-conditional-assignment": false,
         "no-empty-interface": false,
         "no-namespace": false,
-        "label-position": false
+        "label-position": false,
+        "class-name": false
     },
     "rulesDirectory": []
 }

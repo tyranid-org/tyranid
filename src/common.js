@@ -20,6 +20,40 @@ export function pathAdd(path, add) {
   return path ? path + '.' + add : add;
 }
 
+export function isArrow(fn) {
+  return /^[a-zA-Z0-9,_\s]*=>/.test(fn.toString());
+}
+
+export function hasMongoUpdateOperator(update) {
+  for (const key in update) {
+    if (key.startsWith('$') && update.hasOwnProperty(key)) {
+      return true;
+    }
+  }
+
+  //return undefined;
+}
+
+export function extractUpdateFields(doc, opts) {
+  const updateFields = {};
+  if (opts.fields) {
+    _.each(opts.fields, (field, key) => {
+      if (field) {
+        updateFields[key] = 1;
+      }
+    });
+
+  } else {
+    _.each(doc, (field, key) => {
+      if (key !== '_id') {
+        updateFields[key] = 1;
+      }
+    });
+  }
+
+  return updateFields;
+}
+
 // Options parsing
 // ===============
 

@@ -41,8 +41,8 @@ declare namespace Tyranid {
     export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
     export function labelize(name: string): string;
     export function config(opts: ConfigOptions): void;
-    export function byUid(uid: string, options?: LookupQueryOptions): Promise<Document | null>;
-    export function byUids(uidList: string[], options?: LookupQueryOptions): Promise<Document[]>;
+    export function byUid(uid: string, options?: Options_FindById): Promise<Document | null>;
+    export function byUids(uidList: string[], options?: Options_FindByIds): Promise<Document[]>;
     export function trace(opts: any): Promise<void>;
     export function log(opts: any): Promise<void>;
     export function info(id: number, message: string): Promise<void>;
@@ -110,21 +110,63 @@ declare namespace Tyranid {
       $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
       $populate(fields: any, denormal?: boolean): Promise<this>;
       $save(opts?: { timestamps?: boolean }): Promise<this>;
-      $toClient(opts?: LookupQueryOptions): RawMongoDocument;
+      $toClient(opts?: Options_ToClient): RawMongoDocument;
+      $toPlain(): RawMongoDocument;
       $update(fields?: any): Promise<this>;
       $validate(): ValidationError[];
       $replace(replacements: any): Promise<this>;
       $copy(replacements: any, props?: Array<keyof this>): this;
-      $slice(prop: string, opts?: BaseQueryOptions): Promise<this>;
+      $slice(prop: string, opts?: Options_Slice): Promise<this>;
       $asOf(time: Date, fields?: any): void;
+      $toRaw(): RawMongoDocument;
     }
 
-    export interface LookupQueryOptions extends BaseQueryOptions {
+    /*
+     * Options
+     */
+
+    export interface OptionsAuth {
 
       /**
-       * The standard MongoDB-style fields object that specifies the projection.
+       * An authorization object (a user, group, role, etc.) to pass to a Secure
+       * plug-in. Can also be "true" to auto-detect the current user.
        */
-      fields?: { [key: string]: number } | string | Array<string | { [key: string]: number }>;
+      auth?: Tyr.Document | null;
+
+      /**
+       * The permission to use when an auth object is specified.
+       * Usually perm is inferred ('view' for finds, 'delete' for removes, ...)
+       */
+      perm?: string;
+    }
+
+    export interface OptionsCount {
+
+      /**
+       * Indicates that a count of the records should be added to the returned array.
+       */
+      count?: boolean;
+    }
+
+    export interface OptionsHistorical {
+
+      /**
+       * Return the historical version of the doc
+       */
+      historical?: boolean;
+    }
+
+    export interface OptionsParallel {
+
+      /**
+       * If specified this indicates that the documents will be returned in a parallel array to given list of
+       * IDs/UIDs.  If the same id is given multiple times, the document instances will be shared.  If a
+       * given identifier could not be found, then matching slots in the array will be undefined.
+       */
+      parallel?: boolean;
+    }
+
+    export interface OptionsPopulate {
 
       /**
        * The population fields to populate.
@@ -133,7 +175,48 @@ declare namespace Tyranid {
 
     }
 
-    export interface UpdateQueryOptions extends ModificationQueryOptions {
+    export interface OptionsProjection {
+
+      /**
+       * The standard MongoDB-style fields object that specifies the projection.
+       */
+      fields?: { [key: string]: number } | string | Array<string | { [key: string]: number }>;
+    }
+
+    export interface OptionsQuery {
+
+      /**
+       * raw mongodb query
+       */
+      query: MongoQuery;
+    }
+
+    export interface OptionsPlain {
+
+      /**
+       * Indicates that returned documents should be simple Plain 'ole JavaScript Objects (POJO)s.
+       */
+      plain?: boolean;
+    }
+
+    export interface OptionsPost {
+
+      /**
+       * Provides a hook to do post-processing on the document.
+       */
+      post?: (opts: Options_All) => void;
+    }
+
+    export interface OptionsTimestamps {
+
+      /**
+       * Indicates if timestamps should be updated.
+       * Defaults to the timestamps setting on the collection.
+       */
+      timestamps?: boolean;
+    }
+
+    export interface OptionsUpdate {
 
       /**
        * The standard MongoDB-style update object. 'insert' for inserts, etc.)
@@ -147,53 +230,15 @@ declare namespace Tyranid {
       multi?: boolean;
     }
 
-    export interface FindAndModifyOptions extends UpdateQueryOptions, LookupQueryOptions {
+    export interface OptionsWhere {
 
       /**
-       * raw mongodb query
+       * Applies a predicate that is applied to the dataset.
        */
-      query: MongoQuery;
-
-      /**
-       * whether or not to return a new document in findAndModify
-       */
-      new?: boolean;
-
-      /**
-       * whether or not to insert the document if it doesn't exist
-       */
-      upsert?: boolean;
-
+      where?: (doc: any) => boolean;
     }
 
-    export interface ModificationQueryOptions extends BaseQueryOptions {
-
-      /**
-       * Indicates if timestamps should be updated.
-       * Defaults to the timestamps setting on the collection.
-       */
-      timestamps?: boolean;
-    }
-
-    export interface AllQueryOptions extends FindAndModifyOptions, ModificationQueryOptions, UpdateQueryOptions, LookupQueryOptions {
-    }
-
-    /**
-     * Options passed to database methods
-     */
-    export interface BaseQueryOptions {
-
-      /**
-       * An authorization object (a user, group, role, etc.) to pass to a Secure
-       * plug-in. Can also be "true" to auto-detect the current user.
-       */
-      auth?: Tyr.Document | null;
-
-      /**
-       * The permission to use when an auth object is specified.
-       * Usually perm is inferred ('view' for finds, 'delete' for removes, ...)
-       */
-      perm?: string;
+    export interface OptionsWindow {
 
       /**
        * The maximum number of documents to retrieve.
@@ -209,12 +254,72 @@ declare namespace Tyranid {
        * The standard MongoDB-style sort object.
        */
       sort?: { [key: string]: number };
+    }
+
+    /*
+     * Options by operation
+     */
+
+    export interface Options_Count
+        extends Options_Exists {}
+
+    export interface Options_Exists
+        extends OptionsAuth, OptionsCount {}
+
+    export interface Options_FindById
+        extends OptionsAuth, OptionsHistorical, OptionsPopulate, OptionsProjection, OptionsPlain  {}
+
+    export interface Options_FindByIds
+        extends Options_FindById, OptionsParallel {}
+
+    export interface Options_FindOne
+        extends Options_FindById, OptionsQuery {}
+
+    export interface Options_FindCursor
+        extends Options_FindOne, OptionsWindow {}
+
+    export interface Options_FindMany
+        extends Options_FindCursor, OptionsCount {}
+
+    export interface Options_FindAndModify
+        extends OptionsAuth, OptionsQuery, OptionsUpdate {
 
       /**
-       * Return the historical version of the doc
+       * whether or not to return a new document in findAndModify
        */
-      historical?: boolean;
+      new?: boolean;
+
+      /**
+       * whether or not to insert the document if it doesn't exist
+       */
+      upsert?: boolean;
     }
+
+    export interface Options_Insert
+        extends OptionsAuth, OptionsHistorical, OptionsTimestamps {}
+
+    export interface Options_Remove
+        extends OptionsAuth, OptionsQuery {}
+
+    export interface Options_Save
+        extends Options_Insert, Options_UpdateDoc {}
+
+    export interface Options_Slice
+        extends OptionsAuth, OptionsPopulate, OptionsWhere, OptionsWindow {}
+
+    export interface Options_ToClient
+        extends OptionsAuth, OptionsPost {}
+
+    export interface Options_Update
+        extends OptionsAuth, OptionsQuery, OptionsTimestamps, OptionsUpdate {}
+
+    export interface Options_UpdateDoc
+        extends OptionsAuth, OptionsHistorical, OptionsTimestamps {}
+
+    export interface Options_All
+        extends OptionsAuth, OptionsHistorical, OptionsQuery, OptionsParallel,
+                OptionsPlain, OptionsPopulate, OptionsPost, OptionsProjection,
+                OptionsTimestamps, OptionsUpdate, OptionsWindow {}
 
     /**
      * Fields to populate in a document
@@ -446,13 +551,13 @@ declare namespace Tyranid {
 
       secureQuery(query: MongoQuery, perm: string, auth: Document): Promise<MongoQuery>;
 
-      byId(id: IdType | string | number, options?: LookupQueryOptions): Promise<T | null>;
-      byIds(ids: Array<IdType| number | string>, projection?: any, options?: LookupQueryOptions): Promise<T[]>;
+      byId(id: IdType | string | number, options?: Options_FindById): Promise<T | null>;
+      byIds(ids: Array<IdType| number | string>, options?: Options_FindByIds): Promise<T[]>;
       byLabel(label: LabelType, forcePromise?: boolean): Promise<T | null>;
 
-      count(opts: BaseQueryOptions): Promise<number>;
+      count(opts: Options_Count): Promise<number>;
 
-      exists(opts: BaseQueryOptions): Promise<boolean>;
+      exists(opts: Options_Exists): Promise<boolean>;
 
       fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
       fieldsFor(obj: any): Promise<FieldInstance[]>;
@@ -460,18 +565,21 @@ declare namespace Tyranid {
 
       fake(options: { n?: number, schemaOpts?: any, seed?: number }): Promise<T>;
 
-      find(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<Cursor<T>>;
-      findAll(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T[]>;
-      findOne(opts: LookupQueryOptions & { query: RawMongoDocument }): Promise<T | null>;
+      find(opts: Options_FindCursor): Promise<Cursor<T>>;
+      findAll(opts: Options_FindMany): Promise<T[]>;
+      findOne(opts: Options_FindOne): Promise<T | null>;
+
+      /** @deprecated */
       findOne(id: mongodb.ObjectID, proj?: any): Promise<T | null>;
-      findAndModify(opts: FindAndModifyOptions): Promise<{ value: T } | null>;
+
+      findAndModify(opts: Options_FindAndModify): Promise<{ value: T } | null>;
 
       fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;
       toClient(doc: Document | Document[] | RawMongoDocument | RawMongoDocument[]): RawMongoDocument;
 
       idToLabel(id: any): Promise<string>;
-      insert<I, A extends I[]>(docs: A): Promise<T[]>;
+      insert<I, A extends I[]>(docs: A, opts?: Options_Insert): Promise<T[]>;
       insert<I>(doc: I): Promise<T>;
       isStatic(): boolean;
 
@@ -499,10 +607,10 @@ declare namespace Tyranid {
       subscribe(query: MongoQuery, cancel?: boolean): void;
 
       // mongodb methods
-      remove(opts: LookupQueryOptions & { query: MongoQuery }): Promise<void>;
-      save(rawDoc: any, opts?: ModificationQueryOptions): Promise<T>;
-      update(opts: UpdateQueryOptions & { query: MongoQuery }): Promise<T[]>;
-      updateDoc(doc: MaybeRawDocument): Promise<T>;
+      remove(opts: Options_Remove): Promise<void>;
+      save(rawDoc: any, opts?: Options_Save): Promise<T>;
+      update(opts: Options_Update & { query: MongoQuery }): Promise<T[]>;
+      updateDoc(doc: MaybeRawDocument, opts?: Options_UpdateDoc): Promise<T>;
       valuesFor(fields: FieldInstance[]): Promise<any[]>;
     }
 
@@ -583,7 +691,7 @@ declare namespace Tyranid {
       documents?: Document[];
       fieldValue?: any;
       instanceId?: string;
-      opts?: AllQueryOptions;
+      opts?: Options_All;
       query?: any;
       type: string;
       update?: any;
@@ -601,7 +709,7 @@ declare namespace Tyranid {
       documents: Promise<Document[]>;
       fieldValue?: any;
       instanceId?: string;
-      opts?: AllQueryOptions;
+      opts?: Options_All;
       query?: any;
       type: string;
       update?: any;

@@ -1,11 +1,10 @@
 
-import * as _            from 'lodash';
+import * as _       from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import Tyr          from '../tyr';
 import Component    from './component';
 import Type         from './type';
-import ObjectType   from '../type/object';
 import Population   from './population';
 import Populator    from './populator';
 import NamePath     from './namePath';
@@ -14,17 +13,24 @@ import SecureError  from '../secure/secureError';
 
 import historical   from '../historical/historical';
 
-// variables shared between classes
 import {
-  combineOptions       ,
-  escapeRegex          ,
-  extractAuthorization ,
-  extractProjection    ,
-  extractOptions       ,
-  isOptions            ,
-  parseInsertObj       ,
-  parseProjection      ,
-  toClient
+  documentPrototype,
+  defineDocumentProperties
+}                   from './document';
+
+import {
+  combineOptions,
+  escapeRegex,
+  extractAuthorization,
+  extractProjection,
+  extractOptions,
+  isOptions,
+  parseInsertObj,
+  parseProjection,
+  toClient,
+  hasMongoUpdateOperator,
+  extractUpdateFields,
+  isArrow
 } from '../common';
 
 const {
@@ -34,12 +40,15 @@ const {
 
 const OPTIONS = Tyr.options;
 
-function isArrow(fn) {
-  return /^[a-zA-Z0-9,_\s]*=>/.test(fn.toString());
-}
-
 async function postFind(collection, opts, documents) {
   const array = Array.isArray(documents);
+
+  // we have to wrap here even if plain is set so that computed properties get called and so logic that depends on documents works
+  if (array) {
+    documents = documents.map(doc => new collection(doc));
+  } else {
+    documents = new collection(documents);
+  }
 
   if (opts) {
     const asOf = opts.asOf;
@@ -64,16 +73,16 @@ async function postFind(collection, opts, documents) {
   } else {
     await Tyr.Event.fire({ collection, type: 'find', when: 'post', document: documents, opts });
   }
-}
 
-function hasMongoUpdateOperator(update) {
-  for (const key in update) {
-    if (key.startsWith('$') && update.hasOwnProperty(key)) {
-      return true;
+  if (opts.plain) {
+    if (array) {
+      documents = documents.map(doc => doc.$toPlain());
+    } else {
+      documents = documents.$toPlain();
     }
   }
 
-  //return undefined;
+  return documents;
 }
 
 function timestampsUpdate(opts, collection, update, doc) {
@@ -91,175 +100,6 @@ function timestampsUpdate(opts, collection, update, doc) {
       doc.updatedAt = updatedAt;
     }
   }
-}
-
-function extractUpdateFields(doc, opts) {
-  const updateFields = {};
-  if (opts.fields) {
-    _.each(opts.fields, (field, key) => {
-      if (field) {
-        updateFields[key] = 1;
-      }
-    });
-
-  } else {
-    _.each(doc, (field, key) => {
-      if (key !== '_id') {
-        updateFields[key] = 1;
-      }
-    });
-  }
-
-  return updateFields;
-}
-
-// Document
-// ========
-
-const documentPrototype = Tyr.documentPrototype = {
-
-  $asOf(date, props) {
-    historical.asOf(this.$model, this, date, props);
-  },
-
-  $clone() {
-    // Amazingly, a seemingly do-nothing cloneDeep `customizer`
-    // seems to address https://github.com/lodash/lodash/issues/602
-    return new this.$model(_.cloneDeep(this, val => val));
-  },
-
-  $cloneDeep() {
-    return new this.$model(Tyr.cloneDeep(this));
-  },
-
-  $copy(obj, keys) {
-    if (keys) {
-      if (keys === Tyr.$all) {
-        _.each(this.$model.fields, field => {
-          const key = field.name,
-                v   = obj[key];
-
-          if (v !== undefined) {
-            this[key] = v;
-          } else {
-            delete this[key];
-          }
-        });
-      } else {
-        for (const key of keys) {
-          this[key] = obj[key];
-        }
-      }
-    } else {
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key) && key !== '_history') {
-          const v = obj[key];
-
-          if (v !== undefined) {
-            this[key] = v;
-          } else {
-            delete this[key];
-          }
-        }
-      }
-    }
-  },
-
-  $snapshot(updateHistory, ...args) {
-    const collection = this.$model;
-
-    if (!collection.def.historical) {
-      throw new Error('Document is not historical');
-    }
-
-    const opts = extractOptions(collection, args),
-          updateFields = extractUpdateFields(this, opts);
-
-    return historical.snapshot(
-      collection,
-      this,
-      historical.patchPropsFromOpts(opts),
-      updateFields,
-      updateHistory
-    );
-  },
-
-  $save(...args) {
-    return this.$model.save(this, ...args);
-  },
-
-  $insert(...args) {
-    return this.$model.insert(this, ...args);
-  },
-
-  $update(...args) {
-    return this.$model.updateDoc(this, ...args);
-  },
-
-  async $remove() {
-    await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'pre', document: this });
-    const rslt = await this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, '$remove', ...arguments);
-    await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'post', document: this });
-    return rslt;
-  },
-
-  $replace(obj) {
-    this.$copy(obj, Tyr.$all);
-  },
-
-  $slice(path, options) {
-    return Tyr._slice(this, path, options);
-  },
-
-  $toClient(opts) {
-    return this.$model.toClient(this, opts);
-  },
-
-  $populate(fields, denormal) {
-    return this.$model.populate(fields, this, denormal);
-  },
-
-  $validate() {
-    return ObjectType.validate(this.$model, this);
-  }
-
-};
-
-function defineDocumentProperties(dp) {
-  Object.defineProperties(dp, {
-    $id: {
-      get() {
-        return this[this.$model.def.primaryKey.field];
-      },
-      enumerable:   false,
-      configurable: false
-    },
-
-    $label: {
-      get() {
-        return this.$model.labelFor(this);
-      },
-      enumerable:   false,
-      configurable: false
-    },
-
-    $tyr: {
-      get() {
-        return Tyr;
-      },
-      enumerable:   false,
-      configurable: false
-    },
-
-    $uid: {
-      get() {
-        const model = this.$model;
-        return model.idToUid(this[model.def.primaryKey.field]);
-      },
-      enumerable:   false,
-      configurable: false
-    }
-  });
 }
 
 async function preSave(collection, obj, opts) {
@@ -329,20 +169,23 @@ export default class Collection {
 
     // hack so that our custom functions have the proper name
     let CollectionInstance;
-    const lodash = _; // eval only takes in local variables into its scope
+
+    // eval only takes in local variables into its scope
+    const lodash = _;
+    const _documentPrototype = documentPrototype;
 
     /* tslint:disable no-eval */
     eval(`CollectionInstance = function ${lodash.capitalize(def.name)}(data) {
       this.__proto__ = dp;
 
       // add properties to dp if not available
-      for (var key in documentPrototype) {
+      for (var key in _documentPrototype) {
         if (key.substring(0,1) === '$' && !(key in dp)) {
           Object.defineProperty(dp, key, {
             enumerable:   false,
             writable:     false,
             configurable: false,
-            value:        documentPrototype[key]
+            value:        _documentPrototype[key]
           });
         }
       }
@@ -418,7 +261,6 @@ export default class Collection {
       }
 
       if (get || set) {
-
         const prop = {
           enumerable:   isDb !== undefined ? isDb : false,
           configurable: false
@@ -660,8 +502,7 @@ export default class Collection {
             let doc = await cursor.next();
 
             if (doc) {
-              doc = new collection(doc);
-              await postFind(collection, opts, doc);
+              doc = await postFind(collection, opts, doc);
             }
 
             return doc;
@@ -672,8 +513,7 @@ export default class Collection {
             let docs = await cursor.toArray();
 
             if (docs.length) {
-              docs = docs.map(doc => new collection(doc));
-              await postFind(collection, opts, docs);
+              docs = await postFind(collection, opts, docs);
             }
 
             return docs;
@@ -758,8 +598,7 @@ export default class Collection {
 
     let doc = await db.findOne(query, projection, _.omit(opts, ['query', 'fields']));
     if (doc) {
-      doc = new collection(doc);
-      await postFind(this, opts, doc);
+      doc = await postFind(this, opts, doc);
       return doc;
     }
 

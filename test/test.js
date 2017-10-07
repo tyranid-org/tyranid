@@ -1853,6 +1853,32 @@ describe('tyranid', function() {
       });
     });
 
+    describe('$toPlain() and plain: true', () => {
+      it('should support Document.$toPlain()', () => {
+        const ud = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+        const ur = ud.$toPlain();
+
+        expect(ud).to.be.instanceof(User);
+        expect(ur).to.not.be.instanceof(User);
+        expect(ur.age).to.eql(ud.age);
+        expect(ur.name).to.eql(ud.name);
+      });
+
+      it('should convert computed values', () => {
+        const ud = new User({ age: 5, name: { first: 'Amy', last: 'Tell' } });
+        const ur = ud.$toPlain();
+
+        expect(ur.fullName).to.eql('Amy Tell');
+      });
+
+      it('should convert support plain: true', async () => {
+        const u = await User.findOne({ query: { _id: 1 }, plain: true });
+
+        expect(u).to.not.be.instanceof(User);
+        expect(u.fullName).to.eql('An Anon');
+      });
+    });
+
     describe('isObject', function() {
       it('test if something is an object', () => {
         const tests = [
