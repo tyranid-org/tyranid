@@ -677,7 +677,7 @@ declare namespace Tyranid {
     }
 
     export interface EventStatic {
-      fire(event: Event | EventDefinition): void;
+      fire(event: EventInstance | EventDefinition): void;
     }
 
     export interface EventDefinition {
