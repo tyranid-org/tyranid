@@ -41,7 +41,8 @@
     "on-finished": "2.3.0",
     "socket.io": "2.0.3",
     "typescript": "2.5.2",
-    "uglify-js": "2.8.16"
+    "uglify-js": "2.8.16",
+    "uuid": "3.0.0"
   },
   "devDependencies": {
     "body-parser": "1.17.2",
