@@ -34,6 +34,7 @@ import './core/namePath';
 import './core/query';
 
 import './fake';
+import './migrator';
 import './timer';
 
 import './log/log';
@@ -259,6 +260,11 @@ _.assign(Tyr, {
     await bootstrap('link');
 
     await bootstrap('post-link');
+
+    const migration = options.migration;
+    if (migration && migration.migrate) {
+      await Tyr.migrate();
+    }
   },
 
   /**

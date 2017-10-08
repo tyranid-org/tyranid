@@ -1,10 +1,11 @@
 
-import * as _        from 'lodash'
+import * as path     from 'path';
+import * as _        from 'lodash';
 import * as nodeUuid from 'uuid';
 import * as chalk    from 'chalk';
 
-import Tyr           from 'tyranid';
-
+import Collection    from './core/collection';
+import Tyr           from './tyr';
 
 const clr       = chalk.hex('#cc5500'),
       clrMig    = chalk.hex('#cc0055'),
@@ -13,7 +14,7 @@ const clr       = chalk.hex('#cc5500'),
       clrGreen  = chalk.keyword('green'),
       clrYellow = chalk.hex('#aaaa00');
 
-const MigrationStatus = new Tyr.Collection({
+const MigrationStatus = new Collection({
   id: '_m1',
   name: 'migrationStatus',
   dbName: 'migrationStatuses',
@@ -26,7 +27,7 @@ const MigrationStatus = new Tyr.Collection({
 
 const doRemoveLock = async remove => {
   if (remove) {
-    await MigrationStatus.db.remove({ '_id': '$$MIGRATION-LOCK' })
+    await MigrationStatus.db.remove({ '_id': '$$MIGRATION-LOCK' });
     log({ note: 'End Migration', end: true });
   }
 };
@@ -36,9 +37,9 @@ const waitForUnLock = async () => {
     .findOne({ query: { _id: '$$MIGRATION-LOCK' } });
 
   if (!lock) {
-    Tyr.options.migrator.waitingOnMigration = false;
+    Tyr.options.migration.waitingOnMigration = false;
   } else {
-    Tyr.options.migrator.waitingOnMigration = true;
+    Tyr.options.migration.waitingOnMigration = true;
     logger.info('Waiting for migration to finish...');
     setTimeout( waitForUnLock, 5000);
   }
@@ -102,7 +103,7 @@ function log(opts) {
     }
   } else {
     if (opts.start) {
-      console.log(clr(''.padEnd(104, '*')));
+      //console.log(clr(''.padEnd(104, '*')));
       allStartMs = Date.now();
     } else if (opts.end) {
       note += ` (${Date.now() - allStartMs}ms)`;
@@ -117,12 +118,12 @@ function log(opts) {
     text += clr(''.padEnd(filler - leadFiller, '*'));
     console.log(text);
 
-    if (opts.end) console.log(clr(''.padEnd(104, '*')));
+    //if (opts.end) console.log(clr(''.padEnd(104, '*')));
   }
 }
 
 export async function migrate(migrationArray) {
-  const migrations = migrationArray || Tyr.options.migrations;
+  const migrations = migrationArray || Tyr.options.migration.list;
   let removeLock = false;
   const uuid = nodeUuid.v4();
 
@@ -152,7 +153,7 @@ export async function migrate(migrationArray) {
     log({ note: 'Beginning Migration', start: true });
 
     for (const migrationName of migrations) {
-      const migration = require('./migrations/' + migrationName);
+      const migration = require(path.join(Tyr.options.migration.dir, migrationName));
 
       if (migration.skip) {
         log({ migration: migrationName, action: 'skip', note: 'Marked as skip' });
@@ -174,7 +175,7 @@ export async function migrate(migrationArray) {
         }
 
         try {
-          await migration.migrate()
+          await migration.migrate();
 
           if (migration.noCommit) {
             await MigrationStatus.db.remove( { '_id' : migrationName } );
@@ -197,3 +198,5 @@ export async function migrate(migrationArray) {
     doRemoveLock(removeLock);
   }
 }
+
+Tyr.migrate = migrate;

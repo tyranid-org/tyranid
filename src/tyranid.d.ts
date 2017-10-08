@@ -54,6 +54,7 @@ declare namespace Tyranid {
     export function express(app: Express.Application, auth?: (req: Express.Request, res: Express.Response, next: Function) => {}): void;
     export function valuesBy(predicate: (field: FieldInstance) => boolean): Promise<any[]>;
     export function generateClientLibrary(): string;
+    export function migrate(): Promise<void>;
 
     export function validate(opts?: {
       glob?: string
@@ -518,6 +519,12 @@ declare namespace Tyranid {
         insert: string;
         update: string;
         remove: string;
+      };
+      migration?: {
+        migrate?: boolean;
+        list?: string[];
+        dir?: string;
+        waitingOnMigration?: boolean;
       };
     }
 
