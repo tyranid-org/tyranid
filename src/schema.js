@@ -43,7 +43,7 @@ Schema.on({
   type: 'change',
   when: 'post',
   handler: (/*event*/) => {
-    Tyr.Event.fire({ collection: Schema, type: 'tyrSchemaInvalidate', broadcast: true });
+    Schema.fire({ type: 'tyrSchemaInvalidate', broadcast: true });
   }
 });
 

@@ -71,6 +71,11 @@ Collection.prototype.on = function(opts) {
   };
 };
 
+Collection.prototype.fire = function(event) {
+  event.collection = this;
+  return Tyr.Event.fire(event);
+};
+
 class EventCancelError {
 
   constructor() {

@@ -574,6 +574,8 @@ declare namespace Tyranid {
 
       findAndModify(opts: Options_FindAndModify): Promise<{ value: T } | null>;
 
+      fire(event: EventInstance | EventDefinition): void;
+
       fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;
       toClient(doc: Document | Document[] | RawMongoDocument | RawMongoDocument[]): RawMongoDocument;
