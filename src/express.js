@@ -502,8 +502,7 @@ export function generateClientLibrary() {
 
     return ajax({
       url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (search || '')
-      method: 'put',
-      data: doc
+      method: 'put'
     });
   };
 
@@ -515,7 +514,8 @@ export function generateClientLibrary() {
       return ajax({
         url: '/api/' + this.collection.def.name + '/' + this.path + '/validate/'
         method: 'put',
-        data: doc
+        data: JSON.stringify(doc),
+        contentType: 'application/json'
       }).then(function(result) {
         if (result) {
           throw new ValidationError(this, result);
@@ -631,12 +631,12 @@ export function generateClientLibrary() {
           vField(path + '._', field, of);
         }
       }
-      
+
       if (def.is === 'object') {
         if (def.fields) {
           vFields(path, field, def.fields);
         }
-      
+
         if (def.keys) {
           let keys = new Field(def.keys);
           field.keys = keys;
@@ -842,7 +842,8 @@ export function generateClientLibrary() {
     return ajax({
       url: '/api/' + this.def.name,
       method: 'put',
-      data: doc
+      data: JSON.stringify(doc),
+      contentType: 'application/json'
     })
   };
 
