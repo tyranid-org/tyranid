@@ -96,6 +96,7 @@ class Serializer {
       'defaultValue',
       'denormal',
       'granularity',
+      'keys',
       'min',
       'minlength',
       'max',
@@ -441,7 +442,7 @@ export function generateClientLibrary() {
 
   function Field(def) {
     this.def = def;
-    this.type = Type.byName[def.is];
+    this.type = Type.byName[def.link ? 'link' : def.is];
 
     if (def.pattern) {
       def.pattern = refineJson(def.pattern);
@@ -623,12 +624,24 @@ export function generateClientLibrary() {
       field.collection = CollectionInstance;
 
       var def = field.def;
-      if (def.is === 'array') {
-        var of = new Field(def.of);
-        field.of = of;
-        vField(path + '._', field, of);
-      } else if (def.fields) {
-        vFields(path, field, def.fields);
+      if (def.is === 'array' || def.is === 'object') {
+        if (def.of) {
+          var of = new Field(def.of);
+          field.of = of;
+          vField(path + '._', field, of);
+        }
+      }
+      
+      if (def.is === 'object') {
+        if (def.fields) {
+          vFields(path, field, def.fields);
+        }
+      
+        if (def.keys) {
+          let keys = new Field(def.keys);
+          field.keys = keys;
+          vField(path + '._key', field, keys);
+        }
       }
     }
 
