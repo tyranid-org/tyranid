@@ -9,7 +9,7 @@ import Tyr           from './tyr';
 
 const clr       = chalk.hex('#cc5500'),
       clrMig    = chalk.hex('#cc0055'),
-      clrDesc   = chalk.hex('#666666'),
+      clrDesc   = chalk.hex('#000000'),
       clrRed    = chalk.keyword('red'),
       clrGreen  = chalk.keyword('green'),
       clrYellow = chalk.hex('#aaaa00');

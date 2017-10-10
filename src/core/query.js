@@ -531,11 +531,13 @@ Collection.prototype.fromClientQuery = function(query) {
 
     let field;
     if (path) {
-      field = col.paths[path];
+      const np = col.parsePath(path);
 
-      if (!field) {
+      if (!np) {
         throw new Error('unknown path: ' + path);
       }
+
+      field = np.tail;
     }
 
     if (_.isArray(client) || !_.isObject(client)) {

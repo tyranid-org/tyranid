@@ -23,7 +23,7 @@ export function add() {
           i3 = '333333333333333333333333',
           i4 = '444444444444444444444444';
 
-    describe('merge()', function() {
+    describe('merge()', () => {
       function testl(v1, v2, expected) {
         const merged = merge(v1, v2);
         //console.log('merged', merged);
@@ -273,7 +273,7 @@ export function add() {
       });
     });
 
-    describe('fromClientQuery', function() {
+    describe('fromClientQuery', () => {
       let Book, User;
 
       before(() => {
@@ -281,60 +281,86 @@ export function add() {
         User = Tyr.byName.user;
       });
 
-      it( 'should variation 1', function() {
-        var title = 'Browsers';
-        var clientQuery = {
+      it( 'should variation 1', () => {
+        const title = 'Browsers';
+        const clientQuery = {
           title,
           isbn: '5614c2f00000000000000000'
         };
-        var serverQuery = Book.fromClientQuery(clientQuery);
+        const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.title).to.be.eql(title);
         expect(serverQuery.isbn).to.be.an.instanceof(O);
       });
 
-      it( 'should variation 2', function() {
-        var clientQuery = {
+      it( 'should variation 2', () => {
+        const clientQuery = {
           isbn: { $in: [ '5614c2f00000000000000000', '5614c2f00000000000000001' ] }
         };
-        var serverQuery = Book.fromClientQuery(clientQuery);
+        const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.isbn.$in.length).to.be.eql(2);
         expect(serverQuery.isbn.$in[0]).to.be.an.instanceof(O);
         expect(serverQuery.isbn.$in[1]).to.be.an.instanceof(O);
       });
 
-      it( 'should variation 3', function() {
-        var clientQuery = {
+      it( 'should variation 3', () => {
+        const clientQuery = {
           isbn: { $ne: '5614c2f00000000000000000' },
           title: { $exists: true }
         };
-        var serverQuery = Book.fromClientQuery(clientQuery);
+        const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.title.$exists).to.be.eql(true);
         expect(serverQuery.isbn.$ne).to.be.an.instanceof(O);
       });
 
-      it( 'should variation 4', function() {
-        var clientQuery = {
+      it( 'should variation 4', () => {
+        const clientQuery = {
           $or: [
             { title: { $exists: true } },
             { isbn: { $in: [ '5614c2f00000000000000000' ] } }
           ]
         };
-        var serverQuery = Book.fromClientQuery(clientQuery);
+        const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.$or[0].title.$exists).to.be.eql(true);
         expect(serverQuery.$or[1].isbn.$in.length).to.be.eql(1);
         expect(serverQuery.$or[1].isbn.$in[0]).to.be.an.instanceof(O);
       });
 
-      it( 'should variation 5', function() {
-        var clientQuery = {
+      it( 'should variation 5', () => {
+        const clientQuery = {
           name: {
             first: { $eq: 'An' },
             last: 'Anon'
           }
         };
-        var serverQuery = User.fromClientQuery(clientQuery);
+        const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery.name.first.$eq).to.be.eql('An');
         expect(serverQuery.name.last).to.be.eql('Anon');
+      });
+
+      it( 'should support support paths strings', () => {
+        const clientQuery = {
+          'name.first': 'An'
+        };
+        const serverQuery = User.fromClientQuery(clientQuery);
+        expect(serverQuery['name.first']).to.be.eql('An');
+      });
+
+      it( 'should support fail on invalid paths strings', () => {
+        const clientQuery = {
+          'name.foo': 'An'
+        };
+
+        expect(() => {
+          User.fromClientQuery(clientQuery);
+        }).to.throw(/cannot find/i);
+      });
+
+      it( 'should support queries against denormalized properties', () => {
+        const clientQuery = {
+          'organization_.name': 'Acme'
+        };
+        const serverQuery = User.fromClientQuery(clientQuery);
+        expect(serverQuery['organization_.name']).to.be.eql('Acme');
       });
     });
   });
