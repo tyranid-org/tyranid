@@ -357,10 +357,10 @@ export function add() {
 
       it( 'should support queries against denormalized properties', () => {
         const clientQuery = {
-          'organization_.name': 'Acme'
+          'organization_.owner_.name.last': 'Anon'
         };
         const serverQuery = User.fromClientQuery(clientQuery);
-        expect(serverQuery['organization_.name']).to.be.eql('Acme');
+        expect(serverQuery['organization_.owner_.name.last']).to.eql('Anon');
       });
     });
   });

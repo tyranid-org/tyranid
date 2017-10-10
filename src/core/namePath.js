@@ -109,7 +109,7 @@ function NamePath(base, pathName, skipArray) {
     }
 
     if (!at) {
-      throw new Error(`Cannot find field "${this.pathName(pi)}"`);
+      throw new Error(`Cannot find field "${this.pathName(pi)}" in path "${base.toString()}::${this.name}"`);
     }
 
     pathFields[pi++] = at;

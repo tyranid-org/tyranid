@@ -527,17 +527,12 @@ Collection.prototype.fromClientQuery = function(query) {
     }
   }
 
-  function convert(path, client) {
+  function convert(col, path, client) {
 
     let field;
     if (path) {
-      const np = col.parsePath(path);
-
-      if (!np) {
-        throw new Error('unknown path: ' + path);
-      }
-
-      field = np.tail;
+      field = col.parsePath(path).tail;
+      col = field.collection;
     }
 
     if (_.isArray(client) || !_.isObject(client)) {
@@ -550,9 +545,9 @@ Collection.prototype.fromClientQuery = function(query) {
       case '$and':
       case '$or':
         if (_.isArray(v)) {
-          server[n] = v.map(cv => convert(path, cv));
+          server[n] = v.map(cv => convert(col, path, cv));
         } else {
-          server[n] = convert(path, v);
+          server[n] = convert(col, path, v);
         }
         break;
       case '$in':
@@ -569,7 +564,7 @@ Collection.prototype.fromClientQuery = function(query) {
         if (_.isArray(v)) {
           server[n] = convertValue(field, v);
         } else {
-          server[n] = convert(path ? path + '.' + n : n, v);
+          server[n] = convert(col, path ? path + '.' + n : n, v);
         }
       }
     });
@@ -577,7 +572,7 @@ Collection.prototype.fromClientQuery = function(query) {
     return server;
   }
 
-  return convert('', query);
+  return convert(col, '', query);
 };
 
 const query = {

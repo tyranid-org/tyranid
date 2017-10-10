@@ -32,11 +32,13 @@ import UserAgent from './userAgent';
 
  */
 
-function has$(q) {
+const illegalKeyCharPattern = /(^\$)|\./;
+
+function hasIllegalKeyChar(q) {
 
   if (_.isObject(q)) {
     for (const p in q) {
-      if (p.startsWith('$') || has$(q[p])) {
+      if (illegalKeyCharPattern.test(p) || hasIllegalKeyChar(q[p])) {
         return true;
       }
     }
@@ -45,14 +47,19 @@ function has$(q) {
   return false;
 }
 
-function adapt$(q) {
-
-  if (has$(q)) {
+function adaptIllegalKeyChar(q) {
+  if (hasIllegalKeyChar(q)) {
     const qc = {};
 
     for (const p in q) {
       if (q.hasOwnProperty(p)) {
-        qc[p.startsWith('$') ? '_' + p : p] = adapt$(q[p]);
+        let safeP = p;
+
+        if (illegalKeyCharPattern.test(p)) {
+          safeP = (p.startsWith('$') ? '_' + p : p).replace(/\./g, ':');
+        }
+
+        qc[safeP] = adaptIllegalKeyChar(q[p]);
       }
     }
 
@@ -215,7 +222,7 @@ async function log(level, ...opts) {
       m:  req.method,
       ip: req.headers['X-Forwarded-For'] || req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
       ua: ua._id,
-      q:  adapt$(req.query)
+      q:  adaptIllegalKeyChar(req.query)
     };
 
     const sid = req.cookies && req.cookies['connect.sid'];
@@ -262,7 +269,8 @@ async function log(level, ...opts) {
   }
 
   if (dbLogLevel && level._id >= dbLogLevel._id) {
-    result = Log.db.save(obj);
+    const logResult = Log.db.save(obj);
+    result = result ? Promise.all([ result, logResult ]) : logResult;
   }
 
   return result;
@@ -330,12 +338,16 @@ Log.request = function(req, res) {
   onFinished(res, function() {
 
     const diff = process.hrtime(req._startAt);
+
     Log.info({
       e:    'http',
       du:   diff[0] * 1e9 + diff[1],
       req:  req,
       res:  res
+    }).catch(err => {
+      console.error('Error when logging a request', err);
     });
+
   });
 };
 
@@ -350,7 +362,8 @@ Log.routes = function(app, auth) {
     .get((req, res) => {
       try {
         const o = JSON.parse(req.query.o);
-        log(null, o);
+        log(null, o)
+          .catch(err => console.error('Error from /api/log/_log route, object=', o, 'error=', err));
 
         res.send(200);
       } catch (err) {

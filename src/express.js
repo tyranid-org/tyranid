@@ -844,7 +844,7 @@ export function generateClientLibrary() {
       method: 'put',
       data: JSON.stringify(doc),
       contentType: 'application/json'
-    })
+    }).then(docs => Array.isArray(docs) ? docs.map(doc => new this(doc)) : new this(docs));
   };
 
   Collection.prototype.remove = function(idOrQuery) {
@@ -856,8 +856,9 @@ export function generateClientLibrary() {
       } :
       {
         url: '/api/' + this.def.name,
-        data: idOrQuery,
-        method: 'delete'
+        data: JSON.stringify(idOrQuery),
+        method: 'delete',
+        contentType: 'application/json'
       }
     ).catch(function(err) {
       console.log(err);
@@ -1261,7 +1262,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.delete) {
         r.delete(async (req, res) => {
           try {
-            await col.remove({ query: col.fromClientQuery(req.query), auth: req.user });
+            await col.remove({ query: col.fromClientQuery(req.body), auth: req.user });
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);
