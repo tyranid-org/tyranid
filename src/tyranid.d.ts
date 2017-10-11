@@ -91,10 +91,10 @@ declare namespace Tyranid {
     export type BootStage = 'compile' | 'link' | 'post-link';
 
     export interface Class<T> {
-      new (...args: any[]): T;
+      new(...args: any[]): T;
     }
 
-    type RawDocument<Base> = { [K in (keyof Base)]: Base[K]; };
+    type RawDocument<Base> = {[K in (keyof Base)]: Base[K]; };
 
     /**
      *  Generic tyranid document object.
@@ -263,28 +263,28 @@ declare namespace Tyranid {
      */
 
     export interface Options_Count
-        extends Options_Exists {}
+      extends Options_Exists { }
 
     export interface Options_Exists
-        extends OptionsAuth, OptionsCount {}
+      extends OptionsAuth, OptionsCount { }
 
     export interface Options_FindById
-        extends OptionsAuth, OptionsHistorical, OptionsPopulate, OptionsProjection, OptionsPlain  {}
+      extends OptionsAuth, OptionsHistorical, OptionsPopulate, OptionsProjection, OptionsPlain { }
 
     export interface Options_FindByIds
-        extends Options_FindById, OptionsParallel {}
+      extends Options_FindById, OptionsParallel { }
 
     export interface Options_FindOne
-        extends Options_FindById, OptionsQuery {}
+      extends Options_FindById, OptionsQuery, OptionsWindow { }
 
     export interface Options_FindCursor
-        extends Options_FindOne, OptionsWindow {}
+      extends Options_FindOne, OptionsWindow { }
 
     export interface Options_FindMany
-        extends Options_FindCursor, OptionsCount {}
+      extends Options_FindCursor, OptionsCount { }
 
     export interface Options_FindAndModify
-        extends OptionsAuth, OptionsQuery, OptionsUpdate {
+      extends OptionsAuth, OptionsQuery, OptionsUpdate {
 
       /**
        * whether or not to return a new document in findAndModify
@@ -298,30 +298,30 @@ declare namespace Tyranid {
     }
 
     export interface Options_Insert
-        extends OptionsAuth, OptionsHistorical, OptionsTimestamps {}
+      extends OptionsAuth, OptionsHistorical, OptionsTimestamps { }
 
     export interface Options_Remove
-        extends OptionsAuth, OptionsQuery {}
+      extends OptionsAuth, OptionsQuery { }
 
     export interface Options_Save
-        extends Options_Insert, Options_UpdateDoc {}
+      extends Options_Insert, Options_UpdateDoc { }
 
     export interface Options_Slice
-        extends OptionsAuth, OptionsPopulate, OptionsWhere, OptionsWindow {}
+      extends OptionsAuth, OptionsPopulate, OptionsWhere, OptionsWindow { }
 
     export interface Options_ToClient
-        extends OptionsAuth, OptionsPost {}
+      extends OptionsAuth, OptionsPost { }
 
     export interface Options_Update
-        extends OptionsAuth, OptionsQuery, OptionsTimestamps, OptionsUpdate {}
+      extends OptionsAuth, OptionsQuery, OptionsTimestamps, OptionsUpdate { }
 
     export interface Options_UpdateDoc
-        extends OptionsAuth, OptionsHistorical, OptionsTimestamps {}
+      extends OptionsAuth, OptionsHistorical, OptionsTimestamps { }
 
     export interface Options_All
-        extends OptionsAuth, OptionsHistorical, OptionsQuery, OptionsParallel,
-                OptionsPlain, OptionsPopulate, OptionsPost, OptionsProjection,
-                OptionsTimestamps, OptionsUpdate, OptionsWindow {}
+      extends OptionsAuth, OptionsHistorical, OptionsQuery, OptionsParallel,
+      OptionsPlain, OptionsPopulate, OptionsPost, OptionsProjection,
+      OptionsTimestamps, OptionsUpdate, OptionsWindow { }
 
     /**
      * Fields to populate in a document
@@ -414,7 +414,7 @@ declare namespace Tyranid {
       help?: string;
       placeholder?: string;
 
-      deprecated?: boolean;
+      deprecated?: string | boolean;
       note?: string;
 
       required?: boolean;
@@ -531,7 +531,7 @@ declare namespace Tyranid {
 
     export interface CollectionStatic {
       // Collection instance constructor
-      new<T extends Document = Document>(def: CollectionDefinition): CollectionInstance<T>;
+      new <T extends Document = Document>(def: CollectionDefinition): CollectionInstance<T>;
     }
 
     export interface Component {
@@ -560,7 +560,7 @@ declare namespace Tyranid {
       secureQuery(query: MongoQuery, perm: string, auth: Document): Promise<MongoQuery>;
 
       byId(id: IdType | string | number, options?: Options_FindById): Promise<T | null>;
-      byIds(ids: Array<IdType| number | string>, options?: Options_FindByIds): Promise<T[]>;
+      byIds(ids: Array<IdType | number | string>, options?: Options_FindByIds): Promise<T[]>;
       byLabel(label: LabelType, forcePromise?: boolean): Promise<T | null>;
 
       count(opts: Options_Count): Promise<number>;
@@ -628,7 +628,7 @@ declare namespace Tyranid {
      *  Tyranid field
      */
     export interface FieldStatic {
-      new (...args: any[]): FieldInstance;
+      new(...args: any[]): FieldInstance;
     }
 
     export interface FieldInstance {
@@ -654,7 +654,7 @@ declare namespace Tyranid {
     }
 
     export interface NamePathStatic {
-      new (...args: any[]): NamePathInstance;
+      new(...args: any[]): NamePathInstance;
     }
 
     export interface NamePathInstance {
@@ -673,7 +673,7 @@ declare namespace Tyranid {
     }
 
     export interface UnitsStatic {
-      new (sid: string, components: Array<{ degree: any, unit: any }>): UnitsInstance;
+      new(sid: string, components: Array<{ degree: any, unit: any }>): UnitsInstance;
     }
 
     export interface UnitsInstance {
@@ -731,7 +731,7 @@ declare namespace Tyranid {
     export interface TypeStatic {
       byName: { [key: string]: TypeInstance };
 
-      new (...args: any[]): TypeInstance;
+      new(...args: any[]): TypeInstance;
     }
 
     export interface TypeDefinition {
@@ -756,7 +756,7 @@ declare namespace Tyranid {
      *  Error thrown in validation failure
      */
     export interface ValidationErrorStatic {
-      new (...args: any[]): ValidationError;
+      new(...args: any[]): ValidationError;
     }
 
     export interface ValidationError {
