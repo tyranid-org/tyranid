@@ -785,9 +785,9 @@ export default class Collection {
       }
 
       await Tyr.Event.fire({ collection, type: 'insert', when: 'pre', _documents: parsedArr, opts });
-      const rslt = await collection.db.insertMany(parsedArr);
 
-      const docs = rslt.ops;
+      const docs = parsedArr.length ? (await collection.db.insertMany(parsedArr)).ops : [];
+
       await Tyr.Event.fire({ collection, type: 'insert', when: 'post', _documents: docs, opts });
       return docs;
     } else {
