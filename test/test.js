@@ -1269,6 +1269,14 @@ describe('tyranid', function() {
           });
       });
 
+      it('should not error when bulk inserting empty array', function() {
+        return User.insert([])
+          .then(newPeople => {
+            expect(newPeople).to.be.instanceof(Array);
+            expect(newPeople.length).to.be.eql(0);
+          });
+      });
+
       it('should return Document instances from insert()', async () => {
         try {
           await Location.db.remove({});
