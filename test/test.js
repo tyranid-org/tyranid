@@ -832,6 +832,11 @@ describe('tyranid', function() {
         expect(await User.idToLabel(1)).to.be.eql('An Anon');
       });
 
+      it('should support labelify on fields', async () => {
+        const user = new User({ job: 3 });
+        expect(await User.paths.job.labelify(3)).to.be.eql('Designer');
+      });
+
       it('should support label on collections', function() {
         expect(Job.label).to.be.eql('Job');
         expect(Task.label).to.be.eql('Issue');

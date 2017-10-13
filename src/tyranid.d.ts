@@ -650,6 +650,7 @@ declare namespace Tyranid {
       type: TypeInstance;
       fields?: { [key: string]: FieldInstance };
 
+      labelify(value: any): Promise<any>;
       labels(text?: string): LabelList;
     }
 

@@ -478,6 +478,10 @@ export function generateClientLibrary() {
     }
   });
 
+  Field.prototype.labelify = function(value) {
+    return this.link ? this.link.idToLabel(value) : value;
+  };
+
   Field.prototype.labels = function(doc, search) {
     const to = this.link;
     if (to.isStatic() ) {
