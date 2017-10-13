@@ -786,7 +786,7 @@ export function generateClientLibrary() {
 
     return ajax({
       url: '/api/' + col.def.name,
-      data: opts
+      data: { opts: JSON.stringify(opts) }
     }).then(docs => docs && docs.length ? new col(docs[0]) : null);
   };
 
@@ -795,7 +795,7 @@ export function generateClientLibrary() {
 
     return ajax({
       url: '/api/' + col.def.name,
-      data: opts
+      data: { opts: JSON.stringify(opts) }
     }).then(rslt => {
       if (Array.isArray(rslt)) {
         return rslt.map(doc => new col(doc));
@@ -1177,7 +1177,8 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.get) {
         r.get(async (req, res) => {
           try {
-            const rOpts = req.query;
+            let rOpts = req.query;
+            rOpts = JSON.parse(rOpts.opts);
 
             const opts = {
               query: rOpts.query ? col.fromClientQuery(rOpts.query) : {},

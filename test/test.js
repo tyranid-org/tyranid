@@ -1902,6 +1902,21 @@ describe('tyranid', function() {
       });
     });
 
+    describe('isObjectId', function() {
+      it('test if something is an object', () => {
+        const tests = [
+          [ 1,        false ],
+          [ {},       false ],
+          [ oid1,     true ],
+          [ { a: 1 }, false ]
+        ];
+
+        for (const test of tests) {
+          expect(Tyr.isObjectId(test[0])).to.be.eql(test[1]);
+        }
+      });
+    });
+
     describe('parseBson', function() {
       it('pass through regular values but parse bson objects', () => {
         const tests = [
