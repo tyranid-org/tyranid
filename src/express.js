@@ -502,7 +502,9 @@ export function generateClientLibrary() {
 
     return ajax({
       url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (search || '')
-      method: 'put'
+      method: 'put',
+      data: JSON.stringify(doc),
+      contentType: 'application/json'
     });
   };
 
@@ -1452,7 +1454,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   query[to.labelField.path] = new RegExp(search, 'i');
                 }
 
-                LinkType.applyWhere(field, doc, query);
+                await LinkType.applyWhere(field, doc, query);
 
                 const results = await to.findAll({ query, fields: { [to.labelField.path]: 1 }, auth: req.user });
                 res.json(results.map(r => r.$toClient()));

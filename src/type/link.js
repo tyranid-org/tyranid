@@ -61,7 +61,7 @@ LinkType.applyWhere = async function(field, doc, query) {
       const rslt = await where.call(doc);
 
       if (_.isObject(rslt)) {
-        _.assign(query, where);
+        _.assign(query, rslt);
       }
     } else {
       _.assign(query, where);
