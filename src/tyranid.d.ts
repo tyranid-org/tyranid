@@ -41,6 +41,7 @@ declare namespace Tyranid {
     export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
     export function labelize(name: string): string;
     export function config(opts: ConfigOptions): void;
+    export function connect(opts: ConfigOptions): void;
     export function byUid(uid: string, options?: Options_FindById): Promise<Document | null>;
     export function byUids(uidList: string[], options?: Options_FindByIds): Promise<Document[]>;
     export function trace(opts: any): Promise<void>;
@@ -527,6 +528,11 @@ declare namespace Tyranid {
         dir?: string;
         waitingOnMigration?: boolean;
       };
+    }
+
+    export interface ConnectOptions {
+      http: any;
+      store: any;
     }
 
     export interface CollectionStatic {
