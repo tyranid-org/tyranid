@@ -531,8 +531,8 @@ declare namespace Tyranid {
     }
 
     export interface ConnectOptions {
-      http: any;
-      store: any;
+      http?: any;
+      store?: any;
     }
 
     export interface CollectionStatic {
