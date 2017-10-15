@@ -171,7 +171,7 @@ export function add() {
         await department.$populate({ creator: { name: 1 } });
         expect(_.keys(department.creator$).length).to.be.eql(2);
         expect(department.creator$._id).to.eql(2);
-        expect(department.creator$.name).to.be.defined;
+        expect(department.creator$.name).to.not.be.undefined;
 
         department = await Department.byId(1);
         await department.$populate({ creator: { age: 1, name: 1 } });
@@ -183,8 +183,8 @@ export function add() {
         await department.$populate({ creator: 'nameAndAge' });
         expect(_.keys(department.creator$).length).to.be.eql(3);
         expect(department.creator$._id).to.eql(2);
-        expect(department.creator$.name).to.be.defined;
-        expect(department.creator$.age).to.be.defined;
+        expect(department.creator$.name).to.not.be.undefined;
+        expect(department.creator$.age).to.not.be.undefined;
 
         department = await Department.byId(1);
         await department.$populate({ creator: ['nameAndAge', { homepage: 1 }] });

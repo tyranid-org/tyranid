@@ -87,16 +87,15 @@ const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
 
 describe('tyranid', function() {
   var db = null;
-  before(async function(done) {
+  before(async () => {
     db = await mongodb.MongoClient.connect('mongodb://localhost:27017/tyranid_test');
-    Tyr.config({
+    await Tyr.config({
       db: db,
       consoleLogLevel: 'ERROR',
       dbLogLevel: 'TRACE',
       secure: fakeSecure,
       indexes: true
     });
-    done(null, db);
   });
 
   after(function() {
@@ -868,13 +867,13 @@ describe('tyranid', function() {
       });
 
       it('objects returned by save() should have their _id set', async () => {
-        var book = new Book({ isbn: newIsbn, title: 'Datamodeling for Dummies' });
+        var loc = new Location({ name: 'Disneyland' });
 
-        await book.$save();
+        await loc.$save();
 
-        expect(book._id).to.be.defined;
+        expect(loc._id).to.not.be.undefined;
 
-        await book.$remove();
+        await loc.$remove();
       });
 
       it('should save existing objects', function() {
@@ -2045,7 +2044,7 @@ describe('tyranid', function() {
     describe('express', () => {
       const urlPrefix = 'http://localhost:' + expressPort;
 
-      before(async done => {
+      before(async () => {
         const app = express(),
               user = await User.byId(1);
 
@@ -2060,12 +2059,14 @@ describe('tyranid', function() {
           noClient: true
         });
 
-        const http = app.listen(expressPort, () => {
-          //console.log('Express listening on port ' + expressPort)
-          done(null, db);
-        });
+        await new Promise((resolve, reject) => {
+          const http = app.listen(expressPort, () => {
+            //console.log('Express listening on port ' + expressPort)
+            resolve();
+          });
 
-        Tyr.connect({ http });
+          Tyr.connect({ http });
+        });
       });
 
       it('should not expose /custom route on non-express collections', async () => {

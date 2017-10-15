@@ -1,12 +1,13 @@
 
-import * as _                    from 'lodash';
 import * as chai                 from 'chai';
+import * as mocha                from 'mocha';
+import * as _                    from 'lodash';
 import * as mongodb              from 'mongodb';
 
 import Tyr                       from '../src/tyranid';
 
 const {
-  ObjectId
+  ObjectID
 } = mongodb;
 
 const {
@@ -22,10 +23,10 @@ export function add() {
     });
 
     // oidX and oidX_ are equals() but not ===
-    const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
-          oid1_ = new ObjectId('55bb8ecff71d45b995ff8c83'),
-          oid2  = new ObjectId('5567f2a8387fa974fc6f3a5a'),
-          oid2_ = new ObjectId('5567f2a8387fa974fc6f3a5a');
+    const oid1 = new ObjectID('55bb8ecff71d45b995ff8c83'),
+          oid1_ = new ObjectID('55bb8ecff71d45b995ff8c83'),
+          oid2  = new ObjectID('5567f2a8387fa974fc6f3a5a'),
+          oid2_ = new ObjectID('5567f2a8387fa974fc6f3a5a');
 
     const simpleObjTests = [
       [ { a: 1, b: 2 }, { a: 1 },       { b: 0 }           ],
