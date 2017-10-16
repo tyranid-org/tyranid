@@ -533,6 +533,8 @@ declare namespace Tyranid {
     export interface ConnectOptions {
       http?: any;
       store?: any;
+      app?: Express.Application;
+      auth?: Express.RequestHandler;
     }
 
     export interface CollectionStatic {
