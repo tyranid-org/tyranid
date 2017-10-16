@@ -953,10 +953,10 @@ export function generateClientLibrary() {
   Collection.prototype.on = ${es5Fn(Collection.prototype.on)};
 
   if (window.io) {
-    Collection.prototype.subscribe = function(query) {
+    Collection.prototype.subscribe = function(query, cancel) {
       return ajax({
         url: '/api/' + this.def.name + '/subscribe',
-        data: query
+        data: { opts: JSON.stringify({ query, cancel }) }
       }).catch(function(err) {
         console.log(err);
       });
@@ -1335,10 +1335,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
       if (express.rest || express.get) {
         r.get(async (req, res) => {
-          const query = req.query;
+          const rQuery = req.query;
+          const opts = JSON.parse(rQuery.opts);
 
           try {
-            await col.subscribe(col.fromClientQuery(query), req.user);
+            await col.subscribe(col.fromClientQuery(opts.query), req.user, opts.cancel);
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);

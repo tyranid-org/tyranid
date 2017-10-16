@@ -155,8 +155,8 @@ Subscription.boot = async function(stage, pass) {
   }
 };
 
-Collection.prototype.subscribe = async function(query, user) {
-  //con sole.log(Tyr.instanceId + ' *** subscribe:', query, user);
+Collection.prototype.subscribe = async function(query, user, cancel) {
+  //con sole.log(Tyr.instanceId + ' *** subscribe:', query, user, cancel);
   const queryStr = JSON.stringify(query);
 
   const subscription = await Subscription.findOne({
@@ -166,6 +166,21 @@ Collection.prototype.subscribe = async function(query, user) {
       q: queryStr
     }
   });
+
+  if (cancel) {
+    if (subscription) {
+      await subscription.$remove();
+
+      await Tyr.Event.fire({
+        collection: Subscription,
+        type: 'unsubscribe',
+        when: 'pre',
+        broadcast: true
+      });
+    }
+
+    return;
+  }
 
   if (!subscription || subscription.i !== Tyr.instanceId) {
     if (subscription) {
