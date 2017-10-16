@@ -164,6 +164,10 @@ const Tyr = {
     return _.isObject(value) && value.constructor.name !== 'ObjectID';
   },
 
+  isObjectId(value) {
+    return _.isObject(value) && value.constructor.name === 'ObjectID';
+  },
+
   cloneDeep(obj) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
     return _.cloneDeepWith ? _.cloneDeepWith(obj, cloneCustomizer) : _.cloneDeep(obj, cloneCustomizer);

@@ -82,6 +82,9 @@ function NamePath(base, pathName, skipArray) {
 
         while /* if */ (_name) {
           const _at = parentAt.fields[_name];
+          if (!_at) {
+            throw new Error(`"${_name}" in "${pathName}" is not a valid field.`);
+          }
 
           if (!denormal) {
             denormal = _at.def.denormal;

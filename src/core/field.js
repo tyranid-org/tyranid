@@ -15,6 +15,10 @@ export default class Field {
     return _.result(this.def, 'label') || Tyr.labelize(this.name);
   }
 
+  async labelify(value) {
+    return this.link ? await this.link.idToLabel(value) : value;
+  }
+
   get namePath() {
     let np = this._np;
     if (!np) {

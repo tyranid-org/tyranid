@@ -44,7 +44,7 @@ export function add() {
       }
 
       u1 = await User.byId(2001);
-      expect(u1).to.be.defined;
+      expect(u1).to.not.be.undefined;
 
       await u1.$remove();
 
@@ -69,7 +69,7 @@ export function add() {
       }
 
       u1 = await User.byId(2001);
-      expect(u1).to.be.defined;
+      expect(u1).to.not.be.undefined;
 
       await User.remove({ query: { _id: 2001 } });
 
@@ -118,7 +118,7 @@ export function add() {
                 doc.pages = doc.pages ? doc.pages + 1 : 1;
             } else {
               expect(doc.pages).to.eql(1);
-              expect(doc._id).to.be.defined;
+              expect(doc._id).to.not.be.undefined;
             }
           }
         }
