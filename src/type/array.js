@@ -14,12 +14,12 @@ const ArrayType = new Type({
   },
 
   fromClient(field, value) {
+    const ofField = field.of,
+          ofFieldType = ofField.type;
     if (Array.isArray(value)) {
-      const ofField = field.of,
-            ofFieldType = ofField.type;
       return value.map(v => ofFieldType.fromClient(ofField, v));
     } else {
-      return value;
+      return ofFieldType.fromClient(ofField, value);
     }
   },
 

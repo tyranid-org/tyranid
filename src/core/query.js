@@ -467,7 +467,9 @@ function valueMatches(match, value) {
           break;
 
         case '$in':
-          if (!arrayIncludes(match.$in, value)) {
+          if (!value ||
+              !match.$in.length ||
+              !arrayIntersection(match.$in, value).length) {
             return false;
           }
           break;
@@ -503,7 +505,7 @@ function queryMatches(query, doc) {
       }
     } else {
 
-      if (!valueMatches(query[name], doc[name])) {
+      if (!valueMatches(_.get(query, name), _.get(doc, name))) {
         return false;
       }
     }

@@ -93,6 +93,7 @@ var User = new tyr.Collection({
     homepage: { is: 'url' },
     goldStars: { is: 'integer', defaultValue: function() { return 0; } },
     createdAt: { is: 'date' },
+    secretCodes: { is: 'array', of: 'mongoid' },
 
     other: { is: 'object' },
 

@@ -246,10 +246,13 @@ export function add() {
       });
 
       it('should work with $in', () => {
-        test({ foo: { $in: [1, 2] } },  { foo: 1 },    true);
-        test({ foo: { $in: [1, 2] } },  { foo: 3 },    false);
-        test({ foo: { $in: [1, 2] } },  {},            false);
-        test({ foo: { $in: [O(i1)] } }, { foo: O(i1)}, true);
+        test({ foo: { $in: [1] } },     { foo: [2, 1] },  true);
+        test({ foo: { $in: [3, 1] } },  { foo: [2, 1] },  true);
+        test({ foo: { $in: [1, 2] } },  { foo: [1] },     true);
+        test({ foo: { $in: [1, 2] } },  { foo: [3] },     false);
+        test({ foo: { $in: [1, 2] } },  {},               false);
+        test({ foo: { $in: [] } },      { foo: [1]},      false);
+        test({ foo: { $in: [O(i1)] } }, { foo: [O(i1)] }, true);
       });
 
       it('should work with $eq', () => {
@@ -335,6 +338,16 @@ export function add() {
         const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery.name.first.$eq).to.be.eql('An');
         expect(serverQuery.name.last).to.be.eql('Anon');
+      });
+
+      it( 'should support $in for array fields', () => {
+        const clientQuery = {
+          secretCodes: { $in: [ '5614c2f00000000000000000', '5614c2f00000000000000001' ] }
+        };
+        const serverQuery = User.fromClientQuery(clientQuery);
+        expect(serverQuery.secretCodes.$in.length).to.be.eql(2);
+        expect(serverQuery.secretCodes.$in[0]).to.be.an.instanceof(O);
+        expect(serverQuery.secretCodes.$in[1]).to.be.an.instanceof(O);
       });
 
       it( 'should support support paths strings', () => {
