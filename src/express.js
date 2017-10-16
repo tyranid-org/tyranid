@@ -1339,7 +1339,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           const opts = JSON.parse(rQuery.opts);
 
           try {
-            await col.subscribe(col.fromClientQuery(opts.query), req.user, opts.cancel);
+            await col.subscribe(opts.query && col.fromClientQuery(opts.query), req.user, opts.cancel);
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);

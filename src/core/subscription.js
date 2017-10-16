@@ -159,6 +159,23 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
   //con sole.log(Tyr.instanceId + ' *** subscribe:', query, user, cancel);
   const queryStr = JSON.stringify(query);
 
+  if (!query) {
+    if (cancel) {
+      await Subscription.remove({ query: { u: user._id, c: this.id } });
+
+      await Tyr.Event.fire({
+        collection: Subscription,
+        type: 'unsubscribe',
+        when: 'pre',
+        broadcast: true
+      });
+
+      return;
+    } else {
+      throw new Error('missing query');
+    }
+  }
+
   const subscription = await Subscription.findOne({
     query: {
       u: user._id,
@@ -207,10 +224,10 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
   }
 };
 
-Subscription.unsubscribe = async function(user) {
+Subscription.unsubscribe = async function(userId) {
   const rslts = await Subscription.remove({
     query: {
-      u: user._id
+      u: userId
     }
   });
 
