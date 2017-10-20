@@ -65,41 +65,58 @@ async function parseSubscriptions(subscription) {
         type: 'change',
         handler: async event => {
           //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:', event);
-          const { document, query } = event;
+          const { document, query, _documents } = event;
 
           for (const queryStr in listener.queries) {
             const queryDef = listener.queries[queryStr];
-            let refinedQuery = query;
+            let refinedDocument = document,
+                refinedQuery = query;
+
+            async function fireEvent() {
+              //con sole.log(Tyr.instanceId + ' *** matched');
+              //con sole.log(Tyr.instanceId + ' *** queryDef.instances', queryDef.instances);
+              for (const instanceId in queryDef.instances) {
+                const event = new Tyr.Event({
+                  collection: Subscription,
+                  dataCollectionId: colId,
+                  query: refinedQuery,
+                  document: refinedDocument,
+                  type: 'subscriptionEvent',
+                  when: 'pre',
+                  instanceId: instanceId
+                });
+
+                if (instanceId === Tyr.instanceId) {
+                  handleSubscriptionEvent(event);
+                } else {
+                  await Tyr.Event.fire(event);
+                }
+              }
+            }
 
             if (document) {
               if (!Query.matches(queryDef.queryObj, document)) continue;
               refinedQuery = undefined;
 
+              await fireEvent();
+
+            } else if (_documents) {
+              refinedQuery = undefined;
+
+              for (const doc of _documents) {
+                if (Query.matches(queryDef.queryObj, doc)) {
+                  refinedDocument = doc;
+                  await fireEvent();
+                }
+              }
+
             } else /*if (query)*/ {
               refinedQuery = Query.intersection(queryDef.queryObj, query);
               if (!refinedQuery) continue;
 
+              await fireEvent();
             }
 
-            //con sole.log(Tyr.instanceId + ' *** matched');
-            //con sole.log(Tyr.instanceId + ' *** queryDef.instances', queryDef.instances);
-            for (const instanceId in queryDef.instances) {
-              const event = new Tyr.Event({
-                collection: Subscription,
-                dataCollectionId: colId,
-                query: refinedQuery,
-                document,
-                type: 'subscriptionEvent',
-                when: 'pre',
-                instanceId: instanceId
-              });
-
-              if (instanceId === Tyr.instanceId) {
-                handleSubscriptionEvent(event);
-              } else {
-                await Tyr.Event.fire(event);
-              }
-            }
           }
         }
       });
