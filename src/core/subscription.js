@@ -27,7 +27,7 @@ const Subscription = new Collection({
 /*
 interface LocalListener {
   [collectionId: string]: {
-    changeHandler: Event => void,
+    changeHandlerDereg: () => void,
     queries: {
       [queryStr: string]: {
         queryObj: MongoDBQuery,
@@ -46,11 +46,18 @@ interface LocalListener {
 let localListeners /*: LocalListener*/ = {};
 
 async function parseSubscriptions(subscription) {
+  //con sole.log('parseSubscriptions(), Tyr.instanceId=', Tyr.instanceId);
   const subs = subscription ? [ subscription ] : await Subscription.findAll({});
   //con sole.log(Tyr.instanceId + ' *** parseSubscriptions, ' + subs.length + ' subs');
 
   if (!subscription) {
     // if we're reparsing all subs, clear out existing data
+
+    for (const colId in localListeners) {
+      const listener = localListener[colId];
+      listener && changeHandlerDereg && changeHandlerDereg();
+    }
+
     localListeners = {};
   }
 
@@ -61,10 +68,10 @@ async function parseSubscriptions(subscription) {
     let listener = localListeners[colId];
 
     if (!localListeners[colId]) {
-      const changeHandler = col.on({
+      const changeHandlerDereg = col.on({
         type: 'change',
         handler: async event => {
-          //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:', event);
+          //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:');//, event);
           const { document, query, _documents } = event;
 
           for (const queryStr in listener.queries) {
@@ -122,7 +129,7 @@ async function parseSubscriptions(subscription) {
       });
 
       listener = localListeners[colId] = {
-        changeHandler,
+        changeHandlerDereg,
         queries: {}
       };
     }
@@ -217,17 +224,20 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
   }
 
   if (!subscription || subscription.i !== Tyr.instanceId) {
-    if (subscription) {
-      await subscription.$remove();
-    }
+    let s = subscription;
 
-    const s = new Subscription({
-      u: user._id,
-      c: this.id,
-      q: queryStr,
-      on: new Date(),
-      i: Tyr.instanceId
-    });
+    if (s) {
+      s.on = new Date();
+      s.i = Tyr.instanceId;
+    } else {
+      s = new Subscription({
+        u: user._id,
+        c: this.id,
+        q: queryStr,
+        on: new Date(),
+        i: Tyr.instanceId
+      });
+    }
 
     await s.$save();
 
@@ -259,7 +269,7 @@ Subscription.unsubscribe = async function(userId) {
 };
 
 async function handleSubscriptionEvent(event) {
-  //con sole.log(Tyr.instanceId + ' *** handleSubscriptionEvent:', event);
+  //con sole.log(Tyr.instanceId + ' *** handleSubscriptionEvent:');//, event);
   const col = event.dataCollection,
         listener = localListeners[col.id],
         mQuery = event.query,

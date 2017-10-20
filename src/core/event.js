@@ -166,8 +166,10 @@ export default class Event {
     }
 
     const instances = await Instance.findAll({
-      _id: instanceId || { $ne: Tyr.instanceId },
-      lastAliveOn: { $gte: moment().subtract(30, 'minutes').toDate() }
+      query: {
+        _id: instanceId || { $ne: Tyr.instanceId },
+        lastAliveOn: { $gte: moment().subtract(30, 'minutes').toDate() }
+      }
     });
 
     //con sole.log(Tyr.instanceId + ' *** broadcasting to ', instances.map(i => i._id));
