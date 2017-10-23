@@ -558,8 +558,9 @@ export function generateClientLibrary() {
   }
 
   function Collection(def) {
+    var CollectionInstance;
 
-    eval(\`var CollectionInstance = function \${_.capitalize(def.name)}(data) {
+    eval(\`CollectionInstance = function \${_.capitalize(def.name)}(data) {
       if (data) {
         _.assign(this, data);
       }
