@@ -54,7 +54,7 @@ async function parseSubscriptions(subscription) {
     // if we're reparsing all subs, clear out existing data
 
     for (const colId in localListeners) {
-      const listener = localListener[colId];
+      const listener = localListeners[colId];
       listener && changeHandlerDereg && changeHandlerDereg();
     }
 

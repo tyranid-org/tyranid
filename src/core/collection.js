@@ -710,6 +710,10 @@ export default class Collection {
   async save(obj, opts) {
     const collection = this;
 
+    if (opts && opts.fields) {
+      throw new Error('save() does not support "fields" option; maybe try updateDoc()/$update()');
+    }
+
     await preSave(collection, obj, opts);
 
     if (Array.isArray(obj)) {
