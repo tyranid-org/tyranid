@@ -55,7 +55,7 @@ async function parseSubscriptions(subscription) {
 
     for (const colId in localListeners) {
       const listener = localListeners[colId];
-      listener && changeHandlerDereg && changeHandlerDereg();
+      listener && listener.changeHandlerDereg && listener.changeHandlerDereg();
     }
 
     localListeners = {};
