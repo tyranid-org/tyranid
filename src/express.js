@@ -13,6 +13,7 @@ import Population      from './core/population';
 import ValidationError from './core/validationError';
 import Type            from './core/type';
 import local           from './local/local';
+import SecureError     from './secure/secureError';
 import BooleanType     from './type/boolean';
 import LinkType        from './type/link';
 
@@ -1344,7 +1345,12 @@ Collection.prototype.connect = function({ app, auth, http }) {
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);
-            res.sendStatus(500);
+
+            if (err instanceof SecureError) {
+              res.status(401).send(err.message);
+            } else {
+              res.sendStatus(500);
+            }
           }
         });
       }

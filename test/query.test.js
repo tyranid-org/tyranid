@@ -300,11 +300,12 @@ export function add() {
         test({ foo: { $bitsAnySet: 3 } }, { foo: 4 }, false);
       });
 
-      it('should work with combination', () => {
+      it('should work with a combination of bit-wise operators', () => {
         test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 5 },  true);
         test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 13 }, false);
         test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 4 },  false);
         test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 6 },  true);
+        test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 7 },  true);
       });
     });
 

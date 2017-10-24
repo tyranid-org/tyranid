@@ -239,6 +239,18 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
       });
     }
 
+    await Tyr.Event.fire({
+      collection: this,
+      type: 'subscribe',
+      when: 'pre',
+      query,
+      opts: {
+        query,
+        auth: user
+      },
+      subscription: s
+    });
+
     await s.$save();
 
     await Tyr.Event.fire({
