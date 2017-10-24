@@ -932,7 +932,7 @@ export function generateClientLibrary() {
 
     if (existing) {
       Object.assign(existing, doc);
-      fireDocUpdate(existing, 'insert');
+      fireDocUpdate(existing, 'update');
       return existing;
     } else {
       if (!(doc instanceof this)) {
@@ -947,7 +947,7 @@ export function generateClientLibrary() {
         this.values = [ doc ];
       }
 
-      fireDocUpdate(doc, 'update');
+      fireDocUpdate(doc, 'insert');
       return doc;
     }
   };
