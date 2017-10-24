@@ -29,7 +29,8 @@
         "curly": false,
         "forin": false,
         "no-conditional-assignment": false,
-        "label-position": false
+        "label-position": false,
+        "no-bitwise": false
     },
     "rules": {
         "quotemark": [

@@ -474,6 +474,40 @@ function valueMatches(match, value) {
           }
           break;
 
+        case '$bitsAllClear':
+          if ((value & match.$bitsAllClear) !== 0x0) {
+            return false;
+          }
+
+          break;
+
+        case '$bitsAllSet': {
+          const v = match.$bitsAllSet;
+          if ((value & v) !== v) {
+            return false;
+          }
+
+          break;
+        }
+
+        case '$bitsAnyClear': {
+          const v = match.$bitsAnyClear;
+          if ((value & v) === v) {
+            return false;
+          }
+
+          break;
+        }
+
+        case '$bitsAnySet': {
+          const v = match.$bitsAnySet;
+          if ((value & v) === 0x0) {
+            return false;
+          }
+
+          break;
+        }
+
         default:
           throw new Error('op ' + op + ' not supported (yet)');
       }

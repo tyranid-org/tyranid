@@ -274,6 +274,38 @@ export function add() {
         test({ $and: [ { foo: 1 }, { bar: 1 } ] }, {},                   false);
         test({ $and: [ { foo: 1 }, { bar: 1 } ] }, { foo: 1, bar: 1 },   true);
       });
+
+      it('should work with $bitsAllClear', () => {
+        test({ foo: { $bitsAllClear: 3 } }, { foo: 4 }, true);
+        test({ foo: { $bitsAllClear: 3 } }, { foo: 1 }, false);
+        test({ foo: { $bitsAllClear: 3 } }, { foo: 3 }, false);
+      });
+
+      it('should work with $bitsAllSet', () => {
+        test({ foo: { $bitsAllSet: 3 } }, { foo: 3 }, true);
+        test({ foo: { $bitsAllSet: 3 } }, { foo: 1 }, false);
+        test({ foo: { $bitsAllSet: 3 } }, { foo: 7 }, true);
+      });
+
+      it('should work with $bitsAnyClear', () => {
+        test({ foo: { $bitsAnyClear: 3 } }, { foo: 3 }, false);
+        test({ foo: { $bitsAnyClear: 3 } }, { foo: 2 }, true);
+        test({ foo: { $bitsAnyClear: 3 } }, { foo: 0 }, true);
+      });
+
+      it('should work with $bitsAnySet', () => {
+        test({ foo: { $bitsAnySet: 3 } }, { foo: 3 }, true);
+        test({ foo: { $bitsAnySet: 3 } }, { foo: 1 }, true);
+        test({ foo: { $bitsAnySet: 3 } }, { foo: 7 }, true);
+        test({ foo: { $bitsAnySet: 3 } }, { foo: 4 }, false);
+      });
+
+      it('should work with combination', () => {
+        test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 5 },  true);
+        test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 13 }, false);
+        test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 4 },  false);
+        test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 6 },  true);
+      });
     });
 
     describe('fromClientQuery', () => {
