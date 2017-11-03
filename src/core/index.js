@@ -12,7 +12,7 @@ async function syncIndexes(col) {
     try {
       existingIndexes = await col.db.indexes();
     } catch (err) {
-      if (/no (collection|database)/.test(err.message)) {
+      if (/no (collection|database)|doesn.*exist/.test(err.message)) {
         return;
       } else {
         throw err;
