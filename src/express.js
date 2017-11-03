@@ -954,17 +954,22 @@ export function generateClientLibrary() {
 
   Collection.prototype.on = ${es5Fn(Collection.prototype.on)};
 
-  if (window.io) {
-    Collection.prototype.subscribe = function(query, cancel) {
-      return ajax({
-        url: '/api/' + this.def.name + '/subscribe',
-        data: { opts: JSON.stringify({ query, cancel }) }
-      }).catch(function(err) {
-        console.log(err);
-      });
-    };
+  /**
+   * web socket stuff
+   */
+  var socketLibrary;
+  var socketLibraryRegistered = false;
 
-    Tyr.socket = window.io();
+  Tyr.setSocketLibrary = function(io) {
+    if (socketLibraryRegistered) {
+      console.warn('already registed a socket library, taking no action.');
+      return;
+    }
+
+    socketLibrary = io;
+    socketLibraryRegistered = true;
+
+    Tyr.socket = socketLibrary();
 
     Tyr.socket.on('subscriptionEvent', function(data) {
       var col = Tyr.byId[data.colId];
@@ -974,6 +979,29 @@ export function generateClientLibrary() {
       });
     });
   }
+
+  Collection.prototype.subscribe = function(query, cancel) {
+    if (!socketLibrary) {
+      const name = this.prototype.constructor.name;
+      console.warn(
+        'Calling subscribe() for collection '
+        + name +
+        ' without a socket implementation, make sure to call ' +
+        'Tyr.setSocketLibrary()'
+      );
+      return Promise.resolve();
+    }
+    return ajax({
+      url: '/api/' + this.def.name + '/subscribe',
+      data: { opts: JSON.stringify({ query, cancel }) }
+    }).catch(function(err) {
+      console.log(err);
+    });
+  };
+
+
+
+
 
   Tyr.Collection = Collection;
   var def;
