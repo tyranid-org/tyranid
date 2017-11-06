@@ -543,7 +543,7 @@ declare namespace Tyranid {
     }
 
     export interface Component {
-      boot(stage: string, pass: number): string | string[];
+      boot(stage: string, pass: number): Promise<string | string[] | void>;
       clientCode(code: string): string;
       compileCollection(compiler: any, field: CollectionStatic): void;
       compileField(compiler: any, field: FieldInstance): void;
