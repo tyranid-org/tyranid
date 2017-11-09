@@ -387,23 +387,21 @@ export default class Collection {
     if (collection.isStatic()) {
       return ids.map(id => collection.byIdIndex[id]);
     } else {
-      const opts = combineOptions(options, { query: { [this.def.primaryKey.field]: { $in: ids } } });
+      const idFieldName = this.def.primaryKey.field;
+      const opts = combineOptions(options, { query: { [idFieldName]: { $in: ids } } });
 
       const docs = await collection.findAll(opts);
 
       if (opts.parallel) {
         // ensure that byIds creates a parallel array to ids
-        return ids.map(id => {
-          for (let di = 0; di < docs.length; di++) {
-            const d = docs[di];
 
-            if (Tyr.isEqual(d._id, id)) {
-              return d;
-            }
-          }
+        // using string ids due to possibility of two ObjectIds being !== but yet still .equal()
+        const docsByStringId = {};
+        for (const doc of docs) {
+          docsByStringId['' + doc[idFieldName]] = doc;
+        }
 
-          return null;
-        });
+        return ids.map(id => docsByStringId['' + id] || null);
       } else {
         return docs;
       }
