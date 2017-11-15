@@ -307,6 +307,15 @@ export function add() {
         test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 6 },  true);
         test({ foo: { $bitsAnySet: 3, $bitsAllSet: 4, $bitsAllClear: 8 } }, { foo: 7 },  true);
       });
+
+      it('should null-check nested object paths', () => {
+        test({ foo: { bar: { baz: 3 } } }, {},                           false);
+        test({ foo: { bar: { baz: 3 } } }, { foo: {} },                  false);
+        test({ foo: { bar: { baz: 3 } } }, { foo: { bar: {} } },         false);
+        test({ foo: { bar: { baz: 3 } } }, { foo: { bar: { baz: 4 } } }, false);
+        test({ foo: { bar: { baz: 3 } } }, { foo: { bar: { baz: 3 } } }, true);
+      });
+
     });
 
     describe('fromClientQuery', () => {

@@ -455,7 +455,7 @@ function valueMatches(match, value) {
 
   for (const op in match) {
     if (!op.startsWith('$')) {
-      if (!valueMatches(match[op], value[op])) {
+      if (!value || !valueMatches(match[op], value[op])) {
         return false;
       }
     } else {
