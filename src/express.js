@@ -931,7 +931,20 @@ export function generateClientLibrary() {
     const existing = this.byIdIndex[doc._id];
 
     if (existing) {
-      Object.assign(existing, doc);
+      for (const f of this.fields) {
+        const fd = field.def;
+        // skip past read-only/computed properties
+        if (!fd.get || fd.set) {
+          const n = f.name,
+                v = doc[n];
+          if (v !== undefined) {
+            existing[n] = v;
+          }
+        }
+
+        // TODO:  copy unknown properties?
+      }
+
       fireDocUpdate(existing, 'update');
       return existing;
     } else {
