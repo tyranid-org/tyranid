@@ -566,15 +566,15 @@ export function generateClientLibrary() {
         _.assign(this, data);
       }
 
-      const paths = this.$model.paths;
-      for (const fk in paths) {
-        const field = paths[fk],
-              dv = field.def.defaultValue;
+      var paths = this.$model.paths;
+      for (var fk in paths) {
+        var field = paths[fk],
+            dv = field.def.defaultValue;
 
         if (dv !== undefined) {
-          const np = field.namePath;
+          var np = field.namePath;
 
-          const v = np.get(this);
+          var v = np.get(this);
 
           if (v === undefined) {
             np.set(this, dv);
