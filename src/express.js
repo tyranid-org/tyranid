@@ -1181,9 +1181,15 @@ export default function connect(app, auth, opts) {
         const sessionId = unescape(rawSessionId[1]).split('.')[0].slice(2);
 
         Tyr.sessions.get(sessionId, async (error, session) => {
-          const userIdStr = session.passport.user;
-          if (userIdStr) {
-            socket.userId = ObjectId(userIdStr);
+          if (session) {
+            const userIdStr = session.passport.user;
+            if (userIdStr) {
+              socket.userId = ObjectId(userIdStr);
+            }
+          }
+
+          if (error) {
+            console.error(error);
           }
         });
       }
