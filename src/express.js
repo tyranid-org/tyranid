@@ -251,6 +251,7 @@ function translateClass(cls) {
 //
 //        NOTE that if it is exposed as a build task, then dynamic schema metadata will still
 //        need to be handled!
+// N
 export function generateClientLibrary() {
   // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
@@ -259,12 +260,12 @@ export function generateClientLibrary() {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
-    module.exports = factory(require('jquery'), require('lodash'));
+    module.exports = factory(require('lodash'));
   } else {
     // Browser globals (root is window)
-    root.Tyr = factory(root.jQuery, root._);
+    root.Tyr = factory(root._);
   }
-})((typeof window !== 'undefined' ? window : this), function($, _) {
+})((typeof window !== 'undefined' ? window : this), function(_) {
   var Tyr = { init: init };
   Tyr.Tyr = Tyr;
 
@@ -272,7 +273,6 @@ export function generateClientLibrary() {
 
   function init() { //... begin Tyr.init();
 
-  if (!$) throw new Error("jQuery not available to Tyranid client");
   if (!_) throw new Error("Lodash not available to Tyranid client ");
 
   _.assign(Tyr, {
@@ -283,17 +283,12 @@ export function generateClientLibrary() {
 
   var byName = {};
 
-  // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest or fetch directly
-  function ajax(opts) {
-    var deferred = $.ajax(opts);
+  function responseToJson(response) {
+    return response.json();
+  }
 
-    return new Promise(function(resolve, reject) {
-      deferred.then(function(data, textStatus, jqXHR) {
-        resolve(data);
-      }, function(jqXHR, textStatus, errorThrown) {
-        reject(errorThrown);
-      });
-    });
+  function ajax(opts) {
+    return fetch(opts).then(responseToJson);
   }
 
   // needed so grid can get at it ... document this or @private?
