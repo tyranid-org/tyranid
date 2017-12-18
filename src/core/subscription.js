@@ -180,7 +180,7 @@ Subscription.boot = async function(stage, pass) {
 };
 
 Collection.prototype.subscribe = async function(query, user, cancel) {
-  //con sole.log(Tyr.instanceId + ' *** subscribe:', query, user, cancel);
+  //con sole.log(Tyr.instanceId + ' *** ' + this.def.name + ' subscribe:', query, user.fullName, cancel);
   const queryStr = JSON.stringify(query);
 
   if (!query) {

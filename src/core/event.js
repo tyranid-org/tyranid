@@ -175,7 +175,7 @@ export default class Event {
     //con sole.log(Tyr.instanceId + ' *** broadcasting to ', instances.map(i => i._id));
     for (const instance of instances) {
       delete event._id;
-      Tyr.db.collection(instance._id + '_event').save(event);
+      await Tyr.db.collection(instance._id + '_event').save(event);
     }
   }
 

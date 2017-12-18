@@ -624,6 +624,8 @@ declare namespace Tyranid {
 
       subscribe(query: MongoQuery, cancel?: boolean): void;
 
+      customFields(): Promise<{ [key: string]: FieldInstance }>;
+
       // mongodb methods
       remove(opts: Options_Remove): Promise<void>;
       save(rawDoc: any, opts?: Options_Save): Promise<T>;

@@ -917,6 +917,7 @@ export function generateClientLibrary() {
         const event = {
           collection: collection,
           document: doc,
+          documents: [ doc ], // TODO:  change this to be an Event instance on the client so this isn't needed
           type: type
         };
 
@@ -931,14 +932,19 @@ export function generateClientLibrary() {
     const existing = this.byIdIndex[doc._id];
 
     if (existing) {
-      for (const f of this.fields) {
-        const fd = field.def;
-        // skip past read-only/computed properties
-        if (!fd.get || fd.set) {
-          const n = f.name,
-                v = doc[n];
-          if (v !== undefined) {
-            existing[n] = v;
+      const fields = this.fields;
+      for (const fName in fields) {
+        if (fields.hasOwnProperty(fName)) {
+          const f = fields[fName];
+          const fd = f.def;
+          // skip past read-only/computed properties
+
+          if (!fd.get || fd.set) {
+            const n = f.name,
+                  v = doc[n];
+            if (v !== undefined) {
+              existing[n] = v;
+            }
           }
         }
 
@@ -1011,10 +1017,6 @@ export function generateClientLibrary() {
       console.log(err);
     });
   };
-
-
-
-
 
   Tyr.Collection = Collection;
   var def;
