@@ -66,7 +66,7 @@ declare namespace Tyranid {
      * utility methods
      */
     export function isEqual(a: any, b: any): boolean;
-    export function isSameId(a: string | IdType, b: string | IdType): boolean;
+    export function isSameId(a: string | IdType | null | undefined, b: string | IdType | null | undefined): boolean;
     export function indexOf(arr: any[], item: any): number;
     export function addToSet(set: any[], item: any): void;
     export function pullAll(arr: any[], item: any): void;
