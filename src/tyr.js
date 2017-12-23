@@ -159,6 +159,30 @@ const Tyr = {
     return _.isEqualWith ? _.isEqualWith(a, b, equalCustomizer) : _.isEqual(a, b, equalCustomizer);
   },
 
+  isSameId(a, b) {
+    if (a) {
+      if (b) {
+        if (typeof a === 'string') {
+          if (typeof b === 'string') {
+            return a === b;
+          } else {
+            return a === b.toString();
+          }
+        } else if (typeof b === 'string') {
+          return a.toString() === b;
+        } else {
+          return a.equals(b);
+        }
+      } else {
+        return false;
+      }
+    } else if (b) {
+      return false;
+    }
+
+    return true;
+  },
+
   isObject(value) {
     // want to treat ObjectIds as primitive values in most places
     return _.isObject(value) && value.constructor.name !== 'ObjectID';

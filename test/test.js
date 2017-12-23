@@ -160,6 +160,25 @@ describe('tyranid', function() {
       ).to.be.true;
     });
 
+    it('should support isSameId()', () => {
+      const tests = [
+        [ null,            null,            true ],
+        [ oid1,            null,            false ],
+        [ undefined,       oid1,            false ],
+        [ oid1,            oid2,            false ],
+        [ oid1,            oid1_,           true ],
+        [ oid1,            oid1.toString(), true ],
+        [ oid1.toString(), oid1.toString(), true ],
+        [ oid1.toString(), oid2.toString(), false ],
+      ];
+
+      for (const test of tests) {
+        expect(
+          Tyr.isSameId(test[0], test[1])
+        ).to.equal(test[2]);
+      }
+    });
+
     it('should support pullAll', () => {
       const a = [oid1, oid2, oid3];
       Tyr.pullAll(a, oid2_);
