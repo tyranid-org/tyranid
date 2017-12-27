@@ -607,7 +607,7 @@ declare namespace Tyranid {
       links(opts?: any): FieldInstance[];
 
       labelFor(doc: MaybeRawDocument): string;
-      labels(text: string): LabelList;
+      labels(text: string | string[]): LabelList;
       mixin(def: FieldDefinition): void;
 
       on(opts: EventOnOptions): () => void;

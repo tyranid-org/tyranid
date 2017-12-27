@@ -355,7 +355,7 @@ export function generateClientLibrary() {
     }
 
     $share() {
-      this.$model.indexById[this._id] = this;
+      this.$model.byIdIndex[this._id] = this;
     }
 
     $toPlain() {
@@ -512,6 +512,7 @@ export function generateClientLibrary() {
       contentType: 'application/json'
     });
   };
+
 
   ${ValidationError.toString()}
   Tyr.ValidationError = ValidationError;
@@ -823,26 +824,42 @@ export function generateClientLibrary() {
   Collection.prototype.labels = function(search) {
     var col  = this;
 
-    if (col.isStatic() ) {
-      var values = col.def.values;
-
-      if (search) {
-        var re = new RegExp(search, 'i');
-        values = values.filter(function(val) {
-          return re.test(val.$label);
-        });
+    if (Array.isArray(search)) {
+      if (col.isStatic() ) {
+        var byIdIndex = CollectionInstance.byIdIndex;
+        return search.map(id => byIdIndex[id]);
       }
 
-      return values;
-    }
+      return ajax({
+        url: '/api/' + col.def.name + '/labelsById',
+        data: { opts: JSON.stringify(search) }
+      //}).then(function(docs) {
+        //return docs.map(function(doc) { return new col(doc); });
+      }).catch(function(err) {
+        console.log(err);
+      });
+    } else {
+      if (col.isStatic() ) {
+        var values = col.def.values;
 
-    return ajax({
-      url: '/api/' + col.def.name + '/label/' + (search || '')
-    //}).then(function(docs) {
-      //return docs.map(function(doc) { return new col(doc); });
-    }).catch(function(err) {
-      console.log(err);
-    });
+        if (search) {
+          var re = new RegExp(search, 'i');
+          values = values.filter(function(val) {
+            return re.test(val.$label);
+          });
+        }
+
+        return values;
+      }
+
+      return ajax({
+        url: '/api/' + col.def.name + '/label/' + (search || '')
+      //}).then(function(docs) {
+        //return docs.map(function(doc) { return new col(doc); });
+      }).catch(function(err) {
+        console.log(err);
+      });
+    }
   };
 
   Collection.prototype.save = function(doc) {
@@ -1405,6 +1422,26 @@ Collection.prototype.connect = function({ app, auth, http }) {
       }
 
       /*
+       *     /api/NAME/labelsById
+       */
+
+      if (col.labelField && (express.rest || express.get || express.labels)) {
+        r = app.route('/api/' + name + '/labelsById');
+        r.all(auth);
+        r.get(async (req, res) => {
+          try {
+            const idField = col.fields._id,
+                  ids = JSON.parse(req.query.opts).map(id => idField.type.fromClient(idField, id)),
+                  results = await col.findAll({ query: { _id: { $in: ids } }, fields: { [col.labelField.path]: 1 }, auth: req.user });
+            res.json(results.map(r => r.$toClient()));
+          } catch (err) {
+            console.log(err.stack);
+            res.sendStatus(500);
+          }
+        });
+      }
+
+      /*
        *     /api/NAME/:id
        */
 
@@ -1477,7 +1514,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
        *     /api/NAME/label/:search
        */
 
-      if (col.labelField && (express.rest || express.get)) {
+      if (col.labelField && (express.rest || express.get || express.labels)) {
         r = app.route('/api/' + name + '/label/:search');
         r.all(auth);
         r.get(async (req, res) => {
