@@ -257,7 +257,7 @@ NamePath.prototype.get = function(obj) {
   return values;
 };
 
-NamePath.prototype.set = function(obj, value) {
+NamePath.prototype.set = function(obj, value, opts) {
   const np     = this,
         path   = np.path,
         fields = np.fields,
@@ -272,6 +272,7 @@ NamePath.prototype.set = function(obj, value) {
       } else if (_.isObject(obj)) {
         obj[path[pi]] = value;
       } else {
+        if (opts && opts.bestEffort && !obj) return;
         throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
       }
 
@@ -289,6 +290,7 @@ NamePath.prototype.set = function(obj, value) {
           walk(pi, v);
         }
       } else if (!_.isObject(obj)) {
+        if (opts && opts.bestEffort && !obj) return;
         throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
       } else {
         if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {

@@ -568,6 +568,7 @@ export function generateClientLibrary() {
       }
 
       var paths = this.$model.paths;
+      var setOpts = { bestEffort: true };
       for (var fk in paths) {
         var field = paths[fk],
             dv = field.def.defaultValue;
@@ -578,7 +579,7 @@ export function generateClientLibrary() {
           var v = np.get(this);
 
           if (v === undefined) {
-            np.set(this, dv);
+            np.set(this, dv, setOpts);
           }
         }
       }
@@ -822,19 +823,31 @@ export function generateClientLibrary() {
   };
 
   Collection.prototype.labels = function(search) {
-    var col  = this;
+    const col = this;
 
     if (Array.isArray(search)) {
+      const byIdIndex = this.byIdIndex;
+
+      const results = () => search.map(id => byIdIndex[id]);
+
       if (col.isStatic() ) {
-        var byIdIndex = CollectionInstance.byIdIndex;
-        return search.map(id => byIdIndex[id]);
+        return results();
+      }
+
+      const missing = search.filter(id => !byIdIndex[id]);
+      if (!missing.length) {
+        return results();
       }
 
       return ajax({
         url: '/api/' + col.def.name + '/labelsById',
-        data: { opts: JSON.stringify(search) }
-      //}).then(function(docs) {
-        //return docs.map(function(doc) { return new col(doc); });
+        data: { opts: JSON.stringify(missing) }
+      }).then(docs => {
+        const docs = docs.map(doc => new col(doc));
+        for (const d of docs) {
+          this.cache(d, true);
+        }
+        return results();
       }).catch(function(err) {
         console.log(err);
       });
@@ -945,7 +958,7 @@ export function generateClientLibrary() {
     }
   }
 
-  Collection.prototype.cache = function(doc) {
+  Collection.prototype.cache = function(doc, silent) {
     const existing = this.byIdIndex[doc._id];
 
     if (existing) {
@@ -968,7 +981,7 @@ export function generateClientLibrary() {
         // TODO:  copy unknown properties?
       }
 
-      fireDocUpdate(existing, 'update');
+      if (!silent) fireDocUpdate(existing, 'update');
       return existing;
     } else {
       if (!(doc instanceof this)) {
@@ -983,7 +996,7 @@ export function generateClientLibrary() {
         this.values = [ doc ];
       }
 
-      fireDocUpdate(doc, 'insert');
+      if (!silent) fireDocUpdate(doc, 'insert');
       return doc;
     }
   };
