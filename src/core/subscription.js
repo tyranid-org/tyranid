@@ -294,13 +294,13 @@ async function handleSubscriptionEvent(event) {
       const queryDef = listener.queries[queryStr];
 
       if (mQuery) {
-        if (Query.intersection(queryDef.query, mQuery)) {
+        if (Query.intersection(queryDef.queryObj, mQuery)) {
           for (const userId in queryDef.users) {
             userIds[userId] = true;
           }
         }
       } else { // if mDoc
-        if (Query.matches(queryDef.query, mDoc)) {
+        if (Query.matches(queryDef.queryObj, mDoc)) {
           for (const userId in queryDef.users) {
             userIds[userId] = true;
           }
