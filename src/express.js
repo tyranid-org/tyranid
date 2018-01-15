@@ -822,58 +822,104 @@ export function generateClientLibrary() {
     });
   };
 
+
+  // *** Labels
+
+  Collection.prototype._batchLabelQueries = function() {
+    const { _labelQueries, byIdIndex } = this;
+
+    // let labels get queued up in the next event tick
+    this._labelQueries = undefined;
+
+    // TODO:  use Map once < IE 11 is a bad memory (or maybe polyfill), this current algorithm
+    //        only works with string keys until this change is made (it would be easy to check
+    //        the key metadata and do a parseInt() if we need to support string keys sooner
+    //        (but most/all integer keyed collections are static, which bypass this already)
+    const idsSeen = {};
+    for (const lq of _labelQueries) {
+      for (const id of lq.ids) {
+        idsSeen[id] = true;
+      }
+    }
+    const allIds = Object.keys(idsSeen);
+
+    const resolve = () => {
+      for (const lq of _labelQueries) {
+        lq.resolve(lq.ids.map(id => byIdIndex[id]);
+      }
+    }
+
+    const missingIds = allIds.filter(id => !byIdIndex[id]);
+    if (!missingIds.length) {
+      return resolve();
+    }
+
+    return ajax({
+      url: '/api/' + this.def.name + '/labelsById',
+      data: { opts: JSON.stringify(missingIds) }
+    }).then(docs => {
+      const docs = docs.map(doc => new this(doc));
+      for (const d of docs) {
+        this.cache(d, true);
+      }
+
+      resolve();
+    }).catch(err => {
+      for (const lq of _labelQueries) {
+        lq.reject(err);
+      }
+    });
+  };
+
   Collection.prototype.labels = function(search) {
-    const col = this;
 
     if (Array.isArray(search)) {
       const byIdIndex = this.byIdIndex;
-
-      const results = () => search.map(id => byIdIndex[id]);
-
-      if (col.isStatic() ) {
-        return results();
+      if (this.isStatic()) {
+        return search.map(id => byIdIndex[id]);
       }
 
-      const missing = search.filter(id => !byIdIndex[id]);
-      if (!missing.length) {
-        return results();
+      if (search.every(id => byIdIndex[id])) {
+        return Promise.resolve(search.map(id => byIdIndex[id]));
       }
 
-      return ajax({
-        url: '/api/' + col.def.name + '/labelsById',
-        data: { opts: JSON.stringify(missing) }
-      }).then(docs => {
-        const docs = docs.map(doc => new col(doc));
-        for (const d of docs) {
-          this.cache(d, true);
-        }
-        return results();
-      }).catch(function(err) {
-        console.log(err);
+      let lqs = this._labelQueries;
+      if (!lqs) {
+        lqs = this._labelQueries = [];
+        window.setTimeout(this._batchLabelQueries.bind(this), 0);
+      }
+
+      return new Promise((resolve, reject) => {
+        lqs.push({
+          ids: search,
+          resolve,
+          reject
+        });
       });
+
     } else {
-      if (col.isStatic() ) {
-        var values = col.def.values;
+      if (this.isStatic() ) {
+        var values = this.def.values;
 
         if (search) {
           var re = new RegExp(search, 'i');
-          values = values.filter(function(val) {
-            return re.test(val.$label);
-          });
+          values = values.filter(val => re.test(val.$label));
         }
 
         return values;
       }
 
       return ajax({
-        url: '/api/' + col.def.name + '/label/' + (search || '')
+        url: '/api/' + this.def.name + '/label/' + (search || '')
       //}).then(function(docs) {
-        //return docs.map(function(doc) { return new col(doc); });
-      }).catch(function(err) {
-        console.log(err);
-      });
+        //return docs.map(doc => new this(doc));
+      }).catch(err => console.log(err));
     }
   };
+
+
+
+  // *** Save
 
   Collection.prototype.save = function(doc) {
 
