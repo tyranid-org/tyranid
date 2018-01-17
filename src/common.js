@@ -265,7 +265,7 @@ export function toClient(col, doc, opts) {
 
   function projected(key) {
     if (!proj) {
-      return true;
+      return key !== '_history';
     }
 
     const v = proj[key];
@@ -273,7 +273,7 @@ export function toClient(col, doc, opts) {
   }
 
   const fields = col ? col.fields : null;
-  _.each(doc, function(v, k) {
+  _.each(doc, (v, k) => {
     let field;
 
     if (!projected(k)) {

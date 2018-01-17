@@ -1654,6 +1654,17 @@ describe('tyranid', function() {
         expect(userc._id).to.be.undefined;
       });
 
+      it( '_history should be excluded by default', async () => {
+        const user = await User.byId(4);
+        user._history = [];
+        let userc = user.$toClient();
+
+        expect(userc._history).to.be.undefined;
+
+        userc = user.$toClient({ fields: { _history: true } });
+        expect(userc._history).to.be.defined;
+      });
+
       it( 'should support conditional toClient values', () => {
         let user = new User({ _id: 222, name: { first: 'Some', last: 'User' }, ssn: '111-23-1232', favoriteColor: 'blue' });
         let userc = user.$toClient();
