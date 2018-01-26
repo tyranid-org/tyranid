@@ -2111,7 +2111,7 @@ describe('tyranid', function() {
 
       it('should support fields', async () => {
         let result = await fetch(urlPrefix + '/api/user/custom', {
-          method: 'POST',
+          method: 'put',
           headers: {
             'Content-Type': 'application/json'
           },
@@ -2126,7 +2126,7 @@ describe('tyranid', function() {
         expect(json.fields.custom.fields.nested1.label).to.eql('Nested 1');
 
         result = await fetch(urlPrefix + '/api/organization/custom', {
-          method: 'POST',
+          method: 'put',
           headers: {
             'Content-Type': 'application/json'
           },

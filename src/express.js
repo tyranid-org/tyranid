@@ -960,12 +960,12 @@ export function generateClientLibrary() {
     }
 
     return ajax({
-      type: 'POST',
+      type: 'put',
       url: '/api/' + col.def.name + '/custom',
-      data: JSON.parse(JSON.stringify(objMatch)), // convert document to pojo
-      dataType: 'json'
+      data: JSON.stringify(objMatch),
+      contentType: 'application/json'
     }).then(function(def) {
-      //def = JSON.parse(def);
+      def = JSON.parse(def);
       var fields = def.fields;
 
       _.each(fields, function(fieldDef, fieldName) {
@@ -1433,7 +1433,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       r.all(auth);
 
       if (express.rest || express.fields) {
-        r.post(async (req, res) => {
+        r.put(async (req, res) => {
           try {
             let obj = req.body;
             if (obj) {
