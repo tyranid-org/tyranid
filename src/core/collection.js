@@ -108,7 +108,7 @@ async function preSave(collection, obj, opts) {
           denormal = collection.denormal;
     let promises, pi = 0;
 
-    if (vFields.length) {
+    if (vFields && vFields.length) {
       if (Array.isArray(obj)) {
         promises = new Array(obj.length * vFields.length + (denormal ? 1 : 0));
 
