@@ -45,6 +45,32 @@ interface LocalListener {
 
 let localListeners /*: LocalListener*/ = {};
 
+async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
+  //con sole.log(Tyr.instanceId + ' *** matched');
+  //con sole.log(Tyr.instanceId + ' *** queryDef.instances', queryDef.instances);
+  const promises = [];
+
+  for (const instanceId in queryDef.instances) {
+    const event = new Tyr.Event({
+      collection: Subscription,
+      dataCollectionId: colId,
+      query: refinedQuery,
+      document: refinedDocument,
+      type: 'subscriptionEvent',
+      when: 'pre',
+      instanceId: instanceId
+    });
+
+    if (instanceId === Tyr.instanceId) {
+      handleSubscriptionEvent(event);
+    } else {
+      promises.push(Tyr.Event.fire(event));
+    }
+  }
+
+  return Promise.all(promises);
+}
+
 async function parseSubscriptions(subscription) {
   //con sole.log('parseSubscriptions(), Tyr.instanceId=', Tyr.instanceId);
   const subs = subscription ? [ subscription ] : await Subscription.findAll({});
@@ -73,58 +99,33 @@ async function parseSubscriptions(subscription) {
         handler: async event => {
           //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:');//, event);
           const { document, query, _documents } = event;
+          const promises = [];
 
           for (const queryStr in listener.queries) {
             const queryDef = listener.queries[queryStr];
-            let refinedDocument = document,
-                refinedQuery = query;
-
-            async function fireEvent() {
-              //con sole.log(Tyr.instanceId + ' *** matched');
-              //con sole.log(Tyr.instanceId + ' *** queryDef.instances', queryDef.instances);
-              for (const instanceId in queryDef.instances) {
-                const event = new Tyr.Event({
-                  collection: Subscription,
-                  dataCollectionId: colId,
-                  query: refinedQuery,
-                  document: refinedDocument,
-                  type: 'subscriptionEvent',
-                  when: 'pre',
-                  instanceId: instanceId
-                });
-
-                if (instanceId === Tyr.instanceId) {
-                  handleSubscriptionEvent(event);
-                } else {
-                  await Tyr.Event.fire(event);
-                }
-              }
-            }
 
             if (document) {
-              if (!Query.matches(queryDef.queryObj, document)) continue;
-              refinedQuery = undefined;
-
-              await fireEvent();
-
-            } else if (_documents) {
-              refinedQuery = undefined;
-
-              for (const doc of _documents) {
-                if (Query.matches(queryDef.queryObj, doc)) {
-                  refinedDocument = doc;
-                  await fireEvent();
-                }
+              if (Query.matches(queryDef.queryObj, document)) {
+                promises.push(fireEvent(colId, queryDef, document));
               }
 
+            } else if (_documents) {
+
+              promises.push(
+                ..._documents
+                  .filter(doc => Query.matches(queryDef.queryObj, doc))
+                  .map(doc => fireEvent(colId, queryDef, doc))
+              );
+
             } else /*if (query)*/ {
-              refinedQuery = Query.intersection(queryDef.queryObj, query);
-              if (!refinedQuery) continue;
-
-              await fireEvent();
+              const refinedQuery = Query.intersection(queryDef.queryObj, query);
+              if (refinedQuery) {
+                promises.push(fireEvent(colId, queryDef, null, refinedQuery));
+              }
             }
-
           }
+
+          await Promise.all(promises);
         }
       });
 
