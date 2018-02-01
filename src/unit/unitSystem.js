@@ -7,6 +7,7 @@ const UnitSystem = new Collection({
   name: 'unitSystem',
   enum: true,
   client: false,
+  internal: true,
   fields: {
     _id:     { is: 'integer' },
     name:    { is: 'string', labelField: true },

@@ -73,6 +73,7 @@ const LogLevel = new Collection({
   id: '_l1',
   name: 'tyrLogLevel',
   client: true,
+  internal: true,
   enum: true,
   fields: {
     _id:    { is: 'integer' },
@@ -95,6 +96,7 @@ const LogEvent = new Collection({
   id: '_l2',
   name: 'tyrLogEvent',
   client: false,
+  internal: true,
   enum: true,
   fields: {
     _id:   { is: 'string' },
@@ -112,6 +114,7 @@ const Log = new Collection({
   id: '_l0',
   name: 'tyrLog',
   client: false,
+  internal: true,
   fields: {
     _id:   { is: 'mongoid' },
     l:     { link: 'tyrLogLevel',  label: 'Level'       },

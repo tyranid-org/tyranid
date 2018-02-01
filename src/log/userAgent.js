@@ -5,6 +5,7 @@ const UserAgent = new Tyr.Collection({
   id: '_u4',
   name: 'tyrUserAgent',
   client: false,
+  internal: true,
   fields: {
     _id:  { is: 'mongoid' },
     ua:   { is: 'string', label: 'User Agent' }

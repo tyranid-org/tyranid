@@ -11,6 +11,7 @@ const Subscription = new Collection({
   id: '_t3',
   name: 'tyrSubscription',
   client: false,
+  internal: true,
   fields: {
     _id: { is: 'mongoid' },
     u:   { link: 'user', label: 'User' },

@@ -10,6 +10,7 @@ export const SchemaType = new Collection({
   name: 'tyrSchemaType',
   enum: true,
   client: false,
+  internal: true,
   fields: {
     _id:  { is: 'integer' },
     name: { is: 'string', labelField: true }
@@ -26,6 +27,7 @@ const Schema = new Collection({
   id: '_t1',
   name: 'tyrSchema',
   client: false,
+  internal: true,
   fields: {
     _id:        { is:   'mongoid' },
     collection: { is:   'string' }, // this is the collection id, i.e. t01

@@ -494,6 +494,14 @@ describe('tyranid', function() {
       });
     });
 
+    describe('internal schemas', () => {
+      it('should show internal collections as internal', () => {
+        for (const c of Tyr.collections) {
+          expect(!!c.def.internal).to.eql(c.id.startsWith('_'));
+        }
+      });
+    });
+
     describe('secure', function() {
       it('should add properties passed to secure.query', async function() {
         const user = await User.findOne({});

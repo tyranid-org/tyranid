@@ -9,6 +9,7 @@ const UnitType = new Collection({
   name: 'unitType',
   enum: true,
   client: false,
+  internal: true,
   fields: {
     _id:              { is: 'integer' },
     name:             { is: 'string', labelField: true },

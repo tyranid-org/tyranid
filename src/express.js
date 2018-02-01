@@ -1116,6 +1116,15 @@ export function generateClientLibrary() {
     enum: true;`;
       }
 
+      if (col.def.internal) {
+        file += `
+    internal: true;`;
+      }
+
+      if (col.def.generated) {
+        file += `
+    generated: true;`;
+      }
       const ser = new Serializer('.', 2);
       ser.fields(col.fields);
       if (def.methods) {

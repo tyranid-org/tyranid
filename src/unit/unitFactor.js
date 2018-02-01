@@ -7,6 +7,7 @@ const UnitFactor = new Collection({
   name: 'unitFactor',
   enum: true,
   client: false,
+  internal: true,
   fields: {
     _id:      { is: 'integer' },
     symbol:   { is: 'string' },

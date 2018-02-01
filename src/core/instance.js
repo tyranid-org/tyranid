@@ -12,6 +12,7 @@ const Instance = new Collection({
   id: '_t2',
   name: 'tyrInstance',
   client: false,
+  internal: true,
   fields: {
     _id:         { is: 'string' },
     lastAliveOn: { is: 'date' }

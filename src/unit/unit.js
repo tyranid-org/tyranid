@@ -7,6 +7,7 @@ const Unit = new Collection({
   name: 'unit',
   enum: true,
   client: false,
+  internal: true,
   fields: {
     _id:              { is: 'integer' },
     sid:              { is: 'string', label: 'String ID', note: 'a unique id like _id, used when integers cannot be used' },

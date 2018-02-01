@@ -17,6 +17,7 @@ const clr       = chalk.hex('#cc5500'),
 const MigrationStatus = new Collection({
   id: '_m1',
   name: 'tyrMigrationStatus',
+  internal: true,
   fields: {
     _id: { is: 'string' },
     appliedOn : { is: 'date'},
