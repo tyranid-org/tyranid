@@ -78,7 +78,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 // oidX and oidX_ are equals() but not ===
-const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
+const oid1  = new ObjectId('55bb8ecff71d45b995ff8c83'),
       oid1_ = new ObjectId('55bb8ecff71d45b995ff8c83'),
       oid2  = new ObjectId('5567f2a8387fa974fc6f3a5a'),
       oid2_ = new ObjectId('5567f2a8387fa974fc6f3a5a'),

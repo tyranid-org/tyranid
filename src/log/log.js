@@ -69,6 +69,16 @@ function adaptIllegalKeyChar(q) {
   return q;
 }
 
+const logLevelValues = [
+  [     1, 'trace', 'T',    'trace'   ],
+  [     2, 'log',   'L',    'log'     ],
+  [     3, 'info',  'I',    'info'    ],
+  [     4, 'warn',  'W',    'warn'    ],
+  [     5, 'error', 'E',    'error'   ],
+  [     6, 'fatal', 'F',    'error'   ],
+  [     7, 'never', 'N',    undefined ]
+];
+
 const LogLevel = new Collection({
   id: '_l1',
   name: 'tyrLogLevel',
@@ -82,13 +92,8 @@ const LogLevel = new Collection({
     method: { is: 'string', help: 'The console.X() method to use when logging to the console.' }
   },
   values: [
-    [ '_id', 'name',  'code', 'method' ],
-    [     1, 'trace', 'T',    'trace'  ],
-    [     2, 'log',   'L',    'log'    ],
-    [     3, 'info',  'I',    'info'   ],
-    [     4, 'warn',  'W',    'warn'   ],
-    [     5, 'error', 'E',    'error'  ],
-    [     6, 'fatal', 'F',    'error'  ]
+    [ '_id', 'name',  'code', 'method'  ],
+    ...logLevelValues
   ]
 });
 
@@ -104,9 +109,10 @@ const LogEvent = new Collection({
     notes: { is: 'string' }
   },
   values: [
-    [ '_id',  'label',            'notes'               ],
-    [ 'http', 'HTTP',             'HTTP Requests'       ],
-    [ 'historical', 'Historical', 'Historical Problems' ]
+    [ '_id',  'label',                 'notes'                    ],
+    [ 'http', 'HTTP',                  'HTTP Requests'            ],
+    [ 'historical', 'Historical',      'Historical diagnostics'   ],
+    [ 'subscription', 'Subscriptions', 'Subscription diagnostics' ]
   ]
 });
 
@@ -147,13 +153,14 @@ function error(msg) {
 }
 
 async function log(level, ...opts) {
-  const config = Tyr.options,
-        externalLogger = config.externalLogger,
-        externalLogLevel = externalLogger && getLogLevel('externalLogLevel', config),
-        consoleLogLevel = getLogLevel('consoleLogLevel', config),
-        dbLogLevel = getLogLevel('dbLogLevel', config);
+  const logging = Tyr.logging,
+        levelId = level._id;
 
-  if (!dbLogLevel && !consoleLogLevel && !externalLogLevel) return;
+  if (levelId < logging.min) return;
+
+  const externalLevel = logging.external,
+        consoleLevel = logging.console,
+        dbLevel = logging.db;
 
   const obj = {};
 
@@ -166,17 +173,13 @@ async function log(level, ...opts) {
     } else if (_.isString(opt)) {
       obj.m = opt;
     } else if (_.isObject(opt)) {
-      _.assign(obj, opt);
+      _.assign(obj, adaptIllegalKeyChar(opt));
     } else {
       error(`Invalid option "${opt}"`);
     }
   }
 
-  if (level) {
-    obj.l = level._id;
-  } else {
-    level = LogLevel.byId(obj.l);
-  }
+  obj.l = levelId;
 
   const event = obj.e;
   if (event && !LogEvent.byId(event)) {
@@ -238,7 +241,7 @@ async function log(level, ...opts) {
     }
   }
 
-  if (consoleLogLevel && level._id >= consoleLogLevel._id) {
+  if (levelId >= consoleLevel) {
     let str = (level._id >= LogLevel.WARN ? chalk.red(level.code) : level.code);
     str += ' ' + chalk.yellow(moment(obj.on).format('YYYY.M.D HH:mm:ss'));
     if (obj.e) {
@@ -267,11 +270,12 @@ async function log(level, ...opts) {
 
   let result;
 
-  if (externalLogger && externalLogLevel && level._id >= externalLogLevel._id) {
+  const externalLogger = Tyr.options.externalLogger;
+  if (externalLogger && levelId >= externalLevel) {
     result = externalLogger(obj);
   }
 
-  if (dbLogLevel && level._id >= dbLogLevel._id) {
+  if (levelId >= dbLevel) {
     const logResult = Log.db.save(obj);
     result = result ? Promise.all([ result, logResult ]) : logResult;
   }
@@ -313,15 +317,6 @@ Log.addEvent = function(name, label, notes) {
 
   LogEvent.addValue(new LogEvent({ _id: name, label: label || name, notes: notes }));
 };
-
-function getLogLevel(propName, config) {
-  let level = ((propName in config) ? config[propName] : (config.logLevel || LogLevel.INFO));
-  if (typeof level === 'string') {
-    level = LogLevel.byId(level);
-  }
-
-  return level;
-}
 
 //
 // Express Request Logging (adapted from morgan)
@@ -459,18 +454,54 @@ Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
   return file;
 };
 
+Log.boot = function(stage, pass) {
+
+  if (stage === 'compile') {
+    const config = Tyr.options;
+
+    const getLogLevel = propName => {
+      const level = ((propName in config) ? config[propName] : (config.logLevel || LogLevel.INFO));
+      return typeof level === 'string' ? LogLevel.byLabel(level) : level;
+    };
+
+    const externalLogger = config.externalLogger,
+          externalLogLevel = (externalLogger && getLogLevel('externalLogLevel')) || LogLevel.NEVER,
+          consoleLogLevel = getLogLevel('consoleLogLevel') || LogLevel.NEVER,
+          dbLogLevel = getLogLevel('dbLogLevel') || LogLevel.NEVER;
+
+    const min = Math.min(externalLogLevel._id, consoleLogLevel._id, dbLogLevel._id);
+
+    const logging = Tyr.logging = Log.logging = {
+      min,
+      external: externalLogLevel._id,
+      console: consoleLogLevel._id,
+      db: dbLogLevel._id,
+    };
+
+    for (const ll of logLevelValues) {
+      const [ _id, name ] = ll;
+
+      if (name !== 'never') {
+        logging[name] = _id >= min;
+      }
+    }
+  }
+
+  //return undefined;
+};
+
 //
 // Tyranid Namespacing
 //
 
 _.assign(Tyr, {
   Log,
-  trace:  Log.trace.bind(Log),
-  log:    Log.log.bind(Log),
-  info:   Log.info.bind(Log),
-  warn:   Log.warn.bind(Log),
-  error:  Log.error.bind(Log),
-  fatal:  Log.fatal.bind(Log),
+  trace: Log.trace.bind(Log),
+  log:   Log.log.bind(Log),
+  info:  Log.info.bind(Log),
+  warn:  Log.warn.bind(Log),
+  error: Log.error.bind(Log),
+  fatal: Log.fatal.bind(Log),
 });
 
 export default Log;
