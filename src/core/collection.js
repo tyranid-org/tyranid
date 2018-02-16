@@ -40,6 +40,65 @@ const {
 
 const OPTIONS = Tyr.options;
 
+async function _count(collection, query) {
+  if (Tyr.logging.trace) {
+    const logPromise = Tyr.trace({ e: 'db', c: collection.id, m: 'count', q: query });
+    const result = await collection.db.count(query);
+    Tyr.Log.updateDuration(logPromise);
+    return result;
+  } else {
+    return collection.db.count(query);
+  }
+}
+
+async function _exists(collection, query) {
+  if (Tyr.logging.trace) {
+    const logPromise = Tyr.trace({ e: 'db', c: collection.id, m: 'findOne/exists', q: query });
+    const result = !!(await collection.db.findOne(query, { _id: 1 }));
+    Tyr.Log.updateDuration(logPromise);
+    return result;
+  } else {
+    return !!(await collection.db.findOne(query, { _id: 1 }));
+  }
+}
+
+// _find cannot be async as find() returns a cursor, NOT a promise of a cursor
+function _find(collection, query, fields, opts) {
+  if (Tyr.logging.trace) {
+    Tyr.trace({ e: 'db', c: collection.id, m: 'find', q: query });
+    const cursor = collection.db.find(query, fields, opts);
+    //Tyr.Log.updateDuration(logPromise);
+    return cursor;
+  } else {
+    return collection.db.find(query, fields, opts);
+  }
+}
+
+async function _findOne(collection, query, projection, opts) {
+  const adjOpts = _.omit(opts, ['query', 'fields']);
+  if (Tyr.logging.trace) {
+    const logPromise = Tyr.trace({ e: 'db', c: collection.id, m: 'findOne', q: query });
+    const result = await collection.db.findOne(query, projection, adjOpts);
+    Tyr.Log.updateDuration(logPromise);
+    return result;
+  } else {
+    return collection.db.findOne(query, projection, adjOpts);
+  }
+}
+
+async function _findAndModify(collection, opts) {
+  const { query, sort, update } = opts;
+
+  if (Tyr.logging.trace) {
+    const logPromise = Tyr.trace({ e: 'db', c: collection.id, m: 'findAndModify', q: query, upd: update });
+    const result = await collection.db.findAndModify(query, sort, update, opts);
+    Tyr.Log.updateDuration(logPromise);
+    return result;
+  } else {
+    return collection.db.findAndModify(query, sort, update, opts);
+  }
+}
+
 async function postFind(collection, opts, documents) {
   const array = Array.isArray(documents);
 
@@ -443,11 +502,10 @@ export default class Collection {
 
   find(...args) {
     const collection = this,
-          opts       = extractOptions(collection, args),
-          db         = collection.db;
+          opts       = extractOptions(collection, args);
 
     if (args.length && (args.length !== 1 || (!isOptions(args[0]) && _.keys(args[0]).length))) {
-      console.warn(`*** ${this.name}.find/findAll(<query>, <fields>?, <opts>?) is deprecated ... use ${this.name}.find/findAll(<opts>)`);
+      console.warn(`*** ${this.name}.find(<query>, <fields>?, <opts>?) is deprecated ... use ${this.name}.find/findAll(<opts>)`);
     }
 
     let query,
@@ -455,16 +513,12 @@ export default class Collection {
     switch (args.length) {
     case 2:
       fields = args[1];
-      if (fields) {
-        opts.fields = args[1];
-      }
+      if (fields) opts.fields = args[1];
       // fall through
 
     case 1:
       query = args[0];
-      if (query) {
-        opts.query = query;
-      }
+      if (query) opts.query = query;
       break;
     case 0:
     }
@@ -479,20 +533,12 @@ export default class Collection {
     const auth = extractAuthorization(opts);
 
     function cursor() {
-      const cursor = db.find(query, fields, opts);
+      const cursor = _find(collection, query, fields, opts);
 
       let v;
-      if ( (v = opts.limit) ) {
-        cursor.limit(v);
-      }
-
-      if ( (v = opts.skip) ) {
-        cursor.skip(v);
-      }
-
-      if ( (v = opts.sort) ) {
-        cursor.sort(v);
-      }
+      if ( (v = opts.limit) ) cursor.limit(v);
+      if ( (v = opts.skip) )  cursor.skip(v);
+      if ( (v = opts.sort) )  cursor.sort(v);
 
       return Object.create(cursor, {
         next: {
@@ -534,19 +580,78 @@ export default class Collection {
   }
 
   /**
-   * A short-cut to do find() + toArray()
+   * Like find() + toArray() except things like the tyranid cursor are not created so it has less overhead
    */
   async findAll(...args) {
 
-    // TODO:  should probably rewrite this to not use find() since can avoid creation of a tyranid cursor
-    const cursor = await this.find(...args),
-          documents = await cursor.toArray();
+    const collection = this,
+          opts       = extractOptions(collection, args);
 
-    if (args.length && args[0].count) {
-      documents.count = await cursor.count();
+    if (args.length && (args.length !== 1 || (!isOptions(args[0]) && _.keys(args[0]).length))) {
+      console.warn(`*** ${this.name}.findAll(<query>, <fields>?, <opts>?) is deprecated ... use ${this.name}.find/findAll(<opts>)`);
     }
 
-    return documents;
+    let query,
+        fields;
+    switch (args.length) {
+    case 2:
+      fields = args[1];
+      if (fields) opts.fields = args[1];
+      // fall through
+
+    case 1:
+      query = args[0];
+      if (query) opts.query = query;
+      break;
+    case 0:
+    }
+
+    query = opts.query;
+    fields = opts.fields;
+
+    if (fields) {
+      opts.fields = fields = parseProjection(collection, fields);
+    }
+
+    const auth = extractAuthorization(opts);
+    if (auth) {
+      query = await collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth);
+    }
+
+    const logPromise = Tyr.logging.trace && Tyr.trace({
+      e: 'db', c: collection.id, m: 'findAll' + (opts.count ? '+count' : ''), q: query
+    });
+    const cursor = collection.db.find(query, fields, opts);
+
+    let v;
+    if ( (v = opts.limit) ) cursor.limit(v);
+    if ( (v = opts.skip) )  cursor.skip(v);
+    if ( (v = opts.sort) )  cursor.sort(v);
+
+    const documentsPromise = cursor.toArray().then(async documents => {
+      if (documents.length) {
+        documents = await postFind(collection, opts, documents);
+      }
+      return documents;
+    });
+
+    let result;
+    if (opts.count) {
+      const [ documents, count ] = await Promise.all([
+        documentsPromise,
+        cursor.count()
+      ]);
+
+      documents.count = count;
+      result = documents;
+
+    } else {
+      result = await documentsPromise;
+    }
+
+    if (logPromise) Tyr.Log.updateDuration(logPromise);
+
+    return result;
   }
 
   /**
@@ -554,8 +659,7 @@ export default class Collection {
    * and that it takes a projection as an optional second parameter and supports an options object
    */
   async findOne(...args) {
-    const collection = this,
-          db         = collection.db;
+    const collection = this;
 
     let opts = extractOptions(collection, args);
 
@@ -594,7 +698,7 @@ export default class Collection {
       }
     }
 
-    let doc = await db.findOne(query, projection, _.omit(opts, ['query', 'fields']));
+    let doc = await _findOne(collection, query, projection, _.omit(opts, ['query', 'fields']));
     if (doc) {
       doc = await postFind(this, opts, doc);
       return doc;
@@ -608,7 +712,6 @@ export default class Collection {
    */
   async findAndModify(opts) {
     const collection = this,
-          db         = collection.db,
           auth       = extractAuthorization(opts);
 
     if (auth) {
@@ -657,7 +760,7 @@ export default class Collection {
     if (!opts.eventAlreadyDone) {
       await Tyr.Event.fire({ collection, type: 'update', when: 'pre', opts });
     }
-    const result = await db.findAndModify(opts.query, opts.sort, opts.update, opts);
+    const result = await _findAndModify(collection, opts);
 
     if (result && result.value) {
       result.value = new collection(result.value);
@@ -675,34 +778,34 @@ export default class Collection {
 
   count(opts) {
     const collection = this,
-          db         = collection.db,
           query      = opts.query,
           auth       = extractAuthorization(opts);
 
     if (auth) {
       return Tyr.mapAwait(
         collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth),
-        securedQuery => db.count(securedQuery)
+        securedQuery => {
+          return _count(collection, securedQuery);
+        }
       );
     }
 
-    return db.count(query);
+    return _count(collection, query);
   }
 
   async exists(opts) {
     const collection = this,
-          db         = collection.db,
           query      = opts.query,
           auth       = extractAuthorization(opts);
 
     if (auth) {
       return Tyr.mapAwait(
         collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth),
-        async securedQuery => !!(await db.findOne(securedQuery, { _id: 1 }))
+        async securedQuery => await _exists(collection, securedQuery)
       );
     }
 
-    return !!(await db.findOne(query, { _id: 1 }));
+    return await _exists(collection, query);
   }
 
   async save(obj, opts) {
@@ -1056,9 +1159,13 @@ export default class Collection {
 
     const fieldsObj = { _id: 0 };
 
+    let found = false;
     _.each(fields, field => {
       fieldsObj[field.spath] = 1;
+      found = true;
     });
+
+    if (!found) return [];
 
     const values = [];
 

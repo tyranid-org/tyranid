@@ -34,39 +34,63 @@ import UserAgent from './userAgent';
 
 const illegalKeyCharPattern = /(^\$)|\./;
 
-function hasIllegalKeyChar(q) {
+function adaptIllegalKeyCharAndEliminateRecursion(q) {
+  // object =>
+  //   undefined (haven't seen)
+  // | true (currently processing, saw invalid chars)
+  // | false (currently processing, haven't seen invalid chars)
+  // | object (its been output already so output _recurse)
+  const seen = new Map();
 
-  if (_.isObject(q)) {
-    for (const p in q) {
-      if (illegalKeyCharPattern.test(p) || hasIllegalKeyChar(q[p])) {
-        return true;
+  const hasIllegalKeyChar = q => {
+
+    if (_.isObject(q)) {
+      const r = seen.get(q);
+      if (r !== undefined) return r;
+
+      // we don't want to log recursive references
+      seen.set(q, false);
+
+      for (const p in q) {
+        if (illegalKeyCharPattern.test(p) || hasIllegalKeyChar(q[p])) {
+          seen.set(q, true);
+          return true;
+        }
       }
     }
-  }
 
-  return false;
-}
+    return false;
+  };
 
-function adaptIllegalKeyChar(q) {
-  if (hasIllegalKeyChar(q)) {
-    const qc = {};
+  const inner = q => {
+    if (_.isObject(q)) {
+      const s = seen.get(q);
+      if (_.isObject(s)) return '_recurse';
 
-    for (const p in q) {
-      if (q.hasOwnProperty(p)) {
-        let safeP = p;
+      if (hasIllegalKeyChar(q)) {
+        const qc = {};
 
-        if (illegalKeyCharPattern.test(p)) {
-          safeP = (p.startsWith('$') ? '_' + p : p).replace(/\./g, ':');
+        for (const p in q) {
+          if (q.hasOwnProperty(p)) {
+            let safeP = p;
+
+            if (illegalKeyCharPattern.test(p)) {
+              safeP = (p.startsWith('$') ? '_' + p : p).replace(/\./g, ':');
+            }
+
+            qc[safeP] = inner(q[p]);
+          }
         }
 
-        qc[safeP] = adaptIllegalKeyChar(q[p]);
+        seen.set(q, qc);
+        return qc;
       }
     }
 
-    return qc;
-  }
+    return q;
+  };
 
-  return q;
+  return inner(q);
 }
 
 const logLevelValues = [
@@ -109,9 +133,10 @@ const LogEvent = new Collection({
     notes: { is: 'string' }
   },
   values: [
-    [ '_id',  'label',                 'notes'                    ],
-    [ 'http', 'HTTP',                  'HTTP Requests'            ],
-    [ 'historical', 'Historical',      'Historical diagnostics'   ],
+    [ '_id',          'label',         'notes'                    ],
+    [ 'http',         'HTTP',          'HTTP Requests'            ],
+    [ 'db',           'Database',      'Database Requests'        ],
+    [ 'historical',   'Historical',    'Historical diagnostics'   ],
     [ 'subscription', 'Subscriptions', 'Subscription diagnostics' ]
   ]
 });
@@ -123,23 +148,27 @@ const Log = new Collection({
   internal: true,
   fields: {
     _id:   { is: 'mongoid' },
-    l:     { link: 'tyrLogLevel',  label: 'Level'       },
-    e:     { link: 'tyrLogEvent',  label: 'Event'       },
-    m:     { is: 'string',         label: 'Message'     },
-    u:     { link: 'user?',        label: 'User'        },
-    st:    { is: 'string',         label: 'Stack Trace' },
-    on:    { is: 'date',           label: 'On'          },
+    l:     { link: 'tyrLogLevel',  label: 'Level'                },
+    i:     { link: 'tyrInstance',  label: 'Instance'             },
+    e:     { link: 'tyrLogEvent',  label: 'Event'                },
+    m:     { is: 'string',         label: 'Message'              },
+    u:     { link: 'user?',        label: 'User'                 },
+    st:    { is: 'string',         label: 'Stack Trace'          },
+    on:    { is: 'date',           label: 'On'                   },
     du:    { is: 'integer',        label: 'Duration',   in: 'ns' },
-    hn:    { is: 'string',         label: 'Host Name'   },
+    hn:    { is: 'string',         label: 'Host Name'            },
     r:     { is: 'object',         label: 'Request', fields: {
-      p:   { is: 'string',         label: 'Path'        },
-      m:   { is: 'string',         label: 'Method'      },
-      ip:  { is: 'string',         label: 'Remote IP'   },
-      ua:  { link: 'tyrUserAgent', label: 'User Agent'  },
-      q:   { is: 'object',         label: 'Query'       },
-      sid: { is: 'string',         label: 'Session ID'  },
-      sc:  { is: 'integer',        label: 'Status Code' },
-    }}
+      p:   { is: 'string',         label: 'Path'                 },
+      m:   { is: 'string',         label: 'Method'               },
+      ip:  { is: 'string',         label: 'Remote IP'            },
+      ua:  { link: 'tyrUserAgent', label: 'User Agent'           },
+      q:   { is: 'object',         label: 'Query'                },
+      sid: { is: 'string',         label: 'Session ID'           },
+      sc:  { is: 'integer',        label: 'Status Code'          },
+    }},
+    c:     { is: 'string',         label: 'Collection ID'        },
+    q:     { is: 'object',         label: 'Query'                },
+    upd:   { is: 'object',         label: 'findAndModify update' },
   },
 });
 
@@ -173,7 +202,7 @@ async function log(level, ...opts) {
     } else if (_.isString(opt)) {
       obj.m = opt;
     } else if (_.isObject(opt)) {
-      _.assign(obj, adaptIllegalKeyChar(opt));
+      _.assign(obj, adaptIllegalKeyCharAndEliminateRecursion(opt));
     } else {
       error(`Invalid option "${opt}"`);
     }
@@ -188,6 +217,7 @@ async function log(level, ...opts) {
 
   obj.on = new Date();
   obj.hn = os.hostname();
+  obj.i = Tyr.instanceId;
 
   const local = Tyr.local;
   let req   = local.req,
@@ -228,7 +258,7 @@ async function log(level, ...opts) {
       m:  req.method,
       ip: req.headers['X-Forwarded-For'] || req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
       ua: ua._id,
-      q:  adaptIllegalKeyChar(req.query)
+      q:  adaptIllegalKeyCharAndEliminateRecursion(req.query)
     };
 
     const sid = req.cookies && req.cookies['connect.sid'];
@@ -282,6 +312,34 @@ async function log(level, ...opts) {
 
   return result;
 }
+
+Log.updateDuration = async function(logResultPromise) {
+  let logResult = await logResultPromise;
+
+  if (Array.isArray(logResult)) {
+    // last one in the array is the db log
+    logResult = logResult[logResult.length - 1];
+  }
+
+  const logDoc = logResult.ops[0];
+
+  return Log.db.findAndModify(
+    { _id: logDoc._id },
+    undefined,
+    { $set: { du: (Date.now() - logDoc.on.getTime()) * 1000 } }
+  );
+
+  //const diff = process.hrtime(req._startAt);
+
+  //Log.info({
+    //e:    'http',
+    //du:   diff[0] * 1e9 + diff[1],
+    //req:  req,
+    //res:  res
+  //}).catch(err => {
+    //console.error('Error when logging a request', err);
+  //});
+};
 
 Log.trace = function() {
   return log(LogLevel.TRACE, ...arguments);

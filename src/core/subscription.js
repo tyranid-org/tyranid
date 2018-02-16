@@ -47,7 +47,7 @@ interface LocalListener {
 let localListeners /*: LocalListener*/ = {};
 
 async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
-  if (Tyr.logging.trace) Tyr.trace({ e: 'subscription', m: Tyr.instanceId + ' *** matched', instances: queryDef.instances });
+  if (Tyr.logging.trace) Tyr.trace({ e: 'subscription', c: colId, m: 'matched', instances: queryDef.instances });
   const promises = [];
 
   for (const instanceId in queryDef.instances) {
@@ -183,9 +183,10 @@ Subscription.boot = async function(stage, pass) {
 Collection.prototype.subscribe = async function(query, user, cancel) {
   if (Tyr.logging.trace) {
     Tyr.trace({
-      e: 'subscription', m: Tyr.instanceId + ' *** ' + this.def.name + ' subscribe:',
-      query,
-      userFullName: user.fullName,
+      c: this._id,
+      e: 'subscription',
+      m: 'subscribe:' + user._id,
+      q: query,
       cancel
     });
   }

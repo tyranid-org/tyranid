@@ -950,10 +950,12 @@ describe('tyranid', function() {
         var allStrings = [
           '123 Construction', 'Acme Unlimited', 'Administrator', 'An', 'Anon', 'Bill Doe', 'Developer', 'Doe', 'Eats at Chipotle way to much...', 'Engineering',
           'George Doe', 'Home Gardening 101', 'Jane', 'Jill', 'Jill Doe', 'John', 'Not a fan of construction companies...',
-          'Tom Doe', 'Tyranid User Guide', 'User', 'u00'
+          'Tom Doe', 'Tyranid User Guide', 'User'
         ];
 
-        return Tyr.valuesBy(field => field.collection.name !== 'TyrInstance' && field.type.def.name === 'string').then(function(values) {
+        return Tyr.valuesBy(
+          field => !field.collection.name.startsWith('Tyr') && !field.collection.name.startsWith('Unit') && field.type.def.name === 'string'
+        ).then(function(values) {
           return values.sort();
         }).should.eventually.eql(allStrings);
       });
@@ -1767,7 +1769,7 @@ describe('tyranid', function() {
       it('should log simple strings', async function() {
         await Tyr.info('test');
 
-        const logs = await Log.findAll({});
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
@@ -1776,7 +1778,7 @@ describe('tyranid', function() {
       it('should log objects', async function() {
         await Tyr.info({ m: 'test', e: 'http' });
 
-        const logs = await Log.findAll({});
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].l).to.be.eql(LogLevel.INFO._id);
@@ -1786,7 +1788,7 @@ describe('tyranid', function() {
       it('should log errors', async function() {
         await Tyr.warn('test one', new Error('test'));
 
-        const logs = await Log.findAll({});
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test one');
         expect(logs[0].l).to.be.eql(LogLevel.WARN._id);
@@ -1796,7 +1798,7 @@ describe('tyranid', function() {
       it('should log errors, #2', async function() {
         await Tyr.info(new Error('test'));
 
-        const logs = await Log.findAll({});
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('test');
         expect(logs[0].st).to.match(/Error: test/);
@@ -1823,10 +1825,30 @@ describe('tyranid', function() {
 
         await Tyr.info({ e: 'myEvent', m: 'a test' });
 
-        const logs = await Log.findAll({});
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
         expect(logs[0].m).to.be.eql('a test');
         expect(logs[0].e).to.be.eql('myEvent');
+      });
+
+      it('should log find()', async function() {
+        await Book.find({ query: { title: 'foo' } });
+
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].e).to.be.eql('db');
+        expect(logs[0].q).to.be.eql({ title: 'foo' });
+        expect(logs[0].l).to.be.eql(LogLevel.TRACE._id);
+      });
+
+      it('should log findAll()', async function() {
+        await Book.findAll({ query: { title: 'foo' } });
+
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
+        expect(logs.length).to.be.eql(1);
+        expect(logs[0].e).to.be.eql('db');
+        expect(logs[0].q).to.be.eql({ title: 'foo' });
+        expect(logs[0].l).to.be.eql(LogLevel.TRACE._id);
       });
     });
 
