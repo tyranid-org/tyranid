@@ -1327,6 +1327,23 @@ describe('tyranid', function() {
           await Location.db.remove({});
         }
       });
+
+      /*
+      it('should insert quickly', async () => {
+        const start = Date.now();
+        try {
+          const promises = [];
+          for (let i=0; i<250; i++) {
+            promises.push(Location.insert({ name: 'test 83272' }));
+          }
+          await Promise.all(promises);
+
+          expect(Date.now() - start).is.lessThan(1000);
+        } finally {
+          await Location.remove({ query: { name: 'test 83272' } });
+        }
+      });
+      */
     });
 
     describe('$update()', function() {
