@@ -71,12 +71,29 @@ async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
   return Promise.all(promises);
 }
 
-async function parseSubscriptions(subscription) {
+async function parseSubscriptions(subscription, userId) {
   //con sole.log('parseSubscriptions(), Tyr.instanceId=', Tyr.instanceId);
-  const subs = subscription ? [ subscription ] : await Subscription.findAll({});
-  //con sole.log(Tyr.instanceId + ' *** parseSubscriptions, ' + subs.length + ' subs');
+  let subs;
 
-  if (!subscription) {
+  if (subscription) {
+    subs = [ subscription ];
+
+  } else if (userId) {
+    // clear out existing data for this userId
+
+    for (const colId in localListeners) {
+      const queries = localListeners[colId].queries;
+
+      for (const queryStr in queries) {
+        delete queries[queryStr].users[userId];
+
+        //if (queryDef.users is empty) then clear out queryDef.instances ?
+      }
+    }
+
+  } else {
+    subs = await Subscription.findAll({});
+
     // if we're reparsing all subs, clear out existing data
 
     for (const colId in localListeners) {
@@ -86,6 +103,8 @@ async function parseSubscriptions(subscription) {
 
     localListeners = {};
   }
+
+  //con sole.log(Tyr.instanceId + ' *** parseSubscriptions, ' + subs.length + ' subs');
 
   for (const sub of subs) {
     const colId = sub.c,
@@ -110,7 +129,6 @@ async function parseSubscriptions(subscription) {
               }
 
             } else if (_documents) {
-
               promises.push(
                 ..._documents
                   .filter(doc => Query.matches(queryDef.queryObj, doc))
@@ -122,6 +140,7 @@ async function parseSubscriptions(subscription) {
               if (refinedQuery) {
                 promises.push(fireEvent(colId, queryDef, null, refinedQuery));
               }
+
             }
           }
 
@@ -161,8 +180,7 @@ Subscription.on({
 Subscription.on({
   type: 'unsubscribe',
   async handler(event) {
-    // TODO:  pass in user and only unsubscribe the user rather than reparsing?
-    await parseSubscriptions();
+    await parseSubscriptions(undefined, event.user);
   }
 });
 
@@ -201,7 +219,8 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
         collection: Subscription,
         type: 'unsubscribe',
         when: 'pre',
-        broadcast: true
+        broadcast: true,
+        user: user._id
       });
 
       return;
@@ -226,7 +245,8 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
         collection: Subscription,
         type: 'unsubscribe',
         when: 'pre',
-        broadcast: true
+        broadcast: true,
+        user: user._id
       });
     }
 
@@ -266,7 +286,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
     await Tyr.Event.fire({
       collection: Subscription,
       type: 'subscribe',
-      when: 'pre',
+      when: 'post',
       broadcast: true,
       subscription: s
     });
@@ -285,7 +305,8 @@ Subscription.unsubscribe = async function(userId) {
       collection: Subscription,
       type: 'unsubscribe',
       when: 'pre',
-      broadcast: true
+      broadcast: true,
+      user: userId
     });
   }
 };

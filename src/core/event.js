@@ -159,6 +159,10 @@ export default class Event {
       event.date = new Date();
     }
 
+    if (event._id) {
+      delete event._id;
+    }
+
     const collection = event.collection;
     if (collection) {
       event.collectionId = collection.id;
@@ -173,10 +177,9 @@ export default class Event {
     });
 
     //con sole.log(Tyr.instanceId + ' *** broadcasting to ', instances.map(i => i._id));
-    for (const instance of instances) {
-      delete event._id;
-      await Tyr.db.collection(instance._id + '_event').save(event);
-    }
+    await Promise.all(
+      instances.map(instance => Tyr.db.collection(instance._id + '_event').save(event))
+    );
   }
 
   /** @private */
