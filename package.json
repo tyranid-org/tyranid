@@ -35,14 +35,12 @@
     "json-stable-stringify": "1.0.1",
     "lodash": "^3.10.1",
     "moment": "2.11.2",
+    "mongodb": "2.2.33",
     "on-finished": "2.3.0",
     "socket.io": "2.0.3",
     "typescript": "^2.5.3",
     "uglify-js": "2.8.16",
     "uuid": "^3.1.0"
-  },
-  "peerDependencies": {
-    "mongodb": "2.2.33"
   },
   "devDependencies": {
     "@types/chai": "3.5.0",
