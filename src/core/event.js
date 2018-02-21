@@ -147,7 +147,7 @@ export default class Event {
   }
 
   static async fire(event) {
-    const instanceId = event.instanceId !== Tyr.instanceId ? event.instanceId : undefined;
+    const instanceId = (event.instanceId && event.instanceId !== Tyr.instanceId) ? event.instanceId : undefined;
 
     if (!instanceId) {
       await Event.handle(event);
