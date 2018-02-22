@@ -80,6 +80,7 @@ async function parseSubscriptions(subscription, userId) {
 
   } else if (userId) {
     // clear out existing data for this userId
+    subs = await Subscription.findAll({ query: { u: userId } });
 
     for (const colId in localListeners) {
       const queries = localListeners[colId].queries;
