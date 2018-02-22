@@ -584,8 +584,8 @@ export default class Collection {
    */
   async findAll(...args) {
 
-    const collection = this,
-          opts       = extractOptions(collection, args);
+    const collection = this;
+    let opts = extractOptions(collection, args);
 
     if (args.length && (args.length !== 1 || (!isOptions(args[0]) && _.keys(args[0]).length))) {
       console.warn(`*** ${this.name}.findAll(<query>, <fields>?, <opts>?) is deprecated ... use ${this.name}.find/findAll(<opts>)`);
@@ -616,6 +616,9 @@ export default class Collection {
     const auth = extractAuthorization(opts);
     if (auth) {
       query = await collection.secureFindQuery(query, opts.perm || OPTIONS.permissions.find, auth);
+
+      opts = _.clone(opts);
+      delete opts.query; // remove the query from options otherwise it will supercede query in new mongo driver
     }
 
     const logPromise = Tyr.logging.trace && Tyr.trace({

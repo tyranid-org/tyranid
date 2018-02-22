@@ -56,6 +56,8 @@ const fakeSecure = {
     if (collection.name === 'Book') {
       if (auth && auth.name.first === 'An') {
         query.title = /Tyranid/;
+      } else if (auth && auth.name.first === 'Jane') {
+        return false;
       }
     } else {
       query.SECURED = {
@@ -524,7 +526,7 @@ describe('tyranid', function() {
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
 
-        const jane = await User.findOne({ 'name.first': 'Jane' });
+        const jane = await User.findOne({ 'name.first': 'John' });
         books = await Book.find({ fields: { title: 1 }, auth: jane }).toArray();
         expect(books.length).to.eql(2);
       });
@@ -546,6 +548,24 @@ describe('tyranid', function() {
       it('should support secured find()s with a empty query / empty options argument', async function() {
         const books = await Book.find({}).toArray();
         expect(books.length).to.eql(2);
+      });
+
+      it('should not find() with an _id contradiction', async () => {
+        const jane = await User.findOne({ 'name.first': 'Jane' });
+        let books = await (await Book.find({ query: {}, auth: jane })).toArray();
+        expect(books.length).to.eql(0);
+
+        books = await (await Book.find({ query: {} })).toArray();
+        expect(books.length).to.not.eql(0);
+      });
+
+      it('should not findAll() with an _id contradiction', async () => {
+        const jane = await User.findOne({ 'name.first': 'Jane' });
+        let books = await Book.findAll({ query: {}, auth: jane });
+        expect(books.length).to.eql(0);
+
+        books = await Book.findAll({ query: {} });
+        expect(books.length).to.not.eql(0);
       });
     });
 
