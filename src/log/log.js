@@ -418,7 +418,7 @@ Log.routes = function(app, auth) {
     .get((req, res) => {
       try {
         const o = JSON.parse(req.query.o);
-        log(null, o)
+        log(LogLevel.INFO, o)
           .catch(err => console.error('Error from /api/log/_log route, object=', o, 'error=', err));
 
         res.send(200);
