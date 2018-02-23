@@ -1,10 +1,21 @@
 language: node_js
-dist: trusty
-sudo: false
-services: mongodb
+
+sudo: required
 
 node_js:
-  - "8.4.0"
+  - "8.1.4"
+
+before_install:
+  - "sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10"
+  - curl https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.4.1.tgz -O -#
+  - tar -xzvf mongodb-linux-x86_64-ubuntu1204-3.4.1.tgz
+  - mkdir -p mongo/db
+  - mkdir -p mongo/log
+  - sudo ./mongodb-linux-x86_64-ubuntu1204-3.4.1/bin/mongod --dbpath=./mongo/db --fork --logpath=./mongo/log/test.log
+  - sleep 5
+  - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
+
+before_script:
 
 script:
   - npm run test-travis
@@ -14,4 +25,5 @@ after_success:
 
 cache:
   yarn: true
-
+  files:
+    - mongodb-linux-x86_64-ubuntu1204-3.4.1.tgz
