@@ -30,7 +30,7 @@
   "dependencies": {
     "chalk": "^2.1.0",
     "continuation-local-storage": "3.1.6",
-    "faker": "3.1.0",
+    "faker": "^4.1.0",
     "glob": "7.0.5",
     "json-stable-stringify": "1.0.1",
     "lodash": "^3.10.1",
