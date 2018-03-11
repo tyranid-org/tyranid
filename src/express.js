@@ -1282,7 +1282,9 @@ export default function connect(app, auth, opts) {
       }
 
       socket.on('disconnect', () => {
-        Tyr.byName.tyrSubscription.unsubscribe(socket.userId);
+        // It doesn't work to unsubscribe on disconnect since socket.io sessions
+        // will occassionally connect/disconnect frequently
+        //Tyr.byName.tyrSubscription.unsubscribe(socket.userId);
         socket.userId = null;
       });
     });
