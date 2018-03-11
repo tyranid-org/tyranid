@@ -34,7 +34,7 @@
     "glob": "7.0.5",
     "json-stable-stringify": "1.0.1",
     "lodash": "^3.10.1",
-    "moment": "2.11.2",
+    "moment": "2.20.1",
     "on-finished": "2.3.0",
     "socket.io": "2.0.3",
     "uglify-js": "2.8.16",
