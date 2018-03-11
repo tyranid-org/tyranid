@@ -1672,6 +1672,29 @@ describe('tyranid', function() {
 
         await User.remove({ _id: 2001 });
       });
+
+      it('save() with timestamps set to false should not update timestamps', async () => {
+        const updatedAt = new Date('2017-01-01');
+        await User.db.save({ _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1, updatedAt});
+
+        let dale = await User.byId(2001);
+
+        await dale.$update({ organization: 2 }, { timestamps: false });
+
+        dale = await User.byId(2001);
+        expect(dale.updatedAt).to.eql(updatedAt);
+
+        await User.save(
+          { _id: 2001, name: { first: 'Dale', last: 'Doe' }, organization: 1 },
+          { timestamps: false }
+        );
+
+        dale = await User.byId(2001);
+
+        expect(dale.updatedAt).to.eql(undefined); // undefined because save() replaces
+
+        await User.remove({ _id: 2001 });
+      });
     });
 
     describe('toClient', function() {

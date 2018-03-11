@@ -147,7 +147,7 @@ export function extractProjection(opts) {
   return opts.fields || opts.project || opts.projectiot ;
 }
 
-export async function parseInsertObj(col, obj) {
+export async function parseInsertObj(col, obj, opts) {
   const def       = col.def,
         fields    = await col.fieldsFor(obj),
         insertObj = new col();
@@ -189,7 +189,7 @@ export async function parseInsertObj(col, obj) {
     insertObj._id = insertObj[def.primaryKey.field];
   }
 
-  if (def.timestamps) {
+  if (def.timestamps && (!opts || opts.timestamps !== false)) {
     const now = new Date();
     // Don't overwrite createdAt in case we are coming from an upsert update.
     // Note it still has to a defined field on the collection.

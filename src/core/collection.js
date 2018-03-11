@@ -728,6 +728,7 @@ export default class Collection {
     }
 
     if (update) {
+
       // Check for whether update param is all field:value expressions.
       // If so, we should replace the entire doc (per Mongo api docs)
       const replaceEntireDoc = Object.keys(update).every(key => !key.startsWith('$'));
@@ -743,7 +744,7 @@ export default class Collection {
 
       if (opts.upsert) {
         const setOnInsertSrc = replaceEntireDoc ? update : update.$setOnInsert,
-              $setOnInsert = await parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), setOnInsertSrc));
+              $setOnInsert = await parseInsertObj(collection, _.merge(_.cloneDeep(opts.query), setOnInsertSrc), opts);
 
         if (replaceEntireDoc) {
           opts.update = update = $setOnInsert;
