@@ -1269,7 +1269,7 @@ export default function connect(app, auth, opts) {
 
         Tyr.sessions.get(sessionId, async (error, session) => {
           if (session) {
-            const userIdStr = session.passport.user;
+            const userIdStr = session.passport && session.passport.user;
             if (userIdStr) {
               socket.userId = ObjectId(userIdStr);
             }
