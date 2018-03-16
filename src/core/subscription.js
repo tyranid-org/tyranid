@@ -72,7 +72,7 @@ async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
 }
 
 async function parseSubscriptions(subscription, userId) {
-  //con sole.log('parseSubscriptions(), Tyr.instanceId=', Tyr.instanceId);
+  //con sole.log('parseSubscriptions(), Tyr.instanceId=', Tyr.instanceId, 'userId=', userId);
   let subs;
 
   if (subscription) {
@@ -173,6 +173,7 @@ async function parseSubscriptions(subscription, userId) {
 
 Subscription.on({
   type: 'subscribe',
+  when: 'post',
   async handler(event) {
     await parseSubscriptions(event.subscription);
   }
@@ -180,6 +181,7 @@ Subscription.on({
 
 Subscription.on({
   type: 'unsubscribe',
+  when: 'post',
   async handler(event) {
     await parseSubscriptions(undefined, event.user);
   }
@@ -219,7 +221,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
       await Tyr.Event.fire({
         collection: Subscription,
         type: 'unsubscribe',
-        when: 'pre',
+        when: 'post',
         broadcast: true,
         user: user._id
       });
@@ -245,7 +247,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
       await Tyr.Event.fire({
         collection: Subscription,
         type: 'unsubscribe',
-        when: 'pre',
+        when: 'post',
         broadcast: true,
         user: user._id
       });
@@ -305,7 +307,7 @@ Subscription.unsubscribe = async function(userId) {
     await Tyr.Event.fire({
       collection: Subscription,
       type: 'unsubscribe',
-      when: 'pre',
+      when: 'post',
       broadcast: true,
       user: userId
     });
