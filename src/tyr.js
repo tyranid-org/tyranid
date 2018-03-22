@@ -32,6 +32,73 @@ function convertStrToHex(str) {
   return result;
 }
 
+// Encode objects for MongoDB (update keys that start with $, deal with recursion)
+
+const illegalKeyCharPattern = /(^\$)|\./;
+
+function adaptIllegalKeyCharAndEliminateRecursion(q) {
+  // object =>
+  //   undefined (haven't seen)
+  // | true (currently processing, saw invalid chars or recursion)
+  // | false (currently processing, haven't seen invalid chars or recursion)
+  // | object (its been output already so output _recurse)
+  const seen = new Map();
+
+  const hasIllegalKeyCharOrRecursion = q => {
+
+    if (Tyr.isObject(q)) {
+      const r = seen.get(q);
+      if (r !== undefined) return r;
+
+      // we don't want to log recursive references
+      seen.set(q, false);
+
+      for (const p in q) {
+        if (illegalKeyCharPattern.test(p) || hasIllegalKeyCharOrRecursion(q[p]) !== undefined) {
+          seen.set(q, true);
+          return true;
+        }
+      }
+    }
+
+    //return undefined;
+  };
+
+  const inner = q => {
+    if (Tyr.isObject(q)) {
+      const s = seen.get(q);
+      if (Tyr.isObject(s)) return '_recurse';
+
+      const rslt = hasIllegalKeyCharOrRecursion(q);
+
+      if (rslt === undefined) {
+        seen.set(q, q);
+      } else {
+        const qc = {};
+        seen.set(q, qc);
+
+        for (const p in q) {
+          if (q.hasOwnProperty(p)) {
+            let safeP = p;
+
+            if (illegalKeyCharPattern.test(p)) {
+              safeP = (p.startsWith('$') ? '_' + p : p).replace(/\./g, ':');
+            }
+
+            qc[safeP] = inner(q[p]);
+          }
+        }
+
+        return qc;
+      }
+    }
+
+    return q;
+  };
+
+  return inner(q);
+}
+
 const Tyr = {
   options: {},
 
@@ -42,6 +109,10 @@ const Tyr = {
   components: [],
 
   $all: '$all',
+
+  adaptIllegalKeyCharAndEliminateRecursion(q) {
+    return adaptIllegalKeyCharAndEliminateRecursion(q);
+  },
 
   async valuesBy(filter) {
     const getValues = c => c.valuesFor(c.fieldsBy(filter));

@@ -176,9 +176,10 @@ export default class Event {
       }
     });
 
+    const adaptedEvent = Tyr.adaptIllegalKeyCharAndEliminateRecursion(opt);
     //con sole.log(Tyr.instanceId + ' *** broadcasting to ', instances.map(i => i._id));
     await Promise.all(
-      instances.map(instance => Tyr.db.collection(instance._id + '_event').save(event))
+      instances.map(instance => Tyr.db.collection(instance._id + '_event').save(adaptedEvent))
     );
   }
 

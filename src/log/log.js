@@ -32,67 +32,6 @@ import UserAgent from './userAgent';
 
  */
 
-const illegalKeyCharPattern = /(^\$)|\./;
-
-function adaptIllegalKeyCharAndEliminateRecursion(q) {
-  // object =>
-  //   undefined (haven't seen)
-  // | true (currently processing, saw invalid chars)
-  // | false (currently processing, haven't seen invalid chars)
-  // | object (its been output already so output _recurse)
-  const seen = new Map();
-
-  const hasIllegalKeyChar = q => {
-
-    if (_.isObject(q)) {
-      const r = seen.get(q);
-      if (r !== undefined) return r;
-
-      // we don't want to log recursive references
-      seen.set(q, false);
-
-      for (const p in q) {
-        if (illegalKeyCharPattern.test(p) || hasIllegalKeyChar(q[p])) {
-          seen.set(q, true);
-          return true;
-        }
-      }
-    }
-
-    return false;
-  };
-
-  const inner = q => {
-    if (_.isObject(q)) {
-      const s = seen.get(q);
-      if (_.isObject(s)) return '_recurse';
-
-      if (hasIllegalKeyChar(q)) {
-        const qc = {};
-
-        for (const p in q) {
-          if (q.hasOwnProperty(p)) {
-            let safeP = p;
-
-            if (illegalKeyCharPattern.test(p)) {
-              safeP = (p.startsWith('$') ? '_' + p : p).replace(/\./g, ':');
-            }
-
-            qc[safeP] = inner(q[p]);
-          }
-        }
-
-        seen.set(q, qc);
-        return qc;
-      }
-    }
-
-    return q;
-  };
-
-  return inner(q);
-}
-
 const logLevelValues = [
   [     1, 'trace', 'T',    'trace'   ],
   [     2, 'log',   'L',    'log'     ],
@@ -202,7 +141,7 @@ async function log(level, ...opts) {
     } else if (_.isString(opt)) {
       obj.m = opt;
     } else if (_.isObject(opt)) {
-      _.assign(obj, adaptIllegalKeyCharAndEliminateRecursion(opt));
+      _.assign(obj, Tyr.adaptIllegalKeyCharAndEliminateRecursion(opt));
     } else {
       error(`Invalid option "${opt}"`);
     }
@@ -258,7 +197,7 @@ async function log(level, ...opts) {
       m:  req.method,
       ip: req.headers['X-Forwarded-For'] || req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
       ua: ua._id,
-      q:  adaptIllegalKeyCharAndEliminateRecursion(req.query)
+      q:  Tyr.adaptIllegalKeyCharAndEliminateRecursion(req.query)
     };
 
     const sid = req.cookies && req.cookies['connect.sid'];

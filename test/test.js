@@ -125,6 +125,33 @@ describe('tyranid', function() {
     });
   });
 
+  describe('Mongo object utilities', () => {
+    it('should support adaptIllegalKeyCharAndEliminateRecursion()', () => {
+      const r1 = {
+        foo: 1
+      };
+
+      r1.bar = r1;
+
+      const tests = [
+        [ { foo: 1 },                   { foo: 1 } ],
+        [ { $foo: 1 },                  { _$foo: 1 } ],
+        [ { 'foo.bar': 1 },             { 'foo:bar': 1 } ],
+        [ r1,                           { foo: 1, bar: '_recurse' } ],
+        [ { foo: 1, bar: r1 },          { foo: 1, bar: { foo: 1, bar: '_recurse' } } ],
+        [ { $foo: 1, bar: r1 },         { _$foo: 1, bar: { foo: 1, bar: '_recurse' } } ],
+        [ { foo: 1, bar: { $foo: 1 } }, { foo: 1, bar: { _$foo: 1 } } ],
+        [ oid1,                         oid1 ],
+        [ { foo: oid1 },                { foo: oid1 } ],
+      ];
+
+      for (const test of tests) {
+        const [ value, expected ] = test;
+        expect(Tyr.adaptIllegalKeyCharAndEliminateRecursion(value)).to.eql(expected);
+      }
+    });
+  });
+
   describe('lodash-like methods', () => {
     it('should support isEqual with OIDs', () => {
       expect(
