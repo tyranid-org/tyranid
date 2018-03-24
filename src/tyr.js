@@ -256,7 +256,7 @@ const Tyr = {
 
   isObject(value) {
     // want to treat ObjectIds as primitive values in most places
-    return _.isObject(value) && value.constructor.name !== 'ObjectID';
+    return _.isObject(value) && (!value.constructor || value.constructor.name !== 'ObjectID');
   },
 
   isObjectId(value) {

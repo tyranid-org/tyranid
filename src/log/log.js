@@ -130,6 +130,10 @@ async function log(level, ...opts) {
         consoleLevel = logging.console,
         dbLevel = logging.db;
 
+  const local = Tyr.local;
+  let req   = local.req,
+      res   = local.res;
+
   const obj = {};
 
   for (const opt of opts) {
@@ -141,6 +145,16 @@ async function log(level, ...opts) {
     } else if (_.isString(opt)) {
       obj.m = opt;
     } else if (_.isObject(opt)) {
+      if (opt.req) {
+        req = opt.req;
+        delete opt.req;
+      }
+
+      if (opt.res) {
+        res = opt.res;
+        delete opt.res;
+      }
+
       _.assign(obj, Tyr.adaptIllegalKeyCharAndEliminateRecursion(opt));
     } else {
       error(`Invalid option "${opt}"`);
@@ -157,20 +171,6 @@ async function log(level, ...opts) {
   obj.on = new Date();
   obj.hn = os.hostname();
   obj.i = Tyr.instanceId;
-
-  const local = Tyr.local;
-  let req   = local.req,
-      res   = local.res;
-
-  if (obj.req) {
-    req = obj.req;
-    delete obj.req;
-  }
-
-  if (obj.res) {
-    res = obj.res;
-    delete obj.res;
-  }
 
   if (Log.fields.u) {
     let user;
