@@ -1308,6 +1308,10 @@ export default class Collection {
         // Store the field path and name on the field itself to support methods on Field
         field.collection = collection;
         field.path = path;
+        if (fieldDef.group) {
+          field.group = fieldDef.group;
+        }
+
         collection.paths[path] = field;
         const lastDot = path.lastIndexOf('.');
         const fieldName = lastDot > -1 ? path.substring(lastDot + 1) : path;
@@ -1394,7 +1398,47 @@ export default class Collection {
           throw compiler.err(path, '"fields" should be an object, got: ' + defFields);
         }
 
-        _.each(_.keys(defFields), name => {
+        if (_.keys(defFields).some(name => name.startsWith('$'))) {
+          const newDefFields = {};
+
+          for (const name in defFields) {
+            if (name.startsWith('$')) {
+              const group = defFields[name];
+
+              const base = group.$base;
+              if (!base) {
+                throw compiler.err(path, `group "${name}" is missing a $base property`);
+              }
+
+              for (const fieldName in group) {
+                if (fieldName !== '$base') {
+                  if (newDefFields[fieldName]) {
+                    throw compiler.err(path, `group "${name}" is redefining field "${fieldName}"`);
+                  }
+
+                  newDefFields[fieldName] = { ...base, ...group[fieldName], group: name };
+                }
+              }
+            } else {
+              if (newDefFields[name]) {
+                throw compiler.err(path, `field "${name}" is being redefined (was originally defined in group "${newDefFields[name].group}"`);
+              }
+
+              newDefFields[name] = defFields[name];
+            }
+          }
+
+          // ensure that the ordering is retained
+          for (const field in defFields) {
+            delete defFields[field];
+          }
+
+          for (const field in newDefFields) {
+            defFields[field] = newDefFields[field];
+          }
+        }
+
+        for (const name of _.keys(defFields)) {
           let field = defFields[name];
 
           if (_.isString(field)) {
@@ -1423,15 +1467,16 @@ export default class Collection {
                 delete fields[name];
               }
             }
-            return;
+
+            continue;
           }
 
           const parentFields = parent.fields = parent.fields || {};
           parentFields[name] = field;
           field.parent = parent;
 
-          return compiler.field(path ? path + '.' + name : name, field);
-        });
+          compiler.field(path ? path + '.' + name : name, field);
+        }
       }
     };
 

@@ -263,14 +263,14 @@ describe('tyranid', function() {
     });
   });
 
-  describe( 'schema validation', function() {
+  describe('schema validation', () => {
     afterEach(() => {
       Tyr.forget('t00');
       Tyr.forget('t01');
       Tyr.forget('t02');
     });
 
-    it( 'should error if no name is provided', function() {
+    it('should error if no name is provided', function() {
       expect(function() {
         new Tyr.Collection({
           id: 't00',
@@ -439,6 +439,13 @@ describe('tyranid', function() {
         expect(User.paths['name.first'].parent.pathLabel).to.be.eql('Name');
         expect(User.paths['name.first'].pathLabel).to.be.eql('Name First Name');
         expect(User.paths['name.last'].pathLabel).to.be.eql('Name Last');
+      });
+
+      it('should support field groups', () => {
+        expect(User.fields.$strings).to.be.undefined;
+        expect(User.fields.oldName).to.be.defined;
+        expect(User.fields.oldName.type.def.name).to.eql('string');
+        expect(User.fields.oldName.group).to.eql('$strings');
       });
     });
 

@@ -70,8 +70,6 @@ var User = new tyr.Collection({
       }
     },
 
-    oldName:   { is: 'string', deprecated: 'use name.first and name.last' },
-
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
     job:       { link: 'job' },
     age:       { is: 'integer', in: 'year', historical: true },
@@ -79,7 +77,12 @@ var User = new tyr.Collection({
 
     bag:       { is: 'object' },
 
-    ssn:       { is: 'string', client: 'conditional' },
+    $strings: {
+      $base: { is: 'string' },
+
+      oldName:   { deprecated: 'use name.first and name.last' },
+      ssn:       { client: 'conditional' },
+    },
 
     favoriteColor: { is: 'string', client: (value, opts, proj) => proj && proj.favoriteColor },
 
