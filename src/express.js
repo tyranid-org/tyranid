@@ -97,6 +97,7 @@ class Serializer {
       'defaultValue',
       'denormal',
       'granularity',
+      'group',
       'keys',
       'min',
       'minlength',
