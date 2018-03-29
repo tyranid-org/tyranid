@@ -364,6 +364,7 @@ declare namespace Tyranid {
       enum?: boolean;
       client?: boolean;
       timestamps?: boolean;
+      preserveInitialValues: Function | boolean;
       values?: any[][];
       db?: mongodb.Db;
     }
@@ -383,6 +384,7 @@ declare namespace Tyranid {
       client?: boolean;
       primaryKey?: PrimaryKeyField;
       timestamps?: boolean;
+      preserveInitialValues: Function | boolean;
       express?: {
         rest?: boolean;
         get?: boolean;
