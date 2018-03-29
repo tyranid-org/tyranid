@@ -379,8 +379,13 @@ export default class Collection {
     if (pojo) {
       _.assign(doc, pojo);
 
-      if (pojo._id && this.def.historical) {
-        historical.preserveInitialValues(this, doc);
+      if (pojo._id) {
+        const preserveInitialValues = this.def.preserveInitialValues;
+        if (preserveInitialValues && (preserveInitialValues === true || preserveInitialValues(doc))) {
+          historical.preserveInitialValues(this, doc, true);
+        } else if (this.def.historical) {
+          historical.preserveInitialValues(this, doc);
+        }
       }
     }
   }

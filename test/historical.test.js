@@ -38,10 +38,11 @@ async function expectAsyncToThrow(promise, regex) {
 
 export function add() {
   describe('historical.js', () => {
-    let Organization, User;
+    let Organization, Task, User;
 
     before(() => {
       Organization = Tyr.byName.organization;
+      Task = Tyr.byName.task;
       User = Tyr.byName.user;
     });
 
@@ -331,6 +332,27 @@ export function add() {
       const oCc = oAmy.organization$;
       expect(oCc.$historical).to.be.true;
       expect(oCc.name).to.eql('Concrete Crackers');
+    });
+
+    it('should support preserveInitialValues', async () => {
+      await Task.remove({ _id: 203 });
+
+      let task = new Task({ _id: 203, name: 'Alpha' });
+      await task.$save();
+      task = await Task.byId(203);
+
+      expect(task.$orig).to.be.undefined;
+
+      task = new Task({ _id: 203, name: 'Preservation' });
+      await task.$save();
+      task = await Task.byId(203);
+
+      task.name = 'New';
+
+      expect(task.$orig).to.exist;
+      expect(task.$orig.name).to.eql('Preservation');
+
+      await task.$remove();
     });
   });
 }

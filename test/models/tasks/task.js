@@ -14,6 +14,7 @@ var Task = new tyr.Collection({
   id: 'tsk',
   name: 'task',
   label: 'Issue',
+  preserveInitialValues: user => user.name === 'Preservation',
   fields: {
     _id: { is: 'integer' },
 

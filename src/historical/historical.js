@@ -29,14 +29,24 @@ function preserveInitialValues(collection, doc, props) {
     });
   }
 
-  _.each(props || collection._historicalFields, field => {
-    const n = field.name,
-          v = doc[n];
+  if (props === true) {
+    for (const n in doc.$model.fields) {
+      const v = doc[n];
 
-    if (v !== undefined) {
-      orig[n] = Tyr.cloneDeep(v);
+      if (v !== undefined) {
+        orig[n] = Tyr.cloneDeep(v);
+      }
     }
-  });
+  } else {
+    _.each(props || collection._historicalFields, field => {
+      const n = field.name,
+            v = doc[n];
+
+      if (v !== undefined) {
+        orig[n] = Tyr.cloneDeep(v);
+      }
+    });
+  }
 }
 
 function snapshot(collection, doc, patchProps, diffProps, historyPresent) {
