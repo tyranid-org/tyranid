@@ -12,7 +12,7 @@ const TYPE_DEFINITION_FOLDER = path.join(__dirname, '../test/typings');
 
 async function main() {
   await Tyr.config({
-    validate: [{ glob: path.join(__dirname, '../dist/test/models/**/*.js') }]
+    validate: [{ glob: path.join(__dirname, '../dist/test-models/**/*.js') }]
   });
 
   if (!fs.existsSync(TYPE_DEFINITION_FOLDER))

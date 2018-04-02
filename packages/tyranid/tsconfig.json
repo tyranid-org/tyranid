@@ -9,5 +9,5 @@
     "skipLibCheck": true,
     "lib": ["es2017"]
   },
-  "include": ["src", "test", "./typings/*.ts"]
+  "include": ["src", "test/models"]
 }
