@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution" : "node",
+    "strict": true,
+    "removeComments": false,
+    "pretty": true,
+    "outDir": "./dist/",
+    "inlineSourceMap": true,
+    "lib": [
+      "es2015"
+    ],
+    "types": [
+      "mongodb",
+      "lodash",
+      "tyranid",
+      "commander"
+    ]
+  },
+  "include": [
+    "src",
+    "test",
+    "example/models"
+  ],
+  "exclude": [
+    "node_modules",
+    "test/compile-test",
+    "test/compile-client"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "exclude": "**/test/*",
+  "mode": "file",
+  "module": "commonjs",
+  "target": "ES6",
+  "out": "docs",
+  "excludePrivate": true
+}

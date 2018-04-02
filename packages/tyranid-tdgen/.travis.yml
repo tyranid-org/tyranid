@@ -1,0 +1,20 @@
+language: node_js
+sudo: false
+compiler: gcc-4.8
+env:
+  - CXX=gcc-4.8
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.8
+      - g++-4.8
+node_js:
+  - "8.1.4"
+after_success:
+  - npm run coverage
+cache:
+  yarn: true
+  directories:
+    - node_modules
