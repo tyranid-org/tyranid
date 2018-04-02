@@ -1,10 +1,12 @@
 # Tyranid Monorepo [![Build Status](https://travis-ci.org/tyranid-org/tyranid.svg?branch=es6-conversion)](https://travis-ci.org/tyranid-org/tyranid)
 
-This repository contains all tyranid packages, individually located in [`./packages`](./packages):
+## Packages
 
-- [`tyranid`](./packages/tyranid) [![npm version](https://badge.fury.io/js/tyranid.svg)](https://badge.fury.io/js/tyranid)
-- [`tyranid-tdgen`](./packages/tyranid-tdgen) [![npm version](https://badge.fury.io/js/tyranid-tdgen.svg)](https://badge.fury.io/js/tyranid-tdgen)
-- [`tyranid-graphql`](./packages/tyranid-graphql) [![npm version](https://badge.fury.io/js/tyranid-graphql.svg)](https://badge.fury.io/js/tyranid-graphql)
+| Package                            | Status                                                                               | Description |
+|------------------------------------|--------------------------------------------------------------------------------------|-------------|
+| [tyranid](https://tyranid.org)     | [![npm version](https://badge.fury.io/js/tyranid.svg)](https://badge.fury.io/js/tyranid)                                                     | Tyranid core library |
+| [tyranid-tdgen](https://www.npmjs.com/package/tyranid-tdgen)                      | [![npm version](https://badge.fury.io/js/tyranid-tdgen.svg)](https://badge.fury.io/js/tyranid-tdgen)                                         | TypeScript definition generator for tyranid |
+| [tyranid-graphql](https://www.npmjs.com/package/tyranid-graphql)                      | [![npm version](https://badge.fury.io/js/tyranid-graphql.svg)](https://badge.fury.io/js/tyranid-graphql)                                         | Tyranid GraphQL driver |
 
 ## Development
 
