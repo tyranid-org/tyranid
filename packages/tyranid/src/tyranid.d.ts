@@ -40,6 +40,7 @@ declare namespace Tyranid {
       uid: string
     ): { collection: CollectionInstance; id: IdType };
     export function labelize(name: string): string;
+    export function pluralize(str: string): string;
     export function config(opts: ConfigOptions): Promise<void>;
     export function connect(opts: ConnectOptions): void;
     export function byUid(
@@ -70,6 +71,21 @@ declare namespace Tyranid {
     export function init(): void;
 
     export function validate(opts?: { glob?: string }): void;
+
+    export function isValidObjectIdStr(str: string): boolean;
+    export function isObject<T, O extends object>(obj: T | O): T is O;
+    export function isObjectId<T>(
+      obj: T | mongodb.ObjectID
+    ): obj is mongodb.ObjectID;
+
+    export function parseBson(bson: any): object;
+
+    export function adaptIllegalKeyCharAndEliminateRecursion(
+      obj: RawMongoDocument
+    ): RawMongoDocument;
+
+    export function isCompliant(obj: any, obj: any): boolean;
+    export function isCompliant(obj: any): (obj: any) => boolean;
 
     /**
      * utility methods
@@ -122,10 +138,12 @@ declare namespace Tyranid {
       $model: CollectionInstance<this>;
       $uid: string;
       $label: string;
+      $tyr: Tyr;
 
       // methods
       $remove(opts?: { auth?: Tyr.Document }): Promise<void>;
       $clone(): this;
+      $cloneDeep(): this;
       $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
       $populate(fields: any, denormal?: boolean): Promise<this>;
       $save(opts?: { timestamps?: boolean }): Promise<this>;
@@ -194,6 +212,7 @@ declare namespace Tyranid {
        */
       fields?:
         | { [key: string]: number }
+        | { _history?: boolean }
         | string
         | Array<string | { [key: string]: number }>;
     }
@@ -203,6 +222,8 @@ declare namespace Tyranid {
        * raw mongodb query
        */
       query: MongoQuery;
+
+      historical?: boolean;
     }
 
     export interface OptionsPlain {
@@ -268,9 +289,12 @@ declare namespace Tyranid {
      * Options by operation
      */
 
-    export interface Options_Count extends Options_Exists {}
+    export interface Options_Count extends Options_Exists, OptionsQuery {}
 
-    export interface Options_Exists extends OptionsAuth, OptionsCount {}
+    export interface Options_Exists
+      extends OptionsAuth,
+        OptionsCount,
+        OptionsQuery {}
 
     export interface Options_FindById
       extends OptionsAuth,
@@ -299,7 +323,8 @@ declare namespace Tyranid {
     export interface Options_FindAndModify
       extends OptionsAuth,
         OptionsQuery,
-        OptionsUpdate {
+        OptionsUpdate,
+        OptionsProjection {
       /**
        * whether or not to return a new document in findAndModify
        */
@@ -326,7 +351,10 @@ declare namespace Tyranid {
         OptionsWhere,
         OptionsWindow {}
 
-    export interface Options_ToClient extends OptionsAuth, OptionsPost {}
+    export interface Options_ToClient
+      extends OptionsAuth,
+        OptionsPost,
+        OptionsProjection {}
 
     export interface Options_Update
       extends OptionsAuth,
@@ -394,6 +422,7 @@ declare namespace Tyranid {
       preserveInitialValues?: Function | boolean;
       values?: any[][];
       db?: mongodb.Db;
+      internal?: boolean;
     }
 
     /**
@@ -576,6 +605,7 @@ declare namespace Tyranid {
       store?: any;
       app?: Express.Application;
       auth?: Express.RequestHandler;
+      noClient?: boolean;
     }
 
     export interface CollectionStatic {
@@ -639,7 +669,7 @@ declare namespace Tyranid {
       }): Promise<T>;
 
       find(opts: Options_FindCursor): Promise<Cursor<T>>;
-      findAll(opts: Options_FindMany): Promise<T[]>;
+      findAll(opts: Options_FindMany): Promise<T[] & { count: number }>;
       findOne(opts: Options_FindOne): Promise<T | null>;
 
       /** @deprecated */
@@ -735,6 +765,7 @@ declare namespace Tyranid {
 
       labelify(value: any): Promise<any>;
       labels(text?: string): LabelList;
+      validate(obj: {}): Promise<void>;
     }
 
     export interface NamePathStatic {
