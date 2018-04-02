@@ -17,7 +17,7 @@ npm i -g yarn lerna
 Next, bootstrap the packages:
 
 ```shell
-lerna bootstrap
+yarn
 ```
 
 This will install all the dependences for each package in `./packages`, along
