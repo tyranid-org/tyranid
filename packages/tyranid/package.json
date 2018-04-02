@@ -7,6 +7,7 @@
   "typings": "src/tyranid.d.ts",
   "scripts": {
     "test": "npm run mocha",
+    "build": "npm run tsc",
     "test-travis": "npm run pretest && npm run mocha-coverage",
     "generate-typings": "ts-node ./scripts/generate-typings.js",
     "pretest": "npm run tsc",

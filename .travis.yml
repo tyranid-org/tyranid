@@ -3,6 +3,7 @@ dist: trusty
 sudo: false
 services: mongodb
 script:
+  - sh ./scripts/build.sh
   - sh ./scripts/style-check.sh
   - npm run test --silent
 cache:
