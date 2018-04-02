@@ -29,3 +29,12 @@ To check that the bootstrap was successfully, run the tests using the linked pac
 ```shell
 yarn test
 ```
+
+## Publishing
+
+Lerna provides tools for publishing multiple packages. To check which packages
+have been changed since the last publish, you can run...
+
+```shell
+lerna updated
+```
