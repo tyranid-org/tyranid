@@ -2,6 +2,10 @@
   "name": "tyranid-graphql",
   "version": "0.0.12",
   "description": "GraphQL plugin for tyranid",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tyranid-org/tyranid"
+  },
   "main": "dist/src/index.js",
   "typings": "dist/src/index.d.ts",
   "scripts": {
