@@ -11,7 +11,7 @@
     "build": "rm -rf ./dist/ && npm run tsc",
     "pretest": "rm -rf generated && npm run build",
     "prepublish": "npm run test",
-    "ava": "mkdir generated && nyc ava",
+    "ava": "mkdir generated && ava",
     "test": "npm run ava && npm run compile-test",
     "compile-test": "tsc -p ./test/compile-test/ && tsc -p ./test/compile-client/",
     "tsc": "tsc -d --pretty",
@@ -27,18 +27,6 @@
   },
   "author": "bsouthga@gmail.com",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "ava": "0.16.0",
-    "codecov": "1.0.1",
-    "gh-pages": "1.0.0",
-    "husky": "0.14.3",
-    "nyc": "8.3.0",
-    "prettier": "1.5.2",
-    "ts-node": "^3.2.0",
-    "typedoc": "0.7.1",
-    "typescript": "2.4.1",
-    "tyranid": "^0.4.0"
-  },
   "peerDependencies": {
     "tyranid": "^0.4.0"
   },
@@ -52,11 +40,10 @@
       "dist/src"
     ]
   },
+  "devDependencies": {
+    "@types/lodash": "4.14.65"
+  },
   "dependencies": {
-    "@types/commander": "2.9.1",
-    "@types/lodash": "4.14.65",
-    "@types/node": "6.0.52",
-    "@types/socket.io-client": "^1.4.31",
     "commander": "2.9.0",
     "lodash": "4.17.2"
   }
