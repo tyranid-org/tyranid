@@ -12,7 +12,8 @@
     "tyranid-tdgen": "bin/tyranid-tdgen"
   },
   "scripts": {
-    "build": "rm -rf ./dist/ && tsc",
+    "build": "npm run tsc",
+    "tsc": "rm -rf ./dist/ && tsc",
     "pretest": "rm -rf generated && npm run build",
     "prepublish": "npm run test",
     "ava": "mkdir generated && ava",
