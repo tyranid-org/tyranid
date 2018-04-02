@@ -3,7 +3,7 @@
 run_tests_for() {
   local PACKAGE=$1;
   echo "building $PACKAGE..."
-  (cd ./packages/$PACKAGE && npm run build)
+  `npm bin`/tsc -p ./packages/$PACKAGE
 }
 
 run_tests_for tyranid

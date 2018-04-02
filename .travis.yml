@@ -4,9 +4,6 @@ sudo: false
 cache: yarn
 services: mongodb
 before_script:
-  - ls node_modules
-  - which tsc
-  - ls `npm bin`
   - sh ./scripts/build.sh
 script:
   - sh ./scripts/style-check.sh
