@@ -8,5 +8,3 @@ before_script:
 script:
   - sh ./scripts/style-check.sh
   - npm run test --silent
-cache:
-  yarn: false
