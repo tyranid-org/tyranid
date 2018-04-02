@@ -2107,7 +2107,7 @@ describe('tyranid', () => {
       it('should log simple strings', async () => {
         await Tyr.info('test');
 
-        const logs = await Tyr.byName.log.findAll({
+        const logs = await Tyr.Log.findAll({
           query: { c: { $ne: Log.id } }
         });
         expect(logs.length).to.be.eql(1);
