@@ -5,18 +5,10 @@
     "strict": true,
     "allowJs": true,
     "outDir": "dist",
-    "noLib": false,
-    "lib": [
-      "es2017"
-    ],
-    "jsx": "react",
     "sourceMap": true
   },
   "include": [
     "src",
     "test"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-test() {
+run_tests_for() {
   local PACKAGE=$1;
   echo "running $PACKAGE tests..."
   (cd ./packages/$PACKAGE && npm test)
 }
 
-test tyranid
-test tyranid-tdgen
+run_tests_for tyranid
+run_tests_for tyranid-tdgen

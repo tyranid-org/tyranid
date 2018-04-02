@@ -1,7 +1,0 @@
-node_modules/*
-tmp/*
-docs/*
-.publish/*
-src/*
-test/*
-npm-debug.log

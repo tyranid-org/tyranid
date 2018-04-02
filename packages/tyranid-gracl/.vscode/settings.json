@@ -1,6 +1,0 @@
-{
-  "[typescript]": {
-    "editor.formatOnSave": true,
-  },
-  "tslint.enable": true
-}
