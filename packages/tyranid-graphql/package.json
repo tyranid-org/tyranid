@@ -10,7 +10,7 @@
   "typings": "dist/src/index.d.ts",
   "scripts": {
     "start": "npm run build && node ./dist/test/example/server.js",
-    "build": "rm -rf ./dist/ && tsc -d",
+    "build": "rm -rf ./dist/ && tsc",
     "pretest": "npm run build",
     "prepublish": "npm run test",
     "test": "ava"
