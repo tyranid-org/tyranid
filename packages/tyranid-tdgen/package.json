@@ -15,11 +15,6 @@
     "test": "npm run ava && npm run compile-test",
     "compile-test": "tsc -p ./test/compile-test/ && tsc -p ./test/compile-client/",
     "tsc": "tsc -d --pretty",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "docs": "typedoc --options typedoc.json src",
-    "gh-pages": "npm run docs && gh-pages -d docs",
-    "prettier": "prettier --single-quote --write ./{src,test}/**/*.ts ./{src,test,example}/*.ts",
-    "precommit": "npm run prettier && npm test",
     "generate-examples": "ts-node ./example/generate.ts"
   },
   "engines": {

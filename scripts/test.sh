@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
 
-echo "running tyrand tests..."
-(cd ./packages/tyranid && npm test)
+test() {
+  local PACKAGE=$1;
+  echo "running $PACKAGE tests..."
+  (cd ./packages/$PACKAGE && npm test)
+}
+
+test tyranid
+test tyranid-tdgen
