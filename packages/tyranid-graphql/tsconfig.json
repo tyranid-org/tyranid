@@ -2,13 +2,14 @@
   "compilerOptions": {
     "target": "es2015",
     "module": "commonjs",
-    "moduleResolution" : "node",
+    "moduleResolution": "node",
+    "declaration": true,
     "strict": true,
     "removeComments": false,
     "noLib": false,
     "skipLibCheck": true,
     "pretty": true,
-    "outDir": "./dist/",
+    "outDir": "./dist/"
   },
   "files": [
     "./test/index.ts",
