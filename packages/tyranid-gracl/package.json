@@ -1,0 +1,48 @@
+{
+  "name": "tyranid-gracl",
+  "version": "0.4.0",
+  "description": "tyranid.js plugin for gracl",
+  "keywords": [
+    "graph",
+    "acl",
+    "permissions",
+    "permission",
+    "tyranid",
+    "gracl"
+  ],
+  "main": "./dist/src/index.js",
+  "typings": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "rm -rf ./dist/ ./test/spec/types && npm run lint && npm run generate-collection-types && npm run tsc && npm run compile-module-test",
+    "pretest": "npm run build",
+    "prepublish": "npm run test",
+    "test": "ava",
+    "prettier": "prettier --loglevel error --single-quote true --write './{src,test}/**/*.ts'",
+    "prettier-test": "echo 'ensuring prettier formatting...' && RESULT=$(npm run prettier > /dev/null && git diff-index --name-only HEAD --) && if [ -n \"$RESULT\" ]; then echo \"Need to format:\n$RESULT\" && exit 1; else exit 0; fi",
+    "compile-module-test": "cd ./test/tscompile && tsc --pretty",
+    "tsc": "tsc -d --pretty -p ./",
+    "lint": "tslint --fix -e ./test/spec/types -c ./tslint.json './{test,src}/**/*.ts' --exclude './test/spec/types/**/*.ts' && echo '> \\033[0;32mlinter passed!\\033[0m'",
+    "compile-collections": "tsc -p ./test/models",
+    "generate-collection-types": "npm run compile-collections && mkdir -p test/spec/types &&  tyranid-tdgen -o './test/spec/types/isomorphic.d.ts' './dist/test/models/**/*.js' && tyranid-tdgen -o './test/spec/types/server.d.ts' -t server './dist/test/models/**/*.js'"
+  },
+  "engines": {
+    "node": ">=8.4.0"
+  },
+  "author": "bsouthga@gmail.com",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/express": "4.0.36",
+    "@types/lodash": "4.14.104",
+    "@types/mongodb": "2.2.7",
+    "gracl": "0.0.16",
+    "lodash": "4.17.2"
+  },
+  "peerDependencies": {
+    "tyranid": "^0.4.53"
+  },
+  "ava": {
+    "files": [
+      "dist/test/spec/**/*.js"
+    ]
+  }
+}
