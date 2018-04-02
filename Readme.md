@@ -23,3 +23,9 @@ lerna bootstrap
 This will install all the dependences for each package in `./packages`, along
 with the dev dependencies in the root `./package.json` file. Finally, it
 simlinks the built packages to `./node_modules` to allow the packages to reference eachother.
+
+To check that the bootstrap was successfully, run the tests using the linked packages:
+
+```shell
+yarn test
+```
