@@ -6,7 +6,6 @@
     "allowJs": true,
     "outDir": "dist",
     "noLib": false,
-    "allowSyntheticDefaultImports": true,
     "lib": [
       "es2017"
     ],
