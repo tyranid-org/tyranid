@@ -22,9 +22,6 @@
   },
   "author": "bsouthga@gmail.com",
   "license": "Apache-2.0",
-  "peerDependencies": {
-    "tyranid": "^0.4.0"
-  },
   "ava": {
     "files": [
       "dist/test/index.js"
@@ -35,11 +32,14 @@
       "dist/src"
     ]
   },
-  "devDependencies": {
-    "@types/lodash": "4.14.65"
+  "peerDependencies": {
+    "tyranid": "^0.4.0"
   },
   "dependencies": {
     "commander": "2.9.0",
     "lodash": "4.17.2"
+  },
+  "devDependencies": {
+    "@types/lodash": "4.14.65"
   }
 }
