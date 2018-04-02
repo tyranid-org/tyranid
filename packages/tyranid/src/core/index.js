@@ -1,8 +1,7 @@
-
-import * as _               from 'lodash';
+import * as _ from 'lodash';
 import * as stableStringify from 'json-stable-stringify';
 
-import Tyr                  from '../tyr';
+import Tyr from '../tyr';
 
 async function syncIndexes(col) {
   const indexes = col.def.indexes;
@@ -22,7 +21,9 @@ async function syncIndexes(col) {
     const alwaysInclude = new Set(['_id_']);
 
     const existingIndexesByName = _.indexBy(existingIndexes, i => toName(i));
-    const existingIndexesByKey = _.indexBy(existingIndexes, i => stableStringify(i.key));
+    const existingIndexesByKey = _.indexBy(existingIndexes, i =>
+      stableStringify(i.key)
+    );
 
     const create = [];
     const keep = [];
@@ -32,7 +33,10 @@ async function syncIndexes(col) {
       const keyHash = stableStringify(index.key);
       const nameHash = toName(index);
       // there is a match for the key and the name (might not be the same matching index!)
-      if (keyHash in existingIndexesByKey && nameHash in existingIndexesByName) {
+      if (
+        keyHash in existingIndexesByKey &&
+        nameHash in existingIndexesByName
+      ) {
         // the index in the tyranid array has an identical existing index,
         if (existingIndexesByKey[keyHash] === existingIndexesByName[nameHash]) {
           // we want to keep this one
@@ -66,7 +70,11 @@ async function syncIndexes(col) {
     for (const index of create) {
       const name = toName(index);
       if (createIndexesByName[name] !== index) {
-        throw new Error(`Tried to create two indexes named ${name} for collection ${col.def.name}`);
+        throw new Error(
+          `Tried to create two indexes named ${name} for collection ${
+            col.def.name
+          }`
+        );
       }
     }
 
@@ -78,16 +86,17 @@ async function syncIndexes(col) {
       const key = stableStringify(index.key);
       if (createIndexesByKey[key] !== index) {
         throw new Error(
-          `Tried to create two indexes with key = ${
-            JSON.stringify(index.key, null, 2)
-          } for collection ${col.def.name}`
+          `Tried to create two indexes with key = ${JSON.stringify(
+            index.key,
+            null,
+            2
+          )} for collection ${col.def.name}`
         );
       }
     }
 
-    const remove = existingIndexes.filter(i =>
-      !alwaysInclude.has(toName(i)) &&
-      !keep.some(k => k === i)
+    const remove = existingIndexes.filter(
+      i => !alwaysInclude.has(toName(i)) && !keep.some(k => k === i)
     );
 
     await Promise.all(remove.map(i => col.db.dropIndex(i.key)));
@@ -96,7 +105,11 @@ async function syncIndexes(col) {
       try {
         await col.db.createIndexes(create);
       } catch (err) {
-        console.error(`Problem when creating indexes on collection "${col.def.name}":\n\n`, create, '\n');
+        console.error(
+          `Problem when creating indexes on collection "${col.def.name}":\n\n`,
+          create,
+          '\n'
+        );
         throw err;
       }
     }
@@ -104,10 +117,10 @@ async function syncIndexes(col) {
 }
 
 function toName(index) {
-  if ( index.name ) {
+  if (index.name) {
     return index.name;
   }
-  let ret = "";
+  let ret = '';
   const key = index.key;
   // TODO: this is potentially a bug,
   // as `for in` is based on property creation order

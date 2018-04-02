@@ -77,7 +77,7 @@ export function generateFile(
 ): Promise<string> {
   return new Promise((res, rej) => {
     const td = resolveGenerationMethod(opts.type)(collections, opts);
-    fs.writeFile(filename, td, (err) => {
+    fs.writeFile(filename, td, err => {
       if (err) rej(err);
       res(td);
     });

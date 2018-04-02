@@ -1,11 +1,10 @@
 import * as _ from 'lodash';
 
 import { evaluateClient } from '../common';
-import Tyr             from '../tyr';
+import Tyr from '../tyr';
 import ValidationError from './validationError';
 
 export default class Type {
-
   constructor(def) {
     this.def = def;
     this.name = def.name;
@@ -33,7 +32,9 @@ export default class Type {
     if (f) {
       return f();
     } else {
-      throw new Error(`Type "${this.name}" does not support generatePrimaryKeyVal()`);
+      throw new Error(
+        `Type "${this.name}" does not support generatePrimaryKeyVal()`
+      );
     }
   }
 
@@ -74,8 +75,10 @@ export default class Type {
   toClient(field, value, doc, opts, proj) {
     const def = this.def;
 
-    if (!evaluateClient(def.client, field.name, doc, value, opts, proj) ||
-        !evaluateClient(field.def.client, field.name, doc, value, opts, proj)) {
+    if (
+      !evaluateClient(def.client, field.name, doc, value, opts, proj) ||
+      !evaluateClient(field.def.client, field.name, doc, value, opts, proj)
+    ) {
       return undefined;
     }
 

@@ -101,11 +101,13 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
   /**
    * Static properties for enum collection "${colName}"
    */
-  export interface ${staticName} ${!properties.length
-    ? '{}'
-    : `{
+  export interface ${staticName} ${
+    !properties.length
+      ? '{}'
+      : `{
     ${properties.join('\n')}
 
-  }`}
+  }`
+  }
   `;
 }

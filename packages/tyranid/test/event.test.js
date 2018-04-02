@@ -1,17 +1,12 @@
+import * as _ from 'lodash';
+import * as chai from 'chai';
+import * as mongodb from 'mongodb';
 
-import * as _                    from 'lodash';
-import * as chai                 from 'chai';
-import * as mongodb              from 'mongodb';
+import Tyr from '../src/tyranid';
 
-import Tyr                       from '../src/tyranid';
+const { ObjectId } = mongodb;
 
-const {
-  ObjectId
-} = mongodb;
-
-const {
-  expect,
-} = chai;
+const { expect } = chai;
 
 export function add() {
   describe('event.js', () => {
@@ -23,14 +18,17 @@ export function add() {
     });
 
     it('should allow you to register events and unregister', async () => {
-      const dereg = User.on({ type: 'remove', handler(/*event*/) {}});
+      const dereg = User.on({ type: 'remove', handler(/*event*/) {} });
       dereg();
     });
 
     it('should allow you to cancel removes on $remove()', async () => {
-      const dereg = User.on({ type: 'remove', handler(/*event*/) {
-        throw new Error('stop');
-      }});
+      const dereg = User.on({
+        type: 'remove',
+        handler(/*event*/) {
+          throw new Error('stop');
+        }
+      });
 
       let u1;
       try {
@@ -53,9 +51,12 @@ export function add() {
     });
 
     it('should allow you to cancel removes on Collection.remove()', async () => {
-      const dereg = User.on({ type: 'remove', handler(/*event*/) {
-        throw new Error('stop');
-      }});
+      const dereg = User.on({
+        type: 'remove',
+        handler(/*event*/) {
+          throw new Error('stop');
+        }
+      });
 
       let u1;
       try {
@@ -115,7 +116,7 @@ export function add() {
           invoked++;
           for (const doc of await event.documents) {
             if (event.when === 'pre') {
-                doc.pages = doc.pages ? doc.pages + 1 : 1;
+              doc.pages = doc.pages ? doc.pages + 1 : 1;
             } else {
               expect(doc.pages).to.eql(1);
               expect(doc._id).to.not.be.undefined;
@@ -148,8 +149,8 @@ export function add() {
 
     it('should work with distinction between insert, update, and change', async () => {
       let insertInvoked = 0,
-          updateInvoked = 0,
-          changeInvoked = 0;
+        updateInvoked = 0,
+        changeInvoked = 0;
 
       const dereg1 = Book.on({
         type: 'insert',
@@ -179,7 +180,6 @@ export function add() {
         book.pages = 1;
         await book.$save();
         expect([insertInvoked, updateInvoked, changeInvoked]).to.eql([1, 1, 2]);
-
       } finally {
         dereg1();
         dereg2();
@@ -225,7 +225,7 @@ export function add() {
 
     it('should not allow you to set up a pre find listener', async () => {
       expect(() => {
-        User.on({ type: 'find', when: 'pre', handler() {}});
+        User.on({ type: 'find', when: 'pre', handler() {} });
       }).to.throw();
     });
 
@@ -240,7 +240,10 @@ export function add() {
       });
 
       try {
-        const users = await User.findAll({ query: { _id: { $lte: 4 } }, sort: { _id: 1 } });
+        const users = await User.findAll({
+          query: { _id: { $lte: 4 } },
+          sort: { _id: 1 }
+        });
 
         expect(users.length).to.eql(4);
         expect(users[0].manufacturedId).to.eql('ID1');
@@ -264,7 +267,7 @@ export function add() {
         const cursor = await User.find({ query: { _id: { $lte: 4 } } });
 
         let user;
-        while ( (user = await cursor.next()) ) {
+        while ((user = await cursor.next())) {
           expect(user.manufacturedId).to.eql('ID' + user._id);
         }
       } finally {

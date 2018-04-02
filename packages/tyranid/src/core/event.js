@@ -1,4 +1,3 @@
-
 import * as moment from 'moment';
 
 import Tyr from '../tyr';
@@ -7,7 +6,6 @@ import Instance from './instance';
 
 /** @isomorphic */
 Collection.prototype.on = function(opts) {
-
   const { type } = opts;
 
   let types;
@@ -41,18 +39,18 @@ Collection.prototype.on = function(opts) {
 
     if (!opts.when) {
       switch (type) {
-      case 'find':
-        opts.when = 'post';
-        break;
-      default:
-        opts.when = 'pre';
+        case 'find':
+          opts.when = 'post';
+          break;
+        default:
+          opts.when = 'pre';
       }
     } else {
       switch (type) {
-      case 'find':
-        if (opts.when === 'pre') {
-          throw new Error(`"find" event does not support "when: pre"`);
-        }
+        case 'find':
+          if (opts.when === 'pre') {
+            throw new Error(`"find" event does not support "when: pre"`);
+          }
       }
     }
 
@@ -62,7 +60,7 @@ Collection.prototype.on = function(opts) {
   return function() {
     for (const opts of optsArr) {
       const handlers = events[opts.type],
-            idx = handlers.indexOf(opts);
+        idx = handlers.indexOf(opts);
 
       if (idx >= 0) {
         handlers.splice(idx, 1);
@@ -77,9 +75,7 @@ Collection.prototype.fire = function(event) {
 };
 
 class EventCancelError {
-
-  constructor() {
-  }
+  constructor() {}
 
   get message() {
     return 'Cancel from event handler';
@@ -93,7 +89,6 @@ class EventCancelError {
 Tyr.EventCancelError = EventCancelError;
 
 export default class Event {
-
   constructor(data) {
     for (const p in data) {
       const v = data[p];
@@ -133,12 +128,14 @@ export default class Event {
   }
 
   get dataCollection() {
-    return this.dataCollectionId ? Tyr.byId[this.dataCollectionId] : this.collection;
+    return this.dataCollectionId
+      ? Tyr.byId[this.dataCollectionId]
+      : this.collection;
   }
 
   get documents() {
     if (this.document) {
-      return Promise.resolve([ this.document ]);
+      return Promise.resolve([this.document]);
     } else if (this._documents) {
       return Promise.resolve(this._documents);
     } else if (this.query) {
@@ -147,7 +144,10 @@ export default class Event {
   }
 
   static async fire(event) {
-    const instanceId = (event.instanceId && event.instanceId !== Tyr.instanceId) ? event.instanceId : undefined;
+    const instanceId =
+      event.instanceId && event.instanceId !== Tyr.instanceId
+        ? event.instanceId
+        : undefined;
 
     if (!instanceId) {
       await Event.handle(event);
@@ -172,14 +172,20 @@ export default class Event {
     const instances = await Instance.findAll({
       query: {
         _id: instanceId || { $ne: Tyr.instanceId },
-        lastAliveOn: { $gte: moment().subtract(30, 'minutes').toDate() }
+        lastAliveOn: {
+          $gte: moment()
+            .subtract(30, 'minutes')
+            .toDate()
+        }
       }
     });
 
     const adaptedEvent = Tyr.adaptIllegalKeyCharAndEliminateRecursion(event);
     //con sole.log(Tyr.instanceId + ' *** broadcasting to ', instances.map(i => i._id));
     await Promise.all(
-      instances.map(instance => Tyr.db.collection(instance._id + '_event').save(adaptedEvent))
+      instances.map(instance =>
+        Tyr.db.collection(instance._id + '_event').save(adaptedEvent)
+      )
     );
   }
 
@@ -211,7 +217,7 @@ export default class Event {
 
               const rslt = await onOpts.handler(event);
               //if (rslt.then) {
-                //await rslt;
+              //await rslt;
               //}
 
               if (rslt === false) {
@@ -233,5 +239,3 @@ export default class Event {
 }
 
 Tyr.Event = Event;
-
-export default Event;

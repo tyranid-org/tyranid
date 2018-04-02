@@ -1,7 +1,6 @@
+import * as _ from 'lodash';
 
-import * as _     from 'lodash';
-
-import Tyr        from '../tyr';
+import Tyr from '../tyr';
 import ObjectType from '../type/object';
 import historical from '../historical/historical';
 
@@ -20,8 +19,7 @@ export function toPlain(doc) {
   return plain;
 }
 
-export const documentPrototype = Tyr.documentPrototype = {
-
+export const documentPrototype = (Tyr.documentPrototype = {
   $asOf(date, props) {
     historical.asOf(this.$model, this, date, props);
   },
@@ -41,7 +39,7 @@ export const documentPrototype = Tyr.documentPrototype = {
       if (keys === Tyr.$all) {
         _.each(this.$model.fields, field => {
           const key = field.name,
-                v   = obj[key];
+            v = obj[key];
 
           if (v !== undefined) {
             this[key] = v;
@@ -77,7 +75,7 @@ export const documentPrototype = Tyr.documentPrototype = {
     }
 
     const opts = extractOptions(collection, args),
-          updateFields = extractUpdateFields(this, opts);
+      updateFields = extractUpdateFields(this, opts);
 
     return historical.snapshot(
       collection,
@@ -101,9 +99,23 @@ export const documentPrototype = Tyr.documentPrototype = {
   },
 
   async $remove() {
-    await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'pre', document: this });
-    const rslt = await this.$model.remove({ [this.$model.def.primaryKey.field]: this.$id }, '$remove', ...arguments);
-    await Tyr.Event.fire({ collection: this.$model, type: 'remove', when: 'post', document: this });
+    await Tyr.Event.fire({
+      collection: this.$model,
+      type: 'remove',
+      when: 'pre',
+      document: this
+    });
+    const rslt = await this.$model.remove(
+      { [this.$model.def.primaryKey.field]: this.$id },
+      '$remove',
+      ...arguments
+    );
+    await Tyr.Event.fire({
+      collection: this.$model,
+      type: 'remove',
+      when: 'post',
+      document: this
+    });
     return rslt;
   },
 
@@ -130,8 +142,7 @@ export const documentPrototype = Tyr.documentPrototype = {
   $validate() {
     return ObjectType.validate(this.$model, this);
   }
-
-};
+});
 
 export function defineDocumentProperties(dp) {
   Object.defineProperties(dp, {
@@ -139,7 +150,7 @@ export function defineDocumentProperties(dp) {
       get() {
         return this[this.$model.def.primaryKey.field];
       },
-      enumerable:   false,
+      enumerable: false,
       configurable: false
     },
 
@@ -147,7 +158,7 @@ export function defineDocumentProperties(dp) {
       get() {
         return this.$model.labelFor(this);
       },
-      enumerable:   false,
+      enumerable: false,
       configurable: false
     },
 
@@ -155,7 +166,7 @@ export function defineDocumentProperties(dp) {
       get() {
         return Tyr;
       },
-      enumerable:   false,
+      enumerable: false,
       configurable: false
     },
 
@@ -164,7 +175,7 @@ export function defineDocumentProperties(dp) {
         const model = this.$model;
         return model.idToUid(this[model.def.primaryKey.field]);
       },
-      enumerable:   false,
+      enumerable: false,
       configurable: false
     }
   });

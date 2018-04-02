@@ -5,8 +5,8 @@ var Department = {
   is: 'object',
 
   fields: {
-    secondName: { is: 'string'},
-    department: { link: 'department'}
+    secondName: { is: 'string' },
+    department: { link: 'department' }
   }
 };
 
@@ -22,7 +22,7 @@ var Task = new tyr.Collection({
     assigneeUid: {
       is: 'uid',
       label: 'Assignee UID',
-      of: [ User, 'department' ]
+      of: [User, 'department']
     },
     departments: { is: 'array', of: Department },
     manual: { link: 'book' }

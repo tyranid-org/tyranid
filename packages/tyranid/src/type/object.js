@@ -13,9 +13,15 @@ const ObjectType = new Type({
     }
 
     if (def.keys && !def.of) {
-      throw compiler.err(field.path, '"of" must be specified if "keys" is present');
+      throw compiler.err(
+        field.path,
+        '"of" must be specified if "keys" is present'
+      );
     } else if (!def.keys && def.of) {
-      throw compiler.err(field.path, '"keys" must be specified if "of" is present');
+      throw compiler.err(
+        field.path,
+        '"keys" must be specified if "of" is present'
+      );
     }
 
     compiler.type(field, 'keys');
@@ -32,7 +38,6 @@ const ObjectType = new Type({
     if (!_.size(fields)) {
       // this is defined as just an empty object, meaning it's 100% dynamic, grab everything
       return value;
-
     } else {
       const obj = {};
 
@@ -41,7 +46,9 @@ const ObjectType = new Type({
 
         if (field) {
           if (!field.type) {
-            throw new Error('collection missing type ("is"), missing from schema?');
+            throw new Error(
+              'collection missing type ("is"), missing from schema?'
+            );
           }
 
           obj[k] = field.type.fromClient(field, v);

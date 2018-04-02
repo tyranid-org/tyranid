@@ -1,10 +1,14 @@
-
-import * as _            from 'lodash';
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
 function equalCustomizer(a, b) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
-  if (a && b && a.constructor.name === 'ObjectID' && b.constructor.name === 'ObjectID') {
+  if (
+    a &&
+    b &&
+    a.constructor.name === 'ObjectID' &&
+    b.constructor.name === 'ObjectID'
+  ) {
     return a.equals(b);
   }
 
@@ -45,7 +49,6 @@ function adaptIllegalKeyCharAndEliminateRecursion(q) {
   const seen = new Map();
 
   const hasIllegalKeyCharOrRecursion = q => {
-
     if (Tyr.isObject(q)) {
       const r = seen.get(q);
       if (r !== undefined) return r;
@@ -54,7 +57,10 @@ function adaptIllegalKeyCharAndEliminateRecursion(q) {
       seen.set(q, false);
 
       for (const p in q) {
-        if (illegalKeyCharPattern.test(p) || hasIllegalKeyCharOrRecursion(q[p]) !== undefined) {
+        if (
+          illegalKeyCharPattern.test(p) ||
+          hasIllegalKeyCharOrRecursion(q[p]) !== undefined
+        ) {
           seen.set(q, true);
           return true;
         }
@@ -151,7 +157,7 @@ const Tyr = {
       return name + 'zes';
     } else if (name.match(/[b-df-hj-np-tv-z]y$/)) {
       return name.substring(0, name.length - 1) + 'ies';
-    //} else if (name.match(/[b-df-hj-np-tv-z]o$/)) {
+      //} else if (name.match(/[b-df-hj-np-tv-z]o$/)) {
       // works for potato, volcano, etc. but not photo ... prob need lodash-inflection to fix this up
       //return name + 's';
     } else if (name.match(/is$/)) {
@@ -227,7 +233,9 @@ const Tyr = {
 
   isEqual(a, b) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
-    return _.isEqualWith ? _.isEqualWith(a, b, equalCustomizer) : _.isEqual(a, b, equalCustomizer);
+    return _.isEqualWith
+      ? _.isEqualWith(a, b, equalCustomizer)
+      : _.isEqual(a, b, equalCustomizer);
   },
 
   isSameId(a, b) {
@@ -256,7 +264,10 @@ const Tyr = {
 
   isObject(value) {
     // want to treat ObjectIds as primitive values in most places
-    return _.isObject(value) && (!value.constructor || value.constructor.name !== 'ObjectID');
+    return (
+      _.isObject(value) &&
+      (!value.constructor || value.constructor.name !== 'ObjectID')
+    );
   },
 
   isObjectId(value) {
@@ -265,7 +276,9 @@ const Tyr = {
 
   cloneDeep(obj) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
-    return _.cloneDeepWith ? _.cloneDeepWith(obj, cloneCustomizer) : _.cloneDeep(obj, cloneCustomizer);
+    return _.cloneDeepWith
+      ? _.cloneDeepWith(obj, cloneCustomizer)
+      : _.cloneDeep(obj, cloneCustomizer);
   },
 
   parseBson(value) {
@@ -273,14 +286,16 @@ const Tyr = {
 
     if (_.isObject(value) && (bsontype = value._bsontype)) {
       switch (bsontype) {
-      case 'ObjectID':
-        // 2.2 driver stores id as Buffer compared to string for 2.1
-        // See http://mongodb.github.io/node-mongodb-native/2.2/api/ObjectID.html#generate
-        // and http://mongodb.github.io/node-mongodb-native/2.1/api/ObjectID.html#generate
-        // and linked sources
-        return new ObjectId(value.id instanceof Buffer ? value.id : convertStrToHex(value.id));
+        case 'ObjectID':
+          // 2.2 driver stores id as Buffer compared to string for 2.1
+          // See http://mongodb.github.io/node-mongodb-native/2.2/api/ObjectID.html#generate
+          // and http://mongodb.github.io/node-mongodb-native/2.1/api/ObjectID.html#generate
+          // and linked sources
+          return new ObjectId(
+            value.id instanceof Buffer ? value.id : convertStrToHex(value.id)
+          );
 
-      // fall through
+        // fall through
       }
     }
 
@@ -310,7 +325,7 @@ const Tyr = {
   },
 
   pullAll(array, ...values) {
-    const an  = array.length;
+    const an = array.length;
     let tai = 0;
 
     for (let sai = 0; sai < an; sai++) {
@@ -337,15 +352,13 @@ const Tyr = {
  * @param s the specificiation
  * @param v the value
  */
-const isCompliant = Tyr.isCompliant = function(s, v) {
-
+const isCompliant = (Tyr.isCompliant = function(s, v) {
   if (arguments.length === 1) {
     return v2 => isCompliant(s, v2);
   }
 
   if (Tyr.isEqual(s, v)) {
     return true;
-
   } else if (Array.isArray(s)) {
     if (Array.isArray(v)) {
       for (let i = 0; i < s.length; i++) {
@@ -364,7 +377,6 @@ const isCompliant = Tyr.isCompliant = function(s, v) {
     }
 
     return false;
-
   } else if (Array.isArray(v)) {
     for (let i = 0; i < v.length; i++) {
       if (isCompliant(s, v[i])) {
@@ -387,13 +399,11 @@ const isCompliant = Tyr.isCompliant = function(s, v) {
     }
 
     return true;
-
   } else if (_.isObject(v)) {
     return false;
-
   }
 
   return false;
-};
+});
 
 export default Tyr;

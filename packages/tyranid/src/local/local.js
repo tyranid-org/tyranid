@@ -1,10 +1,9 @@
-
 import Tyr from '../tyr';
 
 let initialized = false,
-    cls,
-    ns,
-    local;
+  cls,
+  ns,
+  local;
 
 function init() {
   if (Tyr.options.cls !== false) {
@@ -33,9 +32,9 @@ function init() {
       }
 
       Object.defineProperty(local, name, {
-        get:          ()    => ns.get(name),
-        set:          value => ns.set(name, value),
-        enumerable:   true,
+        get: () => ns.get(name),
+        set: value => ns.set(name, value),
+        enumerable: true,
         configurable: false
       });
     }

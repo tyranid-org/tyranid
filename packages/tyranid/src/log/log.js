@@ -1,10 +1,9 @@
+import * as os from 'os';
 
-import * as os         from 'os';
-
-import * as _          from 'lodash';
-import * as util       from 'util';
-import * as moment     from 'moment';
-import * as chalk      from 'chalk';
+import * as _ from 'lodash';
+import * as util from 'util';
+import * as moment from 'moment';
+import * as chalk from 'chalk';
 
 //import onHeaders  from 'on-headers';
 import * as onFinished from 'on-finished';
@@ -33,13 +32,13 @@ import UserAgent from './userAgent';
  */
 
 const logLevelValues = [
-  [     1, 'trace', 'T',    'trace'   ],
-  [     2, 'log',   'L',    'log'     ],
-  [     3, 'info',  'I',    'info'    ],
-  [     4, 'warn',  'W',    'warn'    ],
-  [     5, 'error', 'E',    'error'   ],
-  [     6, 'fatal', 'F',    'error'   ],
-  [     7, 'never', 'N',    undefined ]
+  [1, 'trace', 'T', 'trace'],
+  [2, 'log', 'L', 'log'],
+  [3, 'info', 'I', 'info'],
+  [4, 'warn', 'W', 'warn'],
+  [5, 'error', 'E', 'error'],
+  [6, 'fatal', 'F', 'error'],
+  [7, 'never', 'N', undefined]
 ];
 
 const LogLevel = new Collection({
@@ -49,15 +48,15 @@ const LogLevel = new Collection({
   internal: true,
   enum: true,
   fields: {
-    _id:    { is: 'integer' },
-    name:   { is: 'string', labelField: true },
-    code:   { is: 'string' },
-    method: { is: 'string', help: 'The console.X() method to use when logging to the console.' }
+    _id: { is: 'integer' },
+    name: { is: 'string', labelField: true },
+    code: { is: 'string' },
+    method: {
+      is: 'string',
+      help: 'The console.X() method to use when logging to the console.'
+    }
   },
-  values: [
-    [ '_id', 'name',  'code', 'method'  ],
-    ...logLevelValues
-  ]
+  values: [['_id', 'name', 'code', 'method'], ...logLevelValues]
 });
 
 const LogEvent = new Collection({
@@ -67,16 +66,16 @@ const LogEvent = new Collection({
   internal: true,
   enum: true,
   fields: {
-    _id:   { is: 'string' },
+    _id: { is: 'string' },
     label: { is: 'string', labelField: true },
     notes: { is: 'string' }
   },
   values: [
-    [ '_id',          'label',         'notes'                    ],
-    [ 'http',         'HTTP',          'HTTP Requests'            ],
-    [ 'db',           'Database',      'Database Requests'        ],
-    [ 'historical',   'Historical',    'Historical diagnostics'   ],
-    [ 'subscription', 'Subscriptions', 'Subscription diagnostics' ]
+    ['_id', 'label', 'notes'],
+    ['http', 'HTTP', 'HTTP Requests'],
+    ['db', 'Database', 'Database Requests'],
+    ['historical', 'Historical', 'Historical diagnostics'],
+    ['subscription', 'Subscriptions', 'Subscription diagnostics']
   ]
 });
 
@@ -86,29 +85,33 @@ const Log = new Collection({
   client: false,
   internal: true,
   fields: {
-    _id:   { is: 'mongoid' },
-    l:     { link: 'tyrLogLevel',  label: 'Level'                },
-    i:     { link: 'tyrInstance',  label: 'Instance'             },
-    e:     { link: 'tyrLogEvent',  label: 'Event'                },
-    m:     { is: 'string',         label: 'Message'              },
-    u:     { link: 'user?',        label: 'User'                 },
-    st:    { is: 'string',         label: 'Stack Trace'          },
-    on:    { is: 'date',           label: 'On'                   },
-    du:    { is: 'integer',        label: 'Duration',   in: 'ns' },
-    hn:    { is: 'string',         label: 'Host Name'            },
-    r:     { is: 'object',         label: 'Request', fields: {
-      p:   { is: 'string',         label: 'Path'                 },
-      m:   { is: 'string',         label: 'Method'               },
-      ip:  { is: 'string',         label: 'Remote IP'            },
-      ua:  { link: 'tyrUserAgent', label: 'User Agent'           },
-      q:   { is: 'object',         label: 'Query'                },
-      sid: { is: 'string',         label: 'Session ID'           },
-      sc:  { is: 'integer',        label: 'Status Code'          },
-    }},
-    c:     { is: 'string',         label: 'Collection ID'        },
-    q:     { is: 'object',         label: 'Query'                },
-    upd:   { is: 'object',         label: 'findAndModify update' },
-  },
+    _id: { is: 'mongoid' },
+    l: { link: 'tyrLogLevel', label: 'Level' },
+    i: { link: 'tyrInstance', label: 'Instance' },
+    e: { link: 'tyrLogEvent', label: 'Event' },
+    m: { is: 'string', label: 'Message' },
+    u: { link: 'user?', label: 'User' },
+    st: { is: 'string', label: 'Stack Trace' },
+    on: { is: 'date', label: 'On' },
+    du: { is: 'integer', label: 'Duration', in: 'ns' },
+    hn: { is: 'string', label: 'Host Name' },
+    r: {
+      is: 'object',
+      label: 'Request',
+      fields: {
+        p: { is: 'string', label: 'Path' },
+        m: { is: 'string', label: 'Method' },
+        ip: { is: 'string', label: 'Remote IP' },
+        ua: { link: 'tyrUserAgent', label: 'User Agent' },
+        q: { is: 'object', label: 'Query' },
+        sid: { is: 'string', label: 'Session ID' },
+        sc: { is: 'integer', label: 'Status Code' }
+      }
+    },
+    c: { is: 'string', label: 'Collection ID' },
+    q: { is: 'object', label: 'Query' },
+    upd: { is: 'object', label: 'findAndModify update' }
+  }
 });
 
 //
@@ -122,17 +125,17 @@ function error(msg) {
 
 async function log(level, ...opts) {
   const logging = Tyr.logging,
-        levelId = level._id;
+    levelId = level._id;
 
   if (levelId < logging.min) return;
 
   const externalLevel = logging.external,
-        consoleLevel = logging.console,
-        dbLevel = logging.db;
+    consoleLevel = logging.console,
+    dbLevel = logging.db;
 
   const local = Tyr.local;
-  let req   = local.req,
-      res   = local.res;
+  let req = local.req,
+    res = local.res;
 
   const obj = {};
 
@@ -193,11 +196,16 @@ async function log(level, ...opts) {
     const ua = await UserAgent.by(req.headers['user-agent']);
 
     r = obj.r = {
-      p:  req.path,
-      m:  req.method,
-      ip: req.headers['X-Forwarded-For'] || req.ip || req._remoteAddress || (req.connection && req.connection.remoteAddress) || undefined,
+      p: req.path,
+      m: req.method,
+      ip:
+        req.headers['X-Forwarded-For'] ||
+        req.ip ||
+        req._remoteAddress ||
+        (req.connection && req.connection.remoteAddress) ||
+        undefined,
       ua: ua._id,
-      q:  Tyr.adaptIllegalKeyCharAndEliminateRecursion(req.query)
+      q: Tyr.adaptIllegalKeyCharAndEliminateRecursion(req.query)
     };
 
     const sid = req.cookies && req.cookies['connect.sid'];
@@ -211,7 +219,7 @@ async function log(level, ...opts) {
   }
 
   if (levelId >= consoleLevel) {
-    let str = (level._id >= LogLevel.WARN ? chalk.red(level.code) : level.code);
+    let str = level._id >= LogLevel.WARN ? chalk.red(level.code) : level.code;
     str += ' ' + chalk.yellow(moment(obj.on).format('YYYY.M.D HH:mm:ss'));
     if (obj.e) {
       str += '|' + obj.e;
@@ -227,7 +235,8 @@ async function log(level, ...opts) {
         const sc = res.statusCode;
         str += ' ' + (sc === 200 ? chalk.green('200') : chalk.red(sc));
       }
-      str += ' ' + Log.fields.du.in.convert(obj.du, Tyr.U`ms`).toFixed(2) + 'ms';
+      str +=
+        ' ' + Log.fields.du.in.convert(obj.du, Tyr.U`ms`).toFixed(2) + 'ms';
     }
 
     console[level.method](str);
@@ -246,7 +255,7 @@ async function log(level, ...opts) {
 
   if (levelId >= dbLevel) {
     const logResult = Log.db.save(obj);
-    result = result ? Promise.all([ result, logResult ]) : logResult;
+    result = result ? Promise.all([result, logResult]) : logResult;
   }
 
   return result;
@@ -262,21 +271,19 @@ Log.updateDuration = async function(logResultPromise) {
 
   const logDoc = logResult.ops[0];
 
-  return Log.db.findAndModify(
-    { _id: logDoc._id },
-    undefined,
-    { $set: { du: (Date.now() - logDoc.on.getTime()) * 1000 } }
-  );
+  return Log.db.findAndModify({ _id: logDoc._id }, undefined, {
+    $set: { du: (Date.now() - logDoc.on.getTime()) * 1000 }
+  });
 
   //const diff = process.hrtime(req._startAt);
 
   //Log.info({
-    //e:    'http',
-    //du:   diff[0] * 1e9 + diff[1],
-    //req:  req,
-    //res:  res
+  //e:    'http',
+  //du:   diff[0] * 1e9 + diff[1],
+  //req:  req,
+  //res:  res
   //}).catch(err => {
-    //console.error('Error when logging a request', err);
+  //console.error('Error when logging a request', err);
   //});
 };
 
@@ -312,7 +319,9 @@ Log.addEvent = function(name, label, notes) {
     throw new Error(`Event "${name}" already exists.`);
   }
 
-  LogEvent.addValue(new LogEvent({ _id: name, label: label || name, notes: notes }));
+  LogEvent.addValue(
+    new LogEvent({ _id: name, label: label || name, notes: notes })
+  );
 };
 
 //
@@ -331,18 +340,16 @@ Log.request = function(req, res) {
   //onHeaders(res, recordStartTime);
 
   onFinished(res, function() {
-
     const diff = process.hrtime(req._startAt);
 
     Log.info({
-      e:    'http',
-      du:   diff[0] * 1e9 + diff[1],
-      req:  req,
-      res:  res
+      e: 'http',
+      du: diff[0] * 1e9 + diff[1],
+      req: req,
+      res: res
     }).catch(err => {
       console.error('Error when logging a request', err);
     });
-
   });
 };
 
@@ -351,14 +358,20 @@ Log.request = function(req, res) {
 //
 
 Log.routes = function(app, auth) {
-
-  app.route('/api/log/_log')
+  app
+    .route('/api/log/_log')
     .all(auth)
     .get((req, res) => {
       try {
         const o = JSON.parse(req.query.o);
-        log(LogLevel.INFO, o)
-          .catch(err => console.error('Error from /api/log/_log route, object=', o, 'error=', err));
+        log(LogLevel.INFO, o).catch(err =>
+          console.error(
+            'Error from /api/log/_log route, object=',
+            o,
+            'error=',
+            err
+          )
+        );
 
         res.send(200);
       } catch (err) {
@@ -374,10 +387,12 @@ Log.routes = function(app, auth) {
 
 Log.clientCode = function(file) {
   const config = Tyr.config(),
-        clientLogLevel  = config.clientLogLevel                     || LogLevel.ERROR,
-        consoleLogLevel = config.consoleLogLevel || config.logLevel || LogLevel.INFO,
-        dbLogLevel      = config.dbLogLevel      || config.logLevel || LogLevel.INFO,
-        serverLogLevel  = consoleLogLevel._id < dbLogLevel._id ? consoleLogLevel : dbLogLevel;
+    clientLogLevel = config.clientLogLevel || LogLevel.ERROR,
+    consoleLogLevel =
+      config.consoleLogLevel || config.logLevel || LogLevel.INFO,
+    dbLogLevel = config.dbLogLevel || config.logLevel || LogLevel.INFO,
+    serverLogLevel =
+      consoleLogLevel._id < dbLogLevel._id ? consoleLogLevel : dbLogLevel;
 
   file += `
 
@@ -452,31 +467,38 @@ Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
 };
 
 Log.boot = function(stage, pass) {
-
   if (stage === 'compile') {
     const config = Tyr.options;
 
     const getLogLevel = propName => {
-      const level = ((propName in config) ? config[propName] : (config.logLevel || LogLevel.INFO));
+      const level =
+        propName in config
+          ? config[propName]
+          : config.logLevel || LogLevel.INFO;
       return typeof level === 'string' ? LogLevel.byLabel(level) : level;
     };
 
     const externalLogger = config.externalLogger,
-          externalLogLevel = (externalLogger && getLogLevel('externalLogLevel')) || LogLevel.NEVER,
-          consoleLogLevel = getLogLevel('consoleLogLevel') || LogLevel.NEVER,
-          dbLogLevel = getLogLevel('dbLogLevel') || LogLevel.NEVER;
+      externalLogLevel =
+        (externalLogger && getLogLevel('externalLogLevel')) || LogLevel.NEVER,
+      consoleLogLevel = getLogLevel('consoleLogLevel') || LogLevel.NEVER,
+      dbLogLevel = getLogLevel('dbLogLevel') || LogLevel.NEVER;
 
-    const min = Math.min(externalLogLevel._id, consoleLogLevel._id, dbLogLevel._id);
+    const min = Math.min(
+      externalLogLevel._id,
+      consoleLogLevel._id,
+      dbLogLevel._id
+    );
 
-    const logging = Tyr.logging = Log.logging = {
+    const logging = (Tyr.logging = Log.logging = {
       min,
       external: externalLogLevel._id,
       console: consoleLogLevel._id,
-      db: dbLogLevel._id,
-    };
+      db: dbLogLevel._id
+    });
 
     for (const ll of logLevelValues) {
-      const [ _id, name ] = ll;
+      const [_id, name] = ll;
 
       if (name !== 'never') {
         logging[name] = _id >= min;
@@ -494,11 +516,11 @@ Log.boot = function(stage, pass) {
 _.assign(Tyr, {
   Log,
   trace: Log.trace.bind(Log),
-  log:   Log.log.bind(Log),
-  info:  Log.info.bind(Log),
-  warn:  Log.warn.bind(Log),
+  log: Log.log.bind(Log),
+  info: Log.info.bind(Log),
+  warn: Log.warn.bind(Log),
   error: Log.error.bind(Log),
-  fatal: Log.fatal.bind(Log),
+  fatal: Log.fatal.bind(Log)
 });
 
 export default Log;

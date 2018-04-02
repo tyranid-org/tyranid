@@ -1,9 +1,8 @@
-
 import * as _ from 'lodash';
 
-import Tyr        from './tyr';
+import Tyr from './tyr';
 import Collection from './core/collection';
-import Field      from './core/field';
+import Field from './core/field';
 
 export const SchemaType = new Collection({
   id: '_t0',
@@ -12,15 +11,10 @@ export const SchemaType = new Collection({
   client: false,
   internal: true,
   fields: {
-    _id:  { is: 'integer' },
+    _id: { is: 'integer' },
     name: { is: 'string', labelField: true }
   },
-  values: [
-    [ '_id', 'name'    ],
-
-    [     1, 'Full'    ],
-    [     2, 'Partial' ]
-  ]
+  values: [['_id', 'name'], [1, 'Full'], [2, 'Partial']]
 });
 
 const Schema = new Collection({
@@ -29,12 +23,12 @@ const Schema = new Collection({
   client: false,
   internal: true,
   fields: {
-    _id:        { is:   'mongoid' },
-    collection: { is:   'string' }, // this is the collection id, i.e. t01
-    type:       { link: 'tyrSchemaType' },
-    match:      { is:   'object' },
-    def:        { is:   'object' },
-    src:        { is:   'string' }
+    _id: { is: 'mongoid' },
+    collection: { is: 'string' }, // this is the collection id, i.e. t01
+    type: { link: 'tyrSchemaType' },
+    match: { is: 'object' },
+    def: { is: 'object' },
+    src: { is: 'string' }
   },
   timestamps: true
 });
@@ -64,20 +58,20 @@ Collection.prototype.invalidateSchemaCache = function() {
 function schemaCloneCustomizer(obj) {
   if (obj instanceof Field) {
     const ofield = obj,
-          cfield = new Field(ofield.def);
+      cfield = new Field(ofield.def);
 
     for (const name in ofield) {
       if (ofield.hasOwnProperty(name)) {
         const v = ofield[name];
 
         switch (name) {
-        case 'collection':
-        case 'parent':
-        case 'type':
-          cfield[name] = v;
-          break;
-        default:
-          cfield[name] = cloneSchema(v);
+          case 'collection':
+          case 'parent':
+          case 'type':
+            cfield[name] = v;
+            break;
+          default:
+            cfield[name] = cloneSchema(v);
         }
       }
     }
@@ -90,14 +84,15 @@ function schemaCloneCustomizer(obj) {
 
 function cloneSchema(obj) {
   // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
-  return _.cloneDeepWith ? _.cloneDeepWith(obj, schemaCloneCustomizer) : _.cloneDeep(obj, schemaCloneCustomizer);
+  return _.cloneDeepWith
+    ? _.cloneDeepWith(obj, schemaCloneCustomizer)
+    : _.cloneDeep(obj, schemaCloneCustomizer);
 }
 
 function mergeSchema(fields, name, field) {
   let existingField = fields[name];
 
   if (existingField) {
-
     if (existingField.def.is === 'object' && field.def.is === 'object') {
       existingField = fields[name] = cloneSchema(existingField);
       const existingFields = existingField.def.fields;
@@ -125,7 +120,7 @@ Collection.prototype.fieldsFor = async function(obj) {
 
     schemaCache.forEach(schema => {
       const collection = Tyr.byId[schema.collection],
-            def        = schema.def;
+        def = schema.def;
 
       if (!collection) {
         missing = true;
@@ -134,8 +129,16 @@ Collection.prototype.fieldsFor = async function(obj) {
 
       // TODO:  this is affecting Collection.fields and Collection.paths ...
       //        maybe pass in a "dynamic" flag to createCompiler() to not set those?
-      this.createCompiler(collection, def, 'compile').fields('', collection, def.fields);
-      this.createCompiler(collection, def, 'link').fields('', collection, def.fields);
+      this.createCompiler(collection, def, 'compile').fields(
+        '',
+        collection,
+        def.fields
+      );
+      this.createCompiler(collection, def, 'link').fields(
+        '',
+        collection,
+        def.fields
+      );
 
       schema.objMatcher = Tyr.isCompliant(schema.match);
     });
@@ -161,11 +164,18 @@ Collection.prototype.fieldsFor = async function(obj) {
 };
 
 Collection.prototype.mixin = function(def) {
-
   const collection = this;
 
-  this.createCompiler(collection, def, 'compile').fields('', collection, def.fields);
-  this.createCompiler(collection, def, 'link').fields('', collection, def.fields);
+  this.createCompiler(collection, def, 'compile').fields(
+    '',
+    collection,
+    def.fields
+  );
+  this.createCompiler(collection, def, 'link').fields(
+    '',
+    collection,
+    def.fields
+  );
 
   const baseDefFields = collection.def.fields;
 

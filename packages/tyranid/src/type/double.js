@@ -51,9 +51,12 @@ const DoubleType = new Type({
       for (const op in where) {
         const v = where[op];
         switch (op) {
-        case '$lt': return value < v;
-        case '$gt': return value > v;
-        case '$eq': return value === v;
+          case '$lt':
+            return value < v;
+          case '$gt':
+            return value > v;
+          case '$eq':
+            return value === v;
         }
       }
     } else {

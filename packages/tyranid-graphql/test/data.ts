@@ -13,7 +13,7 @@ import {
 
 export async function createTestData() {
   // nuke old data...
-  await Promise.all(Tyr.collections.map((c) => c.remove({ query: {} })));
+  await Promise.all(Tyr.collections.map(c => c.remove({ query: {} })));
 
   /**
    * Organiations

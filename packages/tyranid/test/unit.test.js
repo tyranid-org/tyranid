@@ -1,21 +1,15 @@
+import * as _ from 'lodash';
+import * as chai from 'chai';
+import * as mongodb from 'mongodb';
 
-import * as _                    from 'lodash';
-import * as chai                 from 'chai';
-import * as mongodb              from 'mongodb';
+import Tyr from '../src/tyranid';
+import Unit from '../src/unit/unit';
+import Units from '../src/unit/units';
+import UnitType from '../src/unit/unitType';
 
-import Tyr                       from '../src/tyranid';
-import Unit                      from '../src/unit/unit';
-import Units                     from '../src/unit/units';
-import UnitType                  from '../src/unit/unitType';
+const { ObjectId } = mongodb;
 
-const {
-  ObjectId
-} = mongodb;
-
-const {
-  expect,
-  assert
-} = chai;
+const { expect, assert } = chai;
 
 function round5(v) {
   return parseFloat(v.toFixed(5));
@@ -35,22 +29,22 @@ export function add() {
 
     describe('unit types', function() {
       it('should parse base and composite unit types', () => {
-        expect(UnitType.parse('l'      ).name === 'length'   ).to.be.true;
-        expect(UnitType.parse('l^2'    ).name === 'area'     ).to.be.true;
+        expect(UnitType.parse('l').name === 'length').to.be.true;
+        expect(UnitType.parse('l^2').name === 'area').to.be.true;
         expect(UnitType.parse('l-2*lum').name === 'luminance').to.be.true;
 
         expect(() => UnitType.parse('l-2*cure')).to.throw(/"cure"/);
       });
 
       it('should be shared and unique', () => {
-        expect(UnitType.parse('l')           === UnitType.parse('l')           ).to.be.true;
-        expect(UnitType.parse('l^2')         === UnitType.parse('l2')          ).to.be.true;
-        expect(UnitType.parse('l2m1/s2cur1') === UnitType.parse('cur-1s-2m1l2')).to.be.true;
+        expect(UnitType.parse('l') === UnitType.parse('l')).to.be.true;
+        expect(UnitType.parse('l^2') === UnitType.parse('l2')).to.be.true;
+        expect(UnitType.parse('l2m1/s2cur1') === UnitType.parse('cur-1s-2m1l2'))
+          .to.be.true;
       });
     });
 
     describe('units', function() {
-
       it('should parse unit factors', () => {
         let u = Unit.parse('km');
         expect(u.abbreviation).to.be.eql('km');
@@ -103,12 +97,12 @@ export function add() {
       });
 
       it('should be shared and unique', () => {
-        expect(Unit.parse('s')     === Unit.parse('s')     ).to.be.true;
-        expect(Unit.parse('Mmol')  === Unit.parse('Mmol')  ).to.be.true;
-        expect(Unit.parse('km')    === Unit.parse('km')    ).to.be.true;
+        expect(Unit.parse('s') === Unit.parse('s')).to.be.true;
+        expect(Unit.parse('Mmol') === Unit.parse('Mmol')).to.be.true;
+        expect(Unit.parse('km') === Unit.parse('km')).to.be.true;
 
         expect(Units.parse('m/s2') === Units.parse('s-2*m')).to.be.true;
-        expect(Units.parse('N')    === Units.parse('N')    ).to.be.true;
+        expect(Units.parse('N') === Units.parse('N')).to.be.true;
       });
 
       it('should support "in" on numbers', () => {
@@ -118,28 +112,28 @@ export function add() {
       const U = Tyr.U;
 
       it('should support base units', () => {
-        expect(U`m`  .base === U('m')).to.be.true;
-        expect(U`m`  .base).to.eql({ m: 1 });
-        expect(U`N`  .base).to.eql({ kg: 1, m: 1, s: -2 });
-        expect(U`Pa` .base).to.eql({ kg: 1, m: -1, s: -2 });
-        expect(U`J`  .base).to.eql({ kg: 1, m: 2, s: -2 });
-        expect(U`W`  .base).to.eql({ kg: 1, m: 2, s: -3 });
-        expect(U`V`  .base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
-        expect(U`Wb` .base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
+        expect(U`m`.base === U('m')).to.be.true;
+        expect(U`m`.base).to.eql({ m: 1 });
+        expect(U`N`.base).to.eql({ kg: 1, m: 1, s: -2 });
+        expect(U`Pa`.base).to.eql({ kg: 1, m: -1, s: -2 });
+        expect(U`J`.base).to.eql({ kg: 1, m: 2, s: -2 });
+        expect(U`W`.base).to.eql({ kg: 1, m: 2, s: -3 });
+        expect(U`V`.base).to.eql({ kg: 1, m: 2, A: -1, s: -3 });
+        expect(U`Wb`.base).to.eql({ kg: 1, m: 2, A: -1, s: -2 });
         expect(U`rad`.base).to.eql({});
       });
 
       it('should have types', () => {
-        expect(U('m'    ).type.name).to.eql('length');
-        expect(U('m2'   ).type.name).to.eql('area');
-        expect(U('m3'   ).type.name).to.eql('volume');
-        expect(U('cm*m' ).type.name).to.eql('area');
-        expect(U('ft2'  ).type.name).to.eql('area');
-        expect(U('N'    ).type.name).to.eql('force');
-        expect(U('N/kg' ).type.name).to.eql('acceleration');
-        expect(U('N*m'  ).type.name).to.eql('energy');
+        expect(U('m').type.name).to.eql('length');
+        expect(U('m2').type.name).to.eql('area');
+        expect(U('m3').type.name).to.eql('volume');
+        expect(U('cm*m').type.name).to.eql('area');
+        expect(U('ft2').type.name).to.eql('area');
+        expect(U('N').type.name).to.eql('force');
+        expect(U('N/kg').type.name).to.eql('acceleration');
+        expect(U('N*m').type.name).to.eql('energy');
         expect(U('N*m/s').type.name).to.eql('power');
-        expect(U('kC'   ).type.name).to.eql('electricCharge');
+        expect(U('kC').type.name).to.eql('electricCharge');
       });
 
       it('should support compatibility checks', () => {
@@ -151,42 +145,46 @@ export function add() {
 
       it('should support valid conversions', () => {
         const tests = [
-          [  1,     'm',       100,    'cm' ],
-          [  0,  'degC',        32,  'degF' ],
-          [ 80,    'kg', 176.36981,    'lb' ],
-          [  5,    'mi',   8.04672,    'km' ],
-          [  1,    'ft',        12,    'in' ],
-          [  1,    'ft',    0.3048,     'm' ],
-          [  1,    'm3',   1000000,   'cm3' ],
-          [  1,    'm3',     10000, 'm*cm2' ],
-          [  1, 'ft*ms',     0.012,  'in*s' ],
+          [1, 'm', 100, 'cm'],
+          [0, 'degC', 32, 'degF'],
+          [80, 'kg', 176.36981, 'lb'],
+          [5, 'mi', 8.04672, 'km'],
+          [1, 'ft', 12, 'in'],
+          [1, 'ft', 0.3048, 'm'],
+          [1, 'm3', 1000000, 'cm3'],
+          [1, 'm3', 10000, 'm*cm2'],
+          [1, 'ft*ms', 0.012, 'in*s']
         ];
 
         for (const test of tests) {
           const fromValue = test[0],
-                fromUnits = U(test[1]),
-                toValue   = test[2],
-                toUnits   = U(test[3]);
+            fromUnits = U(test[1]),
+            toValue = test[2],
+            toUnits = U(test[3]);
 
-          expect(round5(fromUnits.convert(fromValue, toUnits))).to.equal(toValue);
+          expect(round5(fromUnits.convert(fromValue, toUnits))).to.equal(
+            toValue
+          );
         }
       });
 
       it('should throw on invalid conversions', () => {
         const tests = [
-          [  1,    'm',   'degC' ],
-          [  0, 'degC', 'degF*s' ],
-          [ 80,   'kg',      'm' ],
-          [  5,  'm*s',   'm*s2' ],
-          [  1,   'ft',    'in2' ],
+          [1, 'm', 'degC'],
+          [0, 'degC', 'degF*s'],
+          [80, 'kg', 'm'],
+          [5, 'm*s', 'm*s2'],
+          [1, 'ft', 'in2']
         ];
 
         for (const test of tests) {
           const fromValue = test[0],
-                fromUnits = U(test[1]),
-                toUnits   = U(test[2]);
+            fromUnits = U(test[1]),
+            toUnits = U(test[2]);
 
-          expect(() => fromUnits.convert(fromValue, toUnits)).to.throw(/Cannot convert/);
+          expect(() => fromUnits.convert(fromValue, toUnits)).to.throw(
+            /Cannot convert/
+          );
         }
       });
 
@@ -207,22 +205,22 @@ export function add() {
       });
 
       it('should support planck units', () => {
-        const c  = 299792458,
-              EP = 1.0,
-              mP = EP, // EP == mP
-              m  = U`mP`.convert(mP, U`kg`),
-              E  = m * c * c;
+        const c = 299792458,
+          EP = 1.0,
+          mP = EP, // EP == mP
+          m = U`mP`.convert(mP, U`kg`),
+          E = m * c * c;
 
         expect(prec5(m)).to.eql(2.1765e-8);
-        expect(prec5(E)).to.eql(1.9561E9);
+        expect(prec5(E)).to.eql(1.9561e9);
       });
 
       it('should support normals', () => {
-        expect(U('m/s'       ).normal()).to.eql({ m: 1, s: -1 });
-        expect(U('ft'        ).normal()).to.eql({ m: 1 });
-        expect(U('ft/h'      ).normal()).to.eql({ m: 1, s: -1 });
+        expect(U('m/s').normal()).to.eql({ m: 1, s: -1 });
+        expect(U('ft').normal()).to.eql({ m: 1 });
+        expect(U('ft/h').normal()).to.eql({ m: 1, s: -1 });
         expect(U('ft*furlong').normal()).to.eql({ m: 2 });
-        expect(U('cm*m*ft'   ).normal()).to.eql({ m: 3 });
+        expect(U('cm*m*ft').normal()).to.eql({ m: 3 });
       });
 
       it('should support formatting', () => {

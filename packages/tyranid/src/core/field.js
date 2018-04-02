@@ -1,12 +1,10 @@
+import * as _ from 'lodash';
 
-import * as _          from 'lodash';
-
-import Tyr             from '../tyr';
-import NamePath        from './namePath';
+import Tyr from '../tyr';
+import NamePath from './namePath';
 import ValidationError from './validationError';
 
 export default class Field {
-
   constructor(def) {
     this.def = def;
   }
@@ -38,7 +36,7 @@ export default class Field {
   /** @private @isopmorphic */
   _calcPathLabel() {
     const p = this.parent,
-          l = this.def.pathLabel || this.label;
+      l = this.def.pathLabel || this.label;
 
     if (p) {
       const pl = p.pathLabel;

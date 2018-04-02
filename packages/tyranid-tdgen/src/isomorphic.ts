@@ -127,18 +127,18 @@ export function generateCollectionLookups(
   return `/**
      * Add lookup properties to Tyr.byName with extended interfaces
      */
-    ${exportInterfaces ? 'export ' : ''}interface CollectionsByName${typeParam
-    ? `<${typeParam} = string>`
-    : ''} {
+    ${exportInterfaces ? 'export ' : ''}interface CollectionsByName${
+    typeParam ? `<${typeParam} = string>` : ''
+  } {
       ${byNameEntries.join('\n      ')}
     }
 
     /**
      * Add lookup properties to Tyr.byId with extended interfaces
      */
-    ${exportInterfaces ? 'export ' : ''}interface CollectionsById${typeParam
-    ? `<${typeParam} = string>`
-    : ''} {
+    ${exportInterfaces ? 'export ' : ''}interface CollectionsById${
+    typeParam ? `<${typeParam} = string>` : ''
+  } {
       ${byIdEntries.join('\n      ')}
     }
   `;
@@ -154,7 +154,7 @@ export function generateCommonTypes(
   const cols: string[] = [];
   const aliases: string[] = [];
 
-  sorted.forEach((c) => {
+  sorted.forEach(c => {
     const name = c.def.name;
     const docName = names.document(name);
     const colName = names.collection(name);

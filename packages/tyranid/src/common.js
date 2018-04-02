@@ -1,12 +1,11 @@
-
-import * as _            from 'lodash';
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
-import projection   from './core/projection';
-import Tyr          from './tyr';
-import NamePath     from './core/namePath';
+import projection from './core/projection';
+import Tyr from './tyr';
+import NamePath from './core/namePath';
 
-export const metaRegex         = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+export const metaRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
 export function setFalse(v) {
   return v !== undefined && !v;
@@ -42,7 +41,6 @@ export function extractUpdateFields(doc, opts) {
         updateFields[key] = 1;
       }
     });
-
   } else {
     _.each(doc, (field, key) => {
       if (key !== '_id') {
@@ -59,29 +57,30 @@ export function extractUpdateFields(doc, opts) {
 
 export function isOptions(opts) {
   // TODO:  this is a hack, need to figure out a better way (though most likely a non-issue in practice)
-  return opts &&
-    ( (opts.asOf !== undefined ||
-       opts.auth !== undefined ||
-       opts.author !== undefined ||
-       opts.comment !== undefined ||
-       opts.fields !== undefined ||
-       opts.historical !== undefined ||
-       opts.limit !== undefined ||
-       opts.multi !== undefined ||
-       opts.parallel !== undefined ||
-       opts.perm !== undefined ||
-       opts.populate !== undefined ||
-       opts.query !== undefined ||
-       opts.skip !== undefined ||
-       opts.timestamps !== undefined ||
-       opts.tyranid !== undefined ||
-       opts.upsert !== undefined ||
-       opts.writeConcern !== undefined)
-     || !_.keys(opts).length);
+  return (
+    opts &&
+    (opts.asOf !== undefined ||
+      opts.auth !== undefined ||
+      opts.author !== undefined ||
+      opts.comment !== undefined ||
+      opts.fields !== undefined ||
+      opts.historical !== undefined ||
+      opts.limit !== undefined ||
+      opts.multi !== undefined ||
+      opts.parallel !== undefined ||
+      opts.perm !== undefined ||
+      opts.populate !== undefined ||
+      opts.query !== undefined ||
+      opts.skip !== undefined ||
+      opts.timestamps !== undefined ||
+      opts.tyranid !== undefined ||
+      opts.upsert !== undefined ||
+      opts.writeConcern !== undefined ||
+      !_.keys(opts).length)
+  );
 }
 
 export function processOptions(collection, opts) {
-
   if (opts) {
     const fields = opts.fields;
 
@@ -144,13 +143,13 @@ export function extractAuthorization(opts) {
 }
 
 export function extractProjection(opts) {
-  return opts.fields || opts.project || opts.projectiot ;
+  return opts.fields || opts.project || opts.projectiot;
 }
 
 export async function parseInsertObj(col, obj, opts) {
-  const def       = col.def,
-        fields    = await col.fieldsFor(obj),
-        insertObj = new col();
+  const def = col.def,
+    fields = await col.fieldsFor(obj),
+    insertObj = new col();
 
   _.each(col.denormal, function(field, name) {
     // TODO:  need to parse & process name if it is a path (if it contains "."s)
@@ -202,12 +201,14 @@ export async function parseInsertObj(col, obj, opts) {
 }
 
 export function parseProjection(col, obj) {
-  const def        = col.def,
-        projection = Object.assign({}, obj);
+  const def = col.def,
+    projection = Object.assign({}, obj);
 
-  if (projection[def.primaryKey.field] === undefined &&
-      // if an exclusion is present, don't add an inclusion
-      _.find(projection, v => !v) === undefined) {
+  if (
+    projection[def.primaryKey.field] === undefined &&
+    // if an exclusion is present, don't add an inclusion
+    _.find(projection, v => !v) === undefined
+  ) {
     projection[def.primaryKey.field] = 1;
   }
 
@@ -227,30 +228,31 @@ export function evaluateClient(client, key, doc, value, opts, proj) {
   }
 
   switch (client) {
-  case false:
-  case 0:
-  case 'never':
-    return false;
-
-  case 'conditional':
-    if (!proj || !proj[key]) {
+    case false:
+    case 0:
+    case 'never':
       return false;
-    }
+
+    case 'conditional':
+      if (!proj || !proj[key]) {
+        return false;
+      }
     // fall through
 
-  case true:
-  case 1:
-  case 'default':
-  case undefined:
-    return true;
+    case true:
+    case 1:
+    case 'default':
+    case undefined:
+      return true;
 
-  default:
-    throw new Error(`Invalid client value: ${value}\n\nMust be one of 'never', 'conditional', 'default', true (or 1), false (or 0), or undefined`);
+    default:
+      throw new Error(
+        `Invalid client value: ${value}\n\nMust be one of 'never', 'conditional', 'default', true (or 1), false (or 0), or undefined`
+      );
   }
 }
 
 export function toClient(col, doc, opts) {
-
   if (Array.isArray(doc)) {
     return doc.map(doc2 => toClient(col, doc2, opts));
   }
@@ -305,18 +307,23 @@ export function toClient(col, doc, opts) {
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   _.each(fields, function(field, name) {
     const fieldDef = field.def,
-          getFn = fieldDef.get;
+      getFn = fieldDef.get;
     if (!getFn) {
       return;
     }
 
-    if (!evaluateClient(
-          fieldDef.client, name, doc,
-          // we don't pass in the value in this case because in order to do that we'd need to calculate it which might be costly
-          undefined,
-          opts, proj
-        ) ||
-        !projected(name)) {
+    if (
+      !evaluateClient(
+        fieldDef.client,
+        name,
+        doc,
+        // we don't pass in the value in this case because in order to do that we'd need to calculate it which might be costly
+        undefined,
+        opts,
+        proj
+      ) ||
+      !projected(name)
+    ) {
       return;
     }
 
@@ -324,7 +331,7 @@ export function toClient(col, doc, opts) {
     if (name in doc) {
       // Property will have been set on CollectionInstances
       value = doc[name];
-    } else if ( _.isFunction(getFn)) {
+    } else if (_.isFunction(getFn)) {
       // Have to set manually for POJO
       value = getFn.call(doc);
     } else {

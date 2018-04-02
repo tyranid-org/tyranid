@@ -1,27 +1,25 @@
+import * as _ from 'lodash';
+import { ObjectId } from 'mongodb';
+import * as uglify from 'uglify-js';
+import * as ts from 'typescript';
+import * as socketIo from 'socket.io';
 
-import * as _          from 'lodash';
-import { ObjectId }    from 'mongodb';
-import * as uglify     from 'uglify-js';
-import * as ts         from 'typescript';
-import * as socketIo   from 'socket.io';
-
-import Tyr             from './tyr';
-import Collection      from './core/collection';
-import Field           from './core/field';
-import NamePath        from './core/namePath';
-import Population      from './core/population';
+import Tyr from './tyr';
+import Collection from './core/collection';
+import Field from './core/field';
+import NamePath from './core/namePath';
+import Population from './core/population';
 import ValidationError from './core/validationError';
-import Type            from './core/type';
-import local           from './local/local';
-import SecureError     from './secure/secureError';
-import BooleanType     from './type/boolean';
-import LinkType        from './type/link';
+import Type from './core/type';
+import local from './local/local';
+import SecureError from './secure/secureError';
+import BooleanType from './type/boolean';
+import LinkType from './type/link';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
 
 function stringify(v) {
-
   if (v instanceof RegExp) {
     // mongo's format
     return JSON.stringify({ $regex: v.source, $options: v.flags });
@@ -81,10 +79,7 @@ class Serializer {
       this.file += '",';
     }
 
-    for (const field of [
-      'multiline',
-      'validate'
-    ]) {
+    for (const field of ['multiline', 'validate']) {
       if (def[field]) {
         this.newline();
         this.file += this.k(field) + ': true,';
@@ -200,7 +195,7 @@ function es5Fn(fn) {
   //const name = fn.name;
 
   //if (s.startsWith('function (')) {
-    //s = 'function ' + (name || '_fn' + nextFnName++) + ' (' + s.substring(10);
+  //s = 'function ' + (name || '_fn' + nextFnName++) + ' (' + s.substring(10);
   /*} else */
   if (!s.startsWith('function')) {
     s = 'function ' + s;
@@ -232,12 +227,14 @@ function translateClass(cls) {
       if (value) {
         s += `${cname}${path}.${n} = ${translateValue(value)};\n`;
       } else if (desc.get) {
-        s += `Object.defineProperty(${cname}${path}, '${n}', {get:${translateValue(desc.get)},enumerable:${desc.enumerable}});\n`;
+        s += `Object.defineProperty(${cname}${path}, '${n}', {get:${translateValue(
+          desc.get
+        )},enumerable:${desc.enumerable}});\n`;
       }
     }
   }
 
-  translateObj('',           cls);
+  translateObj('', cls);
   translateObj('.prototype', cls.prototype);
 
   s += `Tyr.${cname} = ${cname};\n`;
@@ -1201,9 +1198,16 @@ function compile(code) {
   });
 
   result.diagnostics.forEach(diagnostic => {
-    const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
-    const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-    console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+    const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
+      diagnostic.start
+    );
+    const message = ts.flattenDiagnosticMessageText(
+      diagnostic.messageText,
+      '\n'
+    );
+    console.log(
+      `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
+    );
   });
 
   return result.outputText;
@@ -1234,7 +1238,8 @@ export default function connect(app, auth, opts) {
     const file = generateClientLibrary();
 
     //app.use(local.express);
-    app.route('/api/tyranid')
+    app
+      .route('/api/tyranid')
       // we don't send insecure information in /api/tyranid, it is just source code
       //.all(auth)
       .get(async (req, res) => res.send(file));
@@ -1256,7 +1261,7 @@ export default function connect(app, auth, opts) {
 
   const http = opts.http;
   if (http) {
-    const io = Tyr.io = Tyr.socketIo = socketIo(http);
+    const io = (Tyr.io = Tyr.socketIo = socketIo(http));
 
     io.on('connection', socket => {
       //console.log('*** connected', socket);
@@ -1264,9 +1269,13 @@ export default function connect(app, auth, opts) {
       //console.log('*** client', socket.client);
       //console.log('*** headers', socket.client.request.headers);
 
-      const rawSessionId = /connect.sid\=([^;]+)/g.exec(socket.client.request.headers.cookie);
+      const rawSessionId = /connect.sid\=([^;]+)/g.exec(
+        socket.client.request.headers.cookie
+      );
       if (rawSessionId && rawSessionId.length) {
-        const sessionId = unescape(rawSessionId[1]).split('.')[0].slice(2);
+        const sessionId = unescape(rawSessionId[1])
+          .split('.')[0]
+          .slice(2);
 
         Tyr.sessions.get(sessionId, async (error, session) => {
           if (session) {
@@ -1302,14 +1311,16 @@ connect.middleware = local.express.bind(local);
  * auth is deprecated, use opts.auth instead
  */
 Collection.prototype.connect = function({ app, auth, http }) {
-  const col     = this,
-        express = col.def.express;
+  const col = this,
+    express = col.def.express;
 
   if (express && app) {
     const name = col.def.name;
 
-    if (express.rest || (express.get || express.put || express.array || express.fields)) {
-
+    if (
+      express.rest ||
+      (express.get || express.put || express.array || express.fields)
+    ) {
       /*
        *     /api/NAME
        */
@@ -1345,7 +1356,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             }
 
             const docs = await col.findAll(opts),
-                  cDocs = col.toClient(docs);
+              cDocs = col.toClient(docs);
 
             if (opts.count) {
               res.json({
@@ -1369,7 +1380,6 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             if (doc._id) {
               res.status(403).send('Use put for updates');
-
             } else {
               await doc.$save({ auth: req.user });
             }
@@ -1388,13 +1398,14 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const doc = col.fromClient(req.body, undefined, { req });
 
             if (doc._id) {
-              const existingDoc = await col.findOne({ query: { _id: doc._id }, auth: req.user });
+              const existingDoc = await col.findOne({
+                query: { _id: doc._id },
+                auth: req.user
+              });
               _.assign(existingDoc, doc);
               await existingDoc.$save();
-
             } else {
               await doc.$save();
-
             }
 
             res.json(col.toClient(doc));
@@ -1408,7 +1419,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.delete) {
         r.delete(async (req, res) => {
           try {
-            await col.remove({ query: col.fromClientQuery(req.body), auth: req.user });
+            await col.remove({
+              query: col.fromClientQuery(req.body),
+              auth: req.user
+            });
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);
@@ -1428,7 +1442,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
         r.get(async (req, res) => {
           try {
             return res.json(
-              await col.count({ query: col.fromClientQuery(req.query), auth: req.user })
+              await col.count({
+                query: col.fromClientQuery(req.query),
+                auth: req.user
+              })
             );
           } catch (err) {
             console.log(err.stack);
@@ -1454,7 +1471,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
               obj = req.user;
             }
 
-            const fields = _.filter(await col.fieldsFor(obj), f => f.def.custom);
+            const fields = _.filter(
+              await col.fieldsFor(obj),
+              f => f.def.custom
+            );
             const ser = new Serializer('.', 2, true);
             ser.fields(fields);
             res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
@@ -1478,7 +1498,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
           const opts = JSON.parse(rQuery.opts);
 
           try {
-            await col.subscribe(opts.query && col.fromClientQuery(opts.query), req.user, opts.cancel);
+            await col.subscribe(
+              opts.query && col.fromClientQuery(opts.query),
+              req.user,
+              opts.cancel
+            );
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);
@@ -1502,8 +1526,14 @@ Collection.prototype.connect = function({ app, auth, http }) {
         r.get(async (req, res) => {
           try {
             const idField = col.fields._id,
-                  ids = JSON.parse(req.query.opts).map(id => idField.type.fromClient(idField, id)),
-                  results = await col.findAll({ query: { _id: { $in: ids } }, fields: { [col.labelField.path]: 1 }, auth: req.user });
+              ids = JSON.parse(req.query.opts).map(id =>
+                idField.type.fromClient(idField, id)
+              ),
+              results = await col.findAll({
+                query: { _id: { $in: ids } },
+                fields: { [col.labelField.path]: 1 },
+                auth: req.user
+              });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
             console.log(err.stack);
@@ -1529,7 +1559,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.delete) {
         r.delete(async (req, res) => {
           try {
-            await col.remove({ query: { _id: ObjectId(req.params.id) }, auth: req.user });
+            await col.remove({
+              query: { _id: ObjectId(req.params.id) },
+              auth: req.user
+            });
             res.sendStatus(200);
           } catch (err) {
             console.log(err.stack);
@@ -1559,15 +1592,12 @@ Collection.prototype.connect = function({ app, auth, http }) {
             r.all(auth);
             r.get(async (req, res) => {
               try {
-                const doc = await col.byId(
-                  req.params.id,
-                  {
-                    auth: req.user,
-                    fields: {
-                      [field.spath]: 1
-                    }
+                const doc = await col.byId(req.params.id, {
+                  auth: req.user,
+                  fields: {
+                    [field.spath]: 1
                   }
-                );
+                });
 
                 doc.$slice(field.path, req.body);
 
@@ -1594,7 +1624,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
               [col.labelField.path]: new RegExp(req.params.search, 'i')
             };
 
-            const results = await col.findAll({ query, fields: { [col.labelField.path]: 1 }, auth: req.user });
+            const results = await col.findAll({
+              query,
+              fields: { [col.labelField.path]: 1 },
+              auth: req.user
+            });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
             console.log(err.stack);
@@ -1612,13 +1646,15 @@ Collection.prototype.connect = function({ app, auth, http }) {
         _.each(col.paths, field => {
           const to = field.link;
           if (to && to.labelField) {
-            r = app.route('/api/' + name + '/' + field.path + '/label/:search?');
+            r = app.route(
+              '/api/' + name + '/' + field.path + '/label/:search?'
+            );
             r.all(auth);
             r.put(async (req, res) => {
               try {
                 const doc = col.fromClient(req.body, undefined, { req }),
-                      query = {},
-                      search = req.params.search;
+                  query = {},
+                  search = req.params.search;
 
                 if (search) {
                   query[to.labelField.path] = new RegExp(search, 'i');
@@ -1626,7 +1662,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 await LinkType.applyWhere(field, doc, query);
 
-                const results = await to.findAll({ query, fields: { [to.labelField.path]: 1 }, auth: req.user });
+                const results = await to.findAll({
+                  query,
+                  fields: { [to.labelField.path]: 1 },
+                  auth: req.user
+                });
                 res.json(results.map(r => r.$toClient()));
               } catch (err) {
                 console.log(err.stack);
@@ -1641,7 +1681,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
             r.all(auth);
             r.put(async (req, res) => {
               try {
-                await field.validate(col.fromClient(req.body, undefined, { req }));
+                await field.validate(
+                  col.fromClient(req.body, undefined, { req })
+                );
                 res.json('');
               } catch (err) {
                 if (err instanceof ValidationError) {

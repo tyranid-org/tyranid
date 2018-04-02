@@ -1,4 +1,3 @@
-
 import * as os from 'os';
 import * as moment from 'moment';
 
@@ -14,14 +13,14 @@ const Subscription = new Collection({
   internal: true,
   fields: {
     _id: { is: 'mongoid' },
-    u:   { link: 'user', label: 'User' },
-    c:   { is: 'string', label: 'Collection' },
-    q:   { is: 'string', label: 'Query', note: 'Stringified MongoDB query.' },
-    on:  { is: 'date' },
+    u: { link: 'user', label: 'User' },
+    c: { is: 'string', label: 'Collection' },
+    q: { is: 'string', label: 'Query', note: 'Stringified MongoDB query.' },
+    on: { is: 'date' },
 
     // TODO:  this is temporary, long-term would like to hook up tyranid to session table and use that to
     //        determine user -> instance bindings
-    i:   { is: 'string', label: 'Instance' },
+    i: { is: 'string', label: 'Instance' }
   }
 });
 
@@ -47,7 +46,13 @@ interface LocalListener {
 let localListeners /*: LocalListener*/ = {};
 
 async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
-  if (Tyr.logging.trace) Tyr.trace({ e: 'subscription', c: colId, m: 'matched', instances: queryDef.instances });
+  if (Tyr.logging.trace)
+    Tyr.trace({
+      e: 'subscription',
+      c: colId,
+      m: 'matched',
+      instances: queryDef.instances
+    });
   const promises = [];
 
   for (const instanceId in queryDef.instances) {
@@ -76,8 +81,7 @@ async function parseSubscriptions(subscription, userId) {
   let subs;
 
   if (subscription) {
-    subs = [ subscription ];
-
+    subs = [subscription];
   } else if (userId) {
     // clear out existing data for this userId
     subs = await Subscription.findAll({ query: { u: userId } });
@@ -91,7 +95,6 @@ async function parseSubscriptions(subscription, userId) {
         //if (queryDef.users is empty) then clear out queryDef.instances ?
       }
     }
-
   } else {
     subs = await Subscription.findAll({});
 
@@ -109,7 +112,7 @@ async function parseSubscriptions(subscription, userId) {
 
   for (const sub of subs) {
     const colId = sub.c,
-          col   = Tyr.byId[colId];
+      col = Tyr.byId[colId];
 
     let listener = localListeners[colId];
 
@@ -128,20 +131,20 @@ async function parseSubscriptions(subscription, userId) {
               if (Query.matches(queryDef.queryObj, document)) {
                 promises.push(fireEvent(colId, queryDef, document));
               }
-
             } else if (_documents) {
               promises.push(
                 ..._documents
                   .filter(doc => Query.matches(queryDef.queryObj, doc))
                   .map(doc => fireEvent(colId, queryDef, doc))
               );
-
-            } else /*if (query)*/ {
-              const refinedQuery = Query.intersection(queryDef.queryObj, query);
+            } else {
+              /*if (query)*/ const refinedQuery = Query.intersection(
+                queryDef.queryObj,
+                query
+              );
               if (refinedQuery) {
                 promises.push(fireEvent(colId, queryDef, null, refinedQuery));
               }
-
             }
           }
 
@@ -189,13 +192,12 @@ Subscription.on({
 
 //let bootNeeded = 'Subscription needs to be booted';
 Subscription.boot = async function(stage, pass) {
-
   if (stage === 'link' && Tyr.db) {
-  //if (bootNeeded) {
+    //if (bootNeeded) {
     await parseSubscriptions();
 
     //bootNeeded = undefined;
-  //}
+    //}
 
     return undefined; //bootNeeded;
   }
@@ -317,9 +319,9 @@ Subscription.unsubscribe = async function(userId) {
 async function handleSubscriptionEvent(event) {
   //con sole.log(Tyr.instanceId + ' *** handleSubscriptionEvent:');//, event);
   const col = event.dataCollection,
-        listener = localListeners[col.id],
-        mQuery = event.query,
-        mDoc = event.document;
+    listener = localListeners[col.id],
+    mQuery = event.query,
+    mDoc = event.document;
 
   if (listener) {
     const userIds = {};
@@ -333,7 +335,8 @@ async function handleSubscriptionEvent(event) {
             userIds[userId] = true;
           }
         }
-      } else { // if mDoc
+      } else {
+        // if mDoc
         if (Query.matches(queryDef.queryObj, mDoc)) {
           for (const userId in queryDef.users) {
             userIds[userId] = true;

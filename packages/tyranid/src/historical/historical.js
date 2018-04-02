@@ -1,5 +1,4 @@
-
-import * as _    from 'lodash';
+import * as _ from 'lodash';
 
 import diff from '../diff/diff';
 
@@ -24,7 +23,7 @@ function preserveInitialValues(collection, doc, props) {
     doc.$orig = orig = {};
 
     Object.defineProperty(doc, '$orig', {
-      enumerable:   false,
+      enumerable: false,
       configurable: false
     });
   }
@@ -40,7 +39,7 @@ function preserveInitialValues(collection, doc, props) {
   } else {
     _.each(props || collection._historicalFields, field => {
       const n = field.name,
-            v = doc[n];
+        v = doc[n];
 
       if (v !== undefined) {
         orig[n] = Tyr.cloneDeep(v);
@@ -49,7 +48,13 @@ function preserveInitialValues(collection, doc, props) {
   }
 }
 
-function snapshotPartial(collection, doc, patchProps, diffProps, historyPresent) {
+function snapshotPartial(
+  collection,
+  doc,
+  patchProps,
+  diffProps,
+  historyPresent
+) {
   const $orig = doc.$orig;
 
   if (!$orig) {
@@ -98,7 +103,13 @@ function snapshotPartial(collection, doc, patchProps, diffProps, historyPresent)
 }
 
 function snapshot(collection, doc, patchProps, _diffProps, historyPresent) {
-  const { snapshot, diffProps } = snapshotPartial(collection, doc, patchProps, _diffProps, historyPresent);
+  const { snapshot, diffProps } = snapshotPartial(
+    collection,
+    doc,
+    patchProps,
+    _diffProps,
+    historyPresent
+  );
 
   if (diffProps) {
     preserveInitialValues(collection, doc, diffProps);
@@ -108,7 +119,6 @@ function snapshot(collection, doc, patchProps, _diffProps, historyPresent) {
 }
 
 function snapshotPush(path, patchProps) {
-
   const snapshot = {
     o: new Date().getTime(),
     p: { [Tyr.NamePath.encode(path)]: 1 }
@@ -122,9 +132,10 @@ function snapshotPush(path, patchProps) {
 }
 
 function asOf(collection, doc, date, props) {
-
   if (!collection.def.historical) {
-    throw new Error(`Collection "${collection.def.name}" is not historical, cannot $asOf()`);
+    throw new Error(
+      `Collection "${collection.def.name}" is not historical, cannot $asOf()`
+    );
   }
 
   if (date instanceof Date) {
@@ -148,9 +159,9 @@ function asOf(collection, doc, date, props) {
     }
 
     Object.defineProperty(doc, '$historical', {
-      enumerable:   false,
+      enumerable: false,
       configurable: false,
-      value:        true
+      value: true
     });
   }
 }

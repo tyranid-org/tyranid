@@ -12,10 +12,7 @@ declare module 'tyranid' {
 
     export interface TyranidGraphQLFunction {
       // full options object
-      (opts: TyranidGraphQlQueryOptions): Promise<ExecutionResult>;
-
-      // just query string
-      (query: string): Promise<ExecutionResult>;
+      (opts: TyranidGraphQlQueryOptions | string): Promise<ExecutionResult>;
 
       // template tag
       (queryString: TemplateStringsArray, ...interpolated: any[]): Promise<

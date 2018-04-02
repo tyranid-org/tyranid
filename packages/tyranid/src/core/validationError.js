@@ -1,8 +1,6 @@
-
 import Tyr from '../tyr';
 
 export default class ValidationError extends Error {
-
   constructor(field, reason) {
     super(reason);
     this.field = field;
@@ -15,5 +13,3 @@ export default class ValidationError extends Error {
 }
 
 Tyr.ValidationError = ValidationError;
-
-export default ValidationError;

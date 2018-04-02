@@ -26,7 +26,10 @@ test.before(async () => {
   graphqlize(Tyr);
 });
 
-interface AvaTest { name: string; fn: (...args: any[]) => Promise<any>; }
+interface AvaTest {
+  name: string;
+  fn: (...args: any[]) => Promise<any>;
+}
 
 for (const caseName in cases) {
   const params = ((cases as any) as {

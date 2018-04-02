@@ -1,8 +1,7 @@
-
 import { ObjectId } from 'mongodb';
 
 import Type from '../core/type';
-import Tyr  from '../tyr';
+import Tyr from '../tyr';
 
 export const MongoIdType = new Type({
   name: 'mongoid',

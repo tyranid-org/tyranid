@@ -1,14 +1,11 @@
-
-import * as _   from 'lodash';
+import * as _ from 'lodash';
 import Tyr from '../tyr';
 
 const isArray = Array.isArray,
-
-      O_DELETE = 0,
-      O_TRUNCATE_ARRAY_BY_1 = 1,
-
-      T_ARRAY  = 0,
-      T_OBJECT = 1;
+  O_DELETE = 0,
+  O_TRUNCATE_ARRAY_BY_1 = 1,
+  T_ARRAY = 0,
+  T_OBJECT = 1;
 
 function badPatch() {
   return new Error('Bad patch');
@@ -29,13 +26,12 @@ function diffObj(a, b, props) {
   //        because it's probably faster to outerloop props if it is present
 
   for (const prop in a) {
-    if (   !a.hasOwnProperty(prop)
-        || (props && !props[prop])) {
+    if (!a.hasOwnProperty(prop) || (props && !props[prop])) {
       continue;
     }
 
     const av = a[prop],
-          bv = b[prop];
+      bv = b[prop];
 
     if (!Tyr.isEqual(av, bv)) {
       if (bv === undefined) {
@@ -43,31 +39,30 @@ function diffObj(a, b, props) {
       } else {
         if (isArray(av)) {
           if (isArray(bv)) {
-            diffs[prop] = [ T_ARRAY, diffArr(av, bv) ];
+            diffs[prop] = [T_ARRAY, diffArr(av, bv)];
           } else {
-            diffs[prop] = [ bv ];
+            diffs[prop] = [bv];
           }
         } else if (isArray(bv)) {
-          diffs[prop] = [ bv ];
+          diffs[prop] = [bv];
         } else if (Tyr.isObject(av) && Tyr.isObject(bv)) {
-          diffs[prop] = [ T_OBJECT, diffObj(av, bv) ];
+          diffs[prop] = [T_OBJECT, diffObj(av, bv)];
         } else {
-          diffs[prop] = [ bv ];
+          diffs[prop] = [bv];
         }
       }
     }
   }
 
   for (const prop in b) {
-    if (   !b.hasOwnProperty(prop)
-        || (props && !props[prop])) {
+    if (!b.hasOwnProperty(prop) || (props && !props[prop])) {
       continue;
     }
 
     if (!(prop in a)) {
       const bv = b[prop];
 
-      diffs[prop] = [ bv ];
+      diffs[prop] = [bv];
     }
   }
 
@@ -75,7 +70,6 @@ function diffObj(a, b, props) {
 }
 
 function patchObj(a, patch, props) {
-
   for (let prop in patch) {
     if (props && !props[prop]) {
       continue;
@@ -98,7 +92,9 @@ function patchObj(a, patch, props) {
       } else {
         const collection = a.$model;
         if (!collection) {
-          throw new Error('the patched document must be a tyranid document (not a pojo) for this type of patch');
+          throw new Error(
+            'the patched document must be a tyranid document (not a pojo) for this type of patch'
+          );
         }
 
         arr = collection.parsePath(prop).get(a);
@@ -109,34 +105,39 @@ function patchObj(a, patch, props) {
       }
 
       if (!arr.length) {
-        Tyr.warn({ e: 'historical', m: `the array at path "${prop}" in the patch is already empty` }, new Error());
+        Tyr.warn(
+          {
+            e: 'historical',
+            m: `the array at path "${prop}" in the patch is already empty`
+          },
+          new Error()
+        );
         continue;
       }
 
       arr.length--;
       continue;
-
     } else if (_.isArray(pv)) {
       switch (pv.length) {
-      case 1:
-        // these parseBson() calls are due to invalid bson data present due to earlier bug
-        a[prop] = Tyr.cloneDeep(Tyr.parseBson(pv[0]));
-        continue;
-
-      case 2:
-        const [ type, ipatch ] = pv;
-
-        switch (type) {
-        case T_ARRAY:
-          patchArr(a[prop], ipatch);
+        case 1:
+          // these parseBson() calls are due to invalid bson data present due to earlier bug
+          a[prop] = Tyr.cloneDeep(Tyr.parseBson(pv[0]));
           continue;
 
-        case T_OBJECT:
-          patchObj(a[prop], ipatch);
-          continue;
-        }
+        case 2:
+          const [type, ipatch] = pv;
 
-        throw badPatch();
+          switch (type) {
+            case T_ARRAY:
+              patchArr(a[prop], ipatch);
+              continue;
+
+            case T_OBJECT:
+              patchObj(a[prop], ipatch);
+              continue;
+          }
+
+          throw badPatch();
       }
     }
 
@@ -152,11 +153,9 @@ function patchObj(a, patch, props) {
 const USED = { $used_: 0 };
 
 function diffArr(a, b) {
-
   const alen = a.length,
-        blen = b.length,
-
-        diff = {};
+    blen = b.length,
+    diff = {};
 
   a = _.clone(a);
 
@@ -178,7 +177,7 @@ function diffArr(a, b) {
     }
 
     // new addition
-    diff[bi] = [ bv ];
+    diff[bi] = [bv];
   }
 
   if (blen < alen) {
@@ -187,7 +186,9 @@ function diffArr(a, b) {
   }
 
   // compress runs
-  let offset, runLen = 0, bi = 0;
+  let offset,
+    runLen = 0,
+    bi = 0;
 
   /*
     transform things like:
@@ -211,7 +212,7 @@ function diffArr(a, b) {
   function compressRun() {
     if (runLen > 1 && offset) {
       let ri = bi - runLen;
-      diff[ri] = [ offset, runLen ];
+      diff[ri] = [offset, runLen];
       for (ri++; ri < bi; ri++) {
         delete diff[ri];
       }
@@ -243,7 +244,7 @@ function patchArr(a, patch) {
 
   for (const pn in patch) {
     const pi = parseInt(pn, 10),
-          pv = patch[pn];
+      pv = patch[pn];
 
     if (isNaN(pi)) {
       if (pn === 'n') {
@@ -254,19 +255,19 @@ function patchArr(a, patch) {
     } else {
       if (isArray(pv)) {
         switch (pv.length) {
-        case 1:
-          a[pi] = Tyr.cloneDeep(Tyr.parseBson(pv[0]));
-          continue;
+          case 1:
+            a[pi] = Tyr.cloneDeep(Tyr.parseBson(pv[0]));
+            continue;
 
-        case 2:
-          const [ offset, len ] = pv;
-          const plen = pi + len;
+          case 2:
+            const [offset, len] = pv;
+            const plen = pi + len;
 
-          for (let i = pi; i < plen; i++) {
-            a[i] = orig[i + offset];
-          }
+            for (let i = pi; i < plen; i++) {
+              a[i] = orig[i + offset];
+            }
 
-          continue;
+            continue;
         }
 
         throw badPatch();
@@ -276,7 +277,6 @@ function patchArr(a, patch) {
 
       if (isNaN(fi)) {
         throw badPatch();
-
       } else {
         a[pi] = orig[fi];
       }

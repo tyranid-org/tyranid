@@ -1,10 +1,9 @@
+import * as _ from 'lodash';
 
-import * as _          from 'lodash';
-
-import Tyr        from '../tyr';
-import Type       from '../core/type';
+import Tyr from '../tyr';
+import Type from '../core/type';
 import Population from '../core/population';
-import Populator  from '../core/populator';
+import Populator from '../core/populator';
 
 const ArrayType = new Type({
   name: 'array',
@@ -15,7 +14,7 @@ const ArrayType = new Type({
 
   fromClient(field, value) {
     const ofField = field.of,
-          ofFieldType = ofField.type;
+      ofFieldType = ofField.type;
     if (Array.isArray(value)) {
       return value.map(v => ofFieldType.fromClient(ofField, v));
     } else {
@@ -44,7 +43,9 @@ const ArrayType = new Type({
 
       const link = of.link;
       if (link) {
-        values = await Promise.all(values.map(async v => (await link.byLabel(v)).$id));
+        values = await Promise.all(
+          values.map(async v => (await link.byLabel(v)).$id)
+        );
       }
 
       if (or) {
@@ -81,7 +82,6 @@ const ArrayType = new Type({
  *        https://docs.mongodb.com/manual/reference/method/cursor.sort/#cursor.sort
  */
 function mongoCompare(a, b) {
-
   // TODO:  maybe faster to write this as a switch off of "typeof a/b" ?
 
   if (a === undefined) {
@@ -94,7 +94,7 @@ function mongoCompare(a, b) {
     return 1;
   }
 
-  if (a === null ) {
+  if (a === null) {
     if (b === null) {
       return 0;
     }
@@ -134,7 +134,7 @@ function mongoCompare(a, b) {
 
       for (const key of _.union(_.keys(a), _.keys(b)).sort()) {
         const av = a[key],
-              bv = b[key];
+          bv = b[key];
 
         if (av === undefined) {
           return 1;
@@ -195,7 +195,7 @@ Tyr.arraySort = function(array, sortObj) {
         sortProps.push({ key, fn: mongoCompare });
       } else if (v < 0) {
         sortProps.push({ key, fn: inverseMongoCompare });
-      //} else {
+        //} else {
         // ignore
       }
     }
@@ -216,9 +216,9 @@ Tyr.arraySort = function(array, sortObj) {
 };
 
 Tyr._slice = async function(doc, path, opts) {
-  const col   = doc.$model,
-        field = col.paths[path],
-        np    = field.namePath;
+  const col = doc.$model,
+    field = col.paths[path],
+    np = field.namePath;
 
   const { skip, limit, sort, where, populate } = opts || {};
 
@@ -226,8 +226,8 @@ Tyr._slice = async function(doc, path, opts) {
   let arr = np.get(arrDoc);
 
   if (populate) {
-    const populator  = new Populator(false /* TODO: ??? */),
-          population = Population.parse(populator, np, populate);
+    const populator = new Populator(false /* TODO: ??? */),
+      population = Population.parse(populator, np, populate);
 
     await population.populate(populator, arr);
   }
@@ -247,7 +247,7 @@ Tyr._slice = async function(doc, path, opts) {
   }
 
   const begin = skip || 0,
-        end = limit ? Math.min(begin + limit, arr.length) : arr.length;
+    end = limit ? Math.min(begin + limit, arr.length) : arr.length;
   for (let i = begin; i < end; i++) {
     docArr[i] = arr[i];
   }

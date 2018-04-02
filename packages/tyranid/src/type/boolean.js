@@ -34,27 +34,27 @@ const BooleanType = new Type({
 
   fromClient(field, value) {
     switch (typeof value) {
-    case 'string':
-      try {
-        return fromString(value);
-      } catch (err) {
-        // rethrowing a more specific error below
-      }
+      case 'string':
+        try {
+          return fromString(value);
+        } catch (err) {
+          // rethrowing a more specific error below
+        }
 
-      break;
+        break;
 
-    case 'boolean':
-      return value;
+      case 'boolean':
+        return value;
 
-    case 'number':
-      if (value === 1) {
-        return true;
-      } else if (value === 0) {
-        return false;
-      }
+      case 'number':
+        if (value === 1) {
+          return true;
+        } else if (value === 0) {
+          return false;
+        }
 
-      // NOTE:  see "intelligent" above
-      break;
+        // NOTE:  see "intelligent" above
+        break;
     }
 
     throw new Error(`Invalid boolean on field ${field.name}: ${value}`);
@@ -62,12 +62,12 @@ const BooleanType = new Type({
 
   query(namePath, where, query) {
     switch (where) {
-    case true:
-      query[namePath.name] = true;
-      break;
-    case false:
-      query[namePath.name] = { $ne: true };
-      break;
+      case true:
+        query[namePath.name] = true;
+        break;
+      case false:
+        query[namePath.name] = { $ne: true };
+        break;
     }
   },
 

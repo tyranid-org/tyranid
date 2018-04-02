@@ -1,4 +1,3 @@
-
 import Tyr from './tyr';
 
 class Timer {
@@ -23,7 +22,7 @@ class Timer {
 
   lap(name) {
     const data = this.data(name),
-          now = Date.now();
+      now = Date.now();
 
     const last = data.start || this.last;
 
@@ -46,7 +45,9 @@ class Timer {
     const now = Date.now();
 
     if (!data.start) {
-      throw new Error(`Cannot stop() timer "${data.name}" -- it is not running`);
+      throw new Error(
+        `Cannot stop() timer "${data.name}" -- it is not running`
+      );
     }
 
     data.elapsed += now - data.start;

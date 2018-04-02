@@ -29,7 +29,7 @@ program
     '-t, --type [outputType]',
     'type of definitions to output (client|server|isomorphic)'
   )
-  .action((glob) => {
+  .action(glob => {
     fileGlob = glob;
   })
   .parse(process.argv);
@@ -67,7 +67,7 @@ program
       process.exit(0);
     });
   }
-})().catch((err) => {
+})().catch(err => {
   console.log(err.stack);
   process.exit(1);
 });

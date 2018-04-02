@@ -1,5 +1,5 @@
-import * as _    from 'lodash';
-import * as fs   from 'fs';
+import * as _ from 'lodash';
+import * as fs from 'fs';
 import * as glob from 'glob';
 import Tyr from './tyr';
 
@@ -107,13 +107,11 @@ const options = Tyr.options;
 const bootstrappedComponents = [];
 
 _.assign(Tyr, {
-
   version: require('../../package.json').version,
 
   generateClientLibrary,
 
   async config(opts) {
-
     if (!opts) {
       return options;
     }
@@ -126,17 +124,19 @@ _.assign(Tyr, {
     _.extend(options, opts);
 
     if (opts.db) {
-      const db = this.db = opts.db;
+      const db = (this.db = opts.db);
       Tyr.collections.forEach(collection => {
         if (!collection.db) {
           const server = collection.server;
-          collection.db = server ?
-            this.servers[server] :
-            db.collection(collection.def.dbName);
+          collection.db = server
+            ? this.servers[server]
+            : db.collection(collection.def.dbName);
         }
       });
     } else {
-      console.warn('******** no "db" property passed to config, boostraping Tyranid without database! ********');
+      console.warn(
+        '******** no "db" property passed to config, boostraping Tyranid without database! ********'
+      );
     }
 
     if (opts.validate) {
@@ -144,7 +144,7 @@ _.assign(Tyr, {
     }
 
     // ensure permission defaults
-    const p = options.permissions = options.permissions || {};
+    const p = (options.permissions = options.permissions || {});
     for (const perm of ['find', 'insert', 'update', 'remove']) {
       if (!p[perm]) {
         p[perm] = perm;
@@ -157,7 +157,6 @@ _.assign(Tyr, {
   },
 
   async validate(opts) {
-
     if (opts && opts !== true) {
       function process(dirOpts) {
         const globPattern = dirOpts.glob;
@@ -170,7 +169,9 @@ _.assign(Tyr, {
             throw new Error('dir not specified in validate option.');
           }
 
-          const fileRe = dirOpts.fileMatch ? new RegExp(dirOpts.fileMatch) : undefined;
+          const fileRe = dirOpts.fileMatch
+            ? new RegExp(dirOpts.fileMatch)
+            : undefined;
 
           fs
             .readdirSync(dirOpts.dir)
@@ -201,7 +202,9 @@ _.assign(Tyr, {
     }
 
     async function bootstrap(stage) {
-      const bootstrapping = Tyr.components.filter(col => col.boot && !_.includes(bootstrappedComponents, col));
+      const bootstrapping = Tyr.components.filter(
+        col => col.boot && !_.includes(bootstrappedComponents, col)
+      );
       let reasons;
 
       for (let pass = 1; bootstrapping.length && pass < 100; pass++) {
@@ -209,7 +212,7 @@ _.assign(Tyr, {
         for (let i = 0; i < bootstrapping.length; ) {
           let thisReasons = await bootstrapping[i].boot(stage, pass);
           if (thisReasons && !_.isArray(thisReasons)) {
-            thisReasons = [ thisReasons ];
+            thisReasons = [thisReasons];
           }
 
           if (thisReasons && thisReasons.length) {
@@ -228,10 +231,11 @@ _.assign(Tyr, {
       if (bootstrapping.length) {
         throw new Error(
           `Tyranid could not boot during ${stage} stage after 100 passes.\n\n` +
-          'Deadlocked collections: ' +
-          bootstrapping.map(c => c.def.name).join(', ') +
-          '\n\nReasons:\n' +
-          reasons.map(r => '  ' + r).join('\n'));
+            'Deadlocked collections: ' +
+            bootstrapping.map(c => c.def.name).join(', ') +
+            '\n\nReasons:\n' +
+            reasons.map(r => '  ' + r).join('\n')
+        );
       }
     }
 
@@ -275,7 +279,7 @@ _.assign(Tyr, {
     const col = Tyr.byId[collectionId];
 
     if (col) {
-      _.remove(Tyr.collections,        col  => col.id  === collectionId);
+      _.remove(Tyr.collections, col => col.id === collectionId);
       _.remove(bootstrappedComponents, comp => comp.id === collectionId);
       delete Tyr.byId[collectionId];
       delete Type.byName[col.def.name];
@@ -286,8 +290,8 @@ _.assign(Tyr, {
 if (global.__TyranidGlobal) {
   throw new Error(
     `Multiple versions of tyranid are being required, only one global tyranid can exist! ` +
-    `Tried to create tyranid version = ${Tyr.version} but ` +
-    `global tyranid version = ${global.__TyranidGlobal.version} exists!`
+      `Tried to create tyranid version = ${Tyr.version} but ` +
+      `global tyranid version = ${global.__TyranidGlobal.version} exists!`
   );
 }
 

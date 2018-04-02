@@ -1,4 +1,3 @@
-
 // cannot use import because @isomorphic
 const _ = require('lodash');
 
@@ -12,7 +11,6 @@ const PATH_REGEX = /\._/g;
  * @isomorphic
  */
 function NamePath(base, pathName, skipArray) {
-
   this.base = base;
   this.name = pathName;
 
@@ -20,19 +18,18 @@ function NamePath(base, pathName, skipArray) {
     base = base.tail;
   }
 
-  const path       = this.path = pathName.length ? pathName.split('.') : [],
-        plen       = path.length,
-        pathFields = this.fields = new Array(plen);
+  const path = (this.path = pathName.length ? pathName.split('.') : []),
+    plen = path.length,
+    pathFields = (this.fields = new Array(plen));
 
   let at = base;
 
   let pi = 0,
-      denormal;
+    denormal;
 
-  nextPath:
-  while (pi < plen) {
+  nextPath: while (pi < plen) {
     const name = path[pi];
-    let def  = at.def;
+    let def = at.def;
 
     if (name === '_') {
       if (!at.of) {
@@ -42,9 +39,12 @@ function NamePath(base, pathName, skipArray) {
       at = at.of;
       pathFields[pi++] = at;
       continue nextPath;
-
     } else {
-      if (name.match(NamePath._numberRegex) && pi && pathFields[pi - 1].type.name === 'array') {
+      if (
+        name.match(NamePath._numberRegex) &&
+        pi &&
+        pathFields[pi - 1].type.name === 'array'
+      ) {
         at = at.of;
         pathFields[pi++] = at;
         continue nextPath;
@@ -56,12 +56,11 @@ function NamePath(base, pathName, skipArray) {
         if (aAt && aAt.fields && aAt.fields[name]) {
           at = aAt;
           def = at.def;
-
         } else {
           if (!def.keys) {
             throw new Error(
               `"${name}" in "${pathName}" is not valid` +
-              (at.link ? '" (maybe need advanced population syntax)' : '')
+                (at.link ? '" (maybe need advanced population syntax)' : '')
             );
           }
         }
@@ -80,10 +79,12 @@ function NamePath(base, pathName, skipArray) {
         // does this name match a denormalized entry?
         const _name = name.substring(0, name.length - 1);
 
-        while /* if */ (_name) {
+        while (/* if */ _name) {
           const _at = parentAt.fields[_name];
           if (!_at) {
-            throw new Error(`"${_name}" in "${pathName}" is not a valid field.`);
+            throw new Error(
+              `"${_name}" in "${pathName}" is not a valid field.`
+            );
           }
 
           if (!denormal) {
@@ -112,7 +113,11 @@ function NamePath(base, pathName, skipArray) {
     }
 
     if (!at) {
-      throw new Error(`Cannot find field "${this.pathName(pi)}" in path "${base.toString()}::${this.name}"`);
+      throw new Error(
+        `Cannot find field "${this.pathName(
+          pi
+        )}" in path "${base.toString()}::${this.name}"`
+      );
     }
 
     pathFields[pi++] = at;
@@ -167,17 +172,16 @@ NamePath.populateNameFor = function(name, denormal) {
 };
 
 NamePath.prototype.pathName = function(pi) {
-  return pi <= 1 ?
-    this.name :
-    this.path.slice(0, pi).join('.') + ' in ' + this.name;
+  return pi <= 1
+    ? this.name
+    : this.path.slice(0, pi).join('.') + ' in ' + this.name;
 };
 
 NamePath.prototype.toString = function() {
   return (
     (this.base instanceof Tyr.Collection
-      ? (this.base.def.name + ':')
-      : (this.base.toString() + '/'))
-    + this.name
+      ? this.base.def.name + ':'
+      : this.base.toString() + '/') + this.name
   );
 };
 
@@ -201,10 +205,10 @@ NamePath.prototype.isHistorical = function() {
 };
 
 NamePath.prototype.get = function(obj) {
-  const np     = this,
-        path   = np.path,
-        fields = np.fields,
-        plen   = path.length;
+  const np = this,
+    path = np.path,
+    fields = np.fields,
+    plen = path.length;
   let arrayInPath = false;
 
   const values = [];
@@ -223,7 +227,7 @@ NamePath.prototype.get = function(obj) {
         values.push(obj);
       } else {
         arrayInPath = true;
-        for (let ai = 0, alen = obj.length; ai < alen; ai++ ) {
+        for (let ai = 0, alen = obj.length; ai < alen; ai++) {
           getInner(pi, obj[ai]);
         }
       }
@@ -232,7 +236,9 @@ NamePath.prototype.get = function(obj) {
     } else if (obj === undefined || obj === null) {
       return;
     } else if (!_.isObject(obj)) {
-      throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
+      throw new Error(
+        'Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj
+      );
     } else {
       if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {
         arrayInPath = true;
@@ -248,9 +254,11 @@ NamePath.prototype.get = function(obj) {
 
   if (!arrayInPath) {
     switch (values.length) {
-    case 0: return undefined;
-    case 1: return values[0];
-    // fall through
+      case 0:
+        return undefined;
+      case 1:
+        return values[0];
+      // fall through
     }
   }
 
@@ -258,10 +266,10 @@ NamePath.prototype.get = function(obj) {
 };
 
 NamePath.prototype.set = function(obj, value, opts) {
-  const np     = this,
-        path   = np.path,
-        fields = np.fields,
-        plen   = path.length;
+  const np = this,
+    path = np.path,
+    fields = np.fields,
+    plen = path.length;
 
   function walk(pi, obj) {
     if (pi === plen - 1) {
@@ -273,9 +281,13 @@ NamePath.prototype.set = function(obj, value, opts) {
         obj[path[pi]] = value;
       } else {
         if (opts && opts.bestEffort && !obj) return;
-        throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
+        throw new Error(
+          'Expected an object or array at ' +
+            np.pathName(pi) +
+            ', but got ' +
+            obj
+        );
       }
-
     } else {
       if (Array.isArray(obj)) {
         const name = path[pi];
@@ -291,7 +303,12 @@ NamePath.prototype.set = function(obj, value, opts) {
         }
       } else if (!_.isObject(obj)) {
         if (opts && opts.bestEffort && !obj) return;
-        throw new Error('Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj);
+        throw new Error(
+          'Expected an object or array at ' +
+            np.pathName(pi) +
+            ', but got ' +
+            obj
+        );
       } else {
         if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {
           pi++;
@@ -310,14 +327,14 @@ NamePath.prototype.set = function(obj, value, opts) {
 
 NamePath.prototype.uniq = function(obj) {
   const val = this.get(obj);
-  return _.isArray(val) ? _.uniq(val) : [ val ];
+  return _.isArray(val) ? _.uniq(val) : [val];
 };
 
 Object.defineProperty(NamePath.prototype, 'pathLabel', {
   get: function() {
     const pf = this.fields;
     let i = 0,
-        label = '';
+      label = '';
     while (i < pf.length - 1) {
       const f = pf[i++];
 

@@ -1,12 +1,11 @@
-import * as _          from 'lodash';
+import * as _ from 'lodash';
 
-import Tyr        from '../tyr';
+import Tyr from '../tyr';
 import historical from '../historical/historical';
 
 const $all = Tyr.$all;
 
 class Cache {
-
   constructor(colId) {
     this.colId = colId;
     this.col = Tyr.byId[colId];
@@ -31,8 +30,8 @@ class Cache {
         fields.$all = 1;
       } else {
         const pathName = p.namePath.spath,
-              existing = fields[pathName],
-              target   = (p.projection && 1) || 0;
+          existing = fields[pathName],
+          target = (p.projection && 1) || 0;
 
         if (target || !existing) {
           if (!target && pathName === '_id') {
@@ -47,7 +46,6 @@ class Cache {
 }
 
 export default class Populator {
-
   constructor(denormal, opts) {
     this.denormal = denormal;
     this.opts = opts || {};
@@ -73,7 +71,7 @@ export default class Populator {
     }
 
     const linkId = link.id,
-          cache = this.cacheFor(linkId);
+      cache = this.cacheFor(linkId);
 
     documents.forEach(function(doc) {
       _.each(namePath.uniq(doc), function(id) {
@@ -90,43 +88,44 @@ export default class Populator {
   async queryMissingIds() {
     const asOf = this.opts.asOf;
 
-    return await Promise.all(_.map(this.cachesByColId, async (cache, colId) => {
-      const collection = Tyr.byId[colId],
-            primaryKeyField = collection.def.primaryKey.field,
-            idType = collection.fields[primaryKeyField].type;
+    return await Promise.all(
+      _.map(this.cachesByColId, async (cache, colId) => {
+        const collection = Tyr.byId[colId],
+          primaryKeyField = collection.def.primaryKey.field,
+          idType = collection.fields[primaryKeyField].type;
 
-      const ids = [];
-      _.each(cache.values, (v, k) => {
-        if (v === null) {
-          // TODO:  once we can use ES6 Maps we can get rid of
-          // this string conversion -- due to keys having to be
-          // strings on regular objects
-          ids.push(idType.fromString(k));
-        }
-      });
+        const ids = [];
+        _.each(cache.values, (v, k) => {
+          if (v === null) {
+            // TODO:  once we can use ES6 Maps we can get rid of
+            // this string conversion -- due to keys having to be
+            // strings on regular objects
+            ids.push(idType.fromString(k));
+          }
+        });
 
-      if (!ids.length) return;
+        if (!ids.length) return;
 
-      const opts = {};
-      let fields = cache.fields;
+        const opts = {};
+        let fields = cache.fields;
 
-      if (fields && !fields.$all && !_.isEmpty(fields)) {
-        opts.fields = fields;
-      } else {
-        fields = undefined;
-      }
-
-      const linkDocs = await collection.byIds(ids, opts),
-            isHistorical = collection.def.historical;
-
-      linkDocs.forEach(doc => {
-        if (asOf && isHistorical) {
-          historical.asOf(collection, doc, asOf, fields);
+        if (fields && !fields.$all && !_.isEmpty(fields)) {
+          opts.fields = fields;
+        } else {
+          fields = undefined;
         }
 
-        cache.values[doc[primaryKeyField]] = doc;
-      });
+        const linkDocs = await collection.byIds(ids, opts),
+          isHistorical = collection.def.historical;
 
-    }));
+        linkDocs.forEach(doc => {
+          if (asOf && isHistorical) {
+            historical.asOf(collection, doc, asOf, fields);
+          }
+
+          cache.values[doc[primaryKeyField]] = doc;
+        });
+      })
+    );
   }
 }

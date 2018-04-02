@@ -1,5 +1,4 @@
-
-import * as _   from 'lodash';
+import * as _ from 'lodash';
 
 import Tyr from '../tyr';
 
@@ -11,7 +10,7 @@ import * as Uu from './unitUtil';
 
 class UnitDegree {
   constructor(unit, degree) {
-    this.unit   = unit;
+    this.unit = unit;
     this.degree = degree;
   }
 }
@@ -45,7 +44,6 @@ function sortByDegreeThenAbbrev(ud1, ud2) {
 //
 
 function addBase(next, base, add, degree) {
-
   for (const ud of add) {
     const units = ud.unit.units;
     if (units) {
@@ -87,8 +85,8 @@ function deriveBase(components) {
 
 class Units {
   constructor(sid, components) {
-    Object.defineProperty(this, 'sid',         { value: sid });
-    Object.defineProperty(this, 'components',  { value: components });
+    Object.defineProperty(this, 'sid', { value: sid });
+    Object.defineProperty(this, 'components', { value: components });
     Object.defineProperty(this, 'conversions', { value: {} });
 
     let complex = false;
@@ -105,7 +103,7 @@ class Units {
     Object.defineProperty(this, 'base', { value: base });
 
     const typeComponents = base.components.map(comp => ({
-      type:   comp.unit.type,
+      type: comp.unit.type,
       degree: comp.degree
     }));
 
@@ -148,7 +146,6 @@ function make(unitDegrees) {
 }
 
 Units.parse = function(text) {
-
   if (!text) {
     return; // undefined
   }
@@ -164,12 +161,12 @@ Units.parse = function(text) {
     return; // undefined
   }
 
-  const len        = text.length,
-        components = new Array(compCount);
+  const len = text.length,
+    components = new Array(compCount);
 
   let multiplier = 1,
-      pos = 0,
-      nextComp = 0;
+    pos = 0,
+    nextComp = 0;
 
   //console.log(`parsing unit ${text}:`);
   while (pos < len) {
@@ -268,10 +265,9 @@ class UnitConversionError {
 }
 
 const INCOMPATIBLE = 'INCOMPATIBLE',
-      MANUAL       = 'MANUAL';
+  MANUAL = 'MANUAL';
 
 Units.prototype.convert = function(value, targetUnit) {
-
   if (targetUnit === this) {
     return value;
   }
@@ -290,8 +286,7 @@ Units.prototype.convert = function(value, targetUnit) {
     conversion = INCOMPATIBLE;
   }
 
-  OUTER:
-  if (conversion !== INCOMPATIBLE) {
+  OUTER: if (conversion !== INCOMPATIBLE) {
     while (true) {
       // example:  5 m/s to x ft/s
 
@@ -326,7 +321,7 @@ Units.prototype.convert = function(value, targetUnit) {
           const degree = sud.degree - tud.degree;
 
           if (degree) {
-            difference[ next++ ] = new UnitDegree(sud.unit, degree);
+            difference[next++] = new UnitDegree(sud.unit, degree);
           }
 
           spos++;
@@ -359,7 +354,11 @@ Units.prototype.convert = function(value, targetUnit) {
           const ud = difference[i];
           const u = ud.unit;
 
-          if (u === Unit.KELVIN || u === Unit.CELSIUS || u === Unit.FAHRENHEIT) {
+          if (
+            u === Unit.KELVIN ||
+            u === Unit.CELSIUS ||
+            u === Unit.FAHRENHEIT
+          ) {
             temperatures++;
             additive += ud.degree;
 
@@ -376,8 +375,7 @@ Units.prototype.convert = function(value, targetUnit) {
             break OUTER;
           }
 
-          let from,
-              to;
+          let from, to;
 
           if (difference[0].degree === 1) {
             from = difference[0].unit;
@@ -392,7 +390,7 @@ Units.prototype.convert = function(value, targetUnit) {
           if (from === Unit.CELSIUS) {
             value = value + 273.15;
           } else if (from === Unit.FAHRENHEIT) {
-            value = ( ( value - 32) * 5 / 9 ) + 273.15;
+            value = (value - 32) * 5 / 9 + 273.15;
           }
 
           // Step 2:  convert from Kelvin to the target temperature if it's not Kelvin
@@ -400,7 +398,7 @@ Units.prototype.convert = function(value, targetUnit) {
           if (to === Unit.CELSIUS) {
             value -= 273.15;
           } else if (to === Unit.FAHRENHEIT) {
-            value = ( ( value - 273.15 ) * 9 / 5 ) + 32;
+            value = (value - 273.15) * 9 / 5 + 32;
           }
 
           conversion = MANUAL;
@@ -449,10 +447,9 @@ Units.prototype.subtract = function(value, subUnit, subValue) {
 };
 
 function multAdd(len, components, addComponents, mult) {
-
   for (const addComp of addComponents) {
     const addUnit = addComp.unit,
-          addDegree = addComp.degree * mult;
+      addDegree = addComp.degree * mult;
     let ci = 0;
 
     for (; ci < len; ci++) {
@@ -473,7 +470,6 @@ function multAdd(len, components, addComponents, mult) {
 }
 
 function mult(name, units, by) {
-
   let multipliers = units[name];
   if (!multipliers) {
     multipliers = {};
@@ -482,7 +478,9 @@ function mult(name, units, by) {
 
   let is = multipliers[by.sid];
   if (!is) {
-    const components = new Array(units.components.length + by.components.length);
+    const components = new Array(
+      units.components.length + by.components.length
+    );
     let len = 0;
 
     len = multAdd(len, components, units.components, 1);
@@ -525,7 +523,9 @@ Units.prototype.normal = function() {
   let normal = this._normal;
 
   if (!normal) {
-    const nuds = this.base.components.map(comp => new UnitDegree(Unit.bySid[comp.unit.type.normal], comp.degree));
+    const nuds = this.base.components.map(
+      comp => new UnitDegree(Unit.bySid[comp.unit.type.normal], comp.degree)
+    );
     Uu.merge('unit', nuds);
     normal = make(nuds);
     Object.defineProperty(this, '_normal', { value: normal });
@@ -540,9 +540,9 @@ Units.prototype.normal = function() {
 
 Units.prototype.toString = function() {
   let str = '',
-      positiveFound = false,
-      inverse = false,
-      floatingOne = false;
+    positiveFound = false,
+    inverse = false,
+    floatingOne = false;
 
   for (const ud of this.components) {
     if (ud.degree > 0) {
@@ -571,7 +571,16 @@ Units.prototype.toString = function() {
   return str;
 };
 
-for (const prop of ['convert', 'add', 'subtract', 'multiply', 'divide', 'invert', 'normal', 'toString']) {
+for (const prop of [
+  'convert',
+  'add',
+  'subtract',
+  'multiply',
+  'divide',
+  'invert',
+  'normal',
+  'toString'
+]) {
   Object.defineProperty(Units.prototype, prop, { enumerable: false });
 }
 

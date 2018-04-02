@@ -1,8 +1,6 @@
-
 import Tyr from '../tyr';
 
 export default class SecureError {
-
   constructor(msg) {
     this.msg = msg;
   }

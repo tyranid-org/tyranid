@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
-import Tyr        from '../tyr';
-import Type       from '../core/type';
+import Tyr from '../tyr';
+import Type from '../core/type';
 import Collection from '../core/collection';
 
 const LinkType = new Type({
@@ -12,20 +12,23 @@ const LinkType = new Type({
     const relate = field.def.relate;
 
     switch (relate) {
-    case undefined:
-    case 'associate':
-    case 'owns':
-    case 'ownedBy':
-      field.relate = relate || 'associate';
-      break;
-    default:
-      throw compiler.err(field.path, '"relate" must be one of "associate", "owns", or "ownedBy" if present');
+      case undefined:
+      case 'associate':
+      case 'owns':
+      case 'ownedBy':
+        field.relate = relate || 'associate';
+        break;
+      default:
+        throw compiler.err(
+          field.path,
+          '"relate" must be one of "associate", "owns", or "ownedBy" if present'
+        );
     }
   },
 
   fromClient(field, value) {
     const link = field.link,
-          linkField = link.fields[field.link.def.primaryKey.field];
+      linkField = link.fields[field.link.def.primaryKey.field];
 
     try {
       return linkField.type.def.fromClient(linkField, value);
@@ -46,7 +49,9 @@ const LinkType = new Type({
   },
 
   toClient(field, value) {
-    return value ? (ObjectId.isValid(value.toString()) ? value.toString() : value) : value;
+    return value
+      ? ObjectId.isValid(value.toString()) ? value.toString() : value
+      : value;
   },
 
   format(field, value) {
@@ -74,14 +79,14 @@ Collection.prototype.links = function(search) {
 
   const relate = search.relate;
   switch (relate) {
-  case 'associate':
-  case 'owns':
-  case 'ownedBy':
-  case undefined:
-  case null:
-    break;
-  default:
-    throw new Error(`Unknown links() relate option "${relate}"`);
+    case 'associate':
+    case 'owns':
+    case 'ownedBy':
+    case undefined:
+    case null:
+      break;
+    default:
+      throw new Error(`Unknown links() relate option "${relate}"`);
   }
 
   function matchesRelate(field) {
@@ -90,13 +95,13 @@ Collection.prototype.links = function(search) {
 
   const direction = search.direction;
   switch (direction) {
-  case 'incoming':
-  case 'outgoing':
-  case undefined:
-  case null:
-    break;
-  default:
-    throw new Error(`Unknown links() direction option "${direction}"`);
+    case 'incoming':
+    case 'outgoing':
+    case undefined:
+    case null:
+      break;
+    default:
+      throw new Error(`Unknown links() direction option "${direction}"`);
   }
 
   const links = [];
@@ -126,11 +131,11 @@ Collection.prototype.links = function(search) {
 
 Collection.prototype.references = async function(opts) {
   const thisCol = this,
-        refs = [];
+    refs = [];
 
   let ids = opts.ids || opts.id;
   if (!Array.isArray(ids)) {
-    ids = ids ? [ ids ] : [];
+    ids = ids ? [ids] : [];
   }
 
   if (!ids.length) {
@@ -141,10 +146,10 @@ Collection.prototype.references = async function(opts) {
 
   let exclude = opts.exclude || [];
   if (!Array.isArray(exclude)) {
-    exclude = [ exclude ];
+    exclude = [exclude];
   }
 
-  const makeMatch = values => values.length > 1 ? { $in: values } : values[0];
+  const makeMatch = values => (values.length > 1 ? { $in: values } : values[0]);
 
   const idMatch = makeMatch(ids);
   let uidMatch;
@@ -171,7 +176,7 @@ Collection.prototype.references = async function(opts) {
     if (queries.length) {
       const query = queries.length > 1 ? { $or: queries } : queries[0];
       //console.log(col.name, '=', query);
-      refs.push(...await col.findAll({ query, fields }));
+      refs.push(...(await col.findAll({ query, fields })));
     }
   }
 

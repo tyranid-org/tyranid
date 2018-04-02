@@ -48,4 +48,4 @@ import { createTestData } from '../data';
       `GraphQL Server is now running on http://localhost:${GRAPHQL_PORT}/graphiql`
     )
   );
-})().catch((err) => console.log(err.stack)); /* tslint:enable no-console */
+})().catch(err => console.log(err.stack)); /* tslint:enable no-console */

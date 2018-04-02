@@ -1,23 +1,15 @@
+import * as _ from 'lodash';
+import * as chai from 'chai';
+import * as mongodb from 'mongodb';
 
-import * as _                    from 'lodash';
-import * as chai                 from 'chai';
-import * as mongodb              from 'mongodb';
+import Tyr from '../src/tyranid';
+import historical from '../src/historical/historical';
 
-import Tyr                       from '../src/tyranid';
-import historical                from '../src/historical/historical';
+const { ObjectId } = mongodb;
 
-const {
-  ObjectId
-} = mongodb;
+const { expect, assert } = chai;
 
-const {
-  expect,
-  assert
-} = chai;
-
-const {
-  $all
-} = Tyr;
+const { $all } = Tyr;
 
 async function expectAsyncToThrow(promise, regex) {
   let failed = false;
@@ -105,7 +97,11 @@ export function add() {
     it('should preserveInitialValues() automatically on records read from the db', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36
+      });
       await amy.$save();
 
       amy = await User.byId(2001);
@@ -118,7 +114,11 @@ export function add() {
     it('should _history for $save()', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36
+      });
 
       await amy.$save();
       amy = await User.byId(2001);
@@ -130,7 +130,7 @@ export function add() {
       await amy.$save();
       amy = await User.byId(2001);
 
-      expect(amy._history[0].p).to.eql({ age: [ 36 ] });
+      expect(amy._history[0].p).to.eql({ age: [36] });
 
       await User.remove({ _id: 2001 });
     });
@@ -140,7 +140,12 @@ export function add() {
 
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36, address: {} });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36,
+        address: {}
+      });
 
       await amy.$save();
 
@@ -172,9 +177,13 @@ export function add() {
 
       let amy = new User({
         _id: 2001,
-        name: { first: 'Amy', last: 'Tell', suffices: [ 'The Awesome', 'Sr', 'The Nice' ] },
+        name: {
+          first: 'Amy',
+          last: 'Tell',
+          suffices: ['The Awesome', 'Sr', 'The Nice']
+        },
         address: {
-          notes: [ 'one', 'two', 'three' ]
+          notes: ['one', 'two', 'three']
         },
         age: 36
       });
@@ -186,20 +195,24 @@ export function add() {
       amy = await User.byId(2001);
 
       expect(amy._history).to.be.undefined; // name isn't historical
-      expect(amy.name.suffices).to.eql([ 'The Awesome', 'The Nice' ]);
+      expect(amy.name.suffices).to.eql(['The Awesome', 'The Nice']);
 
       await User.pull(2001, 'address.notes', v => v === 'two');
 
       amy = await User.byId(2001);
 
       expect(amy._history.length).to.eql(1);
-      expect(amy.address.notes).to.eql([ 'one', 'three' ]);
+      expect(amy.address.notes).to.eql(['one', 'three']);
     });
 
     it('should support historical $update()', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36
+      });
 
       await amy.$save();
 
@@ -217,7 +230,11 @@ export function add() {
     it('should support historical $update() with partial data', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36
+      });
 
       await amy.$save();
 
@@ -236,7 +253,11 @@ export function add() {
     it('should support author and comment', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36
+      });
       await amy.$save();
 
       amy = await User.byId(2001, { fields: { age: 1 } });
@@ -256,7 +277,11 @@ export function add() {
     it('should prevent $save()s on $historical documents', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36
+      });
 
       await amy.$save();
       amy = await User.byId(2001);
@@ -275,7 +300,11 @@ export function add() {
     it('historical differencing should take into account nested modifications', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, address: { street: '123 Mayberry' } });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        address: { street: '123 Mayberry' }
+      });
 
       await amy.$save();
       amy = await User.byId(2001);
@@ -286,7 +315,9 @@ export function add() {
       await amy.$save();
       amy = await User.byId(2001);
 
-      expect(amy._history[0].p).to.eql({'address': [1, {'street': ['123 Mayberry']}]});
+      expect(amy._history[0].p).to.eql({
+        address: [1, { street: ['123 Mayberry'] }]
+      });
 
       await User.remove({ _id: 2001 });
     });
@@ -294,7 +325,11 @@ export function add() {
     it('should support asOf on query methods', async () => {
       await User.remove({ _id: 2001 });
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36
+      });
 
       await amy.$save();
       amy = await User.byId(2001);
@@ -311,13 +346,22 @@ export function add() {
       await User.remove({ _id: 2001 });
       await Organization.remove({ _id: 2001 });
 
-      let cc = new Organization({ _id: 2001, name: 'Concrete Crackers', owner: 2001 });
+      let cc = new Organization({
+        _id: 2001,
+        name: 'Concrete Crackers',
+        owner: 2001
+      });
       await cc.$save();
       cc = await Organization.byId(2001);
       cc.name = 'Concrete R Us';
       await cc.$save();
 
-      let amy = new User({ _id: 2001, name: { first: 'Amy', last: 'Tell' }, age: 36, organization: 2001 });
+      let amy = new User({
+        _id: 2001,
+        name: { first: 'Amy', last: 'Tell' },
+        age: 36,
+        organization: 2001
+      });
       await amy.$save();
       amy = await User.byId(2001);
       amy.age = 37;

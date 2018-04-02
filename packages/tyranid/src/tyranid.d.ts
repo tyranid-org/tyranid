@@ -15,10 +15,8 @@ import * as mongodb from 'mongodb';
 export = Tyranid;
 
 declare namespace Tyranid {
-
   // declare properties of Tyr object
   export namespace Tyr {
-
     export const Collection: CollectionStatic;
     export const Event: EventStatic;
     export const Field: FieldStatic;
@@ -38,12 +36,20 @@ declare namespace Tyranid {
     export const secure: Secure;
 
     export function U(text: string | TemplateStringsArray | number): any;
-    export function parseUid(uid: string): { collection: CollectionInstance, id: IdType };
+    export function parseUid(
+      uid: string
+    ): { collection: CollectionInstance; id: IdType };
     export function labelize(name: string): string;
     export function config(opts: ConfigOptions): void;
     export function connect(opts: ConnectOptions): void;
-    export function byUid(uid: string, options?: Options_FindById): Promise<Document | null>;
-    export function byUids(uidList: string[], options?: Options_FindByIds): Promise<Document[]>;
+    export function byUid(
+      uid: string,
+      options?: Options_FindById
+    ): Promise<Document | null>;
+    export function byUids(
+      uidList: string[],
+      options?: Options_FindByIds
+    ): Promise<Document[]>;
     export function trace(opts: any): Promise<void>;
     export function log(opts: any): Promise<void>;
     export function info(id: number, message: string): Promise<void>;
@@ -52,26 +58,35 @@ declare namespace Tyranid {
     export function warn(opts: any): Promise<void>;
     export function error(opts: any): Promise<void>;
     export function fatal(opts: any): Promise<void>;
-    export function express(app: Express.Application, auth?: Express.RequestHandler): void;
-    export function valuesBy(predicate: (field: FieldInstance) => boolean): Promise<any[]>;
+    export function express(
+      app: Express.Application,
+      auth?: Express.RequestHandler
+    ): void;
+    export function valuesBy(
+      predicate: (field: FieldInstance) => boolean
+    ): Promise<any[]>;
     export function generateClientLibrary(): string;
     export function migrate(): Promise<void>;
     export function init(): void;
 
-    export function validate(opts?: {
-      glob?: string
-    }): void;
+    export function validate(opts?: { glob?: string }): void;
 
     /**
      * utility methods
      */
     export function isEqual(a: any, b: any): boolean;
-    export function isSameId(a: string | IdType | null | undefined, b: string | IdType | null | undefined): boolean;
+    export function isSameId(
+      a: string | IdType | null | undefined,
+      b: string | IdType | null | undefined
+    ): boolean;
     export function indexOf(arr: any[], item: any): number;
     export function addToSet(set: any[], item: any): void;
     export function pullAll(arr: any[], item: any): void;
     export function cloneDeep<T>(obj: T): T;
-    export function arraySort(arr: any[], order: { [key: string]: number }): void;
+    export function arraySort(
+      arr: any[],
+      order: { [key: string]: number }
+    ): void;
 
     export function forget(id: string): void;
 
@@ -93,10 +108,10 @@ declare namespace Tyranid {
     export type BootStage = 'compile' | 'link' | 'post-link';
 
     export interface Class<T> {
-      new(...args: any[]): T;
+      new (...args: any[]): T;
     }
 
-    type RawDocument<Base> = {[K in (keyof Base)]: Base[K]; };
+    type RawDocument<Base> = { [K in keyof Base]: Base[K] };
 
     /**
      *  Generic tyranid document object.
@@ -130,7 +145,6 @@ declare namespace Tyranid {
      */
 
     export interface OptionsAuth {
-
       /**
        * An authorization object (a user, group, role, etc.) to pass to a Secure
        * plug-in. Can also be "true" to auto-detect the current user.
@@ -145,7 +159,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsCount {
-
       /**
        * Indicates that a count of the records should be added to the returned array.
        */
@@ -153,7 +166,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsHistorical {
-
       /**
        * Return the historical version of the doc
        */
@@ -161,7 +173,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsParallel {
-
       /**
        * If specified this indicates that the documents will be returned in a parallel array to given list of
        * IDs/UIDs.  If the same id is given multiple times, the document instances will be shared.  If a
@@ -171,24 +182,23 @@ declare namespace Tyranid {
     }
 
     export interface OptionsPopulate {
-
       /**
        * The population fields to populate.
        */
       populate?: PopulationOption;
-
     }
 
     export interface OptionsProjection {
-
       /**
        * The standard MongoDB-style fields object that specifies the projection.
        */
-      fields?: { [key: string]: number } | string | Array<string | { [key: string]: number }>;
+      fields?:
+        | { [key: string]: number }
+        | string
+        | Array<string | { [key: string]: number }>;
     }
 
     export interface OptionsQuery {
-
       /**
        * raw mongodb query
        */
@@ -196,7 +206,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsPlain {
-
       /**
        * Indicates that returned documents should be simple Plain 'ole JavaScript Objects (POJO)s.
        */
@@ -204,7 +213,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsPost {
-
       /**
        * Provides a hook to do post-processing on the document.
        */
@@ -212,7 +220,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsTimestamps {
-
       /**
        * Indicates if timestamps should be updated.
        * Defaults to the timestamps setting on the collection.
@@ -221,7 +228,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsUpdate {
-
       /**
        * The standard MongoDB-style update object. 'insert' for inserts, etc.)
        * but you can override it with this option.
@@ -235,7 +241,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsWhere {
-
       /**
        * Applies a predicate that is applied to the dataset.
        */
@@ -243,7 +248,6 @@ declare namespace Tyranid {
     }
 
     export interface OptionsWindow {
-
       /**
        * The maximum number of documents to retrieve.
        */
@@ -264,30 +268,38 @@ declare namespace Tyranid {
      * Options by operation
      */
 
-    export interface Options_Count
-      extends Options_Exists { }
+    export interface Options_Count extends Options_Exists {}
 
-    export interface Options_Exists
-      extends OptionsAuth, OptionsCount { }
+    export interface Options_Exists extends OptionsAuth, OptionsCount {}
 
     export interface Options_FindById
-      extends OptionsAuth, OptionsHistorical, OptionsPopulate, OptionsProjection, OptionsPlain { }
+      extends OptionsAuth,
+        OptionsHistorical,
+        OptionsPopulate,
+        OptionsProjection,
+        OptionsPlain {}
 
     export interface Options_FindByIds
-      extends Options_FindById, OptionsParallel { }
+      extends Options_FindById,
+        OptionsParallel {}
 
     export interface Options_FindOne
-      extends Options_FindById, OptionsQuery, OptionsWindow { }
+      extends Options_FindById,
+        OptionsQuery,
+        OptionsWindow {}
 
     export interface Options_FindCursor
-      extends Options_FindOne, OptionsWindow { }
+      extends Options_FindOne,
+        OptionsWindow {}
 
     export interface Options_FindMany
-      extends Options_FindCursor, OptionsCount { }
+      extends Options_FindCursor,
+        OptionsCount {}
 
     export interface Options_FindAndModify
-      extends OptionsAuth, OptionsQuery, OptionsUpdate {
-
+      extends OptionsAuth,
+        OptionsQuery,
+        OptionsUpdate {
       /**
        * whether or not to return a new document in findAndModify
        */
@@ -300,36 +312,51 @@ declare namespace Tyranid {
     }
 
     export interface Options_Insert
-      extends OptionsAuth, OptionsHistorical, OptionsTimestamps { }
+      extends OptionsAuth,
+        OptionsHistorical,
+        OptionsTimestamps {}
 
-    export interface Options_Remove
-      extends OptionsAuth, OptionsQuery { }
+    export interface Options_Remove extends OptionsAuth, OptionsQuery {}
 
-    export interface Options_Save
-      extends Options_Insert, Options_UpdateDoc { }
+    export interface Options_Save extends Options_Insert, Options_UpdateDoc {}
 
     export interface Options_Slice
-      extends OptionsAuth, OptionsPopulate, OptionsWhere, OptionsWindow { }
+      extends OptionsAuth,
+        OptionsPopulate,
+        OptionsWhere,
+        OptionsWindow {}
 
-    export interface Options_ToClient
-      extends OptionsAuth, OptionsPost { }
+    export interface Options_ToClient extends OptionsAuth, OptionsPost {}
 
     export interface Options_Update
-      extends OptionsAuth, OptionsQuery, OptionsTimestamps, OptionsUpdate { }
+      extends OptionsAuth,
+        OptionsQuery,
+        OptionsTimestamps,
+        OptionsUpdate {}
 
     export interface Options_UpdateDoc
-      extends OptionsAuth, OptionsHistorical, OptionsTimestamps { }
+      extends OptionsAuth,
+        OptionsHistorical,
+        OptionsTimestamps {}
 
     export interface Options_All
-      extends OptionsAuth, OptionsHistorical, OptionsQuery, OptionsParallel,
-      OptionsPlain, OptionsPopulate, OptionsPost, OptionsProjection,
-      OptionsTimestamps, OptionsUpdate, OptionsWindow { }
+      extends OptionsAuth,
+        OptionsHistorical,
+        OptionsQuery,
+        OptionsParallel,
+        OptionsPlain,
+        OptionsPopulate,
+        OptionsPost,
+        OptionsProjection,
+        OptionsTimestamps,
+        OptionsUpdate,
+        OptionsWindow {}
 
     /**
      * Fields to populate in a document
      */
-    export type PopulationOption
-      = string
+    export type PopulationOption =
+      | string
       | string[]
       | { [key: string]: PopulationOption };
 
@@ -398,7 +425,7 @@ declare namespace Tyranid {
           fn: Function;
           fnClient?: Function;
           fnServer?: Function;
-        }
+        };
       };
       values?: any[][];
       fromClient?: (opts: object) => void;
@@ -463,8 +490,8 @@ declare namespace Tyranid {
       pathLabel?: string;
     }
 
-    export type CollectionCurriedMethodReturn
-      = Function
+    export type CollectionCurriedMethodReturn =
+      | Function
       | Promise<Document | Document[]>;
 
     export interface CollectionsByName {
@@ -476,7 +503,12 @@ declare namespace Tyranid {
     }
 
     export interface Secure {
-      canInsert?: (collection: CollectionInstance, doc: Tyr.Document, perm: string, auth: Tyr.Document) => Promise<boolean> | boolean;
+      canInsert?: (
+        collection: CollectionInstance,
+        doc: Tyr.Document,
+        perm: string,
+        auth: Tyr.Document
+      ) => Promise<boolean> | boolean;
       boot(state: BootStage): void;
       query(
         collection: CollectionInstance,
@@ -492,8 +524,8 @@ declare namespace Tyranid {
       define(propertyName: string): void;
     }
 
-    export type ValidationPattern
-      = FileMatchValidationPattern
+    export type ValidationPattern =
+      | FileMatchValidationPattern
       | GlobValidationPattern;
 
     export interface FileMatchValidationPattern {
@@ -505,7 +537,13 @@ declare namespace Tyranid {
       glob: string;
     }
 
-    export type LogLevel = 'TRACE' | 'LOG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
+    export type LogLevel =
+      | 'TRACE'
+      | 'LOG'
+      | 'INFO'
+      | 'WARN'
+      | 'ERROR'
+      | 'FATAL';
 
     export interface ConfigOptions {
       db?: mongodb.Db;
@@ -542,7 +580,9 @@ declare namespace Tyranid {
 
     export interface CollectionStatic {
       // Collection instance constructor
-      new <T extends Document = Document>(def: CollectionDefinition): CollectionInstance<T>;
+      new <T extends Document = Document>(
+        def: CollectionDefinition
+      ): CollectionInstance<T>;
     }
 
     export interface Component {
@@ -555,8 +595,8 @@ declare namespace Tyranid {
     /**
      *  Tyranid collection class
      */
-    export interface CollectionInstance<T extends Tyr.Document = Tyr.Document> extends Component {
-
+    export interface CollectionInstance<T extends Tyr.Document = Tyr.Document>
+      extends Component {
       fields: { [key: string]: FieldInstance };
       label: LabelType;
       labelField: FieldInstance;
@@ -566,12 +606,22 @@ declare namespace Tyranid {
       id: string;
 
       // Collection instance constructor
-      new(doc?: RawMongoDocument): T;
+      new (doc?: RawMongoDocument): T;
 
-      secureQuery(query: MongoQuery, perm: string, auth: Document): Promise<MongoQuery>;
+      secureQuery(
+        query: MongoQuery,
+        perm: string,
+        auth: Document
+      ): Promise<MongoQuery>;
 
-      byId(id: IdType | string | number, options?: Options_FindById): Promise<T | null>;
-      byIds(ids: Array<IdType | number | string>, options?: Options_FindByIds): Promise<T[]>;
+      byId(
+        id: IdType | string | number,
+        options?: Options_FindById
+      ): Promise<T | null>;
+      byIds(
+        ids: Array<IdType | number | string>,
+        options?: Options_FindByIds
+      ): Promise<T[]>;
       byLabel(label: LabelType, forcePromise?: boolean): Promise<T | null>;
 
       count(opts: Options_Count): Promise<number>;
@@ -582,7 +632,11 @@ declare namespace Tyranid {
       fieldsFor(obj: any): Promise<FieldInstance[]>;
       idToUid(id: string | mongodb.ObjectID): string;
 
-      fake(options: { n?: number, schemaOpts?: any, seed?: number }): Promise<T>;
+      fake(options: {
+        n?: number;
+        schemaOpts?: any;
+        seed?: number;
+      }): Promise<T>;
 
       find(opts: Options_FindCursor): Promise<Cursor<T>>;
       findAll(opts: Options_FindMany): Promise<T[]>;
@@ -597,7 +651,9 @@ declare namespace Tyranid {
 
       fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;
-      toClient(doc: Document | Document[] | RawMongoDocument | RawMongoDocument[]): RawMongoDocument;
+      toClient(
+        doc: Document | Document[] | RawMongoDocument | RawMongoDocument[]
+      ): RawMongoDocument;
 
       idToLabel(id: any): Promise<string>;
       insert<I, A extends I[]>(docs: A, opts?: Options_Insert): Promise<T[]>;
@@ -616,14 +672,29 @@ declare namespace Tyranid {
 
       parsePath(text: string): NamePathInstance;
 
-      populate<R>(fields: string | string[] | { [key: string]: any }): (docs: R) => Promise<R>;
+      populate<R>(
+        fields: string | string[] | { [key: string]: any }
+      ): (docs: R) => Promise<R>;
       populate(fields: any, document: T, denormal?: boolean): Promise<T>;
       populate(fields: any, documents: T[], denormal?: boolean): Promise<T[]>;
 
-      push(id: IdType | string | number, path: string, prop: any): Promise<void>;
-      pull(id: IdType | string | number, path: string, fn: (p: any) => boolean): Promise<void>;
+      push(
+        id: IdType | string | number,
+        path: string,
+        prop: any
+      ): Promise<void>;
+      pull(
+        id: IdType | string | number,
+        path: string,
+        fn: (p: any) => boolean
+      ): Promise<void>;
 
-      references(opts: { id?: any, ids?: any, idsOnly?: boolean, exclude?: Array<CollectionInstance<Tyr.Document>> }): Promise<Tyr.Document[]>;
+      references(opts: {
+        id?: any;
+        ids?: any;
+        idsOnly?: boolean;
+        exclude?: Array<CollectionInstance<Tyr.Document>>;
+      }): Promise<Tyr.Document[]>;
 
       subscribe(query: MongoQuery, cancel?: boolean): void;
 
@@ -641,11 +712,10 @@ declare namespace Tyranid {
      *  Tyranid field
      */
     export interface FieldStatic {
-      new(...args: any[]): FieldInstance;
+      new (...args: any[]): FieldInstance;
     }
 
     export interface FieldInstance {
-
       collection: CollectionInstance;
       db: boolean;
       def: FieldDefinition;
@@ -668,7 +738,7 @@ declare namespace Tyranid {
     }
 
     export interface NamePathStatic {
-      new(...args: any[]): NamePathInstance;
+      new (...args: any[]): NamePathInstance;
     }
 
     export interface NamePathInstance {
@@ -687,12 +757,13 @@ declare namespace Tyranid {
     }
 
     export interface UnitsStatic {
-      new(sid: string, components: Array<{ degree: any, unit: any }>): UnitsInstance;
+      new (
+        sid: string,
+        components: Array<{ degree: any; unit: any }>
+      ): UnitsInstance;
     }
 
-    export interface UnitsInstance {
-
-    }
+    export interface UnitsInstance {}
 
     export interface EventOnOptions {
       type: string;
@@ -745,7 +816,7 @@ declare namespace Tyranid {
     export interface TypeStatic {
       byName: { [key: string]: TypeInstance };
 
-      new(...args: any[]): TypeInstance;
+      new (...args: any[]): TypeInstance;
     }
 
     export interface TypeDefinition {
@@ -759,8 +830,16 @@ declare namespace Tyranid {
       fromString(str: string): any;
       fromClient(field: FieldInstance, value: any): any;
       format(field: FieldInstance, value: any): string;
-      matches(namePath: NamePathInstance, where: any, doc: MaybeRawDocument): boolean;
-      query(namePath: NamePathInstance, where: any, query: MongoQuery): Promise<void>;
+      matches(
+        namePath: NamePathInstance,
+        where: any,
+        doc: MaybeRawDocument
+      ): boolean;
+      query(
+        namePath: NamePathInstance,
+        where: any,
+        query: MongoQuery
+      ): Promise<void>;
       sortValue(namePath: NamePathInstance, value: any): any;
       toClient(field: FieldInstance, value: any): any;
       validate(field: FieldInstance, value: any): ValidationError;
@@ -770,7 +849,7 @@ declare namespace Tyranid {
      *  Error thrown in validation failure
      */
     export interface ValidationErrorStatic {
-      new(...args: any[]): ValidationError;
+      new (...args: any[]): ValidationError;
     }
 
     export interface ValidationError {
@@ -783,6 +862,5 @@ declare namespace Tyranid {
     export interface QueryStatic {
       merge(a: MongoQuery, b: MongoQuery): MongoQuery;
     }
-
   }
 }

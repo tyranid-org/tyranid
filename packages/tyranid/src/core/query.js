@@ -1,20 +1,18 @@
-
-import * as _            from 'lodash';
+import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
-import Tyr          from '../tyr';
-import Collection   from './collection';
+import Tyr from '../tyr';
+import Collection from './collection';
 
 //
 // Detection and Validation
 //
 
 function isValue(v) {
-  return !_.isObject(v) || (v instanceof ObjectId);
+  return !_.isObject(v) || v instanceof ObjectId;
 }
 
 function isOpObject(obj) {
-
   if (isValue(obj)) {
     return false;
   }
@@ -88,7 +86,7 @@ function mergeOpObject(v1, v2) {
   const o = {};
 
   const o1 = isOpObject(v1) ? v1 : { $eq: v1 },
-        o2 = isOpObject(v2) ? v2 : { $eq: v2 };
+    o2 = isOpObject(v2) ? v2 : { $eq: v2 };
 
   //
   // Merge into single object
@@ -108,13 +106,13 @@ function mergeOpObject(v1, v2) {
     if (and) {
       and.push(obj);
     } else {
-      and = [ obj ];
+      and = [obj];
     }
   }
 
   for (const op in o1) {
     const v1 = o1[op],
-          v2 = o2[op];
+      v2 = o2[op];
 
     if (v1 === undefined) {
       o[op] = v2;
@@ -122,67 +120,71 @@ function mergeOpObject(v1, v2) {
       o[op] = v1;
     } else {
       switch (op) {
-      case '$in':
-        validateInArray(v1);
-        validateInArray(v2);
+        case '$in':
+          validateInArray(v1);
+          validateInArray(v2);
 
-        const iarr = arrayIntersection(v1, v2);
-        switch (iarr.length) {
-        case 0:  return false;
-        default: o.$in = iarr;
-        }
+          const iarr = arrayIntersection(v1, v2);
+          switch (iarr.length) {
+            case 0:
+              return false;
+            default:
+              o.$in = iarr;
+          }
 
-        break;
+          break;
 
-      case '$nin':
-        validateInArray(v1);
-        validateInArray(v2);
+        case '$nin':
+          validateInArray(v1);
+          validateInArray(v2);
 
-        const uarr = union(v1, v2);
-        switch (uarr.length) {
-        case 0:  break;
-        default: addToNin(uarr);
-        }
+          const uarr = union(v1, v2);
+          switch (uarr.length) {
+            case 0:
+              break;
+            default:
+              addToNin(uarr);
+          }
 
-        break;
+          break;
 
-      case '$eq':
-        if (Tyr.isEqual(v1, v2)) {
-          o.$eq = v1;
-        } else {
-          return false;
-        }
+        case '$eq':
+          if (Tyr.isEqual(v1, v2)) {
+            o.$eq = v1;
+          } else {
+            return false;
+          }
 
-        break;
+          break;
 
-      case '$ne':
-        if (Tyr.isEqual(v1, v2)) {
-          o.$ne = v1;
-        } else {
-          addToNin([ v1, v2 ]);
-        }
+        case '$ne':
+          if (Tyr.isEqual(v1, v2)) {
+            o.$ne = v1;
+          } else {
+            addToNin([v1, v2]);
+          }
 
-        break;
+          break;
 
-      case '$lt':
-        o.$lt = Math.min(v1, v2);
-        break;
+        case '$lt':
+          o.$lt = Math.min(v1, v2);
+          break;
 
-      case '$ge':
-        o.$ge = Math.max(v1, v2);
-        break;
+        case '$ge':
+          o.$ge = Math.max(v1, v2);
+          break;
 
-      case '$and':
-        o.$and = v1.concat(v2);
-        break;
+        case '$and':
+          o.$and = v1.concat(v2);
+          break;
 
-      case '$or':
-        addToAnd({ $or: v1 });
-        addToAnd({ $or: v2 });
-        break;
+        case '$or':
+          addToAnd({ $or: v1 });
+          addToAnd({ $or: v2 });
+          break;
 
-      default:
-        throw new Error(`Unsupported operation "${op}" in query merging`);
+        default:
+          throw new Error(`Unsupported operation "${op}" in query merging`);
       }
 
       if (!o) {
@@ -211,13 +213,12 @@ function mergeOpObject(v1, v2) {
 }
 
 function simplifyOpObject(o) {
-
   //
   // Simplify and check for contradictions
   //
 
   const inv = o.$in,
-        nev = o.$ne;
+    nev = o.$ne;
   let eqv = o.$eq;
   if (inv) {
     validateInArray(inv);
@@ -277,7 +278,7 @@ function merge(query1, query2) {
 
   for (const n in query1) {
     const v1 = query1[n],
-          v2 = query2[n];
+      v2 = query2[n];
 
     if (!v2 || Tyr.isEqual(v1, v2)) {
       query[n] = simplify(v1);
@@ -292,7 +293,7 @@ function merge(query1, query2) {
         if (v === false) {
           return false;
         } else if (v === null) {
-          return { $and: [ query1, query2 ] };
+          return { $and: [query1, query2] };
         } else {
           query[n] = v;
         }
@@ -305,7 +306,7 @@ function merge(query1, query2) {
 
   for (const n in query2) {
     const v1 = query1[n],
-          v2 = query2[n];
+      v2 = query2[n];
 
     if (!v1) {
       query[n] = v2;
@@ -349,7 +350,7 @@ function _queryIntersection(a, b) {
 
   for (const n in a) {
     const av = a[n],
-          bv = b[n];
+      bv = b[n];
 
     if (av === undefined) {
       obj[n] = bv;
@@ -448,7 +449,6 @@ function queryIntersection(a, b) {
 //
 
 function valueMatches(match, value) {
-
   if (isValue(match)) {
     return Tyr.isEqual(match, value);
   }
@@ -467,9 +467,11 @@ function valueMatches(match, value) {
           break;
 
         case '$in':
-          if (!value ||
-              !match.$in.length ||
-              !arrayIntersection(match.$in, value).length) {
+          if (
+            !value ||
+            !match.$in.length ||
+            !arrayIntersection(match.$in, value).length
+          ) {
             return false;
           }
           break;
@@ -518,7 +520,6 @@ function valueMatches(match, value) {
 }
 
 function queryMatches(query, doc) {
-
   for (const name in query) {
     if (name.startsWith('$')) {
       switch (name) {
@@ -538,7 +539,6 @@ function queryMatches(query, doc) {
           throw new Error('op ' + name + ' not supported (yet)');
       }
     } else {
-
       if (!valueMatches(_.get(query, name), _.get(doc, name))) {
         return false;
       }
@@ -564,7 +564,6 @@ Collection.prototype.fromClientQuery = function(query) {
   }
 
   function convert(col, path, client) {
-
     let field;
     if (path) {
       field = col.parsePath(path).tail;
@@ -578,30 +577,30 @@ Collection.prototype.fromClientQuery = function(query) {
     const server = {};
     _.each(client, (v, n) => {
       switch (n) {
-      case '$and':
-      case '$or':
-        if (_.isArray(v)) {
-          server[n] = v.map(cv => convert(col, path, cv));
-        } else {
-          server[n] = convert(col, path, v);
-        }
-        break;
-      case '$in':
-      case '$eq':
-      case '$ne':
-      case '$gt':
-      case '$lt':
-        server[n] = convertValue(field, v);
-        break;
-      case '$exists':
-        server[n] = v;
-        break;
-      default:
-        if (_.isArray(v)) {
+        case '$and':
+        case '$or':
+          if (_.isArray(v)) {
+            server[n] = v.map(cv => convert(col, path, cv));
+          } else {
+            server[n] = convert(col, path, v);
+          }
+          break;
+        case '$in':
+        case '$eq':
+        case '$ne':
+        case '$gt':
+        case '$lt':
           server[n] = convertValue(field, v);
-        } else {
-          server[n] = convert(col, path ? path + '.' + n : n, v);
-        }
+          break;
+        case '$exists':
+          server[n] = v;
+          break;
+        default:
+          if (_.isArray(v)) {
+            server[n] = convertValue(field, v);
+          } else {
+            server[n] = convert(col, path ? path + '.' + n : n, v);
+          }
       }
     });
 

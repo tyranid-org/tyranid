@@ -1,13 +1,10 @@
-
 import Tyr from '../tyr';
 
-import Component  from '../core/component';
+import Component from '../core/component';
 import Collection from '../core/collection';
-import Query      from '../core/query';
+import Query from '../core/query';
 
-const Secure = {
-
-};
+const Secure = {};
 
 Tyr.mixin(Secure, Component);
 
@@ -28,7 +25,9 @@ Tyr.Secure = Secure;
 Collection.prototype.canInsert = function(document, permissionType, authObj) {
   const secure = Tyr.secure;
 
-  return secure ? secure.canInsert(this, document, permissionType, authObj) : true;
+  return secure
+    ? secure.canInsert(this, document, permissionType, authObj)
+    : true;
 };
 
 Collection.prototype.secureQuery = function(query, permissionType, authObj) {
@@ -37,17 +36,24 @@ Collection.prototype.secureQuery = function(query, permissionType, authObj) {
   query = query || {};
 
   if (secure) {
-    return Tyr.mapAwait(secure.query(this, permissionType, authObj), q => q ? Query.merge(query, q) : false);
+    return Tyr.mapAwait(
+      secure.query(this, permissionType, authObj),
+      q => (q ? Query.merge(query, q) : false)
+    );
   }
 
   return query;
 };
 
-Collection.prototype.secureFindQuery = function(query, permissionType, authObj) {
+Collection.prototype.secureFindQuery = function(
+  query,
+  permissionType,
+  authObj
+) {
   return Tyr.mapAwait(
     this.secureQuery(query, permissionType, authObj),
     // TODO: compare how fast this is compared to { _id: { $exists: false } }
-    q => q ? q : { _id: null }
+    q => (q ? q : { _id: null })
   );
 };
 

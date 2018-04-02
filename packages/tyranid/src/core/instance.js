@@ -1,4 +1,3 @@
-
 import * as os from 'os';
 import * as process from 'process';
 import * as moment from 'moment';
@@ -14,7 +13,7 @@ const Instance = new Collection({
   client: false,
   internal: true,
   fields: {
-    _id:         { is: 'string' },
+    _id: { is: 'string' },
     lastAliveOn: { is: 'date' }
   }
 });
@@ -23,8 +22,7 @@ let compiled = false;
 
 let eventdb;
 
-Instance.boot = async function(stage/*, pass*/) {
-
+Instance.boot = async function(stage /*, pass*/) {
   if (!Instance.db) {
     console.log('bootstrapping without database, skipping instance boot...');
     return;
@@ -33,11 +31,13 @@ Instance.boot = async function(stage/*, pass*/) {
   if (!compiled && stage === 'compile') {
     const old = moment().subtract(30, 'minutes');
 
-    const oldInstances = await Instance.db.find({ lastAliveOn: { $lt: old.toDate() } }).toArray();
+    const oldInstances = await Instance.db
+      .find({ lastAliveOn: { $lt: old.toDate() } })
+      .toArray();
     //con sole.log('*** oldInstances', oldInstances);
     for (const instance of oldInstances) {
       const id = instance._id,
-            ic = Tyr.db.collection(id + '_event');
+        ic = Tyr.db.collection(id + '_event');
 
       try {
         await ic.drop();
@@ -51,14 +51,17 @@ Instance.boot = async function(stage/*, pass*/) {
     await Instance.db.remove({ _id: { $in: oldInstances.map(i => i._id) } });
 
     try {
-      await Tyr.db.collection('tyrSubscription').remove({ i: { $in: oldInstances.map(i => i._id) } });
+      await Tyr.db
+        .collection('tyrSubscription')
+        .remove({ i: { $in: oldInstances.map(i => i._id) } });
     } catch (err) {
       if (!err.toString().match('ns not found')) {
         console.log(err);
       }
     }
 
-    const instanceId = thisInstanceId = Tyr.instanceId = os.hostname().replace(/[-\.:]/g, '_') + '_' + process.pid;
+    const instanceId = (thisInstanceId = Tyr.instanceId =
+      os.hostname().replace(/[-\.:]/g, '_') + '_' + process.pid);
     //con sole.log('*** instanceId:', instanceId);
 
     // Heartbeat
@@ -76,14 +79,11 @@ Instance.boot = async function(stage/*, pass*/) {
 
     // Instance Event Queue
 
-    eventdb = await Tyr.db.createCollection(
-      instanceId + '_event',
-      {
-        capped: true,
-        size: 1000000,
-        max: 10000
-      }
-    );
+    eventdb = await Tyr.db.createCollection(instanceId + '_event', {
+      capped: true,
+      size: 1000000,
+      max: 10000
+    });
 
     const now = new Date();
 
@@ -103,22 +103,28 @@ Instance.boot = async function(stage/*, pass*/) {
       .sort({ $natural: -1 })
       .stream();
     */
-    const eventStream = eventdb.find({
-      date: { $gte: now }
-    }, {
-      tailable: true,
+    const eventStream = eventdb
+      .find(
+        {
+          date: { $gte: now }
+        },
+        {
+          tailable: true,
 
-      awaitData: true,
-      awaitdata: true,
-      await_data: true,
+          awaitData: true,
+          awaitdata: true,
+          await_data: true,
 
-      timeout: false,
-      numberOfRetries: Number.MAX_VALUE
-    }).stream();
+          timeout: false,
+          numberOfRetries: Number.MAX_VALUE
+        }
+      )
+      .stream();
 
     eventStream.on('data', event => {
       //con sole.log(instanceId + ' *** event on capped collection:', event);
-      if (!event.guard) { // ignore guard event
+      if (!event.guard) {
+        // ignore guard event
         const Event = Tyr.Event;
         event = new Event(event);
 

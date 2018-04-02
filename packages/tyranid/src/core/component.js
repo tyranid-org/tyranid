@@ -1,9 +1,6 @@
-
 import Tyr from '../tyr';
 
-const Component = {
-
-};
+const Component = {};
 
 Tyr.Component = Component;
 

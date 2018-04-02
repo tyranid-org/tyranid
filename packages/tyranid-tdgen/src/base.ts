@@ -107,7 +107,7 @@ export function addField(opts: {
   noPopulatedProperty?: boolean;
   commentLineWidth?: number;
 }): string {
-  const  {
+  const {
     name,
     indent = 0,
     parent,
@@ -199,14 +199,16 @@ export function addField(opts: {
       return 'IdType';
 
     case 'array': {
-      return `${def.of
-        ? addField({
-            name,
-            def: def.of,
-            indent,
-            parent: 'array'
-          })
-        : 'any'}[]`;
+      return `${
+        def.of
+          ? addField({
+              name,
+              def: def.of,
+              indent,
+              parent: 'array'
+            })
+          : 'any'
+      }[]`;
     }
 
     case 'object': {

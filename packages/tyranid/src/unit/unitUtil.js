@@ -1,26 +1,25 @@
-
 export const asterisk = 42;
-export const minus    = 45;
-export const slash    = 47;
-export const _0       = 48;
-export const _9       = 57;
-export const _A       = 64;
-export const _Z       = 90;
-export const caret    = 94;
-export const _a       = 97;
-export const _z       = 122;
+export const minus = 45;
+export const slash = 47;
+export const _0 = 48;
+export const _9 = 57;
+export const _A = 64;
+export const _Z = 90;
+export const caret = 94;
+export const _a = 97;
+export const _z = 122;
 
-export const isLetter = code => (code >= _A && code <= _Z) || (code >= _a && code <= _z);
-export const isDigit  = code => code >= _0 && code <= _9;
+export const isLetter = code =>
+  (code >= _A && code <= _Z) || (code >= _a && code <= _z);
+export const isDigit = code => code >= _0 && code <= _9;
 
 /**
  * Given "a2b-3c2" this returns 3.
  */
 export function countComponents(components) {
-
   const len = components.length;
   let c = 0,
-      identifier = false;
+    identifier = false;
 
   for (let i = 0; i < len; i++) {
     const ch = components.charCodeAt(i);
@@ -30,14 +29,24 @@ export function countComponents(components) {
         identifier = true;
         c++;
       }
-    } else if (ch === minus || ch === caret || isDigit(ch) || ch === slash || ch === asterisk) {
+    } else if (
+      ch === minus ||
+      ch === caret ||
+      isDigit(ch) ||
+      ch === slash ||
+      ch === asterisk
+    ) {
       if (!c) {
-        throw new Error(`A units component clause must start with an identifier in "${components}"`);
+        throw new Error(
+          `A units component clause must start with an identifier in "${components}"`
+        );
       }
 
       identifier = false;
     } else {
-      throw new Error(`Illegal character in unit components clause: ${ch} in "${components}"`);
+      throw new Error(
+        `Illegal character in unit components clause: ${ch} in "${components}"`
+      );
     }
   }
 
@@ -64,7 +73,7 @@ export function merge(name, components) {
       components.splice(i, 1);
     } else {
       let j = 0;
-      for ( ; j < i; j++) {
+      for (; j < i; j++) {
         const cj = components[j];
 
         if (cj[name] === ci[name]) {

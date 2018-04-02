@@ -1,4 +1,3 @@
-
 import Tyr from '../tyr';
 
 const UserAgent = new Tyr.Collection({
@@ -7,9 +6,9 @@ const UserAgent = new Tyr.Collection({
   client: false,
   internal: true,
   fields: {
-    _id:  { is: 'mongoid' },
-    ua:   { is: 'string', label: 'User Agent' }
-  },
+    _id: { is: 'mongoid' },
+    ua: { is: 'string', label: 'User Agent' }
+  }
 });
 
 const byString = {};

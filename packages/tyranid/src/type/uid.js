@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
-import Tyr        from '../tyr';
+import Tyr from '../tyr';
 import Collection from '../core/collection';
-import Type       from '../core/type';
+import Type from '../core/type';
 
 function validateUidCollection(validator, path, collection) {
   const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
@@ -30,7 +30,7 @@ const UidType = new Type({
     }
 
     if (Array.isArray(of)) {
-      _.each(of, function(v /*,k*/ ) {
+      _.each(of, function(v /*,k*/) {
         validateUidCollection(compiler, field.path, v);
       });
     } else {
@@ -74,11 +74,11 @@ Tyr.byUids = async function(uids, opts) {
 
   for (const uid of uids) {
     const { collection, id } = Tyr.parseUid(uid),
-          colId = collection.id;
+      colId = collection.id;
 
     const colUids = byColId[colId];
     if (!colUids) {
-      byColId[colId] = [ id ];
+      byColId[colId] = [id];
     } else {
       colUids.push(id);
     }
@@ -86,13 +86,15 @@ Tyr.byUids = async function(uids, opts) {
 
   const docsByUid = {};
 
-  await Promise.all(_.map(byColId, async (ids, colId) => {
-    const docs = await Tyr.byId[colId].byIds(ids, opts);
+  await Promise.all(
+    _.map(byColId, async (ids, colId) => {
+      const docs = await Tyr.byId[colId].byIds(ids, opts);
 
-    for (const doc of docs) {
-      docsByUid[doc.$uid] = doc;
-    }
-  }));
+      for (const doc of docs) {
+        docsByUid[doc.$uid] = doc;
+      }
+    })
+  );
 
   return uids.map(uid => docsByUid[uid]);
 };

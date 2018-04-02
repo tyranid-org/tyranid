@@ -7,7 +7,7 @@
   "scripts": {
     "test": "npm run mocha",
     "test-travis": "npm run pretest && npm run mocha-coverage",
-    "pretest": "npm run lint && npm run tsc",
+    "pretest": "npm run tsc",
     "prepublish": "npm run test",
     "watch": "rm -rf ./dist/ && tsc -w",
     "tsc": "rm -rf ./dist/ && tsc",

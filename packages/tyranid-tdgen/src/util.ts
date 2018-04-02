@@ -41,9 +41,9 @@ export function pad(str: string, n: number) {
  */
 export function unionType(arr: any[], prop?: string): string {
   return _.chain(arr)
-    .map((el) => (prop ? _.get(el, prop) : el))
+    .map(el => (prop ? _.get(el, prop) : el))
     .sortBy()
-    .map((v) => (typeof v === 'string' ? `'${v}'` : v))
+    .map(v => (typeof v === 'string' ? `'${v}'` : v))
     .join('|')
     .value();
 }
@@ -117,5 +117,5 @@ export function wordWrap(
 
   if (line) lines.push(line);
 
-  return lines.map((l) => (l.startsWith(join) ? l.replace(join, '') : l));
+  return lines.map(l => (l.startsWith(join) ? l.replace(join, '') : l));
 }

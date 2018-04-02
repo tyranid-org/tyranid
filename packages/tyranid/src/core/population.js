@@ -1,18 +1,18 @@
+import * as _ from 'lodash';
 
-import * as _                  from 'lodash';
-
-import Tyr                from '../tyr';
-import NamePath           from './namePath';
-import { ObjectId }       from 'mongodb';
-import projectionFns      from './projection';
+import Tyr from '../tyr';
+import NamePath from './namePath';
+import { ObjectId } from 'mongodb';
+import projectionFns from './projection';
 
 const $all = Tyr.$all;
 
 export default class Population {
-
   constructor(namePath, projection) {
     if (!(namePath instanceof NamePath)) {
-      throw new Error('parameter namePath is not an instanceof NamePath, got: ' + namePath);
+      throw new Error(
+        'parameter namePath is not an instanceof NamePath, got: ' + namePath
+      );
     }
 
     this.namePath = namePath;
@@ -36,7 +36,7 @@ export default class Population {
     // Step 2 would be to eliminate the separate "population" option and just have "fields" perform combined projection/population duties
     if (_.isString(fields)) {
       // process the really simple format -- a simple path name
-      fields = [ fields ];
+      fields = [fields];
     }
 
     if (Array.isArray(fields)) {
@@ -45,10 +45,12 @@ export default class Population {
         namePath,
         fields.map(function(field) {
           if (!_.isString(field)) {
-            throw new Error('The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.');
+            throw new Error(
+              'The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.'
+            );
           }
 
-          return new Population(base.parsePath(field), [ $all ]);
+          return new Population(base.parsePath(field), [$all]);
         })
       );
     }
@@ -74,7 +76,13 @@ export default class Population {
               const link = namePath.detail.link;
 
               if (!link) {
-                throw new Error('Cannot populate ' + base.toString() + '.' + namePath + ' -- it is not a link');
+                throw new Error(
+                  'Cannot populate ' +
+                    base.toString() +
+                    '.' +
+                    namePath +
+                    ' -- it is not a link'
+                );
               }
 
               if (value === $all) {
@@ -85,10 +93,19 @@ export default class Population {
                 value = projectionFns.resolve(linkCol.def.projections, value);
 
                 if (!_.isObject(value)) {
-                  throw new Error('Invalid populate syntax at ' + base.toString() + '.' + namePath + ': ' + value);
+                  throw new Error(
+                    'Invalid populate syntax at ' +
+                      base.toString() +
+                      '.' +
+                      namePath +
+                      ': ' +
+                      value
+                  );
                 }
 
-                projection.push(new Population(namePath, parseProjection(linkCol, value)));
+                projection.push(
+                  new Population(namePath, parseProjection(linkCol, value))
+                );
               }
             }
           }
@@ -101,7 +118,10 @@ export default class Population {
         return projection;
       };
 
-      return new Population(base.parsePath(''), parseProjection(rootCollection, fields));
+      return new Population(
+        base.parsePath(''),
+        parseProjection(rootCollection, fields)
+      );
     }
 
     throw new Error('missing opts.fields option to populate()');
@@ -137,7 +157,6 @@ export default class Population {
 
     // create function to map projection
     const populateIds = population => {
-
       if (!(population instanceof Population) || population.isSimple()) {
         return;
       }
@@ -150,14 +169,14 @@ export default class Population {
       const namePath = population.namePath;
       documents.forEach(function(obj) {
         const cache = populator.cacheFor(namePath.detail.link.id),
-              path  = namePath.path,
-              plen  = path.length;
+          path = namePath.path,
+          plen = path.length;
 
         function mapIdsToObjects(obj) {
           if (Array.isArray(obj)) {
             const arr = new Array(obj.length);
 
-            for (let ai = 0, alen = obj.length; ai < alen; ai++ ) {
+            for (let ai = 0, alen = obj.length; ai < alen; ai++) {
               arr[ai] = mapIdsToObjects(obj[ai]);
             }
 
@@ -188,7 +207,12 @@ export default class Population {
             const pname = NamePath.populateNameFor(name, populator.denormal);
             obj[pname] = mapIdsToObjects(obj[name]);
           } else if (!_.isObject(obj)) {
-            throw new Error('Expected an object or array at ' + namePath.pathName(pi) + ', but got ' + obj);
+            throw new Error(
+              'Expected an object or array at ' +
+                namePath.pathName(pi) +
+                ', but got ' +
+                obj
+            );
           } else {
             walkToEndOfPath(pi + 1, obj[path[pi]]);
           }
@@ -214,7 +238,6 @@ export default class Population {
 
       if (_.isObject(v)) {
         population[k] = Population.fromClient(v);
-
       } else {
         const i = parseInt(v, 10);
         if (!isNaN(i)) {

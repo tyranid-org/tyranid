@@ -5,16 +5,16 @@ var Job = new tyr.Collection({
   name: 'job',
   enum: true,
   fields: {
-    _id:     { is: 'integer' },
-    name:    { is: 'string', labelField: true },
+    _id: { is: 'integer' },
+    name: { is: 'string', labelField: true },
     manager: { is: 'boolean' }
   },
   values: [
-    [ '_id', 'name',              'manager' ],
+    ['_id', 'name', 'manager'],
 
-    [    1,  'Software Engineer', false     ],
-    [    2,  'Software Lead',     true      ],
-    [    3,  'Designer',          false     ]
+    [1, 'Software Engineer', false],
+    [2, 'Software Lead', true],
+    [3, 'Designer', false]
   ]
 });
 

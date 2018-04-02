@@ -1,18 +1,17 @@
-
-import * as path     from 'path';
-import * as _        from 'lodash';
+import * as path from 'path';
+import * as _ from 'lodash';
 import * as nodeUuid from 'uuid';
-import * as chalk    from 'chalk';
+import * as chalk from 'chalk';
 
-import Collection    from './core/collection';
-import Tyr           from './tyr';
+import Collection from './core/collection';
+import Tyr from './tyr';
 
-const clr       = chalk.hex('#cc5500'),
-      clrMig    = chalk.hex('#cc0055'),
-      clrDesc   = chalk.hex('#000000'),
-      clrRed    = chalk.keyword('red'),
-      clrGreen  = chalk.keyword('green'),
-      clrYellow = chalk.hex('#aaaa00');
+const clr = chalk.hex('#cc5500'),
+  clrMig = chalk.hex('#cc0055'),
+  clrDesc = chalk.hex('#000000'),
+  clrRed = chalk.keyword('red'),
+  clrGreen = chalk.keyword('green'),
+  clrYellow = chalk.hex('#aaaa00');
 
 const MigrationStatus = new Collection({
   id: '_m1',
@@ -20,28 +19,29 @@ const MigrationStatus = new Collection({
   internal: true,
   fields: {
     _id: { is: 'string' },
-    appliedOn : { is: 'date'},
+    appliedOn: { is: 'date' },
     uuid: { is: 'string' }
   }
 });
 
 const doRemoveLock = async remove => {
   if (remove) {
-    await MigrationStatus.db.remove({ '_id': '$$MIGRATION-LOCK' });
+    await MigrationStatus.db.remove({ _id: '$$MIGRATION-LOCK' });
     log({ note: 'End Migration', end: true });
   }
 };
 
 const waitForUnLock = async () => {
-  const lock = await MigrationStatus
-    .findOne({ query: { _id: '$$MIGRATION-LOCK' } });
+  const lock = await MigrationStatus.findOne({
+    query: { _id: '$$MIGRATION-LOCK' }
+  });
 
   if (!lock) {
     Tyr.options.migration.waitingOnMigration = false;
   } else {
     Tyr.options.migration.waitingOnMigration = true;
     logger.info('Waiting for migration to finish...');
-    setTimeout( waitForUnLock, 5000);
+    setTimeout(waitForUnLock, 5000);
   }
 };
 
@@ -63,7 +63,8 @@ function log(opts) {
     text += clr(' '.padEnd(30 - migration.length, '*'));
     text += ' ';
 
-    let actionLabel, ms = '';
+    let actionLabel,
+      ms = '';
     switch (action) {
       case 'start':
         actionLabel = 'STARTING';
@@ -84,7 +85,7 @@ function log(opts) {
         text += clrRed.bold(actionLabel);
         break;
       default:
-      actionLabel = '';
+        actionLabel = '';
     }
 
     note = note ? ' -- ' + note : '';
@@ -135,7 +136,7 @@ export async function migrate(migrationArray) {
     const lockObj = await MigrationStatus.findAndModify({
       query: { _id: '$$MIGRATION-LOCK' },
       update: {
-        $setOnInsert : setOnInsert
+        $setOnInsert: setOnInsert
       },
       new: true,
       upsert: true
@@ -153,19 +154,26 @@ export async function migrate(migrationArray) {
     log({ note: 'Beginning Migration', start: true });
 
     for (const migrationName of migrations) {
-      const migration = require(path.join(Tyr.options.migration.dir, migrationName));
+      const migration = require(path.join(
+        Tyr.options.migration.dir,
+        migrationName
+      ));
 
       if (migration.skip) {
-        log({ migration: migrationName, action: 'skip', note: 'Marked as skip' });
+        log({
+          migration: migrationName,
+          action: 'skip',
+          note: 'Marked as skip'
+        });
         continue;
       }
 
-      const m = await MigrationStatus.db.findOne({'_id' : migrationName});
+      const m = await MigrationStatus.db.findOne({ _id: migrationName });
 
       if (!m) {
         await MigrationStatus.db.save({
-          _id : migrationName,
-          appliedOn : new Date()
+          _id: migrationName,
+          appliedOn: new Date()
         });
 
         log({ migration: migrationName, action: 'start' });
@@ -178,18 +186,26 @@ export async function migrate(migrationArray) {
           await migration.migrate();
 
           if (migration.noCommit) {
-            await MigrationStatus.db.remove( { '_id' : migrationName } );
-            log({ migration: migrationName, action: 'complete', note: 'Not committed' });
+            await MigrationStatus.db.remove({ _id: migrationName });
+            log({
+              migration: migrationName,
+              action: 'complete',
+              note: 'Not committed'
+            });
           } else {
             log({ migration: migrationName, action: 'complete' });
           }
         } catch (err) {
           console.log(err.stack);
-          await MigrationStatus.db.remove( { '_id' : migrationName } );
+          await MigrationStatus.db.remove({ _id: migrationName });
           log({ migration: migrationName, action: 'error', error: err });
         }
       } else {
-        log({ migration: migrationName, action: 'skip', note: 'Already applied' });
+        log({
+          migration: migrationName,
+          action: 'skip',
+          note: 'Already applied'
+        });
       }
     }
   } catch (err) {
