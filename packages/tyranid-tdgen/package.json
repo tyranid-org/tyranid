@@ -1,0 +1,49 @@
+{
+  "name": "tyranid-tdgen",
+  "version": "0.4.3",
+  "description": "Generate type definition files from tyranid schemas",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tyranid-org/tyranid"
+  },
+  "main": "./dist/src/index.js",
+  "typings": "./dist/src/index.d.ts",
+  "bin": {
+    "tyranid-tdgen": "bin/tyranid-tdgen"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist/ && npm run tsc",
+    "pretest": "rm -rf generated && npm run build",
+    "prepublish": "npm run test",
+    "ava": "mkdir generated && ava",
+    "test": "npm run ava && npm run compile-test",
+    "compile-test": "tsc -p ./test/compile-test/ && tsc -p ./test/compile-client/",
+    "tsc": "tsc -d --pretty",
+    "generate-examples": "ts-node ./example/generate.ts"
+  },
+  "engines": {
+    "node": ">=8.1.4"
+  },
+  "author": "bsouthga@gmail.com",
+  "license": "Apache-2.0",
+  "ava": {
+    "files": [
+      "dist/test/index.js"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "dist/src"
+    ]
+  },
+  "peerDependencies": {
+    "tyranid": "^0.4.0"
+  },
+  "dependencies": {
+    "commander": "2.9.0",
+    "lodash": "4.17.2"
+  },
+  "devDependencies": {
+    "@types/lodash": "4.14.65"
+  }
+}

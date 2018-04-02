@@ -1,71 +1,47 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended"
-    ],
-    "jsRules": {
-        "quotemark": [
-            "single"
-        ],
-        "no-unused-expression": false,
-        "trailing-comma": [ false ],
-        "no-string-literal": false,
-        "one-variable-per-declaration": [
-            false
-        ],
-        "variable-name": [
-            false
-        ],
-        "no-empty": false,
-        "object-literal-sort-keys": false,
-        "no-console": [
-            false
-        ],
-        "no-shadowed-variable": false,
-        "max-line-length": [
-            false
-        ],
-        "import-spacing": false,
-        "curly": false,
-        "forin": false,
-        "no-conditional-assignment": false,
-        "label-position": false,
-        "no-bitwise": false
-    },
-    "rules": {
-        "quotemark": [
-            "single"
-        ],
-        "no-unused-expression": false,
-        "trailing-comma": [ false ],
-        "no-string-literal": false,
-        "one-variable-per-declaration": [
-            false
-        ],
-        "variable-name": [
-            false
-        ],
-        "no-empty": false,
-        "object-literal-sort-keys": false,
-        "no-console": [
-            false
-        ],
-        "no-shadowed-variable": false,
-        "interface-name": [
-            false
-        ],
-        "max-line-length": [
-            false
-        ],
-        "import-spacing": false,
-        "curly": false,
-        "ban-types": false,
-        "forin": false,
-        "no-conditional-assignment": false,
-        "no-empty-interface": false,
-        "no-namespace": false,
-        "label-position": false,
-        "class-name": false
-    },
-    "rulesDirectory": []
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "jsRules": {
+    "quotemark": ["single"],
+    "no-unused-expression": false,
+    "trailing-comma": [false],
+    "no-string-literal": false,
+    "one-variable-per-declaration": [false],
+    "variable-name": [false],
+    "no-empty": false,
+    "object-literal-sort-keys": false,
+    "no-console": [false],
+    "no-shadowed-variable": false,
+    "max-line-length": [false],
+    "import-spacing": false,
+    "curly": false,
+    "forin": false,
+    "no-conditional-assignment": false,
+    "label-position": false,
+    "no-bitwise": false
+  },
+  "rules": {
+    "quotemark": ["single"],
+    "no-unused-expression": false,
+    "trailing-comma": [false],
+    "no-string-literal": false,
+    "one-variable-per-declaration": [false],
+    "variable-name": [false],
+    "no-empty": false,
+    "object-literal-sort-keys": false,
+    "no-console": [false],
+    "no-shadowed-variable": false,
+    "interface-name": [false],
+    "max-line-length": [false],
+    "import-spacing": false,
+    "curly": false,
+    "ban-types": false,
+    "forin": false,
+    "no-conditional-assignment": false,
+    "no-empty-interface": false,
+    "no-namespace": false,
+    "label-position": false,
+    "class-name": false
+  },
+  "rulesDirectory": []
 }

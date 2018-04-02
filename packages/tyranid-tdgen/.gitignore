@@ -1,0 +1,12 @@
+dist/*
+docs/*
+node_modules/*
+.nyc_output
+generated
+test/compile-test/*
+!test/compile-test/index.ts
+!test/compile-test/tsconfig.json
+test/compile-client/*
+!test/compile-client/index.ts
+!test/compile-client/tsconfig.json
+.vscode
