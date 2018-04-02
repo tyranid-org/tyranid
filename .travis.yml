@@ -2,8 +2,9 @@ language: node_js
 dist: trusty
 sudo: false
 services: mongodb
-script:
+before_script:
   - sh ./scripts/build.sh
+script:
   - sh ./scripts/style-check.sh
   - npm run test --silent
 cache:

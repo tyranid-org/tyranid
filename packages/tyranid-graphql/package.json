@@ -10,11 +10,10 @@
   "typings": "dist/src/index.d.ts",
   "scripts": {
     "start": "npm run build && node ./dist/test/example/server.js",
-    "build": "rm -rf ./dist/ && npm run tsc",
+    "build": "rm -rf ./dist/ && tsc -d",
     "pretest": "npm run build",
     "prepublish": "npm run test",
-    "test": "ava",
-    "tsc": "tsc -d"
+    "test": "ava"
   },
   "author": "bsouthga@gmail.com",
   "license": "Apache-2.0",

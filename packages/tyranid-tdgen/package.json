@@ -12,13 +12,13 @@
     "tyranid-tdgen": "bin/tyranid-tdgen"
   },
   "scripts": {
-    "build": "rm -rf ./dist/ && npm run tsc",
+    "build": "rm -rf ./dist/ && tsc -d",
     "pretest": "rm -rf generated && npm run build",
     "prepublish": "npm run test",
     "ava": "mkdir generated && ava",
     "test": "npm run ava && npm run compile-test",
-    "compile-test": "tsc -p ./test/compile-test/ && tsc -p ./test/compile-client/",
-    "tsc": "tsc -d --pretty",
+    "compile-test":
+      "tsc -p ./test/compile-test/ && tsc -p ./test/compile-client/",
     "generate-examples": "ts-node ./example/generate.ts"
   },
   "engines": {
@@ -27,14 +27,10 @@
   "author": "bsouthga@gmail.com",
   "license": "Apache-2.0",
   "ava": {
-    "files": [
-      "dist/test/index.js"
-    ]
+    "files": ["dist/test/index.js"]
   },
   "nyc": {
-    "include": [
-      "dist/src"
-    ]
+    "include": ["dist/src"]
   },
   "peerDependencies": {
     "tyranid": "^0.5.0"

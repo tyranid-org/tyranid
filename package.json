@@ -3,6 +3,9 @@
   "workspaces": ["packages/*"],
   "scripts": {
     "docs": "ts-node ./doc/doc.js",
+    "clean": "sh ./scripts/clean.sh",
+    "build": "sh ./scripts/build.sh",
+    "nd": "npm run clean && yarn",
     "test": "npm run prettier && npm run lint && sh ./scripts/test.sh",
     "lint":
       "tslint './packages/*/{test,src}/{!typings}/*.{ts,js}' --format stylish --fix",
