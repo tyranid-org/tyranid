@@ -1,4 +1,4 @@
-import { version, InterfaceGenerationOptions } from './util';
+import { InterfaceGenerationOptions, version } from './util';
 
 export function generateDefinitionPreamble(
   passedOptions: InterfaceGenerationOptions

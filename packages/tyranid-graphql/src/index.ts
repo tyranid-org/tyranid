@@ -93,7 +93,7 @@ export function createGraphQLSchema(tyr: typeof Tyr): GraphQLSchema {
   const typeMap: GraphQLOutputTypeMap = new Map();
   const queryFields: GraphQLFieldConfigMap<any, any> = {};
 
-  tyr.collections.forEach(col => {
+  tyr.collections.forEach((col) => {
     const name = col.def.name;
     if (!col.def.fields) {
       return error(`Collection "${name}" has no fields!`);
@@ -594,7 +594,7 @@ function shouldSkipHelper(
       if (!subFields) {
         return true;
       } else {
-        return Object.keys(subFields).every(sub =>
+        return Object.keys(subFields).every((sub) =>
           shouldSkip(subFields[sub], extendPath(path, sub))
         );
       }

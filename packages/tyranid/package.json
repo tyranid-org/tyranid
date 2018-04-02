@@ -11,7 +11,6 @@
     "prepublish": "npm run test",
     "watch": "rm -rf ./dist/ && tsc -w",
     "tsc": "rm -rf ./dist/ && tsc",
-    "lint": "tslint './{test,src}/**/*.{ts,js}' --format stylish --fix",
     "mocha": "mocha \"./dist/test/test.js\" --read false",
     "mocha-coverage": "nyc mocha \"./dist/test/test.js\" --read false",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",

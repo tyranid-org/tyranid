@@ -1,9 +1,9 @@
-import { Tyr } from 'tyranid';
 import * as _ from 'lodash';
-import * as names from './names';
-import { InterfaceGenerationOptions, pad } from './util';
-import { generateDefinitionPreamble } from './preamble';
+import { Tyr } from 'tyranid';
 import { generateCollectionLookups, generateCommonTypes } from './isomorphic';
+import * as names from './names';
+import { generateDefinitionPreamble } from './preamble';
+import { InterfaceGenerationOptions, pad } from './util';
 
 /**
  *

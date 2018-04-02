@@ -1,12 +1,12 @@
-import { Tyr } from 'tyranid';
 import * as _ from 'lodash';
-import { wrappedUnionType, pad } from './util';
-import * as names from './names';
+import { Tyr } from 'tyranid';
+import { baseInterface } from './base';
 import { colInterface, enumIdAlias, enumStaticInterface } from './collection';
 import { docInterface } from './document';
-import { baseInterface } from './base';
-import { InterfaceGenerationOptions } from './util';
+import * as names from './names';
 import { generateDefinitionPreamble } from './preamble';
+import { pad, wrappedUnionType } from './util';
+import { InterfaceGenerationOptions } from './util';
 
 export interface GenerateModuleOptions {
   client?: boolean;
@@ -154,7 +154,7 @@ export function generateCommonTypes(
   const cols: string[] = [];
   const aliases: string[] = [];
 
-  sorted.forEach(c => {
+  sorted.forEach((c) => {
     const name = c.def.name;
     const docName = names.document(name);
     const colName = names.collection(name);

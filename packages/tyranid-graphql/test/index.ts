@@ -1,6 +1,6 @@
+import test from 'ava';
 import * as mongodb from 'mongodb';
 import { Tyr } from 'tyranid';
-import test from 'ava';
 
 import { graphqlize } from '../src';
 import { createTestData } from './data';
@@ -13,7 +13,7 @@ test.before(async () => {
   );
 
   Tyr.config({
-    db: db,
+    db,
     validate: [
       {
         dir: __dirname,
@@ -26,7 +26,7 @@ test.before(async () => {
   graphqlize(Tyr);
 });
 
-type AvaTest = { name: string; fn: (...args: any[]) => Promise<any> };
+interface AvaTest { name: string; fn: (...args: any[]) => Promise<any>; }
 
 for (const caseName in cases) {
   const params = ((cases as any) as {

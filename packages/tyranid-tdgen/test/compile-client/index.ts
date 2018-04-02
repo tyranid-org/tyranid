@@ -9,7 +9,7 @@ function run() {
       event.document.email = adjustedEmail;
     }
   });
-  Tyr.byName.user.findAll({ query: {} }).then(docs => {
+  Tyr.byName.user.findAll({ query: {} }).then((docs) => {
     const doc = docs[0];
     if (doc.email !== adjustedEmail)
       throw Error(`User.on() event handler did not run`);

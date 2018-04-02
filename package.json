@@ -4,7 +4,8 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "sh ./scripts/test.sh"
+    "test": "sh ./scripts/test.sh",
+    "lint": "tslint './packages/*/{test,src}/**/*.{ts,js}' --format stylish --fix"
   },
   "devDependencies": {
     "@types/chai": "3.5.0",

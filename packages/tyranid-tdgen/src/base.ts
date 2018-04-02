@@ -1,6 +1,6 @@
 import { Tyr } from 'tyranid';
-import { pad, wordWrap } from './util';
 import * as names from './names';
+import { pad, wordWrap } from './util';
 
 /**
  * generate base interface for tyranid document type
@@ -33,7 +33,7 @@ export function baseInterface(
       const fieldName = field + (required ? '' : '?');
       const fieldType = addField({
         name: field,
-        def: def,
+        def,
         indent,
         siblingFields: fields,
         colName: name,
@@ -107,9 +107,8 @@ export function addField(opts: {
   noPopulatedProperty?: boolean;
   commentLineWidth?: number;
 }): string {
-  let {
+  const  {
     name,
-    def,
     indent = 0,
     parent,
     siblingFields,
@@ -117,6 +116,7 @@ export function addField(opts: {
     commentLineWidth,
     noPopulatedProperty = false
   } = opts;
+  let { def } = opts;
 
   /**
    *
@@ -153,7 +153,7 @@ export function addField(opts: {
     out += `${linkIdType};\n`;
 
     const deIded = name.replace(/Id$/, '');
-    let replacementName =
+    const replacementName =
       !/Id$/.test(name) || (siblingFields && deIded in siblingFields)
         ? `${name}$`
         : deIded;

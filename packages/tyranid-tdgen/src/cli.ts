@@ -1,12 +1,17 @@
 import * as program from 'commander';
+import * as fs from 'fs';
 import * as mongodb from 'mongodb';
 import * as path from 'path';
-import * as fs from 'fs';
 import { generateStream } from './index';
 
 const ROOT = __dirname;
+
+// tslint:disable-next-line
 const config = require(path.join(ROOT, '../../package.json'));
+
 const CWD = process.cwd();
+
+// tslint:disable-next-line
 const { Tyr } = require(path.join(
   CWD,
   './node_modules/tyranid/dist/src/tyranid.js'
@@ -24,7 +29,7 @@ program
     '-t, --type [outputType]',
     'type of definitions to output (client|server|isomorphic)'
   )
-  .action(glob => {
+  .action((glob) => {
     fileGlob = glob;
   })
   .parse(process.argv);
@@ -62,7 +67,7 @@ program
       process.exit(0);
     });
   }
-})().catch(err => {
+})().catch((err) => {
   console.log(err.stack);
   process.exit(1);
 });

@@ -16,8 +16,8 @@ function makeFactorialFunction() {
 
     const ifBody = ts.createBlock(
         [ts.createReturn(ts.createLiteral(1))],
-        /*multiline*/ true)
-    const decrementedArg = ts.createBinary(paramName, ts.SyntaxKind.MinusToken, ts.createLiteral(1))
+        /*multiline*/ true);
+    const decrementedArg = ts.createBinary(paramName, ts.SyntaxKind.MinusToken, ts.createLiteral(1));
     const recurse = ts.createBinary(
         paramName,
         ts.SyntaxKind.AsteriskToken,
@@ -38,7 +38,7 @@ function makeFactorialFunction() {
         [parameter],
         /*returnType*/ ts.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
         ts.createBlock(statements, /*multiline*/ true),
-    )
+    );
 }
 
 const resultFile = ts.createSourceFile("someFileName.ts", "", ts.ScriptTarget.Latest, /*setParentNodes*/ false, ts.ScriptKind.TS);

@@ -2,21 +2,21 @@ import { Tyr } from 'tyranid';
 
 import {
   Blog,
-  User,
-  Team,
   Chart,
+  Comment,
   Inventory,
   Organization,
-  Comment,
+  Team,
+  User,
   UserStatus
 } from './models';
 
 export async function createTestData() {
   // nuke old data...
-  await Promise.all(Tyr.collections.map(c => c.remove({ query: {} })));
+  await Promise.all(Tyr.collections.map((c) => c.remove({ query: {} })));
 
   /**
-    Organiations
+   * Organiations
    */
   const chipotle = await Organization.insert({ name: 'Chipotle' });
   const chopped = await Organization.insert({ name: 'Chopped' });
@@ -27,7 +27,7 @@ export async function createTestData() {
   await Inventory.insert({ name: 'Cava', organizationId: cava.$id });
 
   /**
-    Blogs
+   * Blogs
    */
   const chipotleFoodBlog = await Blog.insert({
     name: 'Burritos Etc',
@@ -47,7 +47,7 @@ export async function createTestData() {
   });
 
   /**
-    Posts
+   * Posts
    */
   await Blog.insert({
     name: 'Why burritos are amazing.',
@@ -106,7 +106,7 @@ export async function createTestData() {
   await Team.insert({ name: 'choppedExec', organizationId: chopped.$id });
 
   /**
-    Users
+   * Users
    */
   const ben = await User.insert({
     name: 'ben',

@@ -1,5 +1,5 @@
-import { Tyr } from 'tyranid';
 import * as _ from 'lodash';
+import { Tyr } from 'tyranid';
 import * as names from './names';
 import { pad, wrappedUnionType } from './util';
 
@@ -65,7 +65,7 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
   if (rows.length && 'name' in fields) {
     for (const row of rows) {
       let obj = '{';
-      for (const key of Object.keys(row) as (keyof typeof row)[]) {
+      for (const key of Object.keys(row) as Array<keyof typeof row>) {
         if (typeof row[key] !== 'undefined') {
           let propType: string;
           switch (typeof row[key]) {
@@ -86,7 +86,7 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
       obj += '\n';
       obj += pad('}', 3);
 
-      let enumPropName = _.snakeCase((<any>row)['name']).toUpperCase();
+      let enumPropName = _.snakeCase((row as any)['name']).toUpperCase();
 
       // need to wrap in quotes if starting with digit
       if (/[0-9]/.test(enumPropName[0])) {

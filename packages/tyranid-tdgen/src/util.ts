@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as _ from 'lodash';
+import * as path from 'path';
 import { Tyr } from 'tyranid';
 
 export const { version } = JSON.parse(
@@ -25,7 +25,9 @@ export function pad(str: string, n: number) {
   let indent = '';
   let curr = '  ';
   while (true) {
+    // tslint:disable-next-line
     if (n & 1) indent += curr;
+    // tslint:disable-next-line
     n >>>= 1;
     if (n <= 0) break;
     curr += curr;
@@ -39,9 +41,9 @@ export function pad(str: string, n: number) {
  */
 export function unionType(arr: any[], prop?: string): string {
   return _.chain(arr)
-    .map(el => (prop ? _.get(el, prop) : el))
+    .map((el) => (prop ? _.get(el, prop) : el))
     .sortBy()
-    .map(v => (typeof v === 'string' ? `'${v}'` : v))
+    .map((v) => (typeof v === 'string' ? `'${v}'` : v))
     .join('|')
     .value();
 }
@@ -68,7 +70,7 @@ export function wordWrap(
         breakWords?: boolean;
       } = {}
 ): string[] {
-  let { width = 80, split = /\s+/g, join = ' ', breakWords = true } =
+  const { width = 80, split = /\s+/g, join = ' ', breakWords = true } =
     typeof opts === 'number' ? { width: opts } : opts;
 
   const lines: string[] = [];
@@ -115,5 +117,5 @@ export function wordWrap(
 
   if (line) lines.push(line);
 
-  return lines.map(l => (l.startsWith(join) ? l.replace(join, '') : l));
+  return lines.map((l) => (l.startsWith(join) ? l.replace(join, '') : l));
 }

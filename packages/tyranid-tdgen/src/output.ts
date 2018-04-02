@@ -1,10 +1,10 @@
-import { Tyr } from 'tyranid';
 import * as fs from 'fs';
 import { Readable } from 'stream';
-import { InterfaceGenerationOptions } from './util';
-import { generateServerDefinitionFile } from './server';
+import { Tyr } from 'tyranid';
 import { generateClientDefinitionFile } from './client';
 import { generateIsomorphicDefinitionFile } from './isomorphic';
+import { generateServerDefinitionFile } from './server';
+import { InterfaceGenerationOptions } from './util';
 
 export type CodeType = 'client' | 'server' | 'isomorphic';
 
@@ -77,7 +77,7 @@ export function generateFile(
 ): Promise<string> {
   return new Promise((res, rej) => {
     const td = resolveGenerationMethod(opts.type)(collections, opts);
-    fs.writeFile(filename, td, err => {
+    fs.writeFile(filename, td, (err) => {
       if (err) rej(err);
       res(td);
     });

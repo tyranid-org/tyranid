@@ -1,5 +1,5 @@
-import { Tyr } from 'tyranid';
 import { ExecutionResult, GraphQLSchema } from 'graphql';
+import { Tyr } from 'tyranid';
 
 declare module 'tyranid' {
   namespace Tyr {
