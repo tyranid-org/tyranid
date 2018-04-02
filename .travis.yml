@@ -18,10 +18,7 @@ before_install:
 before_script:
 
 script:
-  - npm run test-travis
-
-after_success:
-  - npm run coverage
+  - npm run test
 
 cache:
   yarn: true

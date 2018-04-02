@@ -29,8 +29,8 @@ import * as testHistorical       from './historical.test';
 import * as testPopulation       from './population.test';
 import * as testUnit             from './unit.test';
 
-const jquerySource = fs.readFileSync('./node_modules/jquery/dist/jquery.min.js', 'utf-8');
-const lodashSource = fs.readFileSync('./node_modules/lodash/index.js', 'utf-8');
+const jquerySource = fs.readFileSync(require.resolve('jquery/dist/jquery.min.js'), 'utf-8');
+const lodashSource = fs.readFileSync(require.resolve('lodash/index.js'), 'utf-8');
 
 const expressPort = 6783; // random #
 
