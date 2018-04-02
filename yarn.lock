@@ -40,6 +40,10 @@
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-3.10.1.tgz#ef8c8c35649f07884e0fb7763b24baaf7e175c36"
 
+"@types/lodash@4.14.104":
+  version "4.14.104"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.104.tgz#53ee2357fa2e6e68379341d92eb2ecea4b11bb80"
+
 "@types/lodash@4.14.65":
   version "4.14.65"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.65.tgz#a0f78d71ffcd3c02628d5f616410c98c424326d5"
@@ -2671,6 +2675,10 @@ graceful-fs@~1:
 "graceful-readlink@>= 1.0.0":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/graceful-readlink/-/graceful-readlink-1.0.1.tgz#4cafad76bc62f02fa039b2f94e9a3dd3a391a725"
+
+gracl@0.0.16:
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/gracl/-/gracl-0.0.16.tgz#f7068f3bb91450dff2635fe7cf275fd0d3bc6ab8"
 
 growl@1.9.2:
   version "1.9.2"
