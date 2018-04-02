@@ -1,4 +1,4 @@
-import Tyr from '../';
+import Tyr from 'tyranid';
 import * as mongodb from 'mongodb';
 import * as fs from 'fs';
 

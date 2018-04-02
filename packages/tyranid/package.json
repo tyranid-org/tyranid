@@ -14,7 +14,6 @@
     "mocha": "mocha \"./dist/test/test.js\" --read false",
     "mocha-coverage": "nyc mocha \"./dist/test/test.js\" --read false",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "docs": "ts-node ./doc/doc.js",
     "server": "node ./test/serverBoot.js"
   },
   "repository": {
