@@ -5,7 +5,8 @@
     "strict": true,
     "allowJs": true,
     "outDir": "dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true
   },
   "include": [
     "src",

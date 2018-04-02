@@ -8,6 +8,7 @@
     "pretty": true,
     "outDir": "./dist/",
     "inlineSourceMap": true,
+    "skipLibCheck": true,
     "lib": [
       "es2015"
     ],

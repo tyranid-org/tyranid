@@ -3,6 +3,6 @@ dist: trusty
 sudo: false
 services: mongodb
 script:
-  - npm run test
+  - npm run test --silent
 cache:
   yarn: true

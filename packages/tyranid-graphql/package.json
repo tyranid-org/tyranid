@@ -1,0 +1,28 @@
+{
+  "name": "tyranid-graphql",
+  "version": "0.0.12",
+  "description": "GraphQL plugin for tyranid",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
+  "scripts": {
+    "start": "npm run build && node ./dist/test/example/server.js",
+    "build": "rm -rf ./dist/ && npm run tsc",
+    "pretest": "npm run build",
+    "prepublish": "npm run test",
+    "test": "ava",
+    "tsc": "tsc -d"
+  },
+  "author": "bsouthga@gmail.com",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "tyranid": "^0.4.40"
+  },
+  "dependencies": {
+    "graphql": "^0.12.3"
+  },
+  "ava": {
+    "files": [
+      "dist/test/index.js"
+    ]
+  }
+}
