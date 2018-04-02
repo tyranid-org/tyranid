@@ -1,4 +1,4 @@
-# Tyranid Monorepo
+# Tyranid Monorepo [![Build Status](https://travis-ci.org/tyranid-org/tyranid-graphql.svg?branch=master)](https://travis-ci.org/tyranid-org/tyranid-graphql)
 
 This repository contains all tyranid packages, individually located in [`./packages`](./packages):
 
