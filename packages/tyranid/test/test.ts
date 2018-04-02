@@ -62,6 +62,7 @@ const fakeSecure = {
         auth: auth.$uid
       };
     }
+
     return query;
   },
   canInsert(
@@ -567,17 +568,19 @@ describe('tyranid', () => {
       it('should support secured find()s', async () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
         let books = await (await Book.find({
-          query: {
-            fields: { title: 1 },
-            auth: anon
-          }
+          query: {},
+          fields: { title: 1 },
+          auth: anon
         })).toArray();
+
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
 
         const jane = await User.findOne({ query: { 'name.first': 'John' } });
         books = await (await Book.find({
-          query: { fields: { title: 1 }, auth: jane }
+          query: {},
+          fields: { title: 1 },
+          auth: jane
         })).toArray();
         expect(books.length).to.eql(2);
       });
@@ -596,10 +599,9 @@ describe('tyranid', () => {
       it('should support secured find()s with a query and an options argument', async () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
         const books = await (await Book.find({
-          query: {
-            fields: { title: 1 },
-            auth: anon
-          }
+          query: {},
+          fields: { title: 1 },
+          auth: anon
         })).toArray();
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
@@ -2172,7 +2174,7 @@ describe('tyranid', () => {
       });
 
       it('should log find()', async () => {
-        await Book.find({ query: { title: 'foo' } });
+        await (await Book.find({ query: { title: 'foo' } })).toArray();
 
         const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
