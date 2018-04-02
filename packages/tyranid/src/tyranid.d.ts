@@ -40,7 +40,7 @@ declare namespace Tyranid {
       uid: string
     ): { collection: CollectionInstance; id: IdType };
     export function labelize(name: string): string;
-    export function config(opts: ConfigOptions): void;
+    export function config(opts: ConfigOptions): Promise<void>;
     export function connect(opts: ConnectOptions): void;
     export function byUid(
       uid: string,
