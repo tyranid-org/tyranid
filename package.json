@@ -7,7 +7,8 @@
     "docs": "ts-node ./doc/doc.js",
     "test": "npm run prettier && npm run lint && sh ./scripts/test.sh",
     "lint": "tslint './packages/*/{test,src}/**/*.{ts,js}' --format stylish --fix",
-    "prettier": "prettier --write --loglevel error --single-quote true './packages/*/{test,src}/**/*.{ts,js}'"
+    "prettier": "prettier --write --loglevel error --single-quote true './packages/*/{test,src}/**/*.{ts,js}'",
+    "watch": "cd ./packages/tyranid && npm run watch"
   },
   "devDependencies": {
     "@types/body-parser": "1.16.8",
