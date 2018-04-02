@@ -38,3 +38,17 @@ have been changed since the last publish, you can run...
 ```shell
 lerna updated
 ```
+
+This will output something like the following:
+
+```
+lerna info version 2.9.1
+lerna info versioning independent
+lerna info Checking for updated packages...
+lerna info Comparing with v0.4.54.
+lerna info Checking for prereleased packages...
+lerna info result
+- tyranid-graphql
+- tyranid-tdgen
+- tyranid
+```
