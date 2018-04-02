@@ -34,23 +34,16 @@ yarn test
 
 ## Publishing
 
-Lerna provides tools for publishing multiple packages. To check which packages
-have been changed since the last publish, you can run...
+To check which packages have been updated, run...
 
 ```shell
 lerna updated
 ```
 
-This will output something like the following:
+Once you want to publish new versions of the updated packages, run...
 
+```shell
+lerna publish
 ```
-lerna info version 2.9.1
-lerna info versioning independent
-lerna info Checking for updated packages...
-lerna info Comparing with v0.4.54.
-lerna info Checking for prereleased packages...
-lerna info result
-- tyranid-graphql
-- tyranid-tdgen
-- tyranid
-```
+
+And follow the prompt
