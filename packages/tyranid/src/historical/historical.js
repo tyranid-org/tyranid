@@ -49,7 +49,7 @@ function preserveInitialValues(collection, doc, props) {
   }
 }
 
-function snapshot(collection, doc, patchProps, diffProps, historyPresent) {
+function snapshotPartial(collection, doc, patchProps, diffProps, historyPresent) {
   const $orig = doc.$orig;
 
   if (!$orig) {
@@ -73,7 +73,7 @@ function snapshot(collection, doc, patchProps, diffProps, historyPresent) {
   if (_.isEmpty(p) && _.isEmpty(patchProps)) {
     // TODO:  do we need some way of looking at the patch props and seeing it contains something that is useful in its own right to store?
     //        (for example, like a user comment?)
-    return; // undefined; ... undefined means there was no snapshot needed
+    return {}; // snapshot and diffProps are undefined; ... undefined means there was no snapshot needed
   }
 
   const so = {
@@ -94,8 +94,17 @@ function snapshot(collection, doc, patchProps, diffProps, historyPresent) {
     arr.push(so);
   }
 
-  preserveInitialValues(collection, doc, _diffProps);
-  return so;
+  return { snapshot: so, diffProps: _diffProps };
+}
+
+function snapshot(collection, doc, patchProps, _diffProps, historyPresent) {
+  const { snapshot, diffProps } = snapshotPartial(collection, doc, patchProps, _diffProps, historyPresent);
+
+  if (diffProps) {
+    preserveInitialValues(collection, doc, diffProps);
+  }
+
+  return snapshot;
 }
 
 function snapshotPush(path, patchProps) {
@@ -174,6 +183,7 @@ export default {
   asOf,
   link,
   preserveInitialValues,
+  snapshotPartial,
   snapshot,
   snapshotPush,
   patchPropsFromOpts

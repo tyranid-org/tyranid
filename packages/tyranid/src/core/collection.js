@@ -830,52 +830,58 @@ export default class Collection {
       const arrOpts = combineOptions(opts, { preSaveAlreadyDone: true });
       // TODO:  use bulkops
       return await Promise.all(obj.map(doc => collection.save(doc, arrOpts)));
-    } else {
-      if (!(obj instanceof collection)) {
-        // save off an actual collection instance, not just a pojo,
-        // so that any computed db properties will get generated
-        obj = new collection(obj);
-      }
-
-      if (collection.def.historical && (!opts || opts.historical !== false)) {
-        if (obj.$historical) {
-          throw new Error('Document is read-only due to $historical');
-        } else {
-          historical.snapshot(collection, obj, historical.patchPropsFromOpts(opts));
-        }
-      }
-
-      const keyFieldName = collection.def.primaryKey.field,
-            keyValue = obj[keyFieldName];
-
-      let rslt;
-      if (keyValue) {
-        await Tyr.Event.fire({ collection, type: 'update', when: 'pre', document: obj, opts });
-
-        // using REPLACE semantics with findAndModify() here
-        const result = await collection.findAndModify(combineOptions(opts, {
-          query: { [keyFieldName]: keyValue },
-          // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
-          // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
-          update: _.omit(obj, '_id'),
-          upsert: true,
-          new: true,
-          historical: false,
-          eventAlreadyDone: true
-        }));
-
-        await Tyr.Event.fire({ collection, type: 'update', when: 'post', document: obj, opts });
-
-        rslt = result.value;
-      } else {
-
-        const modOpts = combineOptions(opts, { preSaveAlreadyDone: true });
-
-        rslt = await collection.insert(obj, modOpts);
-      }
-
-      return rslt;
     }
+
+    if (!(obj instanceof collection)) {
+      // save off an actual collection instance, not just a pojo,
+      // so that any computed db properties will get generated
+      obj = new collection(obj);
+    }
+
+    let diffProps;
+
+    if (collection.def.historical && (!opts || opts.historical !== false)) {
+      if (obj.$historical) {
+        throw new Error('Document is read-only due to $historical');
+      } else {
+        ({ diffProps } = historical.snapshotPartial(collection, obj, historical.patchPropsFromOpts(opts)));
+      }
+    }
+
+    const keyFieldName = collection.def.primaryKey.field,
+          keyValue = obj[keyFieldName];
+
+    let rslt;
+    if (keyValue) {
+      await Tyr.Event.fire({ collection, type: 'update', when: 'pre', document: obj, opts });
+
+      // using REPLACE semantics with findAndModify() here
+      const result = await collection.findAndModify(combineOptions(opts, {
+        query: { [keyFieldName]: keyValue },
+        // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
+        // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
+        update: _.omit(obj, '_id'),
+        upsert: true,
+        new: true,
+        historical: false,
+        eventAlreadyDone: true
+      }));
+
+      await Tyr.Event.fire({ collection, type: 'update', when: 'post', document: obj, opts });
+
+      rslt = result.value;
+    } else {
+
+      const modOpts = combineOptions(opts, { preSaveAlreadyDone: true });
+
+      rslt = await collection.insert(obj, modOpts);
+    }
+
+    if (diffProps) {
+      historical.preserveInitialValues(collection, obj, diffProps);
+    }
+
+    return rslt;
   }
 
   async insert(obj, opts) {
@@ -957,6 +963,8 @@ export default class Collection {
 
     opts.update = { $set: update };
 
+    let snapshot, diffProps;
+
     if (collection.def.historical && opts.historical !== false) {
       if (obj.$historical) {
         throw new Error('Document is read-only due to $historical');
@@ -967,13 +975,13 @@ export default class Collection {
       // If so, we will do a direct $push onto the _history array.
       const historyPresent = !!obj._history;
 
-      const snapshot = historical.snapshot(
+      ({ snapshot, diffProps } = historical.snapshotPartial(
         collection,
         obj,
         historical.patchPropsFromOpts(opts),
         updateFields,
         historyPresent
-      );
+      ));
 
       if (snapshot) {
         if (historyPresent) {
@@ -1001,6 +1009,11 @@ export default class Collection {
     await Tyr.Event.fire({ collection, type: 'update', when: 'pre', document: obj, opts });
     const rslt = await collection.db.update(query, opts.update, opts);
     await Tyr.Event.fire({ collection, type: 'update', when: 'post', document: obj, opts });
+
+    if (diffProps) {
+      historical.preserveInitialValues(collection, obj, diffProps);
+    }
+
     return rslt;
   }
 
