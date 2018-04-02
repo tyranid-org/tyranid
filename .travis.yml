@@ -1,9 +1,11 @@
 language: node_js
 dist: trusty
 sudo: false
+cache: yarn
 services: mongodb
-before_script:
-  - rm -rf ./node_modules && yarn
+  - ls node_modules
+  - which tsc
+  - ls `npm bin`
   - sh ./scripts/build.sh
 script:
   - sh ./scripts/style-check.sh
