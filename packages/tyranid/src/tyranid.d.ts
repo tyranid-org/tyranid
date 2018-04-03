@@ -659,7 +659,7 @@ declare namespace Tyranid {
       exists(opts: Options_Exists): Promise<boolean>;
 
       fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
-      fieldsFor(obj: any): Promise<FieldInstance[]>;
+      fieldsFor(obj: any): Promise<{ [key: string]: FieldInstance }>;
       idToUid(id: string | mongodb.ObjectID): string;
 
       fake(options: {
