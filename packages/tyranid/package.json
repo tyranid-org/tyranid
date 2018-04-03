@@ -1,6 +1,6 @@
 {
   "name": "tyranid",
-  "version": "0.5.1",
+  "version": "0.5.3",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/src/tyranid.js",
   "typings": "src/tyranid.d.ts",
@@ -38,7 +38,6 @@
     "moment": "2.20.1",
     "on-finished": "2.3.0",
     "socket.io": "2.0.3",
-    "ts-node": "^3.2.0",
     "uglify-js": "2.8.16",
     "uuid": "^3.1.0"
   },

@@ -1,6 +1,6 @@
 {
   "name": "tyranid-graphql",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "GraphQL plugin for tyranid",
   "repository": {
     "type": "git",
@@ -25,6 +25,8 @@
     "graphql": "^0.12.3"
   },
   "ava": {
-    "files": ["dist/test/index.js"]
+    "files": [
+      "dist/test/index.js"
+    ]
   }
 }

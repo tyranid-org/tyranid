@@ -669,7 +669,7 @@ declare namespace Tyranid {
       }): Promise<T>;
 
       find(opts: Options_FindCursor): Promise<Cursor<T>>;
-      findAll(opts: Options_FindMany): Promise<T[] & { count: number }>;
+      findAll(opts: Options_FindMany): Promise<T[] & { count?: number }>;
       findOne(opts: Options_FindOne): Promise<T | null>;
 
       /** @deprecated */
