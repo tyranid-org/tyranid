@@ -2,11 +2,11 @@
 
 ## Packages
 
-| Package                            | Status                                                                               | Description |
-|------------------------------------|--------------------------------------------------------------------------------------|-------------|
-| [tyranid](https://tyranid.org)     | [![npm version](https://badge.fury.io/js/tyranid.svg)](https://badge.fury.io/js/tyranid)                                                     | Tyranid core library |
-| [tyranid-tdgen](https://www.npmjs.com/package/tyranid-tdgen)                      | [![npm version](https://badge.fury.io/js/tyranid-tdgen.svg)](https://badge.fury.io/js/tyranid-tdgen)                                         | TypeScript definition generator for tyranid |
-| [tyranid-graphql](https://www.npmjs.com/package/tyranid-graphql)                      | [![npm version](https://badge.fury.io/js/tyranid-graphql.svg)](https://badge.fury.io/js/tyranid-graphql)                                         | Tyranid GraphQL driver |
+| Package                                                          | Status                                                                                                   | Description                                 |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [tyranid](https://tyranid.org)                                   | [![npm version](https://badge.fury.io/js/tyranid.svg)](https://badge.fury.io/js/tyranid)                 | Tyranid core library                        |
+| [tyranid-tdgen](https://www.npmjs.com/package/tyranid-tdgen)     | [![npm version](https://badge.fury.io/js/tyranid-tdgen.svg)](https://badge.fury.io/js/tyranid-tdgen)     | TypeScript definition generator for tyranid |
+| [tyranid-graphql](https://www.npmjs.com/package/tyranid-graphql) | [![npm version](https://badge.fury.io/js/tyranid-graphql.svg)](https://badge.fury.io/js/tyranid-graphql) | Tyranid GraphQL driver                      |
 
 ## Development
 
@@ -34,16 +34,11 @@ yarn test
 
 ## Publishing
 
-To check which packages have been updated, run...
+To ensure that tests are run across all packages before publishing, we use the following npm script to publish
 
 ```shell
-lerna updated
+yarn run bump
 ```
 
-Once you want to publish new versions of the updated packages, run...
-
-```shell
-lerna publish
-```
-
-And follow the prompt
+This will internally call `npm test && lerna publish`, and the normal lerna publishing ui
+will come up.
