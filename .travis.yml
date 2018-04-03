@@ -1,9 +1,10 @@
 language: node_js
 dist: trusty
 sudo: false
+cache: yarn
 services: mongodb
+before_script:
+  - sh ./scripts/build.sh
 script:
   - sh ./scripts/style-check.sh
   - npm run test --silent
-cache:
-  yarn: true
