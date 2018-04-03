@@ -58,7 +58,7 @@ function snapshotPartial(
   const $orig = doc.$orig;
 
   if (!$orig) {
-    return;
+    return {}; // snapshot and diffProps are undefined; ... undefined means there was no snapshot needed
   }
 
   let _diffProps;
