@@ -34,16 +34,11 @@ yarn test
 
 ## Publishing
 
-To check which packages have been updated, run...
+To ensure that tests are run across all packages before publishing, we use the following npm script to publish
 
 ```shell
-lerna updated
+yarn run bump
 ```
 
-Once you want to publish new versions of the updated packages, run...
-
-```shell
-lerna publish
-```
-
-And follow the prompt
+This will internally call `npm test && lerna publish`, and the normal lerna publishing ui
+will come up.
