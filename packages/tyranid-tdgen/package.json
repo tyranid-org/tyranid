@@ -1,6 +1,6 @@
 {
   "name": "tyranid-tdgen",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Generate type definition files from tyranid schemas",
   "repository": {
     "type": "git",
@@ -18,8 +18,7 @@
     "prepublish": "npm run test",
     "ava": "mkdir generated && ava",
     "test": "npm run ava && npm run compile-test",
-    "compile-test":
-      "tsc -p ./test/compile-test/ && tsc -p ./test/compile-client/",
+    "compile-test": "tsc -p ./test/compile-test/ && tsc -p ./test/compile-client/",
     "generate-examples": "ts-node ./example/generate.ts"
   },
   "engines": {
@@ -28,10 +27,14 @@
   "author": "bsouthga@gmail.com",
   "license": "Apache-2.0",
   "ava": {
-    "files": ["dist/test/index.js"]
+    "files": [
+      "dist/test/index.js"
+    ]
   },
   "nyc": {
-    "include": ["dist/src"]
+    "include": [
+      "dist/src"
+    ]
   },
   "peerDependencies": {
     "tyranid": "^0.5.0"
