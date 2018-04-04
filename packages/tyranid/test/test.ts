@@ -1942,6 +1942,11 @@ describe('tyranid', () => {
     });
 
     describe('toClient', () => {
+      it('should support passing undefined / null to toClient()', () => {
+        expect(User.toClient(undefined)).to.eql(undefined);
+        expect(User.toClient(null)).to.eql(null);
+      });
+
       it('should support call post-processing functions', () => {
         const user = new User({
           name: { first: 'Jane', last: 'Smith' },

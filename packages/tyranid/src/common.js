@@ -253,6 +253,10 @@ export function evaluateClient(client, key, doc, value, opts, proj) {
 }
 
 export function toClient(col, doc, opts) {
+  if (!doc) {
+    return doc;
+  }
+
   if (Array.isArray(doc)) {
     return doc.map(doc2 => toClient(col, doc2, opts));
   }

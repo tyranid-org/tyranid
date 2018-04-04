@@ -682,7 +682,13 @@ declare namespace Tyranid {
       fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;
       toClient(
-        doc: Document | Document[] | RawMongoDocument | RawMongoDocument[]
+        doc:
+          | undefined
+          | null
+          | Document
+          | Document[]
+          | RawMongoDocument
+          | RawMongoDocument[]
       ): RawMongoDocument;
 
       idToLabel(id: any): Promise<string>;
