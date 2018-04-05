@@ -95,7 +95,10 @@ function mergeSchema(fields, name, field) {
   if (existingField) {
     if (existingField.def.is === 'object' && field.def.is === 'object') {
       existingField = fields[name] = cloneSchema(existingField);
-      const existingFields = existingField.def.fields;
+      let existingFields = existingField.def.fields;
+      if (!existingFields) {
+        existingFields = existingField.def.fields = {};
+      }
 
       _.each(field.def.fields, (nestedField, nestedName) => {
         mergeSchema(existingFields, nestedName, nestedField);
