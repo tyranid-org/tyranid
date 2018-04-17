@@ -2476,6 +2476,18 @@ describe('tyranid', () => {
         });
       });
 
+      it('should 404 when doc not found on /api/NAME/:id', async () => {
+        const result = await fetch(urlPrefix + '/api/user/999998');
+        expect(result.status).to.eql(404);
+      });
+
+      it('should 404 when doc not found on /api/NAME/:id/FIELD_PATH/slice', async () => {
+        const result = await fetch(
+          urlPrefix + '/api/user/999998/siblings/slice'
+        );
+        expect(result.status).to.eql(404);
+      });
+
       it('should not expose /custom route on non-express collections', async () => {
         const result = await fetch(urlPrefix + '/api/role/custom');
         expect(result.status).to.eql(404);
