@@ -38,7 +38,7 @@ yarn test
 To ensure that tests are run across all packages before publishing, we use the following npm script to publish
 
 ```shell
-yarn run bump
+yarn bump
 ```
 
 This will internally call `npm test && lerna publish`, and the normal lerna publishing ui
