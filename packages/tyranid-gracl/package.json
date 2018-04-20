@@ -1,21 +1,26 @@
 {
   "name": "tyranid-gracl",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "tyranid.js plugin for gracl",
-  "keywords": ["graph", "acl", "permissions", "permission", "tyranid", "gracl"],
+  "keywords": [
+    "graph",
+    "acl",
+    "permissions",
+    "permission",
+    "tyranid",
+    "gracl"
+  ],
   "main": "./dist/src/index.js",
   "typings": "./dist/src/index.d.ts",
   "scripts": {
-    "build":
-      "rm -rf ./dist/ ./test/spec/types && npm run generate-collection-types && npm run tsc && npm run compile-module-test",
+    "build": "rm -rf ./dist/ ./test/spec/types && npm run generate-collection-types && npm run tsc && npm run compile-module-test",
     "pretest": "npm run build",
     "prepublish": "npm run test",
     "test": "ava",
     "compile-module-test": "cd ./test/tscompile && tsc --pretty",
     "tsc": "tsc -d --pretty -p ./",
     "compile-collections": "tsc -p ./test/models",
-    "generate-collection-types":
-      "npm run compile-collections && mkdir -p test/spec/types &&  tyranid-tdgen -o './test/spec/types/isomorphic.d.ts' './dist/test/models/**/*.js' && tyranid-tdgen -o './test/spec/types/server.d.ts' -t server './dist/test/models/**/*.js'"
+    "generate-collection-types": "npm run compile-collections && mkdir -p test/spec/types &&  tyranid-tdgen -o './test/spec/types/isomorphic.d.ts' './dist/test/models/**/*.js' && tyranid-tdgen -o './test/spec/types/server.d.ts' -t server './dist/test/models/**/*.js'"
   },
   "engines": {
     "node": ">=8.4.0"
@@ -33,6 +38,8 @@
     "tyranid": "^0.5.0"
   },
   "ava": {
-    "files": ["dist/test/spec/**/*.js"]
+    "files": [
+      "dist/test/spec/**/*.js"
+    ]
   }
 }
