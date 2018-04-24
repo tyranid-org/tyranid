@@ -1552,7 +1552,8 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.get) {
         r.get(async (req, res) => {
           const doc = await col.byId(req.params.id, { auth: req.user });
-          res.json(doc.$toClient());
+          if (doc) res.json(doc.$toClient());
+          else res.sendStatus(404);
         });
       }
 
@@ -1598,6 +1599,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                     [field.spath]: 1
                   }
                 });
+                if (!doc) return res.sendStatus(404);
 
                 doc.$slice(field.path, req.body);
 

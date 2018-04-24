@@ -2,6 +2,7 @@ import * as program from 'commander';
 import * as fs from 'fs';
 import * as mongodb from 'mongodb';
 import * as path from 'path';
+import { Tyr } from 'tyranid';
 import { generateStream } from './index';
 
 const ROOT = __dirname;
@@ -11,11 +12,6 @@ const config = require(path.join(ROOT, '../../package.json'));
 
 const CWD = process.cwd();
 
-// tslint:disable-next-line
-const { Tyr } = require(path.join(
-  CWD,
-  './node_modules/tyranid/dist/src/tyranid.js'
-));
 let fileGlob: string | undefined;
 
 program

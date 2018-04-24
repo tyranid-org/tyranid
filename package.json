@@ -1,8 +1,6 @@
 {
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "docs": "ts-node ./doc/doc.js",
     "clean": "sh ./scripts/clean.sh",
@@ -13,7 +11,7 @@
     "lint":
       "tslint './packages/*/{test,src}/{!typings}/*.{ts,js}' --format stylish --fix",
     "prettier":
-      "prettier --write --loglevel error --single-quote true './packages/*/{test,src}/**/*.{ts,js}'",
+      "prettier --write --loglevel error --single-quote true \"./packages/*/{test,src}/**/*.{ts,js}\"",
     "watch": "cd ./packages/tyranid && npm run watch",
     "bump": "npm run test && lerna publish"
   },
@@ -48,7 +46,7 @@
     "ts-node": "^3.2.0",
     "tslint": "5.5.0",
     "tslint-config-prettier": "1.10.0",
-    "typescript": "2.5.3",
+    "typescript": "2.8.3",
     "yargs": "3.12.0"
   }
 }

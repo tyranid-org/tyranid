@@ -7,6 +7,7 @@
 | [tyranid](https://tyranid.org)                | [![npm version](https://badge.fury.io/js/tyranid.svg)](https://badge.fury.io/js/tyranid)                 | Tyranid core library                        |
 | [tyranid-tdgen](./packages/tyranid-tdgen)     | [![npm version](https://badge.fury.io/js/tyranid-tdgen.svg)](https://badge.fury.io/js/tyranid-tdgen)     | TypeScript definition generator for tyranid |
 | [tyranid-graphql](./packages/tyranid-graphql) | [![npm version](https://badge.fury.io/js/tyranid-graphql.svg)](https://badge.fury.io/js/tyranid-graphql) | Tyranid GraphQL driver                      |
+| [tyranid-gracl](./packages/tyranid-gracl)     | [![npm version](https://badge.fury.io/js/tyranid-gracl.svg)](https://badge.fury.io/js/tyranid-gracl)     | Tyranid Permissions Library                 |
 
 ## Development
 
@@ -37,7 +38,7 @@ yarn test
 To ensure that tests are run across all packages before publishing, we use the following npm script to publish
 
 ```shell
-yarn run bump
+yarn bump
 ```
 
 This will internally call `npm test && lerna publish`, and the normal lerna publishing ui
