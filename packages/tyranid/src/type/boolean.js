@@ -2,7 +2,7 @@ import Type from '../core/type';
 
 function fromString(s) {
   if (s && s.length) {
-    if (/^(f|false|no|off|0)$/i.test(s)) {
+    if (/^(f|false|no|off|null|0)$/i.test(s)) {
       return false;
     }
 
@@ -54,6 +54,13 @@ const BooleanType = new Type({
         }
 
         // NOTE:  see "intelligent" above
+        break;
+
+      case 'object':
+        if (value === null) {
+          return false;
+        }
+
         break;
     }
 

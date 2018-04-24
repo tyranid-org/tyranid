@@ -446,6 +446,8 @@ declare namespace Tyranid {
         get?: boolean;
         post?: boolean;
         put?: boolean;
+        fields?: boolean;
+        labels?: boolean;
       };
       fields?: FieldsObject;
       methods?: {

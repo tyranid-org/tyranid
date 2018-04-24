@@ -133,7 +133,11 @@ function patchObj(a, patch, props) {
               continue;
 
             case T_OBJECT:
-              patchObj(a[prop], ipatch);
+              let obj = a[prop];
+              if (!obj) {
+                obj = a[prop] = {};
+              }
+              patchObj(obj, ipatch);
               continue;
           }
 
