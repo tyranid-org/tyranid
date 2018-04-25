@@ -8,6 +8,7 @@
 | [tyranid-tdgen](./packages/tyranid-tdgen)     | [![npm version](https://badge.fury.io/js/tyranid-tdgen.svg)](https://badge.fury.io/js/tyranid-tdgen)     | TypeScript definition generator for tyranid |
 | [tyranid-graphql](./packages/tyranid-graphql) | [![npm version](https://badge.fury.io/js/tyranid-graphql.svg)](https://badge.fury.io/js/tyranid-graphql) | Tyranid GraphQL driver                      |
 | [tyranid-gracl](./packages/tyranid-gracl)     | [![npm version](https://badge.fury.io/js/tyranid-gracl.svg)](https://badge.fury.io/js/tyranid-gracl)     | Tyranid Permissions Library                 |
+| [tyranid-openapi](./packages/tyranid-openapi) | [![npm version](https://badge.fury.io/js/tyranid-openapi.svg)](https://badge.fury.io/js/tyranid-openapi) | OpenAPI Spec Generator for Tyranid          |
 
 ## Development
 
