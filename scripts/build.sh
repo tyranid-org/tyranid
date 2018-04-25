@@ -9,5 +9,7 @@ run_tsc() {
 run_tsc tyranid
 run_tsc tyranid-tdgen
 run_tsc tyranid-graphql
+run_tsc tyranid-openapi
 
-cd ./packages/tyranid-gracl && npm run build
+echo "building tyranid-gracl..."
+cd ./packages/tyranid-gracl && npm run build --silent

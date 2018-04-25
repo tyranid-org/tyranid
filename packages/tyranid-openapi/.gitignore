@@ -1,0 +1,10 @@
+node_modules
+npm-*
+.DS_Store
+test-spec.yaml
+api-test
+.tmp
+docs
+dist
+.nyc_output
+coverage

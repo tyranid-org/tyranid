@@ -134,9 +134,11 @@ _.assign(Tyr, {
         }
       });
     } else {
-      console.warn(
-        '******** no "db" property passed to config, boostraping Tyranid without database! ********'
-      );
+      if (process.env.DEBUG) {
+        console.warn(
+          '******** no "db" property passed to config, boostraping Tyranid without database! ********'
+        );
+      }
     }
 
     if (opts.validate) {

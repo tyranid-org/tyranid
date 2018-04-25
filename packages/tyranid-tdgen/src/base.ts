@@ -218,7 +218,9 @@ export function addField(opts: {
           (!assignableToString(def.keys.is) && def.keys.is !== 'integer')
         ) {
           console.warn(
-            `Invalid key type: ${JSON.stringify(def.keys)} defaulting to any`
+            `tyranid-tdgen: Invalid key type: ${JSON.stringify(
+              def.keys
+            )} defaulting to any`
           );
           return 'any';
         }

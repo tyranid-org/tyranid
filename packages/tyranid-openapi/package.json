@@ -1,0 +1,30 @@
+{
+  "name": "tyranid-openapi",
+  "version": "0.2.6",
+  "description": "Open API spec and express app generator for tyranid",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "test":
+      "bash -c \"mkdir -p ./.tmp/ && rm -rf ./dist/ && npm run build && npm run ava\"",
+    "ava": "ava",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "keywords": ["tyranid", "swagger", "openapi", "api"],
+  "author": "bsouthga@gmail.com",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/js-yaml": "3.9.1",
+    "@types/swagger-schema-official": "^2.0.6",
+    "ajv": "^5.0.1",
+    "js-yaml": "^3.9.1",
+    "swagger-schema-official": "^2.0.0-bab6bed"
+  },
+  "peerDependencies": {
+    "tyranid": "^0.2.14"
+  },
+  "ava": {
+    "files": ["dist/test/index.js"]
+  }
+}
