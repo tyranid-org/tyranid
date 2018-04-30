@@ -915,10 +915,6 @@ export function generateClientLibrary() {
     }
   };
 
-
-
-  // *** Save
-
   Collection.prototype.save = function(doc) {
 
     return ajax({
@@ -944,6 +940,32 @@ export function generateClientLibrary() {
       }
     ).catch(function(err) {
       console.log(err);
+    });
+  };
+
+  Collection.prototype.update = function(query, update, opts) {
+    const col = this;
+
+    if (opts) {
+      opts.query = query;
+      opts.update = update;
+    } else if (update) {
+      opts = { query, update };
+    } else {
+      opts = query;
+    }
+
+    return ajax({
+      url: '/api/' + col.def.name + '/update',
+      data: { opts: JSON.stringify(opts) }
+    }).then(rslt => {
+      if (Array.isArray(rslt)) {
+        return rslt.map(doc => new col(doc));
+      } else if (_.isObject(rslt)) {
+        const docs = rslt.docs;
+        docs.count = rslt.count;
+        return docs;
+      }
     });
   };
 
@@ -1535,6 +1557,29 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 auth: req.user
               });
             res.json(results.map(r => r.$toClient()));
+          } catch (err) {
+            console.log(err.stack);
+            res.sendStatus(500);
+          }
+        });
+      }
+
+      /*
+       *     /api/NAME/update
+       */
+
+      r = app.route('/api/' + name + '/count');
+      r.all(auth);
+
+      if (express.rest || express.put) {
+        r.put(async function(req, res) {
+          try {
+            const opts = req.body;
+
+            opts.query = col.fromClientQuery(rOpts.query);
+            opts.auth = req.user;
+
+            res.json(await col.update(opts));
           } catch (err) {
             console.log(err.stack);
             res.sendStatus(500);
