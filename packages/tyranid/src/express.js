@@ -957,15 +957,9 @@ export function generateClientLibrary() {
 
     return ajax({
       url: '/api/' + col.def.name + '/update',
-      data: { opts: JSON.stringify(opts) }
-    }).then(rslt => {
-      if (Array.isArray(rslt)) {
-        return rslt.map(doc => new col(doc));
-      } else if (_.isObject(rslt)) {
-        const docs = rslt.docs;
-        docs.count = rslt.count;
-        return docs;
-      }
+      method: 'put',
+      data: JSON.stringify(opts),
+      contentType: 'application/json'
     });
   };
 
@@ -1568,7 +1562,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
        *     /api/NAME/update
        */
 
-      r = app.route('/api/' + name + '/count');
+      r = app.route('/api/' + name + '/update');
       r.all(auth);
 
       if (express.rest || express.put) {
@@ -1576,7 +1570,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             const opts = req.body;
 
-            opts.query = col.fromClientQuery(rOpts.query);
+            opts.query = col.fromClientQuery(opts.query);
             opts.auth = req.user;
 
             res.json(await col.update(opts));
