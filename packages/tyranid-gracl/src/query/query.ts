@@ -240,12 +240,6 @@ export async function query(
 
   const alreadySet = new Set<string>();
 
-  /**
-   * {
-   *    id: { permission: ObjectID } | { parents: [...ids] }
-   * }
-   */
-
   const debugGraphPositive = new Map<string, DebugGraphNode>();
   const debugGraphNegative = new Map<string, DebugGraphNode>();
 
@@ -277,14 +271,18 @@ export async function query(
               alreadySet.add(uid);
             }
             const resourceObjectId = Tyr.parseUid(uid).id;
-            (result.access ? debugGraphPositive : debugGraphNegative).set(
-              resourceObjectId.toString(),
-              {
-                permission: permission.$id,
-                collectionName: permission.resourceType,
-                ...result
-              }
-            );
+
+            if (debug) {
+              (result.access ? debugGraphPositive : debugGraphNegative).set(
+                resourceObjectId.toString(),
+                {
+                  permission: permission.$id,
+                  collectionName: permission.resourceType,
+                  ...result
+                }
+              );
+            }
+
             const accessSet = queryMaps[key].get(collectionName) || new Set();
             if (!queryMaps[key].has(collectionName)) {
               queryMaps[key].set(collectionName, accessSet);
@@ -361,14 +359,17 @@ export async function query(
         // grab access boolean for given permissionType
         const result = getAccess(permission);
         const resourceObjectID = Tyr.parseUid(permission.resourceId).id;
-        (result.access ? debugGraphPositive : debugGraphNegative).set(
-          resourceObjectID.toString(),
-          {
-            permission: permission.$id,
-            collectionName: permission.resourceType,
-            ...result
-          }
-        );
+
+        if (debug) {
+          (result.access ? debugGraphPositive : debugGraphNegative).set(
+            resourceObjectID.toString(),
+            {
+              permission: permission.$id,
+              collectionName: permission.resourceType,
+              ...result
+            }
+          );
+        }
 
         switch (result.access) {
           // access needs to be exactly true or false
@@ -405,16 +406,19 @@ export async function query(
         debug
       );
 
-      addEntriesToDebugMap(
-        debugGraphPositive,
-        positiveResult.childMap,
-        nextCollectionName
-      );
-      addEntriesToDebugMap(
-        debugGraphNegative,
-        negativeResult.childMap,
-        nextCollectionName
-      );
+      if (debug) {
+        addEntriesToDebugMap(
+          debugGraphPositive,
+          positiveResult.childMap,
+          nextCollectionName
+        );
+        addEntriesToDebugMap(
+          debugGraphNegative,
+          negativeResult.childMap,
+          nextCollectionName
+        );
+      }
+
       positiveIds = positiveResult.nextCollectionIds;
       negativeIds = negativeResult.nextCollectionIds;
 
@@ -461,16 +465,18 @@ export async function query(
           debug
         );
 
-        addEntriesToDebugMap(
-          debugGraphPositive,
-          positiveResult.childMap,
-          nextPathCollectionName
-        );
-        addEntriesToDebugMap(
-          debugGraphNegative,
-          negativeResult.childMap,
-          nextPathCollectionName
-        );
+        if (debug) {
+          addEntriesToDebugMap(
+            debugGraphPositive,
+            positiveResult.childMap,
+            nextPathCollectionName
+          );
+          addEntriesToDebugMap(
+            debugGraphNegative,
+            negativeResult.childMap,
+            nextPathCollectionName
+          );
+        }
 
         positiveIds = positiveResult.nextCollectionIds;
         negativeIds = negativeResult.nextCollectionIds;

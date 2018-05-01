@@ -14,7 +14,7 @@ export interface Explaination {
   /**
    * list of uids from child to parent
    */
-  permissionId?: ObjectID;
+  permissionId?: string;
   permissionType?: string;
   property?: string;
   uidPath: string[];
@@ -76,7 +76,7 @@ function getExplainationsForId(
   if (!('parents' in node)) {
     return [
       {
-        permissionId: node.permission,
+        permissionId: node.permission.toString(),
         permissionType: node.type,
         property,
         uidPath: [nodeUid],
@@ -106,7 +106,12 @@ function getExplainationsForId(
       const { parents, uidPath } = current;
 
       for (const parent of parents) {
-        const next = graph.get(parent)!;
+        const next = graph.get(parent);
+
+        if (!next) {
+          throw new Error(`No node found for parentId = ${parent}`);
+        }
+
         const parentUid = toUid(next.collectionName, parent);
         const nextPath = [...uidPath, parentUid];
 
@@ -114,7 +119,7 @@ function getExplainationsForId(
           out.push({
             type,
             uidPath: nextPath,
-            permissionId: next.permission,
+            permissionId: next.permission.toString(),
             permissionType: next.type,
             property
           });

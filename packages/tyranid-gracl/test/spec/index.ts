@@ -447,6 +447,21 @@ test.serial('should explain access result', async t => {
     'edit',
     ben!
   );
+
+  t.deepEqual(resultChipotle, [
+    {
+      type: tyranidGracl.ExplainationType.UNSET,
+      uidPath: []
+    }
+  ]);
+
+  t.deepEqual(resultChopped[0].type, tyranidGracl.ExplainationType.ALLOW);
+  t.deepEqual(resultChopped[0].uidPath, [
+    'b00' + choppedBlog!._id,
+    'o00' + choppedBlog!.organizationId
+  ]);
+  t.deepEqual(resultChopped[0].property, 'blogId');
+  t.deepEqual(resultChopped[0].permissionType, 'edit-post');
 });
 
 test.serial(

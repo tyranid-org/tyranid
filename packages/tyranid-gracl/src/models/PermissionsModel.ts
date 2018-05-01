@@ -262,10 +262,7 @@ export class PermissionsModel extends PermissionsBaseCollection {
     );
 
     const result = match(queryResult, resourceDocument.$toPlain());
-
     const explaination = explain(debug, result, queryResult);
-
-    console.log(JSON.stringify(explaination, null, 2));
 
     return explaination;
   }
