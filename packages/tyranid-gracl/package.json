@@ -32,7 +32,8 @@
     "@types/lodash": "4.14.104",
     "@types/mongodb": "2.2.7",
     "gracl": "0.0.16",
-    "lodash": "4.17.2"
+    "lodash": "4.17.2",
+    "mongo-explain-match": "^0.0.4"
   },
   "peerDependencies": {
     "tyranid": "^0.5.0"
