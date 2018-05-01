@@ -6,10 +6,8 @@ run_tests_for() {
   (cd ./packages/$PACKAGE && npm test --silent)
 }
 
-# run_tests_for tyranid
-# run_tests_for tyranid-tdgen
-# run_tests_for tyranid-graphql
+run_tests_for tyranid
+run_tests_for tyranid-tdgen
+run_tests_for tyranid-graphql
 run_tests_for tyranid-gracl
-# run_tests_for tyranid-openapi
-
-# cd ./packages/tyranid-gracl && npm test --silent -- -m 'should explain access result'
+run_tests_for tyranid-openapi
