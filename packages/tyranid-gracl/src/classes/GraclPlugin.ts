@@ -100,8 +100,8 @@ export class GraclPlugin {
   }
 
   /**
-    Create Gracl class hierarchy from tyranid schemas,
-    needs to be called after all the tyranid collections are validated
+   * Create Gracl class hierarchy from tyranid schemas,
+   * needs to be called after all the tyranid collections are validated
    */
   public boot(stage: Tyr.BootStage) {
     if (stage === 'post-link') {

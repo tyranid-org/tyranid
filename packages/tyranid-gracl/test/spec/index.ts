@@ -224,7 +224,7 @@ test.serial(
 
     checkStringEq(
       t,
-      steppedPostIds.map(s => s.toString()),
+      steppedPostIds.nextCollectionIds.map(s => s.toString()),
       _.map(postIds, i => i.toString()),
       'ids after stepping should be all relevant ids'
     );
@@ -416,6 +416,36 @@ test.serial('should respect permissions hierarchy', async t => {
   t.true(
     !!(ben && choppedBlog && (await choppedBlog.$isAllowed('view-post', ben))),
     `ben should have 'view' access to choppedBlog through 'edit' access to chopped org`
+  );
+});
+
+test.serial('should explain access result', async t => {
+  await giveBenAccessToChoppedPosts(t, 'edit');
+
+  const ben = await Tyr.byName.user.findOne({ query: { name: 'ben' } });
+  const choppedBlog = await Tyr.byName.blog.findOne({
+    query: { name: 'Salads are great' }
+  });
+  const chipotleBlog = await Tyr.byName.blog.findOne({
+    query: { name: 'Mexican Empire' }
+  });
+  const chipotlePost = await Tyr.byName.post.findOne({
+    query: { blogId: chipotleBlog!._id }
+  });
+  const choppedPost = await Tyr.byName.post.findOne({
+    query: { blogId: choppedBlog!._id }
+  });
+
+  const resultChipotle = await secure.permissionsModel.explainAccess(
+    chipotlePost!,
+    'edit',
+    ben!
+  );
+
+  const resultChopped = await secure.permissionsModel.explainAccess(
+    choppedPost!,
+    'edit',
+    ben!
   );
 });
 

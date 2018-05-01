@@ -1,8 +1,12 @@
 import * as _ from 'lodash';
+import { match, MatchResult, MatchResultType } from 'mongo-explain-match';
 import { ObjectID } from 'mongodb';
 import { Tyr } from 'tyranid';
 import { GraclPlugin } from '../classes/GraclPlugin';
-import { Hash, PermissionExplaination, Permission } from '../interfaces';
+import { Hash, Permission, PermissionExplaination } from '../interfaces';
+import { query } from '../query/query';
+
+import { explain, Explaination } from '../query/explain';
 
 import { createResource } from '../graph/createResource';
 import { createSubject } from '../graph/createSubject';
@@ -236,6 +240,34 @@ export class PermissionsModel extends PermissionsBaseCollection {
 
     const permObj = await resource.determineAccess(subject, permissionType);
     return permObj[permissionType];
+  }
+
+  public static async explainAccess(
+    resourceData: Tyr.Document | string,
+    permissionType: string,
+    subjectData: Tyr.Document | string
+  ): Promise<Explaination[]> {
+    const plugin = PermissionsModel.getGraclPlugin();
+    const {
+      resourceDocument,
+      subjectDocument
+    } = await resolveSubjectAndResourceDocuments(resourceData, subjectData);
+
+    const { query: queryResult, debug } = await query(
+      plugin,
+      resourceDocument.$model,
+      permissionType,
+      subjectDocument,
+      true
+    );
+
+    const result = match(queryResult, resourceDocument.$toPlain());
+
+    const explaination = explain(debug, result, queryResult);
+
+    console.log(JSON.stringify(explaination, null, 2));
+
+    return explaination;
   }
 
   /**

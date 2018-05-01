@@ -42,7 +42,8 @@
     "no-namespace": false,
     "label-position": false,
     "class-name": false,
-    "array-type": false
+    "array-type": false,
+    "jsdoc-format": false
   },
   "rulesDirectory": []
 }
