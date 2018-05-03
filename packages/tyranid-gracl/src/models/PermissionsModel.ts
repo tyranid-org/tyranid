@@ -6,7 +6,12 @@ import { GraclPlugin } from '../classes/GraclPlugin';
 import { Hash, Permission, PermissionExplaination } from '../interfaces';
 import { query } from '../query/query';
 
-import { explain, Explaination } from '../query/explain';
+import {
+  AccessExplainationResult,
+  explain,
+  Explaination,
+  formatExplainations
+} from '../query/explain';
 
 import { createResource } from '../graph/createResource';
 import { createSubject } from '../graph/createSubject';
@@ -246,7 +251,19 @@ export class PermissionsModel extends PermissionsBaseCollection {
     resourceData: Tyr.Document | string,
     permissionType: string,
     subjectData: Tyr.Document | string
-  ): Promise<Explaination[]> {
+  ): Promise<AccessExplainationResult>;
+  public static async explainAccess(
+    resourceData: Tyr.Document | string,
+    permissionType: string,
+    subjectData: Tyr.Document | string,
+    format: true
+  ): Promise<string>;
+  public static async explainAccess(
+    resourceData: Tyr.Document | string,
+    permissionType: string,
+    subjectData: Tyr.Document | string,
+    format?: boolean
+  ): Promise<AccessExplainationResult | string> {
     const plugin = PermissionsModel.getGraclPlugin();
     const {
       resourceDocument,
@@ -261,10 +278,22 @@ export class PermissionsModel extends PermissionsBaseCollection {
       true
     );
 
+    const subjectId = subjectDocument.$uid;
     const result = match(queryResult, resourceDocument.$toPlain());
-    const explaination = explain(debug, result, queryResult);
+    const explainations = explain(subjectId, debug, result, queryResult);
 
-    return explaination;
+    const accessResult: AccessExplainationResult = {
+      explainations,
+      hasAccess: result.match,
+      resourceId: resourceDocument.$uid,
+      subjectId
+    };
+
+    if (format) {
+      return formatExplainations(accessResult);
+    }
+
+    return accessResult;
   }
 
   /**

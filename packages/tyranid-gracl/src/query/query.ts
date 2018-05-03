@@ -1,4 +1,4 @@
-import { baseCompare } from 'gracl';
+import { baseCompare, Node as GraclNode } from 'gracl';
 import * as _ from 'lodash';
 import { ObjectID } from 'mongodb';
 import { Tyr } from 'tyranid';
@@ -19,6 +19,7 @@ import { stepThroughCollectionPath } from '../graph/stepThroughCollectionPath';
 export type DebugGraphNode =
   | {
       permission: ObjectID;
+      subjectId: string;
       access: boolean;
       collectionName: string;
       type?: string;
@@ -29,6 +30,7 @@ export type DebugGraph = Map<string, DebugGraphNode>;
 export interface DebugResult {
   positive: DebugGraph;
   negative: DebugGraph;
+  subjects: Map<string, string[]>;
 }
 
 /**
@@ -163,7 +165,10 @@ export async function query(
   // get list of all ids in the subject hierarchy,
   // as well as the names of the classes in the resource hierarchy
   const subjectHierarchyIds = await subject.getHierarchyIds();
+
+  const subjectHierarchyClasses = SubjectClass.getHierarchyClassNames();
   const resourceHierarchyClasses = ResourceClass.getHierarchyClassNames();
+
   const permissionsQuery = {
     subjectId: { $in: subjectHierarchyIds },
     resourceType: { $in: resourceHierarchyClasses },
@@ -242,6 +247,22 @@ export async function query(
 
   const debugGraphPositive = new Map<string, DebugGraphNode>();
   const debugGraphNegative = new Map<string, DebugGraphNode>();
+  const debugSubjectGraph = new Map<string, string[]>();
+
+  // construct full subject graph
+  if (debug) {
+    const nodes: GraclNode[] = [subject];
+    while (nodes.length) {
+      const node = nodes.pop()!;
+      if (!node.hierarchyRoot()) {
+        const parents = await node.getParents();
+        debugSubjectGraph.set(node.getId(), parents.map(n => n.getId()));
+        nodes.push(...parents);
+      } else {
+        debugSubjectGraph.set(node.getId(), []);
+      }
+    }
+  }
 
   // extract all collections that have a relevant permission set for the requested resource
   for (const resource of resourceArray) {
@@ -277,6 +298,7 @@ export async function query(
                 resourceObjectId.toString(),
                 {
                   permission: permission.$id,
+                  subjectId: permission.subjectId,
                   collectionName: permission.resourceType,
                   ...result
                 }
@@ -365,6 +387,7 @@ export async function query(
             resourceObjectID.toString(),
             {
               permission: permission.$id,
+              subjectId: permission.subjectId,
               collectionName: permission.resourceType,
               ...result
             }
@@ -539,7 +562,8 @@ export async function query(
       query: resultingQuery,
       debug: {
         positive: debugGraphPositive,
-        negative: debugGraphNegative
+        negative: debugGraphNegative,
+        subjects: debugSubjectGraph
       }
     };
   }

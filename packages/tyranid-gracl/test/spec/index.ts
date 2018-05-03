@@ -436,21 +436,18 @@ test.serial('should explain access result', async t => {
     query: { blogId: choppedBlog!._id }
   });
 
-  const resultChipotle = await secure.permissionsModel.explainAccess(
-    chipotlePost!,
-    'edit',
-    ben!
-  );
+  const {
+    explainations: resultChipotle
+  } = await secure.permissionsModel.explainAccess(chipotlePost!, 'edit', ben!);
 
-  const resultChopped = await secure.permissionsModel.explainAccess(
-    choppedPost!,
-    'edit',
-    ben!
-  );
+  const {
+    explainations: resultChopped
+  } = await secure.permissionsModel.explainAccess(choppedPost!, 'edit', ben!);
 
   t.deepEqual(resultChipotle, [
     {
       type: tyranidGracl.ExplainationType.UNSET,
+      subjectPath: [],
       uidPath: []
     }
   ]);
@@ -463,6 +460,65 @@ test.serial('should explain access result', async t => {
   t.deepEqual(resultChopped[0].property, 'blogId');
   t.deepEqual(resultChopped[0].permissionType, 'edit-post');
 });
+
+test.serial(
+  'should create human readable access explaination result',
+  async t => {
+    await giveBenAccessToChoppedPosts(t, 'edit');
+
+    const ben = await Tyr.byName.user.findOne({ query: { name: 'ben' } });
+
+    const choppedBlog = await Tyr.byName.blog.findOne({
+      query: { name: 'Salads are great' }
+    });
+
+    const choppedPost = await Tyr.byName.post.findOne({
+      query: { blogId: choppedBlog!._id }
+    });
+
+    const result = await secure.permissionsModel.explainAccess(
+      choppedPost!,
+      'edit',
+      ben!
+    );
+
+    t.is(result.explainations.length, 1);
+    t.is(result.explainations[0].uidPath.length, 2);
+    t.is(result.explainations[0].subjectPath.length, 1);
+    t.is(result.hasAccess, true);
+  }
+);
+
+test.serial(
+  'should create human readable access explaination result (with long subject chain)',
+  async t => {
+    const ben = await Tyr.byName.user.findOne({ query: { name: 'ben' } });
+
+    const chipotle = await Tyr.byName.organization.findOne({
+      query: { name: 'Chipotle' }
+    });
+
+    await chipotle!.$allow('edit-post', chipotle!);
+
+    const chipotleBlog = await Tyr.byName.blog.findOne({
+      query: { name: 'Mexican Empire' }
+    });
+    const chipotlePost = await Tyr.byName.post.findOne({
+      query: { blogId: chipotleBlog!._id }
+    });
+
+    const result = await secure.permissionsModel.explainAccess(
+      chipotlePost!,
+      'edit',
+      ben!
+    );
+
+    t.is(result.explainations.length, 2);
+    t.is(result.explainations[0].uidPath.length, 2);
+    t.is(result.explainations[0].subjectPath.length, 3);
+    t.is(result.hasAccess, true);
+  }
+);
 
 test.serial(
   'should correctly respect combined permission/subject/resource hierarchy',

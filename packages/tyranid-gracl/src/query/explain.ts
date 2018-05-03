@@ -10,6 +10,13 @@ export const enum ExplainationType {
   UNSET = 'UNSET'
 }
 
+export interface AccessExplainationResult {
+  explainations: Explaination[];
+  resourceId: string;
+  subjectId: string;
+  hasAccess: boolean;
+}
+
 export interface Explaination {
   /**
    * list of uids from child to parent
@@ -18,10 +25,29 @@ export interface Explaination {
   permissionType?: string;
   property?: string;
   uidPath: string[];
+  subjectPath: string[];
   type: ExplainationType;
 }
 
-export function explain(debug: DebugResult, result: MatchResult, query: {}) {
+/**
+ * format id as uid
+ *
+ * @param colName
+ * @param id
+ */
+function toUid(colName: string, id: ObjectID | string) {
+  return Tyr.byName[colName].idToUid(id);
+}
+
+/**
+ * create explaination objects for a given match result + query
+ */
+export function explain(
+  subjectId: string,
+  debug: DebugResult,
+  result: MatchResult,
+  query: {}
+): Explaination[] {
   const out: Explaination[] = [];
 
   for (const reason of result.reasons) {
@@ -34,6 +60,8 @@ export function explain(debug: DebugResult, result: MatchResult, query: {}) {
       out.push(
         ...getExplainationsForId(
           idFromQuery,
+          subjectId,
+          debug.subjects,
           debug.positive,
           result.match ? ExplainationType.ALLOW : ExplainationType.DENY,
           reason.propertyPath
@@ -45,6 +73,7 @@ export function explain(debug: DebugResult, result: MatchResult, query: {}) {
   if (!out.length) {
     out.push({
       uidPath: [],
+      subjectPath: [],
       type: ExplainationType.UNSET
     });
   }
@@ -58,6 +87,8 @@ export function explain(debug: DebugResult, result: MatchResult, query: {}) {
  */
 function getExplainationsForId(
   id: ObjectID,
+  subjectId: string,
+  subjectGraph: Map<string, string[]>,
   graph: DebugGraph,
   type: ExplainationType,
   property: string
@@ -77,6 +108,7 @@ function getExplainationsForId(
     return [
       {
         permissionId: node.permission.toString(),
+        subjectPath: [node.subjectId],
         permissionType: node.type,
         property,
         uidPath: [nodeUid],
@@ -88,7 +120,7 @@ function getExplainationsForId(
   const out: Explaination[] = [];
 
   /**
-   * recurse up parent chain, building explainiation objects with uid path
+   * recurse up parent chain, building explaination objects with uid path
    */
 
   let currentNodes = [
@@ -116,17 +148,27 @@ function getExplainationsForId(
         const nextPath = [...uidPath, parentUid];
 
         if (!('parents' in next)) {
-          out.push({
-            type,
-            uidPath: nextPath,
-            permissionId: next.permission.toString(),
-            permissionType: next.type,
-            property
-          });
+          const subjectPaths = getSubjectPaths(
+            subjectId,
+            next.subjectId,
+            subjectGraph
+          );
+
+          for (const subjectPath of subjectPaths) {
+            out.push({
+              type,
+              uidPath: nextPath,
+              subjectPath,
+              permissionId: next.permission.toString(),
+              permissionType: next.type,
+              property
+            });
+          }
         } else {
           nextNodes.push({
             type,
             uidPath: nextPath,
+            subjectPath: [],
             parents: Array.from(next.parents)
           });
         }
@@ -139,6 +181,74 @@ function getExplainationsForId(
   return out;
 }
 
-function toUid(colName: string, id: ObjectID | string) {
-  return Tyr.byName[colName].idToUid(id);
+/**
+ * walk subject graph to find all possible connections between
+ * start and end subjects
+ */
+function getSubjectPaths(
+  startId: string,
+  endId: string,
+  subjectGraph: Map<string, string[]>
+): string[][] {
+  if (startId === endId) {
+    return [[endId]];
+  }
+
+  const parents = subjectGraph.get(startId);
+  if (!parents || !parents.length) {
+    return [[]];
+  }
+
+  const out: string[][] = [];
+  for (const parent of parents) {
+    if (parent === endId) {
+      out.push([startId, endId]);
+    } else {
+      const next = getSubjectPaths(parent, endId, subjectGraph);
+
+      for (const nextPath of next) {
+        if (next.length) {
+          out.push([startId, ...nextPath]);
+        }
+      }
+    }
+  }
+
+  return out;
+}
+
+/**
+ * human readable version of permission explaination
+ */
+export function formatExplainations(result: AccessExplainationResult): string {
+  let out = `The subject (${result.subjectId}) is ${
+    result.hasAccess ? 'allowed' : 'denied'
+  } access to resource (${result.resourceId}):`;
+
+  for (const expl of result.explainations) {
+    out += '\n\t';
+
+    switch (expl.type) {
+      case ExplainationType.DENY:
+      case ExplainationType.ALLOW: {
+        out += `- The subject is ${
+          expl.type === ExplainationType.ALLOW ? 'allowed' : 'denied'
+        } ${expl.permissionType} access through permission ${
+          expl.permissionId
+        }.`;
+        out += `\n\t  > Resource Hierarchy:`;
+        out += `\n\t\t${expl.uidPath.join(' -> ')}`;
+        out += `\n\t  > Subject Hierarchy:`;
+        out += `\n\t\t${expl.subjectPath.join(' -> ')}`;
+        break;
+      }
+
+      case ExplainationType.UNSET: {
+        out += `No relevant permissions are set for this resource.`;
+        break;
+      }
+    }
+  }
+
+  return out;
 }
