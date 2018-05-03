@@ -206,7 +206,10 @@ result ===
     explainations: [
       {
         type: 'ALLOW',
-        uidPath: ['b005aeb2a7199af181806f44856', 'o005aeb2a7199af181806f4484f'],
+        resourcePath: [
+          'b005aeb2a7199af181806f44856',
+          'o005aeb2a7199af181806f4484f'
+        ],
         subjectPath: [
           'u005aeb2a7199af181806f44866',
           't005aeb2a7199af181806f44862',
@@ -218,7 +221,10 @@ result ===
       },
       {
         type: 'ALLOW',
-        uidPath: ['b005aeb2a7199af181806f44856', 'o005aeb2a7199af181806f4484f'],
+        resourcePath: [
+          'b005aeb2a7199af181806f44856',
+          'o005aeb2a7199af181806f4484f'
+        ],
         subjectPath: [
           'u005aeb2a7199af181806f44866',
           't005aeb2a7199af181806f44863',

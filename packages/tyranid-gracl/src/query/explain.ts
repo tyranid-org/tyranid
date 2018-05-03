@@ -24,7 +24,7 @@ export interface Explaination {
   permissionId?: string;
   permissionType?: string;
   property?: string;
-  uidPath: string[];
+  resourcePath: string[];
   subjectPath: string[];
   type: ExplainationType;
 }
@@ -72,7 +72,7 @@ export function explain(
 
   if (!out.length) {
     out.push({
-      uidPath: [],
+      resourcePath: [],
       subjectPath: [],
       type: ExplainationType.UNSET
     });
@@ -111,7 +111,7 @@ function getExplainationsForId(
         subjectPath: [node.subjectId],
         permissionType: node.type,
         property,
-        uidPath: [nodeUid],
+        resourcePath: [nodeUid],
         type: ExplainationType.ALLOW
       }
     ];
@@ -126,7 +126,7 @@ function getExplainationsForId(
   let currentNodes = [
     {
       type,
-      uidPath: [nodeUid],
+      resourcePath: [nodeUid],
       parents: Array.from(node.parents)
     }
   ];
@@ -135,7 +135,7 @@ function getExplainationsForId(
     const nextNodes: (Explaination & { parents: string[] })[] = [];
 
     for (const current of currentNodes) {
-      const { parents, uidPath } = current;
+      const { parents, resourcePath } = current;
 
       for (const parent of parents) {
         const next = graph.get(parent);
@@ -145,7 +145,7 @@ function getExplainationsForId(
         }
 
         const parentUid = toUid(next.collectionName, parent);
-        const nextPath = [...uidPath, parentUid];
+        const nextPath = [...resourcePath, parentUid];
 
         if (!('parents' in next)) {
           const subjectPaths = getSubjectPaths(
@@ -157,7 +157,7 @@ function getExplainationsForId(
           for (const subjectPath of subjectPaths) {
             out.push({
               type,
-              uidPath: nextPath,
+              resourcePath: nextPath,
               subjectPath,
               permissionId: next.permission.toString(),
               permissionType: next.type,
@@ -167,7 +167,7 @@ function getExplainationsForId(
         } else {
           nextNodes.push({
             type,
-            uidPath: nextPath,
+            resourcePath: nextPath,
             subjectPath: [],
             parents: Array.from(next.parents)
           });
@@ -237,7 +237,7 @@ export function formatExplainations(result: AccessExplainationResult): string {
           expl.permissionId
         }.`;
         out += `\n\t  > Resource Hierarchy:`;
-        out += `\n\t\t${expl.uidPath.join(' -> ')}`;
+        out += `\n\t\t${expl.resourcePath.join(' -> ')}`;
         out += `\n\t  > Subject Hierarchy:`;
         out += `\n\t\t${expl.subjectPath.join(' -> ')}`;
         break;
