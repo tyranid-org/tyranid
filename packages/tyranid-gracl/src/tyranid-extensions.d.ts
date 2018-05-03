@@ -16,6 +16,7 @@ declare module 'tyranid' {
       $determineAccessToAllPermissionsForResources: typeof dm.$determineAccessToAllPermissionsForResources;
       $entitiesWithPermission: typeof dm.$entitiesWithPermission;
       $explainPermission: typeof dm.$explainPermission;
+      $explainAccess: typeof dm.$explainAccess;
       $isAllowed: typeof dm.$isAllowed;
       $isAllowedForThis: typeof dm.$isAllowedForThis;
       $updatePermissions: typeof dm.$updatePermissions;

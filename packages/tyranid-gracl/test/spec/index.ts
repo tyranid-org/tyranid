@@ -521,6 +521,37 @@ test.serial(
 );
 
 test.serial(
+  'should create human readable access explaination result (with long subject chain, using doc method)',
+  async t => {
+    const ben = await Tyr.byName.user.findOne({ query: { name: 'ben' } });
+
+    const chipotle = await Tyr.byName.organization.findOne({
+      query: { name: 'Chipotle' }
+    });
+
+    await chipotle!.$allow('edit-post', chipotle!);
+
+    const chipotleBlog = await Tyr.byName.blog.findOne({
+      query: { name: 'Mexican Empire' }
+    });
+    const chipotlePost = await Tyr.byName.post.findOne({
+      query: { blogId: chipotleBlog!._id }
+    });
+
+    const result = await chipotlePost!.$explainAccess('edit', ben!);
+
+    if (typeof result === 'string') {
+      throw new Error(`Should return metadata`);
+    }
+
+    t.is(result.explainations.length, 2);
+    t.is(result.explainations[0].uidPath.length, 2);
+    t.is(result.explainations[0].subjectPath.length, 3);
+    t.is(result.hasAccess, true);
+  }
+);
+
+test.serial(
   'should correctly respect combined permission/subject/resource hierarchy',
   async t => {
     // Set deny view-access for parent subject to parent resource

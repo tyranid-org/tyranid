@@ -6,14 +6,12 @@
 This repository contains a plugin for `tyranid` that allows for graph-based acl permissions to be enforced / utilized
 within tyranid simply by adding a few schema annotations.
 
-
 ## Links
 
-- [Github Repository](https://github.com/tyranid-org/tyranid-gracl)
-- [A few slides](http://slides.com/bensouthgate/graph-based-permissions#/) that explain the basical algorithm and motivation of this project.
+* [Github Repository](https://github.com/tyranid-org/tyranid-gracl)
+* [A few slides](http://slides.com/bensouthgate/graph-based-permissions#/) that explain the basical algorithm and motivation of this project.
 
 ## Setup
-
 
 ### Installation
 
@@ -24,7 +22,6 @@ npm install tyranid-gracl
 ### Annotate your tyranid schemas
 
 ```javascript
-
 import Tyr from 'tyranid';
 
 const Organization = new Tyr.Collection({
@@ -110,16 +107,13 @@ const db = pmongo('mongodb://127.0.0.1:27017/tyranid_gracl_test');
 
 Tyr.config({
   db: db,
-  validate: [
-    { dir: root + '/test/models', fileMatch: '[a-z].js' }
-  ],
+  validate: [{ dir: root + '/test/models', fileMatch: '[a-z].js' }],
   // add to tyranid config...
   secure: secure
-})
+});
 ```
 
 This will install the gracl plugin in tyranid and validate your permissions hierarchies as declared through the collection schema.
-
 
 ### Using permissions
 
@@ -136,18 +130,15 @@ import Tyr from 'tyranid';
 export async function giveUserBlogViewAccessToOrg(req, res) {
   // assume this is a user document mixed in via middlewhere
   const user = req.user,
-        // organizationId of org we want to give user view access to
-        organizationId = req.query.organizationId;
+    // organizationId of org we want to give user view access to
+    organizationId = req.query.organizationId;
 
-  const org = await Tyr.byName
-    .organization
-    .byId(organizationId);
+  const org = await Tyr.byName.organization.byId(organizationId);
 
   const updatedOrg = await org.$allow('view-blog', user); // set view-blog access to true for user
 
   return res.json(updatedOrg);
 }
-
 
 /**
  *  Example express controller to check a permission
@@ -155,8 +146,8 @@ export async function giveUserBlogViewAccessToOrg(req, res) {
 export async function checkCanViewUid(req, res) {
   // assume this is a user document mixed in via middlewhere
   const user = req.user,
-        // uid of entity we want to check if <user> has view access to
-        uid = req.query.uid;
+    // uid of entity we want to check if <user> has view access to
+    uid = req.query.uid;
 
   const entity = await Tyr.byUid(uid);
   const canView = await entity.$isAllowedForThis('view', user);
@@ -178,13 +169,14 @@ export async function findBlogs(req, res) {
 export async function getQueryForBlogsICanEdit(req, res) {
   const originalQuery = {
     name: {
-      $in: [
-        'myBlog',
-        'otherBlog'
-      ]
+      $in: ['myBlog', 'otherBlog']
     }
-  }
-  const secured = await Tyr.byName.blog.secureQuery(originalQuery, 'edit', req.user);
+  };
+  const secured = await Tyr.byName.blog.secureQuery(
+    originalQuery,
+    'edit',
+    req.user
+  );
   return secured;
 }
 
@@ -196,5 +188,75 @@ export async function deletePermissionsRelatingToUid(req, res) {
   await Tyr.secure.permissionsModel.deletePermissions(await Tyr.byUid(uid));
   return res.json({ message: 'Success!' });
 }
+```
 
+### Explaining Permissions
+
+In order to determine why or why not a subject is allowed access to a resource document,
+you can utilize the `doc.$explainAccess(permission, subject)` method:
+
+```typescript
+/**
+ * get metadata explaining access
+ */
+const result = await org.$explainAccess('view-post', user);
+
+result ===
+  {
+    explainations: [
+      {
+        type: 'ALLOW',
+        uidPath: ['b005aeb2a7199af181806f44856', 'o005aeb2a7199af181806f4484f'],
+        subjectPath: [
+          'u005aeb2a7199af181806f44866',
+          't005aeb2a7199af181806f44862',
+          'o005aeb2a7199af181806f4484f'
+        ],
+        permissionId: '5aeb2a711cb4be9be52c3844',
+        permissionType: 'edit-post',
+        property: 'blogId'
+      },
+      {
+        type: 'ALLOW',
+        uidPath: ['b005aeb2a7199af181806f44856', 'o005aeb2a7199af181806f4484f'],
+        subjectPath: [
+          'u005aeb2a7199af181806f44866',
+          't005aeb2a7199af181806f44863',
+          'o005aeb2a7199af181806f4484f'
+        ],
+        permissionId: '5aeb2a711cb4be9be52c3844',
+        permissionType: 'edit-post',
+        property: 'blogId'
+      }
+    ],
+    hasAccess: true,
+    resourceId: 'p005aeb2a7199af181806f4485c',
+    subjectId: 'u005aeb2a7199af181806f44866'
+  };
+
+/**
+ * use a final `true` argument to return a human readable version
+ */
+const reason = await org.$explainAccess(
+  'view-post',
+  user,
+  true /* format as string  */
+);
+
+/**
+ * reason:
+ *
+  The subject (u005aeb2a7199af181806f44866) is allowed access to resource (p005aeb2a7199af181806f4485c):
+        - The subject is allowed edit-post access through permission 5aeb2a711cb4be9be52c3844.
+          > Resource Hierarchy:
+                b005aeb2a7199af181806f44856 -> o005aeb2a7199af181806f4484f
+          > Subject Hierarchy:
+                u005aeb2a7199af181806f44866 -> t005aeb2a7199af181806f44862 -> o005aeb2a7199af181806f4484f
+        - The subject is allowed edit-post access through permission 5aeb2a711cb4be9be52c3844.
+          > Resource Hierarchy:
+                b005aeb2a7199af181806f44856 -> o005aeb2a7199af181806f4484f
+          > Subject Hierarchy:
+                u005aeb2a7199af181806f44866 -> t005aeb2a7199af181806f44863 -> o005aeb2a7199af181806f4484f
+ *
+ */
 ```

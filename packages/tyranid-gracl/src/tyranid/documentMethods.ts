@@ -10,6 +10,7 @@ import { validatePermissionExists } from '../permission/validatePermissionExists
 import { validatePermissionForResource } from '../permission/validatePermissionForResource';
 
 import { validateAsResource } from '../graph/validateAsResource';
+import { AccessExplainationResult } from '../query/explain';
 
 /**
  *  Methods to mixin to Tyr.documentPrototype for working with permissions,
@@ -587,6 +588,77 @@ console.log(explaination.type)
     validatePermissionForResource(plugin, permissionType, this.$model);
     if (subjectDocument) {
       return PermissionsModel.explainPermission(
+        this,
+        permissionType,
+        subjectDocument
+      );
+    }
+    return plugin.error(`No subjectDocument given to doc.$explainPermission!`);
+  },
+
+  /**
+
+  Return an object that provides an explaination of why a subject has access or does not
+  for a specific permission relative to a specific resource.
+
+  Example:
+
+```js
+const result = await org.$explainAccess('view-post', user);
+
+result ===
+  {
+    explainations: [
+      {
+        type: 'ALLOW',
+        uidPath: ['b005aeb2a7199af181806f44856', 'o005aeb2a7199af181806f4484f'],
+        subjectPath: [
+          'u005aeb2a7199af181806f44866',
+          't005aeb2a7199af181806f44862',
+          'o005aeb2a7199af181806f4484f'
+        ],
+        permissionId: '5aeb2a711cb4be9be52c3844',
+        permissionType: 'edit-post',
+        property: 'blogId'
+      },
+      {
+        type: 'ALLOW',
+        uidPath: ['b005aeb2a7199af181806f44856', 'o005aeb2a7199af181806f4484f'],
+        subjectPath: [
+          'u005aeb2a7199af181806f44866',
+          't005aeb2a7199af181806f44863',
+          'o005aeb2a7199af181806f4484f'
+        ],
+        permissionId: '5aeb2a711cb4be9be52c3844',
+        permissionType: 'edit-post',
+        property: 'blogId'
+      }
+    ],
+    hasAccess: true,
+    resourceId: 'p005aeb2a7199af181806f4485c',
+    subjectId: 'u005aeb2a7199af181806f44866'
+  };
+```
+
+  */
+  async $explainAccess<T extends Tyr.Document>(
+    this: T,
+    permissionType: string,
+    subjectDocument?: Tyr.Document | string,
+    format?: boolean
+  ) {
+    const plugin = PermissionsModel.getGraclPlugin();
+    if (subjectDocument) {
+      if (format) {
+        return PermissionsModel.explainAccess(
+          this,
+          permissionType,
+          subjectDocument,
+          format
+        );
+      }
+
+      return PermissionsModel.explainAccess(
         this,
         permissionType,
         subjectDocument
