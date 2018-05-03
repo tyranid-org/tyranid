@@ -3814,6 +3814,10 @@ moment@^2.6.0:
   version "2.22.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.0.tgz#7921ade01017dd45186e7fee5f424f0b8663a730"
 
+mongo-explain-match@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/mongo-explain-match/-/mongo-explain-match-0.0.4.tgz#37529d6811c62f31d073641826752619066787c7"
+
 mongodb-core@2.1.17:
   version "2.1.17"
   resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-2.1.17.tgz#a418b337a14a14990fb510b923dee6a813173df8"

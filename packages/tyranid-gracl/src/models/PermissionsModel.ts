@@ -1,8 +1,17 @@
 import * as _ from 'lodash';
+import { match, MatchResult, MatchResultType } from 'mongo-explain-match';
 import { ObjectID } from 'mongodb';
 import { Tyr } from 'tyranid';
 import { GraclPlugin } from '../classes/GraclPlugin';
-import { Hash, PermissionExplaination, Permission } from '../interfaces';
+import { Hash, Permission, PermissionExplaination } from '../interfaces';
+import { query } from '../query/query';
+
+import {
+  AccessExplainationResult,
+  explain,
+  Explaination,
+  formatExplainations
+} from '../query/explain';
 
 import { createResource } from '../graph/createResource';
 import { createSubject } from '../graph/createSubject';
@@ -236,6 +245,55 @@ export class PermissionsModel extends PermissionsBaseCollection {
 
     const permObj = await resource.determineAccess(subject, permissionType);
     return permObj[permissionType];
+  }
+
+  public static async explainAccess(
+    resourceData: Tyr.Document | string,
+    permissionType: string,
+    subjectData: Tyr.Document | string
+  ): Promise<AccessExplainationResult>;
+  public static async explainAccess(
+    resourceData: Tyr.Document | string,
+    permissionType: string,
+    subjectData: Tyr.Document | string,
+    format: true
+  ): Promise<string>;
+  public static async explainAccess(
+    resourceData: Tyr.Document | string,
+    permissionType: string,
+    subjectData: Tyr.Document | string,
+    format?: boolean
+  ): Promise<AccessExplainationResult | string> {
+    const plugin = PermissionsModel.getGraclPlugin();
+    const {
+      resourceDocument,
+      subjectDocument
+    } = await resolveSubjectAndResourceDocuments(resourceData, subjectData);
+
+    const { query: queryResult, debug } = await query(
+      plugin,
+      resourceDocument.$model,
+      permissionType,
+      subjectDocument,
+      true
+    );
+
+    const subjectId = subjectDocument.$uid;
+    const result = match(queryResult, resourceDocument.$toPlain());
+    const explainations = explain(subjectId, debug, result, queryResult);
+
+    const accessResult: AccessExplainationResult = {
+      explainations,
+      hasAccess: result.match,
+      resourceId: resourceDocument.$uid,
+      subjectId
+    };
+
+    if (format) {
+      return formatExplainations(accessResult);
+    }
+
+    return accessResult;
   }
 
   /**

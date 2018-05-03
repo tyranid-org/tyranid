@@ -1,4 +1,4 @@
-import { baseCompare } from 'gracl';
+import { baseCompare, Node as GraclNode } from 'gracl';
 import * as _ from 'lodash';
 import { ObjectID } from 'mongodb';
 import { Tyr } from 'tyranid';
@@ -16,6 +16,23 @@ import { getCollectionLinksSorted } from '../graph/getCollectionLinksSorted';
 import { getShortestPath } from '../graph/getShortestPath';
 import { stepThroughCollectionPath } from '../graph/stepThroughCollectionPath';
 
+export type DebugGraphNode =
+  | {
+      permission: ObjectID;
+      subjectId: string;
+      access: boolean;
+      collectionName: string;
+      type?: string;
+    }
+  | { parents: Set<string>; collectionName: string };
+
+export type DebugGraph = Map<string, DebugGraphNode>;
+export interface DebugResult {
+  positive: DebugGraph;
+  negative: DebugGraph;
+  subjects: Map<string, string[]>;
+}
+
 /**
  *  Method for creating a specific query based on a schema object
  *
@@ -30,8 +47,22 @@ export async function query(
   plugin: GraclPlugin,
   queriedCollection: Tyr.CollectionInstance,
   permissionType: string,
-  subjectDocument = Tyr.local.user
-): Promise<boolean | {}> {
+  subjectDocument: Tyr.Document,
+  debug: true
+): Promise<{ debug: DebugResult; query: {} }>;
+export async function query(
+  plugin: GraclPlugin,
+  queriedCollection: Tyr.CollectionInstance,
+  permissionType: string,
+  subjectDocument?: Tyr.Document
+): Promise<boolean | {}>;
+export async function query(
+  plugin: GraclPlugin,
+  queriedCollection: Tyr.CollectionInstance,
+  permissionType: string,
+  subjectDocument = Tyr.local.user,
+  debug?: boolean
+): Promise<boolean | {} | { debug: DebugResult; query: {} }> {
   const queriedCollectionName = queriedCollection.def.name;
 
   if (plugin.unsecuredCollections.has(queriedCollectionName)) {
@@ -95,18 +126,18 @@ export async function query(
    *  Iterate through permissions action hierarchy, getting access
    */
   const getAccess = (permission: Permission) => {
-    let perm: boolean | undefined;
+    let perm: { access: boolean; type?: string } = { access: false };
     for (const type of permissionTypes) {
       if (permission.access && type && permission.access[type] === true) {
         // short circuit on true
-        return true;
+        return { access: true, type };
       } else if (
         permission.access &&
         type &&
         permission.access[type] === false
       ) {
         // continue on false, as superior permissions may be true
-        perm = false;
+        perm = { access: false, type };
       }
     }
     return perm;
@@ -134,7 +165,10 @@ export async function query(
   // get list of all ids in the subject hierarchy,
   // as well as the names of the classes in the resource hierarchy
   const subjectHierarchyIds = await subject.getHierarchyIds();
+
+  const subjectHierarchyClasses = SubjectClass.getHierarchyClassNames();
   const resourceHierarchyClasses = ResourceClass.getHierarchyClassNames();
+
   const permissionsQuery = {
     subjectId: { $in: subjectHierarchyIds },
     resourceType: { $in: resourceHierarchyClasses },
@@ -211,10 +245,28 @@ export async function query(
 
   const alreadySet = new Set<string>();
 
-  // extract all collections that have a relevant permission set for the requested resource
-  for (let i = 0, l = resourceArray.length; i < l; i++) {
-    const { collection, resourcePermissions } = resourceArray[i];
+  const debugGraphPositive = new Map<string, DebugGraphNode>();
+  const debugGraphNegative = new Map<string, DebugGraphNode>();
+  const debugSubjectGraph = new Map<string, string[]>();
 
+  // construct full subject graph
+  if (debug) {
+    const nodes: GraclNode[] = [subject];
+    while (nodes.length) {
+      const node = nodes.pop()!;
+      if (!node.hierarchyRoot()) {
+        const parents = await node.getParents();
+        debugSubjectGraph.set(node.getId(), parents.map(n => n.getId()));
+        nodes.push(...parents);
+      } else {
+        debugSubjectGraph.set(node.getId(), []);
+      }
+    }
+  }
+
+  // extract all collections that have a relevant permission set for the requested resource
+  for (const resource of resourceArray) {
+    const { collection, resourcePermissions } = resource;
     const collectionName = collection.def.name;
     const isQueriedCollection = queriedCollectionName === collectionName;
 
@@ -226,12 +278,12 @@ export async function query(
       const permissionArray = [...resourcePermissions.values()];
 
       for (const permission of permissionArray) {
-        const access = getAccess(permission);
-        switch (access) {
+        const result = getAccess(permission);
+        switch (result.access) {
           // access needs to be exactly true or false
           case true:
           case false:
-            const key = access ? 'positive' : 'negative';
+            const key = result.access ? 'positive' : 'negative';
             const uid = permission.resourceId;
             // if a permission was set by a collection of higher depth, keep it...
             if (alreadySet.has(uid)) {
@@ -239,11 +291,25 @@ export async function query(
             } else {
               alreadySet.add(uid);
             }
+            const resourceObjectId = Tyr.parseUid(uid).id;
+
+            if (debug) {
+              (result.access ? debugGraphPositive : debugGraphNegative).set(
+                resourceObjectId.toString(),
+                {
+                  permission: permission.$id,
+                  subjectId: permission.subjectId,
+                  collectionName: permission.resourceType,
+                  ...result
+                }
+              );
+            }
+
             const accessSet = queryMaps[key].get(collectionName) || new Set();
             if (!queryMaps[key].has(collectionName)) {
               queryMaps[key].set(collectionName, accessSet);
             }
-            accessSet.add(Tyr.parseUid(uid).id);
+            accessSet.add(resourceObjectId);
             break;
         }
         queryRestrictionSet = true;
@@ -313,39 +379,76 @@ export async function query(
 
       for (const permission of resourcePermissions.values()) {
         // grab access boolean for given permissionType
-        const access = getAccess(permission);
-        switch (access) {
+        const result = getAccess(permission);
+        const resourceObjectID = Tyr.parseUid(permission.resourceId).id;
+
+        if (debug) {
+          (result.access ? debugGraphPositive : debugGraphNegative).set(
+            resourceObjectID.toString(),
+            {
+              permission: permission.$id,
+              subjectId: permission.subjectId,
+              collectionName: permission.resourceType,
+              ...result
+            }
+          );
+        }
+
+        switch (result.access) {
           // access needs to be exactly true or false
           case true:
-            positiveIds.push(Tyr.parseUid(permission.resourceId).id);
+            positiveIds.push(resourceObjectID);
             break;
           case false:
-            negativeIds.push(Tyr.parseUid(permission.resourceId).id);
+            negativeIds.push(resourceObjectID);
             break;
         }
       }
 
       const pathEndCollection = Tyr.byName[pathEndCollectionName];
-      const nextCollection = Tyr.byName[_.last(path) as string];
+      const nextCollectionName = _.last(path) as string;
+      const nextCollection = Tyr.byName[nextCollectionName];
 
-      positiveIds = await stepThroughCollectionPath(
+      /**
+       * if debug, we need to find relevant children for each id invidually,
+       * so we can audit.
+       */
+
+      const positiveResult = await stepThroughCollectionPath(
         plugin,
         positiveIds,
         pathEndCollection,
-        nextCollection
+        nextCollection,
+        debug
       );
-      negativeIds = await stepThroughCollectionPath(
+      const negativeResult = await stepThroughCollectionPath(
         plugin,
         negativeIds,
         pathEndCollection,
-        nextCollection
+        nextCollection,
+        debug
       );
+
+      if (debug) {
+        addEntriesToDebugMap(
+          debugGraphPositive,
+          positiveResult.childMap,
+          nextCollectionName
+        );
+        addEntriesToDebugMap(
+          debugGraphNegative,
+          negativeResult.childMap,
+          nextCollectionName
+        );
+      }
+
+      positiveIds = positiveResult.nextCollectionIds;
+      negativeIds = negativeResult.nextCollectionIds;
 
       // the remaining path collection is equal to the collection we are trying to query,
       // we don't need to do another link in the path, as the current path collection
       // has a link that exists on the queried collection
       let pathCollectionName = pathEndCollectionName;
-      const nextCollectionName = nextCollection.def.name;
 
       while (path.length >= 2) {
         // break if we are one edge away
@@ -357,7 +460,8 @@ export async function query(
           Tyr.byName[
             (pathCollectionName = path.pop() || plugin._NO_COLLECTION)
           ];
-        const nextPathCollection = Tyr.byName[_.last(path) as string];
+        const nextPathCollectionName = _.last(path) as string;
+        const nextPathCollection = Tyr.byName[nextPathCollectionName];
 
         if (!pathCollection) {
           plugin.error(
@@ -369,18 +473,36 @@ export async function query(
          * we need to recursively collect objects along the path,
            until we reach a collection that linked to the queriedCollection
          */
-        positiveIds = await stepThroughCollectionPath(
+        const positiveResult = await stepThroughCollectionPath(
           plugin,
           positiveIds,
           pathCollection,
-          nextPathCollection
+          nextPathCollection,
+          debug
         );
-        negativeIds = await stepThroughCollectionPath(
+        const negativeResult = await stepThroughCollectionPath(
           plugin,
           negativeIds,
           pathCollection,
-          nextPathCollection
+          nextPathCollection,
+          debug
         );
+
+        if (debug) {
+          addEntriesToDebugMap(
+            debugGraphPositive,
+            positiveResult.childMap,
+            nextPathCollectionName
+          );
+          addEntriesToDebugMap(
+            debugGraphNegative,
+            negativeResult.childMap,
+            nextPathCollectionName
+          );
+        }
+
+        positiveIds = positiveResult.nextCollectionIds;
+        negativeIds = negativeResult.nextCollectionIds;
       }
 
       // now, "nextCollectionName" should be referencing a collection
@@ -435,5 +557,36 @@ export async function query(
     queriedCollection
   ) as Hash<{}>;
 
+  if (debug) {
+    return {
+      query: resultingQuery,
+      debug: {
+        positive: debugGraphPositive,
+        negative: debugGraphNegative,
+        subjects: debugSubjectGraph
+      }
+    };
+  }
+
   return resultingQuery;
+}
+
+function addEntriesToDebugMap(
+  graph: Map<string, DebugGraphNode>,
+  childMap: Map<string, string[]>,
+  collectionName: string
+) {
+  for (const [id, children] of childMap.entries()) {
+    for (const child of children) {
+      const node = graph.get(child) || {
+        parents: new Set<string>(),
+        collectionName
+      };
+      if (node && 'permission' in node) {
+        throw new Error(`Child node already has root entry in debug graph`);
+      }
+      node.parents.add(id);
+      graph.set(child, node);
+    }
+  }
 }
