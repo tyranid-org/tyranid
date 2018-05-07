@@ -13,6 +13,10 @@ new Tyr.Collection({
 
 // run
 doc()
+  .then(() => {
+    console.log('Documentation updated.');
+    process.exit(0);
+  })
   .catch(err => {
     console.log(err.stack);
     process.exit(1);
@@ -21,17 +25,21 @@ doc()
 async function doc() {
   global.ObjectId = mongodb.ObjectId;
 
-  const db = await mongodb.MongoClient.connect('mongodb://localhost:27017/tyranid_test');
+  const db = await mongodb.MongoClient.connect(
+    'mongodb://localhost:27017/tyranid_test'
+  );
 
   Tyr.config({
     db: db,
     validate: true
   });
 
-  let path = './tyranid-org.github.com';
+  let path = '../../tyranid-org.github.com';
 
   function errorMissingDocs() {
-    throw new Error('Missing documentation directory, run the following:\n\n#cd tyranid\ngit clone https://github.com/tyranid-org/tyranid-org.github.com.git\n\n');
+    throw new Error(
+      'Missing documentation directory, run the following:\n\n#cd tyranid\ngit clone https://github.com/tyranid-org/tyranid-org.github.com.git\n\n'
+    );
   }
 
   try {
@@ -44,15 +52,23 @@ async function doc() {
     errorMissingDocs();
   }
 
-
   path += '/_includes';
 
   function supify(text) {
     return text ? text.replace(/(-?\d+)/g, text => `<sup>${text}</sup>`) : '';
   }
 
-  function name(prop) {
-    return (prop && prop.name) || '';
+  function name(prop, collection) {
+    if (prop) {
+      if (prop.name) return prop.name;
+
+      if (collection) {
+        const tuple = collection.byId(prop);
+        if (tuple && tuple.$label) return tuple.$label;
+      }
+    }
+
+    return '';
   }
 
   function header() {
@@ -62,24 +78,33 @@ async function doc() {
   function unitSystem() {
     let html = header();
     html += '<table>\n';
-    html += '<tr><th>Name<th>URL\n'
+    html += '<tr><th>Name<th>URL\n';
 
     for (const row of Tyr.byName.unitSystem.def.values) {
-      html += '<tr><td>' + row.name + '<td><a href="' + row.url + '">' + row.url + '</a>\n';
+      html +=
+        '<tr><td>' +
+        row.name +
+        '<td><a href="' +
+        row.url +
+        '">' +
+        row.url +
+        '</a>\n';
     }
 
     html += '</table>\n';
 
-    fs.writeFileSync(path + '/unitSystem-table.html', html)
+    fs.writeFileSync(path + '/unitSystem-table.html', html);
   }
 
   function unitType() {
-    let html  = header();
+    let html = header();
     html += '<table>\n';
-    html += '<tr><th>Abbreviation<th>Name<th>Formula<th>Normal<th>Note\n'
+    html += '<tr><th>Abbreviation<th>Name<th>Formula<th>Normal<th>Note\n';
 
     for (const row of Tyr.byName.unitType.def.values) {
-      html += `<tr><td>${row.abbreviation || ''}<td>${row.name}<td>${supify(row.formula)}<td>${row.normal || ''}<td>${row.note || ''}\n`;
+      html += `<tr><td>${row.abbreviation || ''}<td>${row.name}<td>${supify(
+        row.formula
+      )}<td>${row.normal || ''}<td>${row.note || ''}\n`;
     }
 
     html += '</table>\n';
@@ -88,9 +113,9 @@ async function doc() {
   }
 
   function unitFactor() {
-    let html  = header();
+    let html = header();
     html += '<table>\n';
-    html += '<tr><th>Symbol<th>Prefix<th>Factor\n'
+    html += '<tr><th>Symbol<th>Prefix<th>Factor\n';
 
     for (const row of Tyr.byName.unitFactor.def.values) {
       html += `<tr><td>${row.symbol}<td>${row.prefix}<td>${row.factor}\n`;
@@ -102,12 +127,20 @@ async function doc() {
   }
 
   function unit() {
-    let html  = header();
+    let html = header();
     html += '<table>\n';
-    html += '<tr><th>Name<th>Abbreviation<th>Formula<th>Type<th>System<th>Multiplier<th>Additive\n'
+    html +=
+      '<tr><th>Name<th>Abbreviation<th>Formula<th>Type<th>System<th>Multiplier<th>Additive\n';
+
+    const UnitSystem = Tyr.byName.unitSystem;
+    const UnitType = Tyr.byName.unitType;
 
     for (const row of Tyr.byName.unit.def.values) {
-      html += `<tr><td>${row.name || ''}<td>${row.abbreviation || ''}<td>${supify(row.formula)}<td>${name(row.type)}<td>${name(row.system)}<td>${row.baseMultiplier || ''}<td>${row.baseAdditive || ''}\n`;
+      html += `<tr><td>${row.name || ''}<td>${row.abbreviation ||
+        ''}<td>${supify(row.formula)}<td>${name(row.type, UnitType)}<td>${name(
+        row.system,
+        UnitSystem
+      )}<td>${row.baseMultiplier || ''}<td>${row.baseAdditive || ''}\n`;
     }
 
     html += '</table>\n';
@@ -116,12 +149,13 @@ async function doc() {
   }
 
   function logLevel() {
-    let html  = header();
+    let html = header();
     html += '<table>\n';
-    html += '<tr><th>Name<th>Code<th>Method\n'
+    html += '<tr><th>Name<th>Code<th>Method\n';
 
     for (const row of Tyr.byName.tyrLogLevel.def.values) {
-      html += `<tr><td>${row.name || ''}<td>${row.code || ''}<td>${row.method || ''}\n`;
+      html += `<tr><td>${row.name || ''}<td>${row.code || ''}<td>${row.method ||
+        ''}\n`;
     }
 
     html += '</table>\n';
@@ -130,12 +164,13 @@ async function doc() {
   }
 
   function logEvent() {
-    let html  = header();
+    let html = header();
     html += '<table>\n';
-    html += '<tr><th>Name<th>Label<th>Notes\n'
+    html += '<tr><th>Name<th>Label<th>Notes\n';
 
     for (const row of Tyr.byName.tyrLogEvent.def.values) {
-      html += `<tr><td>${row._id || ''}<td>${row.label || ''}<td>${row.notes || ''}\n`;
+      html += `<tr><td>${row._id || ''}<td>${row.label || ''}<td>${row.notes ||
+        ''}\n`;
     }
 
     html += '</table>\n';

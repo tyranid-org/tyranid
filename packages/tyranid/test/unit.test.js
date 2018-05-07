@@ -153,7 +153,9 @@ export function add() {
           [1, 'ft', 0.3048, 'm'],
           [1, 'm3', 1000000, 'cm3'],
           [1, 'm3', 10000, 'm*cm2'],
-          [1, 'ft*ms', 0.012, 'in*s']
+          [1, 'ft*ms', 0.012, 'in*s'],
+          [2, 'USD', 1.68, 'EUR'],
+          [2, 'EUR', 2.38095, 'USD']
         ];
 
         for (const test of tests) {

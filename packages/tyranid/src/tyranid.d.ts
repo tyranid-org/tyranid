@@ -582,6 +582,10 @@ declare namespace Tyranid {
       externalLogLevel?: LogLevel | false;
       dbLogLevel?: LogLevel | false;
       externalLogger?: (obj: any) => void | Promise<void>;
+      fixer?: {
+        accessKey: string;
+        every?: number;
+      };
       secure?: Secure;
       cls?: boolean;
       validate?: ValidationPattern[];

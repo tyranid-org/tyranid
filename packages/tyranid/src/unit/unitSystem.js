@@ -21,7 +21,8 @@ const UnitSystem = new Collection({
       'https://en.wikipedia.org/wiki/International_System_of_Units'
     ],
     [2, 'english', 'https://en.wikipedia.org/wiki/English_units'],
-    [3, 'planck', 'https://en.wikipedia.org/wiki/Planck_units']
+    [3, 'planck', 'https://en.wikipedia.org/wiki/Planck_units'],
+    [4, 'currency', 'Uses Fixer for exchange rates -- https://fixer.io']
   ]
 });
 
