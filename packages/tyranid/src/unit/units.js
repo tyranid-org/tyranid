@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import Tyr from '../tyr';
 
 import * as Uu from './unitUtil';
+import { getExchangeRate } from './exchangeRate';
 
 //
 //  Unit Degrees
@@ -407,12 +408,62 @@ Units.prototype.convert = function(value, targetUnit) {
       }
 
       //console.log( "next=" + next );
-      let multiplier = 1.0;
+      let multiplier = 1.0,
+        currencyFrom,
+        currencyTo;
       for (let i = 0; i < next; i++) {
         const ud = difference[i];
 
-        //console.log(`${i}: ${ud.unit.abbreviation} ==> ${ud.degree}  mult: ${ud.unit.baseMultiplier}`);
-        multiplier *= Math.pow(ud.unit.baseMultiplier, ud.degree);
+        if (ud.unit.type.name === 'currency') {
+          switch (ud.degree) {
+            case -1:
+              if (currencyTo) {
+                conversion = INCOMPATIBLE;
+                break OUTER;
+              }
+
+              currencyTo = ud;
+              break;
+
+            case 1:
+              if (currencyFrom) {
+                conversion = INCOMPATIBLE;
+                break OUTER;
+              }
+
+              currencyFrom = ud;
+              break;
+
+            default:
+              conversion = INCOMPATIBLE;
+              break OUTER;
+          }
+        } else {
+          //console.log(`${i}: ${ud.unit.abbreviation} ==> ${ud.degree}  mult: ${ud.unit.baseMultiplier}`);
+          multiplier *= Math.pow(ud.unit.baseMultiplier, ud.degree);
+        }
+      }
+
+      if (currencyFrom) {
+        if (!currencyTo) {
+          conversion = INCOMPATIBLE;
+          break OUTER;
+        }
+
+        const exchangeRate = getExchangeRate(
+          currencyFrom.unit.abbreviation,
+          currencyTo.unit.abbreviation
+        );
+
+        if (exchangeRate === undefined) {
+          conversion = INCOMPATIBLE;
+          break OUTER;
+        } else {
+          multiplier *= exchangeRate;
+        }
+      } else if (currencyTo) {
+        conversion = INCOMPATIBLE;
+        break OUTER;
       }
 
       conversion = multiplier;

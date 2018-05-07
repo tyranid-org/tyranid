@@ -1,10 +1,12 @@
 {
   "name": "tyranid",
   "version": "0.5.11",
-  "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
+  "description":
+    "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/src/tyranid.js",
   "typings": "src/tyranid.d.ts",
   "scripts": {
+    "docs": "ts-node ./scripts/generate-docs.js",
     "test": "npm run mocha",
     "build": "npm run tsc",
     "test-travis": "npm run pretest && npm run mocha-coverage",
@@ -36,8 +38,10 @@
     "json-stable-stringify": "1.0.1",
     "lodash": "^3.10.1",
     "moment": "2.20.1",
+    "node-fetch": "1.7.1",
     "on-finished": "2.3.0",
     "socket.io": "2.0.3",
+    "ts-node": "^3.2.0",
     "uglify-js": "2.8.16",
     "uuid": "^3.1.0"
   },

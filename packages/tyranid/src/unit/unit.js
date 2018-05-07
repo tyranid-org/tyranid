@@ -1,5 +1,6 @@
 import Tyr from '../tyr';
 import Collection from '../core/collection';
+import ExchangeRate from './exchangeRate';
 
 const Unit = new Collection({
   id: '_u2',
@@ -33,7 +34,7 @@ const Unit = new Collection({
     [5, 'kelvin', 'K', null, 'temperature', 'metric'],
     [6, 'mole', 'mol', null, 'substance', 'metric'],
     [7, 'candela', 'cd', null, 'luminosity', 'metric'],
-    [8, 'dollar', 'USD', null, 'currency', 'metric'],
+    [8, 'dollar', 'USD', null, 'currency', 'currency'],
     [9, 'squareMeter', null, 'm2', 'area', 'metric'],
     [10, 'cubicMeter', null, 'm3', 'volume', 'metric'],
     [11, 'meterPerSecond', null, 'm/s', 'velocity', 'metric'],
@@ -387,7 +388,8 @@ const Unit = new Collection({
       { baseMultiplier: 1.416833e32 }
     ],
     [112, 'planckArea', null, 'lP2', 'area', 'planck'],
-    [113, 'planckVolume', null, 'lP3', 'volume', 'planck']
+    [113, 'planckVolume', null, 'lP3', 'volume', 'planck'],
+    [114, 'euro', 'EUR', null, 'currency', 'currency']
   ]
 });
 
@@ -411,7 +413,7 @@ function register(unit) {
 }
 
 let bootNeeded = 'UnitType needs to be booted';
-Unit.boot = function(stage, pass) {
+Unit.boot = async function(stage, pass) {
   const UnitType = Tyr.UnitType,
     UnitSystem = Tyr.UnitSystem;
 
@@ -436,6 +438,8 @@ Unit.boot = function(stage, pass) {
         unit.system = UnitSystem.byId(unit.system);
       }
     }
+
+    await ExchangeRate.boot();
 
     bootNeeded = undefined;
   }
