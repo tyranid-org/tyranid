@@ -459,6 +459,7 @@ export function createGraphQLFieldConfig(
     case 'password':
     case 'date':
     case 'datetime':
+    case 'time':
     case 'uid':
       return {
         type: wrap(GraphQLString),
