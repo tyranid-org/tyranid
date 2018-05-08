@@ -62,7 +62,7 @@ export function explain(
           idFromQuery,
           subjectId,
           debug.subjects,
-          debug.positive,
+          isInSet ? debug.positive : debug.negative,
           result.match ? ExplainationType.ALLOW : ExplainationType.DENY,
           reason.propertyPath
         )
@@ -231,11 +231,9 @@ export function formatExplainations(result: AccessExplainationResult): string {
     switch (expl.type) {
       case ExplainationType.DENY:
       case ExplainationType.ALLOW: {
-        out += `- The subject is ${
-          expl.type === ExplainationType.ALLOW ? 'allowed' : 'denied'
-        } ${expl.permissionType} access through permission ${
-          expl.permissionId
-        }.`;
+        out += `- The subject is ${result.hasAccess ? 'allowed' : 'denied'} ${
+          expl.permissionType
+        } access through permission ${expl.permissionId}.`;
         out += `\n\t  > Resource Hierarchy:`;
         out += `\n\t\t${expl.resourcePath.join(' -> ')}`;
         out += `\n\t  > Subject Hierarchy:`;
