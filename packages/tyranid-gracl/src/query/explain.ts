@@ -44,6 +44,7 @@ function toUid(colName: string, id: ObjectID | string) {
  */
 export function explain(
   subjectId: string,
+  resourceId: string,
   debug: DebugResult,
   result: MatchResult,
   query: {}
@@ -57,16 +58,22 @@ export function explain(
 
     if (isInSet || notInExclusion) {
       const idFromQuery: ObjectID = _.get(query, reason.queryPath);
-      out.push(
-        ...getExplainationsForId(
-          idFromQuery,
-          subjectId,
-          debug.subjects,
-          isInSet ? debug.positive : debug.negative,
-          result.match ? ExplainationType.ALLOW : ExplainationType.DENY,
-          reason.propertyPath
-        )
+      const explainations = getExplainationsForId(
+        idFromQuery,
+        subjectId,
+        debug.subjects,
+        isInSet ? debug.positive : debug.negative,
+        result.match ? ExplainationType.ALLOW : ExplainationType.DENY,
+        reason.propertyPath
       );
+
+      for (const explaination of explainations) {
+        // add final element of resource path
+        if (explaination.resourcePath[0] !== resourceId) {
+          explaination.resourcePath.unshift(resourceId);
+        }
+        out.push(explaination);
+      }
     }
   }
 
@@ -101,23 +108,32 @@ function getExplainationsForId(
 
   const nodeUid = toUid(node.collectionName, id);
 
+  const out: Explaination[] = [];
+
   /**
    * the node itself represents a direct permission
    */
   if (!('parents' in node)) {
-    return [
-      {
+    const subjectPaths = getSubjectPaths(
+      subjectId,
+      node.subjectId,
+      subjectGraph
+    );
+    const resourcePath = [nodeUid];
+
+    for (const path of subjectPaths) {
+      out.push({
         permissionId: node.permission.toString(),
-        subjectPath: [node.subjectId],
+        subjectPath: path,
         permissionType: node.type,
         property,
-        resourcePath: [nodeUid],
+        resourcePath,
         type: ExplainationType.ALLOW
-      }
-    ];
-  }
+      });
+    }
 
-  const out: Explaination[] = [];
+    return out;
+  }
 
   /**
    * recurse up parent chain, building explaination objects with uid path
@@ -231,13 +247,16 @@ export function formatExplainations(result: AccessExplainationResult): string {
     switch (expl.type) {
       case ExplainationType.DENY:
       case ExplainationType.ALLOW: {
+        const resources = expl.resourcePath;
+        const subjects = expl.subjectPath;
+
         out += `- The subject is ${result.hasAccess ? 'allowed' : 'denied'} ${
           expl.permissionType
         } access through permission ${expl.permissionId}.`;
         out += `\n\t  > Resource Hierarchy:`;
-        out += `\n\t\t${expl.resourcePath.join(' -> ')}`;
+        out += `\n\t\t${resources.join(' -> ')}`;
         out += `\n\t  > Subject Hierarchy:`;
-        out += `\n\t\t${expl.subjectPath.join(' -> ')}`;
+        out += `\n\t\t${subjects.join(' -> ')}`;
         break;
       }
 

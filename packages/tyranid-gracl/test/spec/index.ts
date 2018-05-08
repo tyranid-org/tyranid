@@ -454,6 +454,7 @@ test.serial('should explain access result', async t => {
 
   t.deepEqual(resultChopped[0].type, tyranidGracl.ExplainationType.ALLOW);
   t.deepEqual(resultChopped[0].resourcePath, [
+    'p00' + choppedPost!._id,
     'b00' + choppedBlog!._id,
     'o00' + choppedBlog!.organizationId
   ]);
@@ -483,7 +484,7 @@ test.serial(
     );
 
     t.is(result.explainations.length, 1);
-    t.is(result.explainations[0].resourcePath.length, 2);
+    t.is(result.explainations[0].resourcePath.length, 3);
     t.is(result.explainations[0].subjectPath.length, 1);
     t.is(result.hasAccess, true);
   }
@@ -514,7 +515,7 @@ test.serial(
     );
 
     t.is(result.explainations.length, 2);
-    t.is(result.explainations[0].resourcePath.length, 2);
+    t.is(result.explainations[0].resourcePath.length, 3);
     t.is(result.explainations[0].subjectPath.length, 3);
     t.is(result.hasAccess, true);
   }
@@ -545,7 +546,7 @@ test.serial(
     }
 
     t.is(result.explainations.length, 2);
-    t.is(result.explainations[0].resourcePath.length, 2);
+    t.is(result.explainations[0].resourcePath.length, 3);
     t.is(result.explainations[0].subjectPath.length, 3);
     t.is(result.hasAccess, true);
   }

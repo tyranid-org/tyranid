@@ -279,13 +279,20 @@ export class PermissionsModel extends PermissionsBaseCollection {
     );
 
     const subjectId = subjectDocument.$uid;
+    const resourceId = resourceDocument.$uid;
     const result = match(queryResult, resourceDocument.$toPlain());
-    const explainations = explain(subjectId, debug, result, queryResult);
+    const explainations = explain(
+      subjectId,
+      resourceId,
+      debug,
+      result,
+      queryResult
+    );
 
     const accessResult: AccessExplainationResult = {
-      explainations,
       hasAccess: result.match,
-      resourceId: resourceDocument.$uid,
+      explainations,
+      resourceId,
       subjectId
     };
 
