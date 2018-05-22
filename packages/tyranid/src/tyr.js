@@ -227,13 +227,32 @@ const Tyr = {
     return array.some((el, idx) => booleans[idx]);
   },
 
+  async sleep(ms /*: number*/) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  },
+
+  async sleepUntil(
+    fn /*: () => boolean | Promise<boolean>*/,
+    maxMs = 5000,
+    everyMs = 5
+  ) {
+    for (let totalMs = 0; !await fn(); totalMs += everyMs) {
+      if (totalMs >= maxMs) {
+        throw new Error(`Condition failed to occur within ${maxMs}ms`);
+      }
+
+      await sleep(everyMs);
+      totalMs += everyMs;
+    }
+  },
+
   //
   // lodash-like methods
   //
 
   isEqual(a, b) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
-    return _.isEqualWith
+    return _.isEqualWithp
       ? _.isEqualWith(a, b, equalCustomizer)
       : _.isEqual(a, b, equalCustomizer);
   },

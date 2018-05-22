@@ -1,12 +1,9 @@
-import * as bodyParser from 'body-parser';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
-import * as express from 'express';
 import * as fs from 'fs';
 import * as jsdom from 'jsdom';
 import * as _ from 'lodash';
 import * as mongodb from 'mongodb';
-import * as fetch from 'node-fetch';
 
 import { Tyr } from 'tyranid';
 import initModel from './model';
@@ -19,6 +16,7 @@ import './models/user';
 
 import * as testDiff from './diff.test';
 import * as testEvent from './event.test';
+import * as testExpress from './express.test';
 import * as testFake from './fake.test';
 import * as testHistorical from './historical.test';
 import * as testPopulation from './population.test';
@@ -37,8 +35,6 @@ const lodashSource = fs.readFileSync(
   require.resolve('lodash/index.js'),
   'utf-8'
 );
-
-const expressPort = 6783; // random #
 
 const { ObjectID: ObjectId } = mongodb;
 
@@ -2448,88 +2444,6 @@ describe('tyranid', () => {
       });
     });
 
-    describe('express', () => {
-      const urlPrefix = 'http://localhost:' + expressPort;
-
-      before(async () => {
-        const app = express(),
-          user = await User.byId(1);
-
-        app.use(bodyParser.json());
-
-        Tyr.connect({
-          app,
-          auth: (req, res, next) => {
-            (req as any).user = user; // "log in" user 1
-            return next();
-          },
-          noClient: true
-        });
-
-        await new Promise((resolve, reject) => {
-          const http = app.listen(expressPort, () => {
-            // console.log('Express listening on port ' + expressPort)
-            resolve();
-          });
-
-          Tyr.connect({ http });
-        });
-      });
-
-      it('should 404 when doc not found on /api/NAME/:id', async () => {
-        const result = await fetch(urlPrefix + '/api/user/999998');
-        expect(result.status).to.eql(404);
-      });
-
-      it('should 404 when doc not found on /api/NAME/:id/FIELD_PATH/slice', async () => {
-        const result = await fetch(
-          urlPrefix + '/api/user/999998/siblings/slice'
-        );
-        expect(result.status).to.eql(404);
-      });
-
-      it('should not expose /custom route on non-express collections', async () => {
-        const result = await fetch(urlPrefix + '/api/role/custom');
-        expect(result.status).to.eql(404);
-      });
-
-      it('should expose socket.io', async () => {
-        const result = await fetch(urlPrefix + '/socket.io/socket.io.js');
-        expect(result.status).to.eql(200);
-      });
-
-      it('should support fields', async () => {
-        let result = await fetch(urlPrefix + '/api/user/custom', {
-          method: 'put',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ organization: 1 })
-        });
-        let json = await result.json();
-        expect(_.keys(json.fields)).to.eql(['acmeY', 'custom']);
-
-        // should also merge nested fields
-        expect(_.keys(json.fields.custom.fields)).to.eql([
-          'nested1',
-          'nested2'
-        ]);
-
-        expect(json.fields.custom.fields.nested1.label).to.eql('Nested 1');
-
-        result = await fetch(urlPrefix + '/api/organization/custom', {
-          method: 'put',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ foo: 1 })
-        });
-
-        json = await result.json();
-        expect(_.keys(json.fields)).to.eql([]);
-      });
-    });
-
     /**
      *
      * tests of code generated for express route
@@ -2582,6 +2496,7 @@ describe('tyranid', () => {
       });
     });
 
+    testExpress.add();
     testEvent.add();
     testFake.add();
     testQuery.add();

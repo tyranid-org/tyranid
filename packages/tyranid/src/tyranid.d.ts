@@ -103,6 +103,12 @@ declare namespace Tyranid {
       arr: any[],
       order: { [key: string]: number }
     ): void;
+    export async function sleep(ms: number): void;
+    export async function sleepUntil(
+      fn: () => boolean | Promise<boolean>,
+      maxMs = 5000,
+      everyMs = 5
+    ): void;
 
     export function forget(id: string): void;
 

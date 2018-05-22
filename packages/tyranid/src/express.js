@@ -1258,7 +1258,10 @@ export default function connect(app, auth, opts) {
       .route('/api/tyranid')
       // we don't send insecure information in /api/tyranid, it is just source code
       //.all(auth)
-      .get(async (req, res) => res.send(file));
+      .get(async (req, res) => {
+        res.type('javascript');
+        res.send(file);
+      });
   }
 
   Tyr.collections.forEach(col => col.connect(opts));
@@ -1280,10 +1283,10 @@ export default function connect(app, auth, opts) {
     const io = (Tyr.io = Tyr.socketIo = socketIo(http));
 
     io.on('connection', socket => {
-      //console.log('*** connected', socket);
+      //con sole.log('*** connected', socket);
 
-      //console.log('*** client', socket.client);
-      //console.log('*** headers', socket.client.request.headers);
+      //con sole.log('*** client', socket.client);
+      //con sole.log('*** headers', socket.client.request.headers);
 
       const rawSessionId = /connect.sid\=([^;]+)/g.exec(
         socket.client.request.headers.cookie
@@ -1297,7 +1300,7 @@ export default function connect(app, auth, opts) {
           if (session) {
             const userIdStr = session.passport && session.passport.user;
             if (userIdStr) {
-              socket.userId = ObjectId(userIdStr);
+              socket.userId = String(userIdStr);
             }
           }
 
@@ -1457,12 +1460,14 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.get) {
         r.get(async (req, res) => {
           try {
-            return res.json(
-              await col.count({
-                query: col.fromClientQuery(req.query),
-                auth: req.user
-              })
-            );
+            const opts = req.query;
+            if (opts.query) {
+              opts.query = col.fromClientQuery(opts.query);
+            }
+
+            opts.auth = req.user;
+
+            return res.json(await col.count(opts));
           } catch (err) {
             console.log(err.stack);
             res.sendStatus(500);
@@ -1701,7 +1706,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   query[to.labelField.path] = new RegExp(search, 'i');
                 }
 
-                await LinkType.applyWhere(field, doc, query);
+                await LinkType.applyWhere(field, doc, query, {
+                  auth: req.user,
+                  req,
+                  user: req.user
+                });
 
                 const results = await to.findAll({
                   query,

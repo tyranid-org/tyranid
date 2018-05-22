@@ -3,3 +3,6 @@
 **/.DS_Store
 **/.nyc_output
 **/coverage
+**/lerna-debug.log
+**/npm-debug.log
+**/yarn-error.log

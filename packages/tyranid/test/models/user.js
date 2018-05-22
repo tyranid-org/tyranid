@@ -35,6 +35,7 @@ var User = new tyr.Collection({
   name: 'user',
   historical: true,
   timestamps: true,
+  client: true,
   indexes: [
     {
       key: { 'name.first': 1, 'name.last': 1 },

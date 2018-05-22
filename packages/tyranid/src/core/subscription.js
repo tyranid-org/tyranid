@@ -46,6 +46,7 @@ interface LocalListener {
 let localListeners /*: LocalListener*/ = {};
 
 async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
+  //con sole.log('fireEvent', colId, queryDef, refinedDocument, refinedQuery);
   if (Tyr.logging.trace)
     Tyr.trace({
       e: 'subscription',
@@ -77,7 +78,12 @@ async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
 }
 
 async function parseSubscriptions(subscription, userId) {
-  //con sole.log('parseSubscriptions(), Tyr.instanceId=', Tyr.instanceId, 'userId=', userId);
+  /*con sole.log(
+    'parseSubscriptions(), Tyr.instanceId=',
+    Tyr.instanceId,
+    'userId=',
+    userId
+  );*/
   let subs;
 
   if (subscription) {
@@ -120,7 +126,7 @@ async function parseSubscriptions(subscription, userId) {
       const changeHandlerDereg = col.on({
         type: 'change',
         handler: async event => {
-          //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:');//, event);
+          //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:'); //, event);
           const { document, query, _documents } = event;
           const promises = [];
 
@@ -262,6 +268,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
     let s = subscription;
 
     if (s) {
+      delete s._id;
       s.on = new Date();
       s.i = Tyr.instanceId;
     } else {
@@ -317,7 +324,7 @@ Subscription.unsubscribe = async function(userId) {
 };
 
 async function handleSubscriptionEvent(event) {
-  //con sole.log(Tyr.instanceId + ' *** handleSubscriptionEvent:');//, event);
+  //con sole.log(Tyr.instanceId + ' *** handleSubscriptionEvent:'); //, event);
   const col = event.dataCollection,
     listener = localListeners[col.id],
     mQuery = event.query,
