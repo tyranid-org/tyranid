@@ -1,8 +1,7 @@
 {
   "name": "tyranid",
-  "version": "0.5.12",
-  "description":
-    "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
+  "version": "0.5.13",
+  "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/src/tyranid.js",
   "typings": "src/tyranid.d.ts",
   "scripts": {
@@ -16,8 +15,7 @@
     "watch": "rm -rf ./dist/ && tsc -w",
     "tsc:tests": "npm run generate-typings && tsc -p ./test",
     "tsc": "rm -rf ./dist/ && tsc",
-    "mocha":
-      "npm run tsc:tests && mocha \"./dist/test/test.js\" --read false -t 100000",
+    "mocha": "npm run tsc:tests && mocha \"./dist/test/test.js\" --read false -t 100000",
     "mocha-coverage": "nyc mocha \"./dist/test/test.js\" --read false",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "server": "node ./test/serverBoot.js"
