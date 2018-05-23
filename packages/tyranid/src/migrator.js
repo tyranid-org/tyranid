@@ -40,7 +40,7 @@ const waitForUnLock = async () => {
     Tyr.options.migration.waitingOnMigration = false;
   } else {
     Tyr.options.migration.waitingOnMigration = true;
-    logger.info('Waiting for migration to finish...');
+    log({ note: 'Waiting for migration to finish...' });
     setTimeout(waitForUnLock, 5000);
   }
 };
