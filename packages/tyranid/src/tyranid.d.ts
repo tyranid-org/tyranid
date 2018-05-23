@@ -73,7 +73,7 @@ declare namespace Tyranid {
     export function validate(opts?: { glob?: string }): void;
 
     export function isValidObjectIdStr(str: string): boolean;
-    export function isObject<T, O extends object>(obj: T): obj is O;
+    export function isObject(obj: any): obj is object;
     export function isObjectId<T>(
       obj: T | mongodb.ObjectID
     ): obj is mongodb.ObjectID;
