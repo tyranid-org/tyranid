@@ -73,7 +73,7 @@ declare namespace Tyranid {
     export function validate(opts?: { glob?: string }): void;
 
     export function isValidObjectIdStr(str: string): boolean;
-    export function isObject<T, O extends object>(obj: T | O): T is O;
+    export function isObject<T, O extends object>(obj: T): obj is O;
     export function isObjectId<T>(
       obj: T | mongodb.ObjectID
     ): obj is mongodb.ObjectID;
@@ -84,8 +84,8 @@ declare namespace Tyranid {
       obj: RawMongoDocument
     ): RawMongoDocument;
 
-    export function isCompliant(obj: any, obj: any): boolean;
-    export function isCompliant(obj: any): (obj: any) => boolean;
+    export function isCompliant(spec: any, value: any): boolean;
+    export function isCompliant(spec: any): (value: any) => boolean;
 
     /**
      * utility methods
@@ -106,8 +106,8 @@ declare namespace Tyranid {
     export function sleep(ms: number): Promise<void>;
     export function sleepUntil(
       fn: () => boolean | Promise<boolean>,
-      maxMs = 5000,
-      everyMs = 5
+      maxMs?: number,
+      everyMs?: number
     ): Promise<void>;
 
     export function forget(id: string): void;
@@ -144,7 +144,7 @@ declare namespace Tyranid {
       $model: CollectionInstance<this>;
       $uid: string;
       $label: string;
-      $tyr: Tyr;
+      $tyr: typeof Tyr;
 
       // methods
       $remove(opts?: { auth?: Tyr.Document }): Promise<void>;
