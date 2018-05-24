@@ -2193,6 +2193,31 @@ describe('tyranid', () => {
         expect((logs[0] as any).q).to.be.eql({ title: 'foo' });
         expect((logs[0] as any).l).to.be.eql(LogLevel.TRACE._id);
       });
+
+      it('should log a document.$save()', async () => {
+        const cleanup = async () =>
+          Location.remove({ query: { name: 'Mount Everest' } });
+
+        await cleanup();
+
+        try {
+          await Location.save({ name: 'Mount Everest' });
+          const loc = await Location.findOne({
+            query: { name: 'Mount Everest' }
+          });
+
+          await Log.db.remove({});
+
+          await loc!.$save();
+
+          const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
+          expect(logs.length).to.be.eql(1);
+          expect((logs[0] as any).e).to.be.eql('db');
+          expect((logs[0] as any).l).to.be.eql(LogLevel.TRACE._id);
+        } finally {
+          await cleanup();
+        }
+      });
     });
 
     describe('collection.links()', () => {

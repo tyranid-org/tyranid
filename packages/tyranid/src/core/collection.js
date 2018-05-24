@@ -866,7 +866,7 @@ export default class Collection {
         const setOnInsertSrc = replaceEntireDoc ? update : update.$setOnInsert,
           $setOnInsert = await parseInsertObj(
             collection,
-            _.merge(_.cloneDeep(opts.query), setOnInsertSrc),
+            _.merge(Tyr.cloneDeep(opts.query), setOnInsertSrc),
             opts
           );
 
