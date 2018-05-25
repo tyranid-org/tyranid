@@ -142,6 +142,14 @@ describe('tyranid', () => {
         [{ foo: 1, bar: r1 }, { foo: 1, bar: { foo: 1, bar: '_recurse' } }],
         [{ $foo: 1, bar: r1 }, { _$foo: 1, bar: { foo: 1, bar: '_recurse' } }],
         [{ foo: 1, bar: { $foo: 1 } }, { foo: 1, bar: { _$foo: 1 } }],
+        [
+          {
+            $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }]
+          },
+          {
+            _$or: [{ title: new RegExp('foo', 'i') }, { foo: { _$in: [1, 2] } }]
+          }
+        ],
         [oid1, oid1],
         [{ foo: oid1 }, { foo: oid1 }]
       ];
@@ -2219,13 +2227,39 @@ describe('tyranid', () => {
         }
       });
 
-      it('should log queries with regular expressions', async () => {
+      it('should log queries with regular expressions, #1', async () => {
         await Book.findAll({ query: { title: /foo/i } });
 
         const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
         expect((logs[0] as any).e).to.be.eql('db');
         expect((logs[0] as any).q).to.be.eql({ title: /foo/i });
+        expect((logs[0] as any).l).to.be.eql(LogLevel.TRACE._id);
+      });
+
+      it('should log queries with regular expressions, #2', async () => {
+        await Book.findAll({ query: { title: new RegExp('foo', 'i') } });
+
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
+        expect(logs.length).to.be.eql(1);
+        expect((logs[0] as any).e).to.be.eql('db');
+        expect((logs[0] as any).q).to.be.eql({ title: /foo/i });
+        expect((logs[0] as any).l).to.be.eql(LogLevel.TRACE._id);
+      });
+
+      it('should log queries with regular expressions, #3', async () => {
+        await Book.findAll({
+          query: {
+            $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }]
+          }
+        });
+
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
+        expect(logs.length).to.be.eql(1);
+        expect((logs[0] as any).e).to.be.eql('db');
+        expect((logs[0] as any).q).to.be.eql({
+          _$or: [{ title: /foo/i }, { foo: { _$in: [1, 2] } }]
+        });
         expect((logs[0] as any).l).to.be.eql(LogLevel.TRACE._id);
       });
     });

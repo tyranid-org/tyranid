@@ -80,7 +80,7 @@ function adaptIllegalKeyCharAndEliminateRecursion(q) {
       if (rslt === undefined) {
         seen.set(q, q);
       } else {
-        const qc = {};
+        const qc = Array.isArray(q) ? [] : {};
         seen.set(q, qc);
 
         for (const p in q) {
@@ -285,6 +285,7 @@ const Tyr = {
     // want to treat ObjectIds as primitive values in most places
     return (
       _.isObject(value) &&
+      !(value instanceof RegExp) &&
       (!value.constructor || value.constructor.name !== 'ObjectID')
     );
   },
