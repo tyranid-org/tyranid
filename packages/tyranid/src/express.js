@@ -1078,6 +1078,10 @@ export function generateClientLibrary() {
     socketLibrary = io;
     socketLibraryRegistered = true;
 
+    Tyr.reconnectSocket();
+  };
+
+  Tyr.reconnectSocket = function() {
     Tyr.socket = socketLibrary();
 
     Tyr.socket.on('subscriptionEvent', function(data) {
@@ -1087,7 +1091,7 @@ export function generateClientLibrary() {
         col.cache(doc);
       });
     });
-  }
+  };
 
   Collection.prototype.subscribe = function(query, cancel) {
     if (!socketLibrary) {

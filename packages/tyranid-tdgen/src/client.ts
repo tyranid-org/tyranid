@@ -26,6 +26,7 @@ declare module 'tyranid-client' {
     export const byId: CollectionsById & { [key: string]: CollectionInstance | void };
     export const init: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
+    export const reconnectSocket: () => void;
     export type CollectionName = ${names.isomorphic('CollectionName')};
     export type CollectionId = ${names.isomorphic('CollectionId')};
 

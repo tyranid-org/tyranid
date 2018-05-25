@@ -2218,6 +2218,16 @@ describe('tyranid', () => {
           await cleanup();
         }
       });
+
+      it('should log queries with regular expressions', async () => {
+        await Book.findAll({ query: { title: /foo/i } });
+
+        const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
+        expect(logs.length).to.be.eql(1);
+        expect((logs[0] as any).e).to.be.eql('db');
+        expect((logs[0] as any).q).to.be.eql({ title: /foo/i });
+        expect((logs[0] as any).l).to.be.eql(LogLevel.TRACE._id);
+      });
     });
 
     describe('collection.links()', () => {
