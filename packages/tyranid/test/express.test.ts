@@ -159,7 +159,8 @@ export function add() {
 </html>`);
         });
 
-        browser = await puppeteer.launch();
+        // --no-sandbox needed for travis
+        browser = await puppeteer.launch({ args: ['--no-sandbox'] });
         // .launch({ headless: false, devtools: true });
         // .launch({ headless: false, slowMo: 10000 });
         page = await loadTestPage();
@@ -173,6 +174,7 @@ export function add() {
           `http://localhost:${expressPort}/test/page`
         );
         // page.on('console', msg => console.log('PAGE CONSOLE:', msg.text()));
+
         return page;
       };
 
