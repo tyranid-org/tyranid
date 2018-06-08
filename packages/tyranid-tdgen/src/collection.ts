@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { Tyr } from 'tyranid';
 import * as names from './names';
-import { pad, wrappedUnionType } from './util';
+import { escapeString, pad, wrappedUnionType } from './util';
 
 /**
  * produce union type alias for enum id values
@@ -70,7 +70,7 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
           let propType: string;
           switch (typeof row[key]) {
             case 'string':
-              propType = `'${row[key]}'`;
+              propType = `'${escapeString(String(row[key]))}'`;
               break;
             case 'number':
               propType = `${row[key]}`;

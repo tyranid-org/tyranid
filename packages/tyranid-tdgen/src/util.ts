@@ -119,3 +119,11 @@ export function wordWrap(
 
   return lines.map(l => (l.startsWith(join) ? l.replace(join, '') : l));
 }
+
+/**
+ *
+ * escape a string so that it can be quoted in generated source code
+ * (currently just escapes single quotes)
+ *
+ */
+export const escapeString = (str: string) => str.replace(/'/g, "\\'");
