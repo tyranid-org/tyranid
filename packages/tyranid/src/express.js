@@ -1134,6 +1134,11 @@ export function generateClientLibrary() {
     enum: true;`;
       }
 
+      if (col.def.static) {
+        file += `
+    static: true;`;
+      }
+
       if (col.def.internal) {
         file += `
     internal: true;`;
@@ -1153,7 +1158,7 @@ export function generateClientLibrary() {
       file += `
   };`;
 
-      if (def.enum) {
+      if (def.enum || def.static) {
         file += `
   def.values = ${JSON.stringify(def.values.map(v => v.$toClient()))};`;
       }

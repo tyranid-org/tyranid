@@ -423,6 +423,7 @@ declare namespace Tyranid {
       help?: string;
       note?: string;
       enum?: boolean;
+      static?: boolean;
       client?: boolean;
       timestamps?: boolean;
       preserveInitialValues?: Function | boolean;

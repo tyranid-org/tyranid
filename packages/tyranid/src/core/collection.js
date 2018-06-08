@@ -500,7 +500,7 @@ export default class Collection {
   /** @isomorphic */
   isStatic() {
     //return !!this.def.values;
-    return !!this.def.enum;
+    return !!this.def.enum || !!this.def.static;
   }
 
   byId(id, options) {
@@ -1836,11 +1836,14 @@ export default class Collection {
       );
     }
 
-    if (collection.def.enum && !collection.labelField) {
+    if (
+      (collection.def.enum || collection.def.static) &&
+      !collection.labelField
+    ) {
       throw new Error(
         `Some string field must have the label property set if the collection "${
           collection.def.name
-        }" is an enumeration.`
+        }" is an enumeration or static.`
       );
     }
 
@@ -1993,7 +1996,7 @@ export default class Collection {
         }
 
         v = new collection(nrow);
-        if (collection.def.enum) {
+        if (collection.def.enum || collection.def.static) {
           name = v[collection.labelField.path];
 
           if (!name) {
