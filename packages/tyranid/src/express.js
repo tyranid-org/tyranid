@@ -1364,7 +1364,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             const opts = {
               query: rOpts.query ? col.fromClientQuery(rOpts.query) : {},
-              auth: req.user
+              auth: req.user,
+              user: req.user,
+              req
             };
 
             if (rOpts.populate) {
@@ -1409,7 +1411,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             if (doc._id) {
               res.status(403).send('Use put for updates');
             } else {
-              await doc.$save({ auth: req.user });
+              await doc.$save({ auth: req.user, user: req.user, req });
             }
 
             res.json(col.toClient(doc));
@@ -1428,12 +1430,14 @@ Collection.prototype.connect = function({ app, auth, http }) {
             if (doc._id) {
               const existingDoc = await col.findOne({
                 query: { _id: doc._id },
-                auth: req.user
+                auth: req.user,
+                user: req.user,
+                req
               });
               _.assign(existingDoc, doc);
-              await existingDoc.$save();
+              await existingDoc.$save({ auth: req.user, user: req.user, req });
             } else {
-              await doc.$save();
+              await doc.$save({ auth: req.user, user: req.user, req });
             }
 
             res.json(col.toClient(doc));
@@ -1449,7 +1453,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             await col.remove({
               query: col.fromClientQuery(req.body),
-              auth: req.user
+              auth: req.user,
+              user: req.user,
+              req
             });
             res.sendStatus(200);
           } catch (err) {
@@ -1562,7 +1568,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
               results = await col.findAll({
                 query: { _id: { $in: ids } },
                 fields: { [col.labelField.path]: 1 },
-                auth: req.user
+                auth: req.user,
+                user: req.user,
+                req
               });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
@@ -1604,7 +1612,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
       if (express.rest || express.get) {
         r.get(async (req, res) => {
-          const doc = await col.byId(req.params.id, { auth: req.user });
+          const doc = await col.byId(req.params.id, {
+            auth: req.user,
+            user: req.user,
+            req
+          });
           if (doc) res.json(doc.$toClient());
           else res.sendStatus(404);
         });
@@ -1615,7 +1627,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             await col.remove({
               query: { _id: ObjectId(req.params.id) },
-              auth: req.user
+              auth: req.user,
+              user: req.user,
+              req
             });
             res.sendStatus(200);
           } catch (err) {
@@ -1650,7 +1664,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   auth: req.user,
                   fields: {
                     [field.spath]: 1
-                  }
+                  },
+                  user: req.user,
+                  req
                 });
                 if (!doc) return res.sendStatus(404);
 
@@ -1682,7 +1698,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const results = await col.findAll({
               query,
               fields: { [col.labelField.path]: 1 },
-              auth: req.user
+              auth: req.user,
+              user: req.user,
+              req
             });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
@@ -1717,14 +1735,16 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 await LinkType.applyWhere(field, doc, query, {
                   auth: req.user,
-                  req,
-                  user: req.user
+                  user: req.user,
+                  req
                 });
 
                 const results = await to.findAll({
                   query,
                   fields: { [to.labelField.path]: 1 },
-                  auth: req.user
+                  auth: req.user,
+                  user: req.user,
+                  req
                 });
                 res.json(results.map(r => r.$toClient()));
               } catch (err) {
