@@ -1,0 +1,10 @@
+{
+  "name": "tyranid-sanitize",
+  "version": "0.5.0",
+  "peerDependencies": {
+    "tyranid": "^0.5.0"
+  },
+  "dependencies": {
+    "faker": "4.1.0"
+  }
+}

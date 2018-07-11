@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true,
+    "strict": true,
+    "removeComments": false,
+    "pretty": true,
+    "outDir": "./dist/",
+    "inlineSourceMap": true,
+    "lib": ["es2015"]
+  },
+  "files": ["./src/index.ts", "./src/tyranid-extensions.d.ts"]
+}
