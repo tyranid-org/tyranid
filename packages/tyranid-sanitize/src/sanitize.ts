@@ -1,6 +1,8 @@
 import * as faker from 'faker';
 import { Tyr } from 'tyranid';
 
+export type SanitizeConfig = boolean | 'name' | 'email' | 'lorem';
+
 interface SanitizeOptions {
   outDbName?: string;
   batchSize?: number;
@@ -11,6 +13,7 @@ interface SanitizeOptions {
  * sanatize a database based on tyranid schema
  *
  * @param tyr
+ * @param opts
  */
 export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
   const {
@@ -64,8 +67,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
       let docs = await next();
 
       while (docs.length) {
-        const sanitized = docs.map(sanitizer);
-        await outCollection.insertMany(sanitized);
+        await outCollection.insertMany(docs.map(sanitizer));
         docs = await next();
       }
     })
@@ -79,14 +81,60 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
  * @param doc
  */
 function createDocumentSanitizer(def: Tyr.CollectionDefinitionHydrated) {
-  return (doc: Tyr.RawMongoDocument) => {
-    for (const field in def.fields) {
-      const fieldDef = def.fields[field];
-      switch (fieldDef.def.is) {
-      //
+  /**
+   * document walker
+   *
+   * @param doc
+   * @param fields
+   */
+  const walk = (
+    doc: Tyr.RawMongoDocument,
+    fields: Record<string, Tyr.FieldInstance>
+  ) => {
+    const out: Tyr.RawMongoDocument = {};
+
+    for (const field in def.fields!) {
+      const fieldDef = def.fields![field]!;
+      const { is } = fieldDef.def;
+
+      switch (is) {
+        case 'array': {
+          break;
+        }
+
+        case 'object': {
+          out[field] = walk(doc, fieldDef.fields!);
+          break;
+        }
+
+        default: {
+          const value = fieldDef.namePath.get(doc);
+          const sanitizeConfig = fieldDef.def.def!.sanitize;
+          out[field] = getSanitizedValue(sanitizeConfig, value);
+          break;
+        }
       }
     }
 
-    return doc;
+    return out;
   };
+
+  /**
+   * return sanitizer
+   */
+  return (doc: Tyr.RawMongoDocument) => walk(doc, def.fields);
+}
+
+function getSanitizedValue<D>(sanitizeConfig: SanitizeConfig, defaultValue: D) {
+  if (!sanitizeConfig) return defaultValue;
+  switch (sanitizeConfig) {
+    case 'name':
+      return faker.name.findName();
+    case 'email':
+      return faker.internet.email();
+    case 'lorem':
+      return faker.lorem.sentences();
+    default:
+      return faker.lorem.text();
+  }
 }
