@@ -118,13 +118,15 @@ export default class Populator {
         const linkDocs = await collection.byIds(ids, opts),
           isHistorical = collection.def.historical;
 
-        linkDocs.forEach(doc => {
-          if (asOf && isHistorical) {
-            historical.asOf(collection, doc, asOf, fields);
-          }
+        await Promise.all(
+          linkDocs.map(async doc => {
+            if (asOf && isHistorical) {
+              await historical.asOf(collection, doc, asOf, fields);
+            }
 
-          cache.values[doc[primaryKeyField]] = doc;
-        });
+            cache.values[doc[primaryKeyField]] = doc;
+          })
+        );
       })
     );
   }

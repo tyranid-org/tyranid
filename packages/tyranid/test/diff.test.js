@@ -161,5 +161,17 @@ export function add() {
       expect(u.name.suffices.length).to.eql(1);
       expect(u.name.suffices[0]).to.eql('Sr');
     });
+
+    it('should diffPropsObj', () => {
+      const tests = [
+        [{ a: 1 }, { a: 2 }, ['a']],
+        [{ a: 1 }, { a: 1 }, []],
+        [{ a: 1, b: 1 }, { a: 2 }, ['a', 'b']]
+      ];
+      for (const test of tests) {
+        //console.log(JSON.stringify(diff.diffObj(test[0], test[1])));
+        expect(Tyr.diff.diffPropsObj(test[0], test[1])).to.be.eql(test[2]);
+      }
+    });
   });
 }

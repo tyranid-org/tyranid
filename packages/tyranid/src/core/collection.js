@@ -127,11 +127,14 @@ async function postFind(collection, opts, documents) {
     const asOf = opts.asOf;
     if (asOf) {
       if (array) {
-        for (const document of documents) {
-          historical.asOf(collection, document, asOf, opts.fields);
-        }
+        await Promise.all(
+          documents.map(
+            async document =>
+              await historical.asOf(collection, document, asOf, opts.fields)
+          )
+        );
       } else {
-        historical.asOf(collection, documents, asOf, opts.fields);
+        await historical.asOf(collection, documents, asOf, opts.fields);
       }
     }
 
@@ -977,25 +980,28 @@ export default class Collection {
       obj = new collection(obj);
     }
 
-    let diffProps;
-
-    if (collection.def.historical && (!opts || opts.historical !== false)) {
-      if (obj.$historical) {
-        throw new Error('Document is read-only due to $historical');
-      } else {
-        ({ diffProps } = historical.snapshotPartial(
-          collection,
-          obj,
-          historical.patchPropsFromOpts(opts)
-        ));
-      }
-    }
-
     const keyFieldName = collection.def.primaryKey.field,
       keyValue = obj[keyFieldName];
 
     let rslt;
+    let historicalType =
+      (!opts || opts.historical !== false) && collection.def.historical;
+
     if (keyValue) {
+      if (historicalType) {
+        if (obj.$historical) {
+          throw new Error('Document is read-only due to $historical');
+        } else {
+          historical.snapshotPartial(
+            opts,
+            collection,
+            obj,
+            historical.patchPropsFromOpts(opts),
+            (opts && opts.fields) || collection._historicalFields
+          );
+        }
+      }
+
       await Tyr.Event.fire({
         collection,
         type: 'update',
@@ -1003,6 +1009,10 @@ export default class Collection {
         document: obj,
         opts
       });
+
+      if (historicalType === 'document') {
+        historical.saveSnapshots(collection, obj);
+      }
 
       // using REPLACE semantics with findAndModify() here
       const result = await collection.findAndModify(
@@ -1033,8 +1043,8 @@ export default class Collection {
       rslt = await collection.insert(obj, modOpts);
     }
 
-    if (diffProps) {
-      historical.preserveInitialValues(collection, obj, diffProps);
+    if (historicalType) {
+      historical.preserveInitialValues(collection, obj);
     }
 
     return rslt;
@@ -1081,6 +1091,14 @@ export default class Collection {
         ? (await collection.db.insertMany(parsedArr)).ops
         : [];
 
+      for (let i = 0; i < obj.length; i++) {
+        obj[i]._id = docs[i]._id;
+      }
+
+      if (collection.def.historical === 'document') {
+        historical.saveSnapshots(collection, obj);
+      }
+
       await Tyr.Event.fire({
         collection,
         type: 'insert',
@@ -1105,6 +1123,21 @@ export default class Collection {
         }
       }
 
+      let diffProps;
+
+      if (collection.def.historical && (!opts || opts.historical !== false)) {
+        if (obj.$historical) {
+          throw new Error('Document is read-only due to $historical');
+        } else if (collection.def.historical === 'document') {
+          historical.snapshotPartial(
+            opts,
+            collection,
+            obj,
+            historical.patchPropsFromOpts(opts)
+          );
+        }
+      }
+
       await Tyr.Event.fire({
         collection,
         type: 'insert',
@@ -1112,10 +1145,15 @@ export default class Collection {
         document: parsedObj,
         opts
       });
+
       const rslt = await collection.db.insert(parsedObj);
 
       const doc = rslt.ops[0];
       obj._id = doc._id;
+
+      if (collection.def.historical === 'document') {
+        await historical.saveSnapshots(collection, obj);
+      }
 
       await Tyr.Event.fire({
         collection,
@@ -1171,14 +1209,15 @@ export default class Collection {
       const historyPresent = !!obj._history;
 
       ({ snapshot, diffProps } = historical.snapshotPartial(
+        opts,
         collection,
         obj,
         historical.patchPropsFromOpts(opts),
-        updateFields,
+        (opts && opts.fields) || collection._historicalFields,
         historyPresent
       ));
 
-      if (snapshot) {
+      if (snapshot && collection.def.historical === 'patch') {
         if (historyPresent) {
           update._history = obj._history;
         } else {
@@ -1212,7 +1251,12 @@ export default class Collection {
       document: obj,
       opts
     });
+
     const rslt = await collection.db.update(query, opts.update, opts);
+    if (snapshot && collection.def.historical === 'document') {
+      historical.saveSnapshots(collection, obj);
+    }
+
     await Tyr.Event.fire({
       collection,
       type: 'update',

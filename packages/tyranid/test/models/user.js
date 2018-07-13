@@ -33,7 +33,7 @@ Sibling.Friend = Friend;
 var User = new tyr.Collection({
   id: 'u00',
   name: 'user',
-  historical: true,
+  historical: 'patch',
   timestamps: true,
   client: true,
   indexes: [

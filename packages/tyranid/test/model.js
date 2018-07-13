@@ -5,6 +5,7 @@ import Tyr from '../src/tyranid';
 import Role from './models/role'; // require to get extra link in prototype chain
 
 import './models/user';
+import './models/widget';
 
 const { ObjectId } = mongodb;
 
@@ -15,7 +16,8 @@ let Organization,
   Task,
   Book,
   TyrSchema,
-  TyrSchemaType;
+  TyrSchemaType,
+  Widget;
 const AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
 const UserRoleId = new ObjectId('55bb7ecfe71d45b923ff8c83');
 const BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
@@ -38,6 +40,7 @@ export default async function initModel() {
   TyrSchema = Tyr.byName.tyrSchema;
   TyrSchemaType = Tyr.byName.tyrSchemaType;
   Phantom = Tyr.byName.phantom;
+  Widget = Tyr.byName.widget;
 
   await Organization.db.remove({});
   await Organization.db.insert([
@@ -111,6 +114,19 @@ export default async function initModel() {
       title: 'Write instance validation tests',
       assigneeUid: User.idToUid(1),
       manual: BookIsbn
+    }
+  ]);
+  await Widget.db.remove({});
+  await Widget.db.insert([
+    {
+      name: 'Toxulin',
+      creator: 1,
+      tags: ['toxic']
+    },
+    {
+      name: 'Sundae',
+      creator: 1,
+      tags: ['food']
     }
   ]);
   await TyrSchema.db.remove({});
