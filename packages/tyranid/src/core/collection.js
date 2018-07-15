@@ -278,8 +278,10 @@ export default class Collection {
     const lodash = _;
     const _documentPrototype = documentPrototype;
 
+    const capitalizedName = lodash.capitalize(def.name);
+
     /* tslint:disable no-eval */
-    eval(`CollectionInstance = function ${lodash.capitalize(def.name)}(data) {
+    eval(`CollectionInstance = function ${capitalizedName}(data) {
       this.__proto__ = dp;
 
       // add properties to dp if not available
@@ -334,6 +336,7 @@ export default class Collection {
     }
 
     collections.push(CollectionInstance);
+    collections[capitalizedName] = CollectionInstance;
     Tyr.components.push(CollectionInstance);
     Tyr.byId[def.id] = CollectionInstance;
     Tyr.byName[def.name] = CollectionInstance;

@@ -408,6 +408,12 @@ describe('tyranid', () => {
       await initModel();
     });
 
+    describe('collections', () => {
+      it('Tyr.byName.X and Tyr.collections.X should be equivalent', () => {
+        expect(Tyr.byName.unit).to.eql(Tyr.collections.Unit);
+      });
+    });
+
     describe('fields', () => {
       it('should support fields object', () => {
         expect(User.paths['name.first']).to.be.instanceof(Tyr.Field);

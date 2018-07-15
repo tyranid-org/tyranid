@@ -183,6 +183,14 @@ export function add() {
           await page.evaluate('Tyr.byName.tyrLogLevel.values[0].name')
         ).to.eql('trace'));
 
+      it('Tyr.byName.X and Tyr.collections.X should be equivalent', async () => {
+        expect(
+          await page.evaluate(
+            'Tyr.byName.tyrLogLevel === Tyr.collections.TyrLogLevel'
+          )
+        ).to.eql(true);
+      });
+
       it('should support subscriptions', async () => {
         const cleanup = () =>
           Promise.all([

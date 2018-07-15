@@ -560,7 +560,9 @@ export function generateClientLibrary() {
   function Collection(def) {
     var CollectionInstance;
 
-    eval(\`CollectionInstance = function \${_.capitalize(def.name)}(data) {
+    const capitalizedName = _.capitalize(def.name);
+
+    eval(\`CollectionInstance = function \${capitalizedName}(data) {
       if (data) {
         _.assign(this, data);
       }
@@ -705,6 +707,7 @@ export function generateClientLibrary() {
     });
 
     Tyr.collections.push(CollectionInstance);
+    Tyr.collections[capitalizedName] = CollectionInstance;
     Tyr.byId[CollectionInstance.id] = CollectionInstance;
     byName[def.name] = CollectionInstance;
 
