@@ -4,6 +4,7 @@ import Tyr from '../src/tyranid';
 
 import Role from './models/role'; // require to get extra link in prototype chain
 
+import './models/application';
 import './models/user';
 import './models/widget';
 

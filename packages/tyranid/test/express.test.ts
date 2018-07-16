@@ -23,12 +23,14 @@ export function add() {
     let Location: Tyr.LocationCollection,
       User: Tyr.UserCollection,
       Subscription: Tyr.TyrSubscriptionCollection,
+      Job: Tyr.JobCollection,
       app: express.Application;
 
     before(async () => {
       Location = Tyr.byName.location;
       User = Tyr.byName.user;
       Subscription = Tyr.byName.tyrSubscription;
+      Job = Tyr.byName.job;
 
       app = express();
 
@@ -189,6 +191,16 @@ export function add() {
             'Tyr.byName.tyrLogLevel === Tyr.collections.TyrLogLevel'
           )
         ).to.eql(true);
+      });
+
+      it('should serialize conditional field if values', async () => {
+        expect(
+          await page.evaluate('Tyr.byName.application.fields.languages.def.if')
+        ).to.eql({
+          job: {
+            $in: [Job.SOFTWARE_ENGINEER._id, Job.SOFTWARE_LEAD._id]
+          }
+        });
       });
 
       it('should support subscriptions', async () => {
