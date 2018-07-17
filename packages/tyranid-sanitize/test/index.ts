@@ -32,7 +32,7 @@ test.serial('should successfully sanitize', () =>
 
 test.serial('should error if sanitizing into same db', async t => {
   try {
-    await sanitize(Tyr);
+    await sanitize(Tyr, { outDbName: sanitizedDB });
   } catch (err) {
     return t.pass();
   }
