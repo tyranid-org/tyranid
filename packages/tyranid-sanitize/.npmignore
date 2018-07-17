@@ -1,7 +1,5 @@
 src
 node_modules
 test
-dist/test
-!dist
 coverage
 .nyc_output
