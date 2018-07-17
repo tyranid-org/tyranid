@@ -6,7 +6,7 @@ export const Blog = new Tyr.Collection({
   dbName: 'blogs',
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string' },
+    name: { is: 'string', sanitize: 'name' },
     organizationId: { link: 'organization' }
   }
 });
@@ -17,7 +17,7 @@ export const Chart = new Tyr.Collection({
   dbName: 'charts',
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string' },
+    name: { is: 'string', sanitize: 'name' },
     organizationId: {
       link: 'organization'
     },
@@ -45,7 +45,7 @@ export const Comment = new Tyr.Collection({
   dbName: 'comments',
   fields: {
     _id: { is: 'mongoid' },
-    text: { is: 'string' },
+    text: { is: 'string', sanitize: 'lorem' },
     postId: { link: 'post' },
     blogId: { link: 'blog' }
   }
@@ -57,8 +57,8 @@ export const Inventory = new Tyr.Collection({
   dbName: 'inventories',
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string' },
-    items: { is: 'array', of: { is: 'string' } },
+    name: { is: 'string', sanitize: 'name' },
+    items: { is: 'array', of: { is: 'string', sanitize: true } },
     organizationId: {
       link: 'organization',
       relate: 'ownedBy'
@@ -115,9 +115,10 @@ export const User = new Tyr.Collection({
   dbName: 'users',
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string' },
+    name: { is: 'string', sanitize: 'email' },
     computed: {
       is: 'string',
+      sanitize: 'lorem',
       get(this: Tyr.Document & { name: string }) {
         return `Hello ${this.name} from a computed property!`;
       }

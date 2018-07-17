@@ -23,14 +23,15 @@ export interface WalkState {
 export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
   const {
     outDbName = Tyr.db.databaseName + '____sanitized',
-    batchSize = 200,
-    verbose = false
+    batchSize = 200
   } = opts;
 
   const { log, error } = createLogger(opts);
   const admin = await Tyr.db.admin();
   const existingDbs = await admin.listDatabases();
-  if (existingDbs.databases.indexOf(outDbName) !== -1) {
+  if (
+    existingDbs.databases.find((d: { name: string }) => d.name === outDbName)
+  ) {
     return error(`Dabased named ${outDbName} already exists.`);
   }
 
@@ -90,7 +91,7 @@ function createDocumentSanitizer(
   def: Tyr.CollectionDefinitionHydrated,
   opts: SanitizeOptions
 ) {
-  const { log, error } = createLogger(opts);
+  const { log } = createLogger(opts);
 
   /**
    * document walker
@@ -123,6 +124,7 @@ function createDocumentSanitizer(
 
       default: {
         const sanitizeConfig = fieldDef.sanitize;
+        log(`sanitize config: ${sanitizeConfig}`);
         return getSanitizedValue(sanitizeConfig, value);
       }
     }
