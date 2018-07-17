@@ -1,6 +1,6 @@
 {
   "name": "tyranid-sanitize",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "main": "./dist/src/index.js",
   "typings": "./dist/src/index.d.ts",
   "peerDependencies": {
@@ -17,6 +17,8 @@
     "tsc": "rm -rf ./dist/ && tsc"
   },
   "ava": {
-    "files": ["dist/test/index.js"]
+    "files": [
+      "dist/test/index.js"
+    ]
   }
 }
