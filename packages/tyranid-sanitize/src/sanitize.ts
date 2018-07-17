@@ -3,7 +3,7 @@ import { Tyr } from 'tyranid';
 
 export type SanitizeConfig = boolean | 'name' | 'email' | 'lorem';
 
-interface SanitizeOptions {
+export interface SanitizeOptions {
   /**
    * desired name of the output database
    */
