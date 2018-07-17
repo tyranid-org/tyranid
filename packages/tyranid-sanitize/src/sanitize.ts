@@ -70,6 +70,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
    */
   const sanitizeCollection = async (collection: Tyr.CollectionInstance) => {
     let skip = 0;
+    let total = 0;
     const sanitizer = createDocumentSanitizer(collection.def, opts);
     const outCollection = outDb.collection(collection.def.dbName!);
 
@@ -86,17 +87,21 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
     let docs = await next();
 
     while (docs.length) {
+      total += docs.length;
       await outCollection.insertMany(docs.map(sanitizer));
+      log(`sanitized ${total} docs from collection ${collection.def.name}`);
       docs = await next();
     }
   };
 
+  const collections = Tyr.collections.filter(c => !c.def.internal);
+
   if (opts.serial) {
-    for (const collection of Tyr.collections) {
+    for (const collection of collections) {
       await sanitizeCollection(collection);
     }
   } else {
-    await Promise.all(Tyr.collections.map(sanitizeCollection));
+    await Promise.all(collections.map(sanitizeCollection));
   }
 }
 
@@ -123,7 +128,6 @@ function createDocumentSanitizer(
     fieldDef: Tyr.FieldDefinition,
     state: WalkState
   ) => {
-    log(`property: ${state.path}`);
     const { is } = fieldDef;
     if (!is || !value) return value;
 
@@ -138,39 +142,29 @@ function createDocumentSanitizer(
       }
 
       case 'object': {
-        return walkObject(value, fieldDef.fields!, state);
+        const fields = fieldDef.fields;
+        if (!fields) return value;
+        const out: Tyr.RawMongoDocument = {};
+        for (const field in fields) {
+          const innerFieldDef = fields[field].def;
+          if (!innerFieldDef) {
+            out[field] = value[field];
+          } else {
+            out[field] = walk(
+              value[field],
+              innerFieldDef,
+              extendPaths(field, state)
+            );
+          }
+        }
+        return out;
       }
 
       default: {
         const sanitizeConfig = fieldDef.sanitize;
-        log(`sanitize config: ${sanitizeConfig}`);
         return getSanitizedValue(value, sanitizeConfig);
       }
     }
-  };
-
-  /**
-   * walk an object's properties
-   *
-   * @param value
-   * @param fieldDef
-   */
-  const walkObject = (
-    value: Tyr.RawMongoDocument,
-    fieldDef: Tyr.FieldDefinition,
-    state: WalkState
-  ) => {
-    log(`object: ${state.path}`);
-
-    const out: Tyr.RawMongoDocument = {};
-    for (const field in fieldDef.fields!) {
-      out[field] = walk(
-        value,
-        fieldDef.fields![field].def!,
-        extendPaths(field, state)
-      );
-    }
-    return out;
   };
 
   /**
@@ -178,11 +172,12 @@ function createDocumentSanitizer(
    */
   return (doc: Tyr.RawMongoDocument) => {
     const out: Tyr.RawMongoDocument = {};
+    const state = extendPaths(def.name);
     for (const field in def.fields) {
       out[field] = walk(
         doc[field],
         def.fields[field].def,
-        extendPaths(field, { path: def.name })
+        extendPaths(field, state)
       );
     }
     return out;
