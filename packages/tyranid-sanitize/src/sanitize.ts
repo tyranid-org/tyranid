@@ -20,6 +20,10 @@ interface SanitizeOptions {
    * sanitize each collection serially (defaults to concurrently)
    */
   serial?: boolean;
+  /**
+   * faker.js seed
+   */
+  seed?: number;
 }
 
 export interface WalkState {
@@ -35,7 +39,8 @@ export interface WalkState {
 export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
   const {
     outDbName = Tyr.db.databaseName + '____sanitized',
-    batchSize = 200
+    batchSize = 200,
+    seed
   } = opts;
 
   const { log, error } = createLogger(opts);
@@ -46,6 +51,8 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
   ) {
     return error(`Dabased named ${outDbName} already exists.`);
   }
+
+  if (seed) faker.seed(seed);
 
   log(
     `Creating santized version of ${
@@ -183,8 +190,8 @@ function createDocumentSanitizer(
 }
 
 function getSanitizedValue<D>(
-  sanitizeConfig?: SanitizeConfig,
-  defaultValue?: D
+  defaultValue: D,
+  sanitizeConfig?: SanitizeConfig
 ) {
   if (!sanitizeConfig) return defaultValue;
   switch (sanitizeConfig) {

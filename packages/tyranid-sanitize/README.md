@@ -69,5 +69,9 @@ interface SanitizeOptions {
    * sanitize each collection serially (defaults to concurrently)
    */
   serial?: boolean;
+  /**
+   * faker.js seed
+   */
+  seed?: number;
 }
 ```
