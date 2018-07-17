@@ -6,5 +6,15 @@
   },
   "dependencies": {
     "faker": "4.1.0"
+  },
+  "scripts": {
+    "pretest": "npm run build",
+    "prepublish": "npm run test",
+    "test": "ava",
+    "build": "npm run tsc",
+    "tsc": "rm -rf ./dist/ && tsc"
+  },
+  "ava": {
+    "files": ["dist/test/index.js"]
   }
 }

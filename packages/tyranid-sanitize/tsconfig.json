@@ -9,7 +9,12 @@
     "pretty": true,
     "outDir": "./dist/",
     "inlineSourceMap": true,
-    "lib": ["es2015"]
+    "lib": ["es2015"],
+    "skipLibCheck": true
   },
-  "files": ["./src/index.ts", "./src/tyranid-extensions.d.ts"]
+  "files": [
+    "./src/index.ts",
+    "./src/tyranid-extensions.d.ts",
+    "./test/index.ts"
+  ]
 }

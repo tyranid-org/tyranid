@@ -1,1 +1,1 @@
-export { sanitize } from './sanitize';
+export { sanitize, SanitizeConfig, SanitizeOptions } from './sanitize';

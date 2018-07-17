@@ -3,10 +3,15 @@ import { Tyr } from 'tyranid';
 
 export type SanitizeConfig = boolean | 'name' | 'email' | 'lorem';
 
-interface SanitizeOptions {
+export interface SanitizeOptions {
   outDbName?: string;
   batchSize?: number;
   verbose?: boolean;
+  serial?: boolean;
+}
+
+export interface WalkState {
+  path: string;
 }
 
 /**
@@ -22,12 +27,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
     verbose = false
   } = opts;
 
-  const format = (str: string) => `tyranid-sanitize: ${str}`;
-  const log = (str: string) => verbose && console.log(format(str));
-  const error = (str: string) => {
-    throw new Error(str);
-  };
-
+  const { log, error } = createLogger(opts);
   const admin = await Tyr.db.admin();
   const existingDbs = await admin.listDatabases();
   if (existingDbs.databases.indexOf(outDbName) !== -1) {
@@ -40,7 +40,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
     } in new database: ${outDbName}`
   );
 
-  const outDb = await Tyr.db.db(outDbName).open();
+  const outDb = Tyr.db.db(outDbName);
 
   /**
    * - for each collection
@@ -48,30 +48,36 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
    * - for each doc, scramble text fields with 'sanitize: true' fields
    * - insert into new db with given name...
    */
-  await Promise.all(
-    Tyr.collections.map(async collection => {
-      let skip = 0;
-      const sanitizer = createDocumentSanitizer(collection.def);
-      const outCollection = outDb.collection(collection.def.dbName!);
+  const sanitizeCollection = async (collection: Tyr.CollectionInstance) => {
+    let skip = 0;
+    const sanitizer = createDocumentSanitizer(collection.def, opts);
+    const outCollection = outDb.collection(collection.def.dbName!);
 
-      const next = async () => {
-        const docs = await collection.findAll({
-          query: {},
-          skip,
-          limit: batchSize
-        });
-        skip += batchSize;
-        return docs;
-      };
+    const next = async () => {
+      const docs = await collection.findAll({
+        query: {},
+        skip,
+        limit: batchSize
+      });
+      skip += batchSize;
+      return docs;
+    };
 
-      let docs = await next();
+    let docs = await next();
 
-      while (docs.length) {
-        await outCollection.insertMany(docs.map(sanitizer));
-        docs = await next();
-      }
-    })
-  );
+    while (docs.length) {
+      await outCollection.insertMany(docs.map(sanitizer));
+      docs = await next();
+    }
+  };
+
+  if (opts.serial) {
+    for (const collection of Tyr.collections) {
+      await sanitizeCollection(collection);
+    }
+  } else {
+    await Promise.all(Tyr.collections.map(sanitizeCollection));
+  }
 }
 
 /**
@@ -80,7 +86,12 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
  * @param def
  * @param doc
  */
-function createDocumentSanitizer(def: Tyr.CollectionDefinitionHydrated) {
+function createDocumentSanitizer(
+  def: Tyr.CollectionDefinitionHydrated,
+  opts: SanitizeOptions
+) {
+  const { log, error } = createLogger(opts);
+
   /**
    * document walker
    *
@@ -88,44 +99,79 @@ function createDocumentSanitizer(def: Tyr.CollectionDefinitionHydrated) {
    * @param fields
    */
   const walk = (
-    doc: Tyr.RawMongoDocument,
-    fields: Record<string, Tyr.FieldInstance>
+    value: Tyr.RawMongoDocument,
+    fieldDef: Tyr.FieldDefinition,
+    state: WalkState
   ) => {
-    const out: Tyr.RawMongoDocument = {};
+    log(`property: ${state.path}`);
+    const { is } = fieldDef;
+    if (!is || !value) return value;
 
-    for (const field in def.fields!) {
-      const fieldDef = def.fields![field]!;
-      const { is } = fieldDef.def;
+    switch (is) {
+      case 'array': {
+        const { of } = fieldDef;
+        if (!of) return [];
 
-      switch (is) {
-        case 'array': {
-          break;
-        }
+        return value.map((i: Tyr.RawMongoDocument) =>
+          walk(i, of, extendPaths('[]', state))
+        );
+      }
 
-        case 'object': {
-          out[field] = walk(doc, fieldDef.fields!);
-          break;
-        }
+      case 'object': {
+        return walkObject(value, fieldDef.fields!, state);
+      }
 
-        default: {
-          const value = fieldDef.namePath.get(doc);
-          const sanitizeConfig = fieldDef.def.def!.sanitize;
-          out[field] = getSanitizedValue(sanitizeConfig, value);
-          break;
-        }
+      default: {
+        const sanitizeConfig = fieldDef.sanitize;
+        return getSanitizedValue(sanitizeConfig, value);
       }
     }
+  };
 
+  /**
+   * walk an object's properties
+   *
+   * @param value
+   * @param fieldDef
+   */
+  const walkObject = (
+    value: Tyr.RawMongoDocument,
+    fieldDef: Tyr.FieldDefinition,
+    state: WalkState
+  ) => {
+    log(`object: ${state.path}`);
+
+    const out: Tyr.RawMongoDocument = {};
+    for (const field in fieldDef.fields!) {
+      out[field] = walk(
+        value,
+        fieldDef.fields![field].def!,
+        extendPaths(field, state)
+      );
+    }
     return out;
   };
 
   /**
    * return sanitizer
    */
-  return (doc: Tyr.RawMongoDocument) => walk(doc, def.fields);
+  return (doc: Tyr.RawMongoDocument) => {
+    const out: Tyr.RawMongoDocument = {};
+    for (const field in def.fields) {
+      out[field] = walk(
+        doc[field],
+        def.fields[field].def,
+        extendPaths(field, { path: def.name })
+      );
+    }
+    return out;
+  };
 }
 
-function getSanitizedValue<D>(sanitizeConfig: SanitizeConfig, defaultValue: D) {
+function getSanitizedValue<D>(
+  sanitizeConfig?: SanitizeConfig,
+  defaultValue?: D
+) {
   if (!sanitizeConfig) return defaultValue;
   switch (sanitizeConfig) {
     case 'name':
@@ -137,4 +183,26 @@ function getSanitizedValue<D>(sanitizeConfig: SanitizeConfig, defaultValue: D) {
     default:
       return faker.lorem.text();
   }
+}
+
+function createLogger(opts: SanitizeOptions) {
+  const { verbose } = opts;
+  const format = (str: string) => `tyranid-sanitize: ${str}`;
+  const log = (str: string) => verbose && console.log(format(str));
+  const error = (str: string) => {
+    throw new Error(str);
+  };
+
+  return {
+    format,
+    log,
+    error
+  };
+}
+
+function extendPaths(path: string, state: WalkState = { path: '' }): WalkState {
+  return {
+    ...state,
+    path: `${state.path}.${path}`
+  };
 }
