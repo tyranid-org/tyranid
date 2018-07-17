@@ -26,6 +26,11 @@ test.before(async () => {
   await createTestData();
 });
 
+// drop test db
+test.after(async () => {
+  await Tyr.db.db(sanitizedDB).dropDatabase();
+});
+
 test.serial('should successfully sanitize', () =>
   sanitize(Tyr, { outDbName: sanitizedDB })
 );
