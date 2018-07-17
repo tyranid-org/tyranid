@@ -144,7 +144,7 @@ function createDocumentSanitizer(
       default: {
         const sanitizeConfig = fieldDef.sanitize;
         log(`sanitize config: ${sanitizeConfig}`);
-        return getSanitizedValue(sanitizeConfig, value);
+        return getSanitizedValue(value, sanitizeConfig);
       }
     }
   };
