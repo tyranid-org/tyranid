@@ -3,9 +3,22 @@ import * as _ from 'lodash';
 import diff from '../diff/diff';
 
 import Tyr from '../tyr';
+import { OperationCanceledException } from '../../../../node_modules/typescript';
 
 function link(collection) {
   const _historicalFields = {};
+
+  switch (collection.def.historical) {
+    case 'patch':
+    case 'document':
+      break;
+    default:
+      throw new Error(
+        `Collection ${collection.def.name} has invalid historical value: "${
+          collection.def.historical
+        }" must be either 'document' or 'patch'.`
+      );
+  }
 
   _.each(collection.fields, field => {
     if (field.def.historical) {
@@ -14,6 +27,7 @@ function link(collection) {
   });
 
   collection._historicalFields = _historicalFields;
+  collection._historicalFieldsLen = _.keys(_historicalFields).length;
 }
 
 function preserveInitialValues(collection, doc, props) {
@@ -48,17 +62,39 @@ function preserveInitialValues(collection, doc, props) {
   }
 }
 
+function isPartial(collection, fields) {
+  // no fields means select all fields, so not partial
+  if (!fields) {
+    return false;
+  }
+
+  for (const fieldName in collection._historicalFields) {
+    if (!(fieldName in fields)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function snapshotPartial(
+  opts,
   collection,
   doc,
   patchProps,
   diffProps,
   historyPresent
 ) {
-  const $orig = doc.$orig;
+  let $orig = doc.$orig;
 
   if (!$orig) {
-    return {}; // snapshot and diffProps are undefined; ... undefined means there was no snapshot needed
+    switch (collection.def.historical) {
+      case 'document':
+        $orig = {};
+        break;
+      case 'patch':
+        return {}; // snapshot and diffProps are undefined; ... undefined means there was no snapshot needed
+    }
   }
 
   let _diffProps;
@@ -74,36 +110,137 @@ function snapshotPartial(
     _diffProps = collection._historicalFields;
   }
 
-  const p = diff.diffObj(doc, doc.$orig, _diffProps);
-  if (_.isEmpty(p) && _.isEmpty(patchProps)) {
-    // TODO:  do we need some way of looking at the patch props and seeing it contains something that is useful in its own right to store?
-    //        (for example, like a user comment?)
-    return {}; // snapshot and diffProps are undefined; ... undefined means there was no snapshot needed
+  let snapshot;
+
+  switch (collection.def.historical) {
+    case 'patch':
+      const p = diff.diffObj(doc, doc.$orig, _diffProps);
+      if (_.isEmpty(p) && _.isEmpty(patchProps)) {
+        // TODO:  do we need some way of looking at the patch props and seeing it contains something that is useful in its own right to store?
+        //        (for example, like a user comment?)
+        return {}; // snapshot and diffProps are undefined; ... undefined means there was no snapshot needed
+      }
+
+      snapshot = {
+        o: new Date().getTime(),
+        p
+      };
+
+      assignPatchProps(collection, snapshot, patchProps);
+
+      if (historyPresent !== false) {
+        let arr = doc._history;
+        if (!arr) {
+          doc._history = arr = [];
+        }
+
+        arr.push(snapshot);
+      }
+
+      break;
+    case 'document':
+      snapshot = {
+        __id: doc._id,
+        _on: (opts && opts.asOf) || new Date()
+      };
+
+      assignPatchProps(collection, snapshot, patchProps);
+
+      if (!doc._id) {
+        // insert
+        for (const key in _diffProps) {
+          const v = doc[key];
+
+          if (v !== undefined) {
+            snapshot[key] = doc[key];
+          }
+        }
+
+        snapshot._partial = false;
+      } else {
+        // update
+
+        // if this is guaranteed to be a partial update anyway then do a differencing of fields
+        // to make the update as small as possible since _partial is going to be true regardless.  But if all
+        // the fields are there, then write out all the fields, even if they haven't changed, so that
+        // we can set _partial to false.  This is a trade-off between size of updates and the # of records
+        // $asOf() needs to traverse to reconstruct data.  We might want to re-evaluate this trade-off
+        // based on how this performs in practice.  Note that policy also helps address the situation where
+        // the document is updated outside of tyranid or using something like findAndModify() -- the changes
+        // will get picked up on the next $save(), etc.
+        const omitUnchangedValues =
+          (opts && opts.historical === 'partial') ||
+          isPartial(collection, _diffProps); // true
+        let copyProps;
+
+        if (omitUnchangedValues) {
+          copyProps = {};
+
+          for (const key in _diffProps) {
+            if (!Tyr.isEqualInBson($orig[key], doc[key])) {
+              copyProps[key] = 1;
+            }
+          }
+        } else {
+          copyProps = _diffProps;
+        }
+
+        for (const key in copyProps) {
+          snapshot[key] = doc[key];
+        }
+
+        snapshot._partial = isPartial(collection, copyProps);
+      }
+
+      // here we are assuming if there is no _id, that it is an insert ... is that correct?
+      doc.$_snapshot = snapshot;
+      break;
   }
 
-  const so = {
-    o: new Date().getTime(),
-    p
-  };
-
-  if (patchProps) {
-    _.assign(so, patchProps);
-  }
-
-  if (historyPresent !== false) {
-    let arr = doc._history;
-    if (!arr) {
-      doc._history = arr = [];
-    }
-
-    arr.push(so);
-  }
-
-  return { snapshot: so, diffProps: _diffProps };
+  return { snapshot, diffProps: _diffProps };
 }
 
-function snapshot(collection, doc, patchProps, _diffProps, historyPresent) {
+function historicalDb(collection) {
+  return Tyr.db.collection(collection.def.dbName + '_history');
+}
+
+async function saveSnapshots(collection, docs) {
+  if (Array.isArray(docs)) {
+    const snapshots = docs
+      .map(doc => {
+        const snapshot = doc.$_snapshot;
+        snapshot.__id = doc._id;
+        return snapshot;
+      })
+      .filter(doc => doc);
+    for (const doc of docs) {
+      delete doc.$_snapshot;
+    }
+
+    if (snapshots.length) {
+      await historicalDb(collection).insertMany(snapshots);
+    }
+  } else {
+    const snapshot = docs.$_snapshot;
+    snapshot.__id = docs._id;
+    delete docs.$_snapshot;
+
+    if (snapshot) {
+      await historicalDb(collection).insert(snapshot);
+    }
+  }
+}
+
+function snapshot(
+  opts,
+  collection,
+  doc,
+  patchProps,
+  _diffProps,
+  historyPresent
+) {
   const { snapshot, diffProps } = snapshotPartial(
+    opts,
     collection,
     doc,
     patchProps,
@@ -131,38 +268,64 @@ function snapshotPush(path, patchProps) {
   return snapshot;
 }
 
-function asOf(collection, doc, date, props) {
-  if (!collection.def.historical) {
-    throw new Error(
-      `Collection "${collection.def.name}" is not historical, cannot $asOf()`
-    );
-  }
+async function asOf(collection, doc, date, props) {
+  switch (collection.def.historical) {
+    case 'document':
+      const hDb = historicalDb(collection),
+        earliest = await hDb.findOne({
+          _partial: false,
+          _on: { $lte: date }
+        });
 
-  if (date instanceof Date) {
-    date = date.getTime();
-  }
+      const priorSnapshots = await (await hDb
+        .find({
+          _on: {
+            $gte: earliest._on,
+            $lte: date
+          }
+        })
+        .sort({ _on: 1 })).toArray();
 
-  if (doc.$historical) {
-    throw new Error('Cannot $asOf() an already-historical document');
-  }
-
-  const history = doc._history;
-  if (doc._history) {
-    for (let hi = history.length - 1; hi >= 0; hi--) {
-      const h = history[hi];
-
-      if (h.o < date) {
-        break;
+      for (const snapshot of priorSnapshots) {
+        _.assign(doc, snapshot);
       }
 
-      diff.patchObj(doc, h.p, props);
-    }
+      break;
 
-    Object.defineProperty(doc, '$historical', {
-      enumerable: false,
-      configurable: false,
-      value: true
-    });
+    case 'patch':
+      if (date instanceof Date) {
+        date = date.getTime();
+      }
+
+      if (doc.$historical) {
+        throw new Error('Cannot $asOf() an already-historical document');
+      }
+
+      const history = doc._history;
+      if (doc._history) {
+        for (let hi = history.length - 1; hi >= 0; hi--) {
+          const h = history[hi];
+
+          if (h.o < date) {
+            break;
+          }
+
+          diff.patchObj(doc, h.p, props);
+        }
+
+        Object.defineProperty(doc, '$historical', {
+          enumerable: false,
+          configurable: false,
+          value: true
+        });
+      }
+
+      break;
+
+    default:
+      throw new Error(
+        `Collection "${collection.def.name}" is not historical, cannot $asOf()`
+      );
   }
 }
 
@@ -190,11 +353,32 @@ function patchPropsFromOpts(opts) {
   return patchProps;
 }
 
+function assignPatchProps(collection, snapshot, patchProps) {
+  switch (collection.def.historical) {
+    case 'document':
+      if (patchProps) {
+        if (patchProps.a) {
+          snapshot._author = patchProps.a;
+        }
+
+        if (patchProps.c) {
+          snapshot._comment = patchProps.a;
+        }
+      }
+      break;
+    case 'patch':
+      _.assign(snapshot, patchProps);
+      break;
+  }
+}
+
 export default {
   asOf,
+  historicalDb,
   link,
   preserveInitialValues,
   snapshotPartial,
+  saveSnapshots,
   snapshot,
   snapshotPush,
   patchPropsFromOpts

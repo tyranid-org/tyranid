@@ -157,10 +157,6 @@ export async function parseInsertObj(col, obj, opts) {
     insertObj[name] = obj[name];
   });
 
-  if (def.historical && obj._history) {
-    insertObj._history = obj._history;
-  }
-
   _.each(fields, function(field, name) {
     const fieldDef = field.def;
 
@@ -195,6 +191,10 @@ export async function parseInsertObj(col, obj, opts) {
     // https://github.com/tyranid-org/tyranid/issues/94
     insertObj.createdAt = insertObj.createdAt || now;
     insertObj.updatedAt = now;
+  }
+
+  if (def.historical && obj._history) {
+    insertObj._history = obj._history;
   }
 
   return insertObj;

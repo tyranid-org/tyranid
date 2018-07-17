@@ -69,6 +69,38 @@ function diffObj(a, b, props) {
   return diffs;
 }
 
+function diffPropsObj(a, b, props) {
+  const diffProps = [];
+
+  // TODO:  maybe implement two versions of this algo, one if props is present, one if it isn't,
+  //        because it's probably faster to outerloop props if it is present
+
+  for (const prop in a) {
+    if (!a.hasOwnProperty(prop) || (props && !props[prop])) {
+      continue;
+    }
+
+    const av = a[prop],
+      bv = b[prop];
+
+    if (!Tyr.isEqual(av, bv)) {
+      diffProps.push(prop);
+    }
+  }
+
+  for (const prop in b) {
+    if (!b.hasOwnProperty(prop) || (props && !props[prop])) {
+      continue;
+    }
+
+    if (!(prop in a)) {
+      diffProps.push(prop);
+    }
+  }
+
+  return diffProps;
+}
+
 function patchObj(a, patch, props) {
   for (let prop in patch) {
     if (props && !props[prop]) {
@@ -295,6 +327,8 @@ function patchArr(a, patch) {
 const ns = {
   diffObj,
   patchObj,
+
+  diffPropsObj,
 
   diffArr,
   patchArr

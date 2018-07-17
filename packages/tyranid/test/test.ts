@@ -408,6 +408,12 @@ describe('tyranid', () => {
       await initModel();
     });
 
+    describe('collections', () => {
+      it('Tyr.byName.X and Tyr.collections.X should be equivalent', () => {
+        expect(Tyr.byName.unit).to.eql(Tyr.collections.Unit);
+      });
+    });
+
     describe('fields', () => {
       it('should support fields object', () => {
         expect(User.paths['name.first']).to.be.instanceof(Tyr.Field);
@@ -1110,9 +1116,13 @@ describe('tyranid', () => {
           'Jill Doe',
           'John',
           'Not a fan of construction companies...',
+          'Sundae',
           'Tom Doe',
+          'Toxulin',
           'Tyranid User Guide',
-          'User'
+          'User',
+          'food',
+          'toxic'
         ];
 
         return (Tyr.valuesBy(
@@ -2267,12 +2277,12 @@ describe('tyranid', () => {
     describe('collection.links()', () => {
       it('should work with no options', () => {
         const links = User.links();
-        expect(links.length).to.be.eql(12);
+        expect(links.length).to.be.eql(13);
       });
 
       it('should work with incoming', () => {
         const links = User.links({ direction: 'incoming' });
-        expect(links.length).to.be.eql(6);
+        expect(links.length).to.be.eql(7);
       });
 
       it('should work with outgoing', () => {
@@ -2285,7 +2295,7 @@ describe('tyranid', () => {
         expect(links.length).to.be.eql(1);
 
         links = User.links({ relate: 'associate' });
-        expect(links.length).to.be.eql(11);
+        expect(links.length).to.be.eql(12);
       });
     });
 
@@ -2493,20 +2503,20 @@ describe('tyranid', () => {
 
       it('find an array of references', async () => {
         const refs = await User.references({ ids: [1, 3] });
-        expect(refs.length).to.eql(5);
+        expect(refs.length).to.eql(7);
       });
 
       it('should support exclude', async () => {
         const refs = await User.references({
           ids: [1, 3],
-          exclude: [Tyr.byName.organization]
+          exclude: [Tyr.byName.organization, Tyr.byName.widget]
         });
         expect(refs.length).to.eql(4);
       });
 
       it('should support idsOnly', async () => {
         const refs = await User.references({ ids: [1, 3], idsOnly: true });
-        expect(refs.length).to.eql(5);
+        expect(refs.length).to.eql(7);
         for (const r of refs) {
           expect(_.keys(r)).to.eql(['_id']);
         }

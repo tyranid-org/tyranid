@@ -15,6 +15,29 @@ function equalCustomizer(a, b) {
   //return undefined;
 }
 
+function equalBsonCustomizer(a, b) {
+  // cannot use instanceof because multiple versions of MongoDB driver are probably being used
+  if (
+    a &&
+    b &&
+    a.constructor.name === 'ObjectID' &&
+    b.constructor.name === 'ObjectID'
+  ) {
+    return a.equals(b);
+  }
+
+  // BSON has deprecated "undefined" and when you save an object with an undefined value, it gets converted to null
+  if (a === undefined) {
+    return b === undefined || b === null;
+  }
+
+  if (b === undefined) {
+    return a === undefined || a === null;
+  }
+
+  //return undefined;
+}
+
 function cloneCustomizer(obj) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
   if (obj && obj.constructor.name === 'ObjectID') {
@@ -255,6 +278,13 @@ const Tyr = {
     return _.isEqualWithp
       ? _.isEqualWith(a, b, equalCustomizer)
       : _.isEqual(a, b, equalCustomizer);
+  },
+
+  isEqualInBson(a, b) {
+    // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
+    return _.isEqualWithp
+      ? _.isEqualWith(a, b, equalBsonCustomizer)
+      : _.isEqual(a, b, equalBsonCustomizer);
   },
 
   isSameId(a, b) {

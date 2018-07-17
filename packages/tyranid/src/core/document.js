@@ -21,7 +21,7 @@ export function toPlain(doc) {
 
 export const documentPrototype = (Tyr.documentPrototype = {
   $asOf(date, props) {
-    historical.asOf(this.$model, this, date, props);
+    return historical.asOf(this.$model, this, date, props);
   },
 
   $clone() {
@@ -78,6 +78,7 @@ export const documentPrototype = (Tyr.documentPrototype = {
       updateFields = extractUpdateFields(this, opts);
 
     return historical.snapshot(
+      opts,
       collection,
       this,
       historical.patchPropsFromOpts(opts),
