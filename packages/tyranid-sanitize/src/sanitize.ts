@@ -3,10 +3,22 @@ import { Tyr } from 'tyranid';
 
 export type SanitizeConfig = boolean | 'name' | 'email' | 'lorem';
 
-export interface SanitizeOptions {
+interface SanitizeOptions {
+  /**
+   * desired name of the output database
+   */
   outDbName?: string;
+  /**
+   * number of documents to batch insert at a time
+   */
   batchSize?: number;
+  /**
+   * verbose progress logging
+   */
   verbose?: boolean;
+  /**
+   * sanitize each collection serially (defaults to concurrently)
+   */
   serial?: boolean;
 }
 
