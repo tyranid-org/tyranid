@@ -73,5 +73,9 @@ interface SanitizeOptions {
    * faker.js seed
    */
   seed?: number;
+  /**
+   * sanitize every string field automatically
+   */
+  autoSanitize?: boolean;
 }
 ```

@@ -24,6 +24,10 @@ export interface SanitizeOptions {
    * faker.js seed
    */
   seed?: number;
+  /**
+   * sanitize every string field automatically
+   */
+  autoSanitize?: boolean;
 }
 
 export interface WalkState {
@@ -115,6 +119,7 @@ function createDocumentSanitizer(
   def: Tyr.CollectionDefinitionHydrated,
   opts: SanitizeOptions
 ) {
+  const { autoSanitize } = opts;
   const { log } = createLogger(opts);
 
   /**
@@ -162,6 +167,9 @@ function createDocumentSanitizer(
 
       default: {
         const sanitizeConfig = fieldDef.sanitize;
+        if (autoSanitize && is === 'string') {
+          return getSanitizedValue(value, true);
+        }
         return getSanitizedValue(value, sanitizeConfig);
       }
     }
