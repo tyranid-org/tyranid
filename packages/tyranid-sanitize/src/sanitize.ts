@@ -167,10 +167,16 @@ function createDocumentSanitizer(
 
       default: {
         const sanitizeConfig = fieldDef.sanitize;
+
+        if (sanitizeConfig) {
+          return getSanitizedValue(value, sanitizeConfig);
+        }
+
         if (autoSanitize && is === 'string') {
           return getSanitizedValue(value, true);
         }
-        return getSanitizedValue(value, sanitizeConfig);
+
+        return value;
       }
     }
   };
