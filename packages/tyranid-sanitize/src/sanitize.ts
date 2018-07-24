@@ -32,6 +32,7 @@ export interface SanitizeOptions {
 
 export interface WalkState {
   path: string;
+  $id: string;
 }
 
 /**
@@ -120,7 +121,16 @@ function createDocumentSanitizer(
   opts: SanitizeOptions
 ) {
   const { autoSanitize } = opts;
-  const { log } = createLogger(opts);
+  const { warn } = createLogger(opts);
+
+  const skip = (state: WalkState, value: Tyr.RawMongoDocument) => {
+    warn(
+      `skipping field ${state.path} on document id=${state.$id} (${
+        def.name
+      }) as it doesn't match the schema`
+    );
+    return value;
+  };
 
   /**
    * document walker
@@ -132,15 +142,15 @@ function createDocumentSanitizer(
     value: Tyr.RawMongoDocument,
     fieldDef: Tyr.FieldDefinition,
     state: WalkState
-  ) => {
+  ): any => {
     const { is } = fieldDef;
-    if (!is || !value) return value;
+    if (!is) return value;
 
     switch (is) {
       case 'array': {
         const { of } = fieldDef;
-        if (!of) return [];
-
+        if (!of || !value) return value;
+        if (!Array.isArray(value)) return skip(state, []);
         return value.map((i: Tyr.RawMongoDocument) =>
           walk(i, of, extendPaths('[]', state))
         );
@@ -148,7 +158,9 @@ function createDocumentSanitizer(
 
       case 'object': {
         const fields = fieldDef.fields;
-        if (!fields) return value;
+        if (!fields || !value) return value;
+        if (typeof value !== 'object') return skip(state, {});
+
         const out: Tyr.RawMongoDocument = {};
         for (const field in fields) {
           const innerFieldDef = fields[field].def;
@@ -186,7 +198,7 @@ function createDocumentSanitizer(
    */
   return (doc: Tyr.RawMongoDocument) => {
     const out: Tyr.RawMongoDocument = {};
-    const state = extendPaths(def.name);
+    const state = extendPaths(def.name, { path: '', $id: doc.$id.toString() });
     for (const field in def.fields) {
       out[field] = walk(
         doc[field],
@@ -219,6 +231,7 @@ function createLogger(opts: SanitizeOptions) {
   const { verbose } = opts;
   const format = (str: string) => `tyranid-sanitize: ${str}`;
   const log = (str: string) => verbose && console.log(format(str));
+  const warn = (str: string) => verbose && console.warn(format(str));
   const error = (str: string) => {
     throw new Error(str);
   };
@@ -226,11 +239,12 @@ function createLogger(opts: SanitizeOptions) {
   return {
     format,
     log,
-    error
+    error,
+    warn
   };
 }
 
-function extendPaths(path: string, state: WalkState = { path: '' }): WalkState {
+function extendPaths(path: string, state: WalkState): WalkState {
   return {
     ...state,
     path: `${state.path}.${path}`
