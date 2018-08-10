@@ -1,0 +1,27 @@
+{
+  "name": "tyranid-sanitize",
+  "version": "0.5.7",
+  "main": "./dist/src/index.js",
+  "typings": "./dist/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "tyranid": "^0.5.0"
+  },
+  "dependencies": {
+    "faker": "4.1.0"
+  },
+  "scripts": {
+    "pretest": "npm run build",
+    "prepublish": "npm run test",
+    "test": "ava",
+    "build": "npm run tsc",
+    "tsc": "rm -rf ./dist/ && tsc"
+  },
+  "ava": {
+    "files": [
+      "dist/test/index.js"
+    ]
+  }
+}

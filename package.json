@@ -1,8 +1,6 @@
 {
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "docs": "ts-node ./doc/doc.js",
     "clean": "sh ./scripts/clean.sh",
@@ -10,10 +8,13 @@
     "build-tyranid": "sh ./scripts/build-tyranid.sh",
     "nd": "npm run clean && yarn",
     "quick-test": "npm run build && sh ./scripts/test.sh",
-    "test": "npm run build && npm run prettier && npm run lint && sh ./scripts/test.sh",
+    "test":
+      "npm run build && npm run prettier && npm run lint && sh ./scripts/test.sh",
     "test-tyranid": "npm run build-tyranid && sh ./scripts/test-tyranid.sh",
-    "lint": "tslint './packages/*/{test,src}/{!typings}/*.{ts,js}' --format stylish --fix",
-    "prettier": "prettier --write --loglevel error --single-quote true \"./packages/*/{test,src}/**/*.{ts,js}\"",
+    "lint":
+      "tslint './packages/*/{test,src}/{!typings}/*.{ts,js}' --format stylish --fix",
+    "prettier":
+      "prettier --write --loglevel error --single-quote true \"./packages/*/{test,src}/**/*.{ts,js}\"",
     "watch": "cd ./packages/tyranid && npm run watch",
     "bump": "npm run test && lerna publish"
   },
@@ -24,6 +25,7 @@
     "@types/connect-mongo": "0.0.33",
     "@types/express": "^4.11.0",
     "@types/express-session": "1.15.8",
+    "@types/faker": "4.1.2",
     "@types/graphql": "^0.12.3",
     "@types/lodash": "3.10.1",
     "@types/mocha": "2.2.43",

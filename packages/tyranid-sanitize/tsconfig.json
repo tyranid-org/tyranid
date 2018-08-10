@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true,
+    "strict": true,
+    "removeComments": false,
+    "pretty": true,
+    "outDir": "./dist/",
+    "inlineSourceMap": true,
+    "lib": ["es2015"],
+    "skipLibCheck": true
+  },
+  "files": ["./src/index.ts", "./test/index.ts"]
+}
