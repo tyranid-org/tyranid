@@ -5,7 +5,7 @@ import diff from '../diff/diff';
 import Tyr from '../tyr';
 import { OperationCanceledException } from '../../../../node_modules/typescript';
 
-function link(collection) {
+export function link(collection) {
   const _historicalFields = {};
 
   switch (collection.def.historical) {
@@ -30,7 +30,7 @@ function link(collection) {
   collection._historicalFieldsLen = _.keys(_historicalFields).length;
 }
 
-function preserveInitialValues(collection, doc, props) {
+export function preserveInitialValues(collection, doc, props) {
   let orig = doc.$orig;
 
   if (!orig) {
@@ -77,7 +77,7 @@ function isPartial(collection, fields) {
   return false;
 }
 
-function snapshotPartial(
+export function snapshotPartial(
   opts,
   collection,
   doc,
@@ -200,11 +200,11 @@ function snapshotPartial(
   return { snapshot, diffProps: _diffProps };
 }
 
-function historicalDb(collection) {
+export function historicalDb(collection) {
   return Tyr.db.collection(collection.def.dbName + '_history');
 }
 
-async function saveSnapshots(collection, docs) {
+export async function saveSnapshots(collection, docs) {
   if (Array.isArray(docs)) {
     const snapshots = docs
       .map(doc => {
@@ -231,7 +231,7 @@ async function saveSnapshots(collection, docs) {
   }
 }
 
-function snapshot(
+export function snapshot(
   opts,
   collection,
   doc,
@@ -255,7 +255,7 @@ function snapshot(
   return snapshot;
 }
 
-function snapshotPush(path, patchProps) {
+export function snapshotPush(path, patchProps) {
   const snapshot = {
     o: new Date().getTime(),
     p: { [Tyr.NamePath.encode(path)]: 1 }
@@ -268,7 +268,7 @@ function snapshotPush(path, patchProps) {
   return snapshot;
 }
 
-async function asOf(collection, doc, date, props) {
+export async function asOf(collection, doc, date, props) {
   switch (collection.def.historical) {
     case 'document':
       const hDb = historicalDb(collection),
@@ -329,7 +329,7 @@ async function asOf(collection, doc, date, props) {
   }
 }
 
-function patchPropsFromOpts(opts) {
+export function patchPropsFromOpts(opts) {
   let patchProps; // = undefined;
 
   if (opts) {
@@ -372,14 +372,76 @@ function assignPatchProps(collection, snapshot, patchProps) {
   }
 }
 
-export default {
-  asOf,
-  historicalDb,
-  link,
-  preserveInitialValues,
-  snapshotPartial,
-  saveSnapshots,
-  snapshot,
-  snapshotPush,
-  patchPropsFromOpts
-};
+export async function migratePatchToDocument(collection, progress) {
+  const historyDb = historicalDb(collection);
+
+  const cursor = await collection.db.find();
+
+  let opn = 0,
+    opc = 0;
+
+  // note each block count has multiple operations, so this is more like an op count of 4096 * ~10
+  const blockSize = 4096;
+
+  let bulkOp = historyDb.initializeUnorderedBulkOp();
+
+  let doc;
+  while ((doc = await cursor.next())) {
+    migrateDocumentPatchToDocument(bulkop, doc);
+    opn++;
+
+    if (opn >= blockSize) {
+      await bulkOp.execute();
+      bulkop = historyDb.initializeUnorderedBulkOp();
+      opc += opn;
+      opn = 0;
+
+      progress && progress(opc);
+    }
+  }
+
+  if (opn) {
+    opc += opn;
+    await bulkOp.execute();
+    progress && progress(opc);
+  }
+}
+
+function migrateDocumentPatchToDocument(bulkop, document) {
+  const collection = document.$model,
+    history = document._history;
+
+  if (history) {
+    for (let hi = history.length - 1; hi >= 0; hi--) {
+      const h = history[hi];
+
+      diff.patchObj(doc, h.p, props);
+
+      const snapshot = {
+        __id: doc._id,
+        _on: new Date(h.o),
+        _partial: false
+      };
+
+      for (const fieldName in collection._historicalFields) {
+        const v = doc[fieldName];
+
+        if (v !== undefined) {
+          snapshot[fieldName] = v;
+        }
+      }
+
+      if (h.a) {
+        snapshot._author = h.a;
+      }
+
+      if (h.c) {
+        snapshot._comment = h.c;
+      }
+
+      bulkOps.insert(snapshot);
+    }
+
+    bulkOps.find({ _id: document._id }).updateOne({ $unset: { _history: 1 } });
+  }
+}

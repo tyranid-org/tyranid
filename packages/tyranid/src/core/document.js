@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 
 import Tyr from '../tyr';
 import ObjectType from '../type/object';
-import historical from '../historical/historical';
+import * as historical from '../historical/historical';
 
 export function toPlain(doc) {
   const plain = {};

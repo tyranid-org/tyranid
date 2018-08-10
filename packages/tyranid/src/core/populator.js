@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import Tyr from '../tyr';
-import historical from '../historical/historical';
+import * as historical from '../historical/historical';
 
 const $all = Tyr.$all;
 

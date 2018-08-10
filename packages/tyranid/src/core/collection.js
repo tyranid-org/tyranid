@@ -10,7 +10,7 @@ import NamePath from './namePath';
 import Field from './field';
 import SecureError from '../secure/secureError';
 
-import historical from '../historical/historical';
+import * as historical from '../historical/historical';
 
 import { documentPrototype, defineDocumentProperties } from './document';
 
@@ -28,6 +28,7 @@ import {
   extractUpdateFields,
   isArrow
 } from '../common';
+import { textChangeRangeIsUnchanged } from '../../../../node_modules/typescript';
 
 const { collections, labelize } = Tyr;
 
@@ -2086,6 +2087,10 @@ export default class Collection {
   addValue(doc) {
     this.def.values.push(doc);
     this.byIdIndex[doc.$id] = doc;
+  }
+
+  migratePatchToDocument(progress) {
+    return historical.migratePatchToDocument(this, progress);
   }
 }
 

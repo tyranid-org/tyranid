@@ -3,7 +3,7 @@ import * as chai from 'chai';
 import * as mongodb from 'mongodb';
 
 import Tyr from '../src/tyranid';
-import historical from '../src/historical/historical';
+import * as historical from '../src/historical/historical';
 
 const { ObjectId } = mongodb;
 
