@@ -715,6 +715,8 @@ declare namespace Tyranid {
 
       labelFor(doc: MaybeRawDocument): string;
       labels(text: string | string[]): LabelList;
+
+      migratePatchToDocument(progress: (count: number) => void): Promise<void>;
       mixin(def: FieldDefinition): void;
 
       on(opts: EventOnOptions): () => void;
