@@ -28,6 +28,7 @@ const Subscription = new Collection({
 interface LocalListener {
   [collectionId: string]: {
     changeHandlerDereg: () => void,
+    removeHandlerDereg: () => void,
     queries: {
       [queryStr: string]: {
         queryObj: MongoDBQuery,
@@ -45,7 +46,7 @@ interface LocalListener {
 
 let localListeners /*: LocalListener*/ = {};
 
-async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
+async function fireEvent(colId, queryDef, refinedDocument, refinedQuery, type) {
   //con sole.log('fireEvent', colId, queryDef, refinedDocument, refinedQuery);
   if (Tyr.logging.trace)
     Tyr.trace({
@@ -64,7 +65,8 @@ async function fireEvent(colId, queryDef, refinedDocument, refinedQuery) {
       document: refinedDocument,
       type: 'subscriptionEvent',
       when: 'pre',
-      instanceId: instanceId
+      instanceId: instanceId,
+      subType: type
     });
 
     if (instanceId === Tyr.instanceId) {
@@ -108,7 +110,11 @@ async function parseSubscriptions(subscription, userId) {
 
     for (const colId in localListeners) {
       const listener = localListeners[colId];
-      listener && listener.changeHandlerDereg && listener.changeHandlerDereg();
+
+      if (listener) {
+        listener.changeHandlerDereg && listener.changeHandlerDereg();
+        listener.removeHandlerDereg && listener.removeHandlerDereg();
+      }
     }
 
     localListeners = {};
@@ -135,13 +141,17 @@ async function parseSubscriptions(subscription, userId) {
 
             if (document) {
               if (Query.matches(queryDef.queryObj, document)) {
-                promises.push(fireEvent(colId, queryDef, document));
+                promises.push(
+                  fireEvent(colId, queryDef, document, undefined, 'change')
+                );
               }
             } else if (_documents) {
               promises.push(
                 ..._documents
                   .filter(doc => Query.matches(queryDef.queryObj, doc))
-                  .map(doc => fireEvent(colId, queryDef, doc))
+                  .map(doc =>
+                    fireEvent(colId, queryDef, doc, undefined, 'change')
+                  )
               );
             } else {
               /*if (query)*/ const refinedQuery = Query.intersection(
@@ -149,7 +159,50 @@ async function parseSubscriptions(subscription, userId) {
                 query
               );
               if (refinedQuery) {
-                promises.push(fireEvent(colId, queryDef, null, refinedQuery));
+                promises.push(
+                  fireEvent(colId, queryDef, null, refinedQuery, 'change')
+                );
+              }
+            }
+          }
+
+          await Promise.all(promises);
+        }
+      });
+
+      const removeHandlerDereg = col.on({
+        type: 'remove',
+        handler: async event => {
+          //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' remove:'); //, event);
+          const { document, query, _documents } = event;
+          const promises = [];
+
+          for (const queryStr in listener.queries) {
+            const queryDef = listener.queries[queryStr];
+
+            if (document) {
+              if (Query.matches(queryDef.queryObj, document)) {
+                promises.push(
+                  fireEvent(colId, queryDef, document, undefined, 'remove')
+                );
+              }
+            } else if (_documents) {
+              promises.push(
+                ..._documents
+                  .filter(doc => Query.matches(queryDef.queryObj, doc))
+                  .map(doc =>
+                    fireEvent(colId, queryDef, doc, undefined, 'remove')
+                  )
+              );
+            } else {
+              /*if (query)*/ const refinedQuery = Query.intersection(
+                queryDef.queryObj,
+                query
+              );
+              if (refinedQuery) {
+                promises.push(
+                  fireEvent(colId, queryDef, null, refinedQuery, 'remove')
+                );
               }
             }
           }
@@ -160,6 +213,7 @@ async function parseSubscriptions(subscription, userId) {
 
       listener = localListeners[colId] = {
         changeHandlerDereg,
+        removeHandlerDereg,
         queries: {}
       };
     }
@@ -359,6 +413,7 @@ async function handleSubscriptionEvent(event) {
       if (userIds[socket.userId]) {
         socket.emit('subscriptionEvent', {
           colId: event.dataCollectionId,
+          type: event.subType,
           docs: documents.map(doc => doc.$toClient())
         });
       }

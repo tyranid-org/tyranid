@@ -18,6 +18,7 @@ import './type/password';
 import './type/string';
 import './type/time';
 import './type/uid';
+import './type/units';
 import './type/url';
 
 import Type from './core/type';

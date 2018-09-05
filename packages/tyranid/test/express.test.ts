@@ -216,8 +216,10 @@ export function add() {
           await page.evaluate(`
 const Location = Tyr.byName.location;
 Location.subscribe({});
-window._gotEvent = false;
-Location.on({ type: 'change', handler(event) { window._gotEvent = true; } });`);
+window._gotChangeEvent = false;
+window._gotRemoveEvent = false;
+Location.on({ type: 'change', handler(event) { window._gotChangeEvent = true; } });
+Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } });`);
 
           await Tyr.sleepUntil(async () =>
             Subscription.exists({
@@ -229,7 +231,18 @@ Location.on({ type: 'change', handler(event) { window._gotEvent = true; } });`);
 
           await Tyr.sleepUntil(async () =>
             page.evaluate(
-              'Tyr.byName.location.values.length === 1 && window._gotEvent'
+              'Tyr.byName.location.values.length === 1 && window._gotChangeEvent'
+            )
+          );
+
+          const location = await Location.findOne({
+            query: { name: 'Yosemite Valley' }
+          });
+          await location!.$remove();
+
+          await Tyr.sleepUntil(async () =>
+            page.evaluate(
+              'Tyr.byName.location.values.length === 0 && window._gotRemoveEvent'
             )
           );
         } finally {

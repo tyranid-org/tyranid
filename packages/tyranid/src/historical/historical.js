@@ -387,12 +387,12 @@ export async function migratePatchToDocument(collection, progress) {
 
   let doc;
   while ((doc = await cursor.next())) {
-    migrateDocumentPatchToDocument(bulkop, doc);
+    migrateDocumentPatchToDocument(bulkOp, collection, doc);
     opn++;
 
     if (opn >= blockSize) {
       await bulkOp.execute();
-      bulkop = historyDb.initializeUnorderedBulkOp();
+      bulkOp = historyDb.initializeUnorderedBulkOp();
       opc += opn;
       opn = 0;
 
@@ -405,17 +405,18 @@ export async function migratePatchToDocument(collection, progress) {
     await bulkOp.execute();
     progress && progress(opc);
   }
+
+  await collection.db.update({}, { $unset: { _history: 1 } }, { multi: true });
 }
 
-function migrateDocumentPatchToDocument(bulkop, document) {
-  const collection = document.$model,
-    history = document._history;
+function migrateDocumentPatchToDocument(bulkOp, collection, doc) {
+  const history = doc._history;
 
   if (history) {
     for (let hi = history.length - 1; hi >= 0; hi--) {
       const h = history[hi];
 
-      diff.patchObj(doc, h.p, props);
+      diff.patchObj(doc, h.p);
 
       const snapshot = {
         __id: doc._id,
@@ -439,9 +440,7 @@ function migrateDocumentPatchToDocument(bulkop, document) {
         snapshot._comment = h.c;
       }
 
-      bulkOps.insert(snapshot);
+      bulkOp.insert(snapshot);
     }
-
-    bulkOps.find({ _id: document._id }).updateOne({ $unset: { _history: 1 } });
   }
 }

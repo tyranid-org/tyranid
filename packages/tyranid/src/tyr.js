@@ -264,7 +264,7 @@ const Tyr = {
         throw new Error(`Condition failed to occur within ${maxMs}ms`);
       }
 
-      await sleep(everyMs);
+      await Tyr.sleep(everyMs);
       totalMs += everyMs;
     }
   },

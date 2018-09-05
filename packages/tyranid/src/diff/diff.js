@@ -161,7 +161,11 @@ function patchObj(a, patch, props) {
 
           switch (type) {
             case T_ARRAY:
-              patchArr(a[prop], ipatch);
+              let arr = a[prop];
+              if (!arr) {
+                arr = a[prop] = [];
+              }
+              patchArr(arr, ipatch);
               continue;
 
             case T_OBJECT:

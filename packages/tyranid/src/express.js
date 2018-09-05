@@ -866,7 +866,7 @@ export function generateClientLibrary() {
     }).then(docs => {
       const docs = docs.map(doc => new this(doc));
       for (const d of docs) {
-        this.cache(d, true);
+        this.cache(d, undefined, true);
       }
 
       resolve();
@@ -1026,10 +1026,21 @@ export function generateClientLibrary() {
     }
   }
 
-  Collection.prototype.cache = function(doc, silent) {
+  Collection.prototype.cache = function(doc, type, silent) {
     const existing = this.byIdIndex[doc._id];
 
-    if (existing) {
+    if (type === 'remove') {
+      delete this.byIdIndex[doc._id];
+      const idx = this.values.indexOf(existing);
+      if (idx >= 0) {
+        this.values.splice(idx, 1);
+      }
+
+      // TODO:  send existing or doc?
+      if (!silent) fireDocUpdate(existing, 'remove');
+      return existing;
+
+    } else if (existing) {
       const fields = this.fields;
       for (const fName in fields) {
         if (fields.hasOwnProperty(fName)) {
@@ -1096,7 +1107,7 @@ export function generateClientLibrary() {
       var col = Tyr.byId[data.colId];
 
       _.each(data.docs, function(doc) {
-        col.cache(doc);
+        col.cache(doc, data.type);
       });
     });
   };
