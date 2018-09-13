@@ -206,26 +206,22 @@ export function historicalDb(collection) {
 
 export async function saveSnapshots(collection, docs) {
   if (Array.isArray(docs)) {
-    const snapshots = docs
-      .map(doc => {
-        const snapshot = doc.$_snapshot;
-        snapshot.__id = doc._id;
-        return snapshot;
-      })
-      .filter(doc => doc);
-    for (const doc of docs) {
+    const snapshots = docs.filter(doc => doc && doc.$_snapshot).map(doc => {
+      const snapshot = doc.$_snapshot;
       delete doc.$_snapshot;
-    }
+      snapshot.__id = doc._id;
+      return snapshot;
+    });
 
     if (snapshots.length) {
       await historicalDb(collection).insertMany(snapshots);
     }
   } else {
     const snapshot = docs.$_snapshot;
-    snapshot.__id = docs._id;
-    delete docs.$_snapshot;
-
     if (snapshot) {
+      snapshot.__id = docs._id;
+      delete docs.$_snapshot;
+
       await historicalDb(collection).insert(snapshot);
     }
   }
@@ -380,8 +376,8 @@ export async function migratePatchToDocument(collection, progress) {
   let opn = 0,
     opc = 0;
 
-  // note each block count has multiple operations, so this is more like an op count of 4096 * ~10
-  const blockSize = 4096;
+  // note each block count has multiple operations, so this is more like an op count of 512 * ~10
+  const blockSize = 512;
 
   let bulkOp = historyDb.initializeUnorderedBulkOp();
 

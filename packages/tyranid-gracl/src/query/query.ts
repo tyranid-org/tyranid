@@ -50,12 +50,14 @@ export async function query(
   subjectDocument: Tyr.Document,
   debug: true
 ): Promise<{ debug: DebugResult; query: {} }>;
+
 export async function query(
   plugin: GraclPlugin,
   queriedCollection: Tyr.CollectionInstance,
   permissionType: string,
   subjectDocument?: Tyr.Document
 ): Promise<boolean | {}>;
+
 export async function query(
   plugin: GraclPlugin,
   queriedCollection: Tyr.CollectionInstance,
