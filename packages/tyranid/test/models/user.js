@@ -124,7 +124,9 @@ var User = new tyr.Collection({
 
     other: { is: 'object' },
 
-    lochNess: { link: 'lochNess?' }
+    lochNess: { link: 'lochNess?' },
+
+    custom: { is: 'object', custom: true }
   },
   methods: {
     canDrink: {

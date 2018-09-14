@@ -130,16 +130,14 @@ Collection.prototype.fieldsFor = async function(obj) {
         return;
       }
 
-      // TODO:  this is affecting Collection.fields and Collection.paths ...
-      //        maybe pass in a "dynamic" flag to createCompiler() to not set those?
-      this.createCompiler(collection, def, 'compile').fields(
+      this.createCompiler(collection, def, 'compile', true).fields(
         '',
-        collection,
+        def,
         def.fields
       );
-      this.createCompiler(collection, def, 'link').fields(
+      this.createCompiler(collection, def, 'link', true).fields(
         '',
-        collection,
+        def,
         def.fields
       );
 

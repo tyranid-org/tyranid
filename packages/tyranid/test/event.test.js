@@ -315,5 +315,22 @@ export function add() {
         dereg();
       }
     });
+
+    it('should let you define custom events', async () => {
+      let count = 0;
+
+      User.on({
+        type: 'myCustomEvent',
+        async handler(event) {
+          count++;
+        }
+      });
+
+      await User.fire({
+        type: 'myCustomEvent'
+      });
+
+      await Tyr.sleepUntil(() => count);
+    });
   });
 }

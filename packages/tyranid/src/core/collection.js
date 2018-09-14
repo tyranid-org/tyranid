@@ -1576,7 +1576,7 @@ export default class Collection {
     return new NamePath(this, path);
   }
 
-  createCompiler(collection, def, stage) {
+  createCompiler(collection, def, stage, dynamic) {
     const compiler = {
       stage: stage,
 
@@ -1645,7 +1645,9 @@ export default class Collection {
           field.group = fieldDef.group;
         }
 
-        collection.paths[path] = field;
+        if (!dynamic) {
+          collection.paths[path] = field;
+        }
         const lastDot = path.lastIndexOf('.');
         const fieldName = lastDot > -1 ? path.substring(lastDot + 1) : path;
         field.name = fieldName;
@@ -1853,7 +1855,9 @@ export default class Collection {
           }
 
           const parentFields = (parent.fields = parent.fields || {});
+          //if (!dynamic) {
           parentFields[name] = field;
+          //}
           field.parent = parent;
 
           compiler.field(path ? path + '.' + name : name, field);

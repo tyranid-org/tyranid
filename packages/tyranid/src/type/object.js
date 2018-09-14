@@ -37,6 +37,8 @@ const ObjectType = new Type({
 
     if (!_.size(fields)) {
       // this is defined as just an empty object, meaning it's 100% dynamic, grab everything
+
+      // TODO:  this should probably clone the value ?
       return value;
     } else {
       const obj = {};

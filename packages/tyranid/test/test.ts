@@ -525,7 +525,7 @@ describe('tyranid', () => {
 
       it('should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(22);
+        expect(_.values(fields).length).to.be.eql(23);
       });
 
       it('should set dyn fields on insert for matching objects', async () => {

@@ -43,6 +43,7 @@ Collection.prototype.on = function(opts) {
           opts.when = 'post';
           break;
         default:
+          // TODO-ELK:  not sure this makes sense, this should probably be 'post' as well?
           opts.when = 'pre';
       }
     } else {
@@ -144,6 +145,10 @@ export default class Event {
   }
 
   static async fire(event) {
+    if (!event.when) {
+      event.when = 'pre'; // TODO-ELK:  change this to 'post'
+    }
+
     const instanceId =
       event.instanceId && event.instanceId !== Tyr.instanceId
         ? event.instanceId
@@ -206,6 +211,7 @@ export default class Event {
 
       if (handlers && handlers.length) {
         for (const onOpts of handlers) {
+          // TODO-ELK:  should this be 'post' instead?
           const when = onOpts.when || 'pre';
 
           if (when === event.when || when === 'both') {

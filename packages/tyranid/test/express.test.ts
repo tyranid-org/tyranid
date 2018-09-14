@@ -110,6 +110,9 @@ export function add() {
     });
 
     it('should support fields', async () => {
+      // the custom fields not already be in the base fields
+      expect(User.fields.custom.fields).to.be.undefined;
+
       let result = await fetch(urlPrefix + '/api/user/custom', {
         method: 'put',
         headers: {
@@ -118,10 +121,13 @@ export function add() {
         body: JSON.stringify({ organization: 1 })
       });
       let json = await result.json();
-      expect(_.keys(json.fields)).to.eql(['acmeY', 'custom']);
+      expect(_.keys(json.fields)).to.eql(['custom', 'acmeY']);
 
       // should also merge nested fields
       expect(_.keys(json.fields.custom.fields)).to.eql(['nested1', 'nested2']);
+
+      // it should NOT modify the base fields
+      expect(User.fields.custom.fields).to.be.undefined;
 
       expect(json.fields.custom.fields.nested1.label).to.eql('Nested 1');
 
