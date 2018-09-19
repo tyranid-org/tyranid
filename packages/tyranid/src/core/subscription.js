@@ -126,6 +126,13 @@ async function parseSubscriptions(subscription, userId) {
     const colId = sub.c,
       col = Tyr.byId[colId];
 
+    if (!col) {
+      console.warn(
+        `Existing subscription to collection id ${colId} which no longer exists -- skipping`
+      );
+      continue;
+    }
+
     let listener = localListeners[colId];
 
     if (!localListeners[colId]) {

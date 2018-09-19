@@ -170,6 +170,8 @@ export function add() {
       });
 
       it('should $update() partially', async () => {
+        await widgetHistoryDb.remove({});
+
         let w = widget1();
         await w.$save();
 
