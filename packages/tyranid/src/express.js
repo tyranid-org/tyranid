@@ -1106,9 +1106,11 @@ export function generateClientLibrary() {
     Tyr.socket.on('subscriptionEvent', function(data) {
       var col = Tyr.byId[data.colId];
 
-      _.each(data.docs, function(doc) {
-        col.cache(doc, data.type);
-      });
+      if (col) {
+        _.each(data.docs, function(doc) {
+          col.cache(doc, data.type);
+        });
+      }
     });
   };
 

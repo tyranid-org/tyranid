@@ -273,17 +273,19 @@ export async function asOf(collection, doc, date, props) {
           _on: { $lte: date }
         });
 
-      const priorSnapshots = await (await hDb
-        .find({
-          _on: {
-            $gte: earliest._on,
-            $lte: date
-          }
-        })
-        .sort({ _on: 1 })).toArray();
+      if (earliest) {
+        const priorSnapshots = await (await hDb
+          .find({
+            _on: {
+              $gte: earliest._on,
+              $lte: date
+            }
+          })
+          .sort({ _on: 1 })).toArray();
 
-      for (const snapshot of priorSnapshots) {
-        _.assign(doc, snapshot);
+        for (const snapshot of priorSnapshots) {
+          _.assign(doc, snapshot);
+        }
       }
 
       break;
