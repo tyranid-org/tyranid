@@ -221,8 +221,8 @@ export function add() {
         expect(_.keys(department.creator$)).to.eql([
           '_id',
           'name',
-          'homepage',
-          'age'
+          'age',
+          'homepage'
         ]);
       });
     });

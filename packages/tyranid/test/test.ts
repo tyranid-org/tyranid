@@ -18,6 +18,7 @@ import * as testDiff from './diff.test';
 import * as testEvent from './event.test';
 import * as testExpress from './express.test';
 import * as testFake from './fake.test';
+import * as testFunction from './function.test';
 import * as testHistorical from './historical.test';
 import * as testPopulation from './population.test';
 import * as testQuery from './query.test';
@@ -1009,6 +1010,13 @@ describe('tyranid', () => {
         expect(Task.def.fields.assigneeUid.label).to.be.eql('Assignee UID');
         expect(User.def.fields.birthDate.label).to.be.eql('Dyn Birth Date');
       });
+
+      it('should support labels()', async () => {
+        const labels = await User.labels('John');
+
+        expect(labels.length).to.eql(1);
+        expect(labels[0].fullName).to.eql('John Doe');
+      });
     });
 
     describe('saving', () => {
@@ -1076,16 +1084,20 @@ describe('tyranid', () => {
       it('should support valuesFor()', () => {
         const userStrings = [
           'An',
+          'An Anon',
           'Anon',
           'Bill Doe',
           'Developer',
           'Doe',
           'Eats at Chipotle way to much...',
+          'Employee',
           'George Doe',
           'Jane',
+          'Jane Doe',
           'Jill',
           'Jill Doe',
           'John',
+          'John Doe',
           'Not a fan of construction companies...',
           'Tom Doe'
         ];
@@ -1103,18 +1115,22 @@ describe('tyranid', () => {
           'Acme Unlimited',
           'Administrator',
           'An',
+          'An Anon',
           'Anon',
           'Bill Doe',
           'Developer',
           'Doe',
           'Eats at Chipotle way to much...',
+          'Employee',
           'Engineering',
           'George Doe',
           'Home Gardening 101',
           'Jane',
+          'Jane Doe',
           'Jill',
           'Jill Doe',
           'John',
+          'John Doe',
           'Not a fan of construction companies...',
           'Sundae',
           'Tom Doe',
@@ -1852,7 +1868,7 @@ describe('tyranid', () => {
           const user = result!.value;
           expect(user.age).to.be.eql(31);
           expect((user as any).updatedAt).to.exist;
-          expect(user.title).to.not.exist;
+          expect(user.title).to.eql('Employee');
         });
       });
 
@@ -2578,6 +2594,7 @@ describe('tyranid', () => {
     testExpress.add();
     testEvent.add();
     testFake.add();
+    testFunction.add();
     testQuery.add();
     testDiff.add();
     testHistorical.add();

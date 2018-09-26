@@ -1446,7 +1446,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.put) {
         r.put(async function(req, res) {
           try {
-            const doc = col.fromClient(req.body, undefined, { req });
+            let doc = col.fromClient(req.body, undefined, { req });
 
             if (doc._id) {
               const existingDoc = await col.findOne({
@@ -1457,6 +1457,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               });
               _.assign(existingDoc, doc);
               await existingDoc.$save({ auth: req.user, user: req.user, req });
+              doc = existingDoc;
             } else {
               await doc.$save({ auth: req.user, user: req.user, req });
             }
@@ -1712,13 +1713,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
         r.all(auth);
         r.get(async (req, res) => {
           try {
-            const query = {
-              [col.labelField.path]: new RegExp(req.params.search, 'i')
-            };
-
-            const results = await col.findAll({
-              query,
-              fields: { [col.labelField.path]: 1 },
+            const results = await col.labels(req.params.search, {
               auth: req.user,
               user: req.user,
               req
@@ -1760,9 +1755,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   req
                 });
 
-                const results = await to.findAll({
-                  query,
-                  fields: { [to.labelField.path]: 1 },
+                const results = await to.labels(query, {
                   auth: req.user,
                   user: req.user,
                   req

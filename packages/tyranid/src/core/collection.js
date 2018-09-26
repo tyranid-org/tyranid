@@ -586,6 +586,33 @@ export default class Collection {
     return doc[labelField.path];
   }
 
+  async labels(text, opts) {
+    const lf = this.labelField;
+
+    const query = _.isObject(text)
+      ? text
+      : {
+          [lf.path]: new RegExp(text, 'i')
+        };
+
+    const fields = {
+      [lf.path]: 1
+    };
+
+    const getFn = lf.def.get;
+    if (getFn) {
+      const paths = Tyr.functions.paths(getFn);
+
+      for (const path of paths) {
+        fields[path] = 1;
+      }
+    }
+
+    console.log('fields', fields);
+
+    return await this.findAll({ query, fields, ...opts });
+  }
+
   find(...args) {
     const collection = this,
       opts = extractOptions(collection, args);

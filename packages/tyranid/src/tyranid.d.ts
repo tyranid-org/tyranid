@@ -35,6 +35,10 @@ declare namespace Tyranid {
     export const query: QueryStatic;
     export const secure: Secure;
 
+    export namespace functions {
+      export function paths(fn: Function): String[];
+    }
+
     export function U(text: string | TemplateStringsArray | number): any;
     export function parseUid(
       uid: string

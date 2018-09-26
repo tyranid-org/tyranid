@@ -27,6 +27,7 @@ import './core/component';
 import './core/collection';
 import './core/event';
 import './core/field';
+import './core/function';
 import './core/index';
 import './core/instance';
 import './core/subscription';

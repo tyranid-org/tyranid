@@ -64,7 +64,7 @@ export default async function initModel() {
     { _id: UserRoleId, name: 'User' }
   ]);
   await User.db.remove({});
-  await User.db.insert([
+  await User.insert([
     {
       _id: 1,
       organization: 1,
