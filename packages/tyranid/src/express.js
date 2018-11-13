@@ -782,20 +782,20 @@ export function generateClientLibrary() {
     if (col.isStatic()) {
       return ids.map(id => col.byIdIndex[id]);
     } else {
-      return this.findAll(
-        _.assign({}, opts, { query: { _id: { $in: ids } } })
-      ).then(docs => {
-        if (opts.parallel) {
-          const docsById = {};
-          for (const doc of docs) {
-            docsById[doc._id] = doc;
-          }
+      opts = _.assign({}, opts, { query: { _id: { $in: ids } } });
+      return this.findAll(opts)
+        .then(docs => {
+          if (opts.parallel) {
+            const docsById = {};
+            for (const doc of docs) {
+              docsById[doc._id] = doc;
+            }
 
-          return ids.map(id => docsById[id] || null);
-        } else {
-          return docs;
-        }
-      });
+            return ids.map(id => docsById[id] || null);
+          } else {
+            return docs;
+          }
+        });
     }
   };
 
