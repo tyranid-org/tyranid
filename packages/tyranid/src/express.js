@@ -764,18 +764,37 @@ export function generateClientLibrary() {
 
   Collection.prototype.labelFor = ${es5Fn(Collection.prototype.labelFor)};
 
-  Collection.prototype.byId = function(id) {
-    var col  = this;
+  Collection.prototype.byId = function(id, opts) {
+    var col = this;
 
     if (col.isStatic()) {
       return col.byIdIndex[id];
     } else {
-      return ajax({
-        url: '/api/' + col.def.name + '/' + id
-      }).then(function(doc) {
-        return new col(doc);
-      }).catch(function(err) {
-        console.log(err);
+      return this.findOne(
+        _.assign({}, opts, { query: { _id: id } })
+      );
+    }
+  };
+
+  Collection.prototype.byIds = function(ids, opts) {
+    var col = this;
+
+    if (col.isStatic()) {
+      return ids.map(id => col.byIdIndex[id]);
+    } else {
+      return this.findAll(
+        _.assign({}, opts, { query: { _id: { $in: ids } } })
+      ).then(docs => {
+        if (opts.parallel) {
+          const docsById = {};
+          for (const doc of docs) {
+            docsById[doc._id] = doc;
+          }
+
+          return ids.map(id => docsById[id] || null);
+        } else {
+          return docs;
+        }
       });
     }
   };
@@ -808,6 +827,7 @@ export function generateClientLibrary() {
     const col = this;
 
     return ajax({
+      method: 'GET',
       url: '/api/' + col.def.name,
       data: { opts: JSON.stringify(opts) }
     }).then(rslt => {

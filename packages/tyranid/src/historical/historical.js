@@ -268,10 +268,15 @@ export async function asOf(collection, doc, date, props) {
   switch (collection.def.historical) {
     case 'document':
       const hDb = historicalDb(collection),
-        earliest = await hDb.findOne({
-          _partial: false,
-          _on: { $lte: date }
-        });
+        earliest = await hDb.findOne(
+          {
+            _partial: false,
+            _on: { $lte: date }
+          },
+          {
+            sort: { _on: -1 }
+          }
+        );
 
       if (earliest) {
         const priorSnapshots = await (await hDb

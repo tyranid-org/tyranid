@@ -3,6 +3,8 @@ import tyr from '../../src/tyranid';
 var Book = new tyr.Collection({
   id: 'b00',
   name: 'book',
+  client: true,
+  express: { rest: true },
   fields: {
     _id: { is: 'integer' },
     isbn: { is: 'mongoid' }, // Pretend ISBNs are ObjectIds

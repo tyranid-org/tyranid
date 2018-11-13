@@ -181,7 +181,7 @@ export function add() {
         /*const response = */ await page.goto(
           `http://localhost:${expressPort}/test/page`
         );
-        // page.on('console', msg => console.log('PAGE CONSOLE:', msg.text()));
+        page.on('console', msg => console.log('PAGE CONSOLE:', msg.text()));
 
         return page;
       };
@@ -207,6 +207,15 @@ export function add() {
             $in: [Job.SOFTWARE_ENGINEER._id, Job.SOFTWARE_LEAD._id]
           }
         });
+      });
+
+      it('should support byIds()', async () => {
+        const result = await page.evaluate(
+          `Tyr.byName.book.byIds([1,2], { parallel: true })`
+        );
+        expect(result.length).to.eql(2);
+        expect(result[0].title).to.eql('Tyranid User Guide');
+        expect(result[1]).to.eql(null); // not present because security policy on Book
       });
 
       it('should support subscriptions', async () => {
