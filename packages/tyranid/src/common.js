@@ -127,10 +127,11 @@ export function extractAuthorization(opts) {
 
   const auth = opts.auth;
   if (auth) {
-    delete opts.auth;
+    //delete opts.auth;
     return auth === true ? Tyr.local.user : auth;
   }
 
+  // @deprecated
   const tyrOpts = opts.tyranid;
   if (tyrOpts) {
     delete opts.tyranid;
@@ -259,6 +260,10 @@ export function toClient(col, doc, opts) {
 
   if (Array.isArray(doc)) {
     return doc.map(doc2 => toClient(col, doc2, opts));
+  }
+
+  if (doc.$access) {
+    doc.$redact();
   }
 
   opts = processOptions(col, opts);

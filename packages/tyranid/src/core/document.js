@@ -24,6 +24,19 @@ export const documentPrototype = (Tyr.documentPrototype = {
     return historical.asOf(this.$model, this, date, props);
   },
 
+  async $checkAccess(opts) {
+    const secure = Tyr.secure;
+
+    if (secure && secure.checkAccess) {
+      await secure.checkAccess(
+        this,
+        opts.perm,
+        extractAuthorization(opts),
+        opts
+      );
+    }
+  },
+
   $clone() {
     // Amazingly, a seemingly do-nothing cloneDeep `customizer`
     // seems to address https://github.com/lodash/lodash/issues/602
@@ -62,6 +75,43 @@ export const documentPrototype = (Tyr.documentPrototype = {
           } else {
             delete this[key];
           }
+        }
+      }
+    }
+  },
+
+  $redact() {
+    const access = this.$access;
+    if (access) {
+      const fields = access.fields;
+
+      if (fields) {
+        switch (fields.effect) {
+          case 'allow':
+            const allowedNames = {};
+            for (const name of fields.names) {
+              allowedNames[name] = true;
+            }
+
+            const fields = this.$model.fields;
+            for (const name in fields) {
+              if (fields.hasOwnProperty(name) && !allowedNames[name]) {
+                delete this[name];
+              }
+            }
+
+            break;
+
+          case 'deny':
+            for (const name of fields.names) {
+              delete this[name];
+            }
+            break;
+
+          default:
+            throw new SecureError(
+              `Invalid effect: "${fields.effect}" encountered`
+            );
         }
       }
     }

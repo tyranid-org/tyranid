@@ -3,6 +3,7 @@
  */
 import * as Express from 'express';
 import * as mongodb from 'mongodb';
+import { tokenToString } from 'typescript';
 
 /**
  *
@@ -144,6 +145,7 @@ declare namespace Tyranid {
      */
     export interface Document {
       // universal properties
+      $access?: AccessResult;
       $id: IdType;
       $model: CollectionInstance<this>;
       $uid: string;
@@ -152,10 +154,12 @@ declare namespace Tyranid {
 
       // methods
       $remove(opts?: { auth?: Tyr.Document }): Promise<void>;
+      $checkAccess(opts: { perm?: string; auth?: Tyr.Document }): this;
       $clone(): this;
       $cloneDeep(): this;
       $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
       $populate(fields: any, denormal?: boolean): Promise<this>;
+      $redact(): void;
       $save(opts?: { timestamps?: boolean }): Promise<this>;
       $toClient(opts?: Options_ToClient): RawMongoDocument;
       $toPlain(): RawMongoDocument;
@@ -198,6 +202,13 @@ declare namespace Tyranid {
        * Return the historical version of the doc
        */
       historical?: boolean;
+    }
+
+    export interface OptionsKeepNonAccessible {
+      /**
+       * Indicates that results should not be filtered by security, but $checkAccess() should still be called.
+       */
+      keepNonAccessible?: boolean;
     }
 
     export interface OptionsParallel {
@@ -309,12 +320,14 @@ declare namespace Tyranid {
     export interface Options_FindById
       extends OptionsAuth,
         OptionsHistorical,
+        OptionsKeepNonAccessible,
         OptionsPopulate,
         OptionsProjection,
         OptionsPlain {}
 
     export interface Options_FindByIds
       extends Options_FindById,
+        OptionsKeepNonAccessible,
         OptionsParallel {}
 
     export interface Options_FindOne
@@ -544,6 +557,15 @@ declare namespace Tyranid {
       [key: string]: CollectionInstance;
     }
 
+    export interface AccessResult {
+      allowed?: boolean;
+      reason?: string;
+      fields?: {
+        effect: 'allow' | 'deny';
+        names: string[];
+      };
+    }
+
     export interface Secure {
       canInsert?: (
         collection: CollectionInstance,
@@ -552,6 +574,12 @@ declare namespace Tyranid {
         auth: Tyr.Document
       ) => Promise<boolean> | boolean;
       boot(state: BootStage): void;
+      checkAccess?(
+        doc: Tyr.Document,
+        perm: string,
+        auth: Tyr.Document,
+        opts: { keepNonAccessible?: boolean }
+      ): void;
       query(
         collection: CollectionInstance,
         method: 'view' | 'update' | 'insert' | 'delete',

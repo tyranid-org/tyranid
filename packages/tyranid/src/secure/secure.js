@@ -2,7 +2,10 @@ import Tyr from '../tyr';
 
 import Component from '../core/component';
 import Collection from '../core/collection';
+import Document from '../core/document';
 import Query from '../core/query';
+import SecureError from './secureError';
+import { extractAuthorization } from '../common';
 
 const Secure = {};
 

@@ -114,7 +114,7 @@ async function _findAndModify(collection, opts) {
   }
 }
 
-async function postFind(collection, opts, documents) {
+async function postFind(collection, opts, documents, auth) {
   const array = Array.isArray(documents);
 
   // we have to wrap here even if plain is set so that computed properties get called and so logic that depends on documents works
@@ -166,6 +166,21 @@ async function postFind(collection, opts, documents) {
       document: documents,
       opts
     });
+  }
+
+  if (auth) {
+    const secure = Tyr.secure;
+    if (secure && secure.checkAccess) {
+      const perm = opts.perm || OPTIONS.permissions.find;
+
+      if (array) {
+        await Promise.all(
+          documents.map(doc => secure.checkAccess(doc, perm, auth, opts))
+        );
+      } else {
+        await secure.checkAccess(documents, perm, auth, opts);
+      }
+    }
   }
 
   if (opts.plain) {
@@ -667,7 +682,7 @@ export default class Collection {
             let doc = await cursor.next();
 
             if (doc) {
-              doc = await postFind(collection, opts, doc);
+              doc = await postFind(collection, opts, doc, auth);
             }
 
             return doc;
@@ -678,7 +693,7 @@ export default class Collection {
             let docs = await cursor.toArray();
 
             if (docs.length) {
-              docs = await postFind(collection, opts, docs);
+              docs = await postFind(collection, opts, docs, auth);
             }
 
             return docs;
@@ -774,7 +789,7 @@ export default class Collection {
 
     const documentsPromise = cursor.toArray().then(async documents => {
       if (documents.length) {
-        documents = await postFind(collection, opts, documents);
+        documents = await postFind(collection, opts, documents, auth);
       }
       return documents;
     });
@@ -833,7 +848,7 @@ export default class Collection {
 
     const auth = extractAuthorization(opts);
     let query = opts.query || {};
-    if (auth) {
+    if (auth && !opts.keepNonAccessible) {
       query = await this.secureQuery(
         query,
         opts.perm || OPTIONS.permissions.find,
@@ -852,7 +867,7 @@ export default class Collection {
       _.omit(opts, ['query', 'fields'])
     );
     if (doc) {
-      doc = await postFind(this, opts, doc);
+      doc = await postFind(this, opts, doc, auth);
       return doc;
     }
 
@@ -1260,7 +1275,7 @@ export default class Collection {
     const auth = extractAuthorization(opts);
     let query = opts.query;
 
-    if (auth) {
+    if (auth && !opts.keepNonAccessible) {
       query = await collection.secureQuery(
         query,
         opts.perm || OPTIONS.permissions.update,
