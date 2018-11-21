@@ -558,8 +558,8 @@ declare namespace Tyranid {
     }
 
     export interface AccessResult {
-      allowed?: boolean;
-      reason?: string;
+      allowed: boolean;
+      reason: string;
       fields?: {
         effect: 'allow' | 'deny';
         names: string[];
