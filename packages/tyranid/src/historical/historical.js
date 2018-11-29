@@ -267,9 +267,11 @@ export function snapshotPush(path, patchProps) {
 export async function asOf(collection, doc, date, props) {
   switch (collection.def.historical) {
     case 'document':
+      console.log('__id', doc._id);
       const hDb = historicalDb(collection),
         earliest = await hDb.findOne(
           {
+            __id: doc._id,
             _partial: false,
             _on: { $lte: date }
           },
@@ -281,6 +283,7 @@ export async function asOf(collection, doc, date, props) {
       if (earliest) {
         const priorSnapshots = await (await hDb
           .find({
+            __id: doc._id,
             _on: {
               $gte: earliest._on,
               $lte: date
@@ -372,6 +375,15 @@ function assignPatchProps(collection, snapshot, patchProps) {
     case 'patch':
       _.assign(snapshot, patchProps);
       break;
+  }
+}
+
+export async function syncIndexes(collection) {
+  if (collection.def.historical === 'document') {
+    await historicalDb(collection).createIndex({
+      __id: 1,
+      _on: 1
+    });
   }
 }
 

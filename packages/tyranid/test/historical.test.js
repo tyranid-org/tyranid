@@ -212,7 +212,7 @@ export function add() {
         await w.$update({ asOf: new Date('2017-07-01') });
 
         w = await Widget.findOne({
-          query: { name: 'Foo' },
+          query: { _id: w._id },
           asOf: new Date('2017-06-23')
         });
 
