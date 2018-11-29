@@ -7,12 +7,13 @@ import { createGraphQLSchema } from '../../src/';
 import { createTestData } from '../data';
 
 (async () => {
-  const db = await mongodb.MongoClient.connect(
+  const mongoClient = await mongodb.MongoClient.connect(
     'mongodb://127.0.0.1:27017/tyranid_gracl_test'
   );
 
   Tyr.config({
-    db,
+    mongoClient,
+    db: mongoClient.db(),
     validate: [
       {
         dir: __dirname,

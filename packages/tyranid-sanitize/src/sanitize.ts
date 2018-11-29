@@ -65,7 +65,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
     } in new database: ${outDbName}`
   );
 
-  const outDb = Tyr.db.db(outDbName);
+  const outDb = Tyr.mongoClient.db(outDbName);
 
   /**
    * - for each collection

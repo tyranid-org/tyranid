@@ -88,13 +88,13 @@ const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
   oid3_ = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
 
 describe('tyranid', () => {
-  let db = null;
+  let mongoClient = null;
   before(async () => {
-    db = await mongodb.MongoClient.connect(
+    mongoClient = await mongodb.MongoClient.connect(
       'mongodb://localhost:27017/tyranid_test'
     );
     await Tyr.config({
-      db,
+      mongoClient,
       consoleLogLevel: 'ERROR',
       dbLogLevel: 'TRACE',
       secure: fakeSecure,
@@ -103,7 +103,7 @@ describe('tyranid', () => {
   });
 
   after(() => {
-    Tyr.db.close();
+    Tyr.mongoClient.close();
     setTimeout(() => {
       process.exit(0);
     }, 500);

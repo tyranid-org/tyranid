@@ -8,12 +8,13 @@ import { createTestData } from './data';
 import * as cases from './cases/';
 
 test.before(async () => {
-  const db = await mongodb.MongoClient.connect(
+  const mongoClient = await mongodb.MongoClient.connect(
     'mongodb://127.0.0.1:27017/_tyranid_graphql_test'
   );
 
   Tyr.config({
-    db,
+    mongoClient,
+    db: mongoClient.db(),
     validate: [
       {
         dir: __dirname,

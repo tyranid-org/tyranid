@@ -125,8 +125,20 @@ _.assign(Tyr, {
 
     _.extend(options, opts);
 
-    if (opts.db) {
-      const db = (this.db = opts.db);
+    let { mongoClient, db } = opts;
+
+    if (db && !mongoClient) {
+      throw new Error(
+        `if specifying a 'db' option you must also specify a 'mongoClient' option`
+      );
+    } else if (!db && mongoClient) {
+      db = mongoClient.db();
+    }
+
+    this.mongoClient = mongoClient;
+
+    if (db) {
+      this.db = db;
       Tyr.collections.forEach(collection => {
         if (!collection.db) {
           const server = collection.server;

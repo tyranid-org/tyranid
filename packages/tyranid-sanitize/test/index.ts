@@ -9,12 +9,13 @@ const dbName = '_tyranid_sanitize_test';
 const sanitizedDB = `${dbName}___sanitized`;
 
 test.before(async () => {
-  const db = await mongodb.MongoClient.connect(
+  const mongoClient = await mongodb.MongoClient.connect(
     `mongodb://127.0.0.1:27017/${dbName}`
   );
 
   Tyr.config({
-    db,
+    mongoClient,
+    db: mongoClient.db(),
     validate: [
       {
         dir: __dirname,
@@ -28,7 +29,7 @@ test.before(async () => {
 
 // drop test db
 test.after(async () => {
-  await Tyr.db.db(sanitizedDB).dropDatabase();
+  await Tyr.mongoClient.db(sanitizedDB).dropDatabase();
 });
 
 test.serial('should successfully sanitize', () =>
@@ -45,7 +46,7 @@ test.serial('should error if sanitizing into same db', async t => {
 });
 
 test.serial('documents should be sanitized', async t => {
-  const sanitizedUsers = await Tyr.db
+  const sanitizedUsers = await Tyr.mongoClient
     .db(sanitizedDB)
     .collection('users')
     .find()

@@ -103,7 +103,7 @@ async function giveBenAccessToChoppedPosts(t: TestContext, perm = 'view') {
 let plugin: GraclPlugin;
 
 test.before(async t => {
-  const db = await mongodb.MongoClient.connect(
+  const mongoClient = await mongodb.MongoClient.connect(
     'mongodb://127.0.0.1:27017/tyranid_gracl_test',
     { poolSize: 20 }
   );
@@ -113,7 +113,8 @@ test.before(async t => {
   });
 
   Tyr.config({
-    db,
+    mongoClient,
+    db: mongoClient.db(),
     validate: [
       {
         dir: root + `${path.sep}test${path.sep}models`,

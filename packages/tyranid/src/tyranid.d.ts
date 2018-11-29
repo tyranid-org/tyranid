@@ -29,6 +29,7 @@ declare namespace Tyranid {
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
     export const collections: CollectionInstance[] & CollectionsByName;
+    export const mongoClient: mongodb.MongoClient;
     export const db: mongodb.Db;
     export const documentPrototype: any;
     export const local: Local;
@@ -616,6 +617,7 @@ declare namespace Tyranid {
       | 'FATAL';
 
     export interface ConfigOptions {
+      mongoClient?: mongodb.MongoClient;
       db?: mongodb.Db;
       consoleLogLevel?: LogLevel | false;
       externalLogLevel?: LogLevel | false;
