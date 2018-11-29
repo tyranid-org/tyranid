@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import * as stableStringify from 'json-stable-stringify';
 
 import Tyr from '../tyr';
+import * as historical from '../historical/historical';
 
 async function syncIndexes(col) {
   const indexes = col.def.indexes;
@@ -113,6 +114,10 @@ async function syncIndexes(col) {
         throw err;
       }
     }
+  }
+
+  if (col.def.historical) {
+    historical.syncIndexes(col);
   }
 }
 
