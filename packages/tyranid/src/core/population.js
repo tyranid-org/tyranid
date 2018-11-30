@@ -19,7 +19,7 @@ export default class Population {
     this.projection = projection;
   }
 
-  static parse(populator, base, fields) {
+  static parse(populator, base, projection) {
     const rootCollection = base; // TODO:  need to eliminate this
     let namePath;
 
@@ -31,19 +31,19 @@ export default class Population {
 
     // TODO:  deprecate the old string and array population options so we can do:
     //if (true && base instanceof Tyr.Collection) {
-    //  fields = projectionFns.resolve(base.def.projections, value);
+    //  projection = projectionFns.resolve(base.def.projections, value);
     //} else {
-    // Step 2 would be to eliminate the separate "population" option and just have "fields" perform combined projection/population duties
-    if (_.isString(fields)) {
+    // Step 2 would be to eliminate the separate "population" option and just have "projection" perform combined projection/population duties
+    if (_.isString(projection)) {
       // process the really simple format -- a simple path name
-      fields = [fields];
+      projection = [projection];
     }
 
-    if (Array.isArray(fields)) {
+    if (Array.isArray(projection)) {
       // process simplified array of pathnames format
       return new Population(
         namePath,
-        fields.map(function(field) {
+        projection.map(function(field) {
           if (!_.isString(field)) {
             throw new Error(
               'The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.'
@@ -56,7 +56,7 @@ export default class Population {
     }
     //}
 
-    if (_.isObject(fields)) {
+    if (_.isObject(projection)) {
       // process advanced object format which supports nested populations and projections
 
       const parseProjection = function(base, fields) {
@@ -120,11 +120,11 @@ export default class Population {
 
       return new Population(
         base.parsePath(''),
-        parseProjection(rootCollection, fields)
+        parseProjection(rootCollection, projection)
       );
     }
 
-    throw new Error('missing opts.fields option to populate()');
+    throw new Error('missing opts.projection option to populate()');
   }
 
   isSimple() {

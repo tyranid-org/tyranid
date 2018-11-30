@@ -59,7 +59,7 @@ export function add() {
       });
 
       beforeEach(async () => {
-        await historical.historicalDb(Widget).remove({});
+        await historical.historicalDb(Widget).removeMany({});
       });
 
       function widget1() {
@@ -170,7 +170,7 @@ export function add() {
       });
 
       it('should $update() partially', async () => {
-        await widgetHistoryDb.remove({});
+        await widgetHistoryDb.removeMany({});
 
         let w = widget1();
         await w.$save();

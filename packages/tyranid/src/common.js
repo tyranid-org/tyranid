@@ -70,6 +70,7 @@ export function isOptions(opts) {
       opts.parallel !== undefined ||
       opts.perm !== undefined ||
       opts.populate !== undefined ||
+      opts.projection !== undefined ||
       opts.query !== undefined ||
       opts.skip !== undefined ||
       opts.timestamps !== undefined ||
@@ -82,15 +83,17 @@ export function isOptions(opts) {
 
 export function processOptions(collection, opts) {
   if (opts) {
-    const fields = opts.fields;
+    const fields = extractProjection(opts);
 
     if (fields) {
       const f = projection.resolve(collection.def.projections, fields);
 
       if (f !== fields) {
-        const newOpts = {};
-        _.assign(newOpts, opts);
-        newOpts.fields = f;
+        const newOpts = {
+          ...opts,
+          projection: f
+        };
+        delete newOpts.fields;
         return newOpts;
       }
     }
@@ -144,7 +147,7 @@ export function extractAuthorization(opts) {
 }
 
 export function extractProjection(opts) {
-  return opts.fields || opts.project || opts.projectiot;
+  return opts.projection || opts.fields || opts.project;
 }
 
 export async function parseInsertObj(col, obj, opts) {
@@ -267,7 +270,7 @@ export function toClient(col, doc, opts) {
   }
 
   opts = processOptions(col, opts);
-  const proj = opts.fields;
+  const proj = extractProjection(opts);
 
   // fields is only for top-level objects, we do not want to recursively pass it down into embedded documents
   const dOpts = proj ? _.omit(opts, 'fields') : opts;

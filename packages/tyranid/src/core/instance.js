@@ -47,12 +47,14 @@ Instance.boot = async function(stage /*, pass*/) {
       }
     }
 
-    await Instance.db.remove({ _id: { $in: oldInstances.map(i => i._id) } });
+    await Instance.db.deleteMany({
+      _id: { $in: oldInstances.map(i => i._id) }
+    });
 
     try {
       await Tyr.db
         .collection('tyrSubscription')
-        .remove({ i: { $in: oldInstances.map(i => i._id) } });
+        .deleteMany({ i: { $in: oldInstances.map(i => i._id) } });
     } catch (err) {
       if (!err.toString().match('ns not found')) {
         console.log(err);
@@ -66,7 +68,7 @@ Instance.boot = async function(stage /*, pass*/) {
     // Heartbeat
 
     function heartbeat() {
-      Instance.db.save({
+      Instance.db.insertOne({
         _id: instanceId,
         lastAliveOn: new Date()
       });
@@ -87,7 +89,7 @@ Instance.boot = async function(stage /*, pass*/) {
     const now = new Date();
 
     // tailable cursors won't await an empty collection, save a guard
-    await eventdb.save({ date: now, guard: true });
+    await eventdb.insertOne({ date: now, guard: true });
 
     /*
     const eventStream = eventdb.find(

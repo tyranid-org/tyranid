@@ -1057,7 +1057,7 @@ export function generateClientLibrary() {
       }
 
       // TODO:  send existing or doc?
-      if (!silent) fireDocUpdate(existing, 'remove');
+      if (!silent && existing) fireDocUpdate(existing, 'remove');
       return existing;
 
     } else if (existing) {

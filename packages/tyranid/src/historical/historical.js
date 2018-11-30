@@ -222,7 +222,7 @@ export async function saveSnapshots(collection, docs) {
       snapshot.__id = docs._id;
       delete docs.$_snapshot;
 
-      await historicalDb(collection).insert(snapshot);
+      await historicalDb(collection).insertOne(snapshot);
     }
   }
 }
@@ -267,7 +267,6 @@ export function snapshotPush(path, patchProps) {
 export async function asOf(collection, doc, date, props) {
   switch (collection.def.historical) {
     case 'document':
-      console.log('__id', doc._id);
       const hDb = historicalDb(collection),
         earliest = await hDb.findOne(
           {
@@ -421,7 +420,7 @@ export async function migratePatchToDocument(collection, progress) {
     progress && progress(opc);
   }
 
-  await collection.db.update({}, { $unset: { _history: 1 } }, { multi: true });
+  await collection.db.updateMany({}, { $unset: { _history: 1 } });
 }
 
 function migrateDocumentPatchToDocument(bulkOp, collection, doc) {

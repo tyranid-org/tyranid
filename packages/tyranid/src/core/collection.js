@@ -42,7 +42,7 @@ async function _count(collection, query) {
       m: 'count',
       q: query
     });
-    const result = await collection.db.count(query);
+    const result = await collection.db.countDocuments(query);
     Tyr.Log.updateDuration(logPromise);
     return result;
   } else {
@@ -58,28 +58,34 @@ async function _exists(collection, query) {
       m: 'findOne/exists',
       q: query
     });
-    const result = !!await collection.db.findOne(query, { _id: 1 });
+    const result = !!await collection.db.findOne(query, {
+      projection: { _id: 1 }
+    });
     Tyr.Log.updateDuration(logPromise);
     return result;
   } else {
-    return !!await collection.db.findOne(query, { _id: 1 });
+    return !!await collection.db.findOne(query, { projection: { _id: 1 } });
   }
 }
 
 // _find cannot be async as find() returns a cursor, NOT a promise of a cursor
-function _find(collection, query, fields, opts) {
+function _find(collection, query, opts) {
   if (Tyr.logging.trace) {
     Tyr.trace({ e: 'db', c: collection.id, m: 'find', q: query });
-    const cursor = collection.db.find(query, fields, opts);
+    const cursor = collection.db.find(query, opts);
     //Tyr.Log.updateDuration(logPromise);
     return cursor;
   } else {
-    return collection.db.find(query, fields, opts);
+    return collection.db.find(query, opts);
   }
 }
 
 async function _findOne(collection, query, projection, opts) {
   const adjOpts = _.omit(opts, ['query', 'fields']);
+  if (projection) {
+    adjOpts.projection = projection;
+  }
+
   if (Tyr.logging.trace) {
     const logPromise = Tyr.trace({
       e: 'db',
@@ -87,11 +93,11 @@ async function _findOne(collection, query, projection, opts) {
       m: 'findOne',
       q: query
     });
-    const result = await collection.db.findOne(query, projection, adjOpts);
+    const result = await collection.db.findOne(query, adjOpts);
     Tyr.Log.updateDuration(logPromise);
     return result;
   } else {
-    return collection.db.findOne(query, projection, adjOpts);
+    return collection.db.findOne(query, adjOpts);
   }
 }
 
@@ -131,11 +137,21 @@ async function postFind(collection, opts, documents, auth) {
         await Promise.all(
           documents.map(
             async document =>
-              await historical.asOf(collection, document, asOf, opts.fields)
+              await historical.asOf(
+                collection,
+                document,
+                asOf,
+                extractProjection(opts)
+              )
           )
         );
       } else {
-        await historical.asOf(collection, documents, asOf, opts.fields);
+        await historical.asOf(
+          collection,
+          documents,
+          asOf,
+          extractProjection(opts)
+        );
       }
     }
 
@@ -331,6 +347,10 @@ export default class Collection {
 
     if (!def.dbName) {
       def.dbName = def.name;
+    }
+
+    if (Tyr.db && !def.enum && !def.static) {
+      CollectionInstance.db = Tyr.db.collection(def.dbName);
     }
 
     if (!def.primaryKey) {
@@ -623,9 +643,7 @@ export default class Collection {
       }
     }
 
-    console.log('fields', fields);
-
-    return await this.findAll({ query, fields, ...opts });
+    return await this.findAll({ query, projection: fields, ...opts });
   }
 
   find(...args) {
@@ -645,11 +663,11 @@ export default class Collection {
       );
     }
 
-    let query, fields;
+    let query, projection;
     switch (args.length) {
       case 2:
-        fields = args[1];
-        if (fields) opts.fields = args[1];
+        projection = args[1];
+        if (projection) opts.projection = args[1];
       // fall through
 
       case 1:
@@ -660,16 +678,16 @@ export default class Collection {
     }
 
     query = opts.query;
-    fields = opts.fields;
+    projection = extractProjection(opts);
 
-    if (fields) {
-      opts.fields = fields = parseProjection(collection, fields);
+    if (projection) {
+      opts.projection = projection = parseProjection(collection, projection);
     }
 
     const auth = extractAuthorization(opts);
 
     function cursor() {
-      const cursor = _find(collection, query, fields, opts);
+      const cursor = _find(collection, query, opts);
 
       let v;
       if ((v = opts.limit)) cursor.limit(v);
@@ -739,11 +757,11 @@ export default class Collection {
       );
     }
 
-    let query, fields;
+    let query, projection;
     switch (args.length) {
       case 2:
-        fields = args[1];
-        if (fields) opts.fields = args[1];
+        projection = args[1];
+        if (projection) opts.projection = args[1];
       // fall through
 
       case 1:
@@ -754,10 +772,10 @@ export default class Collection {
     }
 
     query = opts.query;
-    fields = opts.fields;
+    projection = extractProjection(opts);
 
-    if (fields) {
-      opts.fields = fields = parseProjection(collection, fields);
+    if (projection) {
+      opts.projection = projection = parseProjection(collection, projection);
     }
 
     const auth = extractAuthorization(opts);
@@ -780,7 +798,7 @@ export default class Collection {
         m: 'findAll' + (opts.count ? '+count' : ''),
         q: query
       });
-    const cursor = collection.db.find(query, fields, opts);
+    const cursor = collection.db.find(query, opts);
 
     let v;
     if ((v = opts.limit)) cursor.limit(v);
@@ -825,7 +843,7 @@ export default class Collection {
       case 2:
         const f = args[1];
         if (f) {
-          opts.fields = f;
+          opts.projection = f;
         }
       // fall through
       case 1:
@@ -864,7 +882,7 @@ export default class Collection {
       collection,
       query,
       projection,
-      _.omit(opts, ['query', 'fields'])
+      _.omit(opts, ['query', 'fields', 'projection'])
     );
     if (doc) {
       doc = await postFind(this, opts, doc, auth);
@@ -929,9 +947,9 @@ export default class Collection {
       }
     }
 
-    opts.fields = extractProjection(opts);
-    if (opts.fields) {
-      opts.fields = parseProjection(collection, opts.fields);
+    opts.projection = extractProjection(opts);
+    if (opts.projection) {
+      opts.projection = parseProjection(collection, opts.projection);
     }
 
     if (!opts.eventAlreadyDone) {
@@ -1006,9 +1024,9 @@ export default class Collection {
   async save(obj, opts) {
     const collection = this;
 
-    if (opts && opts.fields) {
+    if (opts && extractProjection(opts)) {
       throw new Error(
-        'save() does not support "fields" option; maybe try updateDoc()/$update()'
+        'save() does not support a projection option; maybe try updateDoc()/$update()'
       );
     }
 
@@ -1043,7 +1061,7 @@ export default class Collection {
             collection,
             obj,
             historical.patchPropsFromOpts(opts),
-            (opts && opts.fields) || collection._historicalFields
+            (opts && extractProjection(opts)) || collection._historicalFields
           );
         }
       }
@@ -1192,7 +1210,7 @@ export default class Collection {
         opts
       });
 
-      const rslt = await collection.db.insert(parsedObj);
+      const rslt = await collection.db.insertOne(parsedObj);
 
       const doc = rslt.ops[0];
       obj._id = doc._id;
@@ -1259,7 +1277,7 @@ export default class Collection {
         collection,
         obj,
         historical.patchPropsFromOpts(opts),
-        (opts && opts.fields) || collection._historicalFields,
+        (opts && extractProjection(opts)) || collection._historicalFields,
         historyPresent
       ));
 
@@ -1298,7 +1316,7 @@ export default class Collection {
       opts
     });
 
-    const rslt = await collection.db.update(query, opts.update, opts);
+    const rslt = await collection.db.updateOne(query, opts.update, opts);
     if (snapshot && collection.def.historical === 'document') {
       historical.saveSnapshots(collection, obj);
     }
@@ -1367,7 +1385,9 @@ export default class Collection {
       query,
       opts
     });
-    const rslt = await collection.db.update(query, update, opts);
+    const rslt = opts.multi
+      ? await collection.db.updateMany(query, update, opts)
+      : await collection.db.updateOne(query, update, opts);
     await Tyr.Event.fire({
       collection,
       type: 'update',
@@ -1384,7 +1404,7 @@ export default class Collection {
       np = collection.parsePath(path);
 
     const qOpts = Tyr.cloneDeep(opts);
-    qOpts.fields = { [np.path[0]]: 1 };
+    qOpts.projection = { [np.path[0]]: 1 };
 
     const doc = await collection.byId(id, qOpts);
 
@@ -1433,7 +1453,7 @@ export default class Collection {
 
     timestampsUpdate(opts, collection, update);
 
-    await collection.db.update(query, update);
+    await collection.db.updateOne(query, update);
   }
 
   /**
@@ -1478,7 +1498,9 @@ export default class Collection {
         opts
       });
     }
-    return await collection.db.remove(query, justOne);
+    const rslt = justOne
+      ? await collection.db.deleteOne(query)
+      : await collection.db.deleteMany(query);
     if (justOne !== '$remove') {
       await Tyr.Event.fire({
         collection,
@@ -1488,6 +1510,7 @@ export default class Collection {
         opts
       });
     }
+    return rslt;
   }
 
   /**
@@ -1501,10 +1524,10 @@ export default class Collection {
    * If documents is not provided, this function will return a curried version of this function that takes a single array
    * of documents.  This allows populate to be fed into a promise chain.
    */
-  populate(fields, documents, denormal, opts) {
+  populate(projection, documents, denormal, opts) {
     const collection = this,
       populator = new Populator(denormal, opts),
-      population = Population.parse(populator, collection, fields);
+      population = Population.parse(populator, collection, projection);
 
     async function populatorFunc(documents) {
       const isArray = documents && Array.isArray(documents);
@@ -1525,11 +1548,11 @@ export default class Collection {
   async valuesFor(fields) {
     const collection = this;
 
-    const fieldsObj = { _id: 0 };
+    const projection = { _id: 0 };
 
     let found = false;
     _.each(fields, field => {
-      fieldsObj[field.spath] = 1;
+      projection[field.spath] = 1;
       found = true;
     });
 
@@ -1549,7 +1572,7 @@ export default class Collection {
       }
     };
 
-    (await (await collection.db.find({}, fieldsObj)).toArray()).forEach(
+    (await (await collection.db.find({}, { projection })).toArray()).forEach(
       extractValues
     );
 

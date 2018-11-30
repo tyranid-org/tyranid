@@ -91,7 +91,8 @@ describe('tyranid', () => {
   let mongoClient = null;
   before(async () => {
     mongoClient = await mongodb.MongoClient.connect(
-      'mongodb://localhost:27017/tyranid_test'
+      'mongodb://localhost:27017/tyranid_test',
+      { useNewUrlParser: true }
     );
     await Tyr.config({
       mongoClient,
@@ -516,7 +517,7 @@ describe('tyranid', () => {
     describe('dynamic schemas', () => {
       const dynUserId = 111;
       afterEach(() => {
-        return User.db.remove({ _id: dynUserId });
+        return User.db.deleteOne({ _id: dynUserId });
       });
 
       it('should support matching fieldsFor()', async () => {
@@ -580,7 +581,7 @@ describe('tyranid', () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
         let books = await (await Book.find({
           query: {},
-          fields: { title: 1 },
+          projection: { title: 1 },
           auth: anon
         })).toArray();
 
@@ -590,7 +591,7 @@ describe('tyranid', () => {
         const jane = await User.findOne({ query: { 'name.first': 'John' } });
         books = await (await Book.find({
           query: {},
-          fields: { title: 1 },
+          projection: { title: 1 },
           auth: jane
         })).toArray();
         expect(books.length).to.eql(2);
@@ -600,7 +601,7 @@ describe('tyranid', () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
         const books = await (await Book.find({
           query: {},
-          fields: { title: 1 },
+          projection: { title: 1 },
           auth: anon
         })).toArray();
         expect(books.length).to.eql(1);
@@ -611,7 +612,7 @@ describe('tyranid', () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
         const books = await (await Book.find({
           query: {},
-          fields: { title: 1 },
+          projection: { title: 1 },
           auth: anon
         })).toArray();
         expect(books.length).to.eql(1);
@@ -696,7 +697,7 @@ describe('tyranid', () => {
       it('should findOne() with projection', async () => {
         const doc = await User.findOne({
           query: { 'name.first': 'An' },
-          fields: { name: 1 }
+          projection: { name: 1 }
         });
         expect(doc).to.be.an.instanceof(User);
         expect(_.keys(doc)).to.eql(['_id', 'name']);
@@ -711,7 +712,7 @@ describe('tyranid', () => {
       it('should findOne() with a null projection and options, 1', async () => {
         const doc = await User.findOne({
           query: { 'name.first': 'An' },
-          fields: { name: 1 }
+          projection: { name: 1 }
         });
         expect(doc).to.be.an.instanceof(User);
         expect(_.keys(doc)).to.eql(['_id', 'name']);
@@ -727,7 +728,7 @@ describe('tyranid', () => {
       it('should findOne() with just options', async () => {
         const doc = await User.findOne({
           query: { 'name.first': 'An' },
-          fields: { name: 1 }
+          projection: { name: 1 }
         });
         expect(doc).to.be.an.instanceof(User);
       });
@@ -786,13 +787,13 @@ describe('tyranid', () => {
       });
 
       it('should support predefined projections', async () => {
-        const u = await User.byId(4, { fields: 'nameAndAge' });
+        const u = await User.byId(4, { projection: 'nameAndAge' });
         expect(_.keys(u).length).to.eql(3);
       });
 
       it('should support projection merging', async () => {
         const u = await User.byId(4, {
-          fields: ['nameAndAge', { organization: 1 }]
+          projection: ['nameAndAge', { organization: 1 }]
         });
         expect(_.keys(u).length).to.eql(4);
       });
@@ -800,7 +801,7 @@ describe('tyranid', () => {
       it('should support support exclusions', async () => {
         const u = await User.findOne({
           query: { _id: 4 },
-          fields: { organization: 0 }
+          projection: { organization: 0 }
         });
         expect(u!.organization).to.be.undefined;
       });
@@ -871,7 +872,7 @@ describe('tyranid', () => {
       it('should support projections', async () => {
         const docs = await (await User.db.find(
           { 'name.first': 'An' },
-          { name: 1 }
+          { projection: { name: 1 } }
         )).toArray();
         expect(docs.length).to.be.eql(1);
         expect(_.keys(docs[0]).length).to.be.eql(2);
@@ -880,7 +881,7 @@ describe('tyranid', () => {
       it('should return custom primaryKey if not specified in projection', () => {
         return Book.findAll({
           query: { isbn: BookIsbn },
-          fields: { _id: 1 }
+          projection: { _id: 1 }
         }).then(docs => {
           expect(docs.length).to.be.eql(1);
           expect(docs[0].title).to.not.exist;
@@ -891,17 +892,17 @@ describe('tyranid', () => {
       it('should not include custom primaryKey if specifically excluded', () => {
         return Book.findOne({
           query: { isbn: BookIsbn },
-          fields: { isbn: 0 }
+          projection: { isbn: 0 }
         }).then(doc => {
           expect(doc!.isbn).to.not.exist;
         });
       });
 
-      it('should work with findAndModify `fields` param', () => {
+      it('should work with findAndModify `projection` param', () => {
         return Book.findAndModify({
           query: { isbn: BookIsbn },
           update: { $set: { fakeProp: 'fake' } },
-          fields: { title: 1 }
+          projection: { title: 1 }
         }).then(doc => {
           expect(doc!.value.isbn).to.be.eql(BookIsbn);
         });
@@ -1023,7 +1024,7 @@ describe('tyranid', () => {
       const newIsbn = new ObjectId('561cabf00000000000000000');
 
       after(() => {
-        return Book.db.remove({ isbn: newIsbn });
+        return Book.db.deleteOne({ isbn: newIsbn });
       });
 
       it('should save new objects', () => {
@@ -1075,7 +1076,7 @@ describe('tyranid', () => {
 
           expect(roles.length).to.eql(3);
         } finally {
-          await Role.db.remove({ name: /^A-/ });
+          await Role.db.deleteMany({ name: /^A-/ });
         }
       });
     });
@@ -1318,7 +1319,7 @@ describe('tyranid', () => {
       });
 
       after(() => {
-        return User.db.remove(juliaMatch);
+        return User.db.deleteMany(juliaMatch);
       });
 
       it('denormalize on save', () => {
@@ -1452,7 +1453,7 @@ describe('tyranid', () => {
     describe('insert', () => {
       it('should set _id on the inserted document', async () => {
         try {
-          await Location.db.remove({});
+          await Location.db.deleteMany({});
 
           const l = new Location({ name: 'Test Location' });
 
@@ -1460,7 +1461,7 @@ describe('tyranid', () => {
 
           expect(l._id).to.be.instanceof(ObjectId);
         } finally {
-          await Location.db.remove({});
+          await Location.db.deleteMany({});
         }
       });
 
@@ -1548,7 +1549,7 @@ describe('tyranid', () => {
 
       it('should return Document instances from insert()', async () => {
         try {
-          await Location.db.remove({});
+          await Location.db.deleteMany({});
 
           const l = await Location.insert(
             new Location({ name: 'Test Location' })
@@ -1564,7 +1565,7 @@ describe('tyranid', () => {
           expect(locs.length).to.eql(1);
           expect(locs[0]._id).to.eql(l._id);
         } finally {
-          await Location.db.remove({});
+          await Location.db.deleteMany({});
         }
       });
 
@@ -1574,13 +1575,13 @@ describe('tyranid', () => {
         try {
           const promises = [];
           for (let i=0; i<250; i++) {
-            promises.push(Location.insert({ name: 'test 83272' }));
+            promises.push(Location.insertOne({ name: 'test 83272' }));
           }
           await Promise.all(promises);
 
           expect(Date.now() - start).is.lessThan(1000);
         } finally {
-          await Location.remove({ query: { name: 'test 83272' } });
+          await Location.deleteOne({ query: { name: 'test 83272' } });
         }
       });
       */
@@ -1620,7 +1621,7 @@ describe('tyranid', () => {
       });
 
       it('should upsert', async () => {
-        await Role.db.remove({ name: 'foo' });
+        await Role.db.deleteOne({ name: 'foo' });
 
         let foo = new Role({ name: 'foo' });
         await foo.$update();
@@ -1630,7 +1631,7 @@ describe('tyranid', () => {
 
         expect(foo).to.exist;
 
-        await Role.db.remove({ name: 'foo' });
+        await Role.db.deleteOne({ name: 'foo' });
       });
     });
 
@@ -1675,7 +1676,7 @@ describe('tyranid', () => {
 
       it('should set _id on new documents', async () => {
         try {
-          await Location.db.remove({});
+          await Location.db.deleteMany({});
 
           const l = new Location({ name: 'Test Location' });
 
@@ -1683,7 +1684,7 @@ describe('tyranid', () => {
 
           expect(l._id).to.be.instanceof(ObjectId);
         } finally {
-          await Location.db.remove({});
+          await Location.db.deleteMany({});
         }
       });
     });
@@ -1852,7 +1853,7 @@ describe('tyranid', () => {
             return user.$update().then(() => {
               expect(user.createdAt).to.equal(createdAt);
               expect((user as any).updatedAt).to.not.equal(updatedAt);
-              return User.db.remove({ _id: user._id });
+              return User.db.deleteOne({ _id: user._id });
             });
           }
         );
@@ -1944,7 +1945,7 @@ describe('tyranid', () => {
 
       it('save() with timestamps set to false should not update timestamps', async () => {
         const updatedAt = new Date('2017-01-01');
-        await User.db.save({
+        await User.db.insertOne({
           _id: 2001,
           name: { first: 'Dale', last: 'Doe' },
           organization: 1,
@@ -1992,7 +1993,7 @@ describe('tyranid', () => {
 
       it('_id should be included by default with fields', async () => {
         const user = await User.byId(4);
-        const userc = user!.$toClient({ fields: { name: 1 } });
+        const userc = user!.$toClient({ projection: { name: 1 } });
 
         expect(_.keys(userc).length).to.eql(2);
         expect(userc._id).to.eql(4);
@@ -2000,7 +2001,7 @@ describe('tyranid', () => {
 
       it('_id should be excluded if requested', async () => {
         const user = await User.byId(4);
-        const userc = user!.$toClient({ fields: { _id: 0, name: 1 } });
+        const userc = user!.$toClient({ projection: { _id: 0, name: 1 } });
 
         expect(_.keys(userc).length).to.eql(1);
         expect(userc._id).to.be.undefined;
@@ -2013,7 +2014,7 @@ describe('tyranid', () => {
 
         expect(userc._history).to.be.undefined;
 
-        userc = user!.$toClient({ fields: { _history: true } });
+        userc = user!.$toClient({ projection: { _history: true } });
         expect(userc._history).to.not.be.undefined;
       });
 
@@ -2033,7 +2034,7 @@ describe('tyranid', () => {
           ssn: '111-23-1232',
           favoriteColor: 'blue'
         });
-        userc = user.$toClient({ fields: { name: 1, ssn: 1 } });
+        userc = user.$toClient({ projection: { name: 1, ssn: 1 } });
         expect(_.keys(userc)).to.eql(['_id', 'name', 'ssn']);
 
         user = new User({
@@ -2043,7 +2044,7 @@ describe('tyranid', () => {
           favoriteColor: 'blue'
         });
         userc = user.$toClient({
-          fields: { name: 1, ssn: 1, favoriteColor: 1 }
+          projection: { name: 1, ssn: 1, favoriteColor: 1 }
         });
         expect(_.keys(userc)).to.eql(['_id', 'name', 'ssn', 'favoriteColor']);
       });
@@ -2134,11 +2135,11 @@ describe('tyranid', () => {
       const LogLevel = Tyr.byName.tyrLogLevel;
 
       beforeEach(async () => {
-        await Log.db.remove({});
+        await Log.db.deleteMany({});
       });
 
       afterEach(async () => {
-        await Log.db.remove({});
+        await Log.db.deleteMany({});
       });
 
       it('should log simple strings', async () => {
@@ -2240,7 +2241,7 @@ describe('tyranid', () => {
             query: { name: 'Mount Everest' }
           });
 
-          await Log.db.remove({});
+          await Log.db.deleteMany({});
 
           await loc!.$save();
 
@@ -2467,7 +2468,7 @@ describe('tyranid', () => {
 
     describe('$slice', () => {
       it('support an empty options array', async () => {
-        const u = await User.byId(3, { fields: { name: 1 } });
+        const u = await User.byId(3, { projection: { name: 1 } });
         expect(u!.siblings).to.be.undefined;
 
         await u!.$slice('siblings');
@@ -2475,7 +2476,7 @@ describe('tyranid', () => {
       });
 
       it('support skip and limit', async () => {
-        const u = await User.byId(3, { fields: { name: 1 } });
+        const u = await User.byId(3, { projection: { name: 1 } });
         await u!.$slice('siblings', { skip: 1, limit: 1 });
         expect(u!.siblings![0]).to.be.undefined;
         expect(u!.siblings![1].name).to.eql('Bill Doe');
@@ -2483,7 +2484,7 @@ describe('tyranid', () => {
       });
 
       it('support sort', async () => {
-        const u = await User.byId(3, { fields: { name: 1 } });
+        const u = await User.byId(3, { projection: { name: 1 } });
         await u!.$slice('siblings', { skip: 1, limit: 1, sort: { name: 1 } });
         expect(u!.siblings![0]).to.be.undefined;
         expect(u!.siblings![1].name).to.eql('Jill Doe');
@@ -2491,14 +2492,14 @@ describe('tyranid', () => {
       });
 
       it('support where', async () => {
-        const u = await User.byId(3, { fields: { name: 1 } });
+        const u = await User.byId(3, { projection: { name: 1 } });
         await u!.$slice('siblings', { where: v => v.name.startsWith('Jill') });
         expect(u!.siblings![0].name).to.eql('Jill Doe');
         expect(u!.siblings!.length).to.eql(1);
       });
 
       it('support population', async () => {
-        const u = await User.byId(2, { fields: { name: 1 } });
+        const u = await User.byId(2, { projection: { name: 1 } });
 
         await u!.$slice('roles');
         expect(u!.roles!.length).to.eql(2);

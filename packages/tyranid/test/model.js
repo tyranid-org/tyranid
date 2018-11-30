@@ -5,6 +5,10 @@ import Tyr from '../src/tyranid';
 import Role from './models/role'; // require to get extra link in prototype chain
 
 import './models/application';
+import './models/book';
+import './models/department';
+import './models/organization';
+import './models/tasks/task';
 import './models/user';
 import './models/widget';
 
@@ -43,13 +47,13 @@ export default async function initModel() {
   Phantom = Tyr.byName.phantom;
   Widget = Tyr.byName.widget;
 
-  await Organization.db.remove({});
-  await Organization.db.insert([
+  await Organization.db.deleteMany({});
+  await Organization.db.insertMany([
     { _id: 1, name: 'Acme Unlimited' },
     { _id: 2, name: '123 Construction', owner: 3 }
   ]);
-  await Department.db.remove({});
-  await Department.db.insert([
+  await Department.db.deleteMany({});
+  await Department.db.insertMany([
     {
       _id: 1,
       name: 'Engineering',
@@ -58,12 +62,12 @@ export default async function initModel() {
       permissions: { members: [2, 3] }
     }
   ]);
-  await Role.db.remove({});
-  await Role.db.insert([
+  await Role.db.deleteMany({});
+  await Role.db.insertMany([
     { _id: AdministratorRoleId, name: 'Administrator' },
     { _id: UserRoleId, name: 'User' }
   ]);
-  await User.db.remove({});
+  await User.db.deleteMany({});
   await User.insert([
     {
       _id: 1,
@@ -101,15 +105,15 @@ export default async function initModel() {
     },
     { _id: 4, organization: 2, name: { first: 'Jill', last: 'Doe' }, age: 20 }
   ]);
-  await Book.db.remove({});
-  await Book.db.insert([
+  await Book.db.deleteMany({});
+  await Book.db.insertMany([
     { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' }
   ]);
-  await Book.db.insert([
+  await Book.db.insertMany([
     { _id: 2, isbn: Book2Isbn, title: 'Home Gardening 101' }
   ]);
-  await Task.db.remove({});
-  await Task.db.insert([
+  await Task.db.deleteMany({});
+  await Task.db.insertMany([
     {
       _id: 1,
       title: 'Write instance validation tests',
@@ -117,8 +121,8 @@ export default async function initModel() {
       manual: BookIsbn
     }
   ]);
-  await Widget.db.remove({});
-  await Widget.db.insert([
+  await Widget.db.deleteMany({});
+  await Widget.db.insertMany([
     {
       name: 'Toxulin',
       creator: 1,
@@ -130,8 +134,8 @@ export default async function initModel() {
       tags: ['food']
     }
   ]);
-  await TyrSchema.db.remove({});
-  await TyrSchema.db.insert([
+  await TyrSchema.db.deleteMany({});
+  await TyrSchema.db.insertMany([
     {
       collection: User.id,
       match: {
@@ -153,7 +157,7 @@ export default async function initModel() {
       }
     }
   ]);
-  await TyrSchema.db.insert([
+  await TyrSchema.db.insertMany([
     {
       collection: User.id,
       match: {

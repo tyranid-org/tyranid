@@ -189,7 +189,7 @@ export default class Event {
     //con sole.log(Tyr.instanceId + ' *** broadcasting to ', instances.map(i => i._id));
     await Promise.all(
       instances.map(instance =>
-        Tyr.db.collection(instance._id + '_event').save(adaptedEvent)
+        Tyr.db.collection(instance._id + '_event').insertOne(adaptedEvent)
       )
     );
   }

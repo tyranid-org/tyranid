@@ -26,7 +26,7 @@ const MigrationStatus = new Collection({
 
 const doRemoveLock = async remove => {
   if (remove) {
-    await MigrationStatus.db.remove({ _id: '$$MIGRATION-LOCK' });
+    await MigrationStatus.db.deleteOne({ _id: '$$MIGRATION-LOCK' });
     log({ note: 'End Migration', end: true });
   }
 };
@@ -171,7 +171,7 @@ export async function migrate(migrationArray) {
       const m = await MigrationStatus.db.findOne({ _id: migrationName });
 
       if (!m) {
-        await MigrationStatus.db.save({
+        await MigrationStatus.db.insertOne({
           _id: migrationName,
           appliedOn: new Date()
         });
@@ -186,7 +186,7 @@ export async function migrate(migrationArray) {
           await migration.migrate();
 
           if (migration.noCommit) {
-            await MigrationStatus.db.remove({ _id: migrationName });
+            await MigrationStatus.db.deleteOne({ _id: migrationName });
             log({
               migration: migrationName,
               action: 'complete',
@@ -197,7 +197,7 @@ export async function migrate(migrationArray) {
           }
         } catch (err) {
           console.log(err.stack);
-          await MigrationStatus.db.remove({ _id: migrationName });
+          await MigrationStatus.db.deleteOne({ _id: migrationName });
           log({ migration: migrationName, action: 'error', error: err });
         }
       } else {

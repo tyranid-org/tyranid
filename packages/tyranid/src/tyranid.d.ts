@@ -231,8 +231,17 @@ declare namespace Tyranid {
     export interface OptionsProjection {
       /**
        * The standard MongoDB-style fields object that specifies the projection.
+       * @deprecated use projection
        */
       fields?:
+        | { [key: string]: number }
+        | { _history?: boolean }
+        | string
+        | Array<string | { [key: string]: number }>;
+      /**
+       * The standard MongoDB-style fields object that specifies the projection.
+       */
+      projection?:
         | { [key: string]: number }
         | { _history?: boolean }
         | string

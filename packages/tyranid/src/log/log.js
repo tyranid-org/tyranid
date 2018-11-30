@@ -254,7 +254,7 @@ async function log(level, ...opts) {
   }
 
   if (levelId >= dbLevel) {
-    const logResult = Log.db.save(obj);
+    const logResult = Log.db.insertOne(obj);
     result = result ? Promise.all([result, logResult]) : logResult;
   }
 

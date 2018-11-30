@@ -110,7 +110,7 @@ export default class Populator {
         let fields = cache.fields;
 
         if (fields && !fields.$all && !_.isEmpty(fields)) {
-          opts.fields = fields;
+          opts.projection = fields;
         } else {
           fields = undefined;
         }

@@ -176,7 +176,7 @@ Collection.prototype.references = async function(opts) {
     if (queries.length) {
       const query = queries.length > 1 ? { $or: queries } : queries[0];
       //console.log(col.name, '=', query);
-      refs.push(...(await col.findAll({ query, fields })));
+      refs.push(...(await col.findAll({ query, projection: fields })));
     }
   }
 
