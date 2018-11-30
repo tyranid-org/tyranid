@@ -1,6 +1,6 @@
 {
   "name": "tyranid-graphql",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "GraphQL plugin for tyranid",
   "repository": {
     "type": "git",
