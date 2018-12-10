@@ -41,7 +41,7 @@ export async function stepThroughCollectionPath<
       ids.map(async id => {
         const docs = await nextCollection.findAll({
           query: { [nextCollectionLinkField.spath]: { $in: [id] } },
-          fields: { _id: 1, [nextCollectionId]: 1 }
+          projection: { _id: 1, [nextCollectionId]: 1 }
         });
 
         childMap.set(
@@ -67,7 +67,7 @@ export async function stepThroughCollectionPath<
   // the ids of the last collection in the path
   const nextCollectionDocs = await nextCollection.findAll({
     query: { [nextCollectionLinkField.spath]: { $in: ids } },
-    fields: { _id: 1, [nextCollectionId]: 1 }
+    projection: { _id: 1, [nextCollectionId]: 1 }
   });
 
   // extract their primary ids using the primary field

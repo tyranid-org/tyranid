@@ -10,7 +10,8 @@ const sanitizedDB = `${dbName}___sanitized`;
 
 test.before(async () => {
   const mongoClient = await mongodb.MongoClient.connect(
-    `mongodb://127.0.0.1:27017/${dbName}`
+    `mongodb://127.0.0.1:27017/${dbName}`,
+    { useNewUrlParser: true }
   );
 
   Tyr.config({

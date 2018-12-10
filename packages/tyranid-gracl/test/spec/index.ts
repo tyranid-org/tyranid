@@ -105,7 +105,7 @@ let plugin: GraclPlugin;
 test.before(async t => {
   const mongoClient = await mongodb.MongoClient.connect(
     'mongodb://127.0.0.1:27017/tyranid_gracl_test',
-    { poolSize: 20 }
+    { poolSize: 20, useNewUrlParser: true }
   );
 
   t.throws(() => {
@@ -1161,7 +1161,7 @@ test.serial(
 
     const choppedBlogs = await Blog.findAll({
       query: { organizationId: chopped.$id },
-      fields: { _id: 1 }
+      projection: { _id: 1 }
     });
 
     const query = await secure.query(Post, 'view', ben);
@@ -1309,7 +1309,7 @@ test.serial(
 
     const choppedBlogs = await Blog.findAll({
       query: { organizationId: chopped.$id },
-      fields: { _id: 1 }
+      projection: { _id: 1 }
     });
 
     const choppedPosts = await Post.findAll({

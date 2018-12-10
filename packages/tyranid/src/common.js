@@ -35,8 +35,10 @@ export function hasMongoUpdateOperator(update) {
 
 export function extractUpdateFields(doc, opts) {
   const updateFields = {};
-  if (opts.fields) {
-    _.each(opts.fields, (field, key) => {
+
+  const projection = extractProjection(opts);
+  if (projection) {
+    _.each(projection, (field, key) => {
       if (field) {
         updateFields[key] = 1;
       }

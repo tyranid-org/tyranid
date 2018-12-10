@@ -8,7 +8,8 @@ import { createTestData } from '../data';
 
 (async () => {
   const mongoClient = await mongodb.MongoClient.connect(
-    'mongodb://127.0.0.1:27017/tyranid_gracl_test'
+    'mongodb://127.0.0.1:27017/tyranid_gracl_test',
+    { useNewUrlParser: true }
   );
 
   Tyr.config({

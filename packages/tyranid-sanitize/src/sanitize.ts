@@ -54,7 +54,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
   if (
     existingDbs.databases.find((d: { name: string }) => d.name === outDbName)
   ) {
-    return error(`Dabased named ${outDbName} already exists.`);
+    return error(`Database named ${outDbName} already exists.`);
   }
 
   if (seed) faker.seed(seed);

@@ -682,6 +682,7 @@ export default class Collection {
 
     if (projection) {
       opts.projection = projection = parseProjection(collection, projection);
+      delete opts.fields;
     }
 
     const auth = extractAuthorization(opts);
@@ -776,6 +777,7 @@ export default class Collection {
 
     if (projection) {
       opts.projection = projection = parseProjection(collection, projection);
+      delete opts.fields;
     }
 
     const auth = extractAuthorization(opts);

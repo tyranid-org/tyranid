@@ -169,7 +169,7 @@ await user.$removeEntityPermission('resource', 'view-user', 'deny');
       }
     };
 
-    await PermissionsModel.db.update(query, update, { multi: true });
+    await PermissionsModel.db.updateMany(query, update);
 
     return this;
   },

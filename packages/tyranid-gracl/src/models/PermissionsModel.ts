@@ -431,7 +431,7 @@ export class PermissionsModel extends PermissionsBaseCollection {
         const tyranidOpts = {
           auth: subject,
           perm,
-          fields: { _id: 1 }
+          projection: { _id: 1 }
         };
 
         return Tyr.byUids(uidsToCheck, tyranidOpts);

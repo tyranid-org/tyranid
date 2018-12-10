@@ -186,7 +186,7 @@ export function collectionFieldConfig(
 
       return queryFunction({
         query,
-        fields: project,
+        projection: project,
         auth: context && context.auth,
         perm: context && context.perm
       });

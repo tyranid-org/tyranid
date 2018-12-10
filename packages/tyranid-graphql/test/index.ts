@@ -9,7 +9,8 @@ import * as cases from './cases/';
 
 test.before(async () => {
   const mongoClient = await mongodb.MongoClient.connect(
-    'mongodb://127.0.0.1:27017/_tyranid_graphql_test'
+    'mongodb://127.0.0.1:27017/_tyranid_graphql_test',
+    { useNewUrlParser: true }
   );
 
   Tyr.config({

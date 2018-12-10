@@ -281,6 +281,13 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
     });
   }
 
+  if (!user) {
+    console.warn(
+      `${this.name}.subscribe() called without a query or user -- ignoring`
+    );
+    return;
+  }
+
   const queryStr = JSON.stringify(query);
 
   if (!query) {
