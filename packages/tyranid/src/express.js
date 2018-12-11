@@ -376,6 +376,10 @@ export function generateClientLibrary() {
 
       return plain;
     }
+
+    $update(...args) {
+      return this.$model.updateDoc(this, ...args);
+    },
   };
 
   Object.defineProperties(documentPrototype, {
@@ -991,6 +995,16 @@ export function generateClientLibrary() {
     });
   };
 
+  Collection.prototype.updateDoc = function(doc, opts) {
+
+    return ajax({
+      url: '/api/' + this.def.name + '/updateDoc',
+      method: 'put',
+      data: JSON.stringify({ doc, opts }),
+      contentType: 'application/json'
+    }).then(docs => Array.isArray(docs) ? docs.map(doc => new this(doc)) : new this(docs));
+  };
+
   Collection.prototype.customFields = function(objMatch) {
     var col = this,
         cf = col._customFields;
@@ -1438,7 +1452,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               return res.json(cDocs);
             }
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1457,7 +1471,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(col.toClient(doc));
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1484,7 +1498,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(col.toClient(doc));
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1501,7 +1515,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.sendStatus(200);
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1526,7 +1540,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             return res.json(await col.count(opts));
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1557,7 +1571,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             ser.fields(fields);
             res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1583,7 +1597,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             );
             res.sendStatus(200);
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
 
             if (err instanceof SecureError) {
               res.status(401).send(err.message);
@@ -1616,7 +1630,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1639,7 +1653,29 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(await col.update(opts));
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
+            res.sendStatus(500);
+          }
+        });
+      }
+
+      /*
+       *     /api/NAME/updateDoc
+       */
+
+      r = app.route('/api/' + name + '/updateDoc');
+      r.all(auth);
+
+      if (express.rest || express.put) {
+        r.put(async function(req, res) {
+          try {
+            const { doc, opts } = req.body;
+
+            opts.auth = req.user;
+
+            res.json(await col.updateDoc(doc, opts));
+          } catch (err) {
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1675,7 +1711,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.sendStatus(200);
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1716,7 +1752,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 res.json(field.get(doc.$toClient()));
               } catch (err) {
-                console.log(err.stack);
+                console.error(err.stack);
                 res.sendStatus(500);
               }
             });
@@ -1740,7 +1776,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
-            console.log(err.stack);
+            console.error(err.stack);
             res.sendStatus(500);
           }
         });
@@ -1782,7 +1818,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 });
                 res.json(results.map(r => r.$toClient()));
               } catch (err) {
-                console.log(err.stack);
+                console.error(err.stack);
                 res.sendStatus(500);
               }
             });
@@ -1802,7 +1838,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 if (err instanceof ValidationError) {
                   res.json(err.reason);
                 } else {
-                  console.log(err.stack);
+                  console.error(err.stack);
                   res.sendStatus(500);
                 }
               }

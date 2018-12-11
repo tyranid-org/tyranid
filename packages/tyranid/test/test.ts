@@ -53,7 +53,7 @@ const fakeSecure = {
       } else if (auth && auth.name.first === 'Jane') {
         return false;
       }
-    } else {
+    } else if (collection.name === 'Widget') {
       query.SECURED = {
         perm,
         auth: auth.$uid
@@ -385,7 +385,8 @@ describe('tyranid', () => {
       User: Tyr.UserCollection,
       Task: Tyr.TaskCollection,
       Book: Tyr.BookCollection,
-      Location: Tyr.LocationCollection;
+      Location: Tyr.LocationCollection,
+      Widget: Tyr.WidgetCollection;
     // var Job2, Organization2, Department2, User2;
     const AdministratorRoleId = new ObjectId('55bb8ecff71d45b995ff8c83');
     const BookIsbn = new ObjectId('5567f2a8387fa974fc6f3a5a');
@@ -406,6 +407,7 @@ describe('tyranid', () => {
       Task = Tyr.byName.task;
       Book = Tyr.byName.book;
       Location = Tyr.byName.location;
+      Widget = Tyr.byName.widget;
 
       await initModel();
     });
@@ -564,7 +566,7 @@ describe('tyranid', () => {
     describe('secure', () => {
       it('should add properties passed to secure.query', async () => {
         const user = await User.findOne({ query: {} });
-        const secured = await User.secureQuery({}, 'view', user!);
+        const secured = await Widget.secureQuery({}, 'view', user!);
         expect(secured.SECURED).to.deep.equal({
           perm: 'view',
           auth: user!.$uid

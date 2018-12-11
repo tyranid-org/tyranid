@@ -28,7 +28,10 @@ import {
   extractUpdateFields,
   isArrow
 } from '../common';
-import { textChangeRangeIsUnchanged } from '../../../../node_modules/typescript';
+import {
+  textChangeRangeIsUnchanged,
+  createNoSubstitutionTemplateLiteral
+} from '../../../../node_modules/typescript';
 
 const { collections, labelize } = Tyr;
 

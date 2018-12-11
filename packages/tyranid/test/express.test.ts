@@ -218,6 +218,20 @@ export function add() {
         expect(result[1]).to.eql(null); // not present because security policy on Book
       });
 
+      it('should support $update()', async () => {
+        const result = await page.evaluate(`
+async function test() {
+  const { User } = Tyr.collections;
+  let user = await User.byId(1);
+  user.goldStars = 2;
+  await user.$update({ projection: { goldStars: 1 } });
+  user = await User.byId(1);
+  return user.goldStars;
+}
+test();`);
+        expect(result).to.eql(2);
+      });
+
       it('should support subscriptions', async () => {
         const cleanup = () =>
           Promise.all([
