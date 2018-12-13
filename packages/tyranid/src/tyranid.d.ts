@@ -49,6 +49,7 @@ declare namespace Tyranid {
     export function pluralize(str: string): string;
     export function config(opts: ConfigOptions): Promise<void>;
     export function connect(opts: ConnectOptions): void;
+    export function createIndexes(): Promise<void>;
     export function byUid(
       uid: string,
       options?: Options_FindById
