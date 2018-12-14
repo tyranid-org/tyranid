@@ -29,15 +29,53 @@ declare module 'tyranid-isomorphic' {
   export namespace Tyr {
 
     export interface CollectionInstance<IdType = string, T extends Document<IdType> = Document<IdType>> {
+      byId(id: IdType, opts: any): Promise<T>;
+      byIds(ids: IdType[], opts: any): Promise<T[]>;
+      byLabel(label: string): Promise<T>;
+      cache(document: T | object, type: 'insert' | 'update' | 'remove', silent: boolean = false): T;
+      count(opts: any): Promise<number>;
+      def: any /* collection def */;
+      exists(opts: any): Promise<boolean>;
+      fields: { [fieldName: string]: any /* Field */ };
       findAll(args: any): Promise<T[]>;
       findOne(args: any): Promise<T | null>;
+      id: string;
+      idToLabel(id: IdType): Promise<string>;
       idToUid(id: IdType): string;
+      insert(doc: T | object | T[] | object[]): Promise<void>;
+      isStatic(): boolean;
+      isUid(uid: string): boolean;
+      label: string;
+      labelField: any;
+      labelFor(doc: T | object): string;
+      labels(text: string): Promise<{ _id: IdType, [labelField: string]: string }>;
+      labels(ids: string[]): Promise<{ _id: IdType, [labelField: string]: string }>;
+      on(opts: any): () => void;
+      parsePath(text: string): any /* NamePath */;
+      paths: { [fieldPathName: string]: any /* Field */ };
+      push(id: IdType, path: string, value: any, opts: any): Promise<void>;
+      remove(id: IdType, justOne: boolean = true): Promise<void>;
+      remove(query: any /* MongoDB-style query */, justOne: boolean = true): Promise<void>;
+      save(doc: T | object): Promise<T>;
+      save(doc: T[] | object[]): Promise<T[]>;
+      subscribe(query: any /* MongoDB-style query */, cancel: boolean = false): Promise<void>;
+      updateDoc(doc: T | object, opts: any): Promise<void>;
+      values: T[];
     }
 
     export interface Document<IdType = string> {
-      $model: CollectionInstance<IdType, this>;
-      $uid: string;
+      $clone(): Document<IdType>;
+      $cloneDeep(): Document<IdType>;
       $id: IdType;
+      $label: string;
+      $model: CollectionInstance<IdType, this>;
+      $remove(opts: any): Promise<void>;
+      $save(opts: any): Promise<void>;
+      $slice(path: string, opts: any): Promise<void>;
+      $toPlain(): object;
+      $tyr: Tyr;
+      $uid: string;
+      $update(opts: any): Promise<void>;
     }
 
     export interface Inserted<IdType = string> extends Document<IdType> {
