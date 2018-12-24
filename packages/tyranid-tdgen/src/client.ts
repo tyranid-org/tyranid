@@ -30,20 +30,12 @@ declare module 'tyranid-client' {
     export type CollectionName = ${names.isomorphic('CollectionName')};
     export type CollectionId = ${names.isomorphic('CollectionId')};
 
-    export interface CollectionInstance<T extends Document = Document> {
-      findAll(args: any): Promise<T[]>;
-      findOne(args: any): Promise<T | null>;
-      idToUid(id: string): string;
-      on(opts: any): () => void;
+    export interface CollectionInstance<T extends Document = Document> extends Isomorphic.CollectionInstance<string, T> {
+      cache(document: T | object, type: 'insert' | 'update' | 'remove', silent: boolean = false): T;
       subscribe(query: any, cancel?: boolean): Promise<void>;
-      values: T[];
-      labels(search: string | string[]): Promise<T[]>;
     }
 
-    export interface Document {
-      $model: CollectionInstance<this>;
-      $uid: string;
-      $id: string;
+    export interface Document extends Isomorphic.Document<string> {
     }
 
     ${generateCommonTypes(collections, 'client', 'string')}

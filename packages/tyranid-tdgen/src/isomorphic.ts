@@ -28,11 +28,18 @@ declare module 'tyranid-isomorphic' {
 
   export namespace Tyr {
 
+    export interface MongoDocument {
+      [key: string]: any;
+    }
+
+    export interface MongoQuery {
+      [key: string]: any;
+    }
+
     export interface CollectionInstance<IdType = string, T extends Document<IdType> = Document<IdType>> {
-      byId(id: IdType, opts: any): Promise<T>;
+      byId(id: IdType, opts: any): Promise<T | null>;
       byIds(ids: IdType[], opts: any): Promise<T[]>;
-      byLabel(label: string): Promise<T>;
-      cache(document: T | object, type: 'insert' | 'update' | 'remove', silent: boolean = false): T;
+      byLabel(label: string): Promise<T | null>;
       count(opts: any): Promise<number>;
       def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
@@ -42,14 +49,17 @@ declare module 'tyranid-isomorphic' {
       id: string;
       idToLabel(id: IdType): Promise<string>;
       idToUid(id: IdType): string;
-      insert(doc: T | object | T[] | object[]): Promise<void>;
+      insert<I, A extends I[]>(docs: A, opts?: any): Promise<T[]>;
+      insert<I>(doc: I): Promise<T>;
+      insert(doc: any): Promise<any>;
       isStatic(): boolean;
       isUid(uid: string): boolean;
       label: string;
       labelField: any;
       labelFor(doc: T | object): string;
-      labels(text: string): Promise<{ _id: IdType, [labelField: string]: string }>;
-      labels(ids: string[]): Promise<{ _id: IdType, [labelField: string]: string }>;
+      labels(text: string): Promise<{ _id: IdType, [labelField: string]: string }[]>;
+      labels(ids: string[]): Promise<{ _id: IdType, [labelField: string]: string }[]>;
+      labels(_: any): Promise<any>;
       on(opts: any): () => void;
       parsePath(text: string): any /* NamePath */;
       paths: { [fieldPathName: string]: any /* Field */ };
@@ -58,24 +68,25 @@ declare module 'tyranid-isomorphic' {
       remove(query: any /* MongoDB-style query */, justOne: boolean = true): Promise<void>;
       save(doc: T | object): Promise<T>;
       save(doc: T[] | object[]): Promise<T[]>;
-      subscribe(query: any /* MongoDB-style query */, cancel: boolean = false): Promise<void>;
-      updateDoc(doc: T | object, opts: any): Promise<void>;
+      save(doc: any): Promise<any>;
+      subscribe(query: MongoQuery, cancel: boolean = false): Promise<void>;
+      updateDoc(doc: T | MongoDocument, opts: any): Promise<T>;
       values: T[];
     }
 
     export interface Document<IdType = string> {
-      $clone(): Document<IdType>;
-      $cloneDeep(): Document<IdType>;
+      $clone(): this;
+      $cloneDeep(): this;
       $id: IdType;
       $label: string;
       $model: CollectionInstance<IdType, this>;
       $remove(opts: any): Promise<void>;
-      $save(opts: any): Promise<void>;
+      $save(opts: any): Promise<this>;
       $slice(path: string, opts: any): Promise<void>;
       $toPlain(): object;
       $tyr: Tyr;
       $uid: string;
-      $update(opts: any): Promise<void>;
+      $update(opts: any): Promise<this>;
     }
 
     export interface Inserted<IdType = string> extends Document<IdType> {

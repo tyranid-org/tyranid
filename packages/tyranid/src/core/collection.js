@@ -1613,7 +1613,10 @@ export default class Collection {
 
         if (!type) {
           throw new Error(
-            'collection missing type ("is"), missing from schema?'
+            `${collection.name}.${path} field missing a type, possible causes:
+
+  (1) missing or unresolved "is", "link", ... in schema
+  (2) tyranid calls made before tyranid is fully bootstrapped`
           );
         }
 

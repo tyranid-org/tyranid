@@ -133,7 +133,7 @@ declare namespace Tyranid {
     export type MaybeRawDocument = Document | RawMongoDocument;
     export type LabelType = string;
     export type IdType = mongodb.ObjectID;
-    export type LabelList = Array<{ [labelField: string]: string }>;
+    export type LabelList = Array<{ _id: any; [labelField: string]: string }>;
     export type BootStage = 'compile' | 'link' | 'post-link';
 
     export interface Class<T> {
@@ -146,32 +146,29 @@ declare namespace Tyranid {
      *  Generic tyranid document object.
      */
     export interface Document {
-      // universal properties
       $access?: AccessResult;
-      $id: IdType;
-      $model: CollectionInstance<this>;
-      $uid: string;
-      $label: string;
-      $tyr: typeof Tyr;
-
-      // methods
-      $remove(opts?: { auth?: Tyr.Document }): Promise<void>;
+      $asOf(time: Date, fields?: any): void;
       $checkAccess(opts: { perm?: string; auth?: Tyr.Document }): this;
       $clone(): this;
       $cloneDeep(): this;
+      $copy(replacements: any, props?: Array<keyof this>): this;
+      $id: IdType;
       $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
+      $label: string;
+      $model: CollectionInstance<this>;
       $populate(fields: any, denormal?: boolean): Promise<this>;
       $redact(): void;
+      $remove(opts?: { auth?: Tyr.Document }): Promise<void>;
+      $replace(replacements: any): Promise<this>;
       $save(opts?: { timestamps?: boolean }): Promise<this>;
+      $slice(prop: string, opts?: Options_Slice): Promise<void>;
       $toClient(opts?: Options_ToClient): RawMongoDocument;
       $toPlain(): RawMongoDocument;
+      $toRaw(): RawMongoDocument;
+      $tyr: typeof Tyr;
+      $uid: string;
       $update(fields?: any): Promise<this>;
       $validate(): ValidationError[];
-      $replace(replacements: any): Promise<this>;
-      $copy(replacements: any, props?: Array<keyof this>): this;
-      $slice(prop: string, opts?: Options_Slice): Promise<this>;
-      $asOf(time: Date, fields?: any): void;
-      $toRaw(): RawMongoDocument;
     }
 
     /*
@@ -684,22 +681,8 @@ declare namespace Tyranid {
      */
     export interface CollectionInstance<T extends Tyr.Document = Tyr.Document>
       extends Component {
-      fields: { [key: string]: FieldInstance };
-      label: LabelType;
-      labelField: FieldInstance;
-      paths: { [key: string]: FieldInstance };
-      def: CollectionDefinitionHydrated;
-      db: mongodb.Collection;
-      id: string;
-
       // Collection instance constructor
       new (doc?: RawMongoDocument): T;
-
-      secureQuery(
-        query: MongoQuery,
-        perm: string,
-        auth: Document
-      ): Promise<MongoQuery>;
 
       byId(
         id: IdType | string | number,
@@ -713,11 +696,16 @@ declare namespace Tyranid {
 
       count(opts: Options_Count): Promise<number>;
 
+      customFields(): Promise<{ [key: string]: FieldInstance }>;
+
+      db: mongodb.Collection;
+      def: CollectionDefinitionHydrated;
+
       exists(opts: Options_Exists): Promise<boolean>;
 
+      fields: { [key: string]: FieldInstance };
       fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
       fieldsFor(obj: any): Promise<{ [key: string]: FieldInstance }>;
-      idToUid(id: string | mongodb.ObjectID): string;
 
       fake(options: {
         n?: number;
@@ -738,27 +726,27 @@ declare namespace Tyranid {
 
       fromClient(doc: RawMongoDocument, path?: string): T;
       fromClientQuery(query: MongoQuery): MongoQuery;
-      toClient(
-        doc:
-          | undefined
-          | null
-          | Document
-          | Document[]
-          | RawMongoDocument
-          | RawMongoDocument[]
-      ): RawMongoDocument;
 
+      id: string;
       idToLabel(id: any): Promise<string>;
+      idToUid(id: string | mongodb.ObjectID): string;
+
       insert<I, A extends I[]>(docs: A, opts?: Options_Insert): Promise<T[]>;
-      insert<I>(doc: I): Promise<T>;
+      insert<I extends object>(doc: I): Promise<T>;
+      insert(doc: any): Promise<any>;
+
       isStatic(): boolean;
 
       isUid(str: string): boolean;
 
       links(opts?: any): FieldInstance[];
 
+      label: LabelType;
+      labelField: FieldInstance;
       labelFor(doc: MaybeRawDocument): string;
-      labels(text: string | string[]): LabelList;
+      labels(text: string): Promise<LabelList>;
+      labels(ids: string[]): Promise<LabelList>;
+      labels(_: any): Promise<any>;
 
       migratePatchToDocument(progress?: (count: number) => void): Promise<void>;
       mixin(def: FieldDefinition): void;
@@ -766,6 +754,8 @@ declare namespace Tyranid {
       on(opts: EventOnOptions): () => void;
 
       parsePath(text: string): NamePathInstance;
+
+      paths: { [key: string]: FieldInstance };
 
       populate<R>(
         fields: string | string[] | { [key: string]: any }
@@ -791,15 +781,35 @@ declare namespace Tyranid {
         exclude?: Array<CollectionInstance<Tyr.Document>>;
       }): Promise<Tyr.Document[]>;
 
-      subscribe(query: MongoQuery, cancel?: boolean): void;
-
-      customFields(): Promise<{ [key: string]: FieldInstance }>;
-
-      // mongodb methods
       remove(opts: Options_Remove): Promise<void>;
-      save(rawDoc: any, opts?: Options_Save): Promise<T>;
+
+      secureQuery(
+        query: MongoQuery,
+        perm: string,
+        auth: Document
+      ): Promise<MongoQuery>;
+
+      save(rawDoc: T, opts?: Options_Save): Promise<T>;
+      save(rawDoc: T[], opts?: Options_Save): Promise<T[]>;
+      save(rawDoc: any, opts?: Options_Save): Promise<any>;
+
+      subscribe(query: MongoQuery, cancel?: boolean): Promise<void>;
+
+      toClient(
+        doc:
+          | undefined
+          | null
+          | Document
+          | Document[]
+          | RawMongoDocument
+          | RawMongoDocument[]
+      ): RawMongoDocument;
+
       update(opts: Options_Update & { query: MongoQuery }): Promise<T[]>;
       updateDoc(doc: MaybeRawDocument, opts?: Options_UpdateDoc): Promise<T>;
+
+      values: T[];
+
       valuesFor(fields: FieldInstance[]): Promise<any[]>;
     }
 
