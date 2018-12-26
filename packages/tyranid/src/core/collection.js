@@ -784,7 +784,7 @@ export default class Collection {
     }
 
     const auth = extractAuthorization(opts);
-    if (auth) {
+    if (auth && !opts.keepNonAccessible) {
       query = await collection.secureFindQuery(
         query,
         opts.perm || OPTIONS.permissions.find,
