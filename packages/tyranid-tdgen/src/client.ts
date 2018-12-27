@@ -23,6 +23,7 @@ declare module 'tyranid-client' {
   export namespace Tyr {
 
     export const byName: CollectionsByName & { [key: string]: CollectionInstance | void };
+    export const collections: CollectionsByClassName & { [key: string]: CollectionInstance | void };
     export const byId: CollectionsById & { [key: string]: CollectionInstance | void };
     export const init: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
@@ -31,7 +32,7 @@ declare module 'tyranid-client' {
     export type CollectionId = ${names.isomorphic('CollectionId')};
 
     export interface CollectionInstance<T extends Document = Document> extends Isomorphic.CollectionInstance<string, T> {
-      cache(document: T | object, type: 'insert' | 'update' | 'remove', silent: boolean = false): T;
+      cache(document: T | object, type: 'insert' | 'update' | 'remove', silent: boolean): T;
       subscribe(query: any, cancel?: boolean): Promise<void>;
     }
 

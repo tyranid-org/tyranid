@@ -36,7 +36,11 @@ declare module 'tyranid-isomorphic' {
       [key: string]: any;
     }
 
-    export interface CollectionInstance<IdType = string, T extends Document<IdType> = Document<IdType>> {
+    export interface Class<T> {
+      new (...args: any[]): T;
+    }
+
+    export interface CollectionInstance<IdType = string, T extends Document<IdType> = Document<IdType>> extends Class<T> {
       byId(id: IdType, opts: any): Promise<T | null>;
       byIds(ids: IdType[], opts: any): Promise<T[]>;
       byLabel(label: string): Promise<T | null>;
@@ -59,17 +63,17 @@ declare module 'tyranid-isomorphic' {
       labelFor(doc: T | object): string;
       labels(text: string): Promise<{ _id: IdType, [labelField: string]: string }[]>;
       labels(ids: string[]): Promise<{ _id: IdType, [labelField: string]: string }[]>;
-      labels(_: any): Promise<any>;
+      labels(_: any): Promise<{ _id: IdType, [labelField: string]: string }[]>;
       on(opts: any): () => void;
       parsePath(text: string): any /* NamePath */;
       paths: { [fieldPathName: string]: any /* Field */ };
       push(id: IdType, path: string, value: any, opts: any): Promise<void>;
-      remove(id: IdType, justOne: boolean = true): Promise<void>;
-      remove(query: any /* MongoDB-style query */, justOne: boolean = true): Promise<void>;
+      remove(id: IdType, justOne: boolean): Promise<void>;
+      remove(query: any /* MongoDB-style query */, justOne: boolean): Promise<void>;
       save(doc: T | object): Promise<T>;
       save(doc: T[] | object[]): Promise<T[]>;
       save(doc: any): Promise<any>;
-      subscribe(query: MongoQuery, cancel: boolean = false): Promise<void>;
+      subscribe(query: MongoQuery, cancel: boolean): Promise<void>;
       updateDoc(doc: T | MongoDocument, opts: any): Promise<T>;
       values: T[];
     }
@@ -160,13 +164,20 @@ export function generateCollectionLookups(
 ) {
   const sorted = _.sortBy(cols, 'def.name');
   const byNameEntries: string[] = [];
+  const collectionsEntries: string[] = [];
   const byIdEntries: string[] = [];
 
   for (const col of sorted) {
     const { id, name } = col.def;
+    const collectionName = names.format(name);
     const collectionInterfaceName = names.collection(name);
     byNameEntries.push(
       `${name}: ${collectionInterfaceName}${typeParam ? `<${typeParam}>` : ''};`
+    );
+    collectionsEntries.push(
+      `${collectionName}: ${collectionInterfaceName}${
+        typeParam ? `<${typeParam}>` : ''
+      };`
     );
     byIdEntries.push(
       `${id}: ${collectionInterfaceName}${typeParam ? `<${typeParam}>` : ''};`
@@ -180,6 +191,15 @@ export function generateCollectionLookups(
     typeParam ? `<${typeParam} = string>` : ''
   } {
       ${byNameEntries.join('\n      ')}
+    }
+
+    /**
+     * Add lookup properties to Tyr.collections with extended interfaces
+     */
+    ${exportInterfaces ? 'export ' : ''}interface CollectionsByClassName${
+    typeParam ? `<${typeParam} = string>` : ''
+  } {
+      ${collectionsEntries.join('\n      ')}
     }
 
     /**
@@ -218,12 +238,18 @@ export function generateCommonTypes(
 
     docs.push(`
     /**
+     * ${names.format(output)} base document definition for ${colName}.
+     */
+    ${output === 'client' ? 'export ' : ''}interface ${names.base(name)}
+      extends ${isoName}<${idType}, Inserted> {}
+
+    /**
      * ${names.format(output)} document definition for ${colName},
      * extends isomorphic base interface ${names.base(name)}.
      */
     ${output === 'client' ? 'export ' : ''}interface ${docName}
       extends Inserted,
-              ${isoName}<${idType}, Inserted> {}
+              ${names.base(name)} {}
     `);
 
     cols.push(`

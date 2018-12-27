@@ -680,7 +680,8 @@ declare namespace Tyranid {
      *  Tyranid collection class
      */
     export interface CollectionInstance<T extends Tyr.Document = Tyr.Document>
-      extends Component {
+      extends Component,
+        Class<T> {
       // Collection instance constructor
       new (doc?: RawMongoDocument): T;
 
