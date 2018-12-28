@@ -1243,18 +1243,19 @@ export default class Collection {
     const collection = this,
       keyFieldName = collection.def.primaryKey.field;
 
-    if (!obj[keyFieldName]) {
-      // TODO:  maybe look at upsert on opts?  we're effectively assuming we always want to upsert, i.e.:
-      //if (opts.upsert !== false) {
-      return collection.insert(obj, ...args);
-      //}
-    }
-
     const opts = combineOptions(extractOptions(collection, args), {
-      query: { [keyFieldName]: obj[keyFieldName] },
-      upsert: true,
-      new: true
+      query: { [keyFieldName]: obj[keyFieldName] }
     });
+
+    if (!obj[keyFieldName]) {
+      if (!opts.upsert) {
+        throw new Error(
+          `missing key field "${keyFieldName}" in updateDoc() call -- updateDoc() does not upsert unless upsert is set to true`
+        );
+      }
+
+      return collection.insert(obj, ...args);
+    }
 
     const updateFields = extractUpdateFields(obj, opts),
       update = {};

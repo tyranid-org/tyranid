@@ -1669,7 +1669,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.put) {
         r.put(async function(req, res) {
           try {
-            const { doc, opts } = req.body;
+            let { doc, opts } = req.body;
+
+            doc = col.fromClient(doc);
 
             opts.auth = req.user;
 

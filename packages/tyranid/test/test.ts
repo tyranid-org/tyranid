@@ -1626,7 +1626,7 @@ describe('tyranid', () => {
         await Role.db.deleteOne({ name: 'foo' });
 
         let foo = new Role({ name: 'foo' });
-        await foo.$update();
+        await foo.$update({ upsert: true });
         expect(foo._id).to.exist;
 
         foo = (await Role.findOne({ query: { name: 'foo' } }))!;
