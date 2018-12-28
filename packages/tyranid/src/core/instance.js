@@ -68,10 +68,17 @@ Instance.boot = async function(stage /*, pass*/) {
     // Heartbeat
 
     function heartbeat() {
-      Instance.db.insertOne({
-        _id: instanceId,
-        lastAliveOn: new Date()
-      });
+      Instance.db.updateOne(
+        {
+          _id: instanceId
+        },
+        {
+          $set: { lastAliveOn: new Date() }
+        },
+        {
+          upsert: true
+        }
+      );
     }
 
     heartbeat();
