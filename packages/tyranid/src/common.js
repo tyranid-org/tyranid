@@ -269,10 +269,6 @@ export function toClient(col, doc, opts) {
 
   if (doc.$access) {
     doc.$redact();
-
-    // TODO:  we might want to actually pass this down to the client so client-side error messages can be sent,
-    //        instead of filtering here, we could filter in fromClient()
-    delete doc.$access;
   }
 
   opts = processOptions(col, opts);

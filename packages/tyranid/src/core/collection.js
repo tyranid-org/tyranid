@@ -1604,7 +1604,7 @@ export default class Collection {
       fields = detail.fields;
     }
 
-    const obj = {}; // TODO:  create a new instance of this record-class?
+    const obj = {};
 
     _.each(pojo, (v, k) => {
       const field = fields[k];

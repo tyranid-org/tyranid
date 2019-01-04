@@ -40,6 +40,15 @@ declare module 'tyranid-isomorphic' {
       new (...args: any[]): T;
     }
 
+    export interface AccessResult {
+      allowed: boolean;
+      reason: string;
+      fields?: {
+        effect: 'allow' | 'deny';
+        names: string[];
+      };
+    }
+
     export interface CollectionInstance<IdType = string, T extends Document<IdType> = Document<IdType>> extends Class<T> {
       byId(id: IdType, opts: any): Promise<T | null>;
       byIds(ids: IdType[], opts: any): Promise<T[]>;
@@ -79,6 +88,7 @@ declare module 'tyranid-isomorphic' {
     }
 
     export interface Document<IdType = string> {
+      $access?: AccessResult;
       $clone(): this;
       $cloneDeep(): this;
       $id: IdType;
