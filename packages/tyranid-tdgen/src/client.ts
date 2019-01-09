@@ -22,9 +22,13 @@ declare module 'tyranid-client' {
 
   export namespace Tyr {
 
-    export const byName: CollectionsByName & { [key: string]: CollectionInstance | void };
-    export const collections: CollectionsByClassName & { [key: string]: CollectionInstance | void };
+    export const $all: '$all';
     export const byId: CollectionsById & { [key: string]: CollectionInstance | void };
+    export const byName: CollectionsByName & { [key: string]: CollectionInstance | void };
+    export function byUid(uid: string, options?: any): Promise<Document | null>;
+    export const collections: CollectionsByClassName & { [key: string]: CollectionInstance | void };
+    export const documentPrototype: any;
+    export function parseUid(uid: string): { collection: CollectionInstance; id: any };
     export const init: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
     export const reconnectSocket: () => void;

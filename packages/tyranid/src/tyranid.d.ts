@@ -25,7 +25,7 @@ declare namespace Tyranid {
     export const NamePath: NamePathStatic;
     export const Type: TypeStatic;
 
-    export const $all: any;
+    export const $all: '$all';
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
     export const collections: CollectionInstance[] & CollectionsByName;
@@ -151,7 +151,7 @@ declare namespace Tyranid {
       $checkAccess(opts: { perm?: string; auth?: Tyr.Document }): this;
       $clone(): this;
       $cloneDeep(): this;
-      $copy(replacements: any, props?: Array<keyof this>): this;
+      $copy(replacements: any, props?: Array<keyof this> | '$all'): this;
       $id: IdType;
       $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
       $label: string;
