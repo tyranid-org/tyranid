@@ -319,6 +319,10 @@ export function generateClientLibrary() {
 
   const documentPrototype = Tyr.documentPrototype = {
     $clone: function() {
+      return new this.$model(_.clone(this));
+    },
+
+    $cloneDeep: function() {
       return new this.$model(_.cloneDeep(this));
     },
 

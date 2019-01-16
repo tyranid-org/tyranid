@@ -118,6 +118,8 @@ export function add() {
       });
 
       it('should $update() with implicit fields', async () => {
+        await widgetHistoryDb.remove({});
+
         let w = widget1();
         await w.$save();
 
