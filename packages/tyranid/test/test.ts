@@ -99,7 +99,17 @@ describe('tyranid', () => {
       consoleLogLevel: 'ERROR',
       dbLogLevel: 'TRACE',
       secure: fakeSecure,
-      indexes: true
+      indexes: true,
+      meta: {
+        collection: {
+          customMeta1: {
+            client: true
+          },
+          customMeta2: {
+            client: false
+          }
+        }
+      }
     });
   });
 

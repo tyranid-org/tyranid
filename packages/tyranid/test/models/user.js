@@ -147,7 +147,9 @@ var User = new tyr.Collection({
     if (this.foo) {
       delete this.foo;
     }
-  }
+  },
+  customMeta1: { name: 'foo' },
+  customMeta2: { name: 'bar' }
 });
 
 User.Sibling = Sibling;

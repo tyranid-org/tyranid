@@ -4,6 +4,7 @@ import * as mongodb from 'mongodb';
 
 import Tyr from '../src/tyranid';
 import * as historical from '../src/historical/historical';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 const { ObjectId } = mongodb;
 

@@ -191,6 +191,16 @@ export function add() {
           await page.evaluate('Tyr.byName.tyrLogLevel.values[0].name')
         ).to.eql('trace'));
 
+      it('should have access to a custom client metadata', async () =>
+        expect(
+          await page.evaluate('Tyr.byName.user.def.customMeta1.name')
+        ).to.eql('foo'));
+
+      it('should not have access to a custom non-client metadata', async () =>
+        expect(await page.evaluate('Tyr.byName.user.def.customMeta2')).to.eql(
+          undefined
+        ));
+
       it('Tyr.byName.X and Tyr.collections.X should be equivalent', async () => {
         expect(
           await page.evaluate(

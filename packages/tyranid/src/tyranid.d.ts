@@ -652,6 +652,13 @@ declare namespace Tyranid {
         dir?: string;
         waitingOnMigration?: boolean;
       };
+      meta?: {
+        collection?: {
+          [customFieldName: string]: {
+            client?: boolean;
+          };
+        };
+      };
     }
 
     export interface ConnectOptions {

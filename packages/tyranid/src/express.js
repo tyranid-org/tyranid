@@ -1225,9 +1225,17 @@ export function generateClientLibrary() {
         file += `
   def.labelField = ${JSON.stringify(col.labelField.path)};`;
       }
-      if (def.grids) {
-        file += `
-  def.grids = ${JSON.stringify(def.grids)};`;
+
+      const colMeta = Tyr.options.meta && Tyr.options.meta.collection;
+      if (colMeta) {
+        for (const fieldName in colMeta) {
+          const fieldDef = colMeta[fieldName];
+
+          if (fieldDef.client) {
+            file += `
+  def.${fieldName} = ${JSON.stringify(def[fieldName])}`;
+          }
+        }
       }
 
       file += `
