@@ -187,7 +187,9 @@ async function postFind(collection, opts, documents, auth) {
     });
   }
 
-  if (auth && (!opts || !opts.keepNonAccessible)) {
+  // if keepNonAccessible is not supplied, the query will have been checked
+  // already via secureFindQuery and this would be redundant
+  if (auth && opts && opts.keepNonAccessible) {
     const secure = Tyr.secure;
     if (secure && secure.checkAccess) {
       const perm = opts.perm || OPTIONS.permissions.find;
