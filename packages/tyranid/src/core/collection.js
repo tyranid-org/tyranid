@@ -187,7 +187,7 @@ async function postFind(collection, opts, documents, auth) {
     });
   }
 
-  if (auth) {
+  if (auth && (!opts || !opts.keepNonAccessible)) {
     const secure = Tyr.secure;
     if (secure && secure.checkAccess) {
       const perm = opts.perm || OPTIONS.permissions.find;
