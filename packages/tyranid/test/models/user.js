@@ -85,6 +85,7 @@ var User = new tyr.Collection({
 
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
     job: { is: Job }, // equivalent to { link: 'job' }
+    backupJobs: { is: 'array', of: Job }, // equivalent to { is: 'array', of: { link: 'job' } }
     age: { is: 'integer', in: 'year', historical: true },
     roles: { is: 'array', of: RoleStatus },
 

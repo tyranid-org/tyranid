@@ -534,12 +534,12 @@ describe('tyranid', () => {
 
       it('should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(25);
+        expect(_.values(fields).length).to.be.eql(26);
       });
 
       it('should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(23);
+        expect(_.values(fields).length).to.be.eql(24);
       });
 
       it('should set dyn fields on insert for matching objects', async () => {
@@ -2306,7 +2306,7 @@ describe('tyranid', () => {
     describe('collection.links()', () => {
       it('should work with no options', () => {
         const links = User.links();
-        expect(links.length).to.be.eql(13);
+        expect(links.length).to.be.eql(14);
       });
 
       it('should work with incoming', () => {
@@ -2316,7 +2316,7 @@ describe('tyranid', () => {
 
       it('should work with outgoing', () => {
         const links = User.links({ direction: 'outgoing' });
-        expect(links.length).to.be.eql(6);
+        expect(links.length).to.be.eql(7);
       });
 
       it('should work with relate', () => {
@@ -2324,7 +2324,7 @@ describe('tyranid', () => {
         expect(links.length).to.be.eql(1);
 
         links = User.links({ relate: 'associate' });
-        expect(links.length).to.be.eql(12);
+        expect(links.length).to.be.eql(13);
       });
     });
 

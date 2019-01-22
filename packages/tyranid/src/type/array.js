@@ -9,6 +9,12 @@ const ArrayType = new Type({
   name: 'array',
 
   compile(compiler, field) {
+    const fieldDef = field.def;
+    if (fieldDef.of instanceof Tyr.Collection) {
+      // this allows them to use:  { is: 'array', of: Job } as an alias to: { is: 'array', of: { link: Job } }
+      fieldDef.of = { link: fieldDef.of };
+    }
+
     compiler.type(field, 'of', true);
   },
 

@@ -1327,8 +1327,9 @@ export default class Collection {
     });
 
     const rslt = await collection.db.updateOne(query, opts.update, opts);
+    let historicalPromise;
     if (snapshot && collection.def.historical === 'document') {
-      historical.saveSnapshots(collection, obj);
+      historicalPromise = historical.saveSnapshots(collection, obj);
     }
 
     await Tyr.Event.fire({
@@ -1341,6 +1342,7 @@ export default class Collection {
 
     if (diffProps) {
       historical.preserveInitialValues(collection, obj, diffProps);
+      await historicalPromise;
     }
 
     return rslt;
