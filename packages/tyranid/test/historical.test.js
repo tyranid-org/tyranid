@@ -119,7 +119,7 @@ export function add() {
       });
 
       it('should $update() with implicit fields', async () => {
-        await widgetHistoryDb.remove({});
+        await widgetHistoryDb.deleteMany({});
 
         let w = widget1();
         await w.$save();
@@ -132,7 +132,6 @@ export function add() {
         const history = await (await widgetHistoryDb
           .find({})
           .sort({ _on: 1 })).toArray();
-        console.log('history', history);
         expect(history.length).to.eql(2);
         expect(_.keys(history[0]).length).to.eql(6);
         expect(_.keys(history[1]).length).to.eql(7);

@@ -1058,6 +1058,7 @@ export default class Collection {
     let historicalType =
       (!opts || opts.historical !== false) && collection.def.historical;
 
+    let historicalPromise;
     if (keyValue) {
       if (historicalType) {
         if (obj.$historical) {
@@ -1082,7 +1083,7 @@ export default class Collection {
       });
 
       if (historicalType === 'document') {
-        historical.saveSnapshots(collection, obj);
+        historicalPromise = historical.saveSnapshots(collection, obj);
       }
 
       // using REPLACE semantics with findAndModify() here
@@ -1116,6 +1117,7 @@ export default class Collection {
 
     if (historicalType) {
       historical.preserveInitialValues(collection, obj);
+      await historicalPromise; // allow historical saves to be concurrent with regular save
     }
 
     return rslt;
@@ -1728,10 +1730,18 @@ export default class Collection {
         const fieldName = lastDot > -1 ? path.substring(lastDot + 1) : path;
         field.name = fieldName;
 
+        // let them do:  "is: Job" or "link: Job" as an equivalence to "link: 'job'"
+        if (fieldDef.is instanceof Collection) {
+          fieldDef.link = fieldDef.is;
+          delete fieldDef.is;
+        }
+
         let type;
         let linkDef = fieldDef.link;
         if (linkDef) {
-          if (_.isString(linkDef)) {
+          if (linkDef instanceof Collection) {
+            type = linkDef;
+          } else if (_.isString(linkDef)) {
             if (linkDef.endsWith('?')) {
               linkDef = linkDef.substring(0, linkDef.length - 1);
             }
@@ -1790,7 +1800,10 @@ export default class Collection {
             );
           }
         } else {
-          throw compiler.err(path, 'Unknown field definition: ' + fieldDef);
+          throw compiler.err(
+            path,
+            'Unknown field definition: ' + JSON.stringify(fieldDef)
+          );
         }
 
         if (fieldDef.denormal) {

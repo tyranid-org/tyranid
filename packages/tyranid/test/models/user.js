@@ -1,5 +1,9 @@
 import tyr from '../../src/tyranid';
 
+import Job from './job';
+
+console.log('Job', Job instanceof tyr.Collection);
+
 var Friend = {
   is: 'object',
   fields: {
@@ -80,7 +84,7 @@ var User = new tyr.Collection({
     },
 
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
-    job: { link: 'job' },
+    job: { is: Job }, // equivalent to { link: 'job' }
     age: { is: 'integer', in: 'year', historical: true },
     roles: { is: 'array', of: RoleStatus },
 
