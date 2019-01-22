@@ -6,6 +6,11 @@ import ValidationError from './validationError';
 
 export default class Field {
   constructor(def) {
+    // "job: Job" is equivalent to "job: { link: Job }"
+    if (def instanceof Tyr.Collection) {
+      def = { link: def };
+    }
+
     this.def = def;
   }
 
