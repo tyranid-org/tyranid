@@ -24,6 +24,10 @@ function fromString(s) {
     throw new Error(`Invalid boolean: ${s}`);
   }
 
+  if (s === true || s === false) {
+    return s;
+  }
+
   return undefined;
 }
 

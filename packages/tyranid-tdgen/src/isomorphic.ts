@@ -57,7 +57,7 @@ declare module 'tyranid-isomorphic' {
       def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
       fields: { [fieldName: string]: any /* Field */ };
-      findAll(args: any): Promise<T[]>;
+      findAll(args: any): Promise<T[] & { count?: number }>;
       findOne(args: any): Promise<T | null>;
       id: string;
       idToLabel(id: IdType): Promise<string>;

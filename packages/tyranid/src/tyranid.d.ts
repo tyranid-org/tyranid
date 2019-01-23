@@ -28,7 +28,7 @@ declare namespace Tyranid {
     export const $all: '$all';
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
-    export const collections: CollectionInstance[] & CollectionsByName;
+    export const collections: CollectionInstance[] & CollectionsByClassName;
     export const mongoClient: mongodb.MongoClient;
     export const db: mongodb.Db;
     export const documentPrototype: any;

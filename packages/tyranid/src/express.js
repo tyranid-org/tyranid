@@ -799,10 +799,10 @@ export function generateClientLibrary() {
               docsById[doc._id] = doc;
             }
 
-            return ids.map(id => docsById[id] || null);
-          } else {
-            return docs;
+            docs = ids.map(id => docsById[id] || null);
           }
+
+          return docs;
         });
     }
   };
@@ -839,13 +839,20 @@ export function generateClientLibrary() {
       url: '/api/' + col.def.name,
       data: { opts: JSON.stringify(opts) }
     }).then(rslt => {
+      let docs;
+
       if (Array.isArray(rslt)) {
-        return rslt.map(doc => new col(doc));
+        docs = rslt.map(doc => new col(doc));
       } else if (_.isObject(rslt)) {
-        const docs = rslt.docs;
+        docs = rslt.docs;
         docs.count = rslt.count;
-        return docs;
       }
+
+      for (const doc of docs) {
+        this.cache(doc, undefined, true);
+      }
+
+      return docs;
     });
   };
 
