@@ -7,7 +7,7 @@
  */
   
 
-declare module 'tyranid-isomorphic' {
+declare module 'tyranid/isomorphic' {
 
   export namespace Tyr {
 

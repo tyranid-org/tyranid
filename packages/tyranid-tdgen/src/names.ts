@@ -1,3 +1,5 @@
+import { Tyr } from 'tyranid';
+
 /**
  * standardize interface / type naming
  */
@@ -8,3 +10,5 @@ export const enumStatic = (s: string) => `${format(s)}CollectionEnumStatic`;
 export const id = (s: string) => `${format(s)}Id`;
 export const document = format;
 export const isomorphic = (s: string = '') => `Isomorphic${s ? '.' + s : ''}`;
+export const idType = (col: Tyr.CollectionInstance) =>
+  col.fields._id.type.name === 'integer' ? 'number' : 'ObjIdType';

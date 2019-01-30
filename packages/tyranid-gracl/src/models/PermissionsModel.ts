@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
-import { match, MatchResult, MatchResultType } from 'mongo-explain-match';
-import { ObjectID } from 'mongodb';
+import { match } from 'mongo-explain-match';
 import { Tyr } from 'tyranid';
 import { GraclPlugin } from '../classes/GraclPlugin';
 import { Hash, Permission, PermissionExplaination } from '../interfaces';
@@ -9,7 +8,6 @@ import { query } from '../query/query';
 import {
   AccessExplainationResult,
   explain,
-  Explaination,
   formatExplainations
 } from '../query/explain';
 

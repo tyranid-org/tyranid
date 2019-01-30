@@ -5,8 +5,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": [
-    "index.ts",
-    "../../generated"
-  ]
+  "include": ["index.ts", "../../generated"]
 }

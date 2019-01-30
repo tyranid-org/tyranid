@@ -152,7 +152,11 @@ function createDocumentSanitizer(
         if (!of || !value) return value;
         if (!Array.isArray(value)) return skip(state, []);
         return value.map((i: Tyr.RawMongoDocument) =>
-          walk(i, of, extendPaths('[]', state))
+          walk(
+            i,
+            typeof of === 'string' ? { is: of } : of,
+            extendPaths('[]', state)
+          )
         );
       }
 

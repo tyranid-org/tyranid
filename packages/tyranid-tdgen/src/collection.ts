@@ -44,14 +44,17 @@ export function colInterface(col: Tyr.CollectionInstance) {
     /**
      * Type definition for "${name}" collection
      */
-    export interface ${colName}<IdType = string>
-      extends CollectionInstance<IdType, ${docName}<IdType>>${staticProps} {}
+    export interface ${colName}<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<${names.idType(
+        col
+      )}, ${docName}<ObjIdType, ObjContainer, NumContainer>>${staticProps} {}
     `;
 }
 
 export function enumStaticInterface(col: Tyr.CollectionInstance) {
   const { name, id, fields } = col.def;
   const colName = names.collection(name);
+  const docName = names.document(name);
   const staticName = names.enumStatic(name);
   if (!col.def.enum)
     throw new Error(`Cannot generate static interface for non-enum collection`);
@@ -84,7 +87,7 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
         }
       }
       obj += '\n';
-      obj += pad('}', 3);
+      obj += `      } & ${docName}<ObjIdType, ObjContainer, NumContainer>`;
 
       let enumPropName = _.snakeCase((row as any)['name']).toUpperCase();
 
@@ -101,7 +104,7 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
   /**
    * Static properties for enum collection "${colName}"
    */
-  export interface ${staticName} ${
+  export interface ${staticName}<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> ${
     !properties.length
       ? '{}'
       : `{

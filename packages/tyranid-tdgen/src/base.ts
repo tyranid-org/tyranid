@@ -22,7 +22,7 @@ export function baseInterface(
   fieldKeys.sort();
 
   for (const field of fieldKeys) {
-    const def = fields[field]['def'];
+    const def = fields[field].def;
 
     /**
      * don't include injected _id in raw response
@@ -52,7 +52,7 @@ export function baseInterface(
      * Base interface from which documents in collection
      * "${name}" <${names.collection(name)}> are derived
      */
-    export interface ${interfaceName}<IdType = string, Container extends {} = {}> {
+    export interface ${interfaceName}<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
       ${properties.join('\n' + pad('', 3))}
     }
     `;
@@ -144,7 +144,9 @@ export function addField(opts: {
     if (!linkCol)
       throw new Error(`No collection for link: ${colName}.${def.link}`);
 
-    const linkIdType = linkCol.def.enum ? names.id(linkCol.def.name) : 'IdType';
+    const linkIdType = linkCol.def.enum
+      ? names.id(linkCol.def.name)
+      : 'ObjIdType';
 
     // add populated prop too
     if (parent === 'array' || noPopulatedProperty) return linkIdType;
@@ -158,14 +160,12 @@ export function addField(opts: {
         ? `${name}$`
         : deIded;
 
-    /**
-     * link type is intersection of base
-     * interface with Container generic
-     */
     out += pad(
-      `${replacementName}?: Container & ${names.base(
+      `${replacementName}?: ${
+        names.idType(linkCol) === 'number' ? 'Num' : 'Obj'
+      }Container & ${names.base(
         linkCol.def.name
-      )}<IdType, Container>`,
+      )}<ObjIdType, ObjContainer, NumContainer>`,
       indent - 1
     );
     return out;
@@ -196,14 +196,15 @@ export function addField(opts: {
       return 'Date';
 
     case 'mongoid':
-      return 'IdType';
+      return 'ObjIdType';
 
     case 'array': {
+      const defOf = typeof def.of === 'string' ? { is: def.of } : def.of!;
       return `${
         def.of
           ? addField({
               name,
-              def: def.of,
+              def: defOf,
               indent,
               parent: 'array'
             })
@@ -213,9 +214,11 @@ export function addField(opts: {
 
     case 'object': {
       if (def.keys && def.of) {
+        const defKeysIs = typeof def.keys === 'string' ? def.keys : def.keys.is;
+
         if (
-          !def.keys.is ||
-          (!assignableToString(def.keys.is) && def.keys.is !== 'integer')
+          !defKeysIs ||
+          (!assignableToString(defKeysIs) && defKeysIs !== 'integer')
         ) {
           console.warn(
             `tyranid-tdgen: Invalid key type: ${JSON.stringify(
@@ -225,14 +228,16 @@ export function addField(opts: {
           return 'any';
         }
 
+        const defOf = typeof def.of === 'string' ? { is: def.of } : def.of;
+
         const subType = addField({
           name: name + '_hash',
-          def: def.of,
+          def: defOf,
           indent: indent + 1,
           noPopulatedProperty: true
         });
 
-        const keyType = assignableToString(def.keys.is) ? 'string' : 'number';
+        const keyType = assignableToString(defKeysIs) ? 'string' : 'number';
 
         let out = '';
         out += '{';

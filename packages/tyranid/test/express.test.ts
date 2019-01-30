@@ -8,7 +8,7 @@ import * as mongodb from 'mongodb';
 import * as fetch from 'node-fetch';
 import * as puppeteer from 'puppeteer';
 
-import { Tyr } from '../src/tyranid';
+import { Tyr } from 'tyranid';
 
 const { ObjectID } = mongodb;
 

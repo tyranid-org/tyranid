@@ -791,7 +791,8 @@ describe('tyranid', () => {
       });
 
       it('should byId() with custom primaryKey', () => {
-        return Book.byId(BookIsbn).then(doc => {
+        // types don't support custom primary keys yet...
+        return Book.byId(BookIsbn as any).then(doc => {
           expect(doc).to.be.an.instanceof(Book);
           expect(doc!._id).to.be.eql(1);
           expect(doc!.isbn).to.be.eql(BookIsbn);
@@ -937,7 +938,7 @@ describe('tyranid', () => {
 
     describe('documents', () => {
       it('should support $clone() on instances', async () => {
-        const orig = await Book.byId(BookIsbn),
+        const orig = await Book.byId(BookIsbn as any),
           clone = orig!.$clone();
         expect(clone.$id).to.eql(BookIsbn);
         expect(clone.$model).to.equal(orig!.$model);
@@ -945,7 +946,7 @@ describe('tyranid', () => {
       });
 
       it('should support $cloneDeep() on instances', async () => {
-        const orig = await Book.byId(BookIsbn);
+        const orig = await Book.byId(BookIsbn as any);
         (orig as any).nested = { a: 1 };
 
         const clone = orig!.$cloneDeep();

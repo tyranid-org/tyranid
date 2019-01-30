@@ -299,7 +299,7 @@ export async function query(
               (result.access ? debugGraphPositive : debugGraphNegative).set(
                 resourceObjectId.toString(),
                 {
-                  permission: permission.$id,
+                  permission: permission.$id as ObjectID,
                   subjectId: permission.subjectId,
                   collectionName: permission.resourceType,
                   ...result
@@ -311,7 +311,7 @@ export async function query(
             if (!queryMaps[key].has(collectionName)) {
               queryMaps[key].set(collectionName, accessSet);
             }
-            accessSet.add(resourceObjectId);
+            accessSet.add(resourceObjectId as string);
             break;
         }
         queryRestrictionSet = true;
@@ -388,7 +388,7 @@ export async function query(
           (result.access ? debugGraphPositive : debugGraphNegative).set(
             resourceObjectID.toString(),
             {
-              permission: permission.$id,
+              permission: permission.$id as ObjectID,
               subjectId: permission.subjectId,
               collectionName: permission.resourceType,
               ...result
@@ -399,10 +399,10 @@ export async function query(
         switch (result.access) {
           // access needs to be exactly true or false
           case true:
-            positiveIds.push(resourceObjectID);
+            positiveIds.push(resourceObjectID as ObjectID);
             break;
           case false:
-            negativeIds.push(resourceObjectID);
+            negativeIds.push(resourceObjectID as ObjectID);
             break;
         }
       }
@@ -535,7 +535,7 @@ export async function query(
         const map = queryMaps[altAccessString].get(linkedCollectionName);
 
         if (!map || !map.has(id.toString())) {
-          accessSet.add(id);
+          accessSet.add(id as string);
         }
       };
 

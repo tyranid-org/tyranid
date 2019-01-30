@@ -3,7 +3,7 @@
   "version": "0.5.59",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/src/tyranid.js",
-  "typings": "src/tyranid.d.ts",
+  "typings": "tyranid.d.ts",
   "scripts": {
     "docs": "ts-node ./scripts/generate-docs.js",
     "test": "npm run mocha",

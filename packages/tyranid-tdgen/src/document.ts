@@ -18,8 +18,8 @@ export function docInterface(
     /**
      * Document returned by collection "${name}" <${colName}>
      */
-    export interface ${interfaceName}<IdType = ${idType}>
-      extends ${superInterface}<IdType>,
-              ${baseName}<IdType, ${superInterface}<IdType>> {}
+    export interface ${interfaceName}<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<${names.idType(col)}>,
+              ${baseName}<ObjIdType, ObjContainer, NumContainer> {}
     `;
 }

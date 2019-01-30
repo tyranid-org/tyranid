@@ -1,4 +1,4 @@
-import { Tyr } from 'tyranid-client';
+import { Tyr } from 'tyranid/client';
 
 const adjustedEmail = 'obiwan@kenobi.com';
 

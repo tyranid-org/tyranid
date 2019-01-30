@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import Tyr from '../tyr';
 import ObjectType from '../type/object';
 import * as historical from '../historical/historical';
+import SecureError from '../secure/secureError';
 
 export function toPlain(doc) {
   const plain = {};
@@ -93,9 +94,9 @@ export const documentPrototype = (Tyr.documentPrototype = {
               allowedNames[name] = true;
             }
 
-            const fields = this.$model.fields;
-            for (const name in fields) {
-              if (fields.hasOwnProperty(name) && !allowedNames[name]) {
+            const modelFields = this.$model.fields;
+            for (const name in modelFields) {
+              if (modelFields.hasOwnProperty(name) && !allowedNames[name]) {
                 delete this[name];
               }
             }

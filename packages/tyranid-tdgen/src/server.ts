@@ -17,13 +17,14 @@ export function generateServerDefinitionFile(
   const td = `${generateDefinitionPreamble(passedOptions)}
 import { ObjectID } from 'mongodb';
 import { Tyr } from 'tyranid';
-import { Tyr as ${names.isomorphic()} } from 'tyranid-isomorphic';
+import { Tyr as ${names.isomorphic()} } from 'tyranid/isomorphic';
 
 declare module 'tyranid' {
 
   namespace Tyr {
     export type CollectionName = ${names.isomorphic('CollectionName')};
     export type CollectionId = ${names.isomorphic('CollectionId')};
+
     ${generateCommonTypes(collections, 'server', 'ObjectID')}
     ${generateCollectionLookups(collections, false)}
   }

@@ -16,32 +16,12 @@ export function generateClientDefinitionFile(
 ) {
   const td = `${generateDefinitionPreamble(passedOptions)}
 
-declare module 'tyranid-client' {
-  import { Tyr as ${names.isomorphic()} } from 'tyranid-isomorphic';
-  import * as io from 'socket.io-client';
+import 'tyranid/client';
+import { Tyr as ${names.isomorphic()} } from 'tyranid/isomorphic';
+
+declare module 'tyranid/client' {
 
   export namespace Tyr {
-
-    export const $all: '$all';
-    export const byId: CollectionsById & { [key: string]: CollectionInstance | void };
-    export const byName: CollectionsByName & { [key: string]: CollectionInstance | void };
-    export function byUid(uid: string, options?: any): Promise<Document | null>;
-    export const collections: CollectionInstance[] & CollectionsByClassName & { [key: string]: CollectionInstance | void };
-    export const documentPrototype: any;
-    export function parseUid(uid: string): { collection: CollectionInstance; id: any };
-    export const init: () => void;
-    export const setSocketLibrary: (library: typeof io) => void;
-    export const reconnectSocket: () => void;
-    export type CollectionName = ${names.isomorphic('CollectionName')};
-    export type CollectionId = ${names.isomorphic('CollectionId')};
-
-    export interface CollectionInstance<T extends Document = Document> extends Isomorphic.CollectionInstance<string, T> {
-      cache(document: T | object, type: 'insert' | 'update' | 'remove', silent: boolean): T;
-      subscribe(query: any, cancel?: boolean): Promise<void>;
-    }
-
-    export interface Document extends Isomorphic.Document<string> {
-    }
 
     ${generateCommonTypes(collections, 'client', 'string')}
     ${generateCollectionLookups(collections, true)}
