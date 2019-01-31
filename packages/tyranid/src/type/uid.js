@@ -4,38 +4,50 @@ import Collection from '../core/collection';
 import Type from '../core/type';
 
 function validateUidCollection(validator, path, collection) {
-  const unknownTypeErrMsg = 'Unknown Collection for uid "of".';
+  function fail() {
+    throw validator.err(
+      path,
+      `Unknown collection referenced in a uid "of" -- ${JSON.stringify(
+        collection,
+        null,
+        2
+      )}`
+    );
+  }
 
   if (collection instanceof Collection) {
     if (!Tyr.byId[collection.id]) {
-      throw validator.err(path, unknownTypeErrMsg);
+      fail();
     }
   } else if (typeof collection === 'string') {
-    collection = Tyr.byName[collection];
-    if (!collection) {
-      throw validator.err(path, unknownTypeErrMsg);
+    if (!Tyr.byId[collection] && !Tyr.byName[collection]) {
+      fail();
     }
   } else {
-    throw validator.err(path, unknownTypeErrMsg);
+    fail();
   }
 }
 
 const UidType = new Type({
   name: 'uid',
   compile(compiler, field) {
-    const of = field.of;
+    if (compiler.stage !== 'link') return;
+    let of = field.def.of;
 
     if (!of) {
       return;
     }
 
-    if (Array.isArray(of)) {
-      _.each(of, function(v /*,k*/) {
-        validateUidCollection(compiler, field.path, v);
-      });
-    } else {
-      validateUidCollection(compiler, field.path, of);
+    if (!Array.isArray(of)) {
+      of = [of];
     }
+
+    field.of = of.map(cid => {
+      validateUidCollection(compiler, field.path, cid);
+      return cid instanceof Tyr.Collection
+        ? cid
+        : Tyr.byId[cid] || Tyr.byName[cid];
+    });
   }
 });
 

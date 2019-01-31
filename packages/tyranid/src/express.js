@@ -97,6 +97,7 @@ class Serializer {
       'denormal',
       'granularity',
       'group',
+      'help',
       'if',
       'keys',
       'min',
@@ -120,7 +121,11 @@ class Serializer {
     if (of) {
       this.newline();
       this.file += 'of';
-      this.field(of);
+      if (of instanceof Tyr.Field) {
+        this.field(of);
+      } else {
+        this.file += stringify(field.def.of);
+      }
     }
 
     var get = def.getClient || def.get;
@@ -496,7 +501,7 @@ export function generateClientLibrary() {
 
   Field.prototype.labels = function(doc, search) {
     const to = this.link;
-    if (to.isStatic() ) {
+    if (to && to.isStatic()) {
       var values = to.def.values;
 
       if (search) {
@@ -1811,32 +1816,21 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.get) {
         _.each(col.paths, field => {
           const to = field.link;
-          if (to && to.labelField) {
+          if ((to && to.labelField) || field.type.name === 'uid') {
             r = app.route(
               '/api/' + name + '/' + field.path + '/label/:search?'
             );
             r.all(auth);
             r.put(async (req, res) => {
               try {
-                const doc = col.fromClient(req.body, undefined, { req }),
-                  query = {},
-                  search = req.params.search;
+                const doc = col.fromClient(req.body, undefined, { req });
 
-                if (search) {
-                  query[to.labelField.path] = new RegExp(search, 'i');
-                }
-
-                await LinkType.applyWhere(field, doc, query, {
+                const results = await field.labels(doc, req.params.search, {
                   auth: req.user,
                   user: req.user,
                   req
                 });
 
-                const results = await to.labels(query, {
-                  auth: req.user,
-                  user: req.user,
-                  req
-                });
                 res.json(results.map(r => r.$toClient()));
               } catch (err) {
                 console.error(err.stack);

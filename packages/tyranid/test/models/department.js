@@ -5,7 +5,7 @@ var Department = new tyr.Collection({
   name: 'department',
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string' },
+    name: { is: 'string', labelField: true },
     tags: { is: 'array', of: 'string' },
     creator: { link: 'user' },
     head: { link: 'user' },

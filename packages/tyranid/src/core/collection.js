@@ -628,6 +628,11 @@ export default class Collection {
 
   async labels(text, opts) {
     const lf = this.labelField;
+    if (!lf) {
+      throw new Error(
+        `Collection "${this.name}" does not have a label field defined`
+      );
+    }
 
     const query = _.isObject(text)
       ? text

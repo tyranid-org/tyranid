@@ -22,6 +22,31 @@ export default class Field {
     return this.link ? await this.link.idToLabel(value) : value;
   }
 
+  async labels(doc, text, opts) {
+    const field = this,
+      query = {};
+
+    const to = field.link;
+
+    if (to) {
+      if (text) {
+        query[to.labelField.path] = new RegExp(text, 'i');
+      }
+
+      await LinkType.applyWhere(field, doc, query, opts);
+
+      return await to.labels(query, opts);
+    } else if (field.type.name === 'uid') {
+      const cols = field.of;
+
+      if (cols) {
+        return _.flatten(await Promise.all(cols.map(col => col.labels(text))));
+      }
+    }
+
+    //return undefined;
+  }
+
   get namePath() {
     let np = this._np;
     if (!np) {

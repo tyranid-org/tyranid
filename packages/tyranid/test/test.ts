@@ -1031,6 +1031,16 @@ describe('tyranid', () => {
         expect(labels.length).to.eql(1);
         expect(labels[0].fullName).to.eql('John Doe');
       });
+
+      it('should support UID labels()', async () => {
+        const task = new Task();
+        const labels = await Task.fields.assigneeUid.labels(task, 'e');
+
+        expect(labels.length).to.eql(4);
+        expect(labels.map(l => l.$label).join()).to.eql(
+          'John Doe,Jane Doe,Jill Doe,Engineering'
+        );
+      });
     });
 
     describe('saving', () => {

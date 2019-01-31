@@ -832,7 +832,7 @@ export namespace Tyr {
     fields?: { [key: string]: FieldInstance };
 
     labelify(value: any): Promise<any>;
-    labels(text?: string): LabelList<AnyIdType>;
+    labels(doc: Tyr.Document, text?: string, opts?: any): LabelList<AnyIdType>;
     validate(obj: {}): Promise<void>;
   }
 
