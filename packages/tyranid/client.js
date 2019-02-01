@@ -1,1 +1,1 @@
-//export const Tyr = {};
+const foo = {};

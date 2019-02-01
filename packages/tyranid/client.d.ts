@@ -1,3 +1,4 @@
+import * as io from 'socket.io-client';
 import { Tyr as Isomorphic } from 'tyranid/isomorphic';
 
 export namespace Tyr {
@@ -22,14 +23,34 @@ export namespace Tyr {
     };
   }
 
+  export interface CollectionsByName {
+    [key: string]: CollectionInstance;
+  }
+
+  export interface CollectionsByClassName {
+    [key: string]: CollectionInstance;
+  }
+
+  export interface CollectionsById {
+    [key: string]: CollectionInstance;
+  }
+
   export const byId: CollectionsById;
   export const byName: CollectionsByName;
   export const collections: CollectionInstance[] & CollectionsByClassName;
 
+  export const init: () => void;
+  export function parseUid(
+    uid: string
+  ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
+  export const setSocketLibrary: (library: typeof io) => void;
+  export const reconnectSocket: () => void;
+
+  export type AnyIdType = string | number;
   export type ObjIdType = string;
 
   export interface CollectionInstance<
-    IdType,
+    IdType extends AnyIdType = AnyIdType,
     T extends Document<IdType> = Document<IdType>
   > extends Class<T> {
     byId(id: IdType, opts: any): Promise<T | null>;
@@ -73,7 +94,7 @@ export namespace Tyr {
     save(doc: T | object): Promise<T>;
     save(doc: T[] | object[]): Promise<T[]>;
     save(doc: any): Promise<any>;
-    subscribe(query: MongoQuery, cancel: boolean): Promise<void>;
+    subscribe(query: MongoQuery | undefined, cancel?: boolean): Promise<void>;
     updateDoc(doc: T | MongoDocument, opts: any): Promise<T>;
     values: T[];
   }
