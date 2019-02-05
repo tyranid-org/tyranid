@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import Tyr from '../tyr';
 import NamePath from './namePath';
 import ValidationError from './validationError';
+import LinkType from '../type/link';
 
 export default class Field {
   constructor(def) {
