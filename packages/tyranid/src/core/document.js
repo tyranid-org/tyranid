@@ -93,9 +93,9 @@ export const documentPrototype = (Tyr.documentPrototype = {
               allowedNames[name] = true;
             }
 
-            const fields = this.$model.fields;
-            for (const name in fields) {
-              if (fields.hasOwnProperty(name) && !allowedNames[name]) {
+            const modelFields = this.$model.fields;
+            for (const name in modelFields) {
+              if (modelFields.hasOwnProperty(name) && !allowedNames[name]) {
                 delete this[name];
               }
             }
