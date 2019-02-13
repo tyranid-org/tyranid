@@ -740,9 +740,7 @@ export function generateClientLibrary() {
       this.labelField = new NamePath(this, def.labelField).tail;
     }
 
-    if (def.values) {
-      this.values = def.values;
-    }
+    this.values = def.values || [];
 
     _.each(this.paths, function(field) {
       var def = field.def;
