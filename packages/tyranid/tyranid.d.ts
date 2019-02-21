@@ -420,7 +420,7 @@ export namespace Tyr {
   export type PopulationOption =
     | string
     | string[]
-    | { [key: string]: PopulationOption };
+    | { [key: string]: PopulationOption | 0 | 1 };
 
   /**
    *  Hash of strings -> fields
