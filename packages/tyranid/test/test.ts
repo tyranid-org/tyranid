@@ -818,6 +818,13 @@ describe('tyranid', () => {
         });
         expect(u!.organization).to.be.undefined;
       });
+
+      it('objects returned should have an $options property', () => {
+        const opts = { query: { 'name.first': 'An' } };
+        return User.findOne(opts).then(doc => {
+          expect(doc!.$options).to.eql(opts);
+        });
+      });
     });
 
     describe('counting', () => {
@@ -2070,6 +2077,18 @@ describe('tyranid', () => {
           projection: { name: 1, ssn: 1, favoriteColor: 1 }
         });
         expect(_.keys(userc)).to.eql(['_id', 'name', 'ssn', 'favoriteColor']);
+      });
+
+      it('should strip out $options', () => {
+        const user = new User({
+          _id: 222,
+          name: { first: 'Some', last: 'User' },
+          ssn: '111-23-1232',
+          favoriteColor: 'blue'
+        });
+        user.$options = { query: {} };
+        const userc = user.$toClient();
+        expect(userc.$options).to.be.undefined;
       });
     });
 

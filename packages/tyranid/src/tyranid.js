@@ -39,6 +39,9 @@ import './fake';
 import './migrator';
 import './timer';
 
+import './media-type';
+import './type/s3';
+
 import './log/log';
 
 import './diff/diff';

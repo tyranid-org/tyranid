@@ -148,6 +148,26 @@ async function doc() {
     fs.writeFileSync(path + '/unit-table.html', html);
   }
 
+  function mediaType() {
+    let html = header();
+    html += '<table>\n';
+    html +=
+      '<tr><th>Media Type<th>Extensions<th>Name<th>Notes<th>Obsoleted By<th>Unsafe?\n';
+
+    for (const row of Tyr.byName.mediaType.def.values) {
+      html += `<tr><td>${row._id || ''}`;
+      html += `<td>${row.extensions || ''}`;
+      html += `<td>${row.name || ''}`;
+      html += `<td>${row.notes || ''}`;
+      html += `<td>${row.obsolete || ''}`;
+      html += `<td>${row.unsafe || ''}\n`;
+    }
+
+    html += '</table>\n';
+
+    fs.writeFileSync(path + '/mediaType-table.html', html);
+  }
+
   function logLevel() {
     let html = header();
     html += '<table>\n';
@@ -178,6 +198,7 @@ async function doc() {
     fs.writeFileSync(path + '/logEvent-table.html', html);
   }
 
+  mediaType();
   unit();
   unitFactor();
   unitSystem();

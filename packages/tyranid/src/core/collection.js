@@ -28,10 +28,6 @@ import {
   extractUpdateFields,
   isArrow
 } from '../common';
-import {
-  textChangeRangeIsUnchanged,
-  createNoSubstitutionTemplateLiteral
-} from '../../../../node_modules/typescript';
 
 const { collections, labelize } = Tyr;
 
@@ -166,6 +162,24 @@ async function postFind(collection, opts, documents, auth) {
         false /* denormal */,
         opts
       );
+    }
+
+    if (array) {
+      for (const document of documents) {
+        Object.defineProperty(document, '$options', {
+          configurable: false,
+          enumerable: false,
+          value: opts,
+          writable: false
+        });
+      }
+    } else {
+      Object.defineProperty(documents, '$options', {
+        configurable: false,
+        enumerable: false,
+        value: opts,
+        writable: false
+      });
     }
   }
 
@@ -1036,6 +1050,8 @@ export default class Collection {
   async save(obj, opts) {
     const collection = this;
 
+    opts = combineOptions(obj.$options, opts);
+
     if (opts && extractProjection(opts)) {
       throw new Error(
         'save() does not support a projection option; maybe try updateDoc()/$update()'
@@ -1252,9 +1268,13 @@ export default class Collection {
     const collection = this,
       keyFieldName = collection.def.primaryKey.field;
 
-    const opts = combineOptions(extractOptions(collection, args), {
-      query: { [keyFieldName]: obj[keyFieldName] }
-    });
+    const opts = combineOptions(
+      obj.$options,
+      extractOptions(collection, args),
+      {
+        query: { [keyFieldName]: obj[keyFieldName] }
+      }
+    );
 
     if (!obj[keyFieldName]) {
       if (!opts.upsert) {

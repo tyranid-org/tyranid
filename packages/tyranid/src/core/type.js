@@ -14,7 +14,7 @@ export default class Type {
   compile(compiler, path, field) {
     const v = this.def.compile;
     if (v) {
-      v(compiler, path, field);
+      v.call(this, compiler, path, field);
     }
   }
 

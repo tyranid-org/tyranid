@@ -114,12 +114,26 @@ export function extractOptions(collection, args) {
   }
 }
 
+/**
+ * This functions tries to avoid creating a new option object unless it has to.
+ */
 export function combineOptions(...sources) {
-  const o = {};
+  let first;
+  let composite;
   for (const source of sources) {
-    _.assign(o, source);
+    if (source) {
+      if (composite) {
+        _.assign(composite, source);
+      } else if (first) {
+        composite = {};
+        _.assign(composite, first);
+        _.assign(composite, source);
+      } else {
+        first = source;
+      }
+    }
   }
-  return o;
+  return composite || first;
 }
 
 /**
@@ -281,7 +295,7 @@ export function toClient(col, doc, opts) {
 
   function projected(key) {
     if (!proj) {
-      return key !== '_history';
+      return key !== '_history' && key !== '$options';
     }
 
     const v = proj[key];

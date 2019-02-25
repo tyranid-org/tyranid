@@ -14,7 +14,6 @@ import Type from './core/type';
 import local from './local/local';
 import SecureError from './secure/secureError';
 import BooleanType from './type/boolean';
-import LinkType from './type/link';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -286,8 +285,17 @@ export function generateClientLibrary() {
   _.assign(Tyr, {
     $all: '$all',
     collections: [],
-    byId: {}
+    byId: {},
+    options: {}
   });
+
+  ${
+    Tyr.options.aws && Tyr.options.aws.cloudfrontPrefix
+      ? `Tyr.options.aws = { cloudfrontPrefix: '${
+          Tyr.options.aws.cloudfrontPrefix
+        }' };\n`
+      : ''
+  }
 
   var byName = {};
 
@@ -1353,6 +1361,18 @@ export default function connect(app, auth, opts) {
   Tyr.collections.forEach(col => col.connect(opts));
 
   if (app) {
+    const typesByName = Tyr.Type.byName;
+    for (const typeName in typesByName) {
+      const type = typesByName[typeName];
+
+      if (type instanceof Tyr.Type) {
+        const routes = type.def.routes;
+        if (routes) {
+          routes({ app, auth });
+        }
+      }
+    }
+
     Tyr.app = app;
 
     Tyr.components.forEach(comp => {

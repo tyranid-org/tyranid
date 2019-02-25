@@ -158,6 +158,7 @@ export namespace Tyr {
     $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
     $label: string;
     $model: CollectionInstance<IdType, this>;
+    $options: Options_AllFind;
     $populate(fields: any, denormal?: boolean): Promise<this>;
     $redact(): void;
     $remove(opts?: { auth?: Tyr.Document }): Promise<void>;
@@ -353,6 +354,8 @@ export namespace Tyr {
   export interface Options_FindCursor extends Options_FindOne, OptionsWindow {}
 
   export interface Options_FindMany extends Options_FindCursor, OptionsCount {}
+
+  export interface Options_AllFind extends Options_FindMany {}
 
   export interface Options_FindAndModify
     extends OptionsAuth,
@@ -616,34 +619,21 @@ export namespace Tyr {
   export type LogLevel = 'TRACE' | 'LOG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
   export interface ConfigOptions {
-    mongoClient?: mongodb.MongoClient;
-    db?: mongodb.Db;
+    aws?: {
+      bucket?: string;
+      cloudfrontPrefix?: string;
+    };
+    cls?: boolean;
     consoleLogLevel?: LogLevel | false;
-    externalLogLevel?: LogLevel | false;
+    db?: mongodb.Db;
     dbLogLevel?: LogLevel | false;
     externalLogger?: (obj: any) => void | Promise<void>;
+    externalLogLevel?: LogLevel | false;
     fixer?: {
       accessKey: string;
       every?: number;
     };
-    secure?: Secure;
-    cls?: boolean;
-    validate?: ValidationPattern[];
-    pregenerateClient?: boolean;
     indexes?: boolean;
-    minify?: boolean;
-    permissions?: {
-      find: string;
-      insert: string;
-      update: string;
-      remove: string;
-    };
-    migration?: {
-      migrate?: boolean;
-      list?: string[];
-      dir?: string;
-      waitingOnMigration?: boolean;
-    };
     meta?: {
       collection?: {
         [customFieldName: string]: {
@@ -651,6 +641,23 @@ export namespace Tyr {
         };
       };
     };
+    migration?: {
+      migrate?: boolean;
+      list?: string[];
+      dir?: string;
+      waitingOnMigration?: boolean;
+    };
+    minify?: boolean;
+    mongoClient?: mongodb.MongoClient;
+    permissions?: {
+      find: string;
+      insert: string;
+      update: string;
+      remove: string;
+    };
+    pregenerateClient?: boolean;
+    secure?: Secure;
+    validate?: ValidationPattern[];
   }
 
   export interface ConnectOptions {
