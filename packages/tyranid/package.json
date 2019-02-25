@@ -1,8 +1,7 @@
 {
   "name": "tyranid",
-  "version": "0.6.0",
-  "description":
-    "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
+  "version": "0.6.1",
+  "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "main": "dist/src/tyranid.js",
   "typings": "tyranid.d.ts",
   "scripts": {
@@ -16,8 +15,7 @@
     "watch": "rm -rf ./dist/ && tsc -w",
     "tsc:tests": "npm run generate-typings && tsc -p ./test",
     "tsc": "rm -rf ./dist/ && tsc",
-    "mocha":
-      "npm run tsc:tests && mocha \"./dist/test/test.js\" --read false -t 100000",
+    "mocha": "npm run tsc:tests && mocha \"./dist/test/test.js\" --read false -t 100000",
     "mocha-coverage": "nyc mocha \"./dist/test/test.js\" --read false",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "server": "node ./test/serverBoot.js"
@@ -32,8 +30,8 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "aws-sdk": "2.125.0",
     "aws-s3-promisified": "2.0.0",
+    "aws-sdk": "2.125.0",
     "chalk": "^2.1.0",
     "connect-multiparty": "2.0.0",
     "continuation-local-storage": "3.1.6",
