@@ -1269,7 +1269,7 @@ export default class Collection {
       keyFieldName = collection.def.primaryKey.field;
 
     const opts = combineOptions(
-      obj.$options,
+      _.omit(obj.$options, ['fields', 'projection']),
       extractOptions(collection, args),
       {
         query: { [keyFieldName]: obj[keyFieldName] }
