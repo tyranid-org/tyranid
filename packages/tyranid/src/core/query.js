@@ -593,6 +593,8 @@ Collection.prototype.fromClientQuery = function(query) {
           server[n] = convertValue(field, v);
           break;
         case '$exists':
+        case '$regex':
+        case '$options':
           server[n] = v;
           break;
         default:
