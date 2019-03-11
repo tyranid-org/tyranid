@@ -3,6 +3,8 @@ import * as io from 'socket.io-client';
 
 declare module 'tyranid/client' {
   export namespace Tyr {
+    export type anny = any;
+
     export interface MongoDocument {
       [key: string]: any;
     }

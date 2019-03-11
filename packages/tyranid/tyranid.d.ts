@@ -31,6 +31,8 @@ export namespace Tyr {
   export const NamePath: NamePathStatic;
   export const Type: TypeStatic;
 
+  export type anny = any;
+
   export const $all: '$all';
   export const byId: CollectionsById;
   export const byName: CollectionsByName;
@@ -633,6 +635,9 @@ export namespace Tyr {
       accessKey: string;
       every?: number;
     };
+    formats?: {
+      [typeName: string]: string;
+    };
     indexes?: boolean;
     meta?: {
       collection?: {
@@ -932,6 +937,7 @@ export namespace Tyr {
   export interface TypeInstance {
     name: string;
     def: TypeDefinition;
+    compare(field: FieldInstance, a: any, b: any): void;
     compile(compiler: any, path: string, field: FieldInstance): void;
     fromString(str: string): any;
     fromClient(field: FieldInstance, value: any): any;

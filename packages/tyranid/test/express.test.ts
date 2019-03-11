@@ -154,6 +154,7 @@ export function add() {
   <head>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/api/tyranid"></script>
     <script>

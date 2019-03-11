@@ -717,7 +717,10 @@ export default class Collection {
       let v;
       if ((v = opts.limit)) cursor.limit(v);
       if ((v = opts.skip)) cursor.skip(v);
-      if ((v = opts.sort)) cursor.sort(v);
+      if ((v = opts.sort)) {
+        cursor.collation({ locale: 'en' });
+        cursor.sort(v);
+      }
 
       return Object.create(cursor, {
         next: {
@@ -829,7 +832,10 @@ export default class Collection {
     let v;
     if ((v = opts.limit)) cursor.limit(v);
     if ((v = opts.skip)) cursor.skip(v);
-    if ((v = opts.sort)) cursor.sort(v);
+    if ((v = opts.sort)) {
+      cursor.collation({ locale: 'en' });
+      cursor.sort(v);
+    }
 
     const documentsPromise = cursor.toArray().then(async documents => {
       if (documents.length) {

@@ -4,6 +4,10 @@ import Type from '../core/type';
 const StringType = new Type({
   name: 'string',
 
+  compare(field, a, b) {
+    return a.localeCompare(b, undefined, { sensitivity: 'base' });
+  },
+
   query(namePath, where, query) {
     if (where) {
       query[namePath.name] = _.isArray(where) ? { $in: where } : where;

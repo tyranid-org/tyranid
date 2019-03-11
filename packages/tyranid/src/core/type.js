@@ -11,6 +11,33 @@ export default class Type {
     Type.validateType(this);
   }
 
+  compare(field, a, b) {
+    if (a !== undefined && a !== null) {
+      if (b !== undefined && b !== null) {
+        const compare = this.def.compare;
+        if (compare) {
+          return compare(field, a, b);
+        } else {
+          if (a < b) {
+            return -1;
+          } else if (a > b) {
+            return 1;
+          } else {
+            return 0;
+          }
+        }
+      } else {
+        return 1;
+      }
+    } else {
+      if (b !== undefined && b !== null) {
+        return -1;
+      } else {
+        return 0;
+      }
+    }
+  }
+
   compile(compiler, path, field) {
     const v = this.def.compile;
     if (v) {

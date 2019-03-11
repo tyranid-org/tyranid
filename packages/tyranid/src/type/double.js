@@ -5,6 +5,14 @@ import Type from '../core/type';
 const DoubleType = new Type({
   name: 'double',
 
+  compare(field, a, b) {
+    if (a) {
+      return b ? a - b : 1;
+    } else {
+      return b ? -1 : 0;
+    }
+  },
+
   compile(compiler, field) {
     if (compiler.stage === 'link') {
       const unit = field.def.in;

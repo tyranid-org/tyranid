@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import * as moment from 'moment';
 import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
 import * as ts from 'typescript';
@@ -266,12 +267,12 @@ export function generateClientLibrary() {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
-    module.exports = factory(require('jquery'), require('lodash'));
+    module.exports = factory(require('jquery'), require('lodash'), require('moment'));
   } else {
     // Browser globals (root is window)
-    root.Tyr = factory(root.jQuery, root._);
+    root.Tyr = factory(root.jQuery, root._, root.moment);
   }
-})((typeof window !== 'undefined' ? window : this), function($, _) {
+})((typeof window !== 'undefined' ? window : this), function($, _, moment) {
   var Tyr = { init: init };
   Tyr.Tyr = Tyr;
 
@@ -281,6 +282,7 @@ export function generateClientLibrary() {
 
   if (!$) throw new Error("jQuery not available to Tyranid client");
   if (!_) throw new Error("Lodash not available to Tyranid client ");
+  if (!moment) throw new Error("moment not available to Tyranid client ");
 
   _.assign(Tyr, {
     $all: '$all',
@@ -294,6 +296,11 @@ export function generateClientLibrary() {
       ? `Tyr.options.aws = { cloudfrontPrefix: '${
           Tyr.options.aws.cloudfrontPrefix
         }' };\n`
+      : ''
+  }
+  ${
+    Tyr.options.formats
+      ? `Tyr.options.formats = ${JSON.stringify(Tyr.options.formats)};`
       : ''
   }
 
@@ -446,6 +453,7 @@ export function generateClientLibrary() {
     this.name = name;
     Type.byName[name] = this;
   }
+  Type.prototype.compare = ${es5Fn(Type.prototype.compare)};
   Type.prototype.format = ${es5Fn(Type.prototype.format)};
   Type.byName = {};
   Tyr.Type = Type;
@@ -454,6 +462,11 @@ export function generateClientLibrary() {
   _.each(Type.byName, type => {
     file += `  new Type({
       name: '${type.name}',`;
+
+    if (type.def.compare) {
+      file += `
+      compare: ${es5Fn(type.def.compare)},`;
+    }
 
     if (type.def.format) {
       file += `
@@ -852,11 +865,11 @@ export function generateClientLibrary() {
     }).then(rslt => {
       let docs;
 
-      if (Array.isArray(rslt)) {
-        docs = rslt.map(doc => new col(doc));
-      } else if (_.isObject(rslt)) {
-        docs = rslt.docs;
+      if (!Array.isArray(rslt) && _.isObject(rslt)) {
+        docs = rslt.docs.map(doc => new col(doc));
         docs.count = rslt.count;
+      } else {
+        docs = rslt.map(doc => new col(doc));
       }
 
       for (const doc of docs) {
@@ -1289,6 +1302,7 @@ export function generateClientLibrary() {
     // unbastardize imports for the client
     file = file.replace(/tyr_1.default/g, 'Tyr');
     file = file.replace(/lodash_1.default/g, '_');
+    file = file.replace(/moment_1.default/g, 'moment');
 
     return Tyr.options.minify
       ? uglify.minify(file, { fromString: true }).code
@@ -1480,6 +1494,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             if (rOpts.count) {
               opts.count = BooleanType.fromString(rOpts.count);
+            }
+
+            if (rOpts.sort) {
+              opts.sort = rOpts.sort;
             }
 
             const docs = await col.findAll(opts),

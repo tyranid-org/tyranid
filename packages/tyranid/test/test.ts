@@ -36,6 +36,10 @@ const lodashSource = fs.readFileSync(
   require.resolve('lodash/index.js'),
   'utf-8'
 );
+const momentSource = fs.readFileSync(
+  require.resolve('moment/moment.js'),
+  'utf-8'
+);
 
 const { ObjectID: ObjectId } = mongodb;
 
@@ -2554,6 +2558,24 @@ describe('tyranid', () => {
       });
     });
 
+    describe('types', () => {
+      it('should format dates and times', () => {
+        const dateType = User.fields.birthDate;
+        const dateTimeType = User.fields.createdAt;
+
+        expect(
+          dateType.type.format(dateType, new Date('2018-01-01 11:30:20Z'))
+        ).to.eql('01-01-2018');
+
+        expect(
+          dateTimeType.type.format(
+            dateTimeType,
+            new Date('2018-01-01 11:30:20Z')
+          )
+        ).to.eql('01-01-2018 05:30:00 -06:00');
+      });
+    });
+
     describe('references', () => {
       it('find a single reference', async () => {
         const refs = await User.references({ id: 3 });
@@ -2594,7 +2616,7 @@ describe('tyranid', () => {
         await new Promise((res, rej) => {
           jsdom.env({
             html: '<div></div>',
-            src: [jquerySource, lodashSource, code],
+            src: [jquerySource, lodashSource, momentSource, code],
             done(
               err: Error,
               window: { Tyr: typeof Tyr & { Tyr: typeof Tyr } }

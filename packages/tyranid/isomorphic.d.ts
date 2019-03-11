@@ -1,4 +1,6 @@
 export namespace Tyr {
+  export type anny = any;
+
   export interface MongoDocument {
     [key: string]: any;
   }

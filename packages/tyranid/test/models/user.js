@@ -123,7 +123,7 @@ var User = new tyr.Collection({
         return 0;
       }
     },
-    createdAt: { is: 'date' },
+    createdAt: { is: 'datetime' },
     secretCodes: { is: 'array', of: 'mongoid' },
 
     other: { is: 'object' },

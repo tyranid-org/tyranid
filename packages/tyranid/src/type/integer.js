@@ -5,6 +5,14 @@ import ValidationError from '../core/validationError';
 const IntegerType = new Type({
   name: 'integer',
 
+  compare(field, a, b) {
+    if (a) {
+      return b ? a - b : 1;
+    } else {
+      return b ? -1 : 0;
+    }
+  },
+
   compile(compiler, field) {
     if (compiler.stage === 'link') {
       const unit = field.def.in;

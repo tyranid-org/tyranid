@@ -1,9 +1,17 @@
-import * as moment from 'moment';
 import Type from '../core/type';
 import ValidationError from '../core/validationError';
 
+// cannot use import because compare and format are @isomorphic
+const moment = require('moment');
+const Tyr = require('../tyr').default;
+
 const TimeType = new Type({
   name: 'time',
+
+  // @isomorphic
+  compare(field, a, b) {
+    return new Date(a).getTime() - new Date(b).getTime();
+  },
 
   fromString(s) {
     return s ? new Date(s) : s;
@@ -17,8 +25,13 @@ const TimeType = new Type({
     return value;
   },
 
+  // @isomorphic
   format(field, value) {
-    return value ? moment(value).format('HH:mm:SS') : '';
+    return value
+      ? moment(value).format(
+          (Tyr.options.formats && Tyr.options.formats.time) || 'HH:mm:SS'
+        )
+      : '';
   },
 
   query(namePath, where, query) {
