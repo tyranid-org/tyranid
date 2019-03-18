@@ -169,6 +169,10 @@ const Tyr = {
 
   labelize(name) {
     // TODO:  more cases to be added here later on
+    if (name.endsWith('Id')) {
+      name = name.substring(0, name.length - 2);
+    }
+
     return _.startCase(name);
   },
 

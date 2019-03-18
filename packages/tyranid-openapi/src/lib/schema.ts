@@ -158,6 +158,8 @@ function schemaType(
     case 'uid':
     case 'mongoid':
     case 'date':
+    case 'datetime':
+    case 'time':
     case 'email': {
       Object.assign(out, { type: 'string' });
       break;
@@ -275,9 +277,11 @@ function schemaType(
    */
   switch (type) {
     case 'date':
+    case 'datetime':
     case 'password':
     case 'float':
-    case 'double': {
+    case 'double':
+    case 'time': {
       out.format = type;
       break;
     }

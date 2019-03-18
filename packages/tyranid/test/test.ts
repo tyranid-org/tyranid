@@ -1381,14 +1381,14 @@ describe('tyranid', () => {
     testPopulation.add();
 
     describe('client', () => {
-      it('should fromClient', () => {
+      it('should fromClient', async () => {
         const title = 'Browsers';
         const bookObj = {
           title,
           isbn: '5614c2f00000000000000000',
           serial: null
         };
-        const book = Book.fromClient(bookObj);
+        const book = await Book.fromClient(bookObj);
         expect(book).to.be.an.instanceof(Book);
         expect(book.title).to.be.eql(title);
         expect(book.isbn).to.be.an.instanceof(ObjectId);
@@ -1396,7 +1396,7 @@ describe('tyranid', () => {
         expect(book.description).to.not.exist;
       });
 
-      it('should fromClient array objects', () => {
+      it('should fromClient array objects', async () => {
         // note we're also testing that it does fromString conversions by passing in active and duration as string
         let userObj: any = {
           _id: 1,
@@ -1408,18 +1408,18 @@ describe('tyranid', () => {
             }
           ]
         };
-        let user = User.fromClient(userObj);
+        let user = await User.fromClient(userObj);
         expect(user.roles![0].role).to.be.an.instanceof(ObjectId);
         expect(user.roles![0].active).to.eql(true);
         expect(user.roles![0].duration).to.eql(5);
 
         userObj = { _id: 1, roles: [{ active: 1, duration: 5 }] };
-        user = User.fromClient(userObj);
+        user = await User.fromClient(userObj);
         expect(user.roles![0].active).to.eql(true);
         expect(user.roles![0].duration).to.eql(5);
       });
 
-      it('should fromClient deeply nested objects', () => {
+      it('should fromClient deeply nested objects', async () => {
         // note we're also testing that it does fromString conversions by passing in active and duration as string
         const userObj = {
           _id: 1,
@@ -1432,24 +1432,24 @@ describe('tyranid', () => {
           ]
         };
 
-        const user = User.fromClient(userObj);
+        const user = await User.fromClient(userObj);
         expect(user.siblings![0].friends![0].age).to.eql(25);
         expect(user.siblings![0].scores![0]).to.eql(2.3);
       });
 
-      it('should support fromClient collection hooks', () => {
+      it('should support fromClient collection hooks', async () => {
         const bookObj = {
           title: 'Browsers',
           isbn: '5614c2f00000000000000000',
           serial: null
         };
-        const book = Book.fromClient(bookObj);
+        const book = await Book.fromClient(bookObj);
         expect(book.domain).to.equal('custom');
       });
 
-      it('should deep fromClient', () => {
+      it('should deep fromClient', async () => {
         const friendObj = { birthDate: '03-07-1969' };
-        const friend = User.fromClient(friendObj, 'siblings.friends');
+        const friend = await User.fromClient(friendObj, 'siblings.friends');
         expect(friend.birthDate).to.be.an.instanceof(Date);
         expect(friend).not.to.be.an.instanceof(User);
       });
@@ -1467,20 +1467,25 @@ describe('tyranid', () => {
         });
       });
 
-      it('should copy dynamic objects', () => {
+      it('should copy dynamic objects', async () => {
         const userObj = { name: { firstName: 'Foo' }, bag: { abc123: 5 } };
-        const user = User.fromClient(userObj);
+        const user = await User.fromClient(userObj);
         expect(user).to.be.an.instanceof(User);
         expect(user.bag).to.be.eql({ abc123: 5 });
       });
 
-      it('links should fromClient by label or id', () => {
+      it('links should fromClient by label or id', async () => {
         let userObj = { job: 'Designer' };
-        const user = User.fromClient(userObj);
+        const user = await User.fromClient(userObj);
         expect(user.job).to.be.eql(3);
 
         userObj = { job: 'Astronaut' };
-        expect(() => User.fromClient(userObj)).to.throw(/Invalid integer/);
+        try {
+          await User.fromClient(userObj);
+          throw new Error('expected error to be thrown');
+        } catch (err) {
+          expect(/Invalid integer/.test(err.message)).to.eql(true);
+        }
       });
     });
 
@@ -1625,7 +1630,7 @@ describe('tyranid', () => {
       it('should update shallow', async () => {
         const savedUser = await User.byId(1);
         const clientUser = { _id: 1, organization: 2 };
-        const user = User.fromClient(clientUser);
+        const user = await User.fromClient(clientUser);
 
         await user.$update();
         const newUser = await User.byId(1);

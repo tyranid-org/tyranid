@@ -22,17 +22,99 @@ export namespace Tyr {
     };
   }
 
+  export interface FieldDefinitionRaw {
+    [key: string]: any;
+    is?: string;
+    client?: boolean | (() => boolean);
+    custom?: boolean;
+    db?: boolean;
+    historical?: boolean;
+    defaultValue?: any;
+
+    label?: LabelType | (() => string);
+    help?: string;
+    placeholder?: string;
+
+    deprecated?: string | boolean;
+    note?: string;
+
+    required?: boolean;
+    validate?: (field: FieldInstance) => Promise<string | undefined>;
+
+    of?: string | FieldDefinition;
+    cardinality?: string;
+
+    fields?: FieldsObject;
+    keys?: string | FieldDefinition;
+
+    denormal?: any;
+    link?: string;
+    relate?: 'owns' | 'ownedBy' | 'associate';
+    where?: any;
+
+    in?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+
+    labelField?: boolean;
+    pattern?: RegExp;
+    minlength?: number;
+    maxlength?: number;
+
+    granularity?: string;
+
+    get?: Function;
+    getClient?: Function;
+    getServer?: Function;
+    set?: Function;
+    setClient?: Function;
+    setServer?: Function;
+  }
+
+  export interface FieldDefinition extends FieldDefinitionRaw {
+    def?: FieldDefinitionRaw;
+    pathLabel?: string;
+  }
+
+  export interface FieldStatic {
+    new (...args: any[]): FieldInstance;
+  }
+
+  export interface FieldInstance {
+    collection: CollectionInstance;
+    db: boolean;
+    def: FieldDefinition;
+    name: string;
+    namePath: NamePathInstance;
+    of?: FieldInstance;
+    parent?: FieldInstance;
+    pathLabel: string;
+    path: string;
+    spath: string;
+    in: any;
+    keys?: FieldInstance;
+    label: LabelType | (() => string);
+    link?: CollectionInstance;
+    type: TypeInstance;
+    fields?: { [key: string]: FieldInstance };
+
+    labelify(value: any): Promise<any>;
+    labels(doc: Tyr.Document, text?: string, opts?: any): LabelList<AnyIdType>;
+    validate(obj: {}): Promise<void>;
+  }
+
   export interface CollectionInstance<
     IdType,
     T extends Document<IdType> = Document<IdType>
   > extends Class<T> {
-    byId(id: IdType, opts: any): Promise<T | null>;
-    byIds(ids: IdType[], opts: any): Promise<T[]>;
+    byId(id: IdType, opts?: any): Promise<T | null>;
+    byIds(ids: IdType[], opts?: any): Promise<T[]>;
     byLabel(label: string): Promise<T | null>;
     count(opts: any): Promise<number>;
     def: any /* collection def */;
     exists(opts: any): Promise<boolean>;
-    fields: { [fieldName: string]: any /* Field */ };
+    fields: { [fieldName: string]: FieldDefinition };
     findAll(args: any): Promise<T[] & { count?: number }>;
     findOne(args: any): Promise<T | null>;
     id: string;
@@ -57,7 +139,7 @@ export namespace Tyr {
     ): Promise<{ _id: IdType } & { [labelField: string]: string }[]>;
     on(opts: any): () => void;
     parsePath(text: string): any /* NamePath */;
-    paths: { [fieldPathName: string]: any /* Field */ };
+    paths: { [fieldPathName: string]: FieldDefinition };
     push(id: IdType, path: string, value: any, opts: any): Promise<void>;
     remove(id: IdType, justOne: boolean): Promise<void>;
     remove(

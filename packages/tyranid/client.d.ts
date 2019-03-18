@@ -1,5 +1,5 @@
 import * as io from 'socket.io-client';
-//import { Tyr as Isomorphic } from 'tyranid/isomorphic';
+import { Tyr as Isomorphic } from 'tyranid/isomorphic';
 
 declare module 'tyranid/client' {
   export namespace Tyr {
@@ -52,13 +52,41 @@ declare module 'tyranid/client' {
     export type AnyIdType = string | number;
     export type ObjIdType = string;
 
+    export interface FieldDefinitionRaw extends Isomorphic.FieldDefinitionRaw {}
+
+    export interface FieldDefinition extends Isomorphic.FieldDefinition {}
+
+    export interface FieldStatic extends Isomorphic.FieldStatic {
+      new (...args: any[]): FieldInstance;
+    }
+
+    export interface FieldInstance extends Isomorphic.FieldInstance {
+      collection: CollectionInstance;
+      def: FieldDefinition;
+      namePath: NamePathInstance;
+      of?: FieldInstance;
+      parent?: FieldInstance;
+      keys?: FieldInstance;
+      label: LabelType | (() => string);
+      link?: CollectionInstance;
+      type: TypeInstance;
+      fields?: { [key: string]: FieldInstance };
+
+      labels(
+        doc: Tyr.Document,
+        text?: string,
+        opts?: any
+      ): LabelList<AnyIdType>;
+    }
+
     export interface CollectionInstance<
       IdType extends AnyIdType = AnyIdType,
       T extends Document<IdType> = Document<IdType>
     > extends Class<T> {
-      byId(id: IdType, opts: any): Promise<T | null>;
-      byIds(ids: IdType[], opts: any): Promise<T[]>;
+      byId(id: IdType, opts?: any): Promise<T | null>;
+      byIds(ids: IdType[], opts?: any): Promise<T[]>;
       byLabel(label: string): Promise<T | null>;
+      cache(document: T): void;
       count(opts: any): Promise<number>;
       def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
@@ -104,13 +132,14 @@ declare module 'tyranid/client' {
 
     export interface Document<IdType extends AnyIdType = AnyIdType> {
       $access?: AccessResult;
+      $cache(): this;
       $clone(): this;
       $cloneDeep(): this;
       $id: IdType;
       $label: string;
       $model: CollectionInstance<IdType, this>;
       $remove(opts: any): Promise<void>;
-      $save(opts: any): Promise<this>;
+      $save(opts?: any): Promise<this>;
       $slice(path: string, opts: any): Promise<void>;
       $toPlain(): object;
       $tyr: typeof Tyr;

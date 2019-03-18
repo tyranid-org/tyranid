@@ -338,6 +338,11 @@ export function generateClientLibrary() {
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
 
   const documentPrototype = Tyr.documentPrototype = {
+    $cache: function() {
+      this.$model.cache(this);
+      return this;
+    },
+
     $clone: function() {
       return new this.$model(_.clone(this));
     },
@@ -1474,14 +1479,14 @@ Collection.prototype.connect = function({ app, auth, http }) {
             rOpts = JSON.parse(rOpts.opts);
 
             const opts = {
-              query: rOpts.query ? col.fromClientQuery(rOpts.query) : {},
+              query: rOpts.query ? await col.fromClientQuery(rOpts.query) : {},
               auth: req.user,
               user: req.user,
               req
             };
 
             if (rOpts.populate) {
-              opts.populate = Population.fromClient(rOpts.populate);
+              opts.populate = await Population.fromClient(rOpts.populate);
             }
 
             if (rOpts.limit) {
@@ -1521,7 +1526,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.post) {
         r.post(async function(req, res) {
           try {
-            const doc = col.fromClient(req.body, undefined, { req });
+            const doc = await col.fromClient(req.body, undefined, { req });
 
             if (doc._id) {
               res.status(403).send('Use put for updates');
@@ -1540,7 +1545,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.put) {
         r.put(async function(req, res) {
           try {
-            let doc = col.fromClient(req.body, undefined, { req });
+            let doc = await col.fromClient(req.body, undefined, { req });
 
             if (doc._id) {
               const existingDoc = await col.findOne({
@@ -1568,7 +1573,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
         r.delete(async (req, res) => {
           try {
             await col.remove({
-              query: col.fromClientQuery(req.body),
+              query: await col.fromClientQuery(req.body),
               auth: req.user,
               user: req.user,
               req
@@ -1593,7 +1598,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             const opts = req.query;
             if (opts.query) {
-              opts.query = col.fromClientQuery(opts.query);
+              opts.query = await col.fromClientQuery(opts.query);
             }
 
             opts.auth = req.user;
@@ -1618,7 +1623,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             let obj = req.body;
             if (obj) {
-              obj = col.fromClient(obj, undefined, { req });
+              obj = await col.fromClient(obj, undefined, { req });
             } else {
               obj = req.user;
             }
@@ -1651,7 +1656,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
           try {
             await col.subscribe(
-              opts.query && col.fromClientQuery(opts.query),
+              opts.query && (await col.fromClientQuery(opts.query)),
               req.user,
               opts.cancel
             );
@@ -1678,8 +1683,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
         r.get(async (req, res) => {
           try {
             const idField = col.fields._id,
-              ids = JSON.parse(req.query.opts).map(id =>
-                idField.type.fromClient(idField, id)
+              ids = await Promise.all(
+                JSON.parse(req.query.opts).map(
+                  async id => await idField.type.fromClient(idField, id)
+                )
               ),
               results = await col.findAll({
                 query: { _id: { $in: ids } },
@@ -1708,7 +1715,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             const opts = req.body;
 
-            opts.query = col.fromClientQuery(opts.query);
+            opts.query = await col.fromClientQuery(opts.query);
             opts.auth = req.user;
 
             res.json(await col.update(opts));
@@ -1731,7 +1738,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             let { doc, opts } = req.body;
 
-            doc = col.fromClient(doc);
+            doc = await col.fromClient(doc);
 
             opts.auth = req.user;
 
@@ -1859,7 +1866,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             r.all(auth);
             r.put(async (req, res) => {
               try {
-                const doc = col.fromClient(req.body, undefined, { req });
+                const doc = await col.fromClient(req.body, undefined, { req });
 
                 const results = await field.labels(doc, req.params.search, {
                   auth: req.user,
@@ -1882,7 +1889,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             r.put(async (req, res) => {
               try {
                 await field.validate(
-                  col.fromClient(req.body, undefined, { req })
+                  await col.fromClient(req.body, undefined, { req })
                 );
                 res.json('');
               } catch (err) {

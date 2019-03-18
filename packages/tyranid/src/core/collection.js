@@ -45,7 +45,7 @@ async function _count(collection, query) {
     Tyr.Log.updateDuration(logPromise);
     return result;
   } else {
-    return collection.db.count(query);
+    return collection.db.countDocuments(query);
   }
 }
 
@@ -1625,14 +1625,16 @@ export default class Collection {
   /**
    * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
    */
-  fromClient(pojo, path, opts) {
+  async fromClient(pojo, path, opts) {
     let collection = this,
       fields = collection.fields;
 
     const namePath = path ? this.parsePath(path) : null;
 
     if (Array.isArray(pojo)) {
-      return pojo.map(doc => collection.fromClient(doc, path));
+      return await Promise.all(
+        pojo.map(async doc => await collection.fromClient(doc, path))
+      );
     }
 
     if (namePath) {
@@ -1667,7 +1669,7 @@ export default class Collection {
 
       const fromClientFn = collection.def && collection.def.fromClient;
       if (fromClientFn) {
-        fromClientFn.call(doc, opts);
+        await fromClientFn.call(doc, opts);
       }
 
       return doc;
