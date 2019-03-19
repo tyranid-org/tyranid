@@ -171,9 +171,15 @@ const Tyr = {
     // TODO:  more cases to be added here later on
     if (name.endsWith('Id')) {
       name = name.substring(0, name.length - 2);
+    } else if (name.endsWith('Ids')) {
+      name = Tyr.pluralize(name.substring(0, name.length - 3));
     }
 
-    return _.startCase(name);
+    return (
+      _.startCase(name)
+        // i.e. "Date Of Birth" -> "Date of Birth"
+        .replace(/ Of /g, ' of ')
+    );
   },
 
   pluralize(name) {
