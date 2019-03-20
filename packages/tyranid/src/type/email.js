@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import Type from '../core/type';
 
 const EmailType = new Type({
