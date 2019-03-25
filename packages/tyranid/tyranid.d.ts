@@ -710,9 +710,9 @@ export namespace Tyr {
     label: string;
     labelField: FieldInstance;
     labelFor(doc: MaybeRawDocument): string;
-    labels(text: string): Promise<Tyr.Document<IdType>[]>;
-    labels(ids: string[]): Promise<Tyr.Document<IdType>[]>;
-    labels(_: any): Promise<Tyr.Document<IdType>[]>;
+    labels(text: string): Promise<T[]>;
+    labels(ids: string[]): Promise<T[]>;
+    labels(_: any): Promise<T[]>;
 
     migratePatchToDocument(progress?: (count: number) => void): Promise<void>;
     mixin(def: FieldDefinition): void;

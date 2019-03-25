@@ -104,9 +104,9 @@ declare module 'tyranid/client' {
       label: string;
       labelField: any;
       labelFor(doc: T | object): string;
-      labels(text: string): Promise<Tyr.Document<IdType>[]>;
-      labels(ids: string[]): Promise<Tyr.Document<IdType>[]>;
-      labels(_: any): Promise<Document<IdType>[]>;
+      labels(text: string): Promise<T[]>;
+      labels(ids: string[]): Promise<T[]>;
+      labels(_: any): Promise<T[]>;
       on(opts: any): () => void;
       parsePath(text: string): any /* NamePath */;
       paths: { [fieldPathName: string]: any /* Field */ };
