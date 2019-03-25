@@ -1,3 +1,5 @@
+import { TypeReference } from 'typescript';
+
 export namespace Tyr {
   export type anny = any;
 
@@ -31,7 +33,7 @@ export namespace Tyr {
     historical?: boolean;
     defaultValue?: any;
 
-    label?: LabelType | (() => string);
+    label?: string | (() => string);
     help?: string;
     placeholder?: string;
 
@@ -94,13 +96,17 @@ export namespace Tyr {
     spath: string;
     in: any;
     keys?: FieldInstance;
-    label: LabelType | (() => string);
+    label: string | (() => string);
     link?: CollectionInstance;
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance };
 
     labelify(value: any): Promise<any>;
-    labels(doc: Tyr.Document, text?: string, opts?: any): LabelList<AnyIdType>;
+    labels(
+      doc: Tyr.Document,
+      text?: string,
+      opts?: any
+    ): Promise<Tyr.Document[]>;
     validate(obj: {}): Promise<void>;
   }
 
@@ -128,15 +134,9 @@ export namespace Tyr {
     label: string;
     labelField: any;
     labelFor(doc: T | object): string;
-    labels(
-      text: string
-    ): Promise<{ _id: IdType } & { [labelField: string]: string }[]>;
-    labels(
-      ids: string[]
-    ): Promise<{ _id: IdType } & { [labelField: string]: string }[]>;
-    labels(
-      _: any
-    ): Promise<{ _id: IdType } & { [labelField: string]: string }[]>;
+    labels(text: string): Promise<Tyr.Document<IdType>[]>;
+    labels(ids: string[]): Promise<Tyr.Document<IdType>[]>;
+    labels(_: any): Promise<Tyr.Document<IdType>[]>;
     on(opts: any): () => void;
     parsePath(text: string): any /* NamePath */;
     paths: { [fieldPathName: string]: FieldDefinition };

@@ -1223,8 +1223,6 @@ export default class Collection {
         }
       }
 
-      let diffProps;
-
       if (collection.def.historical && (!opts || opts.historical !== false)) {
         if (obj.$historical) {
           throw new Error('Document is read-only due to $historical');

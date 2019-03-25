@@ -335,7 +335,9 @@ export function generateClientLibrary() {
 
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
+  Tyr.labelize = ${es5Fn(Tyr.labelize)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
+  Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
 
   const documentPrototype = Tyr.documentPrototype = {
     $cache: function() {
@@ -421,7 +423,7 @@ export function generateClientLibrary() {
     },
 
     $label: {
-      get: function() {
+      get() {
         return this.$model.labelFor(this);
       },
       enumerable:   false,
@@ -429,7 +431,7 @@ export function generateClientLibrary() {
     },
 
     $tyr: {
-      get: function() {
+      get() {
         return Tyr;
       },
       enumerable:   false,
@@ -437,7 +439,7 @@ export function generateClientLibrary() {
     },
 
     $uid: {
-      get: function() {
+      get() {
         var model = this.$model;
         return model.idToUid(this[model.def.primaryKey.field]);
       },
@@ -497,15 +499,15 @@ export function generateClientLibrary() {
 
   Object.defineProperties(Field.prototype, {
     db: {
-      get: function() { return this.def.db !== false; }
+      get() { return this.def.db !== false; }
     },
 
     label: {
-      get: function() { return this.def.label; }
+      get() { return this.def.label; }
     },
 
     namePath: {
-      get: function() {
+      get() {
         var np = this._np;
         if (!np) {
           np = this._np = new NamePath(this.collection, this.path);
@@ -544,7 +546,7 @@ export function generateClientLibrary() {
         });
       }
 
-      return values;
+      return values.map(doc => new to(doc));
     }
 
     return ajax({
@@ -552,7 +554,11 @@ export function generateClientLibrary() {
       method: 'put',
       data: JSON.stringify(doc),
       contentType: 'application/json'
-    });
+    }).then(docs => docs.map(doc => {
+      doc = new to(doc);
+      doc.$cache();
+      return doc;
+    }));
   };
 
 
@@ -807,6 +813,11 @@ export function generateClientLibrary() {
     if (col.isStatic()) {
       return col.byIdIndex[id];
     } else {
+      if (opts && opts.cached) {
+        const result = col.byIdIndex[id];
+        if (result) return result;
+      }
+
       return this.findOne(
         _.assign({}, opts, { query: { _id: id } })
       );
@@ -819,6 +830,12 @@ export function generateClientLibrary() {
     if (col.isStatic()) {
       return ids.map(id => col.byIdIndex[id]);
     } else {
+      if (opts && opts.cached) {
+        const results = ids.map(id => col.byIdIndex[id]);
+        // TODO:  this is currently all-or-nothing, use partial?
+        if (results.every(v => v)) return results;
+      }
+
       opts = _.assign({}, opts, { query: { _id: { $in: ids } } });
       return this.findAll(opts)
         .then(docs => {
@@ -1227,6 +1244,11 @@ export function generateClientLibrary() {
       if (col.def.enum) {
         file += `
     enum: true;`;
+      }
+
+      if (col.def.tag) {
+        file += `
+    tag: true;`;
       }
 
       if (col.def.static) {
@@ -1871,7 +1893,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 const results = await field.labels(doc, req.params.search, {
                   auth: req.user,
                   user: req.user,
-                  req
+                  req,
+                  // TODO:  pass in opts from the client so this is configurable from the client
+                  limit: 30,
+                  sort: { [field.spath]: 1 }
                 });
 
                 res.json(results.map(r => r.$toClient()));
@@ -1884,7 +1909,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
           const validateFn = field.def.validate;
           if (validateFn) {
-            r = app.route('/api/' + name + '/' + field.path + '/validate');
+            r = app.route('/api/' + name + '/' + field.spath + '/validate');
             r.all(auth);
             r.put(async (req, res) => {
               try {

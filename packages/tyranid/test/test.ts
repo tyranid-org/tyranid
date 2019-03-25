@@ -737,7 +737,7 @@ describe('tyranid', () => {
       it('should findOne() with a null projection and options, 2', async () => {
         const doc = await User.findOne({ query: { 'name.first': 'John' } });
         expect(doc).to.be.an.instanceof(User);
-        expect(doc!.name.first).to.eql('John');
+        expect(doc!.name!.first).to.eql('John');
         expect(_.keys(doc).length).to.be.greaterThan(3);
       });
 
@@ -1040,7 +1040,7 @@ describe('tyranid', () => {
         const labels = await User.labels('John');
 
         expect(labels.length).to.eql(1);
-        expect(labels[0].fullName).to.eql('John Doe');
+        expect(labels[0].$label).to.eql('John Doe');
       });
 
       it('should support UID labels()', async () => {
@@ -1310,7 +1310,7 @@ describe('tyranid', () => {
 
         np = u.$model.paths['name.suffices'].namePath;
         np.set(u, 'Super');
-        expect(u.name.suffices).to.eql('Super');
+        expect(u.name!.suffices).to.eql('Super');
 
         np = u.$model.paths['siblings._.name'].namePath;
         np.set(u, 'Thor');

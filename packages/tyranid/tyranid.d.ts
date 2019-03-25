@@ -9,6 +9,7 @@ import { tokenToString } from 'typescript';
 export { ObjectID };
 
 import { Tyr as Isomorphic } from './isomorphic';
+import { Options } from 'graphql/utilities/buildClientSchema';
 
 /**
  *
@@ -137,11 +138,6 @@ export namespace Tyr {
   export type ObjIdType = ObjectID;
   export type AnyIdType = ObjIdType | number | string;
 
-  export type LabelType = string;
-  export type LabelList<IdType> = Array<
-    { _id: IdType } & { [labelField: string]: string }
-  >;
-
   export type BootStage = 'compile' | 'link' | 'post-link';
 
   type RawDocument<Base> = { [K in keyof Base]: Base[K] };
@@ -182,8 +178,8 @@ export namespace Tyr {
   }
 
   /*
-     * Options
-     */
+   * Options
+   */
 
   export interface OptionsAuth {
     /**
@@ -272,6 +268,20 @@ export namespace Tyr {
     plain?: boolean;
   }
 
+  export interface OptionsHttpRequest {
+    /**
+     * The express Request
+     */
+    req?: Express.Request;
+  }
+
+  export interface OptionsCaching {
+    /**
+     * Indicates that the returned docuemnts should be returned from the cache if available
+     */
+    cached?: boolean;
+  }
+
   export interface OptionsPost {
     /**
      * Provides a hook to do post-processing on the document.
@@ -337,6 +347,7 @@ export namespace Tyr {
 
   export interface Options_FindById
     extends OptionsAuth,
+      OptionsCaching,
       OptionsHistorical,
       OptionsKeepNonAccessible,
       OptionsPopulate,
@@ -344,7 +355,8 @@ export namespace Tyr {
       OptionsPlain {}
 
   export interface Options_FindByIds
-    extends Options_FindById,
+    extends OptionsCaching,
+      Options_FindById,
       OptionsKeepNonAccessible,
       OptionsParallel {}
 
@@ -389,6 +401,8 @@ export namespace Tyr {
       OptionsPopulate,
       OptionsWhere,
       OptionsWindow {}
+
+  export interface Options_FromClient extends OptionsAuth, OptionsHttpRequest {}
 
   export interface Options_ToClient
     extends OptionsAuth,
@@ -452,10 +466,11 @@ export namespace Tyr {
     name: string;
     fields: { [key: string]: FieldInstance };
     dbName?: string;
-    label?: LabelType;
+    label?: string;
     help?: string;
     note?: string;
     enum?: boolean;
+    tag?: boolean;
     static?: boolean;
     client?: boolean;
     timestamps?: boolean;
@@ -473,7 +488,7 @@ export namespace Tyr {
     id: string;
     name: string;
     dbName?: string;
-    label?: LabelType;
+    label?: string;
     help?: string;
     note?: string;
     enum?: boolean;
@@ -499,8 +514,8 @@ export namespace Tyr {
       };
     };
     values?: any[][];
-    fromClient?: (opts: object) => void;
-    toClient?: (opts: object) => void;
+    fromClient?: (opts: Options_FromClient) => void;
+    toClient?: (opts: Options_ToClient) => void;
   }
 
   export type CollectionCurriedMethodReturn =
@@ -647,7 +662,7 @@ export namespace Tyr {
       ids: Array<IdType | string>,
       options?: Options_FindByIds
     ): Promise<T[]>;
-    byLabel(label: LabelType, forcePromise?: boolean): Promise<T | null>;
+    byLabel(label: string, forcePromise?: boolean): Promise<T | null>;
 
     count(opts: Options_Count): Promise<number>;
 
@@ -692,12 +707,12 @@ export namespace Tyr {
 
     links(opts?: any): FieldInstance[];
 
-    label: LabelType;
+    label: string;
     labelField: FieldInstance;
     labelFor(doc: MaybeRawDocument): string;
-    labels(text: string): Promise<LabelList<IdType>>;
-    labels(ids: string[]): Promise<LabelList<IdType>>;
-    labels(_: any): Promise<any>;
+    labels(text: string): Promise<Tyr.Document<IdType>[]>;
+    labels(ids: string[]): Promise<Tyr.Document<IdType>[]>;
+    labels(_: any): Promise<Tyr.Document<IdType>[]>;
 
     migratePatchToDocument(progress?: (count: number) => void): Promise<void>;
     mixin(def: FieldDefinition): void;
@@ -777,12 +792,16 @@ export namespace Tyr {
     of?: FieldInstance;
     parent?: FieldInstance;
     keys?: FieldInstance;
-    label: LabelType | (() => string);
+    label: string | (() => string);
     link?: CollectionInstance;
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance };
 
-    labels(doc: Tyr.Document, text?: string, opts?: any): LabelList<AnyIdType>;
+    labels(
+      doc: Tyr.Document,
+      text?: string,
+      opts?: any
+    ): Promise<Tyr.Document[]>;
   }
 
   export interface NamePathStatic {

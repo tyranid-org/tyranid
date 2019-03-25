@@ -67,7 +67,7 @@ declare module 'tyranid/client' {
       of?: FieldInstance;
       parent?: FieldInstance;
       keys?: FieldInstance;
-      label: LabelType | (() => string);
+      label: string | (() => string);
       link?: CollectionInstance;
       type: TypeInstance;
       fields?: { [key: string]: FieldInstance };
@@ -76,7 +76,7 @@ declare module 'tyranid/client' {
         doc: Tyr.Document,
         text?: string,
         opts?: any
-      ): LabelList<AnyIdType>;
+      ): Promise<Tyr.Document[]>;
     }
 
     export interface CollectionInstance<
@@ -104,15 +104,9 @@ declare module 'tyranid/client' {
       label: string;
       labelField: any;
       labelFor(doc: T | object): string;
-      labels(
-        text: string
-      ): Promise<{ _id: IdType } & { [labelField: string]: string }[]>;
-      labels(
-        ids: string[]
-      ): Promise<{ _id: IdType } & { [labelField: string]: string }[]>;
-      labels(
-        _: any
-      ): Promise<{ _id: IdType } & { [labelField: string]: string }[]>;
+      labels(text: string): Promise<Tyr.Document<IdType>[]>;
+      labels(ids: string[]): Promise<Tyr.Document<IdType>[]>;
+      labels(_: any): Promise<Document<IdType>[]>;
       on(opts: any): () => void;
       parsePath(text: string): any /* NamePath */;
       paths: { [fieldPathName: string]: any /* Field */ };
