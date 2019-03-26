@@ -138,6 +138,7 @@ async function parseSubscriptions(subscription, userId) {
     if (!localListeners[colId]) {
       const changeHandlerDereg = col.on({
         type: 'change',
+        when: 'post',
         handler: async event => {
           //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' change:'); //, event);
           const { document, query, _documents } = event;
@@ -179,6 +180,7 @@ async function parseSubscriptions(subscription, userId) {
 
       const removeHandlerDereg = col.on({
         type: 'remove',
+        when: 'post',
         handler: async event => {
           //con sole.log(Tyr.instanceId + ' *** ' + col.def.name + ' remove:'); //, event);
           const { document, query, _documents } = event;
