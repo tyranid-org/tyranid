@@ -527,7 +527,7 @@ export function generateClientLibrary() {
     return this.link ? this.link.idToLabel(value) : value;
   };
 
-  Field.prototype.labels = function(doc, search) {
+  Field.prototype.labels = function(doc, search, opts) {
     const to = this.link;
     if (to && to.isStatic()) {
       var values = to.def.values;
@@ -549,10 +549,12 @@ export function generateClientLibrary() {
       return values.map(doc => new to(doc));
     }
 
+    const data = { doc, opts };
+
     return ajax({
       url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (search || '')
       method: 'put',
-      data: JSON.stringify(doc),
+      data: JSON.stringify(data),
       contentType: 'application/json'
     }).then(docs => docs.map(doc => {
       doc = new to(doc);
@@ -1888,14 +1890,19 @@ Collection.prototype.connect = function({ app, auth, http }) {
             r.all(auth);
             r.put(async (req, res) => {
               try {
-                const doc = await col.fromClient(req.body, undefined, { req });
+                const data = req.body;
+                let { doc, opts } = data;
+                doc = await col.fromClient(doc, undefined, { req });
+
+                let limit = 30;
+                if (opts && opts.limit !== undefined) limit = opts.limit;
+                console.log({ limit });
 
                 const results = await field.labels(doc, req.params.search, {
                   auth: req.user,
                   user: req.user,
                   req,
-                  // TODO:  pass in opts from the client so this is configurable from the client
-                  limit: 30,
+                  limit,
                   sort: { [field.spath]: 1 }
                 });
 
