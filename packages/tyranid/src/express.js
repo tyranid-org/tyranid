@@ -1911,7 +1911,6 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 let limit = 30;
                 if (opts && opts.limit !== undefined) limit = opts.limit;
-                console.log({ limit });
 
                 const results = await field.labels(doc, req.params.search, {
                   auth: req.user,
