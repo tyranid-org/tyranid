@@ -584,6 +584,10 @@ export namespace Tyr {
     };
     cls?: boolean;
     consoleLogLevel?: LogLevel | false;
+    csrf?: {
+      cookie: string;
+      header: string;
+    };
     db?: mongodb.Db;
     dbLogLevel?: LogLevel | false;
     externalLogger?: (obj: any) => void | Promise<void>;

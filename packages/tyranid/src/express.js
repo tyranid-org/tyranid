@@ -299,6 +299,11 @@ export function generateClientLibrary() {
       : ''
   }
   ${
+    Tyr.options.csrf
+      ? `Tyr.options.csrf = ${JSON.stringify(Tyr.options.csrf)};`
+      : ''
+  }
+  ${
     Tyr.options.formats
       ? `Tyr.options.formats = ${JSON.stringify(Tyr.options.formats)};`
       : ''
@@ -306,8 +311,19 @@ export function generateClientLibrary() {
 
   var byName = {};
 
+  function cookie(key) {
+    var result;
+    return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? (result[1]) : null;
+  }
+
   // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest or fetch directly
   function ajax(opts) {
+    const csrf = Tyr.options.csrf;
+    if (csrf) {
+      var headers = opts.headers = opts.headers || {};
+      headers[csrf.header] = cookie(csrf.cookie);
+    }
+
     var deferred = $.ajax(opts);
 
     return new Promise(function(resolve, reject) {
@@ -319,7 +335,6 @@ export function generateClientLibrary() {
     });
   }
 
-  // needed so grid can get at it ... document this or @private?
   Tyr.ajax = ajax;
 
   function lock(obj) {
