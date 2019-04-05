@@ -150,7 +150,7 @@ async function parseSubscriptions(subscription, userId) {
             if (document) {
               if (Query.matches(queryDef.queryObj, document)) {
                 promises.push(
-                  fireEvent(colId, queryDef, document, undefined, 'change')
+                  fireEvent(colId, queryDef, document, undefined, event.type)
                 );
               }
             } else if (_documents) {
@@ -158,7 +158,7 @@ async function parseSubscriptions(subscription, userId) {
                 ..._documents
                   .filter(doc => Query.matches(queryDef.queryObj, doc))
                   .map(doc =>
-                    fireEvent(colId, queryDef, doc, undefined, 'change')
+                    fireEvent(colId, queryDef, doc, undefined, event.type)
                   )
               );
             } else {
@@ -168,7 +168,7 @@ async function parseSubscriptions(subscription, userId) {
               );
               if (refinedQuery) {
                 promises.push(
-                  fireEvent(colId, queryDef, null, refinedQuery, 'change')
+                  fireEvent(colId, queryDef, null, refinedQuery, event.type)
                 );
               }
             }

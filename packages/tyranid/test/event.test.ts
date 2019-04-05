@@ -1,16 +1,13 @@
-import * as _ from 'lodash';
 import * as chai from 'chai';
-import * as mongodb from 'mongodb';
+import * as _ from 'lodash';
 
-import Tyr from '../src/tyranid';
-
-const { ObjectId } = mongodb;
+import { Tyr } from 'tyranid';
 
 const { expect } = chai;
 
 export function add() {
   describe('event.js', () => {
-    let User, Book;
+    let User: Tyr.UserCollection, Book: Tyr.BookCollection;
 
     before(() => {
       User = Tyr.byName.user;
@@ -44,7 +41,7 @@ export function add() {
       u1 = await User.byId(2001);
       expect(u1).to.not.be.undefined;
 
-      await u1.$remove();
+      await u1!.$remove();
 
       u1 = await User.byId(2001);
       expect(u1).to.be.null;
@@ -92,17 +89,17 @@ export function add() {
         let book = await Book.save({ title: 'events-1' });
         expect(book.pages).to.eql(1);
 
-        book = await Book.findOne({ title: 'events-1' });
+        book = await Book.findOne({ query: { title: 'events-1' } });
         expect(book.pages).to.eql(1);
 
         await book.$save();
         expect(book.pages).to.eql(2);
 
-        book = await Book.findOne({ title: 'events-1' });
+        book = await Book.findOne({ query: { title: 'events-1' } });
         expect(book.pages).to.eql(2);
       } finally {
         dereg();
-        await Book.remove({ title: 'events-1' });
+        await Book.remove({ query: { title: 'events-1' } });
       }
     });
 
@@ -143,7 +140,7 @@ export function add() {
         expect(invoked).to.eql(2);
       } finally {
         dereg();
-        await Book.remove({ title: /event-number/ });
+        await Book.remove({ query: { title: /event-number/ } });
       }
     });
 
@@ -184,7 +181,7 @@ export function add() {
         dereg1();
         dereg2();
         dereg3();
-        await Book.remove({ title: /event-number/ });
+        await Book.remove({ query: { title: /event-number/ } });
       }
     });
 
@@ -219,7 +216,7 @@ export function add() {
         expect(invoked).to.eql(2);
       } finally {
         dereg && dereg();
-        await Book.remove({ title: /event-number/ });
+        await Book.remove({ query: { title: /event-number/ } });
       }
     });
 
@@ -234,16 +231,16 @@ export function add() {
         type: 'find',
         async handler(event) {
           for (const doc of await event.documents) {
-            doc['manufacturedId'] = 'ID' + doc._id;
+            (doc as any)['manufacturedId'] = 'ID' + doc._id;
           }
         }
       });
 
       try {
-        const users = await User.findAll({
+        const users = (await User.findAll({
           query: { _id: { $lte: 4 } },
           sort: { _id: 1 }
-        });
+        })) as (Tyr.User & { manufacturedId: string })[];
 
         expect(users.length).to.eql(4);
         expect(users[0].manufacturedId).to.eql('ID1');
@@ -258,17 +255,19 @@ export function add() {
         type: 'find',
         async handler(event) {
           for (const doc of await event.documents) {
-            doc['manufacturedId'] = 'ID' + doc._id;
+            (doc as any)['manufacturedId'] = 'ID' + doc._id;
           }
         }
       });
 
       try {
-        const cursor = await User.find({ query: { _id: { $lte: 4 } } });
+        const cursor = await User.find({
+          query: { _id: { $lte: 4 } }
+        });
 
         let user;
         while ((user = await cursor.next())) {
-          expect(user.manufacturedId).to.eql('ID' + user._id);
+          expect((user as any).manufacturedId).to.eql('ID' + user._id);
         }
       } finally {
         dereg();
@@ -280,7 +279,7 @@ export function add() {
         type: 'find',
         async handler(event) {
           for (const doc of await event.documents) {
-            doc['manufacturedId'] = 'ID' + doc._id;
+            (doc as any)['manufacturedId'] = 'ID' + doc._id;
           }
         }
       });
@@ -290,7 +289,7 @@ export function add() {
 
         const users = await cursor.toArray();
         for (const user of users) {
-          expect(user.manufacturedId).to.eql('ID' + user._id);
+          expect((user as any).manufacturedId).to.eql('ID' + user._id);
         }
       } finally {
         dereg();
@@ -330,7 +329,29 @@ export function add() {
         type: 'myCustomEvent'
       });
 
-      await Tyr.sleepUntil(() => count);
+      await Tyr.sleepUntil(() => !!count);
+    });
+
+    it('should allow access to the original options', async () => {
+      const auth = new User({ name: { first: 'John', last: 'Doe' } });
+
+      let foundAuth: Tyr.User | undefined;
+
+      const dereg = Book.on({
+        type: 'change',
+        async handler(event) {
+          foundAuth = event.opts!.auth as Tyr.User;
+        }
+      });
+
+      try {
+        await Book.save({ title: 'events-1' }, { auth });
+
+        await Tyr.sleepUntil(() => foundAuth === auth);
+      } finally {
+        dereg();
+        await Book.remove({ query: { title: 'events-1' } });
+      }
     });
   });
 }

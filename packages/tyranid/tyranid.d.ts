@@ -258,6 +258,8 @@ export namespace Tyr {
      */
     query: MongoQuery;
 
+    asOf?: Date;
+
     historical?: boolean;
   }
 
@@ -721,7 +723,7 @@ export namespace Tyr {
     migratePatchToDocument(progress?: (count: number) => void): Promise<void>;
     mixin(def: FieldDefinition): void;
 
-    on(opts: EventOnOptions): () => void;
+    on(opts: EventOnOptions<T>): () => void;
 
     parsePath(text: string): NamePathInstance;
 
@@ -836,10 +838,14 @@ export namespace Tyr {
 
   export interface UnitsInstance {}
 
-  export interface EventOnOptions {
+  export interface EventOnOptions<T> {
+    from?: CollectionInstance;
     type: string;
-    handler: (event: EventDefinition | EventInstance) => Promise<boolean>;
-    when?: 'pre' | 'post';
+    field?: string;
+    handler: (
+      event: EventInstance<T>
+    ) => Promise<boolean | void> | boolean | void;
+    when?: 'pre' | 'post' | 'both';
   }
 
   export interface EventStatic {
@@ -864,7 +870,7 @@ export namespace Tyr {
     when?: 'pre' | 'post';
   }
 
-  export interface EventInstance {
+  export interface EventInstance<T extends Document> {
     broadcast?: boolean;
     collectionId: string;
     collection: CollectionInstance;
@@ -872,7 +878,7 @@ export namespace Tyr {
     dataCollection: CollectionInstance;
     date: Date;
     document?: Document;
-    documents: Promise<Document[]>;
+    documents: Promise<T[]>;
     fieldValue?: any;
     instanceId?: string;
     opts?: Options_All;

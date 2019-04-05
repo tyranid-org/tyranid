@@ -259,6 +259,8 @@ Location.subscribe({});
 window._gotChangeEvent = false;
 window._gotRemoveEvent = false;
 Location.on({ type: 'change', handler(event) { window._gotChangeEvent = true; } });
+Location.on({ type: 'update', handler(event) { window._gotUpdateEvent = true; } });
+Location.on({ type: 'insert', handler(event) { window._gotInsertEvent = true; } });
 Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } });`);
 
           await Tyr.sleepUntil(async () =>
@@ -271,12 +273,28 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
 
           await Tyr.sleepUntil(async () =>
             page.evaluate(
-              'Tyr.byName.location.values.length === 1 && window._gotChangeEvent'
+              `Tyr.byName.location.values.length === 1 && window._gotChangeEvent && window._gotInsertEvent && !window._gotUpdateEvent`
             )
           );
 
-          const location = await Location.findOne({
+          await page.evaluate(`
+          window._gotChangeEvent = false;
+          window._gotUpdateEvent = false;
+          window._gotInsertEvent = false;`);
+          let location = await Location.findOne({
             query: { name: 'Yosemite Valley' }
+          });
+          location!.name = 'Yosemite Valley 2';
+          await location!.$save();
+
+          await Tyr.sleepUntil(async () =>
+            page.evaluate(
+              `Tyr.byName.location.values.length === 1 && Tyr.byName.location.values[0].name === 'Yosemite Valley 2' && window._gotChangeEvent && !window._gotInsertEvent && window._gotUpdateEvent`
+            )
+          );
+
+          location = await Location.findOne({
+            query: { name: 'Yosemite Valley 2' }
           });
           await location!.$remove();
 
