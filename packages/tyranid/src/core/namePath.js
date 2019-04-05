@@ -157,18 +157,16 @@ NamePath.encode = function(path) {
  *    2. organization   -> organization$
  *    3. organization   -> organization
  *
- * @private
  */
 NamePath.populateNameFor = function(name, denormal) {
   const l = name.length;
 
-  if (denormal) {
-    return name + '_';
-  } else if (name.substring(l - 2) === 'Id') {
-    return name.substring(0, l - 2);
-  } else {
-    return name + '$';
+  if (name.substring(l - 2) === 'Id') {
+    name = name.substring(0, l - 2);
+    return denormal ? name + '_' : name;
   }
+
+  return denormal ? name + '_' : name + '$';
 };
 
 NamePath.prototype.pathName = function(pi) {

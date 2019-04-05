@@ -55,8 +55,6 @@ export function generateIsomorphicInterfaces(
   const sorted = _.sortBy(collections, 'def.name');
 
   for (const col of sorted) {
-    const { id, name } = col.def;
-    const collectionInterfaceName = names.collection(name);
     const alias = col.def.enum && enumIdAlias(col);
 
     bases.push(baseInterface(col, { commentLineWidth }));

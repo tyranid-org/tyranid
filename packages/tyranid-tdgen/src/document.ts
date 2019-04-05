@@ -4,12 +4,8 @@ import * as names from './names';
 /**
  * generate interface for tyranid document type
  */
-export function docInterface(
-  col: Tyr.CollectionInstance,
-  opts: { superInterface?: string; idType?: string } = {}
-): string {
-  const { name, fields } = col.def;
-  const { superInterface = 'Inserted', idType = 'string' } = opts;
+export function docInterface(col: Tyr.CollectionInstance): string {
+  const { name } = col.def;
   const interfaceName = names.document(name);
   const baseName = names.base(name);
   const colName = names.collection(name);

@@ -813,6 +813,10 @@ export namespace Tyr {
 
   export interface NamePathStatic {
     new (...args: any[]): NamePathInstance;
+
+    decode(path: string): string;
+    encode(path: string): string;
+    populateNameFor(name: string, denormal: boolean = false): string;
   }
 
   export interface NamePathInstance {
