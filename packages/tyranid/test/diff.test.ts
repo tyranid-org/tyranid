@@ -1,9 +1,8 @@
 import * as chai from 'chai';
-import * as mocha from 'mocha';
 import * as _ from 'lodash';
 import * as mongodb from 'mongodb';
 
-import Tyr from '../src/tyranid';
+import { Tyr } from 'tyranid';
 
 const { ObjectID } = mongodb;
 
@@ -11,7 +10,7 @@ const { expect } = chai;
 
 export function add() {
   describe('diff.js', () => {
-    let User;
+    let User: Tyr.UserCollection;
 
     before(() => {
       User = Tyr.byName.user;
@@ -100,13 +99,15 @@ export function add() {
 
     it('should diff simple arrays', () => {
       for (const test of simpleArrTests) {
-        expect(Tyr.diff.diffArr(test[0], test[1])).to.be.eql(test[2]);
+        expect(Tyr.diff.diffArr(test[0] as any[], test[1] as any[])).to.be.eql(
+          test[2]
+        );
       }
     });
 
     it('should diff complex objects', () => {
       for (const test of complexObjTests) {
-        //console.log(JSON.stringify(diff.diffObj(test[0], test[1])));
+        // console.log(JSON.stringify(diff.diffObj(test[0], test[1])));
         expect(Tyr.diff.diffObj(test[0], test[1])).to.be.eql(test[2]);
       }
     });
@@ -128,7 +129,7 @@ export function add() {
     it('should patch simple arrays', () => {
       for (const test of simpleArrTests) {
         const po = Tyr.cloneDeep(test[0]);
-        Tyr.diff.patchArr(po, test[2]);
+        Tyr.diff.patchArr(po as any[], test[2]);
         expect(po).to.be.eql(test[1]);
       }
     });
@@ -148,18 +149,19 @@ export function add() {
 
       Tyr.diff.patchObj(u, { siblings: 1 });
 
-      expect(u.siblings.length).to.eql(1);
+      expect(u.siblings!.length).to.eql(1);
     });
 
     it('should support patching O_TRUNCATE_ARRAY_BY_1 with composite paths', () => {
-      const u = new User({
+      const u: Tyr.User = new User({
         name: { first: 'Jan', suffices: ['Sr', 'The Awesome'] }
       });
 
       Tyr.diff.patchObj(u, { 'name.suffices': 1 });
 
-      expect(u.name.suffices.length).to.eql(1);
-      expect(u.name.suffices[0]).to.eql('Sr');
+      const name = u.name as any; // this is due to the editor pulling in tsconfig from tyranid-tdgen
+      expect(name.suffices.length).to.eql(1);
+      expect(name.suffices[0]).to.eql('Sr');
     });
 
     it('should diffPropsObj', () => {
@@ -169,7 +171,7 @@ export function add() {
         [{ a: 1, b: 1 }, { a: 2 }, ['a', 'b']]
       ];
       for (const test of tests) {
-        //console.log(JSON.stringify(diff.diffObj(test[0], test[1])));
+        // console.log(JSON.stringify(diff.diffObj(test[0], test[1])));
         expect(Tyr.diff.diffPropsObj(test[0], test[1])).to.be.eql(test[2]);
       }
     });

@@ -1,11 +1,11 @@
 import * as chai from 'chai';
 import * as mongodb from 'mongodb';
 
-import Tyr from '../src/tyranid';
+import { Tyr } from 'tyranid';
 
 const { ObjectId } = mongodb;
 
-const O = ObjectId;
+const O = (ObjectId as any) as (id: string) => mongodb.ObjectId;
 
 const { expect, assert } = chai;
 
@@ -18,13 +18,21 @@ export function add() {
       i4 = '444444444444444444444444';
 
     describe('merge()', () => {
-      function testl(v1, v2, expected) {
+      function testl(
+        v1: Tyr.MongoQuery | null,
+        v2: Tyr.MongoQuery | null,
+        expected: Tyr.MongoQuery | null | boolean
+      ) {
         const merged = merge(v1, v2);
-        //console.log('merged', merged);
+        // console.log('merged', merged);
         expect(merged).to.eql(expected);
       }
 
-      function test(v1, v2, expected) {
+      function test(
+        v1: Tyr.MongoQuery | null,
+        v2: Tyr.MongoQuery | null,
+        expected: Tyr.MongoQuery | null | boolean
+      ) {
         testl(v1, v2, expected);
         expect(merge(v2, v1)).to.eql(expected);
       }
@@ -235,7 +243,11 @@ export function add() {
     });
 
     describe('intersection()', () => {
-      function test(v1, v2, expected) {
+      function test(
+        v1: Tyr.MongoQuery | null,
+        v2: Tyr.MongoQuery | null,
+        expected: Tyr.MongoQuery | undefined
+      ) {
         expect(intersection(v1, v2)).to.eql(expected);
       }
 
@@ -295,7 +307,11 @@ export function add() {
     });
 
     describe('matches()', () => {
-      function test(q, v, expected) {
+      function test(
+        q: Tyr.MongoQuery,
+        v: Tyr.RawMongoDocument,
+        expected: boolean
+      ) {
         expect(matches(q, v)).to.eql(expected);
       }
 
@@ -407,7 +423,7 @@ export function add() {
     });
 
     describe('fromClientQuery', () => {
-      let Book, User;
+      let Book: Tyr.BookCollection, User: Tyr.UserCollection;
 
       before(() => {
         Book = Tyr.byName.book;

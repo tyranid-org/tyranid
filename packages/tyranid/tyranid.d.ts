@@ -38,6 +38,7 @@ export namespace Tyr {
   export const byId: CollectionsById;
   export const byName: CollectionsByName;
   export const collections: CollectionInstance[] & CollectionsByClassName;
+  export const diff: DiffStatic;
   export const mongoClient: mongodb.MongoClient;
   export const db: mongodb.Db;
   export const documentPrototype: any;
@@ -937,7 +938,30 @@ export namespace Tyr {
     tostring(): string;
   }
 
+  export interface DiffStatic {
+    diffObj(
+      a: RawMongoDocument,
+      b: RawMongoDocument,
+      props?: { [propName: string]: any }
+    ): Tyr.RawMongoDocument;
+    diffArr(a: any[], b: any[]): { [idx: number | string]: any };
+    diffPropsObj(
+      a: RawMongoDocument,
+      b: RawMongoDocument
+    ): (keyof a & keyof b)[];
+    patchObj(a: any, patch: any, props?: { [propName: string]: any }): void;
+    patchArr(a: any[], patch: any): void;
+  }
+
   export interface QueryStatic {
-    merge(a: MongoQuery, b: MongoQuery): MongoQuery;
+    matches(doc: MongoQuery, b: RawMongoDocument): boolean;
+    merge(
+      a: MongoQuery | null | undefined,
+      b: MongoQuery | null | undefined
+    ): MongoQuery;
+    intersection(
+      a: MongoQuery | null | undefined,
+      b: MongoQuery | null | undefined
+    ): MongoQuery | undefined;
   }
 }
