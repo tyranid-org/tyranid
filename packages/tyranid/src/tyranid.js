@@ -35,6 +35,7 @@ import './core/validationError';
 import './core/namePath';
 import './core/query';
 
+import './excel';
 import './fake';
 import './migrator';
 import './timer';

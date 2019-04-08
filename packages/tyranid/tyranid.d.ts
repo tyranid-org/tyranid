@@ -1,6 +1,7 @@
 /**
  *  Type definitions for tyranid.js
  */
+import * as stream from 'stream';
 import * as Express from 'express';
 import * as mongodb from 'mongodb';
 import { ObjectID } from 'mongodb';
@@ -10,6 +11,7 @@ export { ObjectID };
 
 import { Tyr as Isomorphic } from './isomorphic';
 import { Options } from 'graphql/utilities/buildClientSchema';
+import { stream } from 'exceljs';
 
 /**
  *
@@ -39,6 +41,7 @@ export namespace Tyr {
   export const byName: CollectionsByName;
   export const collections: CollectionInstance[] & CollectionsByClassName;
   export const diff: DiffStatic;
+  export const excel: ExcelStatic;
   export const mongoClient: mongodb.MongoClient;
   export const db: mongodb.Db;
   export const documentPrototype: any;
@@ -257,7 +260,7 @@ export namespace Tyr {
     /**
      * raw mongodb query
      */
-    query: MongoQuery;
+    query?: MongoQuery;
 
     asOf?: Date;
 
@@ -687,7 +690,7 @@ export namespace Tyr {
     fake(options: { n?: number; schemaOpts?: any; seed?: number }): Promise<T>;
 
     find(opts: Options_FindCursor): Promise<Cursor<T>>;
-    findAll(opts: Options_FindMany): Promise<T[] & { count?: number }>;
+    findAll(opts?: Options_FindMany): Promise<T[] & { count?: number }>;
     findOne(opts: Options_FindOne): Promise<T | null>;
 
     /** @deprecated */
@@ -697,7 +700,7 @@ export namespace Tyr {
 
     fire(event: EventInstance | EventDefinition): void;
 
-    fromClient(doc: RawMongoDocument, path?: string): T;
+    fromClient(doc: RawMongoDocument, path?: string): Promise<T>;
     fromClientQuery(query: MongoQuery): MongoQuery;
 
     id: string;
@@ -967,5 +970,18 @@ export namespace Tyr {
       a: MongoQuery | null | undefined,
       b: MongoQuery | null | undefined
     ): MongoQuery | undefined;
+  }
+
+  export interface ExcelStatic {
+    toExcel(opts: {
+      collection: CollectionInstance;
+      documents: Document[];
+      columns: {
+        field: string;
+        label?: string;
+      }[];
+      stream?: stream.Writable;
+      filename?: string;
+    }): void;
   }
 }

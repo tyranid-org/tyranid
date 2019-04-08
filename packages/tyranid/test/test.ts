@@ -16,6 +16,7 @@ import './models/user';
 
 import * as testDiff from './diff.test';
 import * as testEvent from './event.test';
+import * as testExcel from './excel.test';
 import * as testExpress from './express.test';
 import * as testFake from './fake.test';
 import * as testFunction from './function.test';
@@ -2661,6 +2662,7 @@ describe('tyranid', () => {
       });
     });
 
+    testExcel.add();
     testExpress.add();
     testEvent.add();
     testFake.add();
