@@ -15,6 +15,11 @@ export default class Field {
     this.def = def;
   }
 
+  get readonly() {
+    const def = this.def;
+    return (def.get || def.getServer) && !(def.set || def.setServer);
+  }
+
   get label() {
     return _.result(this.def, 'label') || Tyr.labelize(this.name);
   }

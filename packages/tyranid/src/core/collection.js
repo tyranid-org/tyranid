@@ -1646,7 +1646,7 @@ export default class Collection {
     _.each(pojo, (v, k) => {
       const field = fields[k];
 
-      if (field) {
+      if (field && !field.readonly) {
         const type = field.type;
 
         if (!type) {

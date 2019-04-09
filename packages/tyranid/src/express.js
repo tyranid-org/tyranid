@@ -536,6 +536,15 @@ export function generateClientLibrary() {
       enumerable:   false,
       configurable: false
     }
+
+    readonly: {
+      get() {
+        const def = this.def;
+        return def.get && !def.set;
+      },
+      enumerable:   false,
+      configurable: false
+    }
   });
 
   Field.prototype.labelify = function(value) {
