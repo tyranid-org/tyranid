@@ -1,8 +1,7 @@
 {
   "name": "tyreant",
-  "version": "0.0.1",
-  "description":
-    "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
+  "version": "0.0.2",
+  "description": "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
   "main": "dist/src/tyreant.js",
   "typings": "dist/src/tyreant.d.ts",
   "scripts": {
@@ -29,7 +28,7 @@
     "react-dom": "16.3.2"
   },
   "peerDependencies": {
-    "tyranid": "^0.6.0",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "tyranid": "^0.6.0"
   }
 }
