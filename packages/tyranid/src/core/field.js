@@ -17,7 +17,7 @@ export default class Field {
 
   get readonly() {
     const def = this.def;
-    return (def.get || def.getServer) && !(def.set || def.setServer);
+    return !!(def.get || def.getServer) && !(def.set || def.setServer);
   }
 
   get label() {

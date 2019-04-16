@@ -1,0 +1,35 @@
+{
+  "name": "tyreant",
+  "version": "0.0.1",
+  "description":
+    "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
+  "main": "dist/src/tyreant.js",
+  "typings": "dist/src/tyreant.d.ts",
+  "scripts": {
+    "build": "npm run tsc",
+    "tsc": "rm -rf ./dist/ && tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tyranid-org/tyranid"
+  },
+  "engine": {
+    "node": ">=8.4.0"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/react": "16.3.13",
+    "@types/react-dom": "16.0.5",
+    "antd": "3.5.1",
+    "lodash": "3.10.1",
+    "mobx": "4.9.3",
+    "mobx-react": "5.4.3",
+    "react": "16.3.2",
+    "react-dom": "16.3.2"
+  },
+  "peerDependencies": {
+    "tyranid": "^0.6.0",
+    "typescript": "^2.9.2"
+  }
+}

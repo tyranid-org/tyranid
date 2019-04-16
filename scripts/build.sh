@@ -11,6 +11,7 @@ run_tsc tyranid-tdgen
 run_tsc tyranid-graphql
 run_tsc tyranid-openapi
 run_tsc tyranid-sanitize
+run_tsc tyreant
 
 echo "building tyranid-gracl..."
 cd ./packages/tyranid-gracl && npm run build --silent

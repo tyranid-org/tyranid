@@ -2129,6 +2129,11 @@ describe('tyranid', () => {
         const user = await User.byId(1);
         expect(user!.fullName).to.be.eql('An Anon');
       });
+
+      it('should show as readonly in Fields', async () => {
+        expect(User.fields.fullName.readonly).to.be.eql(true);
+        expect(User.fields.name.fields!.first.readonly).to.be.eql(false);
+      });
     });
 
     describe('methods', () => {

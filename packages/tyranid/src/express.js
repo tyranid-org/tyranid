@@ -540,7 +540,7 @@ export function generateClientLibrary() {
     readonly: {
       get() {
         const def = this.def;
-        return def.get && !def.set;
+        return !!def.get && !def.set;
       },
       enumerable:   false,
       configurable: false
@@ -826,6 +826,7 @@ export function generateClientLibrary() {
 
     if (!id) return Promise.resolve('');
     // TODO:  make the server-side version of this isomorphic portions of this once the other functionality is client-side
+    // TODO:  narrow this projection to just what is needed for label (including computed labels)
     return this.byId(id).then(doc => doc ? doc.$label : 'Unknown');
   }
 

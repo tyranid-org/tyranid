@@ -798,14 +798,15 @@ export namespace Tyr {
   export interface FieldInstance extends Isomorphic.FieldInstance {
     collection: CollectionInstance;
     def: FieldDefinition;
-    namePath: NamePathInstance;
-    of?: FieldInstance;
-    parent?: FieldInstance;
+    fields?: { [key: string]: FieldInstance };
     keys?: FieldInstance;
     label: string | (() => string);
     link?: CollectionInstance;
+    namePath: NamePathInstance;
+    of?: FieldInstance;
+    parent?: FieldInstance;
+    readonly: boolean;
     type: TypeInstance;
-    fields?: { [key: string]: FieldInstance };
 
     labels(
       doc: Tyr.Document,

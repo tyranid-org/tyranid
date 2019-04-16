@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "target": "es2017",
-    "module": "commonjs",
+    "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "node",
     "strict": true,
-    "allowJs": true,
-    "outDir": "dist",
-    "noLib": false,
-    "sourceMap": true,
-    "strictFunctionTypes": false,
     "skipLibCheck": true,
+    "sourceMap": true,
+    "outDir": "dist",
     "lib": ["es6", "dom"],
     "jsx": "react",
     "types": ["moment", "react", "react-dom", "antd"]
-  }
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"]
 }
