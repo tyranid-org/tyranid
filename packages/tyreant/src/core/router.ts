@@ -1,10 +1,10 @@
 export interface TyrLocation {
   route: string;
-  query: any;
+  query?: any;
 }
 
 export interface TyrRouter {
-  location: TyrLocation;
+  location?: TyrLocation;
 
   go({ route, query }: { route: any; query: any }): void;
 }

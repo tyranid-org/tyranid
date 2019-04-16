@@ -2,8 +2,8 @@
   "name": "tyreant",
   "version": "0.0.3",
   "description": "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
-  "main": "dist/src/tyreant.js",
-  "typings": "dist/src/tyreant.d.ts",
+  "main": "dist/tyreant.js",
+  "typings": "dist/tyreant.d.ts",
   "scripts": {
     "build": "npm run tsc",
     "tsc": "rm -rf ./dist/ && tsc"
