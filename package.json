@@ -6,6 +6,7 @@
     "clean": "sh ./scripts/clean.sh",
     "build": "sh ./scripts/build.sh",
     "build-tyranid": "sh ./scripts/build-tyranid.sh",
+    "build-tyreant": "sh ./scripts/build-tyreant.sh",
     "nd": "npm run clean && yarn",
     "quick-test": "npm run build && sh ./scripts/test.sh",
     "test":

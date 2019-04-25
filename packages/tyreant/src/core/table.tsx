@@ -41,12 +41,13 @@ export interface TyrTableProps {
   columns: {
     field: string;
     label?: string;
+    group?: string;
     defaultSort?: TableSortDirection;
     width?: string;
     filter?: (string | number)[];
   }[];
-  query: Tyr.MongoQuery | (() => Tyr.MongoQuery);
-  route: string;
+  query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
+  route?: string;
   actions?: JSX.Element[];
 }
 
@@ -163,15 +164,19 @@ export class TyrTable extends React.Component<TyrTableProps> {
   }
 
   private async findAll() {
-    const location = tyreant.router.location!;
-    if (location.route !== this.props.route) return;
+    if (this.props.route) {
+      const location = tyreant.router.location!;
+      if (location.route !== this.props.route) return;
 
-    const defn = this.urlQueryToTableDefinition(location.query! as {
-      [name: string]: string;
-    });
-    if (_.isEqual(this.tableDefn, defn)) return;
+      const defn = this.urlQueryToTableDefinition(location.query! as {
+        [name: string]: string;
+      });
+      if (_.isEqual(this.tableDefn, defn)) return;
 
-    this.tableDefn = defn;
+      this.tableDefn = defn;
+    }
+
+    const defn = this.tableDefn;
     for (const pathName in defn) {
       const field = defn[pathName] as FieldDefinition;
 

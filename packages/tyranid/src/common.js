@@ -332,6 +332,8 @@ export function toClient(col, doc, opts) {
     }
   });
 
+  if (doc.$access) obj.$access = doc.$access;
+
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   _.each(fields, function(field, name) {
     const fieldDef = field.def,

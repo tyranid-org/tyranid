@@ -1374,7 +1374,7 @@ export default class Collection {
       await historicalPromise;
     }
 
-    return rslt;
+    return obj;
   }
 
   /**

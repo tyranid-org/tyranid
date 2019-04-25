@@ -236,24 +236,23 @@ export namespace Tyr {
     populate?: PopulationOption;
   }
 
+  export type ProjectionOption =
+    | { [key: string]: number }
+    | { _history?: boolean }
+    | string
+    | Array<string | { [key: string]: number }>;
+
   export interface OptionsProjection {
     /**
      * The standard MongoDB-style fields object that specifies the projection.
      * @deprecated use projection
      */
-    fields?:
-      | { [key: string]: number }
-      | { _history?: boolean }
-      | string
-      | Array<string | { [key: string]: number }>;
+    fields?: ProjectionOption;
+
     /**
      * The standard MongoDB-style fields object that specifies the projection.
      */
-    projection?:
-      | { [key: string]: number }
-      | { _history?: boolean }
-      | string
-      | Array<string | { [key: string]: number }>;
+    projection?: ProjectionOption;
   }
 
   export interface OptionsQuery {
@@ -398,6 +397,11 @@ export namespace Tyr {
       OptionsHistorical,
       OptionsTimestamps {}
 
+  export interface Options_Pushpull
+    extends OptionsAuth,
+      OptionsHistorical,
+      OptionsTimestamps {}
+
   export interface Options_Remove extends OptionsAuth, OptionsQuery {}
 
   export interface Options_Save extends Options_Insert, Options_UpdateDoc {}
@@ -522,6 +526,7 @@ export namespace Tyr {
     values?: any[][];
     fromClient?: (opts: Options_FromClient) => void;
     toClient?: (opts: Options_ToClient) => void;
+    routes?: (app: Express.Application, auth: Express.RequestHandler) => void;
   }
 
   export type CollectionCurriedMethodReturn =
@@ -739,11 +744,17 @@ export namespace Tyr {
     populate(fields: any, document: T, denormal?: boolean): Promise<T>;
     populate(fields: any, documents: T[], denormal?: boolean): Promise<T[]>;
 
-    push(id: IdType | string | number, path: string, prop: any): Promise<void>;
+    push(
+      id: IdType | string | number,
+      path: string,
+      prop: any,
+      opts?: Options_Pushpull
+    ): Promise<void>;
     pull(
       id: IdType | string | number,
       path: string,
-      fn: (p: any) => boolean
+      fn: (p: any) => boolean,
+      opts?: Options_Pushpull
     ): Promise<void>;
 
     references(opts: {
