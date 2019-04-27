@@ -1459,8 +1459,32 @@ export default class Collection {
 
   async push(id, path, value, ...args) {
     const collection = this,
-      opts = extractOptions(collection, args),
-      auth = extractAuthorization(opts),
+      opts = extractOptions(collection, args);
+
+    let history = opts.historical !== false && collection.def.historical;
+    if (history && !collection.parsePath(path).isHistorical()) {
+      history = false;
+    }
+
+    if (history === 'document') {
+      const qOpts = Tyr.cloneDeep(opts),
+        np = collection.parsePath(path);
+      qOpts.projection = { [np.path[0]]: 1 };
+
+      const doc = await collection.byId(id, qOpts);
+
+      const arr = np.get(doc);
+      if (!arr) {
+        np.set(doc, [value]);
+      } else {
+        arr.push(value);
+      }
+
+      await doc.$update(opts);
+      return;
+    }
+
+    const auth = extractAuthorization(opts),
       query = { _id: id };
 
     if (auth) {
@@ -1470,20 +1494,14 @@ export default class Collection {
         auth
       );
 
-      if (!query) {
-        throw new SecureError();
-      }
+      if (!query) throw new SecureError();
     }
 
     const pv = {
       [path]: value
     };
 
-    if (
-      collection.def.historical &&
-      opts.historical !== false &&
-      collection.parsePath(path).isHistorical()
-    ) {
+    if (history === 'patch') {
       pv._history = historical.snapshotPush(
         path,
         historical.patchPropsFromOpts(opts)
