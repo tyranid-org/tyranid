@@ -1155,7 +1155,10 @@ export function generateClientLibrary() {
       }
 
       // TODO:  send existing or doc?
-      if (!silent && existing) fireDocUpdate(existing, 'remove');
+      if (!silent) {
+         fireDocUpdate(existing || (new this(doc)), 'remove');
+      }
+
       return existing;
 
     } else if (existing) {
@@ -1225,9 +1228,7 @@ export function generateClientLibrary() {
       var col = Tyr.byId[data.colId];
 
       if (col) {
-        _.each(data.docs, function(doc) {
-          col.cache(doc, data.type);
-        });
+        _.each(data.docs, doc => col.cache(doc, data.type));
       }
     });
   };
