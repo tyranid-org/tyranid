@@ -1788,7 +1788,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
           try {
             let { doc, opts } = req.body;
 
-            doc = await col.fromClient(doc);
+            doc = await col.fromClient(doc, undefined, { req });
 
             opts.auth = req.user;
 
