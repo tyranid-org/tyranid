@@ -1316,7 +1316,7 @@ export default class Collection {
         collection,
         obj,
         historical.patchPropsFromOpts(opts),
-        (opts && extractProjection(opts)) || collection._historicalFields,
+        updateFields,
         historyPresent
       ));
 
@@ -1355,7 +1355,7 @@ export default class Collection {
       opts
     });
 
-    const rslt = await collection.db.updateOne(query, opts.update, opts);
+    /*const rslt = */ await collection.db.updateOne(query, opts.update, opts);
     let historicalPromise;
     if (snapshot && collection.def.historical === 'document') {
       historicalPromise = historical.saveSnapshots(collection, obj);

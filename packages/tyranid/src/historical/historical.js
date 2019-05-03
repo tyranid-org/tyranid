@@ -150,7 +150,6 @@ export function snapshotPartial(
         // insert
         for (const key in _diffProps) {
           const v = doc[key];
-
           if (v !== undefined) {
             snapshot[key] = doc[key];
           }
@@ -267,31 +266,68 @@ export function snapshotPush(path, patchProps) {
 export async function asOf(collection, doc, date, props) {
   switch (collection.def.historical) {
     case 'document':
-      const hDb = historicalDb(collection),
+      const hDb = historicalDb(collection);
+      let earliest = await hDb.findOne(
+        {
+          __id: doc._id,
+          _partial: false,
+          _on: { $lte: date }
+        },
+        {
+          sort: { _on: -1 }
+        }
+      );
+
+      let datePredatesDocument = false;
+      if (!earliest) {
+        datePredatesDocument = true;
+        // the document doesn't yet exist on this date ...
+
+        // two options
+        // (1) mark the document as being non-existant and update collection methods to translate non-existant documents
+        //     into null
+        //doc.$_exists = false;
+
+        // (2) return the earliest version (even though the earliest version is after the specified date)
         earliest = await hDb.findOne(
           {
             __id: doc._id,
-            _partial: false,
-            _on: { $lte: date }
+            _partial: false
           },
           {
-            sort: { _on: -1 }
+            sort: { _on: 1 }
           }
         );
+      }
 
       if (earliest) {
-        const priorSnapshots = await (await hDb
-          .find({
-            __id: doc._id,
-            _on: {
-              $gte: earliest._on,
-              $lte: date
-            }
-          })
-          .sort({ _on: 1 })).toArray();
+        let priorSnapshots;
+
+        if (datePredatesDocument) {
+          priorSnapshots = [earliest];
+        } else {
+          priorSnapshots = await (await hDb
+            .find({
+              __id: doc._id,
+              _on: {
+                $gte: earliest._on,
+                $lte: date
+              }
+            })
+            .sort({ _on: 1 })).toArray();
+        }
 
         for (const snapshot of priorSnapshots) {
-          _.assign(doc, snapshot);
+          for (const key in snapshot) {
+            if (
+              snapshot.hasOwnProperty(key) &&
+              key !== '__id' &&
+              key !== '_on' &&
+              key !== '_id'
+            ) {
+              doc[key] = snapshot[key];
+            }
+          }
         }
       }
 

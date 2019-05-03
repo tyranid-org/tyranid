@@ -134,15 +134,15 @@ export function add() {
           .sort({ _on: 1 })).toArray();
         expect(history.length).to.eql(2);
         expect(_.keys(history[0]).length).to.eql(6);
-        expect(_.keys(history[1]).length).to.eql(7);
+        expect(_.keys(history[1]).length).to.eql(5);
 
         for (const snapshot of history) {
-          expect(snapshot._partial).to.eql(false);
+          expect(snapshot._partial).to.eql(snapshot === history[1]);
           expect(snapshot.__id).to.eql(w._id);
           expect(snapshot._on).to.exist;
           expect(snapshot.name).to.be.defined;
-          expect(snapshot.tags).to.be.defined;
-          expect(snapshot.alterante).to.be.undefined;
+          if (snapshot === history[0]) expect(snapshot.tags).to.be.defined;
+          expect(snapshot.alternate).to.be.undefined;
         }
       });
 
