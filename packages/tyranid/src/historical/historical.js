@@ -286,7 +286,7 @@ export async function asOf(collection, doc, date, props) {
         // two options
         // (1) mark the document as being non-existant and update collection methods to translate non-existant documents
         //     into null
-        //doc.$_exists = false;
+        //doc.$_somePropertyIndicatingThisDoesntExist = false; // something like this?
 
         // (2) return the earliest version (even though the earliest version is after the specified date)
         earliest = await hDb.findOne(
@@ -318,14 +318,28 @@ export async function asOf(collection, doc, date, props) {
         }
 
         for (const snapshot of priorSnapshots) {
-          for (const key in snapshot) {
-            if (
-              snapshot.hasOwnProperty(key) &&
-              key !== '__id' &&
-              key !== '_on' &&
-              key !== '_id'
-            ) {
-              doc[key] = snapshot[key];
+          if (snapshot._partial) {
+            for (const key in snapshot) {
+              if (
+                snapshot.hasOwnProperty(key) &&
+                key !== '__id' &&
+                key !== '_on' &&
+                key !== '_id'
+              ) {
+                doc[key] = snapshot[key];
+              }
+            }
+          } else {
+            // copy all propertes, even missing ones, if _partial = false
+            const netProps = props || collection._historicalFields;
+            for (const prop in netProps) {
+              if (prop !== '_id') {
+                const p = netProps[prop];
+
+                if (p && collection._historicalFields[prop]) {
+                  doc[prop] = snapshot[prop];
+                }
+              }
             }
           }
         }

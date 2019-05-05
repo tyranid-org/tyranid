@@ -2,22 +2,22 @@ import * as _ from 'lodash';
 
 //import Tyr      from '../tyr';
 
-function resolve(projections, fields) {
-  if (_.isArray(fields)) {
+function resolve(projections, projection) {
+  if (_.isArray(projection)) {
     const net = {};
 
-    for (const proj of fields) {
+    for (const proj of projection) {
       _.merge(net, resolve(projections, proj));
     }
 
     return net;
-  } else if (_.isObject(fields)) {
-    return fields;
-  } else if (_.isString(fields)) {
-    const rslt = projections[fields];
+  } else if (_.isObject(projection)) {
+    return projection;
+  } else if (_.isString(projection)) {
+    const rslt = projections[projection];
 
     if (!rslt) {
-      throw new Error(`No project named "${fields}"`);
+      throw new Error(`No project named "${projection}"`);
     }
 
     return rslt;
