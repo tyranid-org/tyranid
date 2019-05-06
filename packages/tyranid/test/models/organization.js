@@ -10,7 +10,12 @@ var Organization = new tyr.Collection({
   fields: {
     _id: { is: 'integer' },
     name: { is: 'string', labelField: true, historical: true },
-    owner: { link: 'user', relate: 'ownedBy', historical: true }
+    owner: {
+      link: 'user',
+      relate: 'ownedBy',
+      historical: true,
+      denormal: { name: 1 }
+    }
   }
 });
 

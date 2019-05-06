@@ -19,8 +19,7 @@ async function toExcel(opts) {
 
   sheet.columns = columns.map(column => {
     const path = column.field;
-    const field = collection.paths[path];
-    const namePath = field.namePath;
+    const namePath = collection.parsePath(path);
 
     return {
       header: column.label || namePath.pathLabel,
@@ -34,8 +33,7 @@ async function toExcel(opts) {
 
     for (const column of columns) {
       const path = column.field;
-      const field = collection.paths[path];
-      const namePath = field.namePath;
+      const namePath = collection.parsePath(path);
 
       row[path] = namePath.get(document);
     }

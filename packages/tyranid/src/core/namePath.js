@@ -39,54 +39,55 @@ function NamePath(base, pathName, skipArray) {
       at = at.of;
       pathFields[pi++] = at;
       continue nextPath;
-    } else {
-      if (
-        name.match(NamePath._numberRegex) &&
-        pi &&
-        pathFields[pi - 1].type.name === 'array'
-      ) {
-        at = at.of;
-        pathFields[pi++] = at;
-        continue nextPath;
-      }
+    }
 
-      if (!at.fields) {
-        const aAt = NamePath._skipArray(at);
+    if (
+      name.match(NamePath._numberRegex) &&
+      pi &&
+      pathFields[pi - 1].type.name === 'array'
+    ) {
+      at = at.of;
+      pathFields[pi++] = at;
+      continue nextPath;
+    }
 
-        if (aAt && aAt.fields && aAt.fields[name]) {
-          at = aAt;
-          def = at.def;
-        } else {
-          if (!def.keys) {
-            throw new Error(
-              `"${name}" in "${pathName}" is not valid` +
-                (at.link ? '" (maybe need advanced population syntax)' : '')
-            );
-          }
+    if (!at.fields) {
+      const aAt = NamePath._skipArray(at);
+
+      if (aAt && aAt.fields && aAt.fields[name]) {
+        at = aAt;
+        def = at.def;
+      } else {
+        if (!def.keys) {
+          throw new Error(
+            `"${name}" in "${pathName}" is not valid` +
+              (at.link ? '" (maybe need advanced population syntax)' : '')
+          );
         }
       }
+    }
 
-      const f = at.fields;
-      if ((!f || !f[name]) && def.keys) {
-        at = at.of;
-        pathFields[pi++] = at;
-        continue nextPath;
-      }
+    const f = at.fields;
+    if ((!f || !f[name]) && def.keys) {
+      at = at.of;
+      pathFields[pi++] = at;
+      continue nextPath;
+    }
 
-      const parentAt = at;
-      at = f[name];
-      if (!at && name.length > 1 && name.endsWith('_')) {
-        // does this name match a denormalized entry?
-        const _name = name.substring(0, name.length - 1);
+    const parentAt = at;
+    at = f[name];
+    if (!at && /.+[$_]$/.test(name)) {
+      const _name = name.substring(0, name.length - 1);
 
-        while (/* if */ _name) {
-          const _at = parentAt.fields[_name];
-          if (!_at) {
-            throw new Error(
-              `"${_name}" in "${pathName}" is not a valid field.`
-            );
-          }
+      while (/* if */ _name) {
+        const _at = parentAt.fields[_name];
+        if (!_at) {
+          throw new Error(`"${_name}" in "${pathName}" is not a valid field.`);
+        }
 
+        const denormalization = name.endsWith('_');
+
+        if (denormalization) {
           if (!denormal) {
             denormal = _at.def.denormal;
             if (!denormal) {
@@ -99,12 +100,14 @@ function NamePath(base, pathName, skipArray) {
 
             denormal = denormal[_name];
           }
-
-          at = _at;
-          pathFields[pi++] = at;
-          at = at.link;
-          continue nextPath;
+        } else {
+          denormal = null;
         }
+
+        at = _at;
+        pathFields[pi++] = at;
+        at = at.link;
+        continue nextPath;
       }
     }
 
