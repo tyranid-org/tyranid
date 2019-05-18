@@ -74,7 +74,8 @@ export default async function initModel() {
       organization: 1,
       department: 1,
       name: { first: 'An', last: 'Anon' },
-      title: 'Developer'
+      title: 'Developer',
+      job: 1
     },
     {
       _id: 2,

@@ -273,24 +273,16 @@ NamePath.prototype.set = function(obj, value, opts) {
     plen = path.length;
 
   function walk(pi, obj) {
-    if (pi === plen - 1) {
-      if (Array.isArray(obj)) {
+    if (!obj && opts && opts.ignore) return;
+
+    const leaf = pi === plen - 1;
+
+    if (Array.isArray(obj)) {
+      if (leaf) {
         for (let i = 0; i < obj.length; i++) {
           obj[i] = value;
         }
-      } else if (_.isObject(obj)) {
-        obj[path[pi]] = value;
       } else {
-        if (opts && opts.bestEffort && !obj) return;
-        throw new Error(
-          'Expected an object or array at ' +
-            np.pathName(pi) +
-            ', but got ' +
-            obj
-        );
-      }
-    } else {
-      if (Array.isArray(obj)) {
         const name = path[pi];
         if (name === '_') {
           pi++;
@@ -302,14 +294,10 @@ NamePath.prototype.set = function(obj, value, opts) {
         for (const v of obj) {
           walk(pi, v);
         }
-      } else if (!_.isObject(obj)) {
-        if (opts && opts.bestEffort && !obj) return;
-        throw new Error(
-          'Expected an object or array at ' +
-            np.pathName(pi) +
-            ', but got ' +
-            obj
-        );
+      }
+    } else if (_.isObject(obj)) {
+      if (leaf) {
+        obj[path[pi]] = value;
       } else {
         if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {
           pi++;
@@ -317,9 +305,18 @@ NamePath.prototype.set = function(obj, value, opts) {
             walk(pi, v);
           }
         } else {
-          walk(pi + 1, obj[path[pi]]);
+          const key = path[pi];
+          let v = obj[key];
+          if (!v && opts && opts.create) {
+            v = obj[key] = fields[pi].type.name === 'array' ? [] : {};
+          }
+          walk(pi + 1, v);
         }
       }
+    } else {
+      throw new Error(
+        'Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj
+      );
     }
   }
 

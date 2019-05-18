@@ -644,7 +644,7 @@ export function generateClientLibrary() {
       }
 
       var paths = this.$model.paths;
-      var setOpts = { bestEffort: true };
+      var setOpts = { ignore: true };
       for (var fk in paths) {
         var field = paths[fk],
             dv = field.def.defaultValue;
@@ -959,7 +959,7 @@ export function generateClientLibrary() {
 
     const resolve = () => {
       for (const lq of _labelQueries) {
-        lq.resolve(lq.ids.map(id => byIdIndex[id]);
+        lq.resolve(lq.ids.map(id => byIdIndex[id]));
       }
     }
 
@@ -1766,6 +1766,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const opts = req.body;
 
             opts.query = await col.fromClientQuery(opts.query);
+            opts.update = await col.fromClientUpdate(opts.update);
             opts.auth = req.user;
 
             res.json(await col.update(opts));

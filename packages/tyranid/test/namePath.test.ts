@@ -183,5 +183,23 @@ export function add() {
         expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
       }
     });
+
+    it('should support create option', () => {
+      let np = User.parsePath('name.first');
+      const user = new User({});
+
+      np.set(user, 'Jane', { create: true });
+
+      expect(np.get(user)).to.eql('Jane');
+    });
+
+    it('should support ignore option', () => {
+      let np = User.parsePath('name.first');
+      const user = new User({});
+
+      np.set(user, 'Jane', { ignore: true });
+
+      expect(np.get(user)).to.eql(undefined);
+    });
   });
 }

@@ -34,6 +34,7 @@ import './core/subscription';
 import './core/validationError';
 import './core/namePath';
 import './core/query';
+import './core/update';
 
 import './excel';
 import './fake';

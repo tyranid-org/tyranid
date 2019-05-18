@@ -25,6 +25,7 @@ import * as testNamePath from './namePath.test';
 import * as testPopulation from './population.test';
 import * as testQuery from './query.test';
 import * as testUnit from './unit.test';
+import * as testUpdate from './update.test';
 
 const Role: Tyr.RoleCollection & {
   search(q: string): mongodb.Cursor<Tyr.Role>;
@@ -2532,6 +2533,7 @@ describe('tyranid', () => {
     testFake.add();
     testFunction.add();
     testQuery.add();
+    testUpdate.add();
     testDiff.add();
     testHistorical.add();
     testUnit.add();

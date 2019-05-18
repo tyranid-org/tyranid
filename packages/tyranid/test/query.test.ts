@@ -7,7 +7,7 @@ const { ObjectId } = mongodb;
 
 const O = (ObjectId as any) as (id: string) => mongodb.ObjectId;
 
-const { expect, assert } = chai;
+const { expect } = chai;
 
 export function add() {
   describe('query.js', () => {

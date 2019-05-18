@@ -26,6 +26,7 @@ export namespace Tyr {
   export import AccessResult = Isomorphic.AccessResult;
   export import Class = Isomorphic.Class;
   export import MongoQuery = Isomorphic.MongoQuery;
+  export import MongoUpdate = Isomorphic.MongoUpdate;
 
   export const Collection: CollectionStatic;
   export const Event: EventStatic;
@@ -707,6 +708,7 @@ export namespace Tyr {
 
     fromClient(doc: RawMongoDocument, path?: string): Promise<T>;
     fromClientQuery(query: MongoQuery): MongoQuery;
+    fromClientUpdate(update: MongoQuery): MongoUpdate;
 
     id: string;
     idToLabel(id: any): Promise<string>;
@@ -846,7 +848,11 @@ export namespace Tyr {
     pathName(idx: number): string;
     uniq(obj: any): any[];
     get(obj: any): any;
-    set<D extends Tyr.Document>(obj: D, prop: string): void;
+    set<D extends Tyr.Document>(
+      obj: D,
+      prop: string,
+      opts?: { create?: boolean; ignore?: boolean }
+    ): void;
   }
 
   export interface UnitsStatic {
@@ -984,16 +990,162 @@ export namespace Tyr {
     ): MongoQuery | undefined;
   }
 
+  //
+  // Excel
+  //
+
+  export type ExcelAlignment = {
+    horizontal?:
+      | 'left'
+      | 'center'
+      | 'right'
+      | 'fill'
+      | 'centerContinuous'
+      | 'distributed'
+      | 'justify';
+    vertical?: 'top' | 'middle' | 'bottom' | 'distributed' | 'justify';
+    wrapText?: boolean;
+    indent?: number;
+    readingOrder?: 'rtl' | 'ltr';
+    textRotation?: number | 'vertical';
+  };
+
+  export type ExcelBorderStyle =
+    | 'thin'
+    | 'dotted'
+    | 'dashDot'
+    | 'hair'
+    | 'dashDotDot'
+    | 'slantDashDot'
+    | 'mediumDashed'
+    | 'mediumDashDotDot'
+    | 'mediumDashDot'
+    | 'medium'
+    | 'double'
+    | 'thick';
+
+  export type ExcelBorder = {
+    color?: string;
+    style?: ExcelBorderStyle;
+  };
+
+  export type ExcelFillPattern =
+    | 'none'
+    | 'solid'
+    | 'darkVertical'
+    | 'darkGray'
+    | 'mediumGray'
+    | 'lightGray'
+    | 'gray125'
+    | 'gray0625'
+    | 'darkHorizontal'
+    | 'darkVertical'
+    | 'darkDown'
+    | 'darkUp'
+    | 'darkGrid'
+    | 'darkTrellis'
+    | 'lightHorizontal'
+    | 'lightVertical'
+    | 'lightDown'
+    | 'lightUp'
+    | 'lightGrid'
+    | 'lightTrellis'
+    | 'lightGrid';
+
+  export type ExcelPatternFill = {
+    type: 'pattern';
+    pattern?: ExcelFillPattern;
+    fgColor?: string;
+    bgColor?: string;
+  };
+
+  export type ExcelGradientFill = {
+    type: 'gradient';
+    gradient: 'angle' | 'path';
+    degree?: number;
+    center?: { left: number; top: number };
+    stops?: { position: number; color: string }[];
+  };
+
+  export type ExcelFill = ExcelPatternFill | ExcelGradientFill;
+
+  export type ExcelFont = {
+    name?: string;
+    family?: number;
+    scheme?: 'major' | 'minor' | 'none';
+    charset?: number;
+    size?: number;
+    color?: string;
+    bold?: boolean;
+    italic?: boolean;
+    outline?: boolean;
+    strike?: boolean;
+    underline?: boolean;
+    vertAlign?: 'superscript' | 'subscript';
+  };
+
+  export type ExcelStyle = {
+    alignment?: ExcelAlignment;
+    borderTop?: ExcelBorder;
+    borderRight?: ExcelBorder;
+    borderBottom?: ExcelBorder;
+    borderLeft?: ExcelBorder;
+    format?: string;
+    color?: string;
+    fill?: ExcelFill;
+    font?: ExcelFont;
+  };
+
+  export type ExcelColumn<
+    T extends Tyr.Document<IdType> = Tyr.Document<IdType>
+  > = {
+    field: string;
+    get?(this: this, doc: T): any;
+    label?: string;
+    cell?: ExcelStyle;
+    header?: ExcelStyle;
+    width?: number;
+  };
+
+  export type ExcelDef<
+    T extends Tyr.Document<IdType> = Tyr.Document<IdType>
+  > = {
+    collection: CollectionInstance;
+    documents: T[];
+    header?: {
+      height?: number;
+      extraRows: [
+        {
+          height?: number;
+          columns: ({
+            colspan?: number;
+            label?: string;
+          } & ExcelStyle)[];
+        }
+      ];
+    };
+    columns: ExcelColumn<T>[];
+    stream?: stream.Writable;
+    filename?: string;
+    images?: {
+      path: string;
+      location:
+        | string
+        | {
+            tl: { col: number; row: number };
+            br: { col: number; row: number };
+            editAs?: 'oneCell' | 'absolute';
+            ext?: { height: number; width: number };
+          };
+    }[];
+  };
+
   export interface ExcelStatic {
-    toExcel(opts: {
-      collection: CollectionInstance;
-      documents: Document[];
-      columns: {
-        field: string;
-        label?: string;
-      }[];
-      stream?: stream.Writable;
-      filename?: string;
-    }): void;
+    toExcel<T extends Tyr.Document<IdType> = Tyr.Document<IdType>>(
+      opts: ExcelDef<T>
+    ): Promise<void>;
+    fromExcel<T extends Tyr.Document<IdType> = Tyr.Document<IdType>>(
+      opts: ExcelDef<T>
+    ): Promise<T[]>;
   }
 }
