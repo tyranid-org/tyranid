@@ -1,6 +1,6 @@
 {
   "name": "tyreant",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
   "homepage": "http://tyranid.org/tyreant",
   "main": "dist/tyreant.js",
@@ -21,12 +21,12 @@
   "dependencies": {
     "@types/react": "16.3.13",
     "@types/react-dom": "16.0.5",
-    "antd": "3.5.1",
+    "antd": "3.18.1",
     "lodash": "3.10.1",
     "mobx": "4.9.3",
     "mobx-react": "5.4.3",
-    "react": "16.3.2",
-    "react-dom": "16.3.2"
+    "react": "16.8.6",
+    "react-dom": "16.8.6"
   },
   "peerDependencies": {
     "typescript": "^2.9.2",
