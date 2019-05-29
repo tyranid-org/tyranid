@@ -157,6 +157,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
           );
 
           const nonNullValues = newValues.filter(v => v.$id);
+
           const selectValues = nonNullValues.map(v => v.$id);
 
           const newDocs = nonNullValues.filter(
