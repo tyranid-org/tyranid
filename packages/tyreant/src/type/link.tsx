@@ -141,6 +141,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         const values = value as string[];
         const link = this.link!;
         const { form } = this.props;
+
         if (link.def.tag) {
           const newValues = await Promise.all(
             values.map(async value => {
@@ -157,6 +158,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
           );
 
           const nonNullValues = newValues.filter(v => v.$id);
+
           const selectValues = nonNullValues.map(v => v.$id);
 
           const newDocs = nonNullValues.filter(
