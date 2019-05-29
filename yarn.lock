@@ -170,11 +170,16 @@
     "@types/events" "*"
     "@types/node" "*"
 
-"@types/react-dom@16.0.5":
-  version "16.0.5"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.0.5.tgz#a757457662e3819409229e8f86795ff37b371f96"
+"@types/react-dom@16.8.4":
+  version "16.8.4"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.8.4.tgz#7fb7ba368857c7aa0f4e4511c4710ca2c5a12a88"
   dependencies:
-    "@types/node" "*"
+    "@types/react" "*"
+
+"@types/react-slick@^0.23.3":
+  version "0.23.4"
+  resolved "https://registry.yarnpkg.com/@types/react-slick/-/react-slick-0.23.4.tgz#c97e2a9e7e3d1933c68593b8e82752fab1e8ce53"
+  dependencies:
     "@types/react" "*"
 
 "@types/react-slick@^0.23.3":
@@ -191,10 +196,11 @@
     "@types/prop-types" "*"
     csstype "^2.2.0"
 
-"@types/react@16.3.13":
-  version "16.3.13"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.3.13.tgz#47d466462b774556c1174ea0eda22c0578643362"
+"@types/react@16.8.16":
+  version "16.8.16"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.8.16.tgz#2bf980b4fb29cceeb01b2c139b3e185e57d3e08e"
   dependencies:
+    "@types/prop-types" "*"
     csstype "^2.2.0"
 
 "@types/serve-static@*":
@@ -5808,7 +5814,6 @@ rc-trigger@^2.2.0, rc-trigger@^2.2.2, rc-trigger@^2.3.0, rc-trigger@^2.5.1, rc-t
 
 rc-trigger@^3.0.0-rc.2:
   version "3.0.0-rc.3"
-  resolved "https://registry.yarnpkg.com/rc-trigger/-/rc-trigger-3.0.0-rc.3.tgz#35842df1674d25315e1426a44882a4c97652258b"
   integrity sha512-4vB6cpxcUdm2qO5VtB9q1TZz0MoWm9BzFLvGknulphGrl1qI6uxUsPDCvqnmujdpDdAKGGfjxntFpA7RtAwkFQ==
   dependencies:
     babel-runtime "6.x"
