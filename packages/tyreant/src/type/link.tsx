@@ -161,6 +161,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
           const newDocs = nonNullValues.filter(
             v => !documents.find(d => d.$id === v.$id)
           );
+
           const docs = [...documents, ...newDocs];
 
           this.setState({

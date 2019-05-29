@@ -1225,7 +1225,7 @@ export default class Collection {
             auth
           );
 
-          console.warn('Trying to insert and not allowed by security', {
+          console.warn('Trying to insert, but not allowed by security', {
             allowed,
             reason
           });
