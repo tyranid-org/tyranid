@@ -23,15 +23,11 @@ class TyrFormBase extends React.Component<TyrFormProps & FormComponentProps> {
   private lastId?: Tyr.AnyIdType;
 
   private mapDocumentToForm() {
-    const { fields, form, document } = this.props;
+    const { document } = this.props;
 
     const { $id } = document;
     if ($id === this.lastId) return;
     this.lastId = $id;
-
-    for (const field of fields) {
-      type.mapDocumentToForm(field, document, form);
-    }
   }
 
   componentDidMount() {

@@ -1,8 +1,11 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
 import { Button, Icon, Input } from 'antd';
+
+import { mapDocumentToForm } from './type';
 
 import {
   byName,
@@ -16,7 +19,11 @@ import {
 } from './type';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
-  const { field, form } = props;
+  const { document, field, form } = props;
+
+  useEffect(() => {
+    mapDocumentToForm(field, document, form);
+  });
 
   return form!.getFieldDecorator(field.path, {
     rules: generateRules(field)

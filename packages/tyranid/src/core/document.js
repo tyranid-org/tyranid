@@ -29,12 +29,17 @@ export const documentPrototype = (Tyr.documentPrototype = {
     const secure = Tyr.secure;
 
     if (secure && secure.checkAccess) {
-      await secure.checkAccess(
+      const accessResult = await secure.checkAccess(
         this,
         opts.perm,
         extractAuthorization(opts),
         opts
       );
+
+      Object.defineProperty(this, '$access', {
+        value: accessResult,
+        enumerable: false
+      });
     }
   },
 

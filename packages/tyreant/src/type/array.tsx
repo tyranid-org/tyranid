@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
@@ -8,12 +9,17 @@ import { TyrLink } from './link';
 import {
   byName,
   /*generateRules, */ TyrTypeProps,
+  mapDocumentToForm,
   mapDocumentValueToFormValue,
-  mapFormValueToDocumentValue,
+  mapFormValueToDocumentValue
 } from './type';
 
 export const TyrArray = (props: TyrTypeProps) => {
-  const { field } = props;
+  const { document, field, form } = props;
+
+  useEffect(() => {
+    mapDocumentToForm(field, document, form);
+  });
 
   switch (field.of!.type.name) {
     case 'link':
@@ -49,5 +55,5 @@ byName.array = {
     }
 
     return value;
-  },
+  }
 };

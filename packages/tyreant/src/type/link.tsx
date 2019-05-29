@@ -7,6 +7,8 @@ import { Select, Spin } from 'antd';
 import { SelectProps } from 'antd/lib/select';
 const { Option } = Select;
 
+import { mapDocumentToForm } from './type';
+
 import {
   byName,
   generateRules,
@@ -55,7 +57,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   linkField?: Tyr.FieldInstance;
 
   async componentDidMount() {
-    const { field } = this.props;
+    const { field, document, form } = this.props;
 
     const link = linkFor(field);
 
@@ -69,6 +71,13 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     } else {
       await this.search();
     }
+
+    mapDocumentToForm(field, document, form);
+  }
+
+  componentDidUpdate() {
+    const { field, document, form } = this.props;
+    mapDocumentToForm(field, document, form);
   }
 
   search = debounce(async (text?: string) => {

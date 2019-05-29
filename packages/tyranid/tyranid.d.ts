@@ -815,9 +815,12 @@ export namespace Tyr {
     keys?: FieldInstance;
     label: string | (() => string);
     link?: CollectionInstance;
+    name: string;
     namePath: NamePathInstance;
     of?: FieldInstance;
     parent?: FieldInstance;
+    path: string;
+    pathLabel: string;
     readonly: boolean;
     type: TypeInstance;
 
