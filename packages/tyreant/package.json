@@ -31,5 +31,6 @@
   "peerDependencies": {
     "typescript": "^2.9.2",
     "tyranid": "^0.6.0"
-  }
+  },
+  "gitHead": "083ef58e65f00563d1c0149fe77a443f1a9144cc"
 }
