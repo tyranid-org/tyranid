@@ -1219,8 +1219,8 @@ export default class Collection {
 
         if (!canInsert) {
           // TODO:  throw a security exception here ?
-
           // TODO: Add $verifyAccess like ability to secure interface
+
           /*
           let { allowed, reason } = await collection.$verifyAccess(
             'create',

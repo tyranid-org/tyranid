@@ -162,10 +162,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
             v => !documents.find(d => d.$id === v.$id)
           );
 
-          const docs = [...documents, ...newDocs];
-
           this.setState({
-            documents: docs
+            documents: [...documents, ...newDocs]
           });
 
           form!.setFieldsValue({
