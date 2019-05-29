@@ -132,7 +132,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       labelInValue: false,
       notFoundContent: loading ? <Spin size="small" /> : null,
       showSearch: true,
-      onSearch: this.search
+      onSearch: this.search,
+      placeholder: this.props.placeholder
     };
 
     if (mode === 'tags') {

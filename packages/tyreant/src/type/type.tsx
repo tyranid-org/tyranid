@@ -13,7 +13,7 @@ export function generateRules(field: Tyr.FieldInstance) {
   if (field.def.required) {
     rules.push({
       required: true,
-      message: `${field.label} is required.`,
+      message: `${field.label} is required.`
     });
   }
 
@@ -58,6 +58,7 @@ export type TyrTypeProps = Readonly<{
   document: Tyr.Document;
   field: Tyr.FieldInstance;
   className?: string;
+  placeholder?: string;
 }>;
 
 export interface TypeUi {
@@ -116,7 +117,7 @@ export const mapDocumentToForm = (
     [field.path]: mapDocumentValueToFormValue(
       field,
       field.namePath.get(document)
-    ),
+    )
   });
 };
 
@@ -190,7 +191,7 @@ export const withTypeContext = (
         ...props,
         form,
         document,
-        field: field as Tyr.FieldInstance,
+        field: field as Tyr.FieldInstance
       });
     }}
   </TypeContext.Consumer>
