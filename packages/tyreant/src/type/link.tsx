@@ -75,10 +75,11 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     mapDocumentToForm(field, document, form);
   }
 
-  componentDidUpdate() {
-    const { field, document, form } = this.props;
-    mapDocumentToForm(field, document, form);
-  }
+  // this was causing infinitely recursing update loops in react
+  //componentDidUpdate() {
+  //const { field, document, form } = this.props;
+  //mapDocumentToForm(field, document, form);
+  //}
 
   search = debounce(async (text?: string) => {
     const { field, document } = this.props;

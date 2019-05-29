@@ -20,23 +20,22 @@ export type TyrFormFields = {
 };
 
 class TyrFormBase extends React.Component<TyrFormProps & FormComponentProps> {
-  private lastId?: Tyr.AnyIdType;
+  //private lastId?: Tyr.AnyIdType;
 
   private mapDocumentToForm() {
-    const { document } = this.props;
-
-    const { $id } = document;
-    if ($id === this.lastId) return;
-    this.lastId = $id;
+    //const { document } = this.props;
+    //const { $id } = document;
+    //if ($id === this.lastId) return;
+    //this.lastId = $id;
   }
 
-  componentDidMount() {
-    this.mapDocumentToForm();
-  }
+  //componentDidMount() {
+  //this.mapDocumentToForm();
+  //}
 
-  componentDidUpdate() {
-    this.mapDocumentToForm();
-  }
+  //componentDidUpdate() {
+  //this.mapDocumentToForm();
+  //}
 
   private renderFormItem(field: Tyr.FieldInstance) {
     const { form, document } = this.props;
