@@ -51,6 +51,7 @@ export type TyrTypeLaxProps = Readonly<{
   document?: Tyr.Document;
   field: Tyr.FieldInstance | string;
   className?: string;
+  placeholder?: string;
 }>;
 
 export type TyrTypeProps = Readonly<{
