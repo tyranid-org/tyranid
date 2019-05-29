@@ -140,6 +140,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         const values = value as string[];
         const link = this.link!;
         const { form } = this.props;
+
         if (link.def.tag) {
           const newValues = await Promise.all(
             values.map(async value => {
