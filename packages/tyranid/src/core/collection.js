@@ -1219,6 +1219,17 @@ export default class Collection {
 
         if (!canInsert) {
           // TODO:  throw a security exception here ?
+
+          let { allowed, reason } = await collection.$verifyAccess(
+            'create',
+            auth
+          );
+
+          console.warn('Trying to insert and not allowed by security', {
+            allowed,
+            reason
+          });
+
           return false;
         }
       }

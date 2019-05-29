@@ -1,5 +1,4 @@
 import { compact, debounce } from 'lodash';
-
 import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
@@ -112,7 +111,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     });
   }, 200);
 
-  render() {
+  render(): React.ReactNode {
     const { field, form } = this.props;
     const { documents, loading } = this.state;
     const { getFieldDecorator } = form!;
@@ -147,27 +146,27 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
               let label = (this.link as Tyr.anny).byIdIndex[value];
 
               if (!label) {
-                console.log('saving', {
-                  [link.labelField.path]: value
-                });
                 label = await link.save({
                   [link.labelField.path]: value
                 });
-                console.log('newTag', label);
                 label.$cache();
               }
-              console.log({ value, label });
-
               return label;
             })
           );
 
-          console.log('newValues', newValues);
-          const selectValues = newValues.filter(v => v.$id).map(v => v.$id); //({
-          //key: v.$id,
-          //label: v.$label,
-          //}));
-          console.log('selectValues', selectValues);
+          const nonNullValues = newValues.filter(v => v.$id);
+          const selectValues = nonNullValues.map(v => v.$id);
+
+          const newDocs = nonNullValues.filter(
+            v => !documents.find(d => d.$id === v.$id)
+          );
+          const docs = [...documents, ...newDocs];
+
+          this.setState({
+            documents: docs
+          });
+
           form!.setFieldsValue({
             [field.path]: selectValues
           });

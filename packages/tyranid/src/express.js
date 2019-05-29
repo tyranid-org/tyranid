@@ -1608,7 +1608,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               await existingDoc.$save({ auth: req.user, user: req.user, req });
               doc = existingDoc;
             } else {
-              await doc.$save({ auth: req.user, user: req.user, req });
+              doc = await doc.$save({ auth: req.user, user: req.user, req });
             }
 
             res.json(col.toClient(doc));

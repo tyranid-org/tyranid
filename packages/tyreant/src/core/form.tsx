@@ -74,7 +74,9 @@ class TyrFormBase extends React.Component<TyrFormProps & FormComponentProps> {
   }
 }
 
-export const TyrForm = Form.create(/*{ name: 'todo' }*/)(TyrFormBase);
+export const TyrForm = Form.create<
+  TyrFormProps & FormComponentProps
+>(/*{ name: 'todo' }*/)(TyrFormBase);
 
 export function submitForm(form: WrappedFormUtils, document: Tyr.Document) {
   const collection = document.$model;
