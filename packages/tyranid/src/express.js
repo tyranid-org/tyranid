@@ -932,7 +932,7 @@ export function generateClientLibrary() {
   Collection.prototype.count = function(opts) {
     return ajax({
       url: '/api/' + this.def.name + '/count',
-      data: opts
+      data: { opts: JSON.stringify(opts) }
     });
   };
 
@@ -1646,7 +1646,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.get) {
         r.get(async (req, res) => {
           try {
-            const opts = req.query;
+            const opts = JSON.parse(req.query.opts);
             if (opts.query) {
               opts.query = await col.fromClientQuery(opts.query);
             }

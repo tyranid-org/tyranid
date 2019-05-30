@@ -229,6 +229,13 @@ export function add() {
         expect(result[1]).to.eql(null); // not present because security policy on Book
       });
 
+      it('should support count()', async () => {
+        const result = await page.evaluate(
+          `Tyr.byName.book.count({ query: { isbn: { $exists: false } } })`
+        );
+        expect(result).to.eql(0);
+      });
+
       it('should support $update()', async () => {
         const result = await page.evaluate(`
 async function test() {

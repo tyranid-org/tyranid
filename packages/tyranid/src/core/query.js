@@ -411,6 +411,22 @@ function _queryIntersection(a, b) {
         throw NO_MATCH;
       }
     }
+
+    if (obj.$lte) {
+      if (obj.$eq <= obj.$lte) {
+        delete obj.$lt;
+      } else {
+        throw NO_MATCH;
+      }
+    }
+
+    if (obj.$gte) {
+      if (obj.$eq >= obj.$gte) {
+        delete obj.$gt;
+      } else {
+        throw NO_MATCH;
+      }
+    }
   }
 
   const objKeys = _.keys(obj);
@@ -590,6 +606,8 @@ Collection.prototype.fromClientQuery = function(query) {
         case '$ne':
         case '$gt':
         case '$lt':
+        case '$gte':
+        case '$lte':
           server[n] = convertValue(field, v);
           break;
         case '$exists':

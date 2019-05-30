@@ -525,6 +525,16 @@ export function add() {
         const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery['organization_.owner_.name.last']).to.eql('Anon');
       });
+
+      it('should support $exists', () => {
+        const clientQuery = {
+          organization: { $exists: false }
+        };
+        const serverQuery = User.fromClientQuery(clientQuery);
+        const v = serverQuery.organization.$exists;
+        console.log('v', v, typeof v);
+        expect(serverQuery.organization.$exists).to.eql(false);
+      });
     });
   });
 }
