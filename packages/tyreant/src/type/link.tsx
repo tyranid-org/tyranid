@@ -131,7 +131,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     let mode: typeof selectProps.mode;
     // TODO:  'tags', 'combobox'
     if (field.type.name === 'array') {
-      mode = field.of!.link!.def.tag ? 'tags' : 'multiple';
+      mode =
+        field.of!.link!.def.tag && this.props.mode !== 'search'
+          ? 'tags'
+          : 'multiple';
     } else {
       mode = 'default';
     }
