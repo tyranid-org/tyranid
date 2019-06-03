@@ -53,6 +53,7 @@ export type TyrTypeLaxProps = Readonly<{
   className?: string;
   placeholder?: string;
   mode?: 'view' | 'edit' | 'search';
+  multiple?: boolean;
 }>;
 
 export type TyrTypeProps = Readonly<{
@@ -62,6 +63,7 @@ export type TyrTypeProps = Readonly<{
   className?: string;
   placeholder?: string;
   mode?: 'view' | 'edit' | 'search';
+  multiple?: boolean;
 }>;
 
 export interface TypeUi {

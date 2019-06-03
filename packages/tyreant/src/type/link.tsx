@@ -122,7 +122,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }, 200);
 
   render(): React.ReactNode {
-    const { field, form } = this.props;
+    const { field, form, multiple } = this.props;
     const { documents, loading } = this.state;
     const { getFieldDecorator } = form!;
 
@@ -135,6 +135,11 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         field.of!.link!.def.tag && this.props.mode !== 'search'
           ? 'tags'
           : 'multiple';
+
+      // if mode is search, but you do not want multiple selection, then override
+      if (mode === 'search' && multiple === false) {
+        mode = 'default';
+      }
     } else {
       mode = 'default';
     }
