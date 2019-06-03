@@ -122,7 +122,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }, 200);
 
   render(): React.ReactNode {
-    const { field, form, multiple } = this.props;
+    const { field, form, multiple, onSelect, onDeselect } = this.props;
     const { documents, loading } = this.state;
     const { getFieldDecorator } = form!;
 
@@ -151,7 +151,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       notFoundContent: loading ? <Spin size="small" /> : null,
       showSearch: true,
       onSearch: this.search,
-      placeholder: this.props.placeholder
+      placeholder: this.props.placeholder,
+      onSelect: onSelect,
+      onDeselect: onDeselect
     };
 
     if (mode === 'tags') {

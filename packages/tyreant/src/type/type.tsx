@@ -4,6 +4,7 @@ import { Tyr } from 'tyranid/client';
 
 import { ColumnFilterItem } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
+import { SelectedValue } from 'antd/lib/select';
 
 export const className = (className: string, props: TyrTypeProps) =>
   className + (props.className ? ' ' + props.className : '');
@@ -54,6 +55,11 @@ export type TyrTypeLaxProps = Readonly<{
   placeholder?: string;
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
+  onSelect?: (
+    value: SelectedValue,
+    option: React.ReactElement<any>
+  ) => Tyr.anny;
+  onDeselect?: (value: SelectedValue) => Tyr.anny;
 }>;
 
 export type TyrTypeProps = Readonly<{
@@ -64,6 +70,11 @@ export type TyrTypeProps = Readonly<{
   placeholder?: string;
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
+  onSelect?: (
+    value: SelectedValue,
+    option: React.ReactElement<any>
+  ) => Tyr.anny;
+  onDeselect?: (value: SelectedValue) => Tyr.anny;
 }>;
 
 export interface TypeUi {
