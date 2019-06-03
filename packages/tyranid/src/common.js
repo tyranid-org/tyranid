@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
-import projection from './core/projection';
+import { extractProjection, resolveProjection } from './core/projection';
 import Tyr from './tyr';
 import NamePath from './core/namePath';
 
@@ -88,7 +88,7 @@ export function processOptions(collection, opts) {
     const fields = extractProjection(opts);
 
     if (fields) {
-      const f = projection.resolve(collection.def.projections, fields);
+      const f = resolveProjection(collection.def.projections, fields);
 
       if (f !== fields) {
         const newOpts = {
@@ -160,10 +160,6 @@ export function extractAuthorization(opts) {
   }
 
   //return undefined;
-}
-
-export function extractProjection(opts) {
-  return opts.projection || opts.fields || opts.project;
 }
 
 export async function parseInsertObj(col, obj, opts) {

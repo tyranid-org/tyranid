@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import Tyr from '../tyr';
 import NamePath from './namePath';
 import { ObjectId } from 'mongodb';
-import projectionFns from './projection';
+import { resolveProjection } from './projection';
 
 const $all = Tyr.$all;
 
@@ -31,7 +31,7 @@ export default class Population {
 
     // TODO:  deprecate the old string and array population options so we can do:
     //if (true && base instanceof Tyr.Collection) {
-    //  projection = projectionFns.resolve(base.def.projections, value);
+    //  projection = resolveProjection(base.def.projections, value);
     //} else {
     // Step 2 would be to eliminate the separate "population" option and just have "projection" perform combined projection/population duties
     if (_.isString(projection)) {
@@ -90,7 +90,7 @@ export default class Population {
               } else {
                 const linkCol = Tyr.byId[link.id];
 
-                value = projectionFns.resolve(linkCol.def.projections, value);
+                value = resolveProjection(linkCol.def.projections, value);
 
                 if (!_.isObject(value)) {
                   throw new Error(

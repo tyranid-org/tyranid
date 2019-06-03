@@ -2,30 +2,55 @@ import * as _ from 'lodash';
 
 //import Tyr      from '../tyr';
 
-function resolve(projections, projection) {
-  if (_.isArray(projection)) {
+export function extractProjection(opts) {
+  return opts.projection || opts.fields || opts.project;
+}
+
+export function resolveProjection(projections, projection) {
+  function inner(projection) {
+    if (_.isArray(projection)) {
+      const net = {};
+
+      for (const proj of projection) {
+        _.merge(net, inner(proj));
+      }
+
+      return net;
+    } else if (_.isObject(projection)) {
+      return projection;
+    } else if (_.isString(projection)) {
+      const rslt = projections[projection];
+
+      if (!rslt) {
+        throw new Error(`No project named "${projection}"`);
+      }
+
+      return rslt;
+    } else {
+      throw new Error('invalid projection');
+    }
+  }
+
+  const rslt = inner(projection),
+    minimal = projections && projections.$minimal;
+
+  if (minimal) {
     const net = {};
 
-    for (const proj of projection) {
-      _.merge(net, resolve(projections, proj));
+    const m = rslt.$minimal;
+    if (m !== undefined) {
+      if (m) _.merge(net, minimal);
+      _.merge(net, rslt);
+      delete net.$minimal;
+    } else {
+      _.merge(net, minimal);
+      _.merge(net, rslt);
     }
 
     return net;
-  } else if (_.isObject(projection)) {
-    return projection;
-  } else if (_.isString(projection)) {
-    const rslt = projections[projection];
-
-    if (!rslt) {
-      throw new Error(`No project named "${projection}"`);
-    }
-
-    return rslt;
+  } else if (rslt.$minimal !== undefined) {
+    return _.omit(rslt, ['$minimal']);
   } else {
-    throw new Error('invalid projection');
+    return rslt;
   }
 }
-
-export default {
-  resolve
-};

@@ -10,7 +10,7 @@ import initModel from './model';
 import Phantom from './models/phantom.model';
 import RoleModel from './models/role'; // require to get extra link in prototype chain
 
-import projection from '../src/core/projection';
+import * as projection from '../src/core/projection';
 import { generateClientLibrary } from '../src/express';
 import './models/user';
 
@@ -259,15 +259,56 @@ describe('tyranid', () => {
 
   describe('projection utilities', () => {
     it('should support projection lookups', () => {
-      expect(projection.resolve({ default: { a: 1, b: 1 } }, 'default')).to.eql(
-        { a: 1, b: 1 }
-      );
+      expect(
+        projection.resolveProjection({ default: { a: 1, b: 1 } }, 'default')
+      ).to.eql({ a: 1, b: 1 });
     });
 
     it('should merge projections', () => {
       expect(
-        projection.resolve({ default: { a: 1, b: 1 } }, ['default', { c: 1 }])
+        projection.resolveProjection({ default: { a: 1, b: 1 } }, [
+          'default',
+          { c: 1 }
+        ])
       ).to.eql({ a: 1, b: 1, c: 1 });
+    });
+
+    it('should support $minimal projections', () => {
+      expect(
+        projection.resolveProjection({ $minimal: { a: 1, b: 1 } }, { c: 1 })
+      ).to.eql({ a: 1, b: 1, c: 1 });
+    });
+
+    it('should support $minimal option with minimal projections', () => {
+      expect(
+        projection.resolveProjection(
+          { $minimal: { a: 1, b: 1 } },
+          { c: 1, $minimal: false }
+        )
+      ).to.eql({ c: 1 });
+
+      expect(
+        projection.resolveProjection(
+          { $minimal: { a: 1, b: 1 } },
+          { c: 1, $minimal: true }
+        )
+      ).to.eql({ a: 1, b: 1, c: 1 });
+    });
+
+    it('should support complex projection options', () => {
+      expect(
+        projection.resolveProjection({ $minimal: { a: 1 }, foo: { b: 1 } }, [
+          'foo',
+          { c: 1 }
+        ])
+      ).to.eql({ a: 1, b: 1, c: 1 });
+
+      expect(
+        projection.resolveProjection({ $minimal: { a: 1 }, foo: { b: 1 } }, [
+          'foo',
+          { c: 1, $minimal: false }
+        ])
+      ).to.eql({ b: 1, c: 1 });
     });
   });
 

@@ -18,7 +18,6 @@ import {
   combineOptions,
   escapeRegex,
   extractAuthorization,
-  extractProjection,
   extractOptions,
   isOptions,
   parseInsertObj,
@@ -28,6 +27,8 @@ import {
   extractUpdateFields,
   isArrow
 } from '../common';
+
+import { extractProjection } from './projection';
 
 const { collections, labelize } = Tyr;
 
