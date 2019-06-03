@@ -137,7 +137,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
           : 'multiple';
 
       // if mode is search, but you do not want multiple selection, then override
-      if (mode === 'search' && multiple === false) {
+      if (multiple === false && mode === 'search') {
         mode = 'default';
       }
     } else {
