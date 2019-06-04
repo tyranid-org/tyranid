@@ -18,7 +18,6 @@ Collection.prototype.fromClientUpdate = function(update) {
     let field;
     if (path) {
       field = col.parsePath(path).tail;
-      col = field.collection;
     }
 
     if (Array.isArray(client) || !_.isObject(client)) {
