@@ -1535,6 +1535,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
               req
             };
 
+            const projection = rOpts.projection || rOpts.fields;
+
+            if (projection) opts.projection = projection;
+
             if (rOpts.populate) {
               opts.populate = await Population.fromClient(rOpts.populate);
             }
