@@ -168,10 +168,16 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
               let label = (this.link as Tyr.anny).byIdIndex[value];
 
               if (!label) {
-                label = await link.save({
-                  [link.labelField.path]: value
-                });
-                label.$cache();
+                label = this.link!.values.find(
+                  l => l.$label.toLowerCase() === value.toLowerCase()
+                );
+
+                if (!label) {
+                  label = await link.save({
+                    [link.labelField.path]: value
+                  });
+                  label.$cache();
+                }
               }
               return label;
             })
