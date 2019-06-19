@@ -583,6 +583,8 @@ Collection.prototype.fromClientQuery = function(query) {
     let field;
     if (path) {
       field = col.parsePath(path).tail;
+
+      // i don't think this line is right, either remove it or update the path variable as well
       col = field.collection;
     }
 
