@@ -203,7 +203,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
             documents: [...documents, ...newDocs]
           });
 
-          // this was causing a flashing of the value twice
+          // this was causing a flashing of the value twice, ant bug?
           //form!.setFieldsValue({
           //[field.path]: nonNullIds
           //});
