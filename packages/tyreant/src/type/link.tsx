@@ -232,6 +232,9 @@ byName.link = {
         const nv = findByLabel(linkFor(field)!, v);
         return nv ? nv.$id : v;
       });
+    } else {
+      const nv = findByLabel(linkFor(field)!, value);
+      if (nv) value = nv.$id;
     }
 
     return value && value.key ? value.key : value;
