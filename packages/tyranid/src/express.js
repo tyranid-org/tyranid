@@ -355,30 +355,34 @@ export function generateClientLibrary() {
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
 
   const documentPrototype = Tyr.documentPrototype = {
-    $cache: function() {
+    $cache() {
       this.$model.cache(this);
       return this;
     },
 
-    $clone: function() {
+    $clone() {
       return new this.$model(_.clone(this));
     },
 
-    $cloneDeep: function() {
+    $cloneDeep() {
       return new this.$model(_.cloneDeep(this));
     },
 
-    $remove: function() {
+    $get(path) {
+      return this.$model.parsePath(path).get(this);
+    },
+
+    $remove() {
       if (this._id) {
         return this.$model.remove({ _id: this._id });
       }
     },
 
-    $save: function() {
+    $save() {
       return this.$model.save(this);
     },
 
-    $slice: function(path, opts) {
+    $slice(path, opts) {
       var doc = this,
           col = doc.$model;
 
@@ -429,8 +433,16 @@ export function generateClientLibrary() {
   };
 
   Object.defineProperties(documentPrototype, {
+    $: {
+      get() {
+        return NamePath.taggedTemplateLiteral.bind(this);
+      },
+      enumerable: false,
+      configurable: false
+    },
+
     $id: {
-      get: function() {
+      get() {
         return this[this.$model.def.primaryKey.field];
       },
       enumerable:   false,

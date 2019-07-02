@@ -33,6 +33,16 @@ function linkFor(field: Tyr.FieldInstance) {
   //return undefined;
 }
 
+// TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search
+function findByLabel(collection: Tyr.CollectionInstance, label: string) {
+  label = label.toLowerCase();
+
+  return collection.values.find(lv => {
+    const l = lv.$label;
+    return l ? l.toLowerCase() === label : false;
+  });
+}
+
 export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   state: TyrLinkState = { documents: [], loading: false };
 
@@ -160,17 +170,15 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       selectProps.onChange = async value => {
         const values = value as string[];
         const link = this.link!;
-        const { form } = this.props;
+        //const { form } = this.props;
 
         if (link.def.tag) {
           const newValues = await Promise.all(
             values.map(async value => {
-              let label = (this.link as Tyr.anny).byIdIndex[value];
+              let label = (this.link as any).byIdIndex[value];
 
               if (!label) {
-                label = this.link!.values.find(
-                  l => l.$label.toLowerCase() === value.toLowerCase()
-                );
+                label = findByLabel(this.link!, value);
 
                 if (!label) {
                   label = await link.save({
@@ -185,7 +193,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
           const nonNullValues = newValues.filter(v => v.$id);
 
-          const selectValues = nonNullValues.map(v => v.$id);
+          //const nonNullIds = nonNullValues.map(v => v.$id);
 
           const newDocs = nonNullValues.filter(
             v => !documents.find(d => d.$id === v.$id)
@@ -195,9 +203,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
             documents: [...documents, ...newDocs]
           });
 
-          form!.setFieldsValue({
-            [field.path]: selectValues
-          });
+          // this was causing a flashing of the value twice
+          //form!.setFieldsValue({
+          //[field.path]: nonNullIds
+          //});
         }
       };
     }
@@ -214,22 +223,29 @@ export const TyrLink = withTypeContext(TyrLinkBase);
 
 byName.link = {
   component: TyrLinkBase,
-  mapDocumentValueToFormValue(field: Tyr.FieldInstance, value: Tyr.anny) {
+  mapDocumentValueToFormValue(field: Tyr.FieldInstance, value: any) {
     return value;
   },
-  mapFormValueToDocumentValue(field: Tyr.FieldInstance, value: Tyr.anny) {
+  mapFormValueToDocumentValue(field: Tyr.FieldInstance, value: any) {
+    if (Array.isArray(value)) {
+      value = value.map(v => {
+        const nv = findByLabel(linkFor(field)!, v);
+        return nv ? nv.$id : v;
+      });
+    }
+
     return value && value.key ? value.key : value;
   },
   filter: (field: Tyr.FieldInstance, filterable: Filterable) => ({
-    filters: linkFor(field)!.values.map((v: Tyr.anny) => ({
+    filters: linkFor(field)!.values.map((v: any) => ({
       text: v.$label,
       value: v._id
     }))
   }),
   finder(
     field: Tyr.FieldInstance,
-    opts: Tyr.anny /* Tyr.Options_Find */,
-    searchValue: Tyr.anny
+    opts: any /* Tyr.Options_Find */,
+    searchValue: any
   ) {
     if (searchValue) {
       if (!opts.query) opts.query = {};
@@ -251,10 +267,8 @@ byName.link = {
   cellValue: (field: Tyr.FieldInstance, document: Tyr.Document) => {
     const link = linkFor(field);
     if (link && link.labelField && !link.isStatic()) {
-      const populatedName = (Tyr as Tyr.anny).NamePath.populateNameFor(
-        field.name
-      );
-      const populatedObject = (document as Tyr.anny)[populatedName];
+      const populatedName = (Tyr as any).NamePath.populateNameFor(field.name);
+      const populatedObject = (document as any)[populatedName];
 
       return populatedObject ? populatedObject[link.labelField.name] : '';
     } else {

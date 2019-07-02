@@ -5,6 +5,8 @@ import ObjectType from '../type/object';
 import * as historical from '../historical/historical';
 import SecureError from '../secure/secureError';
 
+const { NamePath } = Tyr;
+
 export function toPlain(doc) {
   const plain = {};
 
@@ -84,6 +86,10 @@ export const documentPrototype = (Tyr.documentPrototype = {
         }
       }
     }
+  },
+
+  $get(path) {
+    return this.$model.parsePath(path).get(this);
   },
 
   $redact() {
@@ -206,6 +212,14 @@ export function defineDocumentProperties(dp) {
     $id: {
       get() {
         return this[this.$model.def.primaryKey.field];
+      },
+      enumerable: false,
+      configurable: false
+    },
+
+    $: {
+      get() {
+        return NamePath.taggedTemplateLiteral.bind(this);
       },
       enumerable: false,
       configurable: false

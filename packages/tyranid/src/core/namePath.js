@@ -57,6 +57,9 @@ function NamePath(base, pathName, skipArray) {
       if (aAt && aAt.fields && aAt.fields[name]) {
         at = aAt;
         def = at.def;
+      } else if (at.link) {
+        at = at.link;
+        def = at.def;
       } else {
         if (!def.keys) {
           throw new Error(
@@ -246,7 +249,26 @@ NamePath.prototype.get = function(obj) {
         pi++;
         _.each(obj, v => getInner(pi, v));
       } else {
-        getInner(pi + 1, obj[path[pi]]);
+        let v,
+          name = path[pi];
+
+        if (pi < plen - 1 && fields[pi].link) {
+          // if they are dereferencing a link, look for a populated or denormalized value
+          let popName = NamePath.populateNameFor(name, false);
+          v = obj[popName];
+          if (v === undefined) {
+            popName = NamePath.populateNameFor(name, true);
+            v = obj[popName];
+
+            if (v === undefined) {
+              v = obj[name];
+            }
+          }
+        } else {
+          v = obj[name];
+        }
+
+        getInner(pi + 1, v);
       }
     }
   }
@@ -363,6 +385,26 @@ Object.defineProperty(NamePath.prototype, 'spath', {
     return sp;
   }
 });
+
+NamePath.taggedTemplateLiteral = function(strings, ...keys) {
+  if (keys.length) {
+    let s = '',
+      i = 0;
+
+    for (const klen = keys.length; i < klen; i++) {
+      s += strings[i];
+      s += keys[i];
+    }
+
+    if (i < strings.length) {
+      s += strings[i];
+    }
+
+    return this.$get(s);
+  } else {
+    return this.$get(strings[0]);
+  }
+};
 
 Tyr.NamePath = NamePath;
 export default NamePath;

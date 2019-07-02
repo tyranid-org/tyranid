@@ -157,6 +157,8 @@ export namespace Tyr {
     $clone(): this;
     $cloneDeep(): this;
     $copy(replacements: any, props?: Array<keyof this> | '$all'): this;
+    $get(path: string): any;
+    $(strings: TemplateStringsArray, ...keys: string[]): any;
     $id: IdType;
     $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
     $label: string;

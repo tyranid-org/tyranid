@@ -634,7 +634,9 @@ describe('tyranid', () => {
       it('should stop inserts when not authorized', async () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
         const book = new Book();
-        expect(await book.$insert({ auth: anon! })).to.eql(false);
+        (expect(book.$insert({ auth: anon! })).to as any).eventually.throw(
+          /access denied/
+        );
       });
 
       it('should support secured find()s', async () => {

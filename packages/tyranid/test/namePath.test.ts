@@ -1,6 +1,9 @@
+import 'mocha';
 import * as chai from 'chai';
 
 import { Tyr } from 'tyranid';
+
+const { $all } = Tyr;
 
 const { expect } = chai;
 
@@ -91,7 +94,7 @@ export function add() {
 
       np.set(u!, 'Molly');
 
-      expect(u!.name.first).to.eql('Molly');
+      expect(u!.name!.first).to.eql('Molly');
     });
 
     it('should support set with arrays', async () => {
@@ -109,7 +112,7 @@ export function add() {
 
       let np = u.$model.paths['name.suffices._'].namePath;
       np.set(u, 'Super');
-      expect(u.name.suffices).to.eql(['Super', 'Super', 'Super']);
+      expect(u.name!.suffices).to.eql(['Super', 'Super', 'Super']);
 
       np = u.$model.paths['name.suffices'].namePath;
       np.set(u, 'Super');
@@ -185,7 +188,7 @@ export function add() {
     });
 
     it('should support create option', () => {
-      let np = User.parsePath('name.first');
+      const np = User.parsePath('name.first');
       const user = new User({});
 
       np.set(user, 'Jane', { create: true });
@@ -194,12 +197,64 @@ export function add() {
     });
 
     it('should support ignore option', () => {
-      let np = User.parsePath('name.first');
+      const np = User.parsePath('name.first');
       const user = new User({});
 
       np.set(user, 'Jane', { ignore: true });
 
       expect(np.get(user)).to.eql(undefined);
+    });
+
+    it('should used populated or denormalized values when dereferencing a link', async () => {
+      const np = new NamePath(User, 'organization.owner.name.first'),
+        field = np.detail;
+      expect(field.collection).to.be.eql(Tyr.byName.user);
+      expect(field.name).to.be.eql('first');
+      expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
+
+      const u = await User.byId(3, {
+        populate: {
+          organization: {
+            $all,
+            owner: {
+              name: 1
+            }
+          }
+        }
+      });
+
+      expect(np.get(u)).to.eql('Jane');
+    });
+
+    it('should support $get()', async () => {
+      const u = await User.byId(3, {
+        populate: {
+          organization: {
+            $all,
+            owner: {
+              name: 1
+            }
+          }
+        }
+      });
+
+      expect(u!.$get('organization.owner.name.first')).to.eql('Jane');
+    });
+
+    it('should support tagged-template get', async () => {
+      const u = await User.byId(3, {
+        populate: {
+          organization: {
+            $all,
+            owner: {
+              name: 1
+            }
+          }
+        }
+      });
+
+      expect(u!.$`organization.owner.name.first`).to.eql('Jane');
+      expect(u!.$`organization.${'owner.name'}.first`).to.eql('Jane');
     });
   });
 }

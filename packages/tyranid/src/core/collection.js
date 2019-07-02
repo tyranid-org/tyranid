@@ -1175,8 +1175,7 @@ export default class Collection {
         );
 
         if (canInsertArr.some(val => !val)) {
-          // TODO:  throw a security exception here ?
-          return false;
+          throw new Error('access denied');
         }
       }
 
@@ -1219,7 +1218,6 @@ export default class Collection {
         );
 
         if (!canInsert) {
-          // TODO:  throw a security exception here ?
           // TODO: Add $verifyAccess like ability to secure interface
 
           /*
@@ -1234,7 +1232,7 @@ export default class Collection {
           });
           */
 
-          return false;
+          throw new Error('access denied');
         }
       }
 
