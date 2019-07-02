@@ -33,7 +33,7 @@ function linkFor(field: Tyr.FieldInstance) {
   //return undefined;
 }
 
-// TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search
+// TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search...
 function findByLabel(collection: Tyr.CollectionInstance, label: string) {
   label = label.toLowerCase();
 
