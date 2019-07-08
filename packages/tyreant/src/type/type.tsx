@@ -6,8 +6,9 @@ import { ColumnFilterItem } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { SelectedValue } from 'antd/lib/select';
 
-export const className = (className: string, props: TyrTypeProps) =>
-  className + (props.className ? ' ' + props.className : '');
+export const className = function(className: string, props: TyrTypeProps) {
+  return className + (props.className ? ' ' + props.className : '');
+};
 
 export function generateRules(field: Tyr.FieldInstance) {
   const rules = [];
