@@ -121,7 +121,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     if (addDocuments) {
       for (const addDocument of addDocuments) {
         const existing = documents.find(doc => addDocument.$id === doc.$id);
-        if (!existing) documents.push(addDocument);
+        if (!existing) {
+          documents.push(addDocument);
+        }
       }
     }
 
@@ -173,7 +175,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         //const { form } = this.props;
 
         if (link.def.tag) {
-          const newValues = await Promise.all(
+          await Promise.all(
             values.map(async value => {
               let label = (this.link as any).byIdIndex[value];
 
@@ -187,21 +189,22 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
                   label.$cache();
                 }
               }
-              return label;
             })
           );
 
-          const nonNullValues = newValues.filter(v => v.$id);
+          // const nonNullValues = newValues.filter(v => v.$id);
 
           //const nonNullIds = nonNullValues.map(v => v.$id);
 
-          const newDocs = nonNullValues.filter(
-            v => !documents.find(d => d.$id === v.$id)
-          );
+          // const newDocs = nonNullValues.filter(
+          //   v => !documents.find(d => d.$id === v.$id)
+          // );
 
-          this.setState({
-            documents: [...documents, ...newDocs]
-          });
+          // This was adding in dups to the options
+
+          // this.setState({
+          //   documents: [...documents, ...newDocs]
+          // });
 
           // this was causing a flashing of the value twice, ant bug?
           //form!.setFieldsValue({
