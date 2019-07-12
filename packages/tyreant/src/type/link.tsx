@@ -172,7 +172,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       selectProps.onChange = async value => {
         const values = value as string[];
         const link = this.link!;
-        //const { form } = this.props;
+        const { onStateChange } = this.props;
 
         if (link.def.tag) {
           await Promise.all(
@@ -183,10 +183,14 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
                 label = findByLabel(this.link!, value);
 
                 if (!label) {
+                  onStateChange && onStateChange({ ready: false });
+
                   label = await link.save({
                     [link.labelField.path]: value
                   });
+
                   label.$cache();
+                  onStateChange && onStateChange({ ready: true });
                 }
               }
             })

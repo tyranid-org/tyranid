@@ -16,7 +16,7 @@ export interface TyrFormProps {
 }
 
 export type TyrFormFields = {
-  [pathName: string]: Tyr.anny;
+  [pathName: string]: any;
 };
 
 class TyrFormBase extends React.Component<TyrFormProps & FormComponentProps> {
@@ -53,7 +53,7 @@ class TyrFormBase extends React.Component<TyrFormProps & FormComponentProps> {
 
     return (
       <type.TypeContext.Provider
-        value={(this.props as Tyr.anny) as type.TyrTypeProps}
+        value={(this.props as any) as type.TyrTypeProps}
       >
         <Form className="tyr-form">
           {fields &&

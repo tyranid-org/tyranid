@@ -23,7 +23,7 @@ export function generateRules(field: Tyr.FieldInstance) {
 }
 
 export interface Filterable {
-  searchValues: { [pathName: string]: Tyr.anny };
+  searchValues: { [pathName: string]: any };
   onSearch(): void;
 
   // TODO: when we upgrade to latest ant, that Table control takes a component, not a react node, so we can
@@ -37,16 +37,20 @@ export type Filter = (
 ) => {
   filterDropdown?: React.ReactNode;
   filterIcon?: React.ReactNode;
-  onFilter?: (value: Tyr.anny, doc: Tyr.Document) => boolean;
+  onFilter?: (value: any, doc: Tyr.Document) => boolean;
   onFilterDropdownVisibleChange?: (visible: boolean) => void;
   filters?: ColumnFilterItem[];
 };
 
 export type Finder = (
   field: Tyr.FieldInstance,
-  opts: Tyr.anny /* TODO: add Tyr.Options_Find to client */,
-  searchValue: Tyr.anny
+  opts: any /* TODO: add Tyr.Options_Find to client */,
+  searchValue: any
 ) => void;
+
+export interface FieldState {
+  ready?: boolean;
+}
 
 export type TyrTypeLaxProps = Readonly<{
   form?: WrappedFormUtils;
@@ -56,11 +60,9 @@ export type TyrTypeLaxProps = Readonly<{
   placeholder?: string;
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
-  onSelect?: (
-    value: SelectedValue,
-    option: React.ReactElement<any>
-  ) => Tyr.anny;
-  onDeselect?: (value: SelectedValue) => Tyr.anny;
+  onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
+  onDeselect?: (value: SelectedValue) => any;
+  onStateChange?: (value: FieldState) => void;
 }>;
 
 export type TyrTypeProps = Readonly<{
@@ -71,11 +73,9 @@ export type TyrTypeProps = Readonly<{
   placeholder?: string;
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
-  onSelect?: (
-    value: SelectedValue,
-    option: React.ReactElement<any>
-  ) => Tyr.anny;
-  onDeselect?: (value: SelectedValue) => Tyr.anny;
+  onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
+  onDeselect?: (value: SelectedValue) => any;
+  onStateChange?: (value: FieldState) => void;
 }>;
 
 export interface TypeUi {
@@ -83,14 +83,8 @@ export interface TypeUi {
   component: React.ComponentType<TyrTypeProps>;
 
   // mapping between Tyr.Document and ant forms
-  mapDocumentValueToFormValue?(
-    field: Tyr.FieldInstance,
-    value: Tyr.anny
-  ): Tyr.anny;
-  mapFormValueToDocumentValue?(
-    field: Tyr.FieldInstance,
-    value: Tyr.anny
-  ): Tyr.anny;
+  mapDocumentValueToFormValue?(field: Tyr.FieldInstance, value: any): any;
+  mapFormValueToDocumentValue?(field: Tyr.FieldInstance, value: any): any;
 
   // table-related values
   filter?: Filter;
@@ -114,7 +108,7 @@ export const assertTypeUi = (typeName: string) => {
 
 export const mapDocumentValueToFormValue = (
   field: Tyr.FieldInstance,
-  value: Tyr.anny
+  value: any
 ) => {
   const { type } = field;
   const { mapDocumentValueToFormValue } = assertTypeUi(type.name);
@@ -140,7 +134,7 @@ export const mapDocumentToForm = (
 
 export const mapFormValueToDocumentValue = (
   field: Tyr.FieldInstance,
-  value: Tyr.anny
+  value: any
 ) => {
   const { type } = field;
   const { mapFormValueToDocumentValue } = assertTypeUi(type.name);
@@ -152,7 +146,7 @@ export const mapFormValueToDocumentValue = (
 
 export const mapFormValueToDocument = (
   field: Tyr.FieldInstance,
-  value: Tyr.anny,
+  value: any,
   document: Tyr.Document
 ) => {
   field.namePath.set(document, mapFormValueToDocumentValue(field, value));
