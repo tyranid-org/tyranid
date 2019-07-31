@@ -1677,7 +1677,7 @@ export default class Collection {
     _.each(pojo, (v, k) => {
       const field = fields[k];
 
-      if (field && !field.readonly) {
+      if (field && (k === '_id' || !field.readonly)) {
         const type = field.type;
 
         if (!type) {
@@ -1879,7 +1879,8 @@ export default class Collection {
           }
 
           const denormal = (collection.denormal = collection.denormal || {});
-          denormal[path] = fieldDef.denormal;
+          // denormalization uses mongo-style syntax which omits '._'
+          denormal[path.replace(/_\./g, '')] = fieldDef.denormal;
         }
 
         for (const fnName of [

@@ -1,6 +1,7 @@
 import * as awsS3 from 'aws-s3-promisified';
 import * as fs from 'fs';
 import * as multiparty from 'connect-multiparty';
+import * as tmp from 'tmp-promise';
 import { ObjectID } from 'mongodb';
 
 import Tyr from '../tyr';
@@ -99,15 +100,17 @@ function keyForTmp(field, tmpId, filename) {
 
     const s3 = this;
 
-    collection.on({
-      type: 'change',
-      when: 'post',
-      async handler(event) {
-        for (const doc of await event.documents) {
-          s3.def.updateS3(doc);
+    if (field.collection.name === 'CollectionImport')
+      collection.on({
+        type: 'change',
+        when: 'post',
+        order: 0,
+        async handler(event) {
+          for (const doc of await event.documents) {
+            await s3.def.updateS3(doc);
+          }
         }
-      }
-    });
+      });
 
     collection.on({
       type: 'remove',
@@ -221,7 +224,11 @@ function keyForTmp(field, tmpId, filename) {
           val.key = newKey;
           delete val.tmpId;
 
-          await doc.$update({ fields: { [Tyr.NamePath.encode(pathName)]: 1 } });
+          // update the field directly so that we do not recursively call this handler
+          await col.db.updateOne(
+            { _id: doc._id },
+            { $set: { [Tyr.NamePath.encode(pathName)]: val } }
+          );
 
           try {
             console.info(`S3 [${bucket}] DELETE [${tmpKey}]`);
@@ -268,5 +275,32 @@ function keyForTmp(field, tmpId, filename) {
         await s3.deleteObject(bucket, key);
       }
     }
+  },
+
+  async streamS3(doc) {
+    const aws = Tyr.options.aws;
+    const bucket = aws && aws.bucket;
+    if (!bucket) return;
+
+    const keyPath = keyPathFor(doc.$model, doc._id.toString());
+    console.info(`S3 [${bucket}] GET [${keyPath}]`);
+    return await s3.getObject(bucket, keyPath);
+  },
+
+  async downloadS3(doc, path) {
+    if (!path) {
+      const o = await tmp.file();
+      path = o.path;
+    }
+
+    const aws = Tyr.options.aws;
+    const bucket = aws && aws.bucket;
+    if (!bucket) return;
+
+    const keyPath = keyPathFor(doc.$model, doc._id.toString());
+    console.info(`S3 [${bucket}] GET [${keyPath}]`);
+    await s3.saveObjectToFile(bucket, keyPath, path);
+
+    return path;
   }
 });

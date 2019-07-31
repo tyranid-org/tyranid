@@ -49,7 +49,7 @@ export namespace Tyr {
     fields?: FieldsObject;
     keys?: string | FieldDefinition;
 
-    denormal?: any;
+    denormal?: MongoDocument;
     link?: string;
     relate?: 'owns' | 'ownedBy' | 'associate';
     where?: any;
@@ -66,6 +66,7 @@ export namespace Tyr {
 
     granularity?: string;
 
+    computed?: boolean;
     get?: Function;
     getClient?: Function;
     getServer?: Function;
@@ -85,6 +86,7 @@ export namespace Tyr {
 
   export interface FieldInstance {
     collection: CollectionInstance;
+    computed: boolean;
     db: boolean;
     def: FieldDefinition;
     name: string;
@@ -98,6 +100,7 @@ export namespace Tyr {
     keys?: FieldInstance;
     label: string | (() => string);
     link?: CollectionInstance;
+    relate?: 'owns' | 'ownedBy' | 'associate';
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance };
 

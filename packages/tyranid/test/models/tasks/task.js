@@ -6,7 +6,7 @@ var Department = {
 
   fields: {
     secondName: { is: 'string' },
-    department: { link: 'department' }
+    department: { link: 'department', denormal: { name: 1 } }
   }
 };
 

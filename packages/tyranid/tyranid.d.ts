@@ -21,6 +21,34 @@ import { stream } from 'exceljs';
  *
  */
 
+/**
+ * Minor shorthand for declaring a computed property in a field definition.
+ *
+ * i.e. "..., computed, ..." instead of "..., computed: true, ..."
+ */
+export const computed = true;
+
+/**
+ * Minor shorthand for declaring a readonly property in a field definition.
+ *
+ * i.e. "..., labelField ..." instead of "..., labelField: true, ..."
+ */
+export const labelField = true;
+
+/**
+ * Minor shorthand for declaring a readonly property in a field definition.
+ *
+ * i.e. "..., readonly, ..." instead of "..., readonly: true, ..."
+ */
+export const readonly = true;
+
+/**
+ * Minor shorthand for declaring a readonly property in a field definition.
+ *
+ * i.e. "..., required ..." instead of "..., required: true, ..."
+ */
+export const required = true;
+
 // declare properties of Tyr object
 export namespace Tyr {
   export import AccessResult = Isomorphic.AccessResult;
@@ -688,6 +716,7 @@ export namespace Tyr {
 
     db: mongodb.Collection;
     def: CollectionDefinitionHydrated;
+    denormal?: MongoDocument;
 
     exists(opts: Options_Exists): Promise<boolean>;
 
@@ -877,6 +906,7 @@ export namespace Tyr {
       event: EventInstance<T>
     ) => Promise<boolean | void> | boolean | void;
     when?: 'pre' | 'post' | 'both';
+    order?: number;
   }
 
   export interface EventStatic {
@@ -1116,7 +1146,6 @@ export namespace Tyr {
     T extends Tyr.Document<IdType> = Tyr.Document<IdType>
   > = {
     collection: CollectionInstance;
-    documents: T[];
     header?: {
       height?: number;
       extraRows: [
@@ -1147,7 +1176,7 @@ export namespace Tyr {
 
   export interface ExcelStatic {
     toExcel<T extends Tyr.Document<IdType> = Tyr.Document<IdType>>(
-      opts: ExcelDef<T>
+      opts: ExcelDef<T> & { documents: T[] }
     ): Promise<void>;
     fromExcel<T extends Tyr.Document<IdType> = Tyr.Document<IdType>>(
       opts: ExcelDef<T>

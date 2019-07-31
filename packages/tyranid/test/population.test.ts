@@ -220,6 +220,24 @@ export function add() {
       });
     });
 
+    describe('denormalization', () => {
+      it('should support denormalized links inside objects and arrays', async () => {
+        const task = await Task.insert({
+          _id: 2,
+          name: 'denormalized task',
+          departments: [
+            {
+              secondName: 'some second name',
+              department: 1
+            }
+          ]
+        });
+        expect((task!.departments![0] as any).department_!.name).to.eql(
+          'Engineering'
+        );
+      });
+    });
+
     describe('fromClient()', () => {
       it('should convert client data', () => {
         const tests = [

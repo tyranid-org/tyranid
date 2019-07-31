@@ -168,9 +168,11 @@ export async function parseInsertObj(col, obj, opts) {
     insertObj = new col();
 
   _.each(col.denormal, function(field, name) {
-    // TODO:  need to parse & process name if it is a path (if it contains "."s)
-    name = NamePath.populateNameFor(name, true);
-    insertObj[name] = obj[name];
+    // we only need to copy it if it is a top-level level, nested values will be copied below
+    if (name.indexOf('.') < 1) {
+      name = NamePath.populateNameFor(name, true);
+      insertObj[name] = obj[name];
+    }
   });
 
   _.each(fields, function(field, name) {

@@ -118,10 +118,17 @@ _.assign(Tyr, {
 
   generateClientLibrary,
 
+  _configCalled: false,
+
   async config(opts) {
     if (!opts) {
       return options;
     }
+
+    if (this._configCalled) {
+      throw new Error('Tyr.config() called more than once');
+    }
+    this._configCalled = true;
 
     // clear object but keep reference
     for (const prop in options) {
@@ -177,7 +184,14 @@ _.assign(Tyr, {
     }
   },
 
+  _validateCalled: false,
+
   async validate(opts) {
+    if (this._validateCalled) {
+      throw new Error('Tyr.validate() called more than once');
+    }
+    this._validateCalled = true;
+
     if (opts && opts !== true) {
       function process(dirOpts) {
         const globPattern = dirOpts.glob;
@@ -262,6 +276,7 @@ _.assign(Tyr, {
 
     await bootstrap('compile');
 
+    // TODO:  move this to log.boot
     function parseLogLevel(name) {
       const ll = options[name];
       if (_.isString(ll)) {
@@ -315,6 +330,11 @@ if (global.__TyranidGlobal) {
       `global tyranid version = ${global.__TyranidGlobal.version} exists!`
   );
 }
+
+export const computed = true;
+export const readonly = true;
+export const required = true;
+export const labelField = true;
 
 global.__TyranidGlobal = exports.Tyr = Tyr;
 

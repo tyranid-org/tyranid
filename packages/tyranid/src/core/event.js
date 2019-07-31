@@ -56,6 +56,13 @@ Collection.prototype.on = function(opts) {
     }
 
     handlers.push(opts);
+    handlers.sort((a, b) => {
+      const aOrder = a.order !== undefined ? a.order : Number.POSITIVE_INFINITY,
+        bOrder = b.order !== undefined ? b.order : Number.POSITIVE_INFINITY;
+
+      if (aOrder < bOrder) return -1;
+      return aOrder > bOrder ? 1 : 0;
+    });
   }
 
   return function() {

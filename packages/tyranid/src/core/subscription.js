@@ -277,16 +277,14 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
     Tyr.trace({
       c: this._id,
       e: 'subscription',
-      m: 'subscribe:' + user._id,
+      m: 'subscribe:' + (user ? user._id : 'no user'),
       q: query,
       cancel
     });
   }
 
   if (!user) {
-    console.warn(
-      `${this.name}.subscribe() called without a query or user -- ignoring`
-    );
+    console.warn(`${this.name}.subscribe() called without a user -- ignoring`);
     return;
   }
 

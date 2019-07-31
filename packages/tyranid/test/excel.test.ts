@@ -13,7 +13,7 @@ export function add() {
     it('should create an excel file with images', async () => {
       const users = await User.findAll();
 
-      const excelDef: Tyr.ExcelDef<Tyr.User> = {
+      const excelDef: Tyr.ExcelDef<Tyr.User> & { documents: Tyr.User[] } = {
         collection: User,
         documents: users,
         images: [

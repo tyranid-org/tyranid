@@ -353,5 +353,38 @@ export function add() {
         await Book.remove({ query: { title: 'events-1' } });
       }
     });
+
+    it('should call multiple event handlers in order', async () => {
+      let aCalled = 0,
+        bCalled = 0,
+        aCalledBeforeB = false;
+
+      const deregA = User.on({
+        type: 'find',
+        async handler(event) {
+          if (!bCalled) aCalledBeforeB = true;
+          aCalled++;
+        }
+      });
+
+      const deregB = User.on({
+        type: 'find',
+        order: 0,
+        async handler(event) {
+          bCalled++;
+        }
+      });
+
+      try {
+        const users = await User.findAll({ query: { _id: 1 } });
+
+        expect(aCalled).to.eql(1);
+        expect(bCalled).to.eql(1);
+        expect(aCalledBeforeB).to.eql(false);
+      } finally {
+        deregA();
+        deregB();
+      }
+    });
   });
 }

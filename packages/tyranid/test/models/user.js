@@ -32,6 +32,8 @@ var RoleStatus = {
 
 Sibling.Friend = Friend;
 
+// denormal a collection that contains an array that contains objects which contains links that contain denormals
+
 var User = new tyr.Collection({
   id: 'u00',
   name: 'user',

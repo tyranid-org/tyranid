@@ -92,6 +92,7 @@ class Serializer {
 
     for (const field of [
       'cardinality',
+      'computed',
       'custom',
       'defaultValue',
       'denormal',
@@ -107,6 +108,8 @@ class Serializer {
       'order',
       'pattern',
       'placeholder',
+      'readonly',
+      'relate',
       'required',
       'step'
     ]) {
@@ -403,7 +406,7 @@ export function generateClientLibrary() {
           docArr[i] = arr[i];
         }
       }).catch(function(err) {
-        console.log(err);
+        console.error(err);
       });
     }
 
@@ -525,6 +528,13 @@ export function generateClientLibrary() {
   Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
 
   Object.defineProperties(Field.prototype, {
+    computed: {
+      get() {
+        const def = this.def;
+        return this.name === '_id' || def.computed || (!!def.get && !def.set);
+      },
+    },
+
     db: {
       get() { return this.def.db !== false; }
     },
@@ -545,17 +555,18 @@ export function generateClientLibrary() {
 
     pathLabel: {
       get: function() { return this._calcPathLabel(); },
-      enumerable:   false,
-      configurable: false
     }
 
     readonly: {
       get() {
-        const def = this.def;
-        return !!def.get && !def.set;
+        return this.def.readonly || this.computed;
       },
-      enumerable:   false,
-      configurable: false
+    }
+
+    relate: {
+      get() {
+        return this.def.relate;
+      },
     }
   });
 
@@ -1039,7 +1050,7 @@ export function generateClientLibrary() {
         url: '/api/' + this.def.name + '/label/' + (search || '')
       //}).then(function(docs) {
         //return docs.map(doc => new this(doc));
-      }).catch(err => console.log(err));
+      }).catch(err => console.error(err));
     }
   };
 
@@ -1067,7 +1078,7 @@ export function generateClientLibrary() {
         contentType: 'application/json'
       }
     ).catch(function(err) {
-      console.log(err);
+      console.error(err);
     });
   };
 
@@ -1130,7 +1141,7 @@ export function generateClientLibrary() {
       return fields;
 
     }).catch(function(err) {
-      console.log(err);
+      console.error(err);
     });
   };
 
@@ -1260,7 +1271,7 @@ export function generateClientLibrary() {
       url: '/api/' + this.def.name + '/subscribe',
       data: { opts: JSON.stringify({ query, cancel }) }
     }).catch(function(err) {
-      console.log(err);
+      console.error(err);
     });
   };
 
@@ -1375,7 +1386,7 @@ export function generateClientLibrary() {
       ? uglify.minify(file, { fromString: true }).code
       : file;
   } catch (err) {
-    console.log(err.stack);
+    console.error(err);
     throw err;
   }
 }
@@ -1396,7 +1407,7 @@ function compile(code) {
       diagnostic.messageText,
       '\n'
     );
-    console.log(
+    console.error(
       `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
     );
   });
@@ -1583,7 +1594,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               return res.json(cDocs);
             }
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1602,7 +1613,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(col.toClient(doc));
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1629,7 +1640,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(col.toClient(doc));
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1646,7 +1657,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.sendStatus(200);
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1671,7 +1682,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             return res.json(await col.count(opts));
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1702,7 +1713,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             ser.fields(fields);
             res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1728,7 +1739,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             );
             res.sendStatus(200);
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
 
             if (err instanceof SecureError) {
               res.status(401).send(err.message);
@@ -1763,7 +1774,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1787,7 +1798,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(await col.update(opts));
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1811,7 +1822,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(await col.updateDoc(doc, opts));
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1847,7 +1858,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.sendStatus(200);
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1888,7 +1899,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 res.json(field.get(doc.$toClient()));
               } catch (err) {
-                console.error(err.stack);
+                console.error(err);
                 res.sendStatus(500);
               }
             });
@@ -1912,7 +1923,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
-            console.error(err.stack);
+            console.error(err);
             res.sendStatus(500);
           }
         });
@@ -1950,7 +1961,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 res.json(results.map(r => r.$toClient()));
               } catch (err) {
-                console.error(err.stack);
+                console.error(err);
                 res.sendStatus(500);
               }
             });
@@ -1970,7 +1981,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 if (err instanceof ValidationError) {
                   res.json(err.reason);
                 } else {
-                  console.error(err.stack);
+                  console.error(err);
                   res.sendStatus(500);
                 }
               }
