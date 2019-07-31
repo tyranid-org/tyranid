@@ -30,6 +30,7 @@ const Book2Isbn = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
 
 export default async function initModel() {
   // Test validate load models and byName
+  Tyr._validateCalled = false;
   Tyr.validate({
     glob: __dirname + '/models/**/*.js'
     //dir: __dirname + '/models',

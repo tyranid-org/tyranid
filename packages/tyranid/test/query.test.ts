@@ -532,7 +532,6 @@ export function add() {
         };
         const serverQuery = User.fromClientQuery(clientQuery);
         const v = serverQuery.organization.$exists;
-        console.log('v', v, typeof v);
         expect(serverQuery.organization.$exists).to.eql(false);
       });
     });

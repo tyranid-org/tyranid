@@ -76,7 +76,7 @@ export function add() {
 
       await new Promise((resolve, reject) => {
         const http = app.listen(expressPort, () => {
-          // console.log('Express listening on port ' + expressPort)
+          // console.info('Express listening on port ' + expressPort)
           resolve();
         });
 
@@ -179,18 +179,19 @@ export function add() {
 
       const loadTestPage = async () => {
         const page = await browser.newPage();
+        page.on('console', msg => console.info('PAGE CONSOLE:', msg.text()));
         /*const response = */ await page.goto(
           `http://localhost:${expressPort}/test/page`
         );
-        page.on('console', msg => console.log('PAGE CONSOLE:', msg.text()));
 
         return page;
       };
 
-      it('should have access to a client Tyr object', async () =>
+      it('should have access to a client Tyr object', async () => {
         expect(
-          await page.evaluate('Tyr.byName.tyrLogLevel.values[0].name')
-        ).to.eql('trace'));
+          await page.evaluate('debugger; Tyr.byName.tyrLogLevel.values[0].name')
+        ).to.eql('trace');
+      });
 
       it('should have access to a custom client metadata', async () =>
         expect(

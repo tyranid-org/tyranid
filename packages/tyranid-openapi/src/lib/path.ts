@@ -367,7 +367,7 @@ export function path(
         items: {
           type: 'string',
           ['x-tyranid-openapi-object-id']: true
-        },
+        } as Schema,
         description: `IDs of the ${pascalName} objects to delete`,
         required: true
       }),

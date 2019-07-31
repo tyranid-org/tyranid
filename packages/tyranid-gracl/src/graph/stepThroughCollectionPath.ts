@@ -49,7 +49,7 @@ export async function stepThroughCollectionPath<
         childMap.set(
           id.toString(),
           docs.map(doc => {
-            const docId = _.get(doc, nextCollectionId).toString();
+            const docId = (_.get(doc, nextCollectionId) as any).toString();
             nextCollectionIdStrings.add(docId);
             return docId;
           })
@@ -60,7 +60,7 @@ export async function stepThroughCollectionPath<
     return {
       childMap,
       nextCollectionIds: Array.from(nextCollectionIdStrings).map(
-        id => new ObjectID(id)
+        id => new ObjectID(id as any)
       )
     };
   }

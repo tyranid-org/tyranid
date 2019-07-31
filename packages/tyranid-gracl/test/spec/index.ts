@@ -1169,7 +1169,7 @@ test.serial(
     checkStringEq(
       t,
       _.get(query, '$or.0.blogId.$in') as string[],
-      _.map(choppedBlogs, '_id').map(id => id.toString()),
+      _.map(choppedBlogs, '_id').map(id => (id as any).toString()),
       'query should find correct blogs'
     );
   }
@@ -1534,7 +1534,7 @@ test.serial(
 
     const accessObj = await ben.$determineAccessToAllPermissionsForResources(
       ['view', 'edit', 'delete'],
-      _.map(posts, '$uid')
+      _.map(posts, '$uid') as any
     );
 
     for (const post of posts) {

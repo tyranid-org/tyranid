@@ -127,8 +127,9 @@ class Serializer {
       if (of instanceof Tyr.Field) {
         this.field(of);
       } else {
-        this.file += stringify(field.def.of);
+        this.file += ':' + stringify(field.def.of);
       }
+      this.file += ',';
     }
 
     var get = def.getClient || def.get;
@@ -263,10 +264,9 @@ function translateClass(cls) {
 //        NOTE that if it is exposed as a build task, then dynamic schema metadata will still
 //        need to be handled!
 export function generateClientLibrary() {
-  // WARNING:  embedded javascript must currently be written in ES5, not ES6+
   let file = `
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) {
+  if (false && typeof module === 'object' && module.exports) {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
@@ -278,7 +278,6 @@ export function generateClientLibrary() {
 })((typeof window !== 'undefined' ? window : this), function($, _, moment) {
   var Tyr = { init: init };
   Tyr.Tyr = Tyr;
-
   return Tyr;
 
   function init() { //... begin Tyr.init();
@@ -995,7 +994,7 @@ export function generateClientLibrary() {
       url: '/api/' + this.def.name + '/labelsById',
       data: { opts: JSON.stringify(missingIds) }
     }).then(docs => {
-      const docs = docs.map(doc => new this(doc));
+      docs = docs.map(doc => new this(doc));
       for (const d of docs) {
         this.cache(d, undefined, true);
       }
@@ -1395,7 +1394,7 @@ function compile(code) {
   const result = ts.transpileModule(code, {
     compilerOptions: {
       module: ts.ModuleKind.None,
-      target: ts.ScriptTarget.ES5
+      target: ts.ScriptTarget.ES2016
     }
   });
 

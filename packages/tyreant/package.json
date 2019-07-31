@@ -29,7 +29,7 @@
     "react-dom": "16.8.6"
   },
   "peerDependencies": {
-    "typescript": "^2.9.2",
+    "typescript": "^3.5.3",
     "tyranid": "^0.6.0"
   },
   "gitHead": "53597569d8be571ac581880ee0fbf20891b93aa4"

@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import * as mongodb from 'mongodb';
 
-import { Tyr } from '../src/tyranid';
+import { Tyr } from 'tyranid';
 
 const { expect, assert } = chai;
 

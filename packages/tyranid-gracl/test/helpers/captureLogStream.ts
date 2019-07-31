@@ -13,7 +13,7 @@ export function captureLogStream(
     buf += chunk.toString();
     // chunk is a String or Buffer
     if (passThrough) {
-      oldWrite.apply(stream, [chunk, encoding, callback]);
+      oldWrite.apply(stream, [chunk as any, encoding as any, callback]);
     }
     return true;
   };
