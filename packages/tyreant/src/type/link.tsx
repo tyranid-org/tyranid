@@ -18,6 +18,11 @@ import {
   withTypeContext
 } from './type';
 
+const children: any[] = [];
+for (let i = 10; i < 36; i++) {
+  children.push(<Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>);
+}
+
 export interface TyrLinkState {
   documents: Tyr.Document[];
   loading: boolean;
@@ -29,8 +34,6 @@ function linkFor(field: Tyr.FieldInstance) {
   } else if (field.link) {
     return field.link;
   }
-
-  //return undefined;
 }
 
 // TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search...
@@ -43,30 +46,29 @@ function findByLabel(collection: Tyr.CollectionInstance, label: string) {
   });
 }
 
+function findById(collection: Tyr.CollectionInstance, id: string) {
+  return collection.values.find(lv => {
+    return lv.$id === id;
+  });
+}
+
 export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   state: TyrLinkState = { documents: [], loading: false };
 
   protected lastFetchId = 0;
 
   private createOption = (val: Tyr.Document) => {
-    const { $id, $label } = val;
+    const { $label } = val;
 
-    return (
-      <Option
-        key={$id}
-        value={$id}
-        disabled={false /*val.disabled*/}
-        title={$label}
-      >
-        {$label}
-      </Option>
-    );
+    return <Option key={$label}>{$label}</Option>;
   };
 
   link?: Tyr.CollectionInstance;
   linkField?: Tyr.FieldInstance;
+  mounted = false;
 
   async componentDidMount() {
+    this.mounted = true;
     const { field, document, form } = this.props;
 
     const link = linkFor(field);
@@ -77,7 +79,19 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     this.linkField = field.type.name === 'array' ? field.of : field;
 
     if (link!.isStatic()) {
-      this.setState({ documents: link!.values });
+      this.setState({
+        documents: link!.values.sort((a, b) => {
+          const aLabel = a.$label.toLowerCase();
+          const bLabel = b.$label.toLowerCase();
+          if (aLabel < bLabel) {
+            return -1;
+          }
+          if (aLabel > bLabel) {
+            return 1;
+          }
+          return 0;
+        })
+      });
     } else {
       await this.search();
     }
@@ -85,17 +99,18 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     mapDocumentToForm(field, document, form);
   }
 
-  // this was causing infinitely recursing update loops in react
-  //componentDidUpdate() {
-  //const { field, document, form } = this.props;
-  //mapDocumentToForm(field, document, form);
-  //}
+  componentWillUnmount() {
+    this.mounted = false;
+  }
 
   search = debounce(async (text?: string) => {
     const { field, document } = this.props;
     const link = this.link!;
 
-    this.setState({ loading: true });
+    if (this.mounted) {
+      this.setState({ loading: true });
+    }
+
     const fetchId = ++this.lastFetchId;
 
     const promises: Promise<Tyr.Document[]>[] = [];
@@ -127,10 +142,22 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       }
     }
 
-    this.setState({
-      documents,
-      loading: false
-    });
+    if (this.mounted) {
+      this.setState({
+        documents: documents.sort((a, b) => {
+          const aLabel = a.$label.toLowerCase();
+          const bLabel = b.$label.toLowerCase();
+          if (aLabel < bLabel) {
+            return -1;
+          }
+          if (aLabel > bLabel) {
+            return 1;
+          }
+          return 0;
+        }),
+        loading: false
+      });
+    }
   }, 200);
 
   render(): React.ReactNode {
@@ -158,7 +185,6 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     const selectProps: SelectProps = {
       mode,
-      filterOption: false,
       labelInValue: false,
       notFoundContent: loading ? <Spin size="small" /> : null,
       showSearch: true,
@@ -195,25 +221,6 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
               }
             })
           );
-
-          // const nonNullValues = newValues.filter(v => v.$id);
-
-          //const nonNullIds = nonNullValues.map(v => v.$id);
-
-          // const newDocs = nonNullValues.filter(
-          //   v => !documents.find(d => d.$id === v.$id)
-          // );
-
-          // This was adding in dups to the options
-
-          // this.setState({
-          //   documents: [...documents, ...newDocs]
-          // });
-
-          // this was causing a flashing of the value twice, ant bug?
-          //form!.setFieldsValue({
-          //[field.path]: nonNullIds
-          //});
         }
       };
     }
@@ -230,9 +237,22 @@ export const TyrLink = withTypeContext(TyrLinkBase);
 
 byName.link = {
   component: TyrLinkBase,
+
+  // Given ids, return the labels
   mapDocumentValueToFormValue(field: Tyr.FieldInstance, value: any) {
-    return value;
+    if (Array.isArray(value)) {
+      value = value.map(v => {
+        const nv = findById(linkFor(field)!, v);
+        return nv ? nv.$label : v;
+      });
+    } else {
+      const nv = findById(linkFor(field)!, value as string);
+      if (nv) value = nv.$label;
+    }
+
+    return value && value.label ? value.label : value;
   },
+  // Given labels, return the ids
   mapFormValueToDocumentValue(field: Tyr.FieldInstance, value: any) {
     if (Array.isArray(value)) {
       value = value.map(v => {
