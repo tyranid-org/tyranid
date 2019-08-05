@@ -266,7 +266,7 @@ function translateClass(cls) {
 export function generateClientLibrary() {
   let file = `
 (function (root, factory) {
-  if (false && typeof module === 'object' && module.exports) {
+  if (typeof module === 'object' && module.exports) {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
