@@ -737,7 +737,11 @@ export namespace Tyr {
 
     fire(event: EventInstance | EventDefinition): void;
 
-    fromClient(doc: RawMongoDocument, path?: string): Promise<T>;
+    fromClient(
+      doc: RawMongoDocument,
+      path?: string,
+      opts?: Options_FromClient
+    ): Promise<T>;
     fromClientQuery(query: MongoQuery): MongoQuery;
     fromClientUpdate(update: MongoQuery): MongoUpdate;
 

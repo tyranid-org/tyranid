@@ -1698,7 +1698,7 @@ export default class Collection {
 
       const fromClientFn = collection.def && collection.def.fromClient;
       if (fromClientFn) {
-        await fromClientFn.call(doc, opts);
+        await fromClientFn.call(doc, opts || {});
       }
 
       return doc;

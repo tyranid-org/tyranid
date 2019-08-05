@@ -287,7 +287,7 @@ function keyForTmp(field, tmpId, filename) {
     return await s3.getObject(bucket, keyPath);
   },
 
-  async downloadS3(doc, path) {
+  async downloadS3(field, doc, path) {
     if (!path) {
       const o = await tmp.file();
       path = o.path;
@@ -297,7 +297,8 @@ function keyForTmp(field, tmpId, filename) {
     const bucket = aws && aws.bucket;
     if (!bucket) return;
 
-    const keyPath = keyPathFor(doc.$model, doc._id.toString());
+    const value = field.namePath.get(doc);
+    const keyPath = value.key;
     console.info(`S3 [${bucket}] GET [${keyPath}]`);
     await s3.saveObjectToFile(bucket, keyPath, path);
 

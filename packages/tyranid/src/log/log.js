@@ -239,7 +239,7 @@ async function log(level, ...opts) {
         ' ' + Log.fields.du.in.convert(obj.du, Tyr.U`ms`).toFixed(2) + 'ms';
     }
 
-    console[level.method](str);
+    console[level.method === 'trace' ? 'log' : level.method](str);
 
     if (obj.st) {
       console[level.method](obj.st);
@@ -263,6 +263,7 @@ async function log(level, ...opts) {
 
 Log.updateDuration = async function(logResultPromise) {
   let logResult = await logResultPromise;
+  if (!logResult) return;
 
   if (Array.isArray(logResult)) {
     // last one in the array is the db log

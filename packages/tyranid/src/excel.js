@@ -297,7 +297,10 @@ async function fromExcel(opts) {
     };
   });
 
-  const sheet = workbook.getWorksheet('sheet 1');
+  const sheet =
+    workbook.getWorksheet('sheet 1') ||
+    workbook.getWorksheet('Sheet1') ||
+    workbook.getWorksheet(1);
 
   let headerRowNumber = 1 + extraRows.length;
 
@@ -323,7 +326,13 @@ async function fromExcel(opts) {
       const column = columnsByColNumber[colNumber];
       if (!column) return;
 
-      column.namePath.set(doc, cell.value, { create: true });
+      let v = cell.value;
+
+      if (v && v.text) {
+        v = v.text;
+      }
+
+      column.namePath.set(doc, v, { create: true });
     });
   });
 
