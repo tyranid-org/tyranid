@@ -1452,6 +1452,40 @@ export default function connect(app, auth, opts) {
   Tyr.collections.forEach(col => col.connect(opts));
 
   if (app) {
+    /*
+
+    This didn't work.  This was an attempt to detect when the session ID and force the
+    client to make a new Tyr.reconnectSocket() call.
+
+    app.use((req, res, next) => {
+      const sessionId =
+        (req.signedCookies && req.signedCookies['connect.sid']) ||
+        req.cookies['connect.sid'];
+
+      //const userStr = req.cookies.user;
+      //const userId = userStr && JSON.parse(userStr)._id;
+
+      const sockets = Tyr.io.sockets.sockets;
+      let found = false;
+      for (const socketId in sockets) {
+        const socket = sockets[socketId];
+
+        console.log({ tyrSessionId: socket.tyrSessionId, sessionId });
+        if (socket.tyrSessionId === sessionId) {
+          found = true;
+          break;
+        }
+      }
+
+      console.log('___ found:', found);
+      if (!found) {
+        res.setHeader('Tyr-Request-Reconnect', true);
+      }
+
+      return next();
+    });
+    */
+
     const typesByName = Tyr.Type.byName;
     for (const typeName in typesByName) {
       const type = typesByName[typeName];
@@ -1481,7 +1515,6 @@ export default function connect(app, auth, opts) {
 
     io.on('connection', socket => {
       //con sole.log('*** connected', socket);
-
       //con sole.log('*** client', socket.client);
       //con sole.log('*** headers', socket.client.request.headers);
 
@@ -1497,7 +1530,8 @@ export default function connect(app, auth, opts) {
           if (session) {
             const userIdStr = session.passport && session.passport.user;
             if (userIdStr) {
-              socket.userId = String(userIdStr);
+              socket.tyrSessionId = sessionId;
+              socket.tyrUserId = String(userIdStr);
             }
           }
 
@@ -1510,8 +1544,8 @@ export default function connect(app, auth, opts) {
       socket.on('disconnect', () => {
         // It doesn't work to unsubscribe on disconnect since socket.io sessions
         // will occassionally connect/disconnect frequently
-        //Tyr.byName.tyrSubscription.unsubscribe(socket.userId);
-        socket.userId = null;
+        //Tyr.byName.tyrSubscription.unsubscribe(socket.tyrUserId);
+        socket.tyrUserId = null;
       });
     });
   }
@@ -1522,7 +1556,7 @@ Tyr.connect = Tyr.express /* deprecated */ = connect;
 connect.middleware = local.express.bind(local);
 
 /**
- * @private ... clients should use Tyr.express()
+ * @private ... clients should use Tyr.connect()
  *
  * auth is deprecated, use opts.auth instead
  */

@@ -275,7 +275,7 @@ Subscription.boot = async function(stage, pass) {
 Collection.prototype.subscribe = async function(query, user, cancel) {
   if (Tyr.logging.trace) {
     Tyr.trace({
-      c: this._id,
+      c: this.id,
       e: 'subscription',
       m: 'subscribe:' + (user ? user._id : 'no user'),
       q: query,
@@ -424,7 +424,7 @@ async function handleSubscriptionEvent(event) {
     const sockets = Tyr.io.sockets.sockets;
     for (const socketId in sockets) {
       const socket = sockets[socketId];
-      if (userIds[socket.userId]) {
+      if (userIds[socket.tyrUserId]) {
         socket.emit('subscriptionEvent', {
           colId: event.dataCollectionId,
           type: event.subType,
