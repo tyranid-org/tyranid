@@ -921,8 +921,10 @@ export function generateClientLibrary() {
     opts.limit = 1;
 
     return ajax({
+      method: 'POST',
       url: '/api/' + col.def.name,
-      data: { opts: JSON.stringify(opts) }
+      data: JSON.stringify(opts),
+      contentType: 'application/json'
     }).then(docs => docs && docs.length ? new col(docs[0]) : null);
   };
 
@@ -930,9 +932,10 @@ export function generateClientLibrary() {
     const col = this;
 
     return ajax({
-      method: 'GET',
+      method: 'POST',
       url: '/api/' + col.def.name,
-      data: { opts: JSON.stringify(opts) }
+      data: JSON.stringify(opts),
+      contentType: 'application/json'
     }).then(rslt => {
       let docs;
 
@@ -1578,11 +1581,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
       let r = app.route('/api/' + name);
       r.all(auth);
 
-      if (express.rest || express.get) {
-        r.get(async (req, res) => {
+      if (express.rest || express.post) {
+        r.post(async (req, res) => {
           try {
-            let rOpts = req.query;
-            rOpts = JSON.parse(rOpts.opts);
+            let rOpts = req.body;
 
             const opts = {
               query: rOpts.query ? await col.fromClientQuery(rOpts.query) : {},
@@ -1608,7 +1610,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
             }
 
             if (rOpts.count) {
-              opts.count = BooleanType.fromString(rOpts.count);
+              opts.count =
+                typeof rOpts.count === 'string'
+                  ? BooleanType.fromString(rOpts.count)
+                  : rOpts.count;
             }
 
             if (rOpts.sort) {
@@ -1626,25 +1631,6 @@ Collection.prototype.connect = function({ app, auth, http }) {
             } else {
               return res.json(cDocs);
             }
-          } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
-          }
-        });
-      }
-
-      if (express.rest || express.post) {
-        r.post(async function(req, res) {
-          try {
-            const doc = await col.fromClient(req.body, undefined, { req });
-
-            if (doc._id) {
-              res.status(403).send('Use put for updates');
-            } else {
-              await doc.$save({ auth: req.user, user: req.user, req });
-            }
-
-            res.json(col.toClient(doc));
           } catch (err) {
             console.error(err);
             res.sendStatus(500);
