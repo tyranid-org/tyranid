@@ -20,6 +20,8 @@ export const TableContext = React.createContext<TyrTable | undefined>(
   undefined
 );
 
+const ObsTable = observer(Table);
+
 const DEFAULT_PAGE_SIZE = 20;
 
 export type TableSortDirection = 'ascend' | 'descend';
@@ -402,8 +404,6 @@ export class TyrTable extends React.Component<TyrTableProps> {
   render() {
     const { documents, loading } = this.store;
     const { className, actions } = this.props;
-
-    const ObsTable = observer(Table);
 
     const netClassName = 'tyr-table' + (className ? ' ' + className : '');
 
