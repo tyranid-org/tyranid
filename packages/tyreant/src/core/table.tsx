@@ -41,8 +41,9 @@ export interface TyrTableProps {
   className?: string;
   collection: Tyr.CollectionInstance;
   columns: {
-    field: string;
+    field?: string;
     label?: string;
+    render?: (doc: Tyr.Document) => React.ReactElement;
     group?: string;
     defaultSort?: TableSortDirection;
     width?: string;
@@ -113,13 +114,17 @@ export class TyrTable extends React.Component<TyrTableProps> {
         column => !!column.defaultSort
       );
       if (defaultSortColumn) {
-        let fieldDefn = defn[defaultSortColumn.field] as FieldDefinition;
+        const fieldName = defaultSortColumn.field;
 
-        if (!fieldDefn) {
-          fieldDefn = defn[defaultSortColumn.field] = {};
+        if (fieldName) {
+          let fieldDefn = defn[fieldName] as FieldDefinition;
+
+          if (!fieldDefn) {
+            fieldDefn = defn[fieldName] = {};
+          }
+
+          fieldDefn!.sortDirection = defaultSortColumn.defaultSort;
         }
-
-        fieldDefn!.sortDirection = defaultSortColumn.defaultSort;
       }
     }
 
@@ -210,9 +215,9 @@ export class TyrTable extends React.Component<TyrTableProps> {
 
       for (const column of columns) {
         const pathName = column.field,
-          field = collection.paths[pathName],
-          finder = getFinder(field),
-          fieldDefn = defn[pathName] as FieldDefinition,
+          field = pathName && collection.paths[pathName],
+          finder = field && getFinder(field),
+          fieldDefn = pathName && (defn[pathName] as FieldDefinition),
           searchValue = fieldDefn && fieldDefn.searchValue;
 
         if (finder) finder(field, opts, searchValue);
@@ -221,7 +226,7 @@ export class TyrTable extends React.Component<TyrTableProps> {
           const { sortDirection } = fieldDefn;
 
           if (sortDirection) {
-            sort[pathName] = sortDirection === 'ascend' ? 1 : -1;
+            sort[pathName!] = sortDirection === 'ascend' ? 1 : -1;
           }
         }
       }
@@ -260,9 +265,9 @@ export class TyrTable extends React.Component<TyrTableProps> {
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(column => {
       const pathName = column.field;
-      const field = collection.paths[pathName];
+      const field = pathName && collection.paths[pathName];
 
-      const fieldDefn = tableDefn[pathName] as FieldDefinition;
+      const fieldDefn = pathName && (tableDefn[pathName] as FieldDefinition);
       const { sortDirection } = fieldDefn || {
         sortDirection: undefined
       };
@@ -275,9 +280,9 @@ export class TyrTable extends React.Component<TyrTableProps> {
         },
         onSearch: () => {
           const defn: TableDefinition = {
-            [pathName]: {
-              ...((this.tableDefn[pathName] as FieldDefinition) || {}),
-              searchValue: workingSearchValues[pathName] || ''
+            [pathName!]: {
+              ...((this.tableDefn[pathName!] as FieldDefinition) || {}),
+              searchValue: workingSearchValues[pathName!] || ''
             }
           };
 
@@ -285,26 +290,30 @@ export class TyrTable extends React.Component<TyrTableProps> {
         }
       };
 
-      const np = field.namePath;
+      const np = field && field.namePath;
 
       return {
         dataIndex: pathName,
         //key: pathName,
         render: (text: string, document: Tyr.Document) => {
+          const render = column.render;
+
           return (
             <div className="tyr-table-cell">
-              {getCellValue(field, document)}
+              {render ? render(document) : getCellValue(field, document)}
             </div>
           );
         },
-        sorter: !field.link
-          ? (a: Tyr.Document, b: Tyr.Document) =>
-              field.type.compare(field, np.get(a), np.get(b))
+        sorter: field
+          ? !field.link
+            ? (a: Tyr.Document, b: Tyr.Document) =>
+                field.type.compare(field, np && np.get(a), np && np.get(b))
+            : undefined
           : undefined,
         sortOrder: sortDirection,
-        title: column.label || field.label,
+        title: column.label || (field && field.label),
         width: column.width || undefined,
-        ...(getFilter(field, filterable) || {})
+        ...((field && getFilter(field, filterable)) || {})
       };
     });
 

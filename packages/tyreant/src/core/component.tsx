@@ -62,7 +62,9 @@ export class TyrComponent<
         (collection === parentCollection && parentTable.props.columns);
 
       if (fields) {
-        this.fields = fields.map(fieldOpt => collection!.paths[fieldOpt.field]);
+        this.fields = (fields as { field?: string }[])
+          .filter(f => !!f.field)
+          .map(f => collection!.paths[f.field!]);
       }
 
       if (collection === parentCollection) {
