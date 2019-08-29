@@ -97,7 +97,7 @@ export function add() {
       expect(u!.name!.first).to.eql('Molly');
     });
 
-    it('should support set with arrays', async () => {
+    it('should support set with array globs', async () => {
       const u = new User({
         name: {
           first: 'Joseph',
@@ -125,6 +125,24 @@ export function add() {
         { name: 'Thor' },
         { name: 'Thor' }
       ]);
+    });
+
+    it('should support set with array indices', async () => {
+      const u = new User({
+        name: {
+          first: 'Joseph',
+          suffices: ['Dr.', 'Mr.', 'Crazy']
+        },
+        siblings: [
+          { name: 'Tom Doe' },
+          { name: 'Mia Doe' },
+          { name: 'George Doe' }
+        ]
+      });
+
+      const np = u.$model.parsePath('name.suffices.0');
+      np.set(u, 'Super');
+      expect(u.name!.suffices).to.eql(['Super', 'Mr.', 'Crazy']);
     });
 
     it('should support relative NamePaths', async () => {

@@ -300,12 +300,16 @@ NamePath.prototype.set = function(obj, value, opts) {
     const leaf = pi === plen - 1;
 
     if (Array.isArray(obj)) {
+      const name = path[pi];
       if (leaf) {
-        for (let i = 0; i < obj.length; i++) {
-          obj[i] = value;
+        if (name && name.match(NamePath._numberRegex)) {
+          obj[name] = value;
+        } else {
+          for (let i = 0; i < obj.length; i++) {
+            obj[i] = value;
+          }
         }
       } else {
-        const name = path[pi];
         if (name === '_') {
           pi++;
         } else if (name && name.match(NamePath._numberRegex)) {
