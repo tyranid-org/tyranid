@@ -88,8 +88,11 @@ function NamePath(base, pathName, skipArray) {
           throw new Error(`"${_name}" in "${pathName}" is not a valid field.`);
         }
 
+        /*
         const denormalization = name.endsWith('_');
 
+        // TODO:  this denormalization code does not deal with denormal entries like "a.b"
+        //        so commenting it out for now, does more harm than good
         if (denormalization) {
           if (!denormal) {
             denormal = _at.def.denormal;
@@ -97,15 +100,15 @@ function NamePath(base, pathName, skipArray) {
               break;
             }
           } else {
-            if (!denormal[_name]) {
-              break;
-            }
-
-            denormal = denormal[_name];
+            //if (!denormal[_name]) {
+            //break;
+            //}
+            //denormal = denormal[_name];
           }
         } else {
           denormal = null;
         }
+        */
 
         at = _at;
         pathFields[pi++] = at;
@@ -178,7 +181,7 @@ NamePath.populateNameFor = function(name, denormal) {
 NamePath.prototype.pathName = function(pi) {
   return pi <= 1
     ? this.name
-    : this.path.slice(0, pi).join('.') + ' in ' + this.name;
+    : this.path.slice(0, pi + 1).join('.') + ' in ' + this.name;
 };
 
 NamePath.prototype.toString = function() {

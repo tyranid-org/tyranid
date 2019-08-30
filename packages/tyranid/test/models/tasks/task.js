@@ -6,7 +6,10 @@ var Department = {
 
   fields: {
     secondName: { is: 'string' },
-    department: { link: 'department', denormal: { name: 1 } }
+    department: {
+      link: 'department',
+      denormal: { name: 1, 'permissions.members': 1 }
+    }
   }
 };
 

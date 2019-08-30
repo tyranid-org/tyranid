@@ -11,11 +11,14 @@ const { NamePath } = Tyr;
 
 export function add() {
   describe('namePath.js (NamePath)', () => {
-    let User: Tyr.UserCollection, Department: Tyr.DepartmentCollection;
+    let User: Tyr.UserCollection,
+      Department: Tyr.DepartmentCollection,
+      Task: Tyr.TaskCollection;
 
     before(() => {
       User = Tyr.byName.user;
       Department = Tyr.byName.department;
+      Task = Tyr.byName.task;
     });
 
     it('should parse arrays', () => {
@@ -185,11 +188,19 @@ export function add() {
     });
 
     it('should support complex denormalize pathing', () => {
-      const np = new NamePath(User, 'organization_.owner_.name.first'),
+      let np = new NamePath(User, 'organization_.owner_.name.first'),
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.user);
       expect(field.name).to.be.eql('first');
       expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
+
+      np = new NamePath(
+        Task,
+        'departments.1.department_.permissions.members.0.name.first'
+      );
+      field = np.detail;
+      expect(field.collection).to.be.eql(Tyr.byName.user);
+      expect(field.name).to.be.eql('first');
     });
 
     it('should support a mix of denormalization and population pathing', () => {
@@ -197,7 +208,7 @@ export function add() {
         'organization_.owner$.name.first',
         'organization$.owner_.name.first'
       ]) {
-        let np = new NamePath(User, path),
+        const np = new NamePath(User, path),
           field = np.detail;
         expect(field.collection).to.be.eql(Tyr.byName.user);
         expect(field.name).to.be.eql('first');
