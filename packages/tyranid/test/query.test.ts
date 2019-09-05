@@ -423,11 +423,14 @@ export function add() {
     });
 
     describe('fromClientQuery', () => {
-      let Book: Tyr.BookCollection, User: Tyr.UserCollection;
+      let Book: Tyr.BookCollection,
+        User: Tyr.UserCollection,
+        Role: Tyr.RoleCollection;
 
       before(() => {
         Book = Tyr.byName.book;
         User = Tyr.byName.user;
+        Role = Tyr.byName.role;
       });
 
       it('should variation 1', () => {
@@ -486,6 +489,15 @@ export function add() {
         const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery.name.first.$eq).to.be.eql('An');
         expect(serverQuery.name.last).to.be.eql('Anon');
+      });
+
+      it('should variation 6', () => {
+        const stringId = '5d6829a446f48f8b741a466a';
+        const clientQuery = {
+          _id: stringId
+        };
+        const serverQuery = Role.fromClientQuery(clientQuery);
+        expect(new ObjectId(stringId).equals(serverQuery._id)).to.eql(true);
       });
 
       it('should support $in for array fields', () => {

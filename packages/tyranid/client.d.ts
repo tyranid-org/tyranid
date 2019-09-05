@@ -46,6 +46,8 @@ declare module 'tyranid/client' {
     export function parseUid(
       uid: string
     ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
+    export function labelize(name: string): string;
+    export function pluralize(str: string): string;
     export const setSocketLibrary: (library: typeof io) => void;
     export const reconnectSocket: () => void;
 

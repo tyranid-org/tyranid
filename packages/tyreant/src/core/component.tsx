@@ -5,30 +5,7 @@ import { Tyr } from 'tyranid/client';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 
 import { TyrTable, TableContext } from './table';
-
-export type TyrActionName = 'edit';
-
-export class TyrAction {
-  name: TyrActionName;
-  component: TyrComponent;
-
-  // can remove this any when upgrading to newer typescript
-  constructor(name: TyrActionName, component: TyrComponent<any>) {
-    this.name = name;
-    this.component = component;
-  }
-
-  get label() {
-    switch (this.name) {
-      case 'edit':
-        return 'Edit';
-    }
-  }
-
-  act(document: Tyr.Document) {
-    this.component.edit(document);
-  }
-}
+import { TyrAction } from './action';
 
 export type TyrComponentProps = Readonly<{
   collection?: Tyr.CollectionInstance;
@@ -66,16 +43,10 @@ export class TyrComponent<
           .filter(f => !!f.field)
           .map(f => collection!.paths[f.field!]);
       }
-
-      if (collection === parentCollection) {
-        parentTable.enact(new TyrAction('edit', this));
-      }
-    } else {
-      collection = this.collection;
     }
   }
 
-  async edit(document: Tyr.Document) {
+  async find(document: Tyr.Document) {
     const { collection } = this;
 
     if (!collection) throw new Error('no collection');

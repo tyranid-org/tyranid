@@ -15,9 +15,9 @@ export interface TyrFormProps {
   fields: Tyr.FieldInstance[];
 }
 
-export type TyrFormFields = {
+export interface TyrFormFields {
   [pathName: string]: any;
-};
+}
 
 class TyrFormBase extends React.Component<TyrFormProps & FormComponentProps> {
   //private lastId?: Tyr.AnyIdType;
@@ -81,7 +81,7 @@ export function submitForm(form: WrappedFormUtils, document: Tyr.Document) {
       if (err) return;
 
       for (const pathName in values) {
-        let value = values[pathName];
+        const value = values[pathName];
         const field = collection.paths[pathName];
         type.mapFormValueToDocument(field, value, document);
       }

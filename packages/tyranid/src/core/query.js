@@ -593,7 +593,9 @@ Collection.prototype.fromClientQuery = function(query) {
     }
 
     const server = {};
-    _.each(client, (v, n) => {
+    const names = Object.keys(client);
+    for (const n of names) {
+      const v = client[n];
       switch (n) {
         case '$and':
         case '$or':
@@ -624,7 +626,7 @@ Collection.prototype.fromClientQuery = function(query) {
             server[n] = convert(col, path ? path + '.' + n : n, v);
           }
       }
-    });
+    }
 
     return server;
   }

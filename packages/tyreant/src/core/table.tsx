@@ -14,7 +14,7 @@ import { tyreant } from '../tyreant';
 
 import { getFilter, getFinder, getCellValue } from '../type';
 
-import { TyrAction } from './component';
+import { TyrAction } from './action';
 
 export const TableContext = React.createContext<TyrTable | undefined>(
   undefined
@@ -327,7 +327,7 @@ export class TyrTable extends React.Component<TyrTableProps> {
             <Menu className="tyr-menu">
               {this.actions.map(action => (
                 <Menu.Item className="tyr-menu-item" key="0">
-                  <button onClick={() => action.act(document)}>
+                  <button onClick={() => action.act({ document })}>
                     {action.label}
                   </button>
                 </Menu.Item>
@@ -434,10 +434,7 @@ export class TyrTable extends React.Component<TyrTableProps> {
                 rowKey="_id"
                 size="small"
                 pagination={this.pagination()}
-                onChange={
-                  // ant ts def is incorrect
-                  this.handleTableChange as Tyr.anny
-                }
+                onChange={this.handleTableChange}
                 dataSource={
                   /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
                 }

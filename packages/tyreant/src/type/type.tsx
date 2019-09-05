@@ -6,7 +6,7 @@ import { ColumnFilterItem } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { SelectedValue } from 'antd/lib/select';
 
-export const className = function(className: string, props: TyrTypeProps) {
+export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
 };
 
@@ -183,19 +183,21 @@ export const withTypeContext = (
   <TypeContext.Consumer>
     {formProps => {
       const form = props.form || (formProps && formProps.form);
-      if (!form) throw 'tyr form control not given a form';
+      if (!form) throw new Error('tyr form control not given a form');
 
       const document = props.document || (formProps && formProps.document);
-      if (!document) throw 'tyr form control not given a document';
+      if (!document) throw new Error('tyr form control not given a document');
 
       let field = props.field;
-      if (!field) throw 'tyr form control not given a field';
+      if (!field) throw new Error('tyr form control not given a field');
 
       if (typeof field === 'string') {
         const fieldName = field;
         field = document.$model.paths[fieldName];
         if (!field)
-          throw `cannot find "${fieldName}" on "${document.$model.name}"`;
+          throw new Error(
+            `cannot find "${fieldName}" on "${document.$model.name}"`
+          );
       }
 
       return React.createElement(FormControl, {

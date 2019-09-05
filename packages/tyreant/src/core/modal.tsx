@@ -6,6 +6,8 @@ import { Modal, Button, Spin, Icon } from 'antd';
 
 import { TyrForm, submitForm } from './form';
 import { TyrComponent, TyrComponentState } from './component';
+import { TyrAction } from './action';
+import { TyrTable } from './table';
 
 export interface TyrFormModalState extends TyrComponentState {
   visible: boolean;
@@ -15,11 +17,27 @@ export interface TyrFormModalState extends TyrComponentState {
 export class TyrFormModal extends TyrComponent<TyrFormModalState> {
   state: TyrFormModalState = {
     visible: false,
-    loading: false,
+    loading: false
   };
 
-  async edit(document: Tyr.Document) {
-    super.edit(document);
+  connect(parentTable?: TyrTable) {
+    super.connect(parentTable);
+
+    if (parentTable && this.collection === parentTable.props.collection) {
+      parentTable.enact(new TyrAction({ name: 'edit', component: this }));
+    }
+  }
+
+  async handle(action: TyrAction) {
+    await super.handle(action);
+
+    switch (action.name) {
+      case 'edit':
+    }
+  }
+
+  async find(document: Tyr.Document) {
+    super.find(document);
     this.openModal();
   }
 
@@ -116,7 +134,7 @@ export class TyrFormModal extends TyrComponent<TyrFormModalState> {
                 {visible &&
                   document && (
                     <TyrForm
-                      ref={this.getFormRef as Tyr.anny}
+                      ref={this.getFormRef as any}
                       document={document}
                       fields={this.fields}
                     >
