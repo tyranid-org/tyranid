@@ -2489,19 +2489,19 @@ describe('tyranid', () => {
       });
     });
 
-    describe('references', () => {
-      it('find a single reference', async () => {
-        const refs = await User.references({ id: 3 });
+    describe('findReferences', () => {
+      it('should find a single reference', async () => {
+        const refs = await User.findReferences({ id: 3 });
         expect(refs.length).to.eql(4);
       });
 
-      it('find an array of references', async () => {
-        const refs = await User.references({ ids: [1, 3] });
+      it('should find an array of references', async () => {
+        const refs = await User.findReferences({ ids: [1, 3] });
         expect(refs.length).to.eql(7);
       });
 
       it('should support exclude', async () => {
-        const refs = await User.references({
+        const refs = await User.findReferences({
           ids: [1, 3],
           exclude: [Tyr.byName.organization, Tyr.byName.widget]
         });
@@ -2509,11 +2509,53 @@ describe('tyranid', () => {
       });
 
       it('should support idsOnly', async () => {
-        const refs = await User.references({ ids: [1, 3], idsOnly: true });
+        const refs = await User.findReferences({ ids: [1, 3], idsOnly: true });
         expect(refs.length).to.eql(7);
         for (const r of refs) {
           expect(_.keys(r)).to.eql(['_id']);
         }
+      });
+    });
+
+    describe('removeReferences', () => {
+      const userId = 99,
+        departmentId = 99;
+      before(async () => {
+        await User.insert({
+          _id: userId,
+          organization: 1,
+          name: { first: 'test user', last: 'Anon' },
+          title: 'Developer',
+          job: 1
+        });
+
+        await Department.insert({
+          _id: departmentId,
+          name: 'References Dept',
+          creator: 2,
+          head: userId,
+          permissions: { members: [userId, 3] }
+        });
+      });
+
+      after(async () => {
+        await User.remove({ query: { _id: userId } });
+        await Department.remove({ query: { _id: departmentId } });
+      });
+
+      it('should remove references', async () => {
+        let refs = await User.findReferences({ id: userId });
+        expect(refs.length).to.eql(1);
+        expect((refs[0] as Tyr.Department).name).to.eql('References Dept');
+
+        await User.removeReferences({ id: userId });
+
+        refs = await User.findReferences({ id: userId });
+        expect(refs.length).to.eql(0);
+
+        const department = (await Department.byId(departmentId))!;
+        expect(department.head).to.be.undefined;
+        expect(department.permissions!.members).to.eql([3]);
       });
     });
 

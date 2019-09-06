@@ -1763,6 +1763,7 @@ export default class Collection {
         }
 
         if (type instanceof Field) {
+          type.parent = field;
           this.field(field.path + '._', type);
         }
       },

@@ -729,6 +729,12 @@ export namespace Tyr {
     find(opts: Options_FindCursor): Promise<Cursor<T>>;
     findAll(opts?: Options_FindMany): Promise<T[] & { count?: number }>;
     findOne(opts: Options_FindOne): Promise<T | null>;
+    findReferences(opts: {
+      id?: any;
+      ids?: any;
+      idsOnly?: boolean;
+      exclude?: Array<CollectionInstance<AnyIdType, Tyr.Document>>;
+    }): Promise<Tyr.Document[]>;
 
     /** @deprecated */
     findOne(id: IdType, proj?: any): Promise<T | null>;
@@ -794,14 +800,12 @@ export namespace Tyr {
       opts?: Options_Pushpull
     ): Promise<void>;
 
-    references(opts: {
+    remove(opts: Options_Remove): Promise<void>;
+    removeReferences(opts: {
       id?: any;
       ids?: any;
-      idsOnly?: boolean;
       exclude?: Array<CollectionInstance<AnyIdType, Tyr.Document>>;
-    }): Promise<Tyr.Document[]>;
-
-    remove(opts: Options_Remove): Promise<void>;
+    }): Promise<void>;
 
     secureQuery(
       query: MongoQuery,

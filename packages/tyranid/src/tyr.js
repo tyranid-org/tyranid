@@ -245,6 +245,11 @@ const Tyr = {
     return Promise.all(array.map(el => mapFn(el)));
   },
 
+  async awaitAll(array, chunking = 5) {
+    // TODO:  implement support for chunking parameter
+    await Promise.all(array);
+  },
+
   mapAwait(value, fn) {
     if (value.then) {
       return value.then(value => {

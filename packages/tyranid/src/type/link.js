@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import Tyr from '../tyr';
 import Type from '../core/type';
 import Collection from '../core/collection';
+import { func } from 'prop-types';
 
 const LinkType = new Type({
   name: 'link',
@@ -129,7 +130,7 @@ Collection.prototype.links = function(search) {
   return links;
 };
 
-Collection.prototype.references = async function(opts) {
+Collection.prototype.findReferences = async function(opts) {
   const thisCol = this,
     refs = [];
 
@@ -181,6 +182,87 @@ Collection.prototype.references = async function(opts) {
   }
 
   return refs;
+};
+
+Collection.prototype.removeReferences = async function(opts) {
+  const thisCol = this;
+
+  let ids = opts.ids || opts.id;
+  if (!Array.isArray(ids)) {
+    ids = ids ? [ids] : [];
+  }
+
+  if (!ids.length) return;
+
+  let exclude = opts.exclude || [];
+  if (!Array.isArray(exclude)) {
+    exclude = [exclude];
+  }
+
+  const makeMatch = values => (values.length > 1 ? { $in: values } : values[0]);
+
+  const idMatch = makeMatch(ids);
+  let uids, uidMatch;
+
+  for (const col of Tyr.collections) {
+    if (exclude.indexOf(col) >= 0) {
+      continue;
+    }
+
+    const removals = [];
+
+    _.each(col.paths, field => {
+      if (!field.parent) console.log('field has no parent', field.path);
+      if (field.type.name === 'array' && field.of.link === this) {
+        const { spath, path } = field;
+        const arrayPath = path.replace(/_/g, '$');
+        removals.push(
+          col.db.updateMany(
+            { [spath]: idMatch },
+            ids.length > 1
+              ? { $pullAll: { [arrayPath]: ids } }
+              : { $pull: { [arrayPath]: ids[0] } }
+          )
+        );
+      } else if (
+        field.link === this &&
+        (!field.parent.type || field.parent.type.name !== 'array')
+      ) {
+        const { spath } = field;
+        removals.push(
+          col.db.updateMany({ [spath]: idMatch }, { $unset: { [spath]: 1 } })
+        );
+      } else if (
+        (field.type.name === 'array' && field.of.type.name === 'uid') ||
+        field.type.name === 'uid'
+      ) {
+        if (!uids) {
+          uids = ids.map(id => thisCol.idToUid(id));
+          uidMatch = makeMatch(uids);
+        }
+
+        if (field.type.name === 'array') {
+          const { spath, path } = field;
+          const arrayPath = path.replace(/_/g, '$');
+          removals.push(
+            col.db.updateMany(
+              { [spath]: uidMatch },
+              ids.length > 1
+                ? { $pullAll: { [arrayPath]: uids } }
+                : { $pull: { [arrayPath]: uids[0] } }
+            )
+          );
+        } else if (!field.parent.type || field.parent.type.name !== 'array') {
+          const { spath } = field;
+          removals.push(
+            col.db.updateMany({ [spath]: uidMatch }, { $unset: { [spath]: 1 } })
+          );
+        }
+      }
+    });
+
+    await Tyr.awaitAll(removals);
+  }
 };
 
 export default LinkType;
