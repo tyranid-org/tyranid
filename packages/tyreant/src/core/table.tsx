@@ -14,7 +14,8 @@ import { tyreant } from '../tyreant';
 
 import { getFilter, getFinder, getCellValue } from '../type';
 
-import { TyrAction } from './action';
+import { TyrComponentProps } from './component';
+import { TyrComponent } from '../core';
 
 export const TableContext = React.createContext<TyrTable | undefined>(
   undefined
@@ -37,10 +38,10 @@ interface TableDefinition {
   limit?: number;
 }
 
-export interface TyrTableProps {
+export interface TyrTableProps extends TyrComponentProps {
   className?: string;
   collection: Tyr.CollectionInstance;
-  columns: {
+  fields: {
     field?: string;
     label?: string;
     render?: (doc: Tyr.Document) => React.ReactElement;
@@ -55,7 +56,7 @@ export interface TyrTableProps {
 }
 
 @observer
-export class TyrTable extends React.Component<TyrTableProps> {
+export class TyrTable extends TyrComponent<TyrTableProps> {
   @observable
   private store: {
     documents: Tyr.Document[] & { count?: number };
@@ -110,7 +111,7 @@ export class TyrTable extends React.Component<TyrTableProps> {
 
     // apply any default sort if no sort was supplied
     if (!sortFound) {
-      const defaultSortColumn = this.props.columns.find(
+      const defaultSortColumn = this.props.fields.find(
         column => !!column.defaultSort
       );
       if (defaultSortColumn) {
@@ -193,7 +194,7 @@ export class TyrTable extends React.Component<TyrTableProps> {
     }
 
     const { store } = this;
-    const { collection, query: baseQuery, columns } = this.props;
+    const { collection, query: baseQuery, fields: columns } = this.props;
     const { skip, limit } = defn;
 
     try {
@@ -252,13 +253,8 @@ export class TyrTable extends React.Component<TyrTableProps> {
     this.cancelAutorun!();
   }
 
-  private actions: TyrAction[] = [];
-  enact(action: TyrAction) {
-    this.actions.push(action);
-  }
-
   private getColumns(): ColumnProps<Tyr.Document>[] {
-    const { collection, columns } = this.props;
+    const { collection, fields: columns } = this.props;
     const { workingSearchValues } = this.store;
 
     const tableDefn = this.tableDefn;

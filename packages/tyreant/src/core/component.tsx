@@ -4,39 +4,45 @@ import { Tyr } from 'tyranid/client';
 
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 
-import { TyrTable, TableContext } from './table';
+import { TableContext } from './table';
 import { TyrAction } from './action';
 
-export type TyrComponentProps = Readonly<{
+export interface TyrComponentProps {
   collection?: Tyr.CollectionInstance;
-  fields?: { field: string }[];
-}>;
+  fields?: { field?: string }[];
+}
 
 export interface TyrComponentState {
   document?: Tyr.Document;
+  documents?: Tyr.Document[];
 }
 
 export class TyrComponent<
+  Props extends TyrComponentProps = TyrComponentProps,
   State extends TyrComponentState = TyrComponentState
-> extends React.Component<TyrComponentProps, State> {
+> extends React.Component<Props, State> {
   collection?: Tyr.CollectionInstance;
   form?: WrappedFormUtils;
   fields: Tyr.FieldInstance[] = [];
-  parentTable?: TyrTable;
+  parent?: TyrComponent;
 
-  connect(parentTable?: TyrTable) {
+  actions: TyrAction[] = [];
+  enact(action: TyrAction) {
+    this.actions.push(action);
+  }
+
+  connect(parent?: TyrComponent) {
     let collection: Tyr.CollectionInstance | undefined;
 
-    if (parentTable && !this.parentTable) {
+    if (parent && !this.parent) {
       const { collection: propsCollection, fields: propsFields } = this.props;
 
-      this.parentTable = parentTable;
-      const parentCollection = parentTable.props.collection;
+      this.parent = parent;
+      const parentCollection = parent.props.collection;
       collection = this.collection = propsCollection || parentCollection;
 
       const fields =
-        propsFields ||
-        (collection === parentCollection && parentTable.props.columns);
+        propsFields || (collection === parentCollection && parent.props.fields);
 
       if (fields) {
         this.fields = (fields as { field?: string }[])
@@ -70,8 +76,8 @@ export class TyrComponent<
   wrap(children: () => React.ReactNode) {
     return (
       <TableContext.Consumer>
-        {parentTable => {
-          this.connect(parentTable);
+        {parent => {
+          this.connect(parent);
           return children();
         }}
       </TableContext.Consumer>

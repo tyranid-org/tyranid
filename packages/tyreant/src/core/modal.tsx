@@ -1,44 +1,41 @@
 import * as React from 'react';
 
-import { Tyr } from 'tyranid/client';
-
 import { Modal, Button, Spin, Icon } from 'antd';
 
 import { TyrForm, submitForm } from './form';
 import { TyrComponent, TyrComponentState } from './component';
-import { TyrAction } from './action';
-import { TyrTable } from './table';
+import { TyrAction, TyrActionOpts } from './action';
+import { TyrComponentProps } from '../core';
 
 export interface TyrFormModalState extends TyrComponentState {
   visible: boolean;
   loading: boolean;
 }
 
-export class TyrFormModal extends TyrComponent<TyrFormModalState> {
+export class TyrFormModal extends TyrComponent<
+  TyrComponentProps,
+  TyrFormModalState
+> {
   state: TyrFormModalState = {
     visible: false,
     loading: false
   };
 
-  connect(parentTable?: TyrTable) {
-    super.connect(parentTable);
+  connect(parent?: TyrComponent) {
+    super.connect(parent);
 
-    if (parentTable && this.collection === parentTable.props.collection) {
-      parentTable.enact(new TyrAction({ name: 'edit', component: this }));
+    if (parent) {
+      parent.enact(
+        new TyrAction({
+          name: 'edit',
+          component: this,
+          action: (opts: TyrActionOpts) => {
+            this.find(opts.document!);
+            this.openModal();
+          }
+        })
+      );
     }
-  }
-
-  async handle(action: TyrAction) {
-    await super.handle(action);
-
-    switch (action.name) {
-      case 'edit':
-    }
-  }
-
-  async find(document: Tyr.Document) {
-    super.find(document);
-    this.openModal();
   }
 
   openModal = () => this.setState({ visible: true });
