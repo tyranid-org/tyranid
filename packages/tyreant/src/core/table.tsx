@@ -17,10 +17,6 @@ import { getFilter, getFinder, getCellValue } from '../type';
 import { TyrComponentProps } from './component';
 import { TyrComponent } from '../core';
 
-export const TableContext = React.createContext<TyrTable | undefined>(
-  undefined
-);
-
 const ObsTable = observer(Table);
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -408,38 +404,35 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   render() {
     const { documents, loading } = this.store;
-    const { className, actions } = this.props;
+    const { className, children } = this.props;
 
     const netClassName = 'tyr-table' + (className ? ' ' + className : '');
 
-    return (
-      <TableContext.Provider value={this}>
-        <div className={netClassName}>
-          {actions &&
-            actions.length && (
-              <Row>
-                <Col span={24} className="tyr-table-header">
-                  {actions[0]}
-                </Col>
-              </Row>
-            )}
+    return this.wrap(() => (
+      <div className={netClassName}>
+        {children && (
           <Row>
-            <Col span={24}>
-              <ObsTable
-                loading={loading}
-                rowKey="_id"
-                size="small"
-                pagination={this.pagination()}
-                onChange={this.handleTableChange}
-                dataSource={
-                  /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
-                }
-                columns={this.getColumns()}
-              />
+            <Col span={24} className="tyr-table-header">
+              {children}
             </Col>
           </Row>
-        </div>
-      </TableContext.Provider>
-    );
+        )}
+        <Row>
+          <Col span={24}>
+            <ObsTable
+              loading={loading}
+              rowKey="_id"
+              size="small"
+              pagination={this.pagination()}
+              onChange={this.handleTableChange}
+              dataSource={
+                /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
+              }
+              columns={this.getColumns()}
+            />
+          </Col>
+        </Row>
+      </div>
+    ));
   }
 }
