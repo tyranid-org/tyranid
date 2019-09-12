@@ -3,32 +3,39 @@ import * as React from 'react';
 import { Modal, Button, Spin, Icon } from 'antd';
 
 import { TyrAction } from './action';
-import { TyrDecorator } from './decorator';
+import {
+  TyrDecorator,
+  TyrDecoratorProps,
+  TyrDecoratorState
+} from './decorator';
 
-// NOTE:  if we could get a ref from a pre-existing JSXElement then we wouldn't need to have both a TyrModal and a TyrModalImpl class
-//        might be able to solve this with React.cloneElement(theDecoratorJsx, { ref: myRef }, children);
+export interface TyrModalProps extends TyrDecoratorProps {}
 
-export class TyrModal extends TyrDecorator {
-  impl?: TyrModalImpl = undefined;
+export interface TyrModalState extends TyrDecoratorState {
+  loading: boolean;
+}
+
+export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
+  state: TyrModalState = {
+    visible: false,
+    loading: false
+  };
+
   create?: TyrAction;
   edit?: TyrAction;
   save?: TyrAction;
   cancel?: TyrAction;
-
-  getRef = (ref: TyrModalImpl | null) => {
-    if (ref) this.impl = ref;
-  };
 
   enact(action: TyrAction) {
     if (!this.component) throw new Error('modal not connected');
 
     if (action.is('create')) {
       this.create = action.decorate({
-        action: () => this.impl!.openModal()
+        action: () => this.openModal()
       });
     } else if (action.is('edit')) {
       const edit = action.decorate({
-        action: () => this.impl!.openModal()
+        action: () => this.openModal()
       });
       this.edit = edit;
 
@@ -36,48 +43,21 @@ export class TyrModal extends TyrDecorator {
       if (parent) parent.enact(edit);
     } else if (action.is('save')) {
       this.save = action.decorate({
-        action: () => this.impl!.closeModal()
+        action: () => this.closeModal()
       });
     } else if (action.is('cancel')) {
       this.cancel = action.decorate({
-        action: () => this.impl!.closeModal()
+        action: () => this.closeModal()
       });
     }
   }
 
-  wrap(children: () => React.ReactNode) {
-    return (
-      <TyrModalImpl decorator={this} ref={this.getRef}>
-        {children()}
-      </TyrModalImpl>
-    );
-  }
-}
-
-export interface TyrModalProps {
-  decorator: TyrModal;
-}
-
-export interface TyrModalState {
-  visible: boolean;
-  loading: boolean;
-}
-
-export class TyrModalImpl extends React.Component<
-  TyrModalProps,
-  TyrModalState
-> {
-  state: TyrModalState = {
-    visible: false,
-    loading: false
-  };
-
-  openModal = () => this.setState({ visible: true });
-  closeModal = () => this.setState({ visible: false });
+  openModal = () => this.setVisible(true);
+  closeModal = () => this.setVisible(false);
 
   renderHeader() {
     const { loading } = this.state;
-    const { edit, create, cancel } = this.props.decorator;
+    const { edit, create, cancel } = this;
 
     return (
       <div className="tyr-modal-header">
@@ -96,7 +76,7 @@ export class TyrModalImpl extends React.Component<
 
   renderFooter() {
     const { loading } = this.state;
-    const { save, cancel } = this.props.decorator;
+    const { save, cancel } = this;
 
     return (
       <div>
@@ -120,9 +100,9 @@ export class TyrModalImpl extends React.Component<
   }
 
   render() {
-    const { children, decorator } = this.props;
+    const { cancel, create } = this;
+    const { children } = this.props;
     const { visible, loading } = this.state;
-    const { cancel, create } = decorator;
 
     return (
       <>

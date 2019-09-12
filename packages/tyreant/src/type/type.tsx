@@ -4,14 +4,15 @@ import { Tyr } from 'tyranid/client';
 
 import { ColumnFilterItem } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { SelectedValue } from 'antd/lib/select';
+import { TyrFieldLaxProps, TyrFieldExistsProps } from '../core';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
 };
 
-export function generateRules(field: Tyr.FieldInstance) {
+export function generateRules(props: TyrFieldExistsProps) {
   const rules = [];
+  const { field } = props;
   if (field.def.required) {
     rules.push({
       required: true,
@@ -52,31 +53,15 @@ export interface FieldState {
   ready?: boolean;
 }
 
-export type TyrTypeLaxProps = Readonly<{
+export type TyrTypeLaxProps = {
   form?: WrappedFormUtils;
   document?: Tyr.Document;
-  field: Tyr.FieldInstance | string;
-  className?: string;
-  placeholder?: string;
-  mode?: 'view' | 'edit' | 'search';
-  multiple?: boolean;
-  onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
-  onDeselect?: (value: SelectedValue) => any;
-  onStateChange?: (value: FieldState) => void;
-}>;
+} & TyrFieldLaxProps;
 
-export type TyrTypeProps = Readonly<{
+export type TyrTypeProps = {
   form: WrappedFormUtils;
   document: Tyr.Document;
-  field: Tyr.FieldInstance;
-  className?: string;
-  placeholder?: string;
-  mode?: 'view' | 'edit' | 'search';
-  multiple?: boolean;
-  onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
-  onDeselect?: (value: SelectedValue) => any;
-  onStateChange?: (value: FieldState) => void;
-}>;
+} & TyrFieldExistsProps;
 
 export interface TypeUi {
   // standard form control

@@ -21,7 +21,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
   });
 
   return form!.getFieldDecorator(field.path, {
-    rules: generateRules(field)
+    rules: generateRules(props)
   })(
     <Input className={className('tyr-integer', props)} step="1" type="number" />
   );

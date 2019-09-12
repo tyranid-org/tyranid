@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useEffect } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
@@ -8,22 +7,27 @@ import { Tyr } from 'tyranid/client';
 import { TyrLink } from './link';
 import {
   byName,
-  /*generateRules, */ TyrTypeProps,
-  mapDocumentToForm,
+  TyrTypeProps,
   mapDocumentValueToFormValue,
   mapFormValueToDocumentValue
 } from './type';
+import { TyrArrayKeyValue } from './array.key-value';
 
 export const TyrArray = (props: TyrTypeProps) => {
-  const { document, field, form } = props;
+  const { field } = props;
 
-  useEffect(() => {
-    mapDocumentToForm(field, document, form);
-  });
+  if (!props.document) throw new Error('no "document" passed to TyrArray');
 
   switch (field.of!.type.name) {
     case 'link':
       return <TyrLink {...props} />;
+    case 'object':
+      const { keyField: keyFieldName, valueField: valueFieldName } = props;
+      if (keyFieldName || valueFieldName) {
+        return <TyrArrayKeyValue {...props} />;
+      }
+    // fall through
+
     default:
       return <div>TODO: array of {field.type.name}</div>;
   }

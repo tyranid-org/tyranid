@@ -335,7 +335,7 @@ export function toClient(col, doc, opts) {
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   _.each(fields, function(field, name) {
     const fieldDef = field.def,
-      getFn = fieldDef.get;
+      getFn = fieldDef.getServer || fieldDef.get;
     if (!getFn) {
       return;
     }

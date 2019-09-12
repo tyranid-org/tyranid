@@ -16,15 +16,15 @@ import { getFilter, getFinder, getCellValue } from '../type';
 
 import { TyrComponentProps } from './component';
 import { TyrComponent } from '../core';
+import { TyrActionFnOpts, TyrAction } from './action';
+import { TyrSortDirection, TyrFieldLaxProps, getFieldName } from './field';
 
 const ObsTable = observer(Table);
 
 const DEFAULT_PAGE_SIZE = 20;
 
-export type TableSortDirection = 'ascend' | 'descend';
-
 interface FieldDefinition {
-  sortDirection?: TableSortDirection;
+  sortDirection?: TyrSortDirection;
   searchValue?: string;
 }
 
@@ -37,15 +37,7 @@ interface TableDefinition {
 export interface TyrTableProps extends TyrComponentProps {
   className?: string;
   collection: Tyr.CollectionInstance;
-  fields: {
-    field?: string;
-    label?: string;
-    render?: (doc: Tyr.Document) => React.ReactElement;
-    group?: string;
-    defaultSort?: TableSortDirection;
-    width?: string;
-    filter?: (string | number)[];
-  }[];
+  fields: TyrFieldLaxProps[];
   query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
   route?: string;
   actions?: JSX.Element[];
@@ -84,18 +76,17 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           break;
         default: {
           const dot = value.indexOf('.');
-          let sortDirection: TableSortDirection,
-            searchValue: string | undefined;
+          let sortDirection: TyrSortDirection, searchValue: string | undefined;
 
           if (dot !== -1) {
-            sortDirection = value.substring(0, dot) as TableSortDirection;
+            sortDirection = value.substring(0, dot) as TyrSortDirection;
             searchValue = value.substring(dot + 1);
           } else {
-            sortDirection = value as TableSortDirection;
+            sortDirection = value as TyrSortDirection;
           }
 
           const obj: { [name: string]: string } = {
-            sortDirection: sortDirection as TableSortDirection
+            sortDirection: sortDirection as TyrSortDirection
           };
           if (searchValue) obj.searchValue = searchValue;
 
@@ -111,7 +102,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         column => !!column.defaultSort
       );
       if (defaultSortColumn) {
-        const fieldName = defaultSortColumn.field;
+        const fieldName = getFieldName(defaultSortColumn.field);
 
         if (fieldName) {
           let fieldDefn = defn[fieldName] as FieldDefinition;
@@ -211,7 +202,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       };
 
       for (const column of columns) {
-        const pathName = column.field,
+        const pathName = getFieldName(column.field),
           field = pathName && collection.paths[pathName],
           finder = field && getFinder(field),
           fieldDefn = pathName && (defn[pathName] as FieldDefinition),
@@ -241,8 +232,39 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   private cancelAutorun?: () => void;
 
-  componentWillMount() {
-    this.cancelAutorun = autorun(() => this.findAll());
+  startFinding() {
+    if (!this.cancelAutorun) {
+      this.cancelAutorun = autorun(() => this.findAll());
+    }
+  }
+
+  componentDidMount() {
+    const { linkToParent } = this;
+
+    if (!this.collection)
+      throw new Error('could not determine collection for TyrForm');
+
+    if (linkToParent) {
+      this.enactUp(
+        new TyrAction({
+          traits: ['edit'],
+          name: Tyr.pluralize(this.collection!.label),
+          component: this,
+          action: (opts: TyrActionFnOpts) => {
+            this.find(opts.document!);
+          }
+        })
+      );
+
+      this.enactUp(
+        new TyrAction({
+          traits: ['cancel'],
+          name: 'done',
+          component: this,
+          action: (opts: TyrActionFnOpts) => {}
+        })
+      );
+    }
   }
 
   componentWillUnmount() {
@@ -256,7 +278,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const tableDefn = this.tableDefn;
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(column => {
-      const pathName = column.field;
+      const pathName = getFieldName(column.field);
       const field = pathName && collection.paths[pathName];
 
       const fieldDefn = pathName && (tableDefn[pathName] as FieldDefinition);
@@ -318,7 +340,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           const menu = (
             <Menu className="tyr-menu">
               {this.actions.map(action => (
-                <Menu.Item className="tyr-menu-item" key="0">
+                <Menu.Item className="tyr-menu-item" key={action.name}>
                   <button onClick={() => action.act({ document })}>
                     {action.label}
                   </button>
@@ -347,7 +369,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     pagination: PaginationProps,
     filters: { [pathName: string]: string[] },
     sorter: {
-      order?: TableSortDirection;
+      order?: TyrSortDirection;
       columnKey: string;
     }
   ) => {
@@ -408,31 +430,37 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     const netClassName = 'tyr-table' + (className ? ' ' + className : '');
 
-    return this.wrap(() => (
-      <div className={netClassName}>
-        {children && (
+    return this.wrap(() => {
+      if (this.props.decorator && (!this.decorator || !this.decorator.visible))
+        return <div />;
+
+      this.startFinding(); // want to delay finding until the control is actually shown
+      return (
+        <div className={netClassName}>
+          {children && (
+            <Row>
+              <Col span={24} className="tyr-table-header">
+                {children}
+              </Col>
+            </Row>
+          )}
           <Row>
-            <Col span={24} className="tyr-table-header">
-              {children}
+            <Col span={24}>
+              <ObsTable
+                loading={loading}
+                rowKey="_id"
+                size="small"
+                pagination={this.pagination()}
+                onChange={this.handleTableChange}
+                dataSource={
+                  /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
+                }
+                columns={this.getColumns()}
+              />
             </Col>
           </Row>
-        )}
-        <Row>
-          <Col span={24}>
-            <ObsTable
-              loading={loading}
-              rowKey="_id"
-              size="small"
-              pagination={this.pagination()}
-              onChange={this.handleTableChange}
-              dataSource={
-                /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
-              }
-              columns={this.getColumns()}
-            />
-          </Col>
-        </Row>
-      </div>
-    ));
+        </div>
+      );
+    });
   }
 }

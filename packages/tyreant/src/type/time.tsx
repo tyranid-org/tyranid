@@ -17,7 +17,7 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
   });
 
   return form.getFieldDecorator(field.path, {
-    rules: generateRules(field)
+    rules: generateRules(props)
   })(<TimePicker className={className('tyr-time', props)} />);
 }) as React.ComponentType<TyrTypeProps>;
 

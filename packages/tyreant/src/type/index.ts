@@ -1,6 +1,7 @@
 export * from './type';
 
 export * from './array';
+export * from './array.key-value';
 export * from './date';
 export * from './datetime';
 export * from './email';

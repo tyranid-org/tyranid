@@ -161,11 +161,12 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }, 200);
 
   render(): React.ReactNode {
-    const { field, form, multiple, onSelect, onDeselect } = this.props;
+    const { props } = this;
+    const { field, form, multiple, onSelect, onDeselect } = props;
     const { documents, loading } = this.state;
     const { getFieldDecorator } = form!;
 
-    const rules = generateRules(field);
+    const rules = generateRules(props);
 
     let mode: typeof selectProps.mode;
     // TODO:  'tags', 'combobox'
@@ -190,8 +191,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       showSearch: true,
       onSearch: this.search,
       placeholder: this.props.placeholder,
-      onSelect: onSelect,
-      onDeselect: onDeselect
+      onSelect,
+      onDeselect
     };
 
     if (mode === 'tags') {

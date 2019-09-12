@@ -4,7 +4,7 @@ import { Tyr } from 'tyranid/client';
 
 import { TyrAction } from './action';
 import { TyrDecorator } from './decorator';
-import { TyrModal } from './modal';
+import { TyrFieldProps, TyrFieldLaxProps } from './field';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -12,14 +12,14 @@ export const ComponentContext = React.createContext<TyrComponent | undefined>(
 
 export interface TyrComponentProps {
   collection?: Tyr.CollectionInstance;
-  fields?: { field?: string }[];
-  decorator?: string;
+  fields?: TyrFieldLaxProps[];
+  decorator?: React.ReactElement;
 }
 
 export interface TyrComponentState {
   document?: Tyr.Document; // forms
   documents?: Tyr.Document[]; // tables
-  linkToParent?: any /* Field */;
+  visible?: boolean;
 }
 
 export class TyrComponent<
@@ -27,10 +27,11 @@ export class TyrComponent<
   State extends TyrComponentState = TyrComponentState
 > extends React.Component<Props, State> {
   collection?: Tyr.CollectionInstance;
-  fields: Tyr.FieldInstance[] = [];
+  fields: TyrFieldProps[] = [];
   parent?: TyrComponent;
   children: TyrComponent[] = [];
   decorator?: TyrDecorator;
+  _linkToParent?: any /* Field */;
 
   /**
    * A partial component is one that augments its parent object
@@ -39,6 +40,8 @@ export class TyrComponent<
 
   constructor(props: Props, state: State) {
     super(props, state);
+
+    this.setState({ visible: true });
 
     this.collection = this.props.collection;
   }
@@ -86,9 +89,14 @@ export class TyrComponent<
         propsFields || (collection === parentCollection && parent.props.fields);
 
       if (fields) {
-        this.fields = (fields as { field?: string }[])
-          .filter(f => !!f.field)
-          .map(f => collection!.paths[f.field!]);
+        this.fields = fields.map(laxFieldProps => {
+          const fieldProps = Object.assign({}, laxFieldProps);
+          const f = fieldProps.field;
+          if (typeof f === 'string') {
+            fieldProps.field = collection!.paths[f];
+          }
+          return fieldProps as TyrFieldProps;
+        });
       }
 
       if (parentCollection !== collection && collection) {
@@ -99,28 +107,11 @@ export class TyrComponent<
           const field = paths[pathName];
 
           if (field.link === parentCollection) {
-            this.setState({ linkToParent: field });
+            this._linkToParent = field;
           }
         }
       }
 
-      result = true;
-    }
-
-    const decoratorName = this.props.decorator;
-    if (decoratorName && !this.decorator) {
-      let decorator: TyrDecorator;
-
-      switch (decoratorName) {
-        case 'modal':
-          decorator = new TyrModal();
-          break;
-        default:
-          decorator = new TyrModal();
-      }
-
-      this.decorator = decorator;
-      decorator.connect(this);
       result = true;
     }
 
@@ -152,12 +143,7 @@ export class TyrComponent<
   }
 
   get linkToParent(): any /* Field */ | undefined {
-    if (this.state) {
-      const { linkToParent } = this.state;
-      if (linkToParent) return linkToParent;
-    }
-
-    //return undefined;
+    return this._linkToParent;
   }
 
   get parentDocument(): Tyr.Document | undefined {
@@ -185,8 +171,15 @@ export class TyrComponent<
     //return undefined;
   }
 
+  getDecoratorRef = (decorator: TyrDecorator | null) => {
+    if (decorator) {
+      this.decorator = decorator;
+      decorator.connect(this);
+    }
+  };
+
   wrap(children: () => React.ReactNode) {
-    const { decorator } = this;
+    const { decorator } = this.props;
 
     return (
       <ComponentContext.Consumer>
@@ -194,7 +187,13 @@ export class TyrComponent<
           this.connect(parent);
           return (
             <ComponentContext.Provider value={this}>
-              {decorator ? decorator.wrap(children) : children()}
+              {decorator
+                ? React.cloneElement(
+                    decorator!,
+                    { ref: this.getDecoratorRef },
+                    children()
+                  )
+                : children()}
             </ComponentContext.Provider>
           );
         }}
