@@ -99,7 +99,7 @@ declare module 'tyranid/client' {
       count(opts: any): Promise<number>;
       def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
-      fields: { [fieldName: string]: any /* Field */ };
+      fields: { [fieldName: string]: Tyr.FieldInstance };
       findAll(args: any): Promise<T[] & { count?: number }>;
       findOne(args: any): Promise<T | null>;
       id: string;
@@ -117,8 +117,8 @@ declare module 'tyranid/client' {
       labels(ids: string[]): Promise<T[]>;
       labels(_: any): Promise<T[]>;
       on(opts: any): () => void;
-      parsePath(text: string): any /* NamePath */;
-      paths: { [fieldPathName: string]: any /* Field */ };
+      parsePath(text: string): Tyr.NamePathInstance;
+      paths: { [fieldPathName: string]: Tyr.FieldInstance };
       push(id: IdType, path: string, value: any, opts: any): Promise<void>;
       remove(id: IdType, justOne: boolean): Promise<void>;
       remove(

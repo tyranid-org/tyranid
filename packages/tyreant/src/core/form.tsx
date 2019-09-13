@@ -205,7 +205,7 @@ export function submitForm(form: WrappedFormUtils, document: Tyr.Document) {
       for (const pathName in values) {
         const value = values[pathName];
         const field = collection.paths[pathName];
-        type.mapFormValueToDocument(field, value, document);
+        type.mapFormValueToDocument(field.namePath, value, document);
       }
 
       await document.$save();
