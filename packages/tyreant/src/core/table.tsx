@@ -4,7 +4,7 @@ import * as React from 'react';
 import { autorun, observable } from 'mobx';
 import { observer } from 'mobx-react';
 
-import { Col, Dropdown, Icon, Menu, message, Row, Table } from 'antd';
+import { Col, Dropdown, Icon, Menu, message, Row, Table, Input } from 'antd';
 import { PaginationProps } from 'antd/es/pagination';
 import { ColumnProps } from 'antd/es/table';
 
@@ -14,14 +14,22 @@ import { tyreant } from '../tyreant';
 
 import { getFilter, getFinder, getCellValue } from '../type';
 
-import { TyrComponentProps, TyrComponentState } from './component';
+import { TyrComponentProps } from './component';
 import { TyrComponent } from '../core';
 import { TyrActionFnOpts, TyrAction } from './action';
-import { TyrSortDirection, TyrFieldLaxProps, getFieldName } from './field';
+import { TyrSortDirection, TyrFieldLaxProps, getFieldName, TyrFieldBase } from './field';
+import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
+
+const { Item: FormItem } = Form;
 
 const ObsTable = observer(Table);
 
 const DEFAULT_PAGE_SIZE = 20;
+
+interface EditableContextProps {
+  form?: WrappedFormUtils;
+}
+const EditableContext = React.createContext<EditableContextProps>({});
 
 interface FieldDefinition {
   sortDirection?: TyrSortDirection;
@@ -45,6 +53,8 @@ export interface TyrTableProps extends TyrComponentProps {
   pageSize?: number;
   pinActionsRight?: boolean;
   actionTitle?: string | React.ReactNode;
+  rowEdit?: boolean;
+  size?: 'default' | 'middle' | 'small'
 }
 
 @observer
@@ -57,7 +67,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     workingSearchValues: {
       [pathName: string]: string | undefined;
     };
-    pageSize: number
+    pageSize: number,
+    editingKey?: Tyr.AnyIdType
   } = {
     documents: this.props.documents || [],
     loading: false,
@@ -278,6 +289,17 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.cancelAutorun!();
   }
 
+  private isEditing = (document:Tyr.Document) => document.$id === this.store.editingKey;
+
+  private saveDocument = (form: WrappedFormUtils, docId: Tyr.AnyIdType) => {
+    console.log('todo: save document');
+    delete this.store.editingKey;
+  }
+
+  private cancelEdit = (docId: Tyr.AnyIdType) => {
+    delete this.store.editingKey;
+  }
+
   private getColumns(): ColumnProps<Tyr.Document>[] {
     const { collection, fields: columns, actionIconType, pinActionsRight, actionTitle } = this.props;
     const { workingSearchValues } = this.store;
@@ -317,6 +339,26 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         dataIndex: pathName,
         //key: pathName,
         render: (text: string, document: Tyr.Document) => {
+          const editable = this.isEditing(document);
+
+          if (editable) {
+            return (
+              <EditableContext.Consumer>
+                {({ form }) => {
+                  if (!form || !pathName) return <span />;
+
+                  return (
+                    <span>
+                        <FormItem>
+                          <TyrFieldBase field={field} form={form} document={document} />
+                        </FormItem>
+                    </span>
+                  );
+                }}
+              </EditableContext.Consumer>
+            );
+          }
+
           const render = column.render;
 
           return (
@@ -347,6 +389,33 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         dataIndex: '$actions',
         title: actionTitle || '',
         render: (text: string, document: Tyr.Document) => {
+          const editable = this.isEditing(document);
+
+          if (editable) {
+            return (
+              <FormItem>
+                <EditableContext.Consumer>
+                  { ctxProps => {
+                    if (!ctxProps.form) {
+                      return <span>No Form!</span>
+                    }
+
+                    return (
+                    <a
+                      onClick={() => this.saveDocument(ctxProps.form!, document.$id)}
+                      style={{ marginRight: 8 }}
+                    >
+                      Save
+                    </a>
+                    )
+                  }
+                }
+                </EditableContext.Consumer>
+                <a onClick={() => this.cancelEdit(document.$id)}>Cancel</a>
+              </FormItem>
+            );
+          }
+
           const menu = (
             <Menu className="tyr-menu">
               {this.actions.map(action => (
@@ -358,6 +427,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               ))}
             </Menu>
           );
+
           return (
             <Dropdown overlay={menu} trigger={['hover']}>
               <span className="tyr-menu-link">
@@ -425,7 +495,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     // there appears to be a bug in ant table when you switch from paged to non-paging and then back again
     // (forces a 10 row page size) ?
-    return true || totalCount > this.store.pageSize
+    //return true || totalCount > this.store.pageSize
+    return totalCount > this.store.pageSize
       ? {
           defaultCurrent: Math.floor(skip / limit) + 1,
           total: totalCount,
@@ -435,9 +506,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       : false;
   };
 
+  private onEditRow = (document:Tyr.Document, rowIndex: number) => {
+    // Callback and check perms?
+    this.store.editingKey = document.$id;
+  }
+
   render() {
     const { documents, loading } = this.store;
-    const { className, children } = this.props;
+    const { className, children, rowEdit, size } = this.props;
 
     const netClassName = 'tyr-table' + (className ? ' ' + className : '');
 
@@ -446,6 +522,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         return <div />;
 
       this.startFinding(); // want to delay finding until the control is actually shown
+
+      const components = rowEdit ? {
+        body: {
+          row: EditableFormRow,
+        },
+      } : undefined;
+
       return (
         <div className={netClassName}>
           {children && (
@@ -459,14 +542,22 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             <Col span={24}>
               <ObsTable
                 loading={loading}
+                components={components}
                 rowKey="_id"
-                size="small"
+                size={size || "small"}
                 pagination={this.pagination()}
                 onChange={this.handleTableChange}
                 dataSource={
                   /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
                 }
                 columns={this.getColumns()}
+                onRow={ rowEdit ? (record, rowIndex) => {
+                  return {
+                    onDoubleClick: () => {
+                      this.onEditRow(record, rowIndex)
+                    },
+                  };
+                } : undefined}
               />
             </Col>
           </Row>
@@ -475,3 +566,22 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     });
   }
 }
+
+interface EditableRowProps {
+  form: WrappedFormUtils;
+  index: number;
+  props: {};
+}
+
+const EditableRow: React.StatelessComponent<EditableRowProps> = ({
+  form,
+  index,
+  ...props
+}) => (
+  <EditableContext.Provider value={{ form }}>
+    <tr {...props} />
+  </EditableContext.Provider>
+);
+
+export const EditableFormRow = Form.create()(EditableRow);
+
