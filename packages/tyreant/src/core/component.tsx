@@ -14,6 +14,7 @@ export interface TyrComponentProps {
   collection?: Tyr.CollectionInstance;
   fields?: TyrFieldLaxProps[];
   decorator?: React.ReactElement;
+  actions?: TyrAction[];
 }
 
 export interface TyrComponentState {
@@ -25,7 +26,7 @@ export interface TyrComponentState {
 export class TyrComponent<
   Props extends TyrComponentProps = TyrComponentProps,
   State extends TyrComponentState = TyrComponentState
-> extends React.Component<Props, State> {
+> extends React.Component<Props,State> {
   collection?: Tyr.CollectionInstance;
   fields: TyrFieldProps[] = [];
   parent?: TyrComponent;
@@ -44,11 +45,20 @@ export class TyrComponent<
     this.setState({ visible: true });
 
     this.collection = this.props.collection;
+
+    if (props.actions) {
+      const extraActions: TyrAction[] = props.actions;
+
+      for (const action of extraActions) {
+        this.enact(action)
+      }
+    }
   }
 
   actions: TyrAction[] = [];
   enact(action: TyrAction) {
     const { actions } = this;
+
     for (let ai = 0; ai < actions.length; ai++) {
       const a = actions[ai];
       if (a.name === action.name && a.component === action.component) {

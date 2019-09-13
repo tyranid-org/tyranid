@@ -9,22 +9,22 @@ export interface TyrActionFnOpts {
 export type TyrActionTrait = 'create' | 'edit' | 'save' | 'cancel';
 
 export interface TyrActionOpts {
-  traits: TyrActionTrait[];
+  traits?: TyrActionTrait[];
   name: string;
-  label?: string;
-  component: TyrComponent<any>;
+  label?: string | React.ReactNode;
+  component?: TyrComponent<any>;
   action: (opts: TyrActionFnOpts) => void;
 }
 
 export class TyrAction {
   traits: TyrActionTrait[];
   name: string;
-  label: string;
-  component: TyrComponent;
+  label: string | React.ReactNode;;
+  component?: TyrComponent;
   action: (opts: TyrActionFnOpts) => void;
 
   constructor({ traits, name, component, label, action }: TyrActionOpts) {
-    this.traits = traits;
+    this.traits = traits || [];
     this.name = name;
     this.component = component;
     this.label = label || Tyr.labelize(name);

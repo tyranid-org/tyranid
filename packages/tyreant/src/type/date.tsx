@@ -34,6 +34,6 @@ export const TyrDate = withTypeContext(TyrDateBase);
 byName.date = {
   component: TyrDateBase,
   mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: Tyr.anny) {
-    return moment(value);
+    return value ? moment(value) : null;
   }
 };
