@@ -227,11 +227,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       for (const column of columns) {
         const pathName = getFieldName(column.field),
           field = pathName && collection.paths[pathName],
-          finder = field && getFinder(field),
+          finder = field && getFinder(field.namePath),
           fieldDefn = pathName && (defn[pathName] as FieldDefinition),
           searchValue = fieldDefn && fieldDefn.searchValue;
 
-        if (finder) finder(field, opts, searchValue);
+        if (finder)
+          finder((field as Tyr.FieldInstance).namePath, opts, searchValue);
 
         if (fieldDefn) {
           const { sortDirection } = fieldDefn;
@@ -345,7 +346,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         }
       };
 
-      const np = field && field.namePath;
+      const np = field ? field.namePath : undefined;
 
       return {
         dataIndex: pathName,
@@ -363,7 +364,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     <span>
                       <FormItem>
                         <TyrFieldBase
-                          path={np}
+                          path={np!}
                           form={form}
                           document={document}
                         />
@@ -379,7 +380,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
           return (
             <div className="tyr-table-cell">
-              {render ? render(document) : getCellValue(field, document)}
+              {render ? render(document) : getCellValue(np!, document)}
             </div>
           );
         },
@@ -393,7 +394,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         title: column.label || (field && field.label),
         width: column.width || undefined,
         className: column.className,
-        ...((field && getFilter(field, filterable)) || {}),
+        ...((np && getFilter(np, filterable)) || {}),
         ...(column.pinned ? { fixed: column.pinned } : {}),
         ...(column.align ? { align: column.align } : {})
       };
