@@ -14,7 +14,7 @@ import { tyreant } from '../tyreant';
 
 import { getFilter, getFinder, getCellValue } from '../type';
 
-import { TyrComponentProps } from './component';
+import { TyrComponentProps, TyrComponentState } from './component';
 import { TyrComponent } from '../core';
 import { TyrActionFnOpts, TyrAction } from './action';
 import { TyrSortDirection, TyrFieldLaxProps, getFieldName } from './field';
@@ -37,10 +37,14 @@ interface TableDefinition {
 export interface TyrTableProps extends TyrComponentProps {
   className?: string;
   collection: Tyr.CollectionInstance;
+  documents?: Tyr.Document[] & { count?: number };
   fields: TyrFieldLaxProps[];
   query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
   route?: string;
-  actions?: JSX.Element[];
+  actionIconType?: string
+  pageSize?: number;
+  pinActionsRight?: boolean;
+  actionTitle?: string | React.ReactNode;
 }
 
 @observer
@@ -53,17 +57,19 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     workingSearchValues: {
       [pathName: string]: string | undefined;
     };
+    pageSize: number
   } = {
-    documents: [],
+    documents: this.props.documents || [],
     loading: false,
     count: 0,
-    workingSearchValues: {}
+    workingSearchValues: {},
+    pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE,
   };
 
   tableDefn: TableDefinition = {};
 
   urlQueryToTableDefinition(query: { [name: string]: string }) {
-    const defn: TableDefinition = { skip: 0, limit: DEFAULT_PAGE_SIZE };
+    const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
     let sortFound = false;
 
     for (const name in query) {
@@ -172,6 +178,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }
 
     const defn = this.tableDefn;
+
     for (const pathName in defn) {
       const field = defn[pathName] as FieldDefinition;
 
@@ -272,7 +279,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   private getColumns(): ColumnProps<Tyr.Document>[] {
-    const { collection, fields: columns } = this.props;
+    const { collection, fields: columns, actionIconType, pinActionsRight, actionTitle } = this.props;
     const { workingSearchValues } = this.store;
 
     const tableDefn = this.tableDefn;
@@ -327,7 +334,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         sortOrder: sortDirection,
         title: column.label || (field && field.label),
         width: column.width || undefined,
-        ...((field && getFilter(field, filterable)) || {})
+        className: column.className,
+        ...((field && getFilter(field, filterable)) || {}),      
+        ...((column.pinned ? { fixed: column.pinned } : {})),
+        ...((column.align ? { align: column.align } : {}))
       };
     });
 
@@ -335,7 +345,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       antColumns.push({
         key: '$actions',
         dataIndex: '$actions',
-        title: '',
+        title: actionTitle || '',
         render: (text: string, document: Tyr.Document) => {
           const menu = (
             <Menu className="tyr-menu">
@@ -351,14 +361,15 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           return (
             <Dropdown overlay={menu} trigger={['hover']}>
               <span className="tyr-menu-link">
-                <Icon type="ellipsis" />
+                <Icon type={actionIconType || 'ellipsis'} />
               </span>
             </Dropdown>
           );
         },
         sorter: undefined,
         sortOrder: undefined,
-        width: '40px'
+        width: '40px',
+        ...((!!pinActionsRight ? { fixed: 'right' } : {})),
       });
     }
 
@@ -376,7 +387,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const defn: TableDefinition = {};
 
     if (pagination.current) {
-      defn.skip = (pagination.current! - 1) * DEFAULT_PAGE_SIZE;
+      defn.skip = (pagination.current! - 1) * this.store.pageSize;
     }
 
     if (filters) {
@@ -409,12 +420,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   };
 
   private pagination = () => {
-    const { skip = 0, limit = DEFAULT_PAGE_SIZE } = this.tableDefn;
+    const { skip = 0, limit = this.store.pageSize } = this.tableDefn;
     const totalCount = this.store.count || 0;
 
     // there appears to be a bug in ant table when you switch from paged to non-paging and then back again
     // (forces a 10 row page size) ?
-    return true || totalCount > DEFAULT_PAGE_SIZE
+    return true || totalCount > this.store.pageSize
       ? {
           defaultCurrent: Math.floor(skip / limit) + 1,
           total: totalCount,

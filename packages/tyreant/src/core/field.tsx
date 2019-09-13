@@ -41,6 +41,8 @@ export interface TyrFieldProps {
   onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
   onDeselect?: (value: SelectedValue) => any;
   onStateChange?: (value: FieldState) => void;
+  pinned?: 'left' | 'right',
+  align?: 'left' | 'right' | 'center'
 }
 
 export type TyrFieldExistsProps = Omit<TyrFieldProps, 'field'> & {
