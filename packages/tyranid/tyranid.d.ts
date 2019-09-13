@@ -870,32 +870,9 @@ export namespace Tyr {
     ): Promise<Tyr.Document[]>;
   }
 
-  export interface NamePathStatic {
-    new (...args: any[]): NamePathInstance;
+  export interface NamePathStatic extends Isomorphic.NamePathStatic {}
 
-    decode(path: string): string;
-    encode(path: string): string;
-    populateNameFor(name: string, denormal: boolean = false): string;
-  }
-
-  export interface NamePathInstance {
-    detail: FieldInstance;
-    name: string;
-    path: string[];
-    fields: FieldInstance[];
-    pathLabel: string;
-    tail: FieldInstance;
-
-    parsePath(path: string): NamePathInstance;
-    pathName(idx: number): string;
-    uniq(obj: any): any[];
-    get(obj: any): any;
-    set<D extends Tyr.Document>(
-      obj: D,
-      prop: string,
-      opts?: { create?: boolean; ignore?: boolean }
-    ): void;
-  }
+  export interface NamePathInstance extends Isomorphic.NamePathInstance {}
 
   export interface UnitsStatic {
     new (

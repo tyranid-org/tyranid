@@ -4,15 +4,16 @@ import { Tyr } from 'tyranid/client';
 
 import { ColumnFilterItem } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { TyrFieldLaxProps, TyrFieldExistsProps } from '../core';
+import { TyrFieldLaxProps, TyrFieldExistsProps, TyrFieldProps } from '../core';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
 };
 
-export function generateRules(props: TyrFieldExistsProps) {
+export function generateRules(props: TyrTypeProps) {
   const rules = [];
-  const { field } = props;
+  const { path } = props;
+  const { detail: field } = path;
   if (field.def.required) {
     rules.push({
       required: true,
@@ -33,7 +34,7 @@ export interface Filterable {
 }
 
 export type Filter = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   filterable: Filterable
 ) => {
   filterDropdown?: React.ReactNode;
@@ -44,7 +45,7 @@ export type Filter = (
 };
 
 export type Finder = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   opts: any /* TODO: add Tyr.Options_Find to client */,
   searchValue: any
 ) => void;
@@ -56,26 +57,34 @@ export interface FieldState {
 export type TyrTypeLaxProps = {
   form?: WrappedFormUtils;
   document?: Tyr.Document;
+  value?: { value?: any };
+
+  /**
+   * if path does not exist, we will use field.path
+   */
+  path?: string | Tyr.NamePathInstance;
 } & TyrFieldLaxProps;
 
 export type TyrTypeProps = {
   form: WrappedFormUtils;
-  document: Tyr.Document;
-} & TyrFieldExistsProps;
+  document?: Tyr.Document;
+  value?: { value?: any };
+  path: Tyr.NamePathInstance;
+} & Omit<TyrFieldProps, 'field'>;
 
 export interface TypeUi {
   // standard form control
   component: React.ComponentType<TyrTypeProps>;
 
   // mapping between Tyr.Document and ant forms
-  mapDocumentValueToFormValue?(field: Tyr.FieldInstance, value: any): any;
-  mapFormValueToDocumentValue?(field: Tyr.FieldInstance, value: any): any;
+  mapDocumentValueToFormValue?(path: Tyr.NamePathInstance, value: any): any;
+  mapFormValueToDocumentValue?(path: Tyr.NamePathInstance, value: any): any;
 
   // table-related values
   filter?: Filter;
   finder?: Finder;
   cellValue?: (
-    field: Tyr.FieldInstance,
+    path: Tyr.NamePathInstance,
     document: Tyr.Document
   ) => React.ReactNode;
 }
@@ -92,69 +101,122 @@ export const assertTypeUi = (typeName: string) => {
 };
 
 export const mapDocumentValueToFormValue = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   value: any
 ) => {
+  const { detail: field } = path;
   const { type } = field;
   const { mapDocumentValueToFormValue } = assertTypeUi(type.name);
   if (mapDocumentValueToFormValue) {
-    value = mapDocumentValueToFormValue(field, value);
+    value = mapDocumentValueToFormValue(path, value);
   }
 
   return value;
 };
 
+export const getTypeValue = (props: TyrTypeProps, defaultValue: any) => {
+  const { value } = props;
+  let v: any;
+
+  if (value) {
+    v = value.value;
+    if (!v && defaultValue !== undefined) {
+      v = value.value = defaultValue;
+    }
+
+    return v;
+  }
+
+  const { path, document } = props;
+  v = path.get(document);
+  if (!v && defaultValue !== null) {
+    v = defaultValue;
+    path.set(document, v);
+  }
+
+  return v;
+};
+
+export const mapPropsToForm = (props: TyrTypeProps) => {
+  const { path, document, form, value } = props;
+
+  if (value !== undefined) {
+    const oldValue = form.getFieldsValue(['value'])['value'];
+    const newValue = value.value;
+
+    if (oldValue !== newValue) {
+      form.setFieldsValue({
+        ['value']: newValue
+      });
+    }
+  } else {
+    mapDocumentToForm(path, document!, form);
+  }
+};
+
 export const mapDocumentToForm = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   document: Tyr.Document,
   form: WrappedFormUtils
 ) => {
-  form.setFieldsValue({
-    [field.path]: mapDocumentValueToFormValue(
-      field,
-      field.namePath.get(document)
-    )
-  });
+  const { detail: field } = path;
+
+  const oldValue = form.getFieldsValue([path.name])[path.name];
+
+  const newValue = mapDocumentValueToFormValue(path, path.get(document));
+
+  console.log('oldValue', oldValue, 'newValue', newValue);
+
+  if (oldValue !== newValue) {
+    form.setFieldsValue({
+      [path.name]: newValue
+    });
+  }
 };
 
 export const mapFormValueToDocumentValue = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   value: any
 ) => {
+  const { detail: field } = path;
   const { type } = field;
   const { mapFormValueToDocumentValue } = assertTypeUi(type.name);
 
   return mapFormValueToDocumentValue
-    ? mapFormValueToDocumentValue(field, value)
+    ? mapFormValueToDocumentValue(path, value)
     : value;
 };
 
 export const mapFormValueToDocument = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   value: any,
   document: Tyr.Document
 ) => {
-  field.namePath.set(document, mapFormValueToDocumentValue(field, value));
+  path.set(document, mapFormValueToDocumentValue(path, value));
 };
 
-export const getFilter = (field: Tyr.FieldInstance, filterable: Filterable) => {
-  const { filter } = assertTypeUi(field.type.name);
+export const getFilter = (
+  path: Tyr.NamePathInstance,
+  filterable: Filterable
+) => {
+  const { filter } = assertTypeUi(path.detail.type.name);
 
-  return filter ? filter(field, filterable) : undefined;
+  return filter ? filter(path, filterable) : undefined;
 };
 
-export const getFinder = (field: Tyr.FieldInstance) => {
-  const { finder } = assertTypeUi(field.type.name);
+export const getFinder = (path: Tyr.NamePathInstance) => {
+  const { finder } = assertTypeUi(path.detail.type.name);
   return finder;
 };
 
 export const getCellValue = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   document: Tyr.Document
 ) => {
+  const { detail: field } = path;
   const { cellValue } = assertTypeUi(field.type.name);
   return cellValue
-    ? cellValue(field, document)
+    ? cellValue(path, document)
     : field.type.format(field, field.namePath.get(document));
 };
 
@@ -173,23 +235,39 @@ export const withTypeContext = (
       const document = props.document || (formProps && formProps.document);
       if (!document) throw new Error('tyr form control not given a document');
 
-      let field = props.field;
-      if (!field) throw new Error('tyr form control not given a field');
+      const { field: rawField } = props;
+      if (!rawField) throw new Error('tyr form control not given a field');
 
-      if (typeof field === 'string') {
-        const fieldName = field;
+      let field: Tyr.FieldInstance;
+
+      if (typeof rawField === 'string') {
+        const fieldName = rawField;
         field = document.$model.paths[fieldName];
         if (!field)
           throw new Error(
             `cannot find "${fieldName}" on "${document.$model.name}"`
           );
+      } else {
+        field = rawField;
+      }
+
+      const { collection } = field;
+
+      const rawPath = props.path;
+      let path: Tyr.NamePathInstance;
+      if (typeof rawPath === 'string') {
+        path = collection.parsePath(rawPath);
+      } else if (rawPath) {
+        path = rawPath;
+      } else {
+        path = (field as Tyr.FieldInstance).namePath;
       }
 
       return React.createElement(FormControl, {
         ...props,
         form,
         document,
-        field: field as Tyr.FieldInstance
+        path
       });
     }}
   </TypeContext.Consumer>

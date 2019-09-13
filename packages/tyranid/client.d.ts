@@ -54,6 +54,9 @@ declare module 'tyranid/client' {
     export type AnyIdType = string | number;
     export type ObjIdType = string;
 
+    export interface NamePathStatic extends Isomorphic.NamePathStatic {}
+    export interface NamePathInstance extends Isomorphic.NamePathInstance {}
+
     export interface FieldDefinitionRaw extends Isomorphic.FieldDefinitionRaw {}
 
     export interface FieldDefinition extends Isomorphic.FieldDefinition {}

@@ -2,14 +2,14 @@
   "compilerOptions": {
     "declaration": true,
     "experimentalDecorators": true,
-    "target": "es2016",
+    "target": "es2017",
     "module": "esnext",
     "moduleResolution": "node",
     "strict": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "dist",
-    "lib": ["es6", "dom"],
+    "lib": ["es2017", "dom"],
     "jsx": "react",
     "types": ["moment", "react", "react-dom", "antd"]
   },

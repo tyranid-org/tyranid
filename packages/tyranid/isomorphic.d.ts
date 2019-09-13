@@ -94,6 +94,7 @@ export namespace Tyr {
     of?: FieldInstance;
     parent?: FieldInstance;
     pathLabel: string;
+    readonly: boolean;
     path: string;
     spath: string;
     in: any;
@@ -111,6 +112,33 @@ export namespace Tyr {
       opts?: any
     ): Promise<Tyr.Document[]>;
     validate(obj: {}): Promise<void>;
+  }
+
+  export interface NamePathStatic {
+    new (...args: any[]): NamePathInstance;
+
+    decode(path: string): string;
+    encode(path: string): string;
+    populateNameFor(name: string, denormal: boolean = false): string;
+  }
+
+  export interface NamePathInstance {
+    detail: FieldInstance;
+    name: string;
+    path: string[];
+    fields: FieldInstance[];
+    pathLabel: string;
+    tail: FieldInstance;
+
+    parsePath(path: string): NamePathInstance;
+    pathName(idx: number): string;
+    uniq(obj: any): any[];
+    get(obj: any): any;
+    set<D extends Tyr.Document>(
+      obj: D,
+      prop: string,
+      opts?: { create?: boolean; ignore?: boolean }
+    ): void;
   }
 
   export interface CollectionInstance<
@@ -141,7 +169,7 @@ export namespace Tyr {
     labels(ids: string[]): Promise<T[]>;
     labels(_: any): Promise<T[]>;
     on(opts: any): () => void;
-    parsePath(text: string): any /* NamePath */;
+    parsePath(text: string): NamePathInstance;
     paths: { [fieldPathName: string]: FieldDefinition };
     push(id: IdType, path: string, value: any, opts: any): Promise<void>;
     remove(id: IdType, justOne: boolean): Promise<void>;

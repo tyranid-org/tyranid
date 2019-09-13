@@ -3,18 +3,24 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
-import { byName, generateRules, TyrTypeProps, className } from './type';
+import {
+  byName,
+  generateRules,
+  TyrTypeProps,
+  className,
+  mapPropsToForm
+} from './type';
 import { stringFilter, stringFinder } from './string';
-import { mapDocumentToForm, withTypeContext } from './type';
+import { withTypeContext } from './type';
 
 export const TyrEmailBase = ((props: TyrTypeProps) => {
-  const { document, field, form } = props;
+  const { path, form } = props;
 
   useEffect(() => {
-    mapDocumentToForm(field, document, form);
+    mapPropsToForm(props);
   });
 
-  return form!.getFieldDecorator(field.path, {
+  return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
     <Input

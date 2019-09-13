@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
-import { mapDocumentToForm } from './type';
+import { mapPropsToForm } from './type';
 
 import {
   byName,
@@ -14,13 +14,13 @@ import {
 } from './type';
 
 export const TyrIntegerBase = ((props: TyrTypeProps) => {
-  const { document, field, form } = props;
+  const { path, form } = props;
 
   useEffect(() => {
-    mapDocumentToForm(field, document, form);
+    mapPropsToForm(props);
   });
 
-  return form!.getFieldDecorator(field.path, {
+  return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
     <Input className={className('tyr-integer', props)} step="1" type="number" />

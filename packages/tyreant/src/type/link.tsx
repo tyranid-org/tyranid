@@ -7,7 +7,7 @@ import { Select, Spin } from 'antd';
 import { SelectProps } from 'antd/lib/select';
 const { Option } = Select;
 
-import { mapDocumentToForm } from './type';
+import { mapDocumentToForm, mapPropsToForm } from './type';
 
 import {
   byName,
@@ -18,39 +18,33 @@ import {
   withTypeContext
 } from './type';
 
-const children: any[] = [];
-for (let i = 10; i < 36; i++) {
-  children.push(<Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>);
-}
-
 export interface TyrLinkState {
   documents: Tyr.Document[];
   loading: boolean;
 }
 
-function linkFor(field: Tyr.FieldInstance) {
+const linkFor = (path: Tyr.NamePathInstance) => {
+  const { detail: field } = path;
+
   if (field.type.name === 'array' && field.of!.type.name === 'link') {
     return field.of!.link;
   } else if (field.link) {
     return field.link;
   }
-}
+};
 
 // TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search...
-function findByLabel(collection: Tyr.CollectionInstance, label: string) {
+const findByLabel = (collection: Tyr.CollectionInstance, label: string) => {
   label = label.toLowerCase();
 
   return collection.values.find(lv => {
     const l = lv.$label;
     return l ? l.toLowerCase() === label : false;
   });
-}
+};
 
-function findById(collection: Tyr.CollectionInstance, id: string) {
-  return collection.values.find(lv => {
-    return lv.$id === id;
-  });
-}
+const findById = (collection: Tyr.CollectionInstance, id: string) =>
+  collection.values.find(lv => lv.$id === id);
 
 export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   state: TyrLinkState = { documents: [], loading: false };
@@ -68,10 +62,13 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   mounted = false;
 
   async componentDidMount() {
-    this.mounted = true;
-    const { field, document, form } = this.props;
+    const props = this.props;
 
-    const link = linkFor(field);
+    this.mounted = true;
+    const { path } = props;
+    const { detail: field } = path;
+
+    const link = linkFor(path);
 
     if (!link) throw new Error('TyrLink passed a non-link');
 
@@ -80,7 +77,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (link!.isStatic()) {
       this.setState({
-        documents: link!.values.sort((a, b) => {
+        documents: link!.values.sort((a: any, b: any) => {
           const aLabel = a.$label.toLowerCase();
           const bLabel = b.$label.toLowerCase();
           if (aLabel < bLabel) {
@@ -96,7 +93,17 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       await this.search();
     }
 
-    mapDocumentToForm(field, document, form);
+    mapPropsToForm(props);
+  }
+
+  getValue() {
+    const { path, document, value } = this.props;
+
+    if (value) {
+      return value.value;
+    } else {
+      return path.get(document);
+    }
   }
 
   componentWillUnmount() {
@@ -104,7 +111,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }
 
   search = debounce(async (text?: string) => {
-    const { field, document } = this.props;
+    const { document } = this.props;
     const link = this.link!;
 
     if (this.mounted) {
@@ -118,7 +125,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     promises.push(this.linkField!.labels(document!, text));
 
     // include the current value
-    const val = field.namePath.get(document);
+    const val = this.getValue();
     if (val) {
       promises.push(
         // switch to simple Array.isArray() once we move to mobx 5
@@ -162,11 +169,13 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
   render(): React.ReactNode {
     const { props } = this;
-    const { field, form, multiple, onSelect, onDeselect } = props;
+    const { path, form, multiple, onSelect, onDeselect } = props;
     const { documents, loading } = this.state;
     const { getFieldDecorator } = form!;
 
     const rules = generateRules(props);
+
+    const { detail: field } = path;
 
     let mode: typeof selectProps.mode;
     // TODO:  'tags', 'combobox'
@@ -226,7 +235,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       };
     }
 
-    return getFieldDecorator(field.path, { rules })(
+    return getFieldDecorator(path.name, { rules })(
       <Select className={className('tyr-link', this.props)} {...selectProps}>
         {compact(documents.map(this.createOption))}
       </Select>
@@ -240,70 +249,74 @@ byName.link = {
   component: TyrLinkBase,
 
   // Given ids, return the labels
-  mapDocumentValueToFormValue(field: Tyr.FieldInstance, value: any) {
+  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: any) {
     if (Array.isArray(value)) {
       value = value.map(v => {
-        const nv = findById(linkFor(field)!, v);
+        const nv = findById(linkFor(path)!, v);
         return nv ? nv.$label : v;
       });
     } else {
-      const nv = findById(linkFor(field)!, value as string);
+      const nv = findById(linkFor(path)!, value as string);
       if (nv) value = nv.$label;
     }
 
     return value && value.label ? value.label : value;
   },
   // Given labels, return the ids
-  mapFormValueToDocumentValue(field: Tyr.FieldInstance, value: any) {
+  mapFormValueToDocumentValue(path: Tyr.NamePathInstance, value: any) {
+    const { detail: field } = path;
+
     if (Array.isArray(value)) {
       value = value.map(v => {
-        const nv = findByLabel(linkFor(field)!, v);
+        const nv = findByLabel(linkFor(path)!, v);
         return nv ? nv.$id : v;
       });
     } else {
-      const nv = findByLabel(linkFor(field)!, value);
+      const nv = findByLabel(linkFor(path)!, value);
       if (nv) value = nv.$id;
     }
 
     return value && value.key ? value.key : value;
   },
-  filter: (field: Tyr.FieldInstance, filterable: Filterable) => ({
-    filters: linkFor(field)!.values.map((v: any) => ({
+  filter: (path: Tyr.NamePathInstance, filterable: Filterable) => ({
+    filters: linkFor(path)!.values.map((v: any) => ({
       text: v.$label,
       value: v._id
     }))
   }),
   finder(
-    field: Tyr.FieldInstance,
+    path: Tyr.NamePathInstance,
     opts: any /* Tyr.Options_Find */,
     searchValue: any
   ) {
     if (searchValue) {
       if (!opts.query) opts.query = {};
-      opts.query[field.path] = {
+      opts.query[path.name] = {
         $in: String(searchValue)
           .split('.')
           .map(v => parseInt(v, 10))
       };
     }
 
-    const link = linkFor(field)!;
+    const link = linkFor(path)!;
     if (link.labelField && !link.isStatic()) {
       if (!opts.populate) opts.populate = {};
-      opts.populate[field.path] = {
+      opts.populate[path.name] = {
         [link.labelField.path]: 1
       };
     }
   },
-  cellValue: (field: Tyr.FieldInstance, document: Tyr.Document) => {
-    const link = linkFor(field);
+  cellValue: (path: Tyr.NamePathInstance, document: Tyr.Document) => {
+    const link = linkFor(path);
+    const { detail: field } = path;
+
     if (link && link.labelField && !link.isStatic()) {
       const populatedName = (Tyr as any).NamePath.populateNameFor(field.name);
       const populatedObject = (document as any)[populatedName];
 
       return populatedObject ? populatedObject[link.labelField.name] : '';
     } else {
-      return field.type.format(field, field.namePath.get(document));
+      return field.type.format(field, path.get(document));
     }
   }
 };

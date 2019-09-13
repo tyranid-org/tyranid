@@ -58,7 +58,8 @@ export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field'> & {
 };
 
 export const TyrFieldBase = ((props: TyrTypeProps) => {
-  const { field } = props;
+  const { path } = props;
+  const { detail: field } = path;
   const { type } = field;
   const typeUi = assertTypeUi(type.name);
   return React.createElement(typeUi.component, props);

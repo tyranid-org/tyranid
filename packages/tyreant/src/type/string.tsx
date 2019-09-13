@@ -5,7 +5,7 @@ import { Tyr } from 'tyranid/client';
 
 import { Button, Icon, Input } from 'antd';
 
-import { mapDocumentToForm } from './type';
+import { mapPropsToForm } from './type';
 
 import {
   byName,
@@ -19,13 +19,13 @@ import {
 } from './type';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
-  const { document, field, form } = props;
+  const { path, form } = props;
 
   useEffect(() => {
-    mapDocumentToForm(field, document, form);
+    mapPropsToForm(props);
   });
 
-  return form!.getFieldDecorator(field.path, {
+  return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
     <Input
@@ -39,12 +39,12 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
 export const TyrString = withTypeContext(TyrStringBase);
 
 export const stringFilter: Filter = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   filterable: Filterable
 ) => {
-  const { namePath } = field;
-  const pathName = field.path;
+  const pathName = path.name;
   let searchInputRef: Input | null = null;
+  const { detail: field } = path;
 
   const onClearFilters = () => {
     filterable.searchValues[pathName] = '';
@@ -96,7 +96,7 @@ export const stringFilter: Filter = (
       </span>
     ),
     onFilter: (value: string, doc: Tyr.Document) =>
-      namePath
+      path
         .get(doc)
         .toString()
         .toLowerCase()
@@ -110,13 +110,13 @@ export const stringFilter: Filter = (
 };
 
 export const stringFinder: Finder = (
-  field: Tyr.FieldInstance,
+  path: Tyr.NamePathInstance,
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {
   if (searchValue) {
     if (!opts.query) opts.query = {};
-    opts.query[field.path] = {
+    opts.query[path.name] = {
       $regex: searchValue,
       $options: 'i'
     };

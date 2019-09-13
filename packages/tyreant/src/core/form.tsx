@@ -39,6 +39,19 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
   //this.mapDocumentToForm();
   //}
 
+  componentDidUpdate(prevProps: any, prevState: any) {
+    Object.entries(this.props).forEach(
+      ([key, val]) =>
+        prevProps[key] !== val && console.log(`Prop '${key}' changed`)
+    );
+    if (this.state && prevState) {
+      Object.entries(this.state).forEach(
+        ([key, val]) =>
+          prevState[key] !== val && console.log(`State '${key}' changed`)
+      );
+    }
+  }
+
   private renderFormItem(fieldProps: TyrFieldExistsProps) {
     const { form, document } = this.props;
     const { field } = fieldProps;
@@ -46,7 +59,12 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
     return (
       <FormItem key={field!.path}>
         <label htmlFor={field.path}>{field.label}</label>
-        <TyrFieldBase {...fieldProps} form={form!} document={document!} />
+        <TyrFieldBase
+          {...fieldProps}
+          path={field.namePath}
+          form={form!}
+          document={document!}
+        />
       </FormItem>
     );
   }
@@ -55,10 +73,10 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
     const { children, fields } = this.props;
 
     return (
-      <type.TypeContext.Provider
-        value={(this.props as unknown) as type.TyrTypeProps}
-      >
-        <Form className="tyr-form">
+      <Form className="tyr-form">
+        <type.TypeContext.Provider
+          value={(this.props as unknown) as type.TyrTypeProps}
+        >
           {fields &&
             (fields as TyrFieldExistsProps[]).map(fieldProps => (
               <Row key={fieldProps.field.path} gutter={10}>
@@ -66,8 +84,8 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
               </Row>
             ))}
           {children}
-        </Form>
-      </type.TypeContext.Provider>
+        </type.TypeContext.Provider>
+      </Form>
     );
   }
 }
@@ -104,6 +122,10 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
           component: this,
           action: (opts: TyrActionFnOpts) => {
             this.find(opts.document!);
+
+            if (!this.document) {
+              this.setState({ document: this.createDocument(opts) });
+            }
           }
         })
       );
@@ -126,7 +148,7 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
           label: 'Create ' + this.collection.label,
           component: this,
           action: (opts: TyrActionFnOpts) => {
-            this.setState({ document: new this.collection!() });
+            this.setState({ document: this.createDocument(opts) });
           }
         })
       );
@@ -160,15 +182,16 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
   render() {
     const { children } = this.props;
 
-    return this.wrap(() => (
-      <TyrWrappedForm
-        ref={this.getFormRef as any}
-        fields={this.fields}
-        document={this.document!}
-      >
-        {children}
-      </TyrWrappedForm>
-    ));
+    return this.wrap(() => {
+      console.log('rendering wrapped form');
+
+      //ref={this.getFormRef as any}
+      return (
+        <TyrWrappedForm fields={this.fields} document={this.document!}>
+          {children}
+        </TyrWrappedForm>
+      );
+    });
   }
 }
 

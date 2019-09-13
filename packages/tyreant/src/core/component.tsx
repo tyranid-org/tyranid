@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { TyrAction } from './action';
+import { TyrAction, TyrActionFnOpts } from './action';
 import { TyrDecorator } from './decorator';
 import { TyrFieldProps, TyrFieldLaxProps } from './field';
 
@@ -118,6 +118,22 @@ export class TyrComponent<
     return result;
   }
 
+  /**
+   * This creates a new document for this control that is related to the parent documents
+   * according to how the component hierarchy.
+   */
+  createDocument(actionOpts: TyrActionFnOpts) {
+    const { linkToParent } = this;
+
+    const obj = {};
+
+    if (linkToParent) {
+      linkToParent.namePath.set(obj, actionOpts.document!.$id);
+    }
+
+    return new this.collection!(obj);
+  }
+
   async find(document: Tyr.Document) {
     const { collection, linkToParent } = this;
     let updatedDocument: Tyr.Document | null | undefined;
@@ -125,7 +141,11 @@ export class TyrComponent<
     if (!collection) throw new Error('no collection');
 
     if (linkToParent) {
-      updatedDocument = undefined;
+      updatedDocument = await collection.findOne({
+        query: {
+          [linkToParent.namePath.spath]: document.$id
+        }
+      });
     } else {
       if (collection.id !== document.$model.id) {
         throw new Error('mismatched collection ids');

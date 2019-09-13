@@ -6,17 +6,23 @@ import { Tyr } from 'tyranid/client';
 
 import { DatePicker } from 'antd';
 
-import { byName, generateRules, TyrTypeProps, className } from './type';
-import { mapDocumentToForm, withTypeContext } from './type';
+import {
+  byName,
+  generateRules,
+  TyrTypeProps,
+  className,
+  mapPropsToForm
+} from './type';
+import { withTypeContext } from './type';
 
 export const TyrDateTimeBase = ((props: TyrTypeProps) => {
-  const { document, field, form } = props;
+  const { path, form } = props;
 
   useEffect(() => {
-    mapDocumentToForm(field, document, form);
+    mapPropsToForm(props);
   });
 
-  return form.getFieldDecorator(field.path, {
+  return form.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
     <DatePicker
@@ -30,7 +36,7 @@ export const TyrDateTime = withTypeContext(TyrDateTimeBase);
 
 byName.datetime = {
   component: TyrDateTimeBase,
-  mapDocumentValueToFormValue(field: Tyr.FieldInstance, value: Tyr.anny) {
+  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: Tyr.anny) {
     return moment(value);
   }
 };
