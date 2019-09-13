@@ -17,7 +17,12 @@ import { getFilter, getFinder, getCellValue } from '../type';
 import { TyrComponentProps } from './component';
 import { TyrComponent } from '../core';
 import { TyrActionFnOpts, TyrAction } from './action';
-import { TyrSortDirection, TyrFieldLaxProps, getFieldName, TyrFieldBase } from './field';
+import {
+  TyrSortDirection,
+  TyrFieldLaxProps,
+  getFieldName,
+  TyrFieldBase
+} from './field';
 import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
 
 const { Item: FormItem } = Form;
@@ -49,12 +54,12 @@ export interface TyrTableProps extends TyrComponentProps {
   fields: TyrFieldLaxProps[];
   query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
   route?: string;
-  actionIconType?: string
+  actionIconType?: string;
   pageSize?: number;
   pinActionsRight?: boolean;
   actionTitle?: string | React.ReactNode;
   rowEdit?: boolean;
-  size?: 'default' | 'middle' | 'small'
+  size?: 'default' | 'middle' | 'small';
 }
 
 @observer
@@ -67,14 +72,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     workingSearchValues: {
       [pathName: string]: string | undefined;
     };
-    pageSize: number,
-    editingKey?: Tyr.AnyIdType
+    pageSize: number;
+    editingKey?: Tyr.AnyIdType;
   } = {
     documents: this.props.documents || [],
     loading: false,
     count: 0,
     workingSearchValues: {},
-    pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE,
+    pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE
   };
 
   tableDefn: TableDefinition = {};
@@ -293,19 +298,26 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.cancelAutorun!();
   }
 
-  private isEditing = (document:Tyr.Document) => document.$id === this.store.editingKey;
+  private isEditing = (document: Tyr.Document) =>
+    document.$id === this.store.editingKey;
 
   private saveDocument = (form: WrappedFormUtils, docId: Tyr.AnyIdType) => {
     console.log('todo: save document');
     delete this.store.editingKey;
-  }
+  };
 
   private cancelEdit = (docId: Tyr.AnyIdType) => {
     delete this.store.editingKey;
-  }
+  };
 
   private getColumns(): ColumnProps<Tyr.Document>[] {
-    const { collection, fields: columns, actionIconType, pinActionsRight, actionTitle } = this.props;
+    const {
+      collection,
+      fields: columns,
+      actionIconType,
+      pinActionsRight,
+      actionTitle
+    } = this.props;
     const { workingSearchValues } = this.store;
 
     const tableDefn = this.tableDefn;
@@ -353,9 +365,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
                   return (
                     <span>
-                        <FormItem>
-                          <TyrFieldBase field={field} form={form} document={document} />
-                        </FormItem>
+                      <FormItem>
+                        <TyrFieldBase
+                          path={np}
+                          form={form}
+                          document={document}
+                        />
+                      </FormItem>
                     </span>
                   );
                 }}
@@ -381,9 +397,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         title: column.label || (field && field.label),
         width: column.width || undefined,
         className: column.className,
-        ...((field && getFilter(field, filterable)) || {}),      
-        ...((column.pinned ? { fixed: column.pinned } : {})),
-        ...((column.align ? { align: column.align } : {}))
+        ...((field && getFilter(field, filterable)) || {}),
+        ...(column.pinned ? { fixed: column.pinned } : {}),
+        ...(column.align ? { align: column.align } : {})
       };
     });
 
@@ -399,21 +415,22 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             return (
               <FormItem>
                 <EditableContext.Consumer>
-                  { ctxProps => {
+                  {ctxProps => {
                     if (!ctxProps.form) {
-                      return <span>No Form!</span>
+                      return <span>No Form!</span>;
                     }
 
                     return (
-                    <a
-                      onClick={() => this.saveDocument(ctxProps.form!, document.$id)}
-                      style={{ marginRight: 8 }}
-                    >
-                      Save
-                    </a>
-                    )
-                  }
-                }
+                      <a
+                        onClick={() =>
+                          this.saveDocument(ctxProps.form!, document.$id)
+                        }
+                        style={{ marginRight: 8 }}
+                      >
+                        Save
+                      </a>
+                    );
+                  }}
                 </EditableContext.Consumer>
                 <a onClick={() => this.cancelEdit(document.$id)}>Cancel</a>
               </FormItem>
@@ -443,7 +460,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         sorter: undefined,
         sortOrder: undefined,
         width: '40px',
-        ...((!!pinActionsRight ? { fixed: 'right' } : {})),
+        ...(!!pinActionsRight ? { fixed: 'right' } : {})
       });
     }
 
@@ -510,10 +527,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       : false;
   };
 
-  private onEditRow = (document:Tyr.Document, rowIndex: number) => {
+  private onEditRow = (document: Tyr.Document, rowIndex: number) => {
     // Callback and check perms?
     this.store.editingKey = document.$id;
-  }
+  };
 
   render() {
     const { documents, loading } = this.store;
@@ -527,11 +544,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
       this.startFinding(); // want to delay finding until the control is actually shown
 
-      const components = rowEdit ? {
-        body: {
-          row: EditableFormRow,
-        },
-      } : undefined;
+      const components = rowEdit
+        ? {
+            body: {
+              row: EditableFormRow
+            }
+          }
+        : undefined;
 
       return (
         <div className={netClassName}>
@@ -548,20 +567,24 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 loading={loading}
                 components={components}
                 rowKey="_id"
-                size={size || "small"}
+                size={size || 'small'}
                 pagination={this.pagination()}
                 onChange={this.handleTableChange}
                 dataSource={
                   /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
                 }
                 columns={this.getColumns()}
-                onRow={ rowEdit ? (record, rowIndex) => {
-                  return {
-                    onDoubleClick: () => {
-                      this.onEditRow(record, rowIndex)
-                    },
-                  };
-                } : undefined}
+                onRow={
+                  rowEdit
+                    ? (record, rowIndex) => {
+                        return {
+                          onDoubleClick: () => {
+                            this.onEditRow(record, rowIndex);
+                          }
+                        };
+                      }
+                    : undefined
+                }
               />
             </Col>
           </Row>
@@ -588,4 +611,3 @@ const EditableRow: React.StatelessComponent<EditableRowProps> = ({
 );
 
 export const EditableFormRow = Form.create()(EditableRow);
-
