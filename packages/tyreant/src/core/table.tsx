@@ -176,6 +176,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   private async findAll() {
+    if (this.props.documents) {
+      return;
+    }
+
     if (this.props.route) {
       const location = tyreant.router.location!;
       if (location.route !== this.props.route) return;
