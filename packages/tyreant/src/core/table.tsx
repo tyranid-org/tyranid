@@ -538,6 +538,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         width: column.width || undefined,
         className: column.className,
         ellipsis: column.ellipsis,
+        filters: filterable.searchValues[pathName!],
         ...((np && getFilter(np, filterable, column)) || {}),
         ...(column.pinned ? { fixed: column.pinned } : {}),
         ...(column.align ? { align: column.align } : {})
