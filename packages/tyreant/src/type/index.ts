@@ -8,5 +8,6 @@ export * from './datetime';
 export * from './email';
 export * from './integer';
 export * from './link';
+export * from './object';
 export * from './string';
 export * from './time';

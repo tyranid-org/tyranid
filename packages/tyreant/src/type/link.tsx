@@ -4,10 +4,10 @@ import * as React from 'react';
 import { Tyr } from 'tyranid/client';
 
 import { Select, Spin } from 'antd';
-import { SelectProps } from 'antd/lib/select';
+import { SelectProps, SelectedValue, LabeledValue } from 'antd/lib/select';
 const { Option } = Select;
 
-import { mapDocumentToForm, mapPropsToForm } from './type';
+import { mapPropsToForm } from './type';
 
 import {
   byName,
@@ -169,9 +169,22 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
   render(): React.ReactNode {
     const { props } = this;
-    const { path, form, multiple, onSelect, onDeselect } = props;
+    const {
+      mode: controlMode,
+      path,
+      form,
+      multiple,
+      onSelect,
+      onDeselect
+    } = props;
     const { documents, loading } = this.state;
     const { getFieldDecorator } = form!;
+
+    if (controlMode === 'view') {
+      return (
+        <label>{path.tail.link!.idToLabel(path.get(props.document))}</label>
+      );
+    }
 
     const rules = generateRules(props);
 
@@ -200,7 +213,6 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       showSearch: true,
       onSearch: this.search,
       placeholder: this.props.placeholder,
-      onSelect,
       onDeselect
     };
 
@@ -235,6 +247,22 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       };
     }
 
+    if (onSelect) {
+      selectProps.onSelect = (
+        value: SelectedValue,
+        option: React.ReactElement<any>
+      ) => {
+        const v = findByLabel(this.link!, value as string);
+
+        onSelect(
+          v
+            ? ({ key: v.$id, label: v.$label, document: v } as SelectedValue)
+            : value,
+          option
+        );
+      };
+    }
+
     return getFieldDecorator(path.name, { rules })(
       <Select className={className('tyr-link', this.props)} {...selectProps}>
         {compact(documents.map(this.createOption))}
@@ -264,8 +292,6 @@ byName.link = {
   },
   // Given labels, return the ids
   mapFormValueToDocumentValue(path: Tyr.NamePathInstance, value: any) {
-    const { detail: field } = path;
-
     if (Array.isArray(value)) {
       value = value.map(v => {
         const nv = findByLabel(linkFor(path)!, v);

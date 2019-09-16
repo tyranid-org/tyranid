@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import { TyrTypeProps } from './type';
+import { TyrTypeProps, getTypeValue } from './type';
+import { TyrField, TyrFieldBase } from '../core';
 
 /**
  * This control renders an array as a list of its contents.
@@ -12,5 +13,16 @@ export const TyrArrayList = (props: TyrTypeProps) => {
   //mapDocumentToForm(field, document, form);
   //}, []);
 
-  return <>TODO: array list</>;
+  console.log('path', path);
+  const value = getTypeValue(props, []) as any[];
+  console.log('value', value);
+
+  return (
+    <>
+      {value.map((value, idx) => {
+        const childPath = path.tail.collection.parsePath(path.name + '.' + idx);
+        <TyrFieldBase {...props} path={childPath} />;
+      })}
+    </>
+  );
 };

@@ -7,24 +7,28 @@ import {
   byName,
   TyrTypeProps,
   mapDocumentValueToFormValue,
-  mapFormValueToDocumentValue
+  withTypeContext,
+  mapFormValueToDocument
 } from './type';
 import { TyrArrayKeyValue } from './array.key-value';
 import { TyrArrayList } from './array.list';
+import { TyrArrayFixed } from './array.fixed';
 
-export const TyrArray = (props: TyrTypeProps) => {
+export const TyrArrayBase = (props: TyrTypeProps) => {
   const { path } = props;
 
   if (!props.document) throw new Error('no "document" passed to TyrArray');
 
-  const { detail: field } = path;
+  const { tail: field } = path;
   switch (field.of!.type.name) {
     case 'link':
       return <TyrLink {...props} />;
     case 'object':
-      const { keyField: keyFieldName, valueField: valueFieldName } = props;
-      if (keyFieldName || valueFieldName) {
+      const { keyField, valueField, fixedField } = props;
+      if (keyField || valueField) {
         return <TyrArrayKeyValue {...props} />;
+      } else if (fixedField) {
+        return <TyrArrayFixed {...props} />;
       }
     // fall through
 
@@ -33,28 +37,52 @@ export const TyrArray = (props: TyrTypeProps) => {
   }
 };
 
+export const TyrArray = withTypeContext(TyrArrayBase);
+
 byName.array = {
-  component: TyrArray as Tyr.anny,
+  component: TyrArray,
   mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: any) {
-    const { detail: field } = path;
     // TODO:  remove slice when upgrading to mobx 5
     if (value && value.slice) value = value.slice();
 
     if (value) {
-      value = (value as Tyr.anny[]).map(value =>
+      value = (value as any[]).map(value =>
         mapDocumentValueToFormValue(path, value)
       );
     }
 
     return value;
   },
-  mapFormValueToDocumentValue(path: Tyr.NamePathInstance, value: any) {
-    if (value) {
-      value = (value as Tyr.anny[]).map(value =>
-        mapFormValueToDocumentValue(path, value)
-      );
-    }
+  mapFormValueToDocument(
+    path: Tyr.NamePathInstance,
+    arrayValue: any,
+    document: Tyr.Document
+  ) {
+    if (arrayValue) {
+      // the form values don't represent the nested values as arrays
+      // TODO:  do we need to figure out a way to store a length on the form array somewhere to account for a sparse
+      //        array?  right now we're assuming it's a dense array and we stop as soon as we find an undefined element
 
-    return value;
+      let v: any;
+
+      /*
+      let mappedArray = path.get(document);
+      if (!mappedArray) {
+        mappedArray = [];
+        path.set(document, mappedArray);
+      }
+      */
+
+      let i = 0;
+      for (; (v = arrayValue[i]) !== undefined; i++) {
+        mapFormValueToDocument(path.walk(i), v, document);
+      }
+
+      if (i === 0) {
+        // TODO: do we need to remove the array from the document ?
+      }
+    } else {
+      // TODO: do we need to remove the array from the document ?
+    }
   }
 };

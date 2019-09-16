@@ -187,6 +187,24 @@ export function add() {
       expect(field.name).to.be.eql('name');
     });
 
+    it('should support walk', () => {
+      const np = User.parsePath('name');
+      const np2 = np.walk('first');
+
+      const user = new User({});
+      np2.set(user, 'Jane', { create: true });
+      expect(np2.get(user)).to.eql('Jane');
+    });
+
+    it('should support resolve', () => {
+      const np = User.parsePath('name');
+      const np2 = NamePath.resolve(User, np, 'first');
+
+      const user = new User({});
+      np2.set(user, 'Jane', { create: true });
+      expect(np2.get(user)).to.eql('Jane');
+    });
+
     it('should support complex denormalize pathing', () => {
       let np = new NamePath(User, 'organization_.owner_.name.first'),
         field = np.detail;

@@ -131,7 +131,7 @@ function NamePath(base, pathName, skipArray) {
   }
 }
 
-NamePath._numberRegex = /^[0-9]$/;
+NamePath._numberRegex = /^[0-9]+$/;
 
 NamePath._skipArray = function(field) {
   if (field && !field.type) {
@@ -174,6 +174,38 @@ NamePath.populateNameFor = function(name, denormal) {
   }
 
   return denormal ? name + '_' : name + '$';
+};
+
+NamePath.prototype.walk = function(path /*: string | number*/) {
+  /*
+      TODO:  change NamePath to be immutable (it already is for the most part) and to
+             support a parent NamePath then avoid having to pse the entire path here and
+             just use the existing NamePath object embedded in a new NamePath object that
+             just processes the child path
+   */
+  return this.base.parsePath(this.name + '.' + path);
+};
+
+NamePath.resolve = function(
+  collection, // Tyr.CollectionInstance,
+  parentPath, //?: Tyr.NamePathInstance,
+  path //?: Tyr.NamePathInstance | string
+) {
+  if (parentPath) {
+    if (typeof path === 'string') {
+      return parentPath.walk(path);
+    } else if (path) {
+      return path;
+    } else {
+      return parentPath;
+    }
+  }
+
+  if (typeof path === 'string') {
+    return collection.parsePath(path);
+  }
+
+  return path;
 };
 
 NamePath.prototype.pathName = function(pi) {

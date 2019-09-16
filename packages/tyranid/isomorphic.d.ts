@@ -120,6 +120,11 @@ export namespace Tyr {
     decode(path: string): string;
     encode(path: string): string;
     populateNameFor(name: string, denormal: boolean = false): string;
+    resolve(
+      collection: CollectionInstance,
+      parentPath?: NamePathInstance,
+      path?: NamePathInstance | string
+    ): NamePathInstance;
   }
 
   export interface NamePathInstance {
@@ -139,6 +144,7 @@ export namespace Tyr {
       prop: string,
       opts?: { create?: boolean; ignore?: boolean }
     ): void;
+    walk(path: string | number): NamePathInstance;
   }
 
   export interface CollectionInstance<
