@@ -3,6 +3,12 @@ import { Tyr as Isomorphic } from 'tyranid/isomorphic';
 
 declare module 'tyranid/client' {
   export namespace Tyr {
+    export const Collection: CollectionStatic;
+    export const Field: FieldStatic;
+    export const Log: CollectionInstance;
+    export const NamePath: NamePathStatic;
+    export const Type: TypeStatic;
+
     export type anny = any;
 
     export interface MongoDocument {
@@ -54,8 +60,29 @@ declare module 'tyranid/client' {
     export type AnyIdType = string | number;
     export type ObjIdType = string;
 
-    export interface NamePathStatic extends Isomorphic.NamePathStatic {}
-    export interface NamePathInstance extends Isomorphic.NamePathInstance {}
+    export interface NamePathStatic extends Isomorphic.NamePathStatic {
+      new (...args: any[]): NamePathInstance;
+
+      resolve(
+        collection: CollectionInstance,
+        parentPath?: NamePathInstance,
+        path?: NamePathInstance | string
+      ): NamePathInstance;
+    }
+
+    export interface NamePathInstance extends Isomorphic.NamePathInstance {
+      detail: FieldInstance;
+      fields: FieldInstance[];
+      tail: FieldInstance;
+
+      parsePath(path: string): NamePathInstance;
+      set<D extends Tyr.Document>(
+        obj: D,
+        prop: string,
+        opts?: { create?: boolean; ignore?: boolean }
+      ): void;
+      walk(path: string | number): NamePathInstance;
+    }
 
     export interface FieldDefinitionRaw extends Isomorphic.FieldDefinitionRaw {}
 
@@ -94,6 +121,7 @@ declare module 'tyranid/client' {
     > extends Class<T> {
       byId(id: IdType, opts?: any): Promise<T | null>;
       byIds(ids: IdType[], opts?: any): Promise<T[]>;
+      byIdIndex: { [id: string]: T };
       byLabel(label: string): Promise<T | null>;
       cache(document: T): void;
       count(opts: any): Promise<number>;

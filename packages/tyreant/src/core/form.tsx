@@ -5,7 +5,11 @@ import { Tyr } from 'tyranid/client';
 import { Row, Col, Form, message } from 'antd';
 import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 
-import * as type from '../type/type';
+import {
+  TypeContext,
+  TyrTypeProps,
+  mapFormValueToDocument
+} from '../type/type';
 import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
 import { TyrComponentProps, TyrComponent } from './component';
 import { TyrAction, TyrActionFnOpts } from './action';
@@ -74,9 +78,7 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
 
     return (
       <Form className="tyr-form">
-        <type.TypeContext.Provider
-          value={(this.props as unknown) as type.TyrTypeProps}
-        >
+        <TypeContext.Provider value={(this.props as unknown) as TyrTypeProps}>
           {fields &&
             (fields as TyrFieldExistsProps[]).map(fieldProps => (
               <Row key={fieldProps.field.path} gutter={10}>
@@ -84,7 +86,7 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
               </Row>
             ))}
           {children}
-        </type.TypeContext.Provider>
+        </TypeContext.Provider>
       </Form>
     );
   }
@@ -185,9 +187,12 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
     return this.wrap(() => {
       console.log('rendering wrapped form');
 
-      //ref={this.getFormRef as any}
       return (
-        <TyrWrappedForm fields={this.fields} document={this.document!}>
+        <TyrWrappedForm
+          ref={this.getFormRef as any}
+          fields={this.fields}
+          document={this.document!}
+        >
           {children}
         </TyrWrappedForm>
       );
@@ -205,7 +210,7 @@ export function submitForm(form: WrappedFormUtils, document: Tyr.Document) {
       for (const pathName in values) {
         const value = values[pathName];
         const field = collection.paths[pathName];
-        type.mapFormValueToDocument(field.namePath, value, document);
+        mapFormValueToDocument(field.namePath, value, document);
       }
 
       await document.$save();

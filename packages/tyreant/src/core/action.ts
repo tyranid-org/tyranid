@@ -19,7 +19,7 @@ export interface TyrActionOpts {
 export class TyrAction {
   traits: TyrActionTrait[];
   name: string;
-  label: string | React.ReactNode;;
+  label: string | React.ReactNode;
   component?: TyrComponent;
   action: (opts: TyrActionFnOpts) => void;
 

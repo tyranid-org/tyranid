@@ -32,7 +32,8 @@ const LinkType = new Type({
       linkField = link.fields[field.link.def.primaryKey.field];
 
     try {
-      return linkField.type.def.fromClient(linkField, value);
+      const fn = linkField.type.def.fromClient;
+      return fn ? fn(linkField, value) : value;
     } catch (err) {
       if (_.isString(value) && link.isStatic() && link.labelField) {
         // integer and ObjectId parse errors

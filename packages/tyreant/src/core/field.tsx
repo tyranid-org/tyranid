@@ -26,8 +26,12 @@ export interface TyrFieldProps {
    */
   render?: (doc: Tyr.Document) => React.ReactElement;
 
+  // fixed array display format
+  fixedField?: string;
+
   // key-value display format -- field must be an array
   keyField?: string;
+  keyFieldDefault?: string; // the default value to set the key field control to (label)
   valueField?: string;
 
   defaultSort?: TyrSortDirection;
@@ -54,12 +58,12 @@ export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field'> & {
   field?: Tyr.FieldInstance | string;
 };
 
-export const TyrFieldBase = ((props: TyrTypeProps) => {
+export const TyrFieldBase = (props: TyrTypeProps) => {
   const { path } = props;
-  const { detail: field } = path;
+  const { tail: field } = path;
   const { type } = field;
   const typeUi = assertTypeUi(type.name);
   return React.createElement(typeUi.component, props);
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrField = withTypeContext(TyrFieldBase);
