@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Button, Icon, Input } from 'antd';
+import { Button, Input } from 'antd';
 
 import { mapPropsToForm } from './type';
 
@@ -17,15 +17,14 @@ import {
   Finder,
   withTypeContext
 } from './type';
+import { TyrFieldLaxProps } from '../core';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
   const { path, form } = props;
 
   useEffect(() => {
     mapPropsToForm(props);
-  }, 
-  []
-  )
+  }, [])
 
   return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
@@ -44,7 +43,8 @@ export const TyrString = withTypeContext(TyrStringBase);
 
 export const stringFilter: Filter = (
   path: Tyr.NamePathInstance,
-  filterable: Filterable
+  filterable: Filterable,
+  props: TyrFieldLaxProps
 ) => {
   const pathName = path.name;
   let searchInputRef: Input | null = null;
@@ -59,7 +59,7 @@ export const stringFilter: Filter = (
 
   return {
     filterDropdown: (
-      <div className="searchBox">
+      <div className="search-box">
         <Input
           ref={node => {
             searchInputRef = node;
@@ -73,31 +73,25 @@ export const stringFilter: Filter = (
           onPressEnter={() => filterable.onSearch()}
           style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
-        <Button
-          type="primary"
-          onClick={() => filterable.onSearch()}
-          icon="search"
-          size="small"
-          style={{ width: 90, marginRight: 8 }}
-        >
-          Search
-        </Button>
-        <Button
-          onClick={() => onClearFilters()}
-          size="small"
-          style={{ width: 90 }}
-        >
-          Reset
-        </Button>
+        <div className="search-box-footer">
+          <Button
+            onClick={() => onClearFilters()}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => filterable.onSearch()}
+            icon="search"
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+        </div>
       </div>
-    ),
-    filterIcon: (
-      <span>
-        <Icon
-          type="search"
-          className={filterable.searchValues[pathName] ? 'active' : 'inactive'}
-        />
-      </span>
     ),
     onFilter: (value: string, doc: Tyr.Document) =>
       path

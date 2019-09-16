@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { Tyr } from 'tyranid/client';
 
-import { Input } from 'antd';
+import { Input, Slider, Button } from 'antd';
 
-import { mapPropsToForm } from './type';
+import { mapPropsToForm, Filter, Filterable, Finder } from './type';
 
 import {
   byName,
@@ -12,6 +13,8 @@ import {
   TyrTypeProps,
   withTypeContext
 } from './type';
+import { SliderValue } from 'antd/lib/slider';
+import { TyrFieldLaxProps } from '../core';
 
 export const TyrIntegerBase = ((props: TyrTypeProps) => {
   const { path, form } = props;
@@ -29,70 +32,64 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrInteger = withTypeContext(TyrIntegerBase);
-/*
+
 export const integerFilter: Filter = (
-  field: Tyr.FieldInstance,
-  filterable: Filterable
+  path: Tyr.NamePathInstance,
+  filterable: Filterable,
+  props: TyrFieldLaxProps
 ) => {
-  const { namePath } = field;
-  const pathName = field.path;
-  let searchInputRef: Input | null = null;
+  const pathName = path.name;
+  let searchInputRef: Slider | null = null;
+  const range = props.searchRange || [0,100];
 
   const onClearFilters = () => {
-    filterable.searchValues[pathName] = '';
+    filterable.searchValues[pathName] = range;
     filterable.onSearch();
   };
 
-  filterable.searchValues[pathName] = filterable.searchValues[pathName] || '';
+  filterable.searchValues[pathName] = filterable.searchValues[pathName] || range;
 
   return {
     filterDropdown: (
-      <div className="searchBox">
-        <Input
+      <div className="search-box">
+        <Slider 
           ref={node => {
             searchInputRef = node;
           }}
-          placeholder={`Search ${field.label}`}
-          value={filterable.searchValues[pathName]}
-          onChange={e => {
-            filterable.searchValues[pathName] = e.target.value;
+          range 
+          defaultValue={range as [number,number]} 
+          value={filterable.searchValues[pathName] || range}
+          onChange={ (e:SliderValue) => {
+            filterable.searchValues[pathName] = e;
             filterable.onFilterChange();
+            //filterable.onSearch()
+            //style={{ width: 188, marginBottom: 8, display: 'block' }}
           }}
-          onPressEnter={() => filterable.onSearch()}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
-        <Button
-          type="primary"
-          onClick={() => filterable.onSearch()}
-          icon="search"
-          size="small"
-          style={{ width: 90, marginRight: 8 }}
-        >
-          Search
-        </Button>
-        <Button
-          onClick={() => onClearFilters()}
-          size="small"
-          style={{ width: 90 }}
-        >
-          Reset
-        </Button>
+        <div className="search-box-footer">
+          <Button
+            onClick={() => onClearFilters()}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+          <Button
+            type="primary"
+            onClick={() => filterable.onSearch()}
+            icon="search"
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+        </div>
       </div>
     ),
-    filterIcon: (
-      <span>
-        <Icon
-          type="search"
-          className={filterable.searchValues[pathName] ? 'active' : 'inactive'}
-        />
-      </span>
-    ),
-    onFilter: (value: string, doc: Tyr.Document) =>
-      namePath
-        .get(doc)
-        .toString()
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+    onFilter: (value: number[], doc: Tyr.Document) => {
+      const intVal = path.get(doc) as number || 0;
+      return intVal >= value[0] && intVal <= value[1];
+    },
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
         setTimeout(() => searchInputRef!.focus());
@@ -100,26 +97,25 @@ export const integerFilter: Filter = (
     }
   };
 };
-*/
 
-/*
-export const stringFinder: Finder = (
-  field: Tyr.FieldInstance,
-  opts: Tyr.anny, // Tyr.Options_Find,
+export const integerFinder: Finder = (
+  path: Tyr.NamePathInstance,
+  opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {
   if (searchValue) {
     if (!opts.query) opts.query = {};
-    opts.query[field.path] = {
-      $regex: searchValue,
-      $options: 'i'
+    opts.query[path.name] = {
+      $and: [
+        { $gte : searchValue[0] },
+        { $lte : searchValue[1] }
+      ]
     };
   }
 };
-*/
 
 byName.integer = {
-  component: TyrIntegerBase
-  //filter: integerFilter,
-  //finder: integerFinder
+  component: TyrIntegerBase,
+  filter: integerFilter,
+  finder: integerFinder
 };

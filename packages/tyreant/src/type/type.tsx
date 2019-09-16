@@ -35,7 +35,8 @@ export interface Filterable {
 
 export type Filter = (
   path: Tyr.NamePathInstance,
-  filterable: Filterable
+  filterable: Filterable,
+  props: TyrFieldLaxProps
 ) => {
   filterDropdown?: React.ReactNode;
   filterIcon?: React.ReactNode;
@@ -211,11 +212,12 @@ export const mapFormValueToDocument = (
 
 export const getFilter = (
   path: Tyr.NamePathInstance,
-  filterable: Filterable
+  filterable: Filterable,
+  props: TyrFieldLaxProps
 ) => {
   const { filter } = assertTypeUi(path.tail.type.name);
 
-  return filter ? filter(path, filterable) : undefined;
+  return filter ? filter(path, filterable, props) : undefined;
 };
 
 export const getFinder = (path: Tyr.NamePathInstance) => {

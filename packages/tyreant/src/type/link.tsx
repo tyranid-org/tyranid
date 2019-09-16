@@ -17,6 +17,7 @@ import {
   className,
   withTypeContext
 } from './type';
+import { TyrFieldLaxProps } from '../core';
 
 export interface TyrLinkState {
   documents: Tyr.Document[];
@@ -306,8 +307,11 @@ byName.link = {
 
     return value && value.key ? value.key : value;
   },
-  filter: (path: Tyr.NamePathInstance, filterable: Filterable) => ({
-    filters: linkFor(path)!.values.map((v: any) => ({
+  filter: (path: Tyr.NamePathInstance, filterable: Filterable, props: TyrFieldLaxProps) => ({
+    filters: linkFor(path)!.values.map((v: any) => ( props.filterOptionRenderer ? {
+      text: props.filterOptionRenderer(v),
+      value: v._id
+    } : {
       text: v.$label,
       value: v._id
     }))

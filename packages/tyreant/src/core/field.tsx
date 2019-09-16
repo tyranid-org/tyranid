@@ -9,6 +9,7 @@ import {
   FieldState
 } from '../type/type';
 import { SelectedValue } from 'antd/lib/select';
+import { Moment } from 'moment'
 
 export type TyrSortDirection = 'ascend' | 'descend';
 
@@ -42,6 +43,9 @@ export interface TyrFieldProps {
   onStateChange?: (value: FieldState) => void;
   autoFocus?: boolean;
   required?: boolean;
+  sortComparator?: (a:Tyr.Document, b:Tyr.Document) => number;  
+  searchRange?: [number,number] | [Moment, Moment];
+  filterOptionRenderer?: (v:any) => React.ReactElement;
 }
 
 export type TyrFieldExistsProps = Omit<TyrFieldProps, 'field'> & {
