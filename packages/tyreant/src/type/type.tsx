@@ -14,7 +14,7 @@ export function generateRules(props: TyrTypeProps) {
   const rules = [];
   const { path } = props;
   const { detail: field } = path;
-  if (field.def.required) {
+  if (props.required || field.def.required) {
     rules.push({
       required: true,
       message: `${field.label} is required.`

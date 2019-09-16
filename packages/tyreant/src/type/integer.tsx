@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Input } from 'antd';
 
@@ -15,15 +15,16 @@ import {
 
 export const TyrIntegerBase = ((props: TyrTypeProps) => {
   const { path, form } = props;
+  const val = useState(props.form.getFieldsValue(['value'])['value']);
 
   useEffect(() => {
     mapPropsToForm(props);
-  });
+  }, []);
 
   return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
-    <Input className={className('tyr-integer', props)} step="1" type="number" />
+    <Input className={className('tyr-integer', props)} step="1" type="number" placeholder={props.placeholder}/>
   );
 }) as React.ComponentType<TyrTypeProps>;
 

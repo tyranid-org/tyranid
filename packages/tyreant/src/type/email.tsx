@@ -18,7 +18,7 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
 
   useEffect(() => {
     mapPropsToForm(props);
-  });
+  }, []);
 
   return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
@@ -27,6 +27,8 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
       className={className('tyr-email', props)}
       autoComplete="off"
       type="email"
+      placeholder={props.placeholder}
+      autoFocus={props.autoFocus}
     />
   );
 }) as React.ComponentType<TyrTypeProps>;

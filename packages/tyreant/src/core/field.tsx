@@ -14,7 +14,7 @@ export type TyrSortDirection = 'ascend' | 'descend';
 
 export interface TyrFieldProps {
   field?: Tyr.FieldInstance;
-  label?: string;
+  label?: string | React.ReactNode;
   className?: string;
   placeholder?: string;
   mode?: 'view' | 'edit' | 'search';
@@ -26,11 +26,6 @@ export interface TyrFieldProps {
    */
   render?: (doc: Tyr.Document) => React.ReactElement;
 
-  /**
-   * What table column grouping should this be grouped under.
-   */
-  group?: string;
-
   // key-value display format -- field must be an array
   keyField?: string;
   valueField?: string;
@@ -41,8 +36,8 @@ export interface TyrFieldProps {
   onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
   onDeselect?: (value: SelectedValue) => any;
   onStateChange?: (value: FieldState) => void;
-  pinned?: 'left' | 'right',
-  align?: 'left' | 'right' | 'center'
+  autoFocus?: boolean;
+  required?: boolean;
 }
 
 export type TyrFieldExistsProps = Omit<TyrFieldProps, 'field'> & {

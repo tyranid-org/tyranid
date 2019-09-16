@@ -1,10 +1,23 @@
+/*
+
+ - Get sort working
+ - Re-render not working until mouse move (on double click of row and cancel click)
+ - figure out why first column is eyeglass
+ - sort on TyrLink not there
+ - set field value not setting
+ - fixed column problems
+ - when edit, looping on hook
+
+*/
+
+
 import * as _ from 'lodash';
 import * as React from 'react';
 
 import { autorun, observable } from 'mobx';
 import { observer } from 'mobx-react';
 
-import { Col, Dropdown, Icon, Menu, message, Row, Table, Input } from 'antd';
+import { Row, Col, Dropdown, Icon, Menu, message, Table, Spin } from 'antd';
 import { PaginationProps } from 'antd/es/pagination';
 import { ColumnProps } from 'antd/es/table';
 
@@ -24,6 +37,8 @@ import {
   TyrFieldBase
 } from './field';
 import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
+import { TyrFormFields } from './form';
+import * as type from '../type/type';
 
 const { Item: FormItem } = Form;
 
@@ -47,19 +62,39 @@ interface TableDefinition {
   limit?: number;
 }
 
+export interface TyrTableColumnFieldProps extends TyrFieldLaxProps {
+  pinned?: 'left' | 'right';
+  align?: 'left' | 'right' | 'center';
+  ellipsis?: boolean;
+
+  /**
+   * What table column grouping should this be grouped under.
+   */
+  group?: string;
+}
+
 export interface TyrTableProps extends TyrComponentProps {
   className?: string;
   collection: Tyr.CollectionInstance;
   documents?: Tyr.Document[] & { count?: number };
-  fields: TyrFieldLaxProps[];
+  newDocument?: Tyr.Document;
+  fields: TyrTableColumnFieldProps[];
   query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
   route?: string;
   actionIconType?: string;
   pageSize?: number;
   pinActionsRight?: boolean;
-  actionTitle?: string | React.ReactNode;
+  actionLabel?: string | React.ReactNode;
   rowEdit?: boolean;
   size?: 'default' | 'middle' | 'small';
+  saveDocument?: (document:Tyr.Document) => Promise<Tyr.Document>;
+  onAfterSaveDocument?: (document:Tyr.Document) => void;
+  onCancelAddNew?: () => void;
+  onActionLabelClick?: () => void;
+  scroll?: {
+    x?: boolean | number | string;
+    y?: boolean | number | string;
+  }
 }
 
 @observer
@@ -73,16 +108,42 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       [pathName: string]: string | undefined;
     };
     pageSize: number;
-    editingKey?: Tyr.AnyIdType;
+    editingKey: Tyr.AnyIdType;
+    isSavingDocument: boolean;
+    tableDefn: TableDefinition;
   } = {
-    documents: this.props.documents || [],
+    documents: this.props.newDocument ? [this.props.newDocument, ...(this.props.documents || [])] : this.props.documents || [],
     loading: false,
-    count: 0,
+    count: this.props.documents ? this.props.documents.length: 0,
     workingSearchValues: {},
-    pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE
+    pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE,
+    editingKey: '',
+    isSavingDocument: false,
+    tableDefn: {}
   };
 
-  tableDefn: TableDefinition = {};
+  defaultToTableDefinition() {
+    const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
+
+    const defaultSortColumn = this.props.fields.find(
+      column => !!column.defaultSort
+    );
+    if (defaultSortColumn) {
+      const fieldName = getFieldName(defaultSortColumn.field);
+
+      if (fieldName) {
+        let fieldDefn = defn[fieldName] as FieldDefinition;
+
+        if (!fieldDefn) {
+          fieldDefn = defn[fieldName] = {};
+        }
+
+        fieldDefn!.sortDirection = defaultSortColumn.defaultSort;
+      }
+    }
+
+    return defn;
+  }
 
   urlQueryToTableDefinition(query: { [name: string]: string }) {
     const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
@@ -171,7 +232,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   private goToRoute(tableDefn: TableDefinition) {
-    const defn = { ...this.tableDefn, ...tableDefn };
+    const defn = { ...this.store.tableDefn, ...tableDefn };
     const newQuery = this.tableDefinitionToUrlQuery(defn);
 
     tyreant.router.go({
@@ -182,6 +243,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   private async findAll() {
     if (this.props.documents) {
+      this.store.tableDefn = this.defaultToTableDefinition();    
       return;
     }
 
@@ -192,12 +254,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       const defn = this.urlQueryToTableDefinition(location.query! as {
         [name: string]: string;
       });
-      if (_.isEqual(this.tableDefn, defn)) return;
+      if (_.isEqual(this.store.tableDefn, defn)) return;
 
-      this.tableDefn = defn;
+      this.store.tableDefn = defn;
     }
 
-    const defn = this.tableDefn;
+    const defn = this.store.tableDefn;
 
     for (const pathName in defn) {
       const field = defn[pathName] as FieldDefinition;
@@ -300,15 +362,64 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   private isEditing = (document: Tyr.Document) =>
-    document.$id === this.store.editingKey;
+    document.$id === this.store.editingKey || this.props.newDocument === document;
 
   private saveDocument = (form: WrappedFormUtils, docId: Tyr.AnyIdType) => {
-    console.log('todo: save document');
-    delete this.store.editingKey;
+    let document = this.store.documents.find( d => d.$id === docId);
+
+    if (!document) {
+      return;
+    }
+
+    const { saveDocument,onAfterSaveDocument } = this.props;
+    const collection = document.$model;
+
+    const isNew = !!document.$id;
+
+    form.validateFields(async (err: Error, values: TyrFormFields) => {
+      try {
+        if (err || !document) return;
+  
+        for (const pathName in values) {
+          const value = values[pathName];
+          const field = collection.paths[pathName];
+          type.mapFormValueToDocument(field.namePath, value, document);
+        }
+  
+        if (saveDocument) {
+          document = await saveDocument(document);
+        } else  {
+          await document.$save();
+        }
+
+        document.$cache();
+
+        if (isNew) {
+          this.store.documents = [document, ...this.store.documents];
+          this.store.count = this.store.documents.length;
+        } else {
+          this.store.documents = this.store.documents.map( doc => { return doc.$id === document!.$id ? document! : doc; });
+        }
+
+        if (onAfterSaveDocument) {
+          onAfterSaveDocument(document);
+        }
+      } catch (saveError) {
+        if (saveError.message) message.error(saveError.message);
+        message.error(saveError);
+        throw saveError;
+      }
+    });
+  
+    this.store.editingKey = '';
   };
 
   private cancelEdit = (docId: Tyr.AnyIdType) => {
+    const { onCancelAddNew } = this.props;
     delete this.store.editingKey;
+    this.store.editingKey = '';
+
+    if (onCancelAddNew) onCancelAddNew();
   };
 
   private getColumns(): ColumnProps<Tyr.Document>[] {
@@ -317,11 +428,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       fields: columns,
       actionIconType,
       pinActionsRight,
-      actionTitle
+      actionLabel
     } = this.props;
     const { workingSearchValues } = this.store;
 
-    const tableDefn = this.tableDefn;
+    const tableDefn = this.store.tableDefn;
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(column => {
       const pathName = getFieldName(column.field);
@@ -341,7 +452,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         onSearch: () => {
           const defn: TableDefinition = {
             [pathName!]: {
-              ...((this.tableDefn[pathName!] as FieldDefinition) || {}),
+              ...((this.store.tableDefn[pathName!] as FieldDefinition) || {}),
               searchValue: workingSearchValues[pathName!] || ''
             }
           };
@@ -359,6 +470,15 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           const editable = this.isEditing(document);
 
           if (editable) {
+            const fieldProps = {
+              placeholder: column.placeholder,
+              autoFocus: column.autoFocus,
+              required: column.required,
+              width: column.width,
+              multiple: column.multiple,
+              mode: column.mode
+            }
+
             return (
               <EditableContext.Consumer>
                 {({ form }) => {
@@ -371,6 +491,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                           path={np!}
                           form={form}
                           document={document}
+                          {...fieldProps}
                         />
                       </FormItem>
                     </span>
@@ -388,16 +509,28 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             </div>
           );
         },
-        sorter: field
+        sorterX: field
           ? !field.link
             ? (a: Tyr.Document, b: Tyr.Document) =>
-                field.type.compare(field, np && np.get(a), np && np.get(b))
+            {   const av = np && np.get(a);
+                const bv = np && np.get(b);
+
+                return field.type.compare(field, av, bv) }
             : undefined
           : undefined,
+        sorter: field
+          ? (a: Tyr.Document, b: Tyr.Document) =>
+            {   const av = np && np.get(a);
+                const bv = np && np.get(b);
+
+                return field.type.compare(field, av, bv) }
+            : undefined
+          ,
         sortOrder: sortDirection,
         title: column.label || (field && field.label),
         width: column.width || undefined,
         className: column.className,
+        ellipsis: column.ellipsis,
         ...((np && getFilter(np, filterable)) || {}),
         ...(column.pinned ? { fixed: column.pinned } : {}),
         ...(column.align ? { align: column.align } : {})
@@ -408,13 +541,18 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       antColumns.push({
         key: '$actions',
         dataIndex: '$actions',
-        title: actionTitle || '',
+        title: actionLabel || '',
         render: (text: string, document: Tyr.Document) => {
           const editable = this.isEditing(document);
 
           if (editable) {
+
+            if (this.store.isSavingDocument) {
+              return <Spin tip="Saving..."/>;
+            }
+
             return (
-              <FormItem>
+              <FormItem>                
                 <EditableContext.Consumer>
                   {ctxProps => {
                     if (!ctxProps.form) {
@@ -476,6 +614,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       columnKey: string;
     }
   ) => {
+    this.store.editingKey = '';
     const defn: TableDefinition = {};
 
     if (pagination.current) {
@@ -485,7 +624,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     if (filters) {
       for (const pathName in filters) {
         defn[pathName] = {
-          ...((this.tableDefn[pathName] as FieldDefinition) || {}),
+          ...((this.store.tableDefn[pathName] as FieldDefinition) || {}),
           searchValue: filters[pathName].join('.')
         };
       }
@@ -494,8 +633,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const sortFieldName = sorter.columnKey;
     if (sortFieldName) {
       // table doesn't appear to support multiple sort columns currently, so unselect any existing sort
-      for (const pathName in this.tableDefn) {
-        const fieldDefn = this.tableDefn[pathName] as FieldDefinition;
+      for (const pathName in this.store.tableDefn) {
+        const fieldDefn = this.store.tableDefn[pathName] as FieldDefinition;
 
         if (fieldDefn && fieldDefn.sortDirection) {
           defn[pathName] = _.omit(fieldDefn, 'sortDirection');
@@ -503,16 +642,30 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       }
 
       defn[sortFieldName] = {
-        ...((this.tableDefn[sortFieldName] as FieldDefinition) || {}),
+        ...((this.store.tableDefn[sortFieldName] as FieldDefinition) || {}),
         sortDirection: sorter.order
       };
+    } else {
+      // Sort is cleared
+      for (const pathName in this.store.tableDefn) {
+        const fieldDefn = this.store.tableDefn[pathName] as FieldDefinition;
+
+        if (fieldDefn && fieldDefn.sortDirection) {
+          delete fieldDefn.sortDirection;
+        }
+      }
     }
 
-    this.goToRoute(defn);
+    if (this.props.route)
+      this.goToRoute(defn);
+    else
+      this.store.tableDefn = { ...this.store.tableDefn, ...defn };
+
+    this.setState({}); // Hack to force a table re-render
   };
 
   private pagination = () => {
-    const { skip = 0, limit = this.store.pageSize } = this.tableDefn;
+    const { skip = 0, limit = this.store.pageSize } = this.store.tableDefn;
     const totalCount = this.store.count || 0;
 
     // there appears to be a bug in ant table when you switch from paged to non-paging and then back again
@@ -535,7 +688,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   render() {
     const { documents, loading } = this.store;
-    const { className, children, rowEdit, size } = this.props;
+    const { className, children, rowEdit, size, onActionLabelClick, fields, scroll } = this.props;
 
     const netClassName = 'tyr-table' + (className ? ' ' + className : '');
 
@@ -575,12 +728,23 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
                 }
                 columns={this.getColumns()}
+                scroll={ scroll }
+                onHeaderRow={
+//                  onActionLabelClick && this.actions.length ?
+                    (column, index) => {
+                      return {
+                        onClick: fields.length === index ? onActionLabelClick : undefined
+                      };
+                    }
+//                  : undefined
+                }
                 onRow={
                   rowEdit
                     ? (record, rowIndex) => {
                         return {
                           onDoubleClick: () => {
                             this.onEditRow(record, rowIndex);
+                            this.setState({});
                           }
                         };
                       }
@@ -601,7 +765,7 @@ interface EditableRowProps {
   props: {};
 }
 
-const EditableRow: React.StatelessComponent<EditableRowProps> = ({
+const EditableRow: React.StatelessComponent<EditableRowProps> =  ({
   form,
   index,
   ...props

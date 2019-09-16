@@ -20,12 +20,12 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
 
   useEffect(() => {
     mapPropsToForm(props);
-  });
+  }, []);
 
   return form.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
-    <DatePicker className={className('tyr-date', props)} allowClear={false} />
+    <DatePicker className={className('tyr-date', props)} allowClear={false} autoFocus={props.autoFocus} placeholder={props.placeholder}/>
   );
 }) as React.ComponentType<TyrTypeProps>;
 

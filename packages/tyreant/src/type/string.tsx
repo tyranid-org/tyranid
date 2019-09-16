@@ -23,7 +23,9 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
 
   useEffect(() => {
     mapPropsToForm(props);
-  });
+  }, 
+  []
+  )
 
   return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
@@ -32,6 +34,8 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
       className={className('tyr-string', props)}
       autoComplete="off"
       type="text"
+      autoFocus={props.autoFocus}
+      placeholder={props.placeholder}
     />
   );
 }) as React.ComponentType<TyrTypeProps>;

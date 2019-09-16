@@ -201,7 +201,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       onSearch: this.search,
       placeholder: this.props.placeholder,
       onSelect,
-      onDeselect
+      onDeselect,
+      autoFocus: this.props.autoFocus
     };
 
     if (mode === 'tags') {
