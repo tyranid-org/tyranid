@@ -30,13 +30,14 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
   return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
-    <Input
-      className={className('tyr-string', props)}
-      autoComplete="off"
-      type="text"
-      autoFocus={props.autoFocus}
-      placeholder={props.placeholder}
-    />
+    props.renderField && props.document ? props.renderField(props.document) : 
+      <Input
+        className={className('tyr-string', props)}
+        autoComplete="off"
+        type="text"
+        autoFocus={props.autoFocus}
+        placeholder={props.placeholder}
+      />
   );
 }) as React.ComponentType<TyrTypeProps>;
 

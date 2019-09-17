@@ -23,6 +23,7 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
   return form!.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
+    props.renderField && props.document ? props.renderField(props.document) : 
     <Input
       className={className('tyr-email', props)}
       autoComplete="off"

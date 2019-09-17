@@ -516,7 +516,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               multiple: column.multiple,
               mode: column.mode,
               searchOptionRenderer: column.searchOptionRenderer,
-              searchSortById: column.searchSortById
+              searchSortById: column.searchSortById,
+              renderField : column.renderField,
+              renderDisplay : column.renderDisplay
             }
 
             return (
@@ -541,7 +543,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             );
           }
 
-          const render = column.render;
+          const render = column.renderDisplay;
 
           return (
             <div className="tyr-table-cell">

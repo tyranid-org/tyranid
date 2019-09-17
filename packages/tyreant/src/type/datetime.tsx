@@ -25,6 +25,7 @@ export const TyrDateTimeBase = ((props: TyrTypeProps) => {
   return form.getFieldDecorator(path.name, {
     rules: generateRules(props)
   })(
+    props.renderField && props.document ? props.renderField(props.document) : 
     <DatePicker
       className={className('tyr-datetime', props)}
       allowClear={false}
