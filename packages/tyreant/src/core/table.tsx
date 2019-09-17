@@ -518,7 +518,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               searchOptionRenderer: column.searchOptionRenderer,
               searchSortById: column.searchSortById,
               renderField : column.renderField,
-              renderDisplay : column.renderDisplay
+              renderDisplay : column.renderDisplay,
+              noLabel: true
             }
 
             return (
