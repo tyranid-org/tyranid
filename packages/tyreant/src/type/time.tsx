@@ -17,6 +17,7 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
 
   return decorateField(
     props,
+    props.renderField && props.document ? props.renderField(props.document) : 
     <TimePicker
       className={className('tyr-time', props)}
       placeholder={props.placeholder}

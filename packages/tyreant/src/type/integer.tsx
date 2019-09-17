@@ -18,6 +18,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
 
   return decorateField(
     props,
+    props.renderField && props.document ? props.renderField(props.document) :
     <Input
       className={className('tyr-integer', props)}
       step="1"

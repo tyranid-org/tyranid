@@ -27,7 +27,8 @@ export interface TyrFieldProps {
    * This indicates that the following render function should be used to render values.  If render is specified
    * then field is not required/needed.
    */
-  render?: (doc: Tyr.Document) => React.ReactElement;
+  renderField?: (doc: Tyr.Document, options?:Tyr.Document[]) => React.ReactElement;
+  renderDisplay?: (doc: Tyr.Document) => React.ReactElement;
 
   /**
    * Suppress the default generation of field labels.

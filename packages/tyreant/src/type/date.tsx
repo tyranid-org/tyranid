@@ -30,7 +30,7 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
 
   return decorateField(
     props,
-
+    props.renderField && props.document ? props.renderField(props.document) : 
     <DatePicker
       className={className('tyr-date', props)}
       allowClear={false}

@@ -25,6 +25,7 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
 
   return decorateField(
     props,
+    props.renderField && props.document ? props.renderField(props.document) : 
     <Input
       className={className('tyr-string', props)}
       autoComplete="off"
