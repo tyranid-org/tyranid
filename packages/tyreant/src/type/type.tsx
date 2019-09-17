@@ -31,16 +31,19 @@ export interface Filterable {
   // TODO: when we upgrade to latest ant, that Table control takes a component, not a react node, so we can
   //       update via state/props/etc. instead of this callback
   onFilterChange(): void;
+  localSearch: boolean;
 }
 
 export type Filter = (
   path: Tyr.NamePathInstance,
-  filterable: Filterable
+  filterable: Filterable,
+  props: TyrFieldLaxProps
 ) => {
   filterDropdown?: React.ReactNode;
   filterIcon?: React.ReactNode;
   onFilter?: (value: any, doc: Tyr.Document) => boolean;
   onFilterDropdownVisibleChange?: (visible: boolean) => void;
+  filterDropdownVisible?: boolean
   filters?: ColumnFilterItem[];
 };
 
@@ -227,11 +230,12 @@ export const mapFormValueToDocument = (
 
 export const getFilter = (
   path: Tyr.NamePathInstance,
-  filterable: Filterable
+  filterable: Filterable,
+  props: TyrFieldLaxProps
 ) => {
   const { filter } = assertTypeUi(path.tail.type.name);
 
-  return filter ? filter(path, filterable) : undefined;
+  return filter ? filter(path, filterable, props) : undefined;
 };
 
 export const getFinder = (path: Tyr.NamePathInstance) => {

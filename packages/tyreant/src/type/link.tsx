@@ -17,6 +17,7 @@ import {
   className,
   withTypeContext
 } from './type';
+import { TyrFieldLaxProps } from '../core';
 
 export interface TyrLinkState {
   documents: Tyr.Document[];
@@ -54,7 +55,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   private createOption = (val: Tyr.Document) => {
     const { $label } = val;
 
-    return <Option key={$label}>{$label}</Option>;
+    return <Option key={$label}>{this.props.searchOptionRenderer ? this.props.searchOptionRenderer(val) : $label}</Option>;
   };
 
   link?: Tyr.CollectionInstance;
@@ -77,17 +78,22 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (link!.isStatic()) {
       this.setState({
-        documents: link!.values.sort((a: any, b: any) => {
-          const aLabel = a.$label.toLowerCase();
-          const bLabel = b.$label.toLowerCase();
-          if (aLabel < bLabel) {
-            return -1;
-          }
-          if (aLabel > bLabel) {
-            return 1;
-          }
-          return 0;
-        })
+        documents: 
+          link!.values.sort((a: any, b: any) => {
+            if (props.searchSortById) {
+              return a.$id - b.$id;
+            }
+             
+            const aLabel = a.$label.toLowerCase();
+            const bLabel = b.$label.toLowerCase();
+            if (aLabel < bLabel) {
+              return -1;
+            }
+            if (aLabel > bLabel) {
+              return 1;
+            }
+            return 0;
+          })
       });
     } else {
       await this.search();
@@ -152,6 +158,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     if (this.mounted) {
       this.setState({
         documents: documents.sort((a, b) => {
+          if (this.props.searchSortById) {
+            return (a as any).$id - (b as any).$id;
+          }
+
           const aLabel = a.$label.toLowerCase();
           const bLabel = b.$label.toLowerCase();
           if (aLabel < bLabel) {
@@ -306,11 +316,23 @@ byName.link = {
 
     return value && value.key ? value.key : value;
   },
-  filter: (path: Tyr.NamePathInstance, filterable: Filterable) => ({
-    filters: linkFor(path)!.values.map((v: any) => ({
+  filter: (path: Tyr.NamePathInstance, filterable: Filterable, props: TyrFieldLaxProps) => ({
+    filters: linkFor(path)!.values.map((v: any) => ( props.filterOptionRenderer ? {
+      text: props.filterOptionRenderer(v),
+      value: v._id
+    } : {
       text: v.$label,
       value: v._id
-    }))
+    })),
+    onFilter: (value: number, doc: Tyr.Document) => {
+      const val = path.get(doc);
+
+      if (Array.isArray(value)) {
+        return (value as any[]).indexOf(val) > -1;
+      }
+
+      return val === value;
+    },
   }),
   finder(
     path: Tyr.NamePathInstance,

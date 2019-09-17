@@ -1,15 +1,8 @@
 /*
-
- - Get sort working
- - Re-render not working until mouse move (on double click of row and cancel click)
- - figure out why first column is eyeglass
  - sort on TyrLink not there
- - set field value not setting
- - fixed column problems
- - when edit, looping on hook
-
+ - need liveSearch and localSearch working in link
+ - reset pagination somehow when filter applied
 */
-
 
 import * as _ from 'lodash';
 import * as React from 'react';
@@ -94,7 +87,10 @@ export interface TyrTableProps extends TyrComponentProps {
   scroll?: {
     x?: boolean | number | string;
     y?: boolean | number | string;
-  }
+  },
+  footer?: (currentPageData: Object[]) => React.ReactNode;
+  title?: (currentPageData: Object[]) => React.ReactNode;
+  showHeader?: boolean;
 }
 
 @observer
@@ -111,6 +107,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     editingKey: Tyr.AnyIdType;
     isSavingDocument: boolean;
     tableDefn: TableDefinition;
+    newDocument?: Tyr.Document;
   } = {
     documents: this.props.newDocument ? [this.props.newDocument, ...(this.props.documents || [])] : this.props.documents || [],
     loading: false,
@@ -119,8 +116,19 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE,
     editingKey: '',
     isSavingDocument: false,
-    tableDefn: {}
+    tableDefn: {},
   };
+
+  componentWillReceiveProps(props: TyrTableProps) {
+    if (this.store.newDocument) {
+      if(this.store.newDocument.$id) {
+        delete this.store.newDocument;
+      }
+    } else if (props.newDocument && !props.newDocument.$id) {
+      this.store.documents = [props.newDocument, ...this.store.documents];
+      this.store.newDocument = props.newDocument;
+    }
+  }
 
   defaultToTableDefinition() {
     const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
@@ -321,6 +329,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   private cancelAutorun?: () => void;
+  private _mounted: boolean = false;
 
   startFinding() {
     if (!this.cancelAutorun) {
@@ -355,10 +364,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         })
       );
     }
+
+    this._mounted = true;
   }
 
   componentWillUnmount() {
     this.cancelAutorun!();
+    this._mounted = false;
   }
 
   private isEditing = (document: Tyr.Document) =>
@@ -428,11 +440,15 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       fields: columns,
       actionIconType,
       pinActionsRight,
-      actionLabel
+      actionLabel,
+      documents,
+      newDocument
     } = this.props;
-    const { workingSearchValues } = this.store;
+    const { workingSearchValues, editingKey } = this.store;
 
     const tableDefn = this.store.tableDefn;
+    const localSearch = !!documents;
+    const isAddingNewDocument = newDocument && newDocument.$id === '';
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(column => {
       const pathName = getFieldName(column.field);
@@ -447,21 +463,43 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         searchValues: workingSearchValues,
         onFilterChange: () => {
           // TODO:  remove this hack once we upgrade to latest ant
-          this.setState({});
+          if (this._mounted) {
+            this.setState({});
+          }
         },
         onSearch: () => {
-          const defn: TableDefinition = {
-            [pathName!]: {
-              ...((this.store.tableDefn[pathName!] as FieldDefinition) || {}),
-              searchValue: workingSearchValues[pathName!] || ''
-            }
-          };
+          if (!this.props.documents) {
+            const defn: TableDefinition = {
+              [pathName!]: {
+                ...((this.store.tableDefn[pathName!] as FieldDefinition) || {}),
+                searchValue: workingSearchValues[pathName!] || ''
+              }
+            };
 
-          this.goToRoute(defn);
-        }
+            this.goToRoute(defn);
+          }
+        },
+        localSearch
       };
 
       const np = field ? field.namePath : undefined;
+
+      let sorter = undefined;
+
+      if (field) {
+        if (column.sortComparator) {
+          sorter = column.sortComparator;
+        } else {
+          sorter = (a: Tyr.Document, b: Tyr.Document) => {
+            const av = np && np.get(a);
+            const bv = np && np.get(b);
+    
+            return field.type.compare(field, av, bv);
+          }
+        }
+      }
+
+      const filteredValue = pathName ? filterable.searchValues[pathName] : undefined;
 
       return {
         dataIndex: pathName,
@@ -476,7 +514,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               required: column.required,
               width: column.width,
               multiple: column.multiple,
-              mode: column.mode
+              mode: column.mode,
+              searchOptionRenderer: column.searchOptionRenderer,
+              searchSortById: column.searchSortById
             }
 
             return (
@@ -509,29 +549,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             </div>
           );
         },
-        sorterX: field
-          ? !field.link
-            ? (a: Tyr.Document, b: Tyr.Document) =>
-            {   const av = np && np.get(a);
-                const bv = np && np.get(b);
-
-                return field.type.compare(field, av, bv) }
-            : undefined
-          : undefined,
-        sorter: field
-          ? (a: Tyr.Document, b: Tyr.Document) =>
-            {   const av = np && np.get(a);
-                const bv = np && np.get(b);
-
-                return field.type.compare(field, av, bv) }
-            : undefined
-          ,
-        sortOrder: sortDirection,
+        sorter : isAddingNewDocument ? undefined : sorter,
+        sortOrder: isAddingNewDocument ? undefined: sortDirection,
         title: column.label || (field && field.label),
         width: column.width || undefined,
         className: column.className,
         ellipsis: column.ellipsis,
-        ...((np && getFilter(np, filterable)) || {}),
+        ...(!isAddingNewDocument && filteredValue ? { filteredValue : [filteredValue] } : {} ),
+        ...((!isAddingNewDocument && np && getFilter(np, filterable, column)) || {}),
         ...(column.pinned ? { fixed: column.pinned } : {}),
         ...(column.align ? { align: column.align } : {})
       };
@@ -661,7 +686,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     else
       this.store.tableDefn = { ...this.store.tableDefn, ...defn };
 
-    this.setState({}); // Hack to force a table re-render
+    if (this._mounted) {
+      this.setState({}); // Hack to force a table re-render
+    }
   };
 
   private pagination = () => {
@@ -688,7 +715,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   render() {
     const { documents, loading } = this.store;
-    const { className, children, rowEdit, size, onActionLabelClick, fields, scroll } = this.props;
+    const { className, children, rowEdit, size, onActionLabelClick, scroll, footer, title, showHeader } = this.props;
 
     const netClassName = 'tyr-table' + (className ? ' ' + className : '');
 
@@ -724,19 +751,24 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 size={size || 'small'}
                 pagination={this.pagination()}
                 onChange={this.handleTableChange}
+                footer={footer}
+                title={title}
+                showHeader={showHeader}
                 dataSource={
                   /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
                 }
                 columns={this.getColumns()}
                 scroll={ scroll }
                 onHeaderRow={
-//                  onActionLabelClick && this.actions.length ?
-                    (column, index) => {
+                  (columns, index) => {
+                    const column = columns[index];
+
+                    if (column.key === '$actions' && onActionLabelClick){
                       return {
-                        onClick: fields.length === index ? onActionLabelClick : undefined
-                      };
+                        onClick: onActionLabelClick
+                      };  
                     }
-//                  : undefined
+                  }
                 }
                 onRow={
                   rowEdit
@@ -744,7 +776,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                         return {
                           onDoubleClick: () => {
                             this.onEditRow(record, rowIndex);
-                            this.setState({});
+
+                            if (this._mounted) {
+                              this.setState({});
+                            }
                           }
                         };
                       }
@@ -758,7 +793,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     });
   }
 }
-
 interface EditableRowProps {
   form: WrappedFormUtils;
   index: number;

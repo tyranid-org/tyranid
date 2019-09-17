@@ -42,8 +42,6 @@ export class TyrComponent<
   constructor(props: Props, state: State) {
     super(props, state);
 
-    this.setState({ visible: true });
-
     this.collection = this.props.collection;
 
     if (props.actions) {
@@ -53,6 +51,10 @@ export class TyrComponent<
         this.enact(action)
       }
     }
+  }
+
+  componentDidMount() {
+    this.setState({ visible: true });
   }
 
   actions: TyrAction[] = [];

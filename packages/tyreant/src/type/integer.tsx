@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { Tyr } from 'tyranid/client';
 
-import { Input } from 'antd';
+import { Input, Slider, Button } from 'antd';
 
-import { mapPropsToForm } from './type';
+import { mapPropsToForm, Filter, Filterable, Finder } from './type';
 
 import {
   byName,
@@ -12,6 +13,9 @@ import {
   TyrTypeProps,
   withTypeContext
 } from './type';
+import { SliderValue } from 'antd/lib/slider';
+import { TyrFieldLaxProps } from '../core';
+import { FilterDropdownProps } from 'antd/es/table';
 
 export const TyrIntegerBase = ((props: TyrTypeProps) => {
   const { path, form } = props;
@@ -34,97 +38,112 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrInteger = withTypeContext(TyrIntegerBase);
-/*
-export const integerFilter: Filter = (
-  field: Tyr.FieldInstance,
-  filterable: Filterable
-) => {
-  const { namePath } = field;
-  const pathName = field.path;
-  let searchInputRef: Input | null = null;
 
-  const onClearFilters = () => {
-    filterable.searchValues[pathName] = '';
-    filterable.onSearch();
+export const integerFilter: Filter = (
+  path: Tyr.NamePathInstance,
+  filterable: Filterable,
+  props: TyrFieldLaxProps
+) => {
+  const pathName = path.name;
+  const { localSearch} = filterable;
+
+  const onClearFilters = (clearFilters?:  (selectedKeys: string[]) => void) => {
+    delete filterable.searchValues[pathName];
+
+    clearFilters && clearFilters([]);
+
+    if (localSearch) {    
+      filterable.onFilterChange();
+    } else {
+      filterable.onSearch();
+    }
   };
 
-  filterable.searchValues[pathName] = filterable.searchValues[pathName] || '';
+  filterable.searchValues[pathName] = filterable.searchValues[pathName];
+
+  const sliderProps = {
+    ...( props.searchRange ? { min : props.searchRange[0] as number } : {} ),
+    ...( props.searchRange ? { max : props.searchRange[1] as number } : {} )
+  };
 
   return {
-    filterDropdown: (
-      <div className="searchBox">
-        <Input
-          ref={node => {
-            searchInputRef = node;
+    filterDropdown: (filterDdProps: FilterDropdownProps) => (
+      <div className="search-box">
+        <Slider 
+          range
+          {...sliderProps}          
+          defaultValue={props.searchRange ? props.searchRange as [number,number] : [0,100] }
+          onChange={ (e:SliderValue) => {
+            filterable.searchValues[pathName] = e;
+
+            if (props.liveSearch) {
+              filterable.onFilterChange();
+            }
           }}
-          placeholder={`Search ${field.label}`}
-          value={filterable.searchValues[pathName]}
-          onChange={e => {
-            filterable.searchValues[pathName] = e.target.value;
-            filterable.onFilterChange();
-          }}
-          onPressEnter={() => filterable.onSearch()}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
+          style={{ width: 188 }}
         />
-        <Button
-          type="primary"
-          onClick={() => filterable.onSearch()}
-          icon="search"
-          size="small"
-          style={{ width: 90, marginRight: 8 }}
-        >
-          Search
-        </Button>
-        <Button
-          onClick={() => onClearFilters()}
-          size="small"
-          style={{ width: 90 }}
-        >
-          Reset
-        </Button>
+        <div className="search-box-footer">
+          <Button
+            onClick={() => onClearFilters(filterDdProps.clearFilters)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+          {!props.liveSearch && 
+            <Button
+              type="primary"
+              onClick={() => {
+                if (localSearch) {
+                  filterable.onFilterChange();
+                } else {
+                  filterable.onSearch();
+                }
+
+                filterDdProps.confirm && filterDdProps.confirm();
+              }}
+              icon="search"
+              size="small"
+              style={{ width: 90 }}
+            >
+              Search
+            </Button>
+          }
+        </div>
       </div>
     ),
-    filterIcon: (
-      <span>
-        <Icon
-          type="search"
-          className={filterable.searchValues[pathName] ? 'active' : 'inactive'}
-        />
-      </span>
-    ),
-    onFilter: (value: string, doc: Tyr.Document) =>
-      namePath
-        .get(doc)
-        .toString()
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+    onFilter: (value: number[], doc: Tyr.Document) => {
+      const intVal = path.get(doc) as number || 0;
+      return intVal >= value[0] && intVal <= value[1];
+    },
+    /*
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
         setTimeout(() => searchInputRef!.focus());
       }
     }
+    */
   };
 };
-*/
 
-/*
-export const stringFinder: Finder = (
-  field: Tyr.FieldInstance,
-  opts: Tyr.anny, // Tyr.Options_Find,
+export const integerFinder: Finder = (
+  path: Tyr.NamePathInstance,
+  opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {
   if (searchValue) {
     if (!opts.query) opts.query = {};
-    opts.query[field.path] = {
-      $regex: searchValue,
-      $options: 'i'
+    opts.query[path.name] = {
+      $and: [
+        { $gte : searchValue[0] },
+        { $lte : searchValue[1] }
+      ]
     };
   }
 };
-*/
 
 byName.integer = {
-  component: TyrIntegerBase
-  //filter: integerFilter,
-  //finder: integerFinder
+  component: TyrIntegerBase,
+  filter: integerFilter,
+  finder: integerFinder
 };
