@@ -18,6 +18,7 @@ import {
   withTypeContext
 } from './type';
 import { TyrFieldLaxProps } from '../core';
+import { FilterDropdownProps } from 'antd/es/table';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
   const { path, form } = props;
@@ -49,56 +50,91 @@ export const stringFilter: Filter = (
   const pathName = path.name;
   let searchInputRef: Input | null = null;
   const { detail: field } = path;
+  const { localSearch} = filterable;
 
-  const onClearFilters = () => {
-    filterable.searchValues[pathName] = '';
-    filterable.onSearch();
+  const onClearFilters = (clearFilters?:  (selectedKeys: string[]) => void) => {
+    delete filterable.searchValues[pathName];
+
+    clearFilters && clearFilters([]);
+
+    if (localSearch) {    
+      filterable.onFilterChange();
+    } else {
+      filterable.onSearch();
+    }
   };
 
-  filterable.searchValues[pathName] = filterable.searchValues[pathName] || '';
+  filterable.searchValues[pathName] = filterable.searchValues[pathName];
 
   return {
-    filterDropdown: (
+    filterDropdown: (filterDdProps: FilterDropdownProps) => (
       <div className="search-box">
         <Input
           ref={node => {
             searchInputRef = node;
           }}
           placeholder={`Search ${field.label}`}
-          value={filterable.searchValues[pathName]}
+          defaultValue={filterable.searchValues[pathName]}
           onChange={e => {
             filterable.searchValues[pathName] = e.target.value;
-            filterable.onFilterChange();
+
+            if (props.liveSearch) {
+              filterable.onFilterChange();
+            }
           }}
-          onPressEnter={() => filterable.onSearch()}
+          onPressEnter={() => {
+            if (localSearch) {
+              filterDdProps.confirm && filterDdProps.confirm();
+              filterable.onFilterChange();
+            } else {
+              filterable.onSearch();
+            }
+          }}
           style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
         <div className="search-box-footer">
           <Button
-            onClick={() => onClearFilters()}
+            onClick={() => onClearFilters(filterDdProps.clearFilters)}
             size="small"
             style={{ width: 90 }}
           >
             Reset
           </Button>
-          <Button
-            type="primary"
-            onClick={() => filterable.onSearch()}
-            icon="search"
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
+
+          { !props.liveSearch &&
+            <Button
+              type="primary"
+              onClick={() => {
+                  if (localSearch) {
+                    filterable.onFilterChange(); 
+                  } else {
+                    filterable.onSearch();
+                  }
+
+                  filterDdProps.confirm && filterDdProps.confirm();
+                }
+              }
+              icon="search"
+              size="small"
+              style={{ width: 90 }}
+            >
+              Search
+            </Button>
+          }
         </div>
       </div>
     ),
-    onFilter: (value: string, doc: Tyr.Document) =>
-      path
-        .get(doc)
-        .toString()
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+    onFilter: (value: string, doc: Tyr.Document) => {
+      if (value) {
+        return path
+          .get(doc)
+          .toString()
+          .toLowerCase()
+          .includes(value.toLowerCase())
+      }
+
+      return true;
+    },
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
         setTimeout(() => searchInputRef!.focus());

@@ -31,6 +31,7 @@ export interface Filterable {
   // TODO: when we upgrade to latest ant, that Table control takes a component, not a react node, so we can
   //       update via state/props/etc. instead of this callback
   onFilterChange(): void;
+  localSearch: boolean;
 }
 
 export type Filter = (
@@ -42,6 +43,7 @@ export type Filter = (
   filterIcon?: React.ReactNode;
   onFilter?: (value: any, doc: Tyr.Document) => boolean;
   onFilterDropdownVisibleChange?: (visible: boolean) => void;
+  filterDropdownVisible?: boolean
   filters?: ColumnFilterItem[];
 };
 

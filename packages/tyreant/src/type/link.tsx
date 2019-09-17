@@ -314,7 +314,16 @@ byName.link = {
     } : {
       text: v.$label,
       value: v._id
-    }))
+    })),
+    onFilter: (value: number, doc: Tyr.Document) => {
+      const val = path.get(doc);
+
+      if (Array.isArray(value)) {
+        return (value as any[]).indexOf(val) > -1;
+      }
+
+      return val === value;
+    },
   }),
   finder(
     path: Tyr.NamePathInstance,

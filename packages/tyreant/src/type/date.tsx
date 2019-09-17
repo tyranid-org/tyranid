@@ -20,6 +20,7 @@ import {
 } from './type';
 import { withTypeContext } from './type';
 import { TyrFieldLaxProps } from '../core';
+import { FilterDropdownProps } from 'antd/es/table';
 
 const DATE_FORMAT= 'MM/DD/YYYY';
 
@@ -47,56 +48,78 @@ export const dateFilter: Filter = (
   props: TyrFieldLaxProps
 ) => {
   
+  const { localSearch} = filterable;
   const pathName = path.name;
-  const minDate = moment();
-  minDate.subtract(1, 'year');
 
-  const range = props.searchRange || [minDate, moment()];
+  const onClearFilters = (clearFilters?:  (selectedKeys: string[]) => void) => {
+    delete filterable.searchValues[pathName];
 
-  const onClearFilters = () => {
-    filterable.searchValues[pathName] = range;
-    filterable.onSearch();
+    clearFilters && clearFilters([]);
+
+    if (localSearch) {    
+      filterable.onFilterChange();
+    } else {
+      filterable.onSearch();
+    }
   };
 
-  filterable.searchValues[pathName] = filterable.searchValues[pathName] || range;
+  filterable.searchValues[pathName] = filterable.searchValues[pathName];
 
   return {
-    filterDropdown: (
+    filterDropdown: (filterDdProps: FilterDropdownProps) => (
       <div className="search-box">
         <RangePicker
-          value={filterable.searchValues[pathName] || range}
-          defaultValue={range as [Moment,Moment]}
+          value={filterable.searchValues[pathName]}
           format={DATE_FORMAT}
-          onChange={ a => {
-            filterable.searchValues[pathName] = a;
-            filterable.onFilterChange();
-            filterable.onSearch()
+          onChange={ v => {
+            filterable.searchValues[pathName] = v;
+
+            if (props.liveSearch) {
+              filterable.onFilterChange();
+              filterDdProps.confirm && filterDdProps.confirm();
+            }
           }}
           //style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
         <div className="search-box-footer">
           <Button
-            onClick={() => onClearFilters()}
+            onClick={() => onClearFilters(filterDdProps.clearFilters)}
             size="small"
             style={{ width: 90 }}
           >
             Reset
           </Button>
-          <Button
-            type="primary"
-            onClick={() => filterable.onSearch()}
-            icon="search"
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
+          {!props.liveSearch && 
+            <Button
+              type="primary"
+              onClick={() => {
+                if (localSearch) {
+                  filterable.onFilterChange()
+                } else {
+                  filterable.onSearch()
+                }
+
+                filterDdProps.confirm && filterDdProps.confirm();
+              }}
+              icon="search"
+              size="small"
+              style={{ width: 90 }}
+            >
+              Search
+            </Button>
+          }
         </div>
       </div>
     ),
     onFilter: (value: number[], doc: Tyr.Document) => {
-      const intVal = path.get(doc) as number || 0;
-      return intVal >= value[0] && intVal <= value[1];
+      const val = path.get(doc);
+      
+      if (val) {
+        const dateVal = moment(val);
+        return dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1]);
+      }
+
+      return false;
     },
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {

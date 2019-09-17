@@ -1,15 +1,7 @@
 /*
-
- - Get sort working
- - Re-render not working until mouse move (on double click of row and cancel click)
- - figure out why first column is eyeglass
  - sort on TyrLink not there
- - set field value not setting
- - fixed column problems
- - when edit, looping on hook
-
+ - need liveSearch and localSearch working in link
 */
-
 
 import * as _ from 'lodash';
 import * as React from 'react';
@@ -432,11 +424,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       fields: columns,
       actionIconType,
       pinActionsRight,
-      actionLabel
+      actionLabel,
+      documents
     } = this.props;
     const { workingSearchValues } = this.store;
 
     const tableDefn = this.store.tableDefn;
+    const localSearch = !!documents;
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(column => {
       const pathName = getFieldName(column.field);
@@ -466,7 +460,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
             this.goToRoute(defn);
           }
-        }
+        },
+        localSearch
       };
 
       const np = field ? field.namePath : undefined;
@@ -485,6 +480,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           }
         }
       }
+
+      const filteredValue = pathName ? filterable.searchValues[pathName] : undefined;
 
       return {
         dataIndex: pathName,
@@ -538,7 +535,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         width: column.width || undefined,
         className: column.className,
         ellipsis: column.ellipsis,
-        filters: filterable.searchValues[pathName!],
+        ...(filteredValue ? { filteredValue : [filteredValue] } : {} ),
         ...((np && getFilter(np, filterable, column)) || {}),
         ...(column.pinned ? { fixed: column.pinned } : {}),
         ...(column.align ? { align: column.align } : {})
