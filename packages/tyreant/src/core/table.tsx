@@ -1,6 +1,7 @@
 /*
  - sort on TyrLink not there
  - need liveSearch and localSearch working in link
+ - reset pagination somehow when filter applied
 */
 
 import * as _ from 'lodash';
@@ -86,7 +87,10 @@ export interface TyrTableProps extends TyrComponentProps {
   scroll?: {
     x?: boolean | number | string;
     y?: boolean | number | string;
-  }
+  },
+  footer?: (currentPageData: Object[]) => React.ReactNode;
+  title?: (currentPageData: Object[]) => React.ReactNode;
+  showHeader?: boolean;
 }
 
 @observer
@@ -103,6 +107,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     editingKey: Tyr.AnyIdType;
     isSavingDocument: boolean;
     tableDefn: TableDefinition;
+    newDocument?: Tyr.Document;
   } = {
     documents: this.props.newDocument ? [this.props.newDocument, ...(this.props.documents || [])] : this.props.documents || [],
     loading: false,
@@ -111,8 +116,19 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE,
     editingKey: '',
     isSavingDocument: false,
-    tableDefn: {}
+    tableDefn: {},
   };
+
+  componentWillReceiveProps(props: TyrTableProps) {
+    if (this.store.newDocument) {
+      if(this.store.newDocument.$id) {
+        delete this.store.newDocument;
+      }
+    } else if (props.newDocument && !props.newDocument.$id) {
+      this.store.documents = [props.newDocument, ...this.store.documents];
+      this.store.newDocument = props.newDocument;
+    }
+  }
 
   defaultToTableDefinition() {
     const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
@@ -425,12 +441,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       actionIconType,
       pinActionsRight,
       actionLabel,
-      documents
+      documents,
+      newDocument
     } = this.props;
-    const { workingSearchValues } = this.store;
+    const { workingSearchValues, editingKey } = this.store;
 
     const tableDefn = this.store.tableDefn;
     const localSearch = !!documents;
+    const isAddingNewDocument = newDocument && newDocument.$id === '';
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(column => {
       const pathName = getFieldName(column.field);
@@ -496,7 +514,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               required: column.required,
               width: column.width,
               multiple: column.multiple,
-              mode: column.mode
+              mode: column.mode,
+              searchOptionRenderer: column.searchOptionRenderer,
+              searchSortById: column.searchSortById
             }
 
             return (
@@ -529,14 +549,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             </div>
           );
         },
-        sorter,
-        sortOrder: sortDirection,
+        sorter : isAddingNewDocument ? undefined : sorter,
+        sortOrder: isAddingNewDocument ? undefined: sortDirection,
         title: column.label || (field && field.label),
         width: column.width || undefined,
         className: column.className,
         ellipsis: column.ellipsis,
-        ...(filteredValue ? { filteredValue : [filteredValue] } : {} ),
-        ...((np && getFilter(np, filterable, column)) || {}),
+        ...(!isAddingNewDocument && filteredValue ? { filteredValue : [filteredValue] } : {} ),
+        ...((!isAddingNewDocument && np && getFilter(np, filterable, column)) || {}),
         ...(column.pinned ? { fixed: column.pinned } : {}),
         ...(column.align ? { align: column.align } : {})
       };
@@ -695,7 +715,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   render() {
     const { documents, loading } = this.store;
-    const { className, children, rowEdit, size, onActionLabelClick, scroll } = this.props;
+    const { className, children, rowEdit, size, onActionLabelClick, scroll, footer, title, showHeader } = this.props;
 
     const netClassName = 'tyr-table' + (className ? ' ' + className : '');
 
@@ -731,6 +751,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 size={size || 'small'}
                 pagination={this.pagination()}
                 onChange={this.handleTableChange}
+                footer={footer}
+                title={title}
+                showHeader={showHeader}
                 dataSource={
                   /* TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
                 }
@@ -770,7 +793,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     });
   }
 }
-
 interface EditableRowProps {
   form: WrappedFormUtils;
   index: number;

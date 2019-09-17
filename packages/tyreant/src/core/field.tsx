@@ -46,6 +46,8 @@ export interface TyrFieldProps {
   sortComparator?: (a:Tyr.Document, b:Tyr.Document) => number;  
   searchRange?: [number,number] | [Moment, Moment];
   filterOptionRenderer?: (v:any) => React.ReactElement;
+  searchOptionRenderer?: (v:any) => React.ReactElement;
+  searchSortById?: boolean;
   liveSearch?: boolean;
 }
 

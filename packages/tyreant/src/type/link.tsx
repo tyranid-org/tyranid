@@ -55,7 +55,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   private createOption = (val: Tyr.Document) => {
     const { $label } = val;
 
-    return <Option key={$label}>{$label}</Option>;
+    return <Option key={$label}>{this.props.searchOptionRenderer ? this.props.searchOptionRenderer(val) : $label}</Option>;
   };
 
   link?: Tyr.CollectionInstance;
@@ -78,17 +78,22 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (link!.isStatic()) {
       this.setState({
-        documents: link!.values.sort((a: any, b: any) => {
-          const aLabel = a.$label.toLowerCase();
-          const bLabel = b.$label.toLowerCase();
-          if (aLabel < bLabel) {
-            return -1;
-          }
-          if (aLabel > bLabel) {
-            return 1;
-          }
-          return 0;
-        })
+        documents: 
+          link!.values.sort((a: any, b: any) => {
+            if (props.searchSortById) {
+              return a.$id - b.$id;
+            }
+             
+            const aLabel = a.$label.toLowerCase();
+            const bLabel = b.$label.toLowerCase();
+            if (aLabel < bLabel) {
+              return -1;
+            }
+            if (aLabel > bLabel) {
+              return 1;
+            }
+            return 0;
+          })
       });
     } else {
       await this.search();
@@ -153,6 +158,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     if (this.mounted) {
       this.setState({
         documents: documents.sort((a, b) => {
+          if (this.props.searchSortById) {
+            return (a as any).$id - (b as any).$id;
+          }
+
           const aLabel = a.$label.toLowerCase();
           const bLabel = b.$label.toLowerCase();
           if (aLabel < bLabel) {
