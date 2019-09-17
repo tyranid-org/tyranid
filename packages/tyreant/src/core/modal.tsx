@@ -43,7 +43,9 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
       if (parent) parent.enact(edit);
     } else if (action.is('save')) {
       this.save = action.decorate({
-        action: () => this.closeModal()
+        action: () => {
+          /*this.closeModal(); */
+        }
       });
     } else if (action.is('cancel')) {
       this.cancel = action.decorate({

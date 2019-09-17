@@ -2,13 +2,14 @@ import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Row, Col, Form, message } from 'antd';
+import { Row, Col, Form, message, Input } from 'antd';
 import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 
 import {
   TypeContext,
   TyrTypeProps,
-  mapFormValueToDocument
+  mapFormValueToDocument,
+  assertTypeUi
 } from '../type/type';
 import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
 import { TyrComponentProps, TyrComponent } from './component';
@@ -59,16 +60,43 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
   private renderFormItem(fieldProps: TyrFieldExistsProps) {
     const { form, document } = this.props;
     const { field } = fieldProps;
+    const { type } = field;
+    const typeUi = assertTypeUi(type.name);
 
+    //label={<label htmlFor={field.path}>{field.label}</label>}
     return (
-      <FormItem key={field!.path}>
-        <label htmlFor={field.path}>{field.label}</label>
+      <FormItem key={field!.path} label={field.label}>
+        {React.createElement(typeUi.component, fieldProps as any)
+
+        /*
+          
+          form!.getFieldDecorator(field!.namePath.identifier, {
+          rules: [
+            {
+              required: true,
+              message: `string is required.`
+            }
+          ]
+        })(
+          <Input
+            type="text"
+            className="tyr-string"
+            autoComplete="off"
+            autoFocus={false}
+            placeholder={'some placeholder'}
+          />
+        )
+        */
+
+        /*
         <TyrFieldBase
           {...fieldProps}
           path={field.namePath}
           form={form!}
           document={document!}
         />
+  */
+        }
       </FormItem>
     );
   }

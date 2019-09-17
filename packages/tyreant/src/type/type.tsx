@@ -5,7 +5,6 @@ import { Tyr } from 'tyranid/client';
 import { ColumnFilterItem } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFieldLaxProps, TyrFieldProps } from '../core';
-import { propTypes } from 'mobx-react';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
@@ -15,7 +14,7 @@ export function generateRules(props: TyrTypeProps) {
   const rules = [];
   const { path } = props;
   const { tail: field } = path;
-  if (props.required || field.def.required) {
+  if (true || props.required || field.def.required) {
     rules.push({
       required: true,
       message: `${field.label} is required.`
@@ -155,6 +154,7 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
   const { path, document, form, value } = props;
 
   (window as any).a_document = document;
+  (window as any).a_form = form;
   (window as any).a_languages = form.getFieldsValue(['languages']);
   (window as any).a_languages_0_products_0_labels = form.getFieldsValue([
     'languages.0.products.0.labels'

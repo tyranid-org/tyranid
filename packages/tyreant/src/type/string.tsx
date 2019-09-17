@@ -27,7 +27,12 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
 
   console.log(path.identifier, ' +s+');
   return form!.getFieldDecorator(path.identifier, {
-    rules: generateRules(props)
+    rules: [
+      {
+        required: true,
+        message: `string is required.`
+      }
+    ]
   })(
     <Input
       className={className('tyr-string', props)}
