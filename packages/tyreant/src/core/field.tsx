@@ -29,6 +29,11 @@ export interface TyrFieldProps {
    */
   render?: (doc: Tyr.Document) => React.ReactElement;
 
+  /**
+   * Suppress the default generation of field labels.
+   */
+  noLabel?: boolean;
+
   // fixed array display format
   fixedField?: string;
 
@@ -91,7 +96,13 @@ export const decorateField = (
   return (
     <FormItem
       key={field!.path}
-      label={<label htmlFor={field.path}>{field.label}</label>}
+      label={
+        props.noLabel ? (
+          undefined
+        ) : (
+          <label htmlFor={field.path}>{field.label}</label>
+        )
+      }
     >
       {form.getFieldDecorator(path.identifier, {
         rules: generateRules(props)

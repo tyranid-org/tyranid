@@ -119,15 +119,12 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
 
   return (
     <>
-      <div className="tyr-labeled-field">
-        <label>{keyField.label}</label>
-        <TyrLink
-          path={keyPath}
-          value={keyValue}
-          form={form}
-          onSelect={onSelect}
-        />
-      </div>
+      <TyrLink
+        path={keyPath}
+        value={keyValue}
+        form={form}
+        onSelect={onSelect}
+      />
       {valueSubPath && (
         <TypeContext.Provider value={childProps as TyrTypeProps}>
           {children}
