@@ -6,26 +6,23 @@ import { Tyr } from 'tyranid/client';
 
 import { TimePicker } from 'antd';
 
-import {
-  byName,
-  generateRules,
-  TyrTypeProps,
-  className,
-  mapPropsToForm
-} from './type';
+import { byName, TyrTypeProps, className, mapPropsToForm } from './type';
 import { withTypeContext } from './type';
+import { decorateField } from '../core';
 
 export const TyrTimeBase = ((props: TyrTypeProps) => {
-  const { path, form } = props;
-
   useEffect(() => {
     mapPropsToForm(props);
   }, []);
 
-  return form.getFieldDecorator(path.name, {
-    rules: generateRules(props)
-  })(
-    props.renderField && props.document ? props.renderField(props.document) : <TimePicker className={className('tyr-time', props)} placeholder={props.placeholder}/>);
+  return decorateField(
+    props,
+    props.renderField && props.document ? props.renderField(props.document) : 
+    <TimePicker
+      className={className('tyr-time', props)}
+      placeholder={props.placeholder}
+    />
+  );
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrTime = withTypeContext(TyrTimeBase);

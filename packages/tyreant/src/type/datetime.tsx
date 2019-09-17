@@ -6,26 +6,18 @@ import { Tyr } from 'tyranid/client';
 
 import { DatePicker } from 'antd';
 
-import {
-  byName,
-  generateRules,
-  TyrTypeProps,
-  className,
-  mapPropsToForm
-} from './type';
+import { byName, TyrTypeProps, className, mapPropsToForm } from './type';
 import { withTypeContext } from './type';
+import { decorateField } from '../core';
 
 export const TyrDateTimeBase = ((props: TyrTypeProps) => {
-  const { path, form } = props;
-
   useEffect(() => {
     mapPropsToForm(props);
   }, []);
 
-  return form.getFieldDecorator(path.name, {
-    rules: generateRules(props)
-  })(
-    props.renderField && props.document ? props.renderField(props.document) : 
+  return decorateField(
+    props,
+    props.renderField && props.document ? props.renderField(props.document) :
     <DatePicker
       className={className('tyr-datetime', props)}
       allowClear={false}

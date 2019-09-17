@@ -5,39 +5,34 @@ import { Tyr } from 'tyranid/client';
 
 import { Button, Input } from 'antd';
 
-import { mapPropsToForm } from './type';
-
 import {
   byName,
   className,
-  generateRules,
+  mapPropsToForm,
   TyrTypeProps,
   Filter,
   Filterable,
   Finder,
   withTypeContext
 } from './type';
-import { TyrFieldLaxProps } from '../core';
+import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
-  const { path, form } = props;
-
   useEffect(() => {
     mapPropsToForm(props);
-  }, [])
+  }, []);
 
-  return form!.getFieldDecorator(path.name, {
-    rules: generateRules(props)
-  })(
+  return decorateField(
+    props,
     props.renderField && props.document ? props.renderField(props.document) : 
-      <Input
-        className={className('tyr-string', props)}
-        autoComplete="off"
-        type="text"
-        autoFocus={props.autoFocus}
-        placeholder={props.placeholder}
-      />
+    <Input
+      className={className('tyr-string', props)}
+      autoComplete="off"
+      type="text"
+      autoFocus={props.autoFocus}
+      placeholder={props.placeholder}
+    />
   );
 }) as React.ComponentType<TyrTypeProps>;
 
@@ -51,14 +46,14 @@ export const stringFilter: Filter = (
   const pathName = path.name;
   let searchInputRef: Input | null = null;
   const { detail: field } = path;
-  const { localSearch} = filterable;
+  const { localSearch } = filterable;
 
-  const onClearFilters = (clearFilters?:  (selectedKeys: string[]) => void) => {
+  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
 
     clearFilters && clearFilters([]);
 
-    if (localSearch) {    
+    if (localSearch) {
       filterable.onFilterChange();
     } else {
       filterable.onSearch();
@@ -102,26 +97,25 @@ export const stringFilter: Filter = (
             Reset
           </Button>
 
-          { !props.liveSearch &&
+          {!props.liveSearch && (
             <Button
               type="primary"
               onClick={() => {
-                  if (localSearch) {
-                    filterable.onFilterChange(); 
-                  } else {
-                    filterable.onSearch();
-                  }
-
-                  filterDdProps.confirm && filterDdProps.confirm();
+                if (localSearch) {
+                  filterable.onFilterChange();
+                } else {
+                  filterable.onSearch();
                 }
-              }
+
+                filterDdProps.confirm && filterDdProps.confirm();
+              }}
               icon="search"
               size="small"
               style={{ width: 90 }}
             >
               Search
             </Button>
-          }
+          )}
         </div>
       </div>
     ),
@@ -131,7 +125,7 @@ export const stringFilter: Filter = (
           .get(doc)
           .toString()
           .toLowerCase()
-          .includes(value.toLowerCase())
+          .includes(value.toLowerCase());
       }
 
       return true;

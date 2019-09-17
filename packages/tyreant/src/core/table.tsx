@@ -528,14 +528,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
                   return (
                     <span>
-                      <FormItem>
-                        <TyrFieldBase
-                          path={np!}
-                          form={form}
-                          document={document}
-                          {...fieldProps}
-                        />
-                      </FormItem>
+                      <TyrFieldBase
+                        path={np!}
+                        form={form}
+                        document={document}
+                        {...fieldProps}
+                      />
                     </span>
                   );
                 }}

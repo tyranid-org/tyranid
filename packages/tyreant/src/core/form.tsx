@@ -14,8 +14,6 @@ import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
 import { TyrComponentProps, TyrComponent } from './component';
 import { TyrAction, TyrActionFnOpts } from './action';
 
-const { Item: FormItem } = Form;
-
 type TyrFormBaseProps = {
   document: Tyr.Document;
   fields: TyrFieldProps[];
@@ -56,20 +54,17 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
     }
   }
 
-  private renderFormItem(fieldProps: TyrFieldExistsProps) {
+  private renderField(fieldProps: TyrFieldExistsProps) {
     const { form, document } = this.props;
     const { field } = fieldProps;
 
     return (
-      <FormItem key={field!.path}>
-        <label htmlFor={field.path}>{field.label}</label>
-        <TyrFieldBase
-          {...fieldProps}
-          path={field.namePath}
-          form={form!}
-          document={document!}
-        />
-      </FormItem>
+      <TyrFieldBase
+        {...fieldProps}
+        path={field.namePath}
+        form={form!}
+        document={document!}
+      />
     );
   }
 
@@ -82,7 +77,7 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
           {fields &&
             (fields as TyrFieldExistsProps[]).map(fieldProps => (
               <Row key={fieldProps.field.path} gutter={10}>
-                <Col span={24}>{this.renderFormItem(fieldProps)} </Col>
+                <Col span={24}>{this.renderField(fieldProps)} </Col>
               </Row>
             ))}
           {children}
@@ -185,8 +180,6 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
     const { children } = this.props;
 
     return this.wrap(() => {
-      console.log('rendering wrapped form');
-
       return (
         <TyrWrappedForm
           ref={this.getFormRef as any}

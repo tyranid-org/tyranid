@@ -6,10 +6,12 @@ import {
   assertTypeUi,
   TyrTypeProps,
   withTypeContext,
-  FieldState
+  FieldState,
+  generateRules
 } from '../type/type';
 import { SelectedValue } from 'antd/lib/select';
-import { Moment } from 'moment'
+import { Moment } from 'moment';
+import FormItem from 'antd/lib/form/FormItem';
 
 export type TyrSortDirection = 'ascend' | 'descend';
 
@@ -44,10 +46,10 @@ export interface TyrFieldProps {
   onStateChange?: (value: FieldState) => void;
   autoFocus?: boolean;
   required?: boolean;
-  sortComparator?: (a:Tyr.Document, b:Tyr.Document) => number;  
-  searchRange?: [number,number] | [Moment, Moment];
-  filterOptionRenderer?: (v:any) => React.ReactElement;
-  searchOptionRenderer?: (v:any) => React.ReactElement;
+  sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
+  searchRange?: [number, number] | [Moment, Moment];
+  filterOptionRenderer?: (v: any) => React.ReactElement;
+  searchOptionRenderer?: (v: any) => React.ReactElement;
   searchSortById?: boolean;
   liveSearch?: boolean;
 }
@@ -64,6 +66,39 @@ export const getFieldName = (field: string | Tyr.FieldInstance | undefined) => {
 
 export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field'> & {
   field?: Tyr.FieldInstance | string;
+};
+
+export const decorateField = (
+  props: TyrTypeProps,
+  component: React.ReactElement
+) => {
+  const { path, form } = props;
+  const { tail: field } = path;
+
+  /*
+     WARNING!
+
+     There seems to be a hard dependency inside ant's form handling where the following need to be immediately
+     descended from each other:
+
+       FormItem
+         getFieldDecorator()
+           input control
+
+     If you inject other components/dom objects (like a div) in between any of those three ant's form handling
+     breaks down.
+
+   */
+  return (
+    <FormItem
+      key={field!.path}
+      label={<label htmlFor={field.path}>{field.label}</label>}
+    >
+      {form.getFieldDecorator(path.identifier, {
+        rules: generateRules(props)
+      })(component)}
+    </FormItem>
+  );
 };
 
 export const TyrFieldBase = (props: TyrTypeProps) => {

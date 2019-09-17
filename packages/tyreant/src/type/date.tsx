@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import * as moment from 'moment';
-import { Moment } from 'moment'
+import { Moment } from 'moment';
 
 import { Tyr } from 'tyranid/client';
 
@@ -10,7 +10,6 @@ const { RangePicker } = DatePicker;
 
 import {
   byName,
-  generateRules,
   TyrTypeProps,
   className,
   mapPropsToForm,
@@ -19,23 +18,25 @@ import {
   Filterable
 } from './type';
 import { withTypeContext } from './type';
-import { TyrFieldLaxProps } from '../core';
+import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
 
-const DATE_FORMAT= 'MM/DD/YYYY';
+const DATE_FORMAT = 'MM/DD/YYYY';
 
 export const TyrDateBase = ((props: TyrTypeProps) => {
-  const { path, form } = props;
-
   useEffect(() => {
     mapPropsToForm(props);
   }, []);
 
-  return form.getFieldDecorator(path.name, {
-    rules: generateRules(props)
-  })(
+  return decorateField(
+    props,
     props.renderField && props.document ? props.renderField(props.document) : 
-     <DatePicker className={className('tyr-date', props)} allowClear={false} autoFocus={props.autoFocus} placeholder={props.placeholder}/>    
+    <DatePicker
+      className={className('tyr-date', props)}
+      allowClear={false}
+      autoFocus={props.autoFocus}
+      placeholder={props.placeholder}
+    />
   );
 }) as React.ComponentType<TyrTypeProps>;
 
@@ -46,16 +47,15 @@ export const dateFilter: Filter = (
   filterable: Filterable,
   props: TyrFieldLaxProps
 ) => {
-  
-  const { localSearch} = filterable;
+  const { localSearch } = filterable;
   const pathName = path.name;
 
-  const onClearFilters = (clearFilters?:  (selectedKeys: string[]) => void) => {
+  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
 
     clearFilters && clearFilters([]);
 
-    if (localSearch) {    
+    if (localSearch) {
       filterable.onFilterChange();
     } else {
       filterable.onSearch();
@@ -70,7 +70,7 @@ export const dateFilter: Filter = (
         <RangePicker
           value={filterable.searchValues[pathName]}
           format={DATE_FORMAT}
-          onChange={ v => {
+          onChange={v => {
             filterable.searchValues[pathName] = v;
 
             if (props.liveSearch) {
@@ -88,14 +88,14 @@ export const dateFilter: Filter = (
           >
             Reset
           </Button>
-          {!props.liveSearch && 
+          {!props.liveSearch && (
             <Button
               type="primary"
               onClick={() => {
                 if (localSearch) {
-                  filterable.onFilterChange()
+                  filterable.onFilterChange();
                 } else {
-                  filterable.onSearch()
+                  filterable.onSearch();
                 }
 
                 filterDdProps.confirm && filterDdProps.confirm();
@@ -106,16 +106,18 @@ export const dateFilter: Filter = (
             >
               Search
             </Button>
-          }
+          )}
         </div>
       </div>
     ),
     onFilter: (value: number[], doc: Tyr.Document) => {
       const val = path.get(doc);
-      
+
       if (val) {
         const dateVal = moment(val);
-        return dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1]);
+        return (
+          dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1])
+        );
       }
 
       return false;
@@ -136,10 +138,7 @@ export const dateFinder: Finder = (
   if (searchValue) {
     if (!opts.query) opts.query = {};
     opts.query[path.name] = {
-      $and: [
-        { $gte : searchValue[0] },
-        { $lte : searchValue[1] }
-      ]
+      $and: [{ $gte: searchValue[0] }, { $lte: searchValue[1] }]
     };
   }
 };
@@ -151,4 +150,3 @@ byName.date = {
   },
   filter: dateFilter
 };
-

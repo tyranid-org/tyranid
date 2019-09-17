@@ -29,13 +29,14 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
     throw new Error('TyrArrayKeyValue controls require an array of objects');
 
   const array = getTypeValue(props, []) as any[];
+  console.log(path.name + ' +-+ key-value array', array, `(${array.length})`);
 
   const keyPath = path.walk(keyFieldName);
   const keyField = keyPath.tail;
   const keyFieldLink = keyField.link;
   if (!keyFieldLink) throw new Error('"keyField" must be a link field');
 
-  const [valuePath, setValuePath] = useState<Tyr.NamePathInstance | undefined>(
+  const [valueSubPath, setValueSubPath] = useState<string | undefined>(
     undefined
   );
 
@@ -44,6 +45,11 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
     for (; ai < array.length; ai++) {
       const arrayEl = array[ai];
       const key = arrayEl[keyFieldName];
+      if (key === undefined) {
+        // this is ours, claim it
+        arrayEl[keyFieldName] = key;
+        break;
+      }
 
       if (key === selectedKey) {
         break;
@@ -51,18 +57,26 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
     }
 
     if (ai === array.length) {
+      console.log(
+        path.name + ' +-+ pushing',
+        keyFieldName,
+        selectedKey,
+        'onto',
+        array,
+        `(${array.length})`
+      );
       array.push({
         [keyFieldName]: selectedKey
       });
     }
 
-    setValuePath(path.walk(ai + '.' + valueFieldName));
+    setValueSubPath(ai + '.' + valueFieldName);
 
     setKeyValue({ value: selectedKey });
 
     form.setFieldsValue({
       //{
-      [keyPath.name]:
+      [keyPath.identifier]:
         //key: selectedKey, label:
         keyFieldLink.byIdIndex[selectedKey].$label
       //}
@@ -70,14 +84,17 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
   };
 
   if (keyFieldDefaultLabel) {
-    useEffect(() => {
-      (async () => {
-        const labels = await keyField.labels(document!, keyFieldDefaultLabel);
-        if (labels.length) {
-          selectKeyValue(labels[0].$id);
-        }
-      })();
-    }, []);
+    useEffect(
+      () => {
+        (async () => {
+          const labels = await keyField.labels(document!, keyFieldDefaultLabel);
+          if (labels.length) {
+            selectKeyValue(labels[0].$id);
+          }
+        })();
+      },
+      [path.name]
+    );
   }
 
   const [keyValue, setKeyValue] = useState<{ value?: any }>({
@@ -91,8 +108,14 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
 
   const childProps = {
     ...props,
-    path: valuePath!
+    path: valueSubPath && path.walk(valueSubPath!)
   };
+  console.log(
+    'providing valuePath of',
+    childProps.path && childProps.path.name,
+    'valueSubPath=',
+    valueSubPath
+  );
 
   return (
     <>
@@ -105,8 +128,8 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
           onSelect={onSelect}
         />
       </div>
-      {valuePath && (
-        <TypeContext.Provider value={childProps}>
+      {valueSubPath && (
+        <TypeContext.Provider value={childProps as TyrTypeProps}>
           {children}
         </TypeContext.Provider>
       )}

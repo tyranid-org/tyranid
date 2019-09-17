@@ -3,27 +3,19 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
-import {
-  byName,
-  generateRules,
-  TyrTypeProps,
-  className,
-  mapPropsToForm
-} from './type';
+import { byName, TyrTypeProps, className, mapPropsToForm } from './type';
 import { stringFilter, stringFinder } from './string';
 import { withTypeContext } from './type';
+import { decorateField } from '../core';
 
 export const TyrEmailBase = ((props: TyrTypeProps) => {
-  const { path, form } = props;
-
   useEffect(() => {
     mapPropsToForm(props);
   }, []);
 
-  return form!.getFieldDecorator(path.name, {
-    rules: generateRules(props)
-  })(
-    props.renderField && props.document ? props.renderField(props.document) : 
+  return decorateField(
+    props,
+    props.renderField && props.document ? props.renderField(props.document) :
     <Input
       className={className('tyr-email', props)}
       autoComplete="off"
