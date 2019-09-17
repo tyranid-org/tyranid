@@ -14,7 +14,7 @@ export function generateRules(props: TyrTypeProps) {
   const rules = [];
   const { path } = props;
   const { tail: field } = path;
-  if (true || props.required || field.def.required) {
+  if (props.required || field.def.required) {
     rules.push({
       required: true,
       message: `${field.label} is required.`
@@ -43,7 +43,7 @@ export type Filter = (
   filterIcon?: React.ReactNode;
   onFilter?: (value: any, doc: Tyr.Document) => boolean;
   onFilterDropdownVisibleChange?: (visible: boolean) => void;
-  filterDropdownVisible?: boolean
+  filterDropdownVisible?: boolean;
   filters?: ColumnFilterItem[];
 };
 
