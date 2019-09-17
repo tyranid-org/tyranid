@@ -21,10 +21,15 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return form!.getFieldDecorator(path.name, {
+  return form!.getFieldDecorator(path.identifier, {
     rules: generateRules(props)
   })(
-    <Input className={className('tyr-integer', props)} step="1" type="number" placeholder={props.placeholder}/>
+    <Input
+      className={className('tyr-integer', props)}
+      step="1"
+      type="number"
+      placeholder={props.placeholder}
+    />
   );
 }) as React.ComponentType<TyrTypeProps>;
 

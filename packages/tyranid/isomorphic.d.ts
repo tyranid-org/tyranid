@@ -130,6 +130,7 @@ export namespace Tyr {
   export interface NamePathInstance {
     detail: FieldInstance;
     name: string;
+    identifier: string;
     path: string[];
     fields: FieldInstance[];
     pathLabel: string;

@@ -23,11 +23,10 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
 
   useEffect(() => {
     mapPropsToForm(props);
-  }, 
-  []
-  )
+  }, []);
 
-  return form!.getFieldDecorator(path.name, {
+  console.log(path.identifier, ' +s+');
+  return form!.getFieldDecorator(path.identifier, {
     rules: generateRules(props)
   })(
     <Input

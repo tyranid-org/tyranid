@@ -5,6 +5,7 @@ import { Tyr } from 'tyranid/client';
 import { ColumnFilterItem } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFieldLaxProps, TyrFieldProps } from '../core';
+import { propTypes } from 'mobx-react';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
@@ -138,23 +139,35 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
   v = path.get(document!);
   if (!v && defaultValue !== undefined) {
     v = defaultValue;
-    path.set(document!, v);
+    path.set(document!, v, { create: true });
     v = path.get(document); // doing this until we can update mobx to 5+
   }
 
   return v;
 };
 
+export const fieldDecoratorName = (props: TyrTypeProps) => {
+  // ant forms act weird when there are '.'s in the property names
+  return props.path.name.replace(/\./g, '_');
+};
+
 export const mapPropsToForm = (props: TyrTypeProps) => {
   const { path, document, form, value } = props;
 
+  (window as any).a_document = document;
+  (window as any).a_languages = form.getFieldsValue(['languages']);
+  (window as any).a_languages_0_products_0_labels = form.getFieldsValue([
+    'languages.0.products.0.labels'
+  ]);
+
   if (value !== undefined) {
-    const oldValue = form.getFieldsValue(['value'])['value'];
+    const pathid = path.identifier;
+    const oldValue = form.getFieldsValue([pathid]).value;
     const newValue = value.value;
 
     if (oldValue !== newValue) {
       form.setFieldsValue({
-        ['value']: newValue
+        [pathid]: newValue
       });
     }
   } else {
@@ -167,13 +180,14 @@ export const mapDocumentToForm = (
   document: Tyr.Document,
   form: WrappedFormUtils
 ) => {
-  const oldValue = form.getFieldsValue([path.name])[path.name];
+  const pathid = path.identifier;
+  const oldValue = form.getFieldsValue([pathid])[pathid];
 
   const newValue = mapDocumentValueToFormValue(path, path.get(document));
 
   if (oldValue !== newValue) {
     form.setFieldsValue({
-      [path.name]: newValue
+      [pathid]: newValue
     });
   }
 };
@@ -206,7 +220,9 @@ export const mapFormValueToDocument = (
     return;
   }
 
-  path.set(document, mapFormValueToDocumentValue(path, value));
+  path.set(document, mapFormValueToDocumentValue(path, value), {
+    create: true
+  });
 };
 
 export const getFilter = (

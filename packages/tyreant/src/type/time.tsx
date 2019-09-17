@@ -22,9 +22,14 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return form.getFieldDecorator(path.name, {
+  return form.getFieldDecorator(path.identifier, {
     rules: generateRules(props)
-  })(<TimePicker className={className('tyr-time', props)} placeholder={props.placeholder}/>);
+  })(
+    <TimePicker
+      className={className('tyr-time', props)}
+      placeholder={props.placeholder}
+    />
+  );
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrTime = withTypeContext(TyrTimeBase);

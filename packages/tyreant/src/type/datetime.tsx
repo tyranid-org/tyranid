@@ -22,7 +22,7 @@ export const TyrDateTimeBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return form.getFieldDecorator(path.name, {
+  return form.getFieldDecorator(path.identifier, {
     rules: generateRules(props)
   })(
     <DatePicker

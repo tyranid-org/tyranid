@@ -185,8 +185,6 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
     const { children } = this.props;
 
     return this.wrap(() => {
-      console.log('rendering wrapped form');
-
       return (
         <TyrWrappedForm
           ref={this.getFormRef as any}

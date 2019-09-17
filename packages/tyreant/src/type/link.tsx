@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Tyr } from 'tyranid/client';
 
 import { Select, Spin } from 'antd';
-import { SelectProps, SelectedValue, LabeledValue } from 'antd/lib/select';
+import { SelectProps, SelectedValue } from 'antd/lib/select';
 const { Option } = Select;
 
 import { mapPropsToForm } from './type';
@@ -265,7 +265,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       };
     }
 
-    return getFieldDecorator(path.name, { rules })(
+    return getFieldDecorator(path.identifier, { rules })(
       <Select className={className('tyr-link', this.props)} {...selectProps}>
         {compact(documents.map(this.createOption))}
       </Select>

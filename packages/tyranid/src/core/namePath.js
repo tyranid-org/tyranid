@@ -346,7 +346,12 @@ NamePath.prototype.set = function(obj, value, opts) {
         if (name === '_') {
           pi++;
         } else if (name && name.match(NamePath._numberRegex)) {
-          walk(pi + 1, obj[name]);
+          let v = obj[name];
+          if (!v && opts && opts.create) {
+            v = obj[name] = fields[pi].type.name === 'array' ? [] : {};
+          }
+
+          walk(pi + 1, v);
           return;
         }
 
@@ -420,6 +425,16 @@ Object.defineProperty(NamePath.prototype, 'spath', {
       sp = this._spath = this.name.replace(/\._/g, '');
     }
     return sp;
+  }
+});
+
+Object.defineProperty(NamePath.prototype, 'identifier', {
+  get: function() {
+    let id = this._identifier;
+    if (!id) {
+      id = this._identifier = this.name.replace(/\./g, '_');
+    }
+    return id;
   }
 });
 
