@@ -11,7 +11,6 @@ const { RangePicker } = DatePicker;
 import {
   byName,
   TyrTypeProps,
-  className,
   mapPropsToForm,
   Finder,
   Filter,
@@ -29,14 +28,17 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
   }, []);
 
   return decorateField(
+    'date',
     props,
-    props.renderField && props.document ? props.renderField(props.document) : 
-    <DatePicker
-      className={className('tyr-date', props)}
-      allowClear={false}
-      autoFocus={props.autoFocus}
-      placeholder={props.placeholder}
-    />
+    props.renderField && props.document ? (
+      props.renderField(props.document)
+    ) : (
+      <DatePicker
+        allowClear={false}
+        autoFocus={props.autoFocus}
+        placeholder={props.placeholder}
+      />
+    )
   );
 }) as React.ComponentType<TyrTypeProps>;
 

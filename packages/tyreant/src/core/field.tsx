@@ -7,7 +7,8 @@ import {
   TyrTypeProps,
   withTypeContext,
   FieldState,
-  generateRules
+  generateRules,
+  className
 } from '../type/type';
 import { SelectedValue } from 'antd/lib/select';
 import { Moment } from 'moment';
@@ -27,7 +28,10 @@ export interface TyrFieldProps {
    * This indicates that the following render function should be used to render values.  If render is specified
    * then field is not required/needed.
    */
-  renderField?: (doc: Tyr.Document, options?:Tyr.Document[]) => React.ReactElement;
+  renderField?: (
+    doc: Tyr.Document,
+    options?: Tyr.Document[]
+  ) => React.ReactElement;
   renderDisplay?: (doc: Tyr.Document) => React.ReactElement;
 
   /**
@@ -74,6 +78,7 @@ export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field'> & {
 };
 
 export const decorateField = (
+  name: string,
   props: TyrTypeProps,
   component: React.ReactElement
 ) => {
@@ -97,6 +102,7 @@ export const decorateField = (
   return (
     <FormItem
       key={field!.path}
+      className={className('tyr-' + name, props)}
       label={
         props.noLabel ? (
           undefined
@@ -106,7 +112,8 @@ export const decorateField = (
       }
     >
       {form.getFieldDecorator(path.identifier, {
-        rules: generateRules(props)
+        rules: generateRules(props),
+        preserve: true
       })(component)}
     </FormItem>
   );

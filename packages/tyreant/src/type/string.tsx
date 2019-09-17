@@ -7,7 +7,6 @@ import { Button, Input } from 'antd';
 
 import {
   byName,
-  className,
   mapPropsToForm,
   TyrTypeProps,
   Filter,
@@ -24,15 +23,18 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
   }, []);
 
   return decorateField(
+    'string',
     props,
-    props.renderField && props.document ? props.renderField(props.document) : 
-    <Input
-      className={className('tyr-string', props)}
-      autoComplete="off"
-      type="text"
-      autoFocus={props.autoFocus}
-      placeholder={props.placeholder}
-    />
+    props.renderField && props.document ? (
+      props.renderField(props.document)
+    ) : (
+      <Input
+        autoComplete="off"
+        type="text"
+        autoFocus={props.autoFocus}
+        placeholder={props.placeholder}
+      />
+    )
   );
 }) as React.ComponentType<TyrTypeProps>;
 

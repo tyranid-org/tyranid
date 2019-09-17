@@ -270,11 +270,15 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     }
 
     return decorateField(
+      'link',
       props,
-      props.renderField && props.document ? props.renderField(props.document, documents) : 
-      <Select className={className('tyr-link', this.props)} {...selectProps}>
-        {compact(documents.map(this.createOption))}
-      </Select>
+      props.renderField && props.document ? (
+        props.renderField(props.document, documents)
+      ) : (
+        <Select {...selectProps}>
+          {compact(documents.map(this.createOption))}
+        </Select>
+      )
     );
   }
 }
