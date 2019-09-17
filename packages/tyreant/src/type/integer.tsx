@@ -6,7 +6,7 @@ import { Input, Slider, Button } from 'antd';
 
 import { mapPropsToForm, Filter, Filterable, Finder } from './type';
 
-import { byName, className, TyrTypeProps, withTypeContext } from './type';
+import { byName, TyrTypeProps, withTypeContext } from './type';
 import { SliderValue } from 'antd/lib/slider';
 import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
@@ -17,14 +17,13 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
   }, []);
 
   return decorateField(
+    'integer',
     props,
-    props.renderField && props.document ? props.renderField(props.document) :
-    <Input
-      className={className('tyr-integer', props)}
-      step="1"
-      type="number"
-      placeholder={props.placeholder}
-    />
+    props.renderField && props.document ? (
+      props.renderField(props.document)
+    ) : (
+      <Input step="1" type="number" placeholder={props.placeholder} />
+    )
   );
 }) as React.ComponentType<TyrTypeProps>;
 

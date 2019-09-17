@@ -273,6 +273,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     }
 
     return decorateField(
+      'link',
       props,
       props.renderField && props.document ? (
         props.renderField(props.document, documents)

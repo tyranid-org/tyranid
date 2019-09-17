@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
-import { byName, TyrTypeProps, className, mapPropsToForm } from './type';
+import { byName, TyrTypeProps, mapPropsToForm } from './type';
 import { stringFilter, stringFinder } from './string';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
@@ -14,15 +14,18 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
   }, []);
 
   return decorateField(
+    'email',
     props,
-    props.renderField && props.document ? props.renderField(props.document) :
-    <Input
-      className={className('tyr-email', props)}
-      autoComplete="off"
-      type="email"
-      placeholder={props.placeholder}
-      autoFocus={props.autoFocus}
-    />
+    props.renderField && props.document ? (
+      props.renderField(props.document)
+    ) : (
+      <Input
+        autoComplete="off"
+        type="email"
+        placeholder={props.placeholder}
+        autoFocus={props.autoFocus}
+      />
+    )
   );
 }) as React.ComponentType<TyrTypeProps>;
 
