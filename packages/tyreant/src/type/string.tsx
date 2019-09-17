@@ -5,37 +5,26 @@ import { Tyr } from 'tyranid/client';
 
 import { Button, Input } from 'antd';
 
-import { mapPropsToForm } from './type';
-
 import {
   byName,
   className,
-  generateRules,
+  mapPropsToForm,
   TyrTypeProps,
   Filter,
   Filterable,
   Finder,
   withTypeContext
 } from './type';
-import { TyrFieldLaxProps } from '../core';
+import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
-  const { path, form } = props;
-
   useEffect(() => {
     mapPropsToForm(props);
   }, []);
 
-  console.log(path.identifier, ' +s+');
-  return form!.getFieldDecorator(path.identifier, {
-    rules: [
-      {
-        required: true,
-        message: `string is required.`
-      }
-    ]
-  })(
+  return decorateField(
+    props,
     <Input
       className={className('tyr-string', props)}
       autoComplete="off"

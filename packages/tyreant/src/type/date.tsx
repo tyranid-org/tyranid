@@ -10,7 +10,6 @@ const { RangePicker } = DatePicker;
 
 import {
   byName,
-  generateRules,
   TyrTypeProps,
   className,
   mapPropsToForm,
@@ -19,21 +18,19 @@ import {
   Filterable
 } from './type';
 import { withTypeContext } from './type';
-import { TyrFieldLaxProps } from '../core';
+import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
 export const TyrDateBase = ((props: TyrTypeProps) => {
-  const { path, form } = props;
-
   useEffect(() => {
     mapPropsToForm(props);
   }, []);
 
-  return form.getFieldDecorator(path.identifier, {
-    rules: generateRules(props)
-  })(
+  return decorateField(
+    props,
+
     <DatePicker
       className={className('tyr-date', props)}
       allowClear={false}

@@ -9,7 +9,6 @@ import {
   TypeContext,
   mapFormValueToDocument
 } from './type';
-import FormItem from 'antd/lib/form/FormItem';
 import { TyrFieldBase, TyrFieldExistsProps } from '../core';
 import { Row, Col } from 'antd';
 
@@ -19,7 +18,7 @@ interface TyrObjectExtraProps {
 
 type TyrObjectProps = TyrTypeProps & TyrObjectExtraProps;
 
-const renderFormItem = (
+const renderField = (
   props: TyrObjectProps,
   fieldProps: TyrFieldExistsProps
 ) => {
@@ -27,15 +26,12 @@ const renderFormItem = (
   const { field } = fieldProps;
 
   return (
-    <FormItem key={field!.path}>
-      <label htmlFor={field.path}>{field.label}</label>
-      <TyrFieldBase
-        {...fieldProps}
-        path={props.path.walk(field.name)}
-        form={form!}
-        document={document!}
-      />
-    </FormItem>
+    <TyrFieldBase
+      {...fieldProps}
+      path={props.path.walk(field.name)}
+      form={form!}
+      document={document!}
+    />
   );
 };
 
@@ -47,7 +43,7 @@ export const TyrObjectBase = (props: TyrObjectProps) => {
       {fields &&
         fields.map(fieldProps => (
           <Row key={fieldProps.field.name} gutter={10}>
-            <Col span={24}>{renderFormItem(props, fieldProps)} </Col>
+            <Col span={24}>{renderField(props, fieldProps)} </Col>
           </Row>
         ))}
       {children}
