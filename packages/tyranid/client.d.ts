@@ -170,9 +170,12 @@ declare module 'tyranid/client' {
       $id: IdType;
       $label: string;
       $model: CollectionInstance<IdType, this>;
+      $orig?: this;
       $remove(opts: any): Promise<void>;
+      $revert(): void;
       $save(opts?: any): Promise<this>;
       $slice(path: string, opts: any): Promise<void>;
+      $snapshot(): void;
       $toPlain(): object;
       $tyr: typeof Tyr;
       $uid: string;

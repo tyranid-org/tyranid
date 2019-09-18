@@ -380,6 +380,13 @@ export function generateClientLibrary() {
       }
     },
 
+    $revert() {
+      const { $orig } = this;
+      if ($orig) {
+        Object.assign(this, _.cloneDeep($orig));
+      }
+    },
+
     $save() {
       return this.$model.save(this);
     },
