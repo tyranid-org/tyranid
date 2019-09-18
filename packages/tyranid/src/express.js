@@ -419,7 +419,7 @@ export function generateClientLibrary() {
     $snapshot() {
       Object.defineProperty(this, '$orig', {
         enumerable: false,
-        configurable: false,
+        configurable: true,
         value: this.$cloneDeep()
       });
     }
