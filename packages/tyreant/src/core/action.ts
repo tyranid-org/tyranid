@@ -13,7 +13,13 @@ export interface TyrActionOpts {
   name: string;
   label?: string | React.ReactNode;
   component?: TyrComponent<any>;
-  action: (opts: TyrActionFnOpts) => void;
+
+  /**
+   * If an action returns false or Promise<false> then the decorator action will not
+   * be applied.  Note that undefined/void is treated as returning true (i.e. the
+   * decorated action should be performed.
+   */
+  action: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
 }
 
 export class TyrAction {
@@ -21,7 +27,7 @@ export class TyrAction {
   name: string;
   label: string | React.ReactNode;
   component?: TyrComponent;
-  action: (opts: TyrActionFnOpts) => void;
+  action: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
 
   constructor({ traits, name, component, label, action }: TyrActionOpts) {
     this.traits = traits || [];
@@ -52,8 +58,24 @@ export class TyrAction {
 
     if (opts.action && this.action) {
       newOpts.action = (fnOpts: TyrActionFnOpts) => {
-        this.action(fnOpts);
-        opts.action!(fnOpts);
+        const result = this.action(fnOpts);
+
+        switch (typeof result) {
+          case 'undefined':
+            opts.action!(fnOpts);
+            break;
+          case 'boolean':
+            if (result) {
+              opts.action!(fnOpts);
+            }
+            break;
+          default:
+            result.then(promisedResult => {
+              if (promisedResult) {
+                opts.action!(fnOpts);
+              }
+            });
+        }
       };
     }
 

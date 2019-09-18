@@ -14,7 +14,8 @@ import {
   mapPropsToForm,
   Finder,
   Filter,
-  Filterable
+  Filterable,
+  onTypeChange
 } from './type';
 import { withTypeContext } from './type';
 import { TyrFieldLaxProps, decorateField } from '../core';
@@ -37,6 +38,7 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
         allowClear={false}
         autoFocus={props.autoFocus}
         placeholder={props.placeholder}
+        onChange={ev => onTypeChange(props, ev)}
       />
     )
   );

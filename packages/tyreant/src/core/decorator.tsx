@@ -11,6 +11,12 @@ export interface TyrDecorator {
   enact(action: TyrAction): void;
 }
 
+/**
+ * Similar to how "getFieldDecorator" decorates fields, a TyrDecorator decorates
+ * TyrComponents like TyrTable, TyrForm, and so on.
+ *
+ * Examples of Decorators are modals, drawers, panels, and so on.
+ */
 export abstract class TyrDecorator<
   Props extends TyrDecoratorProps = TyrDecoratorProps,
   State extends TyrDecoratorState = TyrDecoratorState

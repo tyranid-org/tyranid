@@ -10,7 +10,6 @@ export const TyrArrayFixed = (props: TyrTypeProps) => {
   const { path, children } = props;
 
   const array = getTypeValue(props, []) as any[];
-  console.log(path.name, ' +++ fixed path, array', array, `(${array.length})`);
 
   const { fixedField: fixedFieldName } = props;
   if (!fixedFieldName)

@@ -5,11 +5,7 @@ import { Tyr } from 'tyranid/client';
 import { Row, Col, Form, message } from 'antd';
 import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 
-import {
-  TypeContext,
-  TyrTypeProps,
-  mapFormValueToDocument
-} from '../type/type';
+import { TypeContext, TyrTypeProps } from '../type/type';
 import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
 import { TyrComponentProps, TyrComponent } from './component';
 import { TyrAction, TyrActionFnOpts } from './action';
@@ -24,23 +20,8 @@ export interface TyrFormFields {
 }
 
 class TyrFormBase extends React.Component<TyrFormBaseProps> {
-  //private lastId?: Tyr.AnyIdType;
-
-  private mapDocumentToForm() {
-    //const { document } = this.props;
-    //const { $id } = document;
-    //if ($id === this.lastId) return;
-    //this.lastId = $id;
-  }
-
-  //componentDidMount() {
-  //this.mapDocumentToForm();
-  //}
-
-  //componentDidUpdate() {
-  //this.mapDocumentToForm();
-  //}
-
+  /*
+  // this is very useful to track down when there is an infinite re-render cycle
   componentDidUpdate(prevProps: any, prevState: any) {
     Object.entries(this.props).forEach(
       ([key, val]) =>
@@ -53,6 +34,7 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
       );
     }
   }
+  */
 
   private renderField(fieldProps: TyrFieldExistsProps) {
     const { form, document } = this.props;
@@ -165,9 +147,8 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
         traits: ['save'],
         name: 'save',
         component: this,
-        action: (opts: TyrActionFnOpts) => {
-          submitForm(this.form!, this.state.document!);
-        }
+        action: (opts: TyrActionFnOpts) =>
+          submitForm(this.form!, this.state.document!)
       })
     );
   }
@@ -193,25 +174,31 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
   }
 }
 
-export function submitForm(form: WrappedFormUtils, document: Tyr.Document) {
-  const collection = document.$model;
+/**
+ * returns Promise<true> if the save was successful, Promise<false> if there were validation errors.
+ */
+export function submitForm(
+  form: WrappedFormUtils,
+  document: Tyr.Document
+): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    form.validateFields(async (err: Error, values: TyrFormFields) => {
+      try {
+        if (err) {
+          resolve(false);
+          return;
+        }
 
-  form.validateFields(async (err: Error, values: TyrFormFields) => {
-    try {
-      if (err) return;
+        // we don't need to map form values here, we map them via onTypeChange on the components themselves
 
-      for (const pathName in values) {
-        const value = values[pathName];
-        const field = collection.paths[pathName];
-        mapFormValueToDocument(field.namePath, value, document);
+        await document.$save();
+        document.$cache();
+        resolve(true);
+      } catch (saveError) {
+        if (saveError.message) message.error(saveError.message);
+        console.error(saveError);
+        reject(false);
       }
-
-      await document.$save();
-      document.$cache();
-    } catch (saveError) {
-      if (saveError.message) message.error(saveError.message);
-      console.error(saveError);
-      throw saveError;
-    }
+    });
   });
 }

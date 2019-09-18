@@ -23,10 +23,14 @@ export interface TyrComponentState {
   visible?: boolean;
 }
 
+/**
+ * A TyrComponent represents a react component that contains documents.  Examples
+ * are TyrTable and TyrForm.
+ */
 export class TyrComponent<
   Props extends TyrComponentProps = TyrComponentProps,
   State extends TyrComponentState = TyrComponentState
-> extends React.Component<Props,State> {
+> extends React.Component<Props, State> {
   collection?: Tyr.CollectionInstance;
   fields: TyrFieldProps[] = [];
   parent?: TyrComponent;
@@ -48,7 +52,7 @@ export class TyrComponent<
       const extraActions: TyrAction[] = props.actions;
 
       for (const action of extraActions) {
-        this.enact(action)
+        this.enact(action);
       }
     }
   }

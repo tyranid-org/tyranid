@@ -228,6 +228,15 @@ export const mapFormValueToDocument = (
   });
 };
 
+/**
+ * We want to keep the document up-to-date and in-sync with the form so that
+ * computed values and computed validations are always up-to-date.
+ */
+export const onTypeChange = (props: TyrTypeProps, value: any) => {
+  if (!props.value && props.document)
+    mapFormValueToDocument(props.path, value, props.document);
+};
+
 export const getFilter = (
   path: Tyr.NamePathInstance,
   filterable: Filterable,

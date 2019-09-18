@@ -7,15 +7,9 @@ import { Select, Spin } from 'antd';
 import { SelectProps, SelectedValue } from 'antd/lib/select';
 const { Option } = Select;
 
-import { mapPropsToForm } from './type';
+import { mapPropsToForm, onTypeChange } from './type';
 
-import {
-  byName,
-  Filterable,
-  TyrTypeProps,
-  className,
-  withTypeContext
-} from './type';
+import { byName, Filterable, TyrTypeProps, withTypeContext } from './type';
 import { TyrFieldLaxProps, decorateField } from '../core';
 
 export interface TyrLinkState {
@@ -275,7 +269,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       props.renderField && props.document ? (
         props.renderField(props.document, documents)
       ) : (
-        <Select {...selectProps}>
+        <Select
+          {...selectProps}
+          onChange={(ev: any) => onTypeChange(props, ev)}
+        >
           {compact(documents.map(this.createOption))}
         </Select>
       )

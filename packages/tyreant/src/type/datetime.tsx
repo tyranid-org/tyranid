@@ -6,7 +6,7 @@ import { Tyr } from 'tyranid/client';
 
 import { DatePicker } from 'antd';
 
-import { byName, TyrTypeProps, mapPropsToForm } from './type';
+import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
 
@@ -25,6 +25,7 @@ export const TyrDateTimeBase = ((props: TyrTypeProps) => {
         allowClear={false}
         placeholder={props.placeholder}
         autoFocus={props.autoFocus}
+        onChange={ev => onTypeChange(props, ev)}
       />
     )
   );

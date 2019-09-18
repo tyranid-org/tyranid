@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
-import { byName, TyrTypeProps, mapPropsToForm } from './type';
+import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
@@ -24,6 +24,7 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
         type="email"
         placeholder={props.placeholder}
         autoFocus={props.autoFocus}
+        onChange={ev => onTypeChange(props, ev.target.value)}
       />
     )
   );
