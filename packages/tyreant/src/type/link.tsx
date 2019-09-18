@@ -46,10 +46,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   protected lastFetchId = 0;
 
   private createOption = (val: Tyr.Document) => {
-    const { $label } = val;
+    const { $label, $id } = val;
 
     return (
-      <Option key={$label}>
+      <Option key={$id}>
         {this.props.searchOptionRenderer
           ? this.props.searchOptionRenderer(val)
           : $label}
@@ -130,11 +130,14 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     // include the current value
     const val = this.getValue();
+
     if (val) {
+      const fields = link.labelProjection();
+
       promises.push(
         // switch to simple Array.isArray() once we move to mobx 5
         link.byIds(typeof val === 'string' ? [val] : val, {
-          fields: { _id: 1, [link.labelField.name]: 1 }
+          fields
         })
       );
     }
@@ -357,9 +360,8 @@ byName.link = {
     const link = linkFor(path)!;
     if (link.labelField && !link.isStatic()) {
       if (!opts.populate) opts.populate = {};
-      opts.populate[path.name] = {
-        [link.labelField.path]: 1
-      };
+
+      opts.populate[path.name] = link.labelProjection();
     }
   },
   cellValue: (path: Tyr.NamePathInstance, document: Tyr.Document) => {

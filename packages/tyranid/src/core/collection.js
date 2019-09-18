@@ -641,6 +641,34 @@ export default class Collection {
     return doc[labelField.path];
   }
 
+  /**  @isomorphic */
+  labelProjection() {
+    const lf = this.labelField;
+
+    const fields = {
+      [lf.path]: 1
+    };
+
+    const getFn = lf.def.get;
+    if (getFn) {
+      const paths = Tyr.functions.paths(getFn);
+
+      for (const path of paths) {
+        fields[path] = 1;
+      }
+    }
+
+    const lfDef = lf.def.labelField;
+
+    if (typeof lfDef === 'object' && !!lfDef.uses) {
+      for (const path of lfDef.uses) {
+        fields[path] = 1;
+      }
+    }
+
+    return fields;
+  }
+
   async labels(text, opts) {
     const lf = this.labelField;
     if (!lf) {
@@ -655,18 +683,7 @@ export default class Collection {
           [lf.path]: new RegExp(text, 'i')
         };
 
-    const fields = {
-      [lf.path]: 1
-    };
-
-    const getFn = lf.def.get;
-    if (getFn) {
-      const paths = Tyr.functions.paths(getFn);
-
-      for (const path of paths) {
-        fields[path] = 1;
-      }
-    }
+    const fields = this.labelProjection();
 
     return await this.findAll({ query, projection: fields, ...opts });
   }

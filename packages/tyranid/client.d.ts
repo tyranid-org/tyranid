@@ -141,6 +141,7 @@ declare module 'tyranid/client' {
       label: string;
       labelField: any;
       labelFor(doc: T | object): string;
+      labelProjection(): any; // Mongo Projection
       labels(text: string): Promise<T[]>;
       labels(ids: string[]): Promise<T[]>;
       labels(_: any): Promise<T[]>;

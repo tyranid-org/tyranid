@@ -1,6 +1,13 @@
-import * as _ from 'lodash';
+// cannot use import because @isomorphic
+const _ = require('lodash');
 
-import Tyr from '../tyr';
+const Tyr = require('../tyr').default;
+
+/**
+ * NOTE: This cannot be a ES6 class because it is isomorphic
+ *
+ * @isomorphic
+ */
 
 /**
  * Analyzes function to see which properties/paths are referred to on the local object.

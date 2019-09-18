@@ -630,6 +630,10 @@ export function generateClientLibrary() {
 
   ${translateClass(NamePath)}
 
+  Tyr.functions = { 
+    paths: ${es5Fn(Tyr.functions.paths)}
+  };
+
   Collection.prototype.parsePath = function(path) {
     return new NamePath(this, path);
   };
@@ -855,6 +859,9 @@ export function generateClientLibrary() {
   Collection.prototype.isStatic = ${es5Fn(Collection.prototype.isStatic)};
 
   Collection.prototype.labelFor = ${es5Fn(Collection.prototype.labelFor)};
+  Collection.prototype.labelProjection = ${es5Fn(
+    Collection.prototype.labelProjection
+  )};
 
   Collection.prototype.byId = function(id, opts) {
     var col = this;

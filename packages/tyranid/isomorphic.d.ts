@@ -59,7 +59,7 @@ export namespace Tyr {
     max?: number;
     step?: number;
 
-    labelField?: boolean;
+    labelField?: boolean | { uses: string[] };
     pattern?: RegExp;
     minlength?: number;
     maxlength?: number;
@@ -172,6 +172,7 @@ export namespace Tyr {
     label: string;
     labelField: any;
     labelFor(doc: T | object): string;
+    labelProjection(): any; // Mongo Projection
     labels(text: string): Promise<T[]>;
     labels(ids: string[]): Promise<T[]>;
     labels(_: any): Promise<T[]>;
