@@ -8,16 +8,20 @@ import { SelectProps, SelectedValue } from 'antd/lib/select';
 const { Option } = Select;
 
 import { FilterDropdownProps } from 'antd/es/table';
-import { mapPropsToForm, Filter } from './type';
 
 import {
+  className,
+  mapPropsToForm,
+  onTypeChange,
+  Filter,
   byName,
   Filterable,
   TyrTypeProps,
-  className,
   withTypeContext
 } from './type';
+
 import { TyrFieldLaxProps, decorateField } from '../core';
+
 import Checkbox from 'antd/es/checkbox';
 
 export interface TyrLinkState {
@@ -288,7 +292,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       props.renderField && props.document ? (
         props.renderField(props.document, documents)
       ) : (
-        <Select className={className('tyr-link', this.props)} {...selectProps}>
+        <Select
+          {...selectProps}
+          onChange={(ev: any) => onTypeChange(props, ev)}
+        >
           {compact(documents.map(this.createOption))}
         </Select>
       )
@@ -475,34 +482,6 @@ byName.link = {
     return value && value.key ? value.key : value;
   },
   filter: linkFilter,
-  /*filter: (
-    path: Tyr.NamePathInstance,
-    filterable: Filterable,
-    props: TyrFieldLaxProps
-  ) => ({
-    filters: linkFor(path)!.values.map(
-      (v: any) =>
-        props.filterOptionRenderer
-          ? {
-              text: props.filterOptionRenderer(v),
-              value: v._id
-            }
-          : {
-              text: v.$label,
-              value: v._id
-            }
-    ),
-    onFilter: (value: number, doc: Tyr.Document) => {
-      const val = path.get(doc);
-
-      if (Array.isArray(value)) {
-        return (value as any[]).indexOf(val) > -1;
-      }
-
-      return val === value;
-    }
-  }),
-  */
   finder(
     path: Tyr.NamePathInstance,
     opts: any /* Tyr.Options_Find */,

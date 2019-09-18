@@ -12,7 +12,8 @@ import {
   Filter,
   Filterable,
   Finder,
-  withTypeContext
+  withTypeContext,
+  onTypeChange
 } from './type';
 import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
@@ -33,6 +34,7 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
         type="text"
         autoFocus={props.autoFocus}
         placeholder={props.placeholder}
+        onChange={ev => onTypeChange(props, ev.target.value)}
       />
     )
   );

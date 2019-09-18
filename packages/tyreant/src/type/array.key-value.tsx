@@ -29,7 +29,6 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
     throw new Error('TyrArrayKeyValue controls require an array of objects');
 
   const array = getTypeValue(props, []) as any[];
-  console.log(path.name + ' +-+ key-value array', array, `(${array.length})`);
 
   const keyPath = path.walk(keyFieldName);
   const keyField = keyPath.tail;
@@ -57,14 +56,6 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
     }
 
     if (ai === array.length) {
-      console.log(
-        path.name + ' +-+ pushing',
-        keyFieldName,
-        selectedKey,
-        'onto',
-        array,
-        `(${array.length})`
-      );
       array.push({
         [keyFieldName]: selectedKey
       });
@@ -110,12 +101,6 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
     ...props,
     path: valueSubPath && path.walk(valueSubPath!)
   };
-  console.log(
-    'providing valuePath of',
-    childProps.path && childProps.path.name,
-    'valueSubPath=',
-    valueSubPath
-  );
 
   return (
     <>

@@ -4,7 +4,13 @@ import { Tyr } from 'tyranid/client';
 
 import { Input, Slider, Button } from 'antd';
 
-import { mapPropsToForm, Filter, Filterable, Finder } from './type';
+import {
+  mapPropsToForm,
+  Filter,
+  Filterable,
+  Finder,
+  onTypeChange
+} from './type';
 
 import { byName, TyrTypeProps, withTypeContext } from './type';
 import { SliderValue } from 'antd/lib/slider';
@@ -22,7 +28,12 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
     props.renderField && props.document ? (
       props.renderField(props.document)
     ) : (
-      <Input step="1" type="number" placeholder={props.placeholder} />
+      <Input
+        step="1"
+        type="number"
+        placeholder={props.placeholder}
+        onChange={ev => onTypeChange(props, ev.target.value)}
+      />
     )
   );
 }) as React.ComponentType<TyrTypeProps>;

@@ -6,7 +6,7 @@ import { Tyr } from 'tyranid/client';
 
 import { TimePicker } from 'antd';
 
-import { byName, TyrTypeProps, mapPropsToForm } from './type';
+import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
 
@@ -21,7 +21,10 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
     props.renderField && props.document ? (
       props.renderField(props.document)
     ) : (
-      <TimePicker placeholder={props.placeholder} />
+      <TimePicker
+        placeholder={props.placeholder}
+        onChange={ev => onTypeChange(props, ev)}
+      />
     )
   );
 }) as React.ComponentType<TyrTypeProps>;
