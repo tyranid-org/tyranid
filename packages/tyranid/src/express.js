@@ -409,8 +409,12 @@ export function generateClientLibrary() {
       });
     }
 
-    $share() {
-      this.$model.byIdIndex[this._id] = this;
+    $snapshot() {
+      Object.defineProperty(doc, '$orig', {
+        enumerable: false,
+        configurable: false,
+        value: this.$cloneDeep()
+      });
     }
 
     $toPlain() {
