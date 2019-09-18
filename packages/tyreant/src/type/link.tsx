@@ -1,16 +1,28 @@
-import { compact, debounce } from 'lodash';
+import { compact, debounce, uniq } from 'lodash';
 import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Select, Spin } from 'antd';
+import { Select, Spin, Button, Menu } from 'antd';
 import { SelectProps, SelectedValue } from 'antd/lib/select';
 const { Option } = Select;
 
-import { mapPropsToForm, onTypeChange } from './type';
+import { FilterDropdownProps } from 'antd/es/table';
 
-import { byName, Filterable, TyrTypeProps, withTypeContext } from './type';
+import {
+  className,
+  mapPropsToForm,
+  onTypeChange,
+  Filter,
+  byName,
+  Filterable,
+  TyrTypeProps,
+  withTypeContext
+} from './type';
+
 import { TyrFieldLaxProps, decorateField } from '../core';
+
+import Checkbox from 'antd/es/checkbox';
 
 export interface TyrLinkState {
   documents: Tyr.Document[];
@@ -39,6 +51,28 @@ const findByLabel = (collection: Tyr.CollectionInstance, label: string) => {
 
 const findById = (collection: Tyr.CollectionInstance, id: string) =>
   collection.values.find(lv => lv.$id === id);
+
+type Label = { $id: any; $label: string };
+
+const sortLabels = (labels: any[], searchSortById?: boolean) => {
+  (labels as Label[]).sort((a, b) => {
+    if (searchSortById) {
+      return a.$id - b.$id;
+    }
+
+    const aLabel = a.$label.toLowerCase();
+    const bLabel = b.$label.toLowerCase();
+    if (aLabel < bLabel) {
+      return -1;
+    }
+    if (aLabel > bLabel) {
+      return 1;
+    }
+    return 0;
+  });
+
+  return labels;
+};
 
 export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   state: TyrLinkState = { documents: [], loading: false };
@@ -77,21 +111,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (link!.isStatic()) {
       this.setState({
-        documents: link!.values.sort((a: any, b: any) => {
-          if (props.searchSortById) {
-            return a.$id - b.$id;
-          }
-
-          const aLabel = a.$label.toLowerCase();
-          const bLabel = b.$label.toLowerCase();
-          if (aLabel < bLabel) {
-            return -1;
-          }
-          if (aLabel > bLabel) {
-            return 1;
-          }
-          return 0;
-        })
+        documents: sortLabels(link!.values, props.searchSortById)
       });
     } else {
       await this.search();
@@ -105,9 +125,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (value) {
       return value.value;
-    } else {
-      return path.get(document);
     }
+
+    return path.get(document);
   }
 
   componentWillUnmount() {
@@ -285,6 +305,149 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
 export const TyrLink = withTypeContext(TyrLinkBase);
 
+export const linkFilter: Filter = (
+  path: Tyr.NamePathInstance,
+  filterable: Filterable,
+  props: TyrFieldLaxProps
+) => {
+  const pathName = path.name;
+  const { localSearch, localDocuments } = filterable;
+
+  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
+    delete filterable.searchValues[pathName];
+
+    clearFilters && clearFilters([]);
+
+    if (localSearch) {
+      filterable.onFilterChange();
+    } else {
+      filterable.onSearch();
+    }
+  };
+
+  let filterValues: { $id: any; $label: string }[] | undefined;
+
+  if (localSearch && localDocuments && props.filterOptionLabel) {
+    // Go get all the values for the filter
+    filterValues = uniq(
+      compact(localDocuments.map((d: any) => props.filterOptionLabel!(d))), //user (populated field)
+      '$id'
+    );
+  } else {
+    const link = linkFor(path)!;
+
+    if (!link.isStatic()) {
+      path.tail.labels(new path.tail.collection({})).then(results => {
+        filterValues = results;
+      });
+    } else {
+      filterValues = linkFor(path)!.values;
+    }
+  }
+
+  return {
+    filterDropdown: (filterDdProps: FilterDropdownProps) => (
+      <div className="search-box" style={{ padding: 0 }}>
+        <Menu
+          className="ant-table-filter-dropdown ant-dropdown-menu"
+          style={{ maxHeight: '400px', overflowX: 'hidden', padding: 0 }}
+          defaultSelectedKeys={filterable.searchValues[pathName]}
+          mode="vertical"
+          multiple={true}
+          onClick={({ key }) => {
+            if (!filterable.searchValues[pathName]) {
+              filterable.searchValues[pathName] = [];
+            }
+
+            const values = filterable.searchValues[pathName];
+            const keyIdx = values.indexOf(key);
+
+            if (keyIdx > -1) {
+              filterable.searchValues[pathName].splice(keyIdx, 1);
+            } else {
+              values.push(key);
+            }
+
+            if (props.liveSearch) {
+              filterable.onFilterChange();
+            }
+          }}
+        >
+          {sortLabels(
+            filterValues || linkFor(path)!.values,
+            props.searchSortById
+          ).map((v: any) => {
+            const values = filterable.searchValues[pathName];
+            const isChecked = values && values.indexOf(v.$id) > -1;
+
+            return (
+              <Menu.Item
+                key={v.$id}
+                className="ant-dropdown-menu-item"
+                style={{
+                  marginBottom: 0,
+                  marginTop: 0,
+                  lineHeight: '30px',
+                  height: '30px'
+                }}
+              >
+                <Checkbox checked={isChecked} />
+                {props.filterOptionRenderer
+                  ? props.filterOptionRenderer(v)
+                  : v.$label}
+              </Menu.Item>
+            );
+          })}
+        </Menu>
+        <div className="search-box-footer" style={{ padding: '8px' }}>
+          <Button
+            onClick={() => onClearFilters(filterDdProps.clearFilters)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Reset
+          </Button>
+          {!props.liveSearch && (
+            <Button
+              type="primary"
+              onClick={() => {
+                if (localSearch) {
+                  filterable.onFilterChange();
+                } else {
+                  filterable.onSearch();
+                }
+
+                filterDdProps.confirm && filterDdProps.confirm();
+              }}
+              icon="search"
+              size="small"
+              style={{ width: 90 }}
+            >
+              Search
+            </Button>
+          )}
+        </div>
+      </div>
+    ),
+    onFilter: (value: any, doc: Tyr.Document) => {
+      const val = path.get(doc);
+
+      if (Array.isArray(value)) {
+        return (value as any[]).indexOf(val) > -1;
+      }
+
+      return val === value;
+    }
+    /*
+    onFilterDropdownVisibleChange: (visible: boolean) => {
+      if (visible) {
+        setTimeout(() => searchInputRef!.focus());
+      }
+    }
+    */
+  };
+};
+
 byName.link = {
   component: TyrLinkBase,
 
@@ -297,9 +460,11 @@ byName.link = {
       });
     } else {
       const nv = findById(linkFor(path)!, value as string);
-      if (nv) value = nv.$label;
+
+      if (nv) value = nv.$label; // HIGH_RISK
     }
 
+    // if collection has label renderer, then return value with labelProjection
     return value && value.label ? value.label : value;
   },
   // Given labels, return the ids
@@ -316,33 +481,7 @@ byName.link = {
 
     return value && value.key ? value.key : value;
   },
-  filter: (
-    path: Tyr.NamePathInstance,
-    filterable: Filterable,
-    props: TyrFieldLaxProps
-  ) => ({
-    filters: linkFor(path)!.values.map(
-      (v: any) =>
-        props.filterOptionRenderer
-          ? {
-              text: props.filterOptionRenderer(v),
-              value: v._id
-            }
-          : {
-              text: v.$label,
-              value: v._id
-            }
-    ),
-    onFilter: (value: number, doc: Tyr.Document) => {
-      const val = path.get(doc);
-
-      if (Array.isArray(value)) {
-        return (value as any[]).indexOf(val) > -1;
-      }
-
-      return val === value;
-    }
-  }),
+  filter: linkFilter,
   finder(
     path: Tyr.NamePathInstance,
     opts: any /* Tyr.Options_Find */,

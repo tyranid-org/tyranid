@@ -64,8 +64,6 @@ export const stringFilter: Filter = (
     }
   };
 
-  filterable.searchValues[pathName] = filterable.searchValues[pathName];
-
   return {
     filterDropdown: (filterDdProps: FilterDropdownProps) => (
       <div className="search-box">

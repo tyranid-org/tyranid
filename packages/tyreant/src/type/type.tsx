@@ -32,6 +32,7 @@ export interface Filterable {
   //       update via state/props/etc. instead of this callback
   onFilterChange(): void;
   localSearch: boolean;
+  localDocuments?: Tyr.Document<any>[];
 }
 
 export type Filter = (
