@@ -351,7 +351,7 @@ export const linkFilter: Filter = (
         <Menu
           className="ant-table-filter-dropdown ant-dropdown-menu"
           style={{ maxHeight: '400px', overflowX: 'hidden', padding: 0 }}
-          defaultSelectedKeys={filterable.searchValues[pathName]}
+          selectedKeys={filterable.searchValues[pathName]}
           mode="vertical"
           multiple={true}
           onClick={({ key }) => {
@@ -456,12 +456,28 @@ byName.link = {
     if (Array.isArray(value)) {
       value = value.map(v => {
         const nv = findById(linkFor(path)!, v);
-        return nv ? nv.$label : v;
+        if (nv) {
+          const column = (path.tail as any).column;
+          if (column && column.translateForWhiteLabel) {
+            return column.translateForWhiteLabel(nv.$label);
+          }
+
+          return nv.$label;
+        }
+
+        return v;
       });
     } else {
       const nv = findById(linkFor(path)!, value as string);
 
-      if (nv) value = nv.$label; // HIGH_RISK
+      if (nv) {
+        const column = (path.tail as any).column;
+        if (column && column.translateForWhiteLabel) {
+          value = column.translateForWhiteLabel(nv.$label);
+        } else {
+          value = nv.$label;
+        }
+      }
     }
 
     // if collection has label renderer, then return value with labelProjection

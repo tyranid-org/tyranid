@@ -458,6 +458,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       const pathName = getFieldName(column.field);
       const field = pathName && collection.paths[pathName];
 
+      (field as any).column = column;
+
       const fieldDefn = pathName && (tableDefn[pathName] as FieldDefinition);
       const { sortDirection } = fieldDefn || {
         sortDirection: undefined

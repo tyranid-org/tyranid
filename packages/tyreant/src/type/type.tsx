@@ -157,13 +157,6 @@ export const fieldDecoratorName = (props: TyrTypeProps) => {
 export const mapPropsToForm = (props: TyrTypeProps) => {
   const { path, document, form, value } = props;
 
-  (window as any).a_document = document;
-  (window as any).a_form = form;
-  (window as any).a_languages = form.getFieldsValue(['languages']);
-  (window as any).a_languages_0_products_0_labels = form.getFieldsValue([
-    'languages.0.products.0.labels'
-  ]);
-
   if (value !== undefined) {
     const pathid = path.identifier;
     const oldValue = form.getFieldsValue([pathid]).value;
