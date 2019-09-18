@@ -417,7 +417,7 @@ export function generateClientLibrary() {
     }
 
     $snapshot() {
-      Object.defineProperty(doc, '$orig', {
+      Object.defineProperty(this, '$orig', {
         enumerable: false,
         configurable: false,
         value: this.$cloneDeep()
