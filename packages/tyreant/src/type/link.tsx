@@ -10,7 +10,6 @@ const { Option } = Select;
 import { FilterDropdownProps } from 'antd/es/table';
 
 import {
-  className,
   mapPropsToForm,
   onTypeChange,
   Filter,
@@ -330,7 +329,7 @@ export const linkFilter: Filter = (
   if (localSearch && localDocuments && props.filterOptionLabel) {
     // Go get all the values for the filter
     filterValues = uniq(
-      compact(localDocuments.map((d: any) => props.filterOptionLabel!(d))), //user (populated field)
+      compact(localDocuments.map((d: any) => props.filterOptionLabel!(d))),
       '$id'
     );
   } else {
@@ -338,10 +337,20 @@ export const linkFilter: Filter = (
 
     if (!link.isStatic()) {
       path.tail.labels(new path.tail.collection({})).then(results => {
-        filterValues = results;
+        filterValues = results.map(d => {
+          return {
+            ...d,
+            $id: String(d.$id)
+          };
+        });
       });
     } else {
-      filterValues = linkFor(path)!.values;
+      filterValues = linkFor(path)!.values.map(d => {
+        return {
+          ...d,
+          $id: String(d.$id)
+        };
+      });
     }
   }
 
@@ -355,17 +364,19 @@ export const linkFilter: Filter = (
           mode="vertical"
           multiple={true}
           onClick={({ key }) => {
+            const strKey = String(key);
+
             if (!filterable.searchValues[pathName]) {
               filterable.searchValues[pathName] = [];
             }
 
             const values = filterable.searchValues[pathName];
-            const keyIdx = values.indexOf(key);
+            const keyIdx = values.indexOf(strKey);
 
             if (keyIdx > -1) {
               filterable.searchValues[pathName].splice(keyIdx, 1);
             } else {
-              values.push(key);
+              values.push(strKey);
             }
 
             if (props.liveSearch) {
@@ -430,7 +441,7 @@ export const linkFilter: Filter = (
       </div>
     ),
     onFilter: (value: any, doc: Tyr.Document) => {
-      const val = path.get(doc);
+      const val = String(path.get(doc));
 
       if (Array.isArray(value)) {
         return (value as any[]).indexOf(val) > -1;

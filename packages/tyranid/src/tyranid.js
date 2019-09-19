@@ -49,6 +49,8 @@ import './log/log';
 import './diff/diff';
 import './secure/secure';
 
+import './ui/table-config';
+
 import './unit/unitSystem';
 import './unit/unitFactor';
 import './unit/unitType';
