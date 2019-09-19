@@ -54,6 +54,7 @@ declare module 'tyranid/client' {
     ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
     export function labelize(name: string): string;
     export function pluralize(str: string): string;
+    export function singularize(str: string): string;
     export const setSocketLibrary: (library: typeof io) => void;
     export const reconnectSocket: () => void;
 
@@ -82,6 +83,18 @@ declare module 'tyranid/client' {
         opts?: { create?: boolean; ignore?: boolean }
       ): void;
       walk(path: string | number): NamePathInstance;
+    }
+
+    export interface TypeStatic extends Isomorphic.TypeStatic {
+      byName: { [key: string]: TypeInstance };
+      new (...args: any[]): TypeInstance;
+    }
+    export interface TypeDefinition extends Isomorphic.TypeDefinition {}
+    export interface TypeInstance extends Isomorphic.TypeInstance {
+      def: TypeDefinition;
+      create(field: FieldInstance): any;
+      compare(field: FieldInstance, a: any, b: any): number;
+      format(field: FieldInstance, value: any): string;
     }
 
     export interface FieldDefinitionRaw extends Isomorphic.FieldDefinitionRaw {}

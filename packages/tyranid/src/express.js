@@ -354,6 +354,7 @@ export function generateClientLibrary() {
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
+  Tyr.singularize = ${es5Fn(Tyr.singularize)};
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
 
   const documentPrototype = Tyr.documentPrototype = {
@@ -502,6 +503,7 @@ export function generateClientLibrary() {
   }
   Type.prototype.compare = ${es5Fn(Type.prototype.compare)};
   Type.prototype.format = ${es5Fn(Type.prototype.format)};
+  Type.prototype.create = ${es5Fn(Type.prototype.create)};
   Type.byName = {};
   Tyr.Type = Type;
 `;
@@ -509,6 +511,11 @@ export function generateClientLibrary() {
   _.each(Type.byName, type => {
     file += `  new Type({
       name: '${type.name}',`;
+
+    if (type.def.create) {
+      file += `
+      compare: ${es5Fn(type.def.create)},`;
+    }
 
     if (type.def.compare) {
       file += `

@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 
-import { Tyr } from 'tyranid/client';
-
 import { TyrLink } from './link';
 import { TyrTypeProps, getTypeValue, TypeContext } from './type';
 import { SelectedValue, LabeledValue } from 'antd/lib/select';

@@ -24,6 +24,24 @@ export namespace Tyr {
     };
   }
 
+  export interface TypeStatic {
+    byName: { [key: string]: TypeInstance };
+
+    new (...args: any[]): TypeInstance;
+  }
+
+  export interface TypeDefinition {
+    name: string;
+  }
+
+  export interface TypeInstance {
+    name: string;
+    def: TypeDefinition;
+    create(field: FieldInstance): any;
+    compare(field: FieldInstance, a: any, b: any): number;
+    format(field: FieldInstance, value: any): string;
+  }
+
   export interface FieldDefinitionRaw {
     [key: string]: any;
     is?: string;

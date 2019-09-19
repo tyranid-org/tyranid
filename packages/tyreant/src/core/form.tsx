@@ -57,6 +57,7 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
       <Form className="tyr-form">
         <TypeContext.Provider value={(this.props as unknown) as TyrTypeProps}>
           {fields &&
+            !children &&
             (fields as TyrFieldExistsProps[]).map(fieldProps => (
               <Row key={fieldProps.field.path} gutter={10}>
                 <Col span={24}>{this.renderField(fieldProps)} </Col>
