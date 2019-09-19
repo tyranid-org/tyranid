@@ -11,6 +11,7 @@ export default class Type {
     Type.validateType(this);
   }
 
+  /** @isomorphic */
   compare(field, a, b) {
     if (a !== undefined && a !== null) {
       if (b !== undefined && b !== null) {
@@ -45,6 +46,15 @@ export default class Type {
     }
   }
 
+  /** @isomorphic */
+  create(field) {
+    if (field.defaultValue) return field.defaultValue;
+
+    const v = this.def.create;
+    if (v) return v.call(this, field);
+    //return undefined;
+  }
+
   validate(field, value) {
     if (field.def.required && value === undefined) {
       return new ValidationError(field, 'is required');
@@ -77,6 +87,7 @@ export default class Type {
     return f ? f(field, value) : value;
   }
 
+  /** @isomorphic */
   format(field, value) {
     const f = this.def.format;
     return f ? f.call(this, field, value) : value;

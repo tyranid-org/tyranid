@@ -201,6 +201,16 @@ const Tyr = {
     }
   },
 
+  singularize(name) {
+    if (name.match(/es$/)) {
+      return name.substring(0, name.length - 2);
+    } else if (name.match(/s$/)) {
+      return name.substring(0, name.length - 1);
+    } else {
+      return name;
+    }
+  },
+
   //
   // async/await/promise utilities
   //

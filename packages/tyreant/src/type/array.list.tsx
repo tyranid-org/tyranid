@@ -1,7 +1,10 @@
 import * as React from 'react';
 
-import { TyrTypeProps, getTypeValue } from './type';
-import { TyrField, TyrFieldBase } from '../core';
+import { Tyr } from 'tyranid/client';
+
+import { TyrTypeProps, getTypeValue, className, onTypeChange } from './type';
+import { TyrFieldBase } from '../core';
+import { Button } from 'antd';
 
 /**
  * This control renders an array as a list of its contents.
@@ -13,16 +16,52 @@ export const TyrArrayList = (props: TyrTypeProps) => {
   //mapDocumentToForm(field, document, form);
   //}, []);
 
-  console.log('path', path);
-  const value = getTypeValue(props, []) as any[];
-  console.log('value', value);
+  const { tail: field, detail: elField } = path;
+
+  const [array, setArray] = React.useState(getTypeValue(props, []) as any[]);
+
+  // using a counter here because we want to keep using the same array
+  const [counter, setCounter] = React.useState(0);
+
+  const addElement = () => {
+    array.push(elField.type.create(elField));
+    setArray(array);
+    setCounter(counter + 1);
+    onTypeChange(props, array);
+  };
+
+  const removeElement = (idx: number) => {
+    array.splice(idx, 1);
+    setArray(array);
+    setCounter(counter + 1);
+    onTypeChange(props, array);
+  };
 
   return (
-    <>
-      {value.map((value, idx) => {
+    <div className={className('tyr-array-list', props)}>
+      <label>{field.label}:</label>
+      <br />
+      {!array.length && (
+        <div>
+          <i>None</i>
+        </div>
+      )}
+      {array.map((value, idx) => {
         const childPath = path.tail.collection.parsePath(path.name + '.' + idx);
-        <TyrFieldBase {...props} path={childPath} />;
+        return (
+          <div className="tyr-array-list-element" key={idx}>
+            <Button
+              icon="close"
+              size="small"
+              onClick={ev => removeElement(idx)}
+            />
+            <TyrFieldBase noLabel {...props} path={childPath} />
+          </div>
+        );
       })}
-    </>
+      <Button onClick={() => addElement()}>
+        {'Add ' + Tyr.singularize(field.label as string)}
+      </Button>
+    </div>
   );
 };

@@ -89,6 +89,7 @@ export namespace Tyr {
   ): { collection: CollectionInstance; id: AnyIdType };
   export function labelize(name: string): string;
   export function pluralize(str: string): string;
+  export function singularize(str: string): string;
   export function config(opts: ConfigOptions): Promise<void>;
   export function connect(opts: ConnectOptions): void;
   export function createIndexes(): Promise<void>;
@@ -949,7 +950,8 @@ export namespace Tyr {
   export interface TypeInstance {
     name: string;
     def: TypeDefinition;
-    compare(field: FieldInstance, a: any, b: any): void;
+    create(field: FieldInstance): any;
+    compare(field: FieldInstance, a: any, b: any): number;
     compile(compiler: any, path: string, field: FieldInstance): void;
     fromString(str: string): any;
     fromClient(field: FieldInstance, value: any): any;
