@@ -353,6 +353,7 @@ export function generateClientLibrary() {
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
+  Tyr.ordinalize = ${es5Fn(Tyr.ordinalize)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
@@ -534,7 +535,7 @@ export function generateClientLibrary() {
 
   function Field(def) {
     this.def = def;
-    this.type = Type.byName[def.link ? 'link' : def.is];
+    this.type = Type.byName[def.link && !def.is ? 'link' : def.is];
 
     if (def.pattern) {
       def.pattern = refineJson(def.pattern);

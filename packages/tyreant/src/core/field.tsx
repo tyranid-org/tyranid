@@ -13,6 +13,7 @@ import {
 import { SelectedValue } from 'antd/lib/select';
 import { Moment } from 'moment';
 import FormItem from 'antd/lib/form/FormItem';
+import { Tooltip, Icon } from 'antd';
 
 export type TyrSortDirection = 'ascend' | 'descend';
 
@@ -44,6 +45,7 @@ export interface TyrFieldProps {
 
   // key-value display format -- field must be an array
   keyField?: string;
+  keyFieldClass?: string;
   keyFieldDefault?: string; // the default value to set the key field control to (label)
   valueField?: string;
 
@@ -83,7 +85,7 @@ export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field'> & {
 export const decorateField = (
   name: string,
   props: TyrTypeProps,
-  component: React.ReactElement
+  component: () => React.ReactElement
 ) => {
   const { path, form } = props;
   const { tail: field } = path;
@@ -102,22 +104,37 @@ export const decorateField = (
      breaks down.
 
    */
+
+  let label;
+  if (!props.noLabel) {
+    const { help } = field.def;
+
+    label = (
+      <>
+        {field.label}
+        {help && (
+          <Tooltip title={help}>
+            &nbsp;<Icon type="exclamation-circle" />
+          </Tooltip>
+        )}
+      </>
+    );
+  }
+
   return (
     <FormItem
       key={field!.path}
       className={className('tyr-' + name, props)}
-      label={
-        props.noLabel ? (
-          undefined
-        ) : (
-          <label htmlFor={field.path}>{field.label}</label>
-        )
-      }
+      label={label}
     >
       {form.getFieldDecorator(path.identifier, {
         rules: generateRules(props),
         preserve: true
-      })(component)}
+      })(
+        props.renderField && props.document
+          ? props.renderField(props.document)
+          : component()
+      )}
     </FormItem>
   );
 };

@@ -93,7 +93,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
   const onSelect = (
     selectedValue: SelectedValue
     //option: React.ReactElement<any>
-  ) => selectKeyValue((selectedValue as LabeledValue).key);
+  ) => selectKeyValue((selectedValue as LabeledValue).key || selectedValue);
 
   const childProps = {
     ...props,
@@ -103,6 +103,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
   return (
     <>
       <TyrLink
+        className={props.keyFieldClass}
         path={keyPath}
         value={keyValue}
         form={form}

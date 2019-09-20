@@ -1846,7 +1846,26 @@ export default class Collection {
             }
 
             field.link = type;
-            field.type = Type.byName.link;
+
+            if (!fieldDef.is || fieldDef.is === 'link') {
+              field.type = Type.byName.link;
+            } else {
+              // it's a link-type field like a bitmask
+              type = Type.byName[fieldDef.is];
+
+              if (type instanceof Collection) {
+                throw compiler.err(
+                  path,
+                  'Trying to "is" a collection -- ' +
+                    fieldDef.is +
+                    ', either make it a "link" or a metadata snippet'
+                );
+              }
+
+              if (type) {
+                field.type = type;
+              }
+            }
 
             field.type.compile(compiler, field);
           }

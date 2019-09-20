@@ -211,6 +211,15 @@ const Tyr = {
     }
   },
 
+  ordinalize(number) {
+    const string = String(number);
+
+    if (/1$/.test(string) && !/11$/.test(string)) return number + 'st';
+    if (/2$/.test(string) && !/12$/.test(string)) return number + 'nd';
+    if (/3$/.test(string) && !/13$/.test(string)) return number + 'rd';
+    return number + 'th';
+  },
+
   //
   // async/await/promise utilities
   //
