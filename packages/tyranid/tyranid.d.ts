@@ -871,9 +871,31 @@ export namespace Tyr {
     ): Promise<Tyr.Document[]>;
   }
 
-  export interface NamePathStatic extends Isomorphic.NamePathStatic {}
+  export interface NamePathInstance extends Isomorphic.NamePathInstance {
+    detail: FieldInstance;
+    fields: FieldInstance[];
+    tail: FieldInstance;
 
-  export interface NamePathInstance extends Isomorphic.NamePathInstance {}
+    parsePath(path: string): NamePathInstance;
+    set<D extends Tyr.Document>(
+      obj: D,
+      value: any,
+      opts?: { create?: boolean; ignore?: boolean }
+    ): void;
+    walk(path: string | number): NamePathInstance;
+  }
+
+  export interface TypeStatic extends Isomorphic.TypeStatic {
+    byName: { [key: string]: TypeInstance };
+    new (...args: any[]): TypeInstance;
+  }
+  export interface TypeDefinition extends Isomorphic.TypeDefinition {}
+  export interface TypeInstance extends Isomorphic.TypeInstance {
+    def: TypeDefinition;
+    create(field: FieldInstance): any;
+    compare(field: FieldInstance, a: any, b: any): number;
+    format(field: FieldInstance, value: any): string;
+  }
 
   export interface UnitsStatic {
     new (

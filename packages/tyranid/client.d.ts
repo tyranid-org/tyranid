@@ -79,7 +79,7 @@ declare module 'tyranid/client' {
       parsePath(path: string): NamePathInstance;
       set<D extends Tyr.Document>(
         obj: D,
-        prop: string,
+        value: any,
         opts?: { create?: boolean; ignore?: boolean }
       ): void;
       walk(path: string | number): NamePathInstance;

@@ -160,7 +160,7 @@ export namespace Tyr {
     get(obj: any): any;
     set<D extends Tyr.Document>(
       obj: D,
-      prop: string,
+      value: any,
       opts?: { create?: boolean; ignore?: boolean }
     ): void;
     walk(path: string | number): NamePathInstance;
