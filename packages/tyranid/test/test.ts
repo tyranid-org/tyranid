@@ -582,12 +582,12 @@ describe('tyranid', () => {
 
       it('should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 1 });
-        expect(_.values(fields).length).to.be.eql(26);
+        expect(_.values(fields).length).to.be.eql(27);
       });
 
       it('should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({ organization: 2 });
-        expect(_.values(fields).length).to.be.eql(24);
+        expect(_.values(fields).length).to.be.eql(25);
       });
 
       it('should set dyn fields on insert for matching objects', async () => {
@@ -2253,7 +2253,7 @@ describe('tyranid', () => {
     describe('collection.links()', () => {
       it('should work with no options', () => {
         const links = User.links();
-        expect(links.length).to.be.eql(14);
+        expect(links.length).to.be.eql(15);
       });
 
       it('should work with incoming', () => {
@@ -2263,7 +2263,7 @@ describe('tyranid', () => {
 
       it('should work with outgoing', () => {
         const links = User.links({ direction: 'outgoing' });
-        expect(links.length).to.be.eql(7);
+        expect(links.length).to.be.eql(8);
       });
 
       it('should work with relate', () => {
@@ -2271,7 +2271,7 @@ describe('tyranid', () => {
         expect(links.length).to.be.eql(1);
 
         links = User.links({ relate: 'associate' });
-        expect(links.length).to.be.eql(13);
+        expect(links.length).to.be.eql(14);
       });
     });
 
@@ -2486,6 +2486,15 @@ describe('tyranid', () => {
             new Date('2018-01-01 11:30:20Z')
           )
         ).to.eql('01-01-2018 05:30:00 -06:00');
+      });
+
+      it('should format bitmask values', () => {
+        const bitmaskType = User.fields.bitmaskedJobs;
+
+        expect(bitmaskType.type.format(bitmaskType, 2)).to.eql('Software Lead');
+        expect(bitmaskType.type.format(bitmaskType, 3)).to.eql(
+          'Software Engineer, Software Lead'
+        );
       });
     });
 

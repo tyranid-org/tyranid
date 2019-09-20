@@ -13,21 +13,15 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return decorateField(
-    'email',
-    props,
-    props.renderField && props.document ? (
-      props.renderField(props.document)
-    ) : (
-      <Input
-        autoComplete="off"
-        type="email"
-        placeholder={props.placeholder}
-        autoFocus={props.autoFocus}
-        onChange={ev => onTypeChange(props, ev.target.value)}
-      />
-    )
-  );
+  return decorateField('email', props, () => (
+    <Input
+      autoComplete="off"
+      type="email"
+      placeholder={props.placeholder}
+      autoFocus={props.autoFocus}
+      onChange={ev => onTypeChange(props, ev.target.value)}
+    />
+  ));
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrEmail = withTypeContext(TyrEmailBase);

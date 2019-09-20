@@ -23,21 +23,15 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return decorateField(
-    'string',
-    props,
-    props.renderField && props.document ? (
-      props.renderField(props.document)
-    ) : (
-      <Input
-        autoComplete="off"
-        type="text"
-        autoFocus={props.autoFocus}
-        placeholder={props.placeholder}
-        onChange={ev => onTypeChange(props, ev.target.value)}
-      />
-    )
-  );
+  return decorateField('string', props, () => (
+    <Input
+      autoComplete="off"
+      type="text"
+      autoFocus={props.autoFocus}
+      placeholder={props.placeholder}
+      onChange={ev => onTypeChange(props, ev.target.value)}
+    />
+  ));
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrString = withTypeContext(TyrStringBase);

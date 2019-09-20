@@ -4,6 +4,7 @@ import * as glob from 'glob';
 import Tyr from './tyr';
 
 import './type/array';
+import './type/bitmask';
 import './type/boolean';
 import './type/date';
 import './type/datetime';

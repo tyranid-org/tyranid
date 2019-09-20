@@ -6,25 +6,29 @@ import Type from '../core/type';
 import Collection from '../core/collection';
 import { func } from 'prop-types';
 
+export const compileRelate = (compiler, field) => {
+  const relate = field.def.relate;
+
+  switch (relate) {
+    case undefined:
+    case 'associate':
+    case 'owns':
+    case 'ownedBy':
+      field.relate = relate || 'associate';
+      break;
+    default:
+      throw compiler.err(
+        field.path,
+        '"relate" must be one of "associate", "owns", or "ownedBy" if present'
+      );
+  }
+};
+
 const LinkType = new Type({
   name: 'link',
 
   compile(compiler, field) {
-    const relate = field.def.relate;
-
-    switch (relate) {
-      case undefined:
-      case 'associate':
-      case 'owns':
-      case 'ownedBy':
-        field.relate = relate || 'associate';
-        break;
-      default:
-        throw compiler.err(
-          field.path,
-          '"relate" must be one of "associate", "owns", or "ownedBy" if present'
-        );
-    }
+    compileRelate(compiler, field);
   },
 
   fromClient(field, value) {

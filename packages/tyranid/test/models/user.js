@@ -89,6 +89,8 @@ var User = new tyr.Collection({
 
     bag: { is: 'object' },
 
+    bitmaskedJobs: { is: 'bitmask', link: 'job' },
+
     $strings: {
       $base: { is: 'string' },
 

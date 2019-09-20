@@ -22,20 +22,14 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return decorateField(
-    'integer',
-    props,
-    props.renderField && props.document ? (
-      props.renderField(props.document)
-    ) : (
-      <Input
-        step="1"
-        type="number"
-        placeholder={props.placeholder}
-        onChange={ev => onTypeChange(props, ev.target.value)}
-      />
-    )
-  );
+  return decorateField('integer', props, () => (
+    <Input
+      step="1"
+      type="number"
+      placeholder={props.placeholder}
+      onChange={ev => onTypeChange(props, ev.target.value)}
+    />
+  ));
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrInteger = withTypeContext(TyrIntegerBase);
