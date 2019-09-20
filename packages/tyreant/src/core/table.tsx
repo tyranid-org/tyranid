@@ -111,6 +111,7 @@ export interface TyrTableProps extends TyrComponentProps {
   size?: 'default' | 'middle' | 'small';
   saveDocument?: (document: Tyr.Document) => Promise<Tyr.Document>;
   onAfterSaveDocument?: (document: Tyr.Document) => void;
+  onBeforeSaveDocument?: (document: Tyr.Document) => void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
   scroll?: {
@@ -448,14 +449,24 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     document.$id === this.store.editingKey ||
     this.props.newDocument === document;
 
-  private saveDocument = (form: WrappedFormUtils, docId: Tyr.AnyIdType) => {
-    let document = this.store.documents.find(d => d.$id === docId);
+  private saveDocument = (form: WrappedFormUtils, docId?: Tyr.AnyIdType) => {
+    const {
+      saveDocument,
+      onAfterSaveDocument,
+      onBeforeSaveDocument,
+      newDocument
+    } = this.props;
+
+    let document = docId
+      ? this.store.documents.find(d => d.$id === docId)
+      : newDocument;
 
     if (!document) {
+      this.store.editingKey = '';
+      message.error(`Unable to find document ${docId} to save!`);
       return;
     }
 
-    const { saveDocument, onAfterSaveDocument } = this.props;
     const collection = document.$model;
 
     const isNew = !!document.$id;
@@ -469,6 +480,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           const field = collection.paths[pathName];
           type.mapFormValueToDocument(field.namePath, value, document);
         }
+
+        onBeforeSaveDocument && onBeforeSaveDocument(document);
 
         if (saveDocument) {
           document = await saveDocument(document);
@@ -487,9 +500,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           });
         }
 
-        if (onAfterSaveDocument) {
-          onAfterSaveDocument(document);
-        }
+        onAfterSaveDocument && onAfterSaveDocument(document);
       } catch (saveError) {
         if (saveError.message) message.error(saveError.message);
         message.error(saveError);
