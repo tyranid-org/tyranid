@@ -66,7 +66,7 @@ export const stringFilter: Filter = (
             searchInputRef = node;
           }}
           placeholder={`Search ${field.label}`}
-          defaultValue={filterable.searchValues[pathName]}
+          value={filterable.searchValues[pathName]}
           onChange={e => {
             filterable.searchValues[pathName] = e.target.value;
 
@@ -116,7 +116,7 @@ export const stringFilter: Filter = (
       </div>
     ),
     onFilter: (value: string, doc: Tyr.Document) => {
-      if (value) {
+      if (value !== undefined) {
         return path
           .get(doc)
           .toString()

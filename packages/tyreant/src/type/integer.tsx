@@ -42,6 +42,10 @@ export const integerFilter: Filter = (
   const pathName = path.name;
   const { localSearch } = filterable;
 
+  const defaultValue = (props.searchRange
+    ? (props.searchRange as [number, number])
+    : [0, 100]) as [number, number];
+
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
 
@@ -54,11 +58,13 @@ export const integerFilter: Filter = (
     }
   };
 
-  filterable.searchValues[pathName] = filterable.searchValues[pathName];
-
   const sliderProps = {
-    ...(props.searchRange ? { min: props.searchRange[0] as number } : {}),
-    ...(props.searchRange ? { max: props.searchRange[1] as number } : {})
+    ...(props.searchRange
+      ? { min: props.searchRange[0] as number }
+      : { min: 0 }),
+    ...(props.searchRange
+      ? { max: props.searchRange[1] as number }
+      : { max: 100 })
   };
 
   return {
@@ -67,11 +73,8 @@ export const integerFilter: Filter = (
         <Slider
           range
           {...sliderProps}
-          defaultValue={
-            props.searchRange
-              ? (props.searchRange as [number, number])
-              : [0, 100]
-          }
+          defaultValue={defaultValue.slice() as [number, number]}
+          value={filterable.searchValues[pathName] || defaultValue}
           onChange={(e: SliderValue) => {
             filterable.searchValues[pathName] = e;
 
