@@ -1,17 +1,10 @@
 import * as React from 'react';
-import { useEffect } from 'react';
 
-import { Input } from 'antd';
-
-import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
+import { byName, TyrTypeProps, getTypeValue } from './type';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
 
 export const TyrBitmaskBase = ((props: TyrTypeProps) => {
-  useEffect(() => {
-    mapPropsToForm(props);
-  }, []);
-
   /*<Input
         autoComplete="off"
         type="email"
@@ -20,9 +13,25 @@ export const TyrBitmaskBase = ((props: TyrTypeProps) => {
         onChange={ev => onTypeChange(props, ev.target.value)}
       />*/
 
-  return decorateField('bitmask', props, () => (
-    <div>TODO: bitmask control</div>
-  ));
+  return decorateField('bitmask', props, () => {
+    const { path } = props;
+    const { tail: field } = path;
+    const { link } = field;
+    const { values } = link!;
+    const mask = getTypeValue(props, 0x0) as number;
+
+    return (
+      <div>
+        {values.map(value => {
+          return (
+            <div>
+              <input type="checkbox" /> <span>value.$label</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  });
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrBitmask = withTypeContext(TyrBitmaskBase);

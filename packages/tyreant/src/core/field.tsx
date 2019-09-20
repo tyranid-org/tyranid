@@ -132,7 +132,7 @@ export const decorateField = (
       })(
         props.renderField && props.document
           ? props.renderField(props.document)
-          : component
+          : component()
       )}
     </FormItem>
   );
