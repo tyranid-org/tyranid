@@ -32,6 +32,7 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
       <Input
         autoComplete="off"
         type="text"
+        tabIndex={props.tabIndex}
         autoFocus={props.autoFocus}
         placeholder={props.placeholder}
         onChange={ev => onTypeChange(props, ev.target.value)}
@@ -71,7 +72,7 @@ export const stringFilter: Filter = (
           ref={node => {
             searchInputRef = node;
           }}
-          placeholder={`Search ${field.label}`}
+          placeholder={`Search ${props.label || field.label}`}
           value={filterable.searchValues[pathName]}
           onChange={e => {
             filterable.searchValues[pathName] = e.target.value;

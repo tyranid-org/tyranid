@@ -57,6 +57,7 @@ export interface TyrFieldProps {
   required?: boolean;
   sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
   searchRange?: [number, number] | [Moment, Moment];
+  tabIndex?: number;
   filterOptionRenderer?: (value: any) => React.ReactElement;
   filterOptionLabel?: (doc: Tyr.Document) => { $id: any; $label: string };
   searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;

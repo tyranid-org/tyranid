@@ -24,6 +24,7 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
       <TimePicker
         placeholder={props.placeholder}
         onChange={ev => onTypeChange(props, ev)}
+        {...{ tabIndex: props.tabIndex }}
       />
     )
   );

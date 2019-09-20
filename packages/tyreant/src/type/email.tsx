@@ -25,6 +25,7 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
         placeholder={props.placeholder}
         autoFocus={props.autoFocus}
         onChange={ev => onTypeChange(props, ev.target.value)}
+        tabIndex={props.tabIndex}
       />
     )
   );

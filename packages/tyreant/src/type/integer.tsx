@@ -31,6 +31,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
       <Input
         step="1"
         type="number"
+        tabIndex={props.tabIndex}
         placeholder={props.placeholder}
         onChange={ev => onTypeChange(props, ev.target.value)}
       />
@@ -80,7 +81,7 @@ export const integerFilter: Filter = (
           range
           {...sliderProps}
           defaultValue={defaultValue.slice() as [number, number]}
-          value={filterable.searchValues[pathName] || defaultValue}
+          value={(filterable.searchValues[pathName] || defaultValue).slice()}
           onChange={(e: SliderValue) => {
             filterable.searchValues[pathName] = e;
 

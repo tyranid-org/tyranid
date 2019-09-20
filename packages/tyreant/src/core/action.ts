@@ -20,6 +20,7 @@ export interface TyrActionOpts {
    * decorated action should be performed.
    */
   action: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
+  hide?: (doc: Tyr.Document) => boolean;
 }
 
 export class TyrAction {
@@ -28,13 +29,15 @@ export class TyrAction {
   label: string | React.ReactNode;
   component?: TyrComponent;
   action: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
+  hide?: (doc: Tyr.Document) => boolean;
 
-  constructor({ traits, name, component, label, action }: TyrActionOpts) {
+  constructor({ traits, name, component, label, action, hide }: TyrActionOpts) {
     this.traits = traits || [];
     this.name = name;
     this.component = component;
     this.label = label || Tyr.labelize(name);
     this.action = action;
+    this.hide = hide;
   }
 
   is(trait: TyrActionTrait) {
@@ -51,7 +54,8 @@ export class TyrAction {
       name: this.name,
       label: this.label,
       component: this.component,
-      action: this.action
+      action: this.action,
+      hide: this.hide
     };
 
     Object.assign(newOpts, opts);
