@@ -51,7 +51,10 @@ const findByLabel = (collection: Tyr.CollectionInstance, label: string) => {
 const findById = (collection: Tyr.CollectionInstance, id: string) =>
   collection.values.find(lv => lv.$id === id);
 
-type Label = { $id: any; $label: string };
+interface Label {
+  $id: any;
+  $label: string;
+}
 
 const sortLabels = (labels: any[], searchSortById?: boolean) => {
   (labels as Label[]).sort((a, b) => {
@@ -332,7 +335,8 @@ export const linkFilter: Filter = (
         filterValues = results.map(d => {
           return {
             ...d,
-            $id: String(d.$id)
+            $id: String(d.$id),
+            $label: d.$label
           };
         });
       });
@@ -340,7 +344,8 @@ export const linkFilter: Filter = (
       filterValues = linkFor(path)!.values.map(d => {
         return {
           ...d,
-          $id: String(d.$id)
+          $id: String(d.$id),
+          $label: d.$label
         };
       });
     }
