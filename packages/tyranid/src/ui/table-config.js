@@ -5,7 +5,8 @@ const tableConfigField = {
   is: 'object',
   fields: {
     name: { is: 'string', required: true },
-    hidden: { is: 'boolean' }
+    hidden: { is: 'boolean' },
+    width: { is: 'number' }
   }
 };
 
@@ -29,10 +30,10 @@ const TableConfig = new Collection({
   },
   indexes: [
     {
-      key: { documentUid: 1, userId: 1 }
+      key: { documentUid: 1, userId: 1, key: 1 }
     },
     {
-      key: { collectionId: 1, userId: 1 }
+      key: { collectionId: 1, userId: 1, key: 1 }
     }
   ],
   fromClient(/*opts*/) {
