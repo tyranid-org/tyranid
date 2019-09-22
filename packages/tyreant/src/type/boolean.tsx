@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Button, Checkbox, Input } from 'antd';
+import { Button, Checkbox } from 'antd';
 
 import {
   byName,
@@ -42,7 +42,7 @@ export const booleanFilter: Filter = (
   props: TyrFieldLaxProps
 ) => {
   const pathName = path.name;
-  const { detail: field } = path;
+  // const { detail: field } = path;
   const { localSearch } = filterable;
 
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
@@ -57,28 +57,6 @@ export const booleanFilter: Filter = (
     }
   };
 
-  /*
-        <Input
-          placeholder={`Search ${props.label || field.label}`}
-          value={filterable.searchValues[pathName]}
-          onChange={e => {
-            filterable.searchValues[pathName] = e.target.value;
-
-            if (props.liveSearch) {
-              filterable.onFilterChange();
-            }
-          }}
-          onPressEnter={() => {
-            if (localSearch) {
-              filterDdProps.confirm && filterDdProps.confirm();
-              filterable.onFilterChange();
-            } else {
-              filterable.onSearch();
-            }
-          }}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-*/
   return {
     filterDropdown: (filterDdProps: FilterDropdownProps) => {
       return (
@@ -194,10 +172,7 @@ export const booleanFinder: Finder = (
 ) => {
   if (searchValue) {
     if (!opts.query) opts.query = {};
-    opts.query[path.name] = {
-      $regex: searchValue,
-      $options: 'i'
-    };
+    opts.query[path.name] = !!searchValue;
   }
 };
 
