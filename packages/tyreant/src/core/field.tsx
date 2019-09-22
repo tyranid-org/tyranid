@@ -50,6 +50,7 @@ export interface TyrFieldProps {
   valueField?: string;
 
   defaultSort?: TyrSortDirection;
+  dropdownClassName?: string;
   width?: string;
   filter?: (string | number)[];
   onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;

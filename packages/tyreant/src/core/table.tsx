@@ -1,7 +1,7 @@
 /*
- - disable sort when editing/inserting
- - click on type colum does not populate
- - min width on link dropdown
+ - after save, links are coming back as "Unknown"
+ - link typeahead is not showing characters as being typed--- values are not passing to <Select>
+ - Form validation is not working.  
 
  - Add resizeable columns: "re-resizable": "4.4.4",
    - https://ant.design/components/table/#components-table-demo-resizable-column
@@ -13,6 +13,7 @@
    - Maybe see if we can do this with beautiful d&d
  - Row selection
    - https://ant.design/components/table/#components-table-demo-row-selection
+
 */
 
 import * as React from 'react';
@@ -154,6 +155,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     showConfig: boolean;
     fields: TyrTableColumnFieldProps[];
     tableConfig?: any;
+    newDocument?: Tyr.Document;
   } = {
     documents: this.props.documents || [],
     loading: false,
@@ -236,17 +238,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   addNewDocument = (doc: Tyr.Document) => {
-    const { store } = this;
-    const { documents } = store;
+    this.store.newDocument = doc;
 
-    // Check if already adding a new document
-    if (documents.length > 0 && !documents[0].$id) {
-      return false;
+    if (this._mounted) {
+      this.setState({});
     }
-
-    store.documents = [doc, ...store.documents];
-    store.count += 1;
-    store.editingKey = 'new';
 
     return true;
   };
@@ -497,18 +493,18 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       onBeforeSaveDocument
     } = this.props;
 
-    const { documents } = this.store;
+    const { documents, newDocument } = this.store;
 
-    let document = docId
-      ? documents.find(d => d.$id === docId)
-      : documents.find(d => !d.$id);
+    let document = docId ? documents.find(d => d.$id === docId) : newDocument;
 
     if (!document) {
       this.store.editingKey = '';
+      delete this.store.newDocument;
       message.error(`Unable to find document ${docId} to save!`);
       return;
     }
 
+    this.store.isSavingDocument = true;
     const docIdx = documents.indexOf(document);
     const collection = document.$model;
 
@@ -547,9 +543,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         }
 
         onAfterSaveDocument && onAfterSaveDocument(document);
+        this.store.isSavingDocument = false;
+        delete this.store.newDocument;
       } catch (saveError) {
         if (saveError.message) message.error(saveError.message);
         message.error(saveError);
+        this.store.isSavingDocument = false;
         throw saveError;
       }
     });
@@ -563,6 +562,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const { documents } = store;
 
     store.editingKey = '';
+    delete store.newDocument;
 
     if (!document.$id) {
       onCancelAddNew && onCancelAddNew();
@@ -587,7 +587,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.setState({});
   };
 
-  private getColumns(): ColumnProps<Tyr.Document>[] {
+  private getColumns(newDocumentTable?: boolean): ColumnProps<Tyr.Document>[] {
     const {
       collection,
       actionIconType,
@@ -596,7 +596,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       actionTrigger,
       actionColumnClassName
     } = this.props;
-    const { workingSearchValues, fields: columns, tableDefn } = this.store;
+    const {
+      workingSearchValues,
+      fields: columns,
+      tableDefn,
+      newDocument
+    } = this.store;
 
     const localSearch = !!this.props.documents;
     const fieldCount = columns.length;
@@ -661,7 +666,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           dataIndex: pathName,
           //key: pathName,
           render: (text: string, document: Tyr.Document) => {
-            const editable = this.isEditing(document);
+            const editable = newDocumentTable || this.isEditing(document);
 
             if (editable) {
               const fieldProps = {
@@ -676,7 +681,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 renderField: column.renderField,
                 renderDisplay: column.renderDisplay,
                 noLabel: true,
-                tabIndex: columnIdx
+                tabIndex: columnIdx,
+                dropdownClassName: column.dropdownClassName,
+                className: column.className
               };
 
               return (
@@ -685,14 +692,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     if (!form || !pathName) return <span />;
 
                     return (
-                      <span>
-                        <TyrFieldBase
-                          path={np!}
-                          form={form}
-                          document={document}
-                          {...fieldProps}
-                        />
-                      </span>
+                      <TyrFieldBase
+                        path={np!}
+                        form={form}
+                        document={document}
+                        {...fieldProps}
+                      />
                     );
                   }}
                 </EditableContext.Consumer>
@@ -707,15 +712,21 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               </div>
             );
           },
-          sorter,
-          sortOrder: sortDirection,
+          sorter: !newDocumentTable ? sorter : undefined,
+          sortOrder: !newDocumentTable ? sortDirection : undefined,
           title: column.label || (field && field.label),
           width: (fieldCount > 1 && column.width) || undefined,
           className: column.className,
           ellipsis: column.ellipsis,
-          ...(filteredValue ? { filteredValue: [filteredValue] } : {}),
-          ...((np && getFilter(np, filterable, column)) || {}),
-          ...(column.pinned && fieldCount > 1 ? { fixed: column.pinned } : {}),
+          ...(!newDocumentTable && filteredValue
+            ? { filteredValue: [filteredValue] }
+            : {}),
+          ...((!newDocumentTable &&
+            (np && getFilter(np, filterable, column))) ||
+            {}),
+          ...(!newDocumentTable && column.pinned && fieldCount > 1
+            ? { fixed: column.pinned }
+            : {}),
           ...(column.align ? { align: column.align } : {})
         };
       }
@@ -729,9 +740,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         className: `tyr-action-column${
           actionColumnClassName ? ' ' + actionColumnClassName : ''
         }`,
-        title: actionHeaderLabel || '',
+        title: !newDocumentTable ? actionHeaderLabel || '' : '',
         render: (text: string, document: Tyr.Document) => {
-          const editable = this.isEditing(document);
+          const editable = newDocumentTable || this.isEditing(document);
 
           if (editable) {
             if (this.store.isSavingDocument) {
@@ -771,6 +782,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 </EditableContext.Consumer>
               </div>
             );
+          }
+
+          if (newDocument) {
+            return <span />;
           }
 
           const menu = (
@@ -889,7 +904,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   };
 
   render() {
-    const { documents, loading, showConfig, fields, editingKey } = this.store;
+    const {
+      documents,
+      loading,
+      showConfig,
+      fields,
+      editingKey,
+      newDocument
+    } = this.store;
     const {
       className,
       children,
@@ -901,7 +923,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       footer,
       title,
       showHeader,
-      config: tableConfig
+      config: tableConfig,
+      onCancelAddNew,
+      decorator
     } = this.props;
 
     const fieldCount = fields.length;
@@ -911,7 +935,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }`;
 
     return this.wrap(() => {
-      if (this.props.decorator && (!this.decorator || !this.decorator.visible))
+      if (decorator && (!this.decorator || !this.decorator.visible))
         return <div />;
 
       this.startFinding(); // want to delay finding until the control is actually shown
@@ -930,6 +954,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       //   : documents.slice();
 
       const dataSourceDocs = documents.slice();
+
       return (
         <div className={netClassName}>
           {children && (
@@ -941,17 +966,32 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           )}
           <Row>
             <Col span={24}>
+              {fields &&
+                newDocument && (
+                  <ObsTable
+                    className="tyr-table-new-document"
+                    loading={loading}
+                    components={components}
+                    rowKey="new"
+                    size={size || 'small'}
+                    pagination={false}
+                    showHeader={true}
+                    dataSource={[newDocument]}
+                    columns={this.getColumns(true)}
+                  />
+                )}
+
               {fields && (
                 <ObsTable
                   loading={loading}
                   components={components}
-                  rowKey={(doc: any) => doc.$id || doc.$id || 'new'}
+                  rowKey={(doc: any) => doc.$id || doc.$id}
                   size={size || 'small'}
                   pagination={this.pagination()}
                   onChange={this.handleTableChange}
                   footer={footer}
                   title={title}
-                  showHeader={showHeader}
+                  showHeader={newDocument ? false : showHeader}
                   dataSource={dataSourceDocs}
                   columns={this.getColumns()}
                   scroll={fieldCount > 1 ? scroll : undefined}
@@ -984,6 +1024,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                                 (!canEditDocument || canEditDocument(record))
                               ) {
                                 this.onEditRow(record, rowIndex);
+
+                                if (newDocument) {
+                                  onCancelAddNew && onCancelAddNew();
+                                  delete this.store.newDocument;
+                                }
 
                                 if (this._mounted) {
                                   this.setState({});
@@ -1291,10 +1336,9 @@ const ensureTableConfig = async (
     columns.filter(column => {
       const fieldName = getFieldName(column.field);
 
-      return (
-        fieldName &&
-        !!tableConfig.fields.find(f => f.name === fieldName && !f.hidden)
-      );
+      const configField = tableConfig.fields.find(f => f.name === fieldName);
+
+      return fieldName && (!configField || !configField.hidden);
     })
   );
 
