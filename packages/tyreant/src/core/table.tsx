@@ -1138,21 +1138,37 @@ class TyrTableConfigModal extends React.Component<
 
     const { documentUid } = tableConfig;
     const collection = Tyr.parseUid(documentUid!).collection;
+    const orderedFields = orderedArray(tableConfig.fields, columns);
 
-    const columnFields = tableConfig.fields.map((f: any, index: number) => {
-      const column = columns.find(c => c.field === f.name);
-      const pathName = getFieldName(column!.field);
-      const field = pathName && collection.paths[pathName];
+    const columnFields = compact(
+      orderedFields.map((column: TyrTableColumnFieldProps, index: number) => {
+        const savedField = tableConfig.fields.find(
+          c => column.field === c.name
+        );
+        const pathName = getFieldName(column!.field);
 
-      return {
-        name: f.name,
-        label: ((column && column.label) || (field && field.label)) as string,
-        locked: index < config.lockedLeft,
-        hidden: !!f.hidden
-      };
+        if (pathName) {
+          const field = pathName && collection.paths[pathName];
+          const hidden =
+            (savedField && !!savedField.hidden) || !!column.defaultHidden;
+
+          return {
+            name: pathName,
+            label: ((column && column.label) ||
+              (field && field.label)) as string,
+            locked: index < config.lockedLeft,
+            hidden
+          };
+        }
+
+        return null;
+      })
+    );
+
+    this.setState({
+      tableConfig,
+      columnFields: columnFields as ColumnConfigField[]
     });
-
-    this.setState({ tableConfig, columnFields });
   }
 
   private onSave = async () => {
