@@ -47,14 +47,6 @@ export class TyrComponent<
     super(props, state);
 
     this.collection = this.props.collection;
-
-    if (props.actions) {
-      const extraActions: TyrAction[] = props.actions;
-
-      for (const action of extraActions) {
-        this.enact(action);
-      }
-    }
   }
 
   componentDidMount() {

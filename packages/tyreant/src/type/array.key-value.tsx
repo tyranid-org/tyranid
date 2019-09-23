@@ -10,7 +10,7 @@ import { SelectedValue, LabeledValue } from 'antd/lib/select';
  */
 export const TyrArrayKeyValue = (props: TyrTypeProps) => {
   const { document, form, path, children } = props;
-  const { tail: field } = path;
+  const { tail: field } = path!;
 
   const {
     keyField: keyFieldName,
@@ -28,7 +28,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
 
   const array = getTypeValue(props, []) as any[];
 
-  const keyPath = path.walk(keyFieldName);
+  const keyPath = path!.walk(keyFieldName);
   const keyField = keyPath.tail;
   const keyFieldLink = keyField.link;
   if (!keyFieldLink) throw new Error('"keyField" must be a link field');
@@ -82,7 +82,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
           }
         })();
       },
-      [path.name]
+      [path!.name]
     );
   }
 
@@ -97,7 +97,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
 
   const childProps = {
     ...props,
-    path: valueSubPath && path.walk(valueSubPath!)
+    path: valueSubPath && path!.walk(valueSubPath!)
   };
 
   return (

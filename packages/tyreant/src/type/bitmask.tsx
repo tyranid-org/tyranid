@@ -1,14 +1,16 @@
 import * as React from 'react';
 import { useState } from 'react';
 
+import Checkbox from 'antd/es/checkbox';
+
 import { byName, TyrTypeProps, getTypeValue } from './type';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
-import Checkbox from 'antd/es/checkbox';
 
 export const TyrBitmaskBase = ((props: TyrTypeProps) => {
   return decorateField('bitmask', props, () => {
-    const { path, document } = props;
+    const path = props.path!;
+    const { document } = props;
     const { tail: field } = path;
     const { link } = field;
     const { values } = link!;

@@ -13,12 +13,14 @@ export const className = (className: string, props: TyrTypeProps) => {
 export function generateRules(props: TyrTypeProps) {
   const rules = [];
   const { path } = props;
-  const { tail: field } = path;
-  if (props.required || field.def.required) {
-    rules.push({
-      required: true,
-      message: `${field.label} is required.`
-    });
+  if (path) {
+    const { tail: field } = path;
+    if (props.required || field.def.required) {
+      rules.push({
+        required: true,
+        message: `${field.label} is required.`
+      });
+    }
   }
 
   return rules;
@@ -67,6 +69,8 @@ export type TyrTypeLaxProps = {
    * if path does not exist, we will use field.path
    */
   path?: string | Tyr.NamePathInstance;
+  extra?: string;
+
   children?: React.ReactNode;
 } & TyrFieldLaxProps;
 
@@ -74,7 +78,8 @@ export type TyrTypeProps = {
   form: WrappedFormUtils;
   document?: Tyr.Document;
   value?: { value?: any };
-  path: Tyr.NamePathInstance;
+  path?: Tyr.NamePathInstance;
+  extra?: string;
   children?: React.ReactNode;
 } & Omit<TyrFieldProps, 'field'>;
 
@@ -138,7 +143,12 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
     return v;
   }
 
-  const { path, document } = props;
+  const { extra, document } = props;
+  if (extra) {
+    return (document as any)[extra];
+  }
+
+  const path = props.path!;
   v = path.get(document!);
   if (!v && defaultValue !== undefined) {
     v = defaultValue;
@@ -151,24 +161,36 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
 
 export const fieldDecoratorName = (props: TyrTypeProps) => {
   // ant forms act weird when there are '.'s in the property names
-  return props.path.name.replace(/\./g, '_');
+  return props.extra || props.path!.name.replace(/\./g, '_');
 };
 
 export const mapPropsToForm = (props: TyrTypeProps) => {
-  const { path, document, form, value } = props;
+  const { path, document, form, value, extra } = props;
 
   if (value !== undefined) {
-    const pathid = path.identifier;
+    const pathid = path!.identifier;
+    // TODO:  this should be [pathid] instead of .value ?
     const oldValue = form.getFieldsValue([pathid]).value;
     const newValue = value.value;
 
     if (oldValue !== newValue) {
       form.setFieldsValue({
+        // TODO:  should this be "value" instead of "newValue" ?
         [pathid]: newValue
       });
     }
+  } else if (extra) {
+    const oldValue = form.getFieldsValue([extra])[extra];
+    const newValue = (document as any)[extra];
+
+    if (oldValue !== newValue) {
+      form.setFieldsValue({
+        // TODO:  should this be "value" instead of "newValue" ?
+        [extra]: newValue
+      });
+    }
   } else {
-    mapDocumentToForm(path, document!, form);
+    mapDocumentToForm(path!, document!, form);
   }
 };
 
@@ -227,8 +249,17 @@ export const mapFormValueToDocument = (
  * computed values and computed validations are always up-to-date.
  */
 export const onTypeChange = (props: TyrTypeProps, value: any) => {
-  if (!props.value && props.document)
-    mapFormValueToDocument(props.path, value, props.document);
+  const { document } = props;
+
+  if (document) {
+    const { extra } = props;
+
+    if (extra) {
+      (document as any)[extra] = value;
+    } else if (!props.value) {
+      mapFormValueToDocument(props.path!, value, document);
+    }
+  }
 };
 
 export const getFilter = (
@@ -279,7 +310,7 @@ export const withTypeContext = <T extends {} = {}>(
         parentProps && parentProps.path,
         props.path
       );
-      if (!path) return <div className="no-path" />;
+      if (!path && !props.extra) return <div className="no-path" />;
 
       return React.createElement(TypeControl, {
         ...props,

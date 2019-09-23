@@ -102,9 +102,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     this.mounted = true;
     const { path } = props;
-    const { detail: field } = path;
+    const { detail: field } = path!;
 
-    const link = linkFor(path);
+    const link = linkFor(path!);
 
     if (!link) throw new Error('TyrLink passed a non-link');
 
@@ -129,7 +129,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       return value.value;
     }
 
-    return path.get(document);
+    return path!.get(document);
   }
 
   componentWillUnmount() {
@@ -207,11 +207,11 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (controlMode === 'view') {
       return (
-        <label>{path.tail.link!.idToLabel(path.get(props.document))}</label>
+        <label>{path!.tail.link!.idToLabel(path!.get(props.document))}</label>
       );
     }
 
-    const { detail: field } = path;
+    const { detail: field } = path!;
 
     let mode: typeof selectProps.mode;
     // TODO:  'tags', 'combobox'

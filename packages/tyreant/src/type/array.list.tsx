@@ -10,7 +10,7 @@ import { Button } from 'antd';
  * This control renders an array as a list of its contents.
  */
 export const TyrArrayList = (props: TyrTypeProps) => {
-  const { path } = props;
+  const path = props.path!;
 
   const { tail: field, detail: elField } = path;
 

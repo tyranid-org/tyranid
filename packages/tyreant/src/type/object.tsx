@@ -28,7 +28,7 @@ const renderField = (
   return (
     <TyrFieldBase
       {...fieldProps}
-      path={props.path.walk(field.name)}
+      path={props.path!.walk(field.name)}
       form={form!}
       document={document!}
     />

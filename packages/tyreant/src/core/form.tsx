@@ -89,18 +89,53 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
   form?: WrappedFormUtils;
 
   componentDidMount() {
-    const { linkToParent } = this;
+    const { linkToParent, props } = this;
 
     if (!this.collection)
       throw new Error('could not determine collection for form');
+
+    if (props.actions) {
+      for (const action of props.actions) {
+        // TODO:  clone action instead?
+        action.component = this;
+        const actFn = action.action;
+
+        if (!actFn && action.is('edit')) {
+          action.action = opts => {
+            this.find(opts.document!);
+
+            if (!this.document) {
+              this.setState({ document: this.createDocument(opts) });
+            }
+          };
+        } else if (actFn && action.is('save')) {
+          action.action = opts => {
+            actFn({ ...opts, document: this.document });
+          };
+        }
+
+        this.enactUp(action);
+      }
+
+      this.enactUp(
+        new TyrAction({
+          traits: ['cancel'],
+          name: 'cancel',
+          component: this,
+          action: opts => {}
+        })
+      );
+
+      return;
+    }
 
     if (linkToParent) {
       this.enactUp(
         new TyrAction({
           traits: ['edit'],
-          name: Tyr.pluralize(this.collection!.label),
+          name: this.collection!.label,
           component: this,
-          action: (opts: TyrActionFnOpts) => {
+          action: opts => {
             this.find(opts.document!);
 
             if (!this.document) {
@@ -115,7 +150,7 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
           traits: ['edit'],
           name: 'edit',
           component: this,
-          action: (opts: TyrActionFnOpts) => {
+          action: opts => {
             this.find(opts.document!);
           }
         })
@@ -127,7 +162,7 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
           name: 'create',
           label: 'Create ' + this.collection.label,
           component: this,
-          action: (opts: TyrActionFnOpts) => {
+          action: opts => {
             this.setState({ document: this.createDocument(opts) });
           }
         })
@@ -139,7 +174,7 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
         traits: ['cancel'],
         name: 'cancel',
         component: this,
-        action: (opts: TyrActionFnOpts) => {}
+        action: opts => {}
       })
     );
 

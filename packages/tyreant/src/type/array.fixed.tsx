@@ -17,7 +17,7 @@ export const TyrArrayFixed = (props: TyrTypeProps) => {
       '"fixedField" must be specified for TyrArrayFixed controls'
     );
 
-  const fixedPath = path.walk(fixedFieldName);
+  const fixedPath = path!.walk(fixedFieldName);
   const fixedField = fixedPath.tail;
   const fixedLink = fixedField.link;
   if (!fixedLink)
@@ -43,7 +43,7 @@ export const TyrArrayFixed = (props: TyrTypeProps) => {
   return (
     <>
       {array.map((value, idx) => {
-        const childPath = path.walk('' + idx);
+        const childPath = path!.walk('' + idx);
         return children ? (
           <TypeContext.Provider
             key={idx}
