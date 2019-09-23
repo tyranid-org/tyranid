@@ -1,4 +1,3 @@
-import Tyr from '../tyr';
 import Collection from '../core/collection';
 
 const tableConfigField = {
@@ -24,9 +23,9 @@ const TableConfig = new Collection({
       defaultValue: []
     },
     key: { is: 'string' },
-    documentUid: { is: 'string' },
+    documentUid: { is: 'string', requried: true },
     userId: { link: 'user?' },
-    collectionId: { is: 'string' }
+    collectionId: { is: 'string', requried: true }
   },
   indexes: [
     {
@@ -35,12 +34,7 @@ const TableConfig = new Collection({
     {
       key: { collectionId: 1, userId: 1, key: 1 }
     }
-  ],
-  fromClient(/*opts*/) {
-    if (!this.collection && this.documentUid) {
-      this.collectionId = Tyr.parseUid(this.documentUid).collection.id;
-    }
-  }
+  ]
 });
 
 export default TableConfig;

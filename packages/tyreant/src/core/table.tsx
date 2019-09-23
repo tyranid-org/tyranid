@@ -1,12 +1,6 @@
 /*
  - link typeahead is not showing characters as being typed--- values are not passing to <Select>
  - Form validation is not working.
- - Need "dynamic" column
-   - Field not in Tyr.Document
-   - Needs to be saved in table config like everything else
-   - Needs to be able to pass filter options
-   - Needs to be able to pass search options  (don't need this right away-- just disable edit for it)
-
 
  - after save, links are coming back as "Unknown"
  
@@ -105,8 +99,8 @@ export interface TyrTableColumnFieldProps extends TyrFieldLaxProps {
 
 export type TyrTableConfig = {
   userId: string;
-  documentUid?: string;
-  collectionId?: string;
+  documentUid: string;
+  collectionId: string;
   required: string[];
   lockedLeft: number;
   title?: string;
@@ -244,8 +238,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps) {
     if (
       this.props.documents &&
-      nextProps.documents &&
-      this.props.documents.length !== nextProps.documents.length
+      nextProps.documents
+      //&& this.props.documents.length !== nextProps.documents.length
     ) {
       this.store.documents = nextProps.documents;
       this.store.count = nextProps.documents.length;
@@ -254,6 +248,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   addNewDocument = (doc: Tyr.Document) => {
     this.store.newDocument = doc;
+    this.store.editingKey = '';
 
     if (this._mounted) {
       this.setState({});
@@ -615,11 +610,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       workingSearchValues,
       fields: columns,
       tableDefn,
-      newDocument
+      newDocument,
+      editingKey
     } = this.store;
 
     const localSearch = !!this.props.documents;
     const fieldCount = columns.length;
+    const isEditingAnything = newDocumentTable || editingKey;
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(
       (column, columnIdx) => {
@@ -739,7 +736,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           ...((!newDocumentTable &&
             (np && getFilter(np, filterable, column))) ||
             {}),
-          ...(!newDocumentTable && column.pinned && fieldCount > 1
+          ...(!isEditingAnything && column.pinned && fieldCount > 1
             ? { fixed: column.pinned }
             : {}),
           ...(column.align ? { align: column.align } : {})
@@ -767,7 +764,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             return (
               <div style={{ display: 'flex' }}>
                 <Button
-                  style={{ width: '60px', marginRight: 8 }}
+                  style={{ width: '60px', marginRight: 8, zIndex: 1 }}
                   size="small"
                   type="default"
                   onClick={() => this.cancelEdit(document)}
@@ -784,7 +781,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     return (
                       <Button
                         size="small"
-                        style={{ width: '60px' }}
+                        style={{ width: '60px', zIndex: 1 }}
                         type="primary"
                         onClick={() =>
                           this.saveDocument(ctxProps.form!, document.$id)
@@ -987,7 +984,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     className="tyr-table-new-document"
                     loading={loading}
                     components={components}
-                    rowKey="new"
+                    rowKey={() => 'new'}
                     size={size || 'small'}
                     pagination={false}
                     showHeader={true}
@@ -1095,9 +1092,9 @@ type TyrTableConfigType = Tyr.Document & {
   key?: string;
   name?: string;
   fields: { name: string; hidden?: boolean }[];
-  documentUid?: string;
+  documentUid: string;
   userId: string;
-  collectionId?: string;
+  collectionId: string;
 };
 
 type TyrTableConfigProps = {
@@ -1151,8 +1148,8 @@ class TyrTableConfigModal extends React.Component<
       }) as any;
     }
 
-    const { documentUid } = tableConfig;
-    const collection = Tyr.parseUid(documentUid!).collection;
+    const { documentUid, collectionId } = tableConfig;
+    const collection = Tyr.byId[collectionId];
     const orderedFields = orderedArray(tableConfig.fields, columns, true);
 
     const columnFields = compact(
