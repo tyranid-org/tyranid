@@ -6,7 +6,7 @@ const tableConfigField = {
   fields: {
     name: { is: 'string', required: true },
     hidden: { is: 'boolean' },
-    width: { is: 'number' }
+    width: { is: 'integer' }
   }
 };
 
