@@ -326,7 +326,10 @@ export const linkFilter: Filter = (
   if (localSearch && localDocuments && props.filterOptionLabel) {
     // Go get all the values for the filter
     filterValues = uniq(
-      compact(localDocuments.map((d: any) => props.filterOptionLabel!(d))),
+      compact(localDocuments.map((d: any) => props.filterOptionLabel!(d)) as {
+        $id: any;
+        $label: string;
+      }[]),
       '$id'
     );
   } else {
@@ -440,6 +443,10 @@ export const linkFilter: Filter = (
       </div>
     ),
     onFilter: (value: any, doc: Tyr.Document) => {
+      if (props.onFilter) {
+        return props.onFilter(value, doc);
+      }
+
       const val = String(path.get(doc));
 
       if (Array.isArray(value)) {

@@ -29,7 +29,7 @@ export const TyrBooleanBase = ((props: TyrTypeProps) => {
       // autoComplete="off"
       autoFocus={props.autoFocus}
       onChange={ev => onTypeChange(props, ev.target.value)}
-      tabIndex={props.tabIndex}
+      //{...{ tabIndex: props.tabIndex }}
     />
   ));
 }) as React.ComponentType<TyrTypeProps>;

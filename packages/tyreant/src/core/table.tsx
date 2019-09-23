@@ -1,8 +1,15 @@
 /*
- - after save, links are coming back as "Unknown"
  - link typeahead is not showing characters as being typed--- values are not passing to <Select>
- - Form validation is not working.  
+ - Form validation is not working.
+ - Need "dynamic" column
+   - Field not in Tyr.Document
+   - Needs to be saved in table config like everything else
+   - Needs to be able to pass filter options
+   - Needs to be able to pass search options  (don't need this right away-- just disable edit for it)
 
+
+ - after save, links are coming back as "Unknown"
+ 
  - Add resizeable columns: "re-resizable": "4.4.4",
    - https://ant.design/components/table/#components-table-demo-resizable-column
    - store in tableConfig
@@ -171,9 +178,17 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   async componentDidMount() {
     const { linkToParent } = this;
+    const { actions } = this.props;
 
-    if (!this.collection)
+    if (!this.collection) {
       throw new Error('could not determine collection for TyrForm');
+    }
+
+    if (actions) {
+      for (const action of actions) {
+        this.enact(action);
+      }
+    }
 
     if (linkToParent) {
       this.enactUp(
@@ -668,7 +683,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           render: (text: string, document: Tyr.Document) => {
             const editable = newDocumentTable || this.isEditing(document);
 
-            if (editable) {
+            if (editable && !column.readonly) {
               const fieldProps = {
                 placeholder: column.placeholder,
                 autoFocus: column.autoFocus,
@@ -1138,7 +1153,7 @@ class TyrTableConfigModal extends React.Component<
 
     const { documentUid } = tableConfig;
     const collection = Tyr.parseUid(documentUid!).collection;
-    const orderedFields = orderedArray(tableConfig.fields, columns);
+    const orderedFields = orderedArray(tableConfig.fields, columns, true);
 
     const columnFields = compact(
       orderedFields.map((column: TyrTableColumnFieldProps, index: number) => {
@@ -1149,8 +1164,9 @@ class TyrTableConfigModal extends React.Component<
 
         if (pathName) {
           const field = pathName && collection.paths[pathName];
-          const hidden =
-            (savedField && !!savedField.hidden) || !!column.defaultHidden;
+          const hidden = !!savedField
+            ? !!savedField.hidden
+            : !!column.defaultHidden;
 
           return {
             name: pathName,
@@ -1314,9 +1330,9 @@ const ensureTableConfig = async (
   } else {
     const { documentUid, collectionId, userId, key } = config;
 
-    if (!documentUid && !collectionId) {
+    if (!documentUid || !collectionId) {
       console.error(
-        'Unable to load table configuration.  Neither the documentUid, not the collectionId have been specified.'
+        'Unable to load table configuration.  Need both the documentUid and the collectionId.'
       );
       return Promise.resolve(undefined);
     }
@@ -1325,14 +1341,22 @@ const ensureTableConfig = async (
       query: {
         userId,
         ...(key ? { key } : {}),
-        ...(documentUid ? { documentUid } : { collectionId })
+        documentUid,
+        collectionId
       }
     })) as TyrTableConfigType;
 
     if (!tableConfig) {
       const columnFields = compact(
-        columns.map(c => getFieldName(c.field))
+        columns.map(c => {
+          if (c.defaultHidden) {
+            return null;
+          }
+
+          return getFieldName(c.field);
+        })
       ) as string[];
+
       tableConfig = new Tyr.byName.tyrTableConfig({
         documentUid,
         collectionId,
@@ -1363,7 +1387,8 @@ const ensureTableConfig = async (
 
 const orderedArray = (
   arrayWithOrder: { name: string }[],
-  array: TyrTableColumnFieldProps[]
+  array: TyrTableColumnFieldProps[],
+  includeHidden?: boolean
 ) => {
   const arrayToOrder = [...array];
   const orderedArray: TyrTableColumnFieldProps[] = [];
@@ -1378,10 +1403,10 @@ const orderedArray = (
 
       if (index > -1) {
         orderedArray[index] = current;
-      } else {
+      } else if (!!includeHidden || !current.defaultHidden) {
         extra.push(current);
       }
-    } else {
+    } else if (!!includeHidden || !current.defaultHidden) {
       extra.push(current);
     }
 

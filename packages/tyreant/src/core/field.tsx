@@ -34,7 +34,7 @@ export interface TyrFieldProps {
     doc: Tyr.Document,
     options?: Tyr.Document[]
   ) => React.ReactElement;
-  renderDisplay?: (doc: Tyr.Document) => React.ReactElement;
+  renderDisplay?: (doc: Tyr.Document) => React.ReactElement | string;
 
   /**
    * Suppress the default generation of field labels.
@@ -62,12 +62,16 @@ export interface TyrFieldProps {
   sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
   searchRange?: [number, number] | [Moment, Moment];
   tabIndex?: number;
+  onFilter?: (value: any, doc: Tyr.Document) => boolean;
   filterOptionRenderer?: (value: any) => React.ReactElement;
-  filterOptionLabel?: (doc: Tyr.Document) => { $id: any; $label: string };
+  filterOptionLabel?: (
+    doc: Tyr.Document
+  ) => { $id: any; $label: string } | undefined;
   searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
   searchSortById?: boolean;
   liveSearch?: boolean;
   defaultHidden?: boolean;
+  readonly?: boolean;
   translateForWhiteLabel?: (label: string) => string;
 }
 
