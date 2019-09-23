@@ -66,6 +66,7 @@ export interface TyrFieldProps {
   searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
   searchSortById?: boolean;
   liveSearch?: boolean;
+  defaultHidden?: boolean;
   translateForWhiteLabel?: (label: string) => string;
 }
 
