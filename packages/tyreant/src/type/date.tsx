@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import * as moment from 'moment';
-import { Moment } from 'moment';
 
 import { Tyr } from 'tyranid/client';
 

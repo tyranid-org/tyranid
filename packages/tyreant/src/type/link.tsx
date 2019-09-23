@@ -239,7 +239,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       onSelect,
       onDeselect,
       autoFocus: this.props.autoFocus,
-      tabIndex: this.props.tabIndex
+      tabIndex: this.props.tabIndex,
+      className: this.props.className,
+      dropdownClassName: this.props.dropdownClassName
     };
 
     if (mode === 'tags') {
