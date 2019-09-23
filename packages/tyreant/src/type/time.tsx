@@ -18,7 +18,7 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
   return decorateField('time', props, () => (
     <TimePicker
       placeholder={props.placeholder}
-      onChange={ev => onTypeChange(props, ev)}
+      onChange={ev => onTypeChange(props, ev, ev)}
       {...{ tabIndex: props.tabIndex }}
     />
   ));

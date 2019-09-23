@@ -28,7 +28,7 @@ export const TyrBooleanBase = ((props: TyrTypeProps) => {
     <Checkbox
       // autoComplete="off"
       autoFocus={props.autoFocus}
-      onChange={ev => onTypeChange(props, ev.target.value)}
+      onChange={ev => onTypeChange(props, ev.target.value, ev)}
       tabIndex={props.tabIndex}
     />
   ));

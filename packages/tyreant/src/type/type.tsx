@@ -248,8 +248,8 @@ export const mapFormValueToDocument = (
  * We want to keep the document up-to-date and in-sync with the form so that
  * computed values and computed validations are always up-to-date.
  */
-export const onTypeChange = (props: TyrTypeProps, value: any) => {
-  const { document } = props;
+export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
+  const { document, onChange } = props;
 
   if (document) {
     const { extra } = props;
@@ -259,6 +259,8 @@ export const onTypeChange = (props: TyrTypeProps, value: any) => {
     } else if (!props.value) {
       mapFormValueToDocument(props.path!, value, document);
     }
+
+    onChange && onChange(value, event, props);
   }
 };
 

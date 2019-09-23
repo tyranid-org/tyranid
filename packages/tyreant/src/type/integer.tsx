@@ -27,7 +27,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
       step="1"
       type="number"
       placeholder={props.placeholder}
-      onChange={ev => onTypeChange(props, ev.target.value)}
+      onChange={ev => onTypeChange(props, ev.target.value, ev)}
       tabIndex={props.tabIndex}
     />
   ));

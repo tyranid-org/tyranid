@@ -54,6 +54,7 @@ export interface TyrFieldProps {
   dropdownClassName?: string;
   width?: string;
   filter?: (string | number)[];
+  onChange?: (value: any, event: any, props: TyrTypeProps) => void;
   onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
   onDeselect?: (value: SelectedValue) => any;
   onStateChange?: (value: FieldState) => void;

@@ -23,14 +23,14 @@ export const TyrArrayList = (props: TyrTypeProps) => {
     array.push(elField.type.create(elField));
     setArray(array);
     setCounter(counter + 1);
-    onTypeChange(props, array);
+    onTypeChange(props, array, array);
   };
 
   const removeElement = (idx: number) => {
     array.splice(idx, 1);
     setArray(array);
     setCounter(counter + 1);
-    onTypeChange(props, array);
+    onTypeChange(props, array, array);
   };
 
   return (
