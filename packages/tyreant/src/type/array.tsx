@@ -15,7 +15,7 @@ import { TyrArrayList } from './array.list';
 import { TyrArrayFixed } from './array.fixed';
 
 export const TyrArrayBase = (props: TyrTypeProps) => {
-  const { path } = props;
+  const path = props.path!;
 
   if (!props.document) throw new Error('no "document" passed to TyrArray');
 

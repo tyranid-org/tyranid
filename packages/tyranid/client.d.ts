@@ -128,6 +128,8 @@ declare module 'tyranid/client' {
       ): Promise<Tyr.Document[]>;
     }
 
+    export interface CollectionStatic extends Isomorphic.CollectionStatic {}
+
     export interface CollectionInstance<
       IdType extends AnyIdType = AnyIdType,
       T extends Document<IdType> = Document<IdType>
@@ -175,7 +177,8 @@ declare module 'tyranid/client' {
       values: T[];
     }
 
-    export interface Document<IdType extends AnyIdType = AnyIdType> {
+    export interface Document<IdType extends AnyIdType = AnyIdType>
+      extends Isomorphic.Document<IdType> {
       $access?: AccessResult;
       $cache(): this;
       $clone(): this;
@@ -196,7 +199,8 @@ declare module 'tyranid/client' {
     }
 
     export interface Inserted<IdType extends AnyIdType = AnyIdType>
-      extends Document<IdType> {
+      extends Document<IdType>,
+        Isomorphic.Inserted<IdType> {
       _id: IdType;
     }
   }

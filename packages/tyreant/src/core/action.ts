@@ -19,7 +19,7 @@ export interface TyrActionOpts {
    * be applied.  Note that undefined/void is treated as returning true (i.e. the
    * decorated action should be performed.
    */
-  action: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
+  action?: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
   hide?: (doc: Tyr.Document) => boolean;
 }
 
@@ -28,7 +28,7 @@ export class TyrAction {
   name: string;
   label: string | React.ReactNode;
   component?: TyrComponent;
-  action: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
+  action?: (opts: TyrActionFnOpts) => void | boolean | Promise<boolean>;
   hide?: (doc: Tyr.Document) => boolean;
 
   constructor({ traits, name, component, label, action, hide }: TyrActionOpts) {
@@ -45,7 +45,7 @@ export class TyrAction {
   }
 
   act(opts: TyrActionFnOpts) {
-    this.action(opts);
+    this.action && this.action(opts);
   }
 
   decorate(opts: Partial<TyrActionOpts>) {
@@ -62,7 +62,7 @@ export class TyrAction {
 
     if (opts.action && this.action) {
       newOpts.action = (fnOpts: TyrActionFnOpts) => {
-        const result = this.action(fnOpts);
+        const result = this.action && this.action(fnOpts);
 
         switch (typeof result) {
           case 'undefined':

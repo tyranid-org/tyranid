@@ -1,138 +1,143 @@
-// quiet errors
-export {};
+import * as React from 'react';
 
-// the drawer component is not in our version of ant, need to upgrade to newer version
-
-//import * as React from 'react';
-
-//import { Tyr } from 'tyranid/client';
-
-/*
 import { Drawer, Button, Spin, Icon } from 'antd';
 
-import { TyrForm, submitForm } from './form';
-import { TyrComponent, TyrComponentState } from './component';
+import { TyrAction } from './action';
+import {
+  TyrDecorator,
+  TyrDecoratorProps,
+  TyrDecoratorState
+} from './decorator';
 
-export interface TyrFormDrawerState extends TyrComponentState {
-  visible: boolean;
+export interface TyrDrawerProps extends TyrDecoratorProps {
+  placement?: 'top' | 'right' | 'bottom' | 'left';
+}
+
+export interface TyrDrawerState extends TyrDecoratorState {
   loading: boolean;
 }
 
-export class TyrFormDrawer extends TyrComponent<TyrFormDrawerState> {
-  state: TyrFormDrawerState = {
+export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
+  state: TyrDrawerState = {
     visible: false,
-    loading: false,
+    loading: false
   };
 
-  async edit(document: Tyr.Document) {
-    super.edit(document);
-    this.openDrawer();
+  create?: TyrAction;
+  edit?: TyrAction;
+  save?: TyrAction;
+  cancel?: TyrAction;
+
+  enact(action: TyrAction) {
+    if (!this.component) throw new Error('drawer not connected');
+
+    if (action.is('create')) {
+      this.create = action.decorate({
+        action: () => this.openDrawer()
+      });
+    } else if (action.is('edit')) {
+      const edit = action.decorate({
+        action: () => this.openDrawer()
+      });
+      this.edit = edit;
+
+      const parent = this.component.parent;
+      if (parent) parent.enact(edit);
+    } else if (action.is('save')) {
+      this.save = action.decorate({
+        action: () => {
+          this.closeDrawer();
+        }
+      });
+    } else if (action.is('cancel')) {
+      this.cancel = action.decorate({
+        action: () => this.closeDrawer()
+      });
+    }
   }
 
-  openDrawer = () => this.setState({ visible: true });
-  closeDrawer = () => this.setState({ visible: false });
-
-  onClickOpenButton = () => {
-    this.setState({ document: new this.collection!() });
-    this.openDrawer();
-  };
-
-  onSubmit = () => {
-    try {
-      submitForm(this.form!, this.state.document!);
-    } catch (saveErr) {
-      this.setState({ loading: false });
-    }
-  };
-
-  onCancel = () => this.closeDrawer();
+  openDrawer = () => this.setVisible(true);
+  closeDrawer = () => this.setVisible(false);
 
   renderHeader() {
-    const { collection } = this;
-    const { loading, document } = this.state;
+    const { loading } = this.state;
+    const { edit, create, cancel } = this;
 
     return (
-      collection && (
-        <div className="tyr-modal-header">
-          <h4>
-            {document && document.$id ? 'Edit' : 'Create'} {collection.label}
-          </h4>
-          {!loading && (
+      <div className="tyr-header">
+        {!loading &&
+          cancel && (
             <Icon
               type="close"
-              className="tyr-modal-close-icon"
-              onClick={this.onCancel}
+              className="tyr-drawer-close-icon"
+              onClick={() => cancel.act({})}
             />
           )}
-        </div>
-      )
+        <h4>{create ? create.label : edit ? edit!.label : 'unknown'}</h4>
+      </div>
     );
   }
 
   renderFooter() {
     const { loading } = this.state;
+    const { save, cancel } = this;
 
     return (
-      <div>
-        <Button key="back" onClick={this.onCancel} loading={loading}>
-          Cancel
-        </Button>
-        <Button
-          key="submit"
-          type="primary"
-          onClick={this.onSubmit}
-          loading={loading}
-        >
-          Save
-        </Button>
+      <div className="tyr-footer">
+        {cancel && (
+          <Button key="back" onClick={() => cancel.act({})} loading={loading}>
+            {cancel.label}
+          </Button>
+        )}
+        {save && (
+          <Button
+            key="submit"
+            type="primary"
+            onClick={() => save.act({})}
+            loading={loading}
+          >
+            {save.label}
+          </Button>
+        )}
       </div>
     );
   }
 
   render() {
-    const { onCancel } = this;
-    const { children } = this.props;
-    const { visible, loading, document } = this.state;
+    const { cancel, create } = this;
+    const { children, placement } = this.props;
+    const { visible, loading } = this.state;
+    console.log('rendering drawer, visible:', visible);
 
-    return this.wrap(() => {
-      const { collection } = this;
-
-      return (
-        collection && (
-          <>
-            <Button
-              type="primary"
-              onClick={this.onClickOpenButton}
-              className="tyr-primary-btn"
-            >
-              {children // TODO:  probably should use children in a different way
-                `Create ${collection.label}`}
-            </Button>
-
-            <Drawer
-              className="tyr-modal"
-              visible={visible}
-              onCancel={onCancel}
-              title={this.renderHeader()}
-              footer={this.renderFooter()}
-              maskClosable={!loading}
-              closable={false}
-            >
-              <Spin spinning={loading}>
-                {visible &&
-                  document && (
-                    <TyrForm
-                      ref={this.getFormRef as Tyr.anny}
-                      document={document}
-                      fields={this.fields}
-                    />
-                  )}
-              </Spin>
-            </Drawer>
-          </>
-        )
-      );
-    });
+    return (
+      <>
+        {create && (
+          <Button
+            type="primary"
+            onClick={() => create.act({})}
+            className="tyr-primary-btn"
+          >
+            {create.label}
+          </Button>
+        )}
+        <Drawer
+          visible={visible}
+          closable={false}
+          placement={placement || 'right'}
+        >
+          {visible && (
+            <div className="tyr-drawer-container">
+              <div className="tyr-drawer">
+                {this.renderHeader()}
+                <Spin spinning={loading}>
+                  {visible && <div className="tyr-content">{children}</div>}
+                </Spin>
+                {this.renderFooter()}
+              </div>
+            </div>
+          )}
+        </Drawer>
+      </>
+    );
   }
 }
-*/

@@ -14,6 +14,7 @@ import { SelectedValue } from 'antd/lib/select';
 import { Moment } from 'moment';
 import FormItem from 'antd/lib/form/FormItem';
 import { Tooltip, Icon } from 'antd';
+import { reportObserved } from 'mobx/lib/internal';
 
 export type TyrSortDirection = 'ascend' | 'descend';
 
@@ -84,13 +85,25 @@ export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field'> & {
   field?: Tyr.FieldInstance | string;
 };
 
+export const labelForProps = (props: TyrTypeProps) => {
+  const label = props.label;
+  if (label) return label;
+
+  const { extra } = props;
+  if (extra) return Tyr.labelize(extra);
+
+  return props.path!.tail.label;
+};
+
 export const decorateField = (
   name: string,
   props: TyrTypeProps,
   component: () => React.ReactElement
 ) => {
-  const { path, form } = props;
-  const { tail: field } = path;
+  const { path, form, extra } = props;
+  const field = path && path.tail;
+
+  const identifier = extra || path!.identifier;
 
   /*
      WARNING!
@@ -109,11 +122,11 @@ export const decorateField = (
 
   let label;
   if (!props.noLabel) {
-    const { help } = field.def;
+    const help = field && field.def && field.def.help;
 
     label = (
       <>
-        {field.label}
+        {labelForProps(props)}
         {help && (
           <Tooltip title={help}>
             &nbsp;<Icon type="exclamation-circle" />
@@ -125,11 +138,11 @@ export const decorateField = (
 
   return (
     <FormItem
-      key={field!.path}
+      key={extra || field!.path}
       className={className('tyr-' + name, props)}
       label={label}
     >
-      {form.getFieldDecorator(path.identifier, {
+      {form.getFieldDecorator(identifier, {
         rules: generateRules(props),
         preserve: true
       })(
@@ -143,7 +156,7 @@ export const decorateField = (
 
 export const TyrFieldBase = (props: TyrTypeProps) => {
   const { path } = props;
-  const { tail: field } = path;
+  const { tail: field } = path!;
   const { type } = field;
   const typeUi = assertTypeUi(type.name);
   return React.createElement(typeUi.component, props);

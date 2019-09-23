@@ -179,6 +179,7 @@ const Tyr = {
       _.startCase(name)
         // i.e. "Date Of Birth" -> "Date of Birth"
         .replace(/ Of /g, ' of ')
+        .replace(/ Url /g, ' URL ')
     );
   },
 

@@ -129,7 +129,7 @@ export namespace Tyr {
       text?: string,
       opts?: any
     ): Promise<Tyr.Document[]>;
-    validate(obj: {}): Promise<void>;
+    validate(obj: {}): Promise<string | undefined>;
   }
 
   export interface NamePathStatic {
@@ -165,6 +165,8 @@ export namespace Tyr {
     ): void;
     walk(path: string | number): NamePathInstance;
   }
+
+  export interface CollectionStatic {}
 
   export interface CollectionInstance<
     IdType,
