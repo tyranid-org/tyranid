@@ -29,7 +29,7 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
       type="text"
       autoFocus={props.autoFocus}
       placeholder={props.placeholder}
-      onChange={ev => onTypeChange(props, ev.target.value)}
+      onChange={ev => onTypeChange(props, ev.target.value, ev)}
       tabIndex={props.tabIndex}
     />
   ));

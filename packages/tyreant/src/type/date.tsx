@@ -32,7 +32,7 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
       allowClear={false}
       autoFocus={props.autoFocus}
       placeholder={props.placeholder}
-      onChange={ev => onTypeChange(props, ev)}
+      onChange={ev => onTypeChange(props, ev, ev)}
       {...{ tabIndex: props.tabIndex }}
     />
   ));

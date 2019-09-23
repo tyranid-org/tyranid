@@ -292,7 +292,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     }
 
     return decorateField('link', props, () => (
-      <Select {...selectProps} onChange={(ev: any) => onTypeChange(props, ev)}>
+      <Select
+        {...selectProps}
+        onChange={(ev: any) => onTypeChange(props, ev, ev)}
+      >
         {compact(documents.map(this.createOption))}
       </Select>
     ));
