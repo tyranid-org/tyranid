@@ -801,9 +801,17 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             return <span />;
           }
 
+          const thisActions = this.actions.filter(
+            action => !action.hide || !action.hide(document)
+          );
+
+          if (!thisActions.length) {
+            return <span />;
+          }
+
           const menu = (
             <Menu className="tyr-menu">
-              {this.actions.map(action => (
+              {thisActions.map(action => (
                 <Menu.Item className="tyr-menu-item" key={action.name}>
                   <button onClick={() => action.act({ document })}>
                     {action.label}
@@ -961,13 +969,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           }
         : undefined;
 
-      // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
-      // const dataSourceDocs = newDocument
-      //   ? [newDocument, ...documents]
-      //   : documents.slice();
-
-      const dataSourceDocs = documents.slice();
-
       return (
         <div className={netClassName}>
           {children && (
@@ -1005,7 +1006,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   footer={footer}
                   title={title}
                   showHeader={newDocument ? false : showHeader}
-                  dataSource={dataSourceDocs}
+                  // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
+                  dataSource={documents.slice()}
                   columns={this.getColumns()}
                   scroll={fieldCount > 1 ? scroll : undefined}
                   onHeaderRow={(columns, index) => {
@@ -1083,7 +1085,7 @@ const EditableRow: React.StatelessComponent<EditableRowProps> = ({
   ...props
 }) => (
   <EditableContext.Provider value={{ form }}>
-    <tr {...props} />
+    <tr key={`form-${index}`} {...props} />
   </EditableContext.Provider>
 );
 
@@ -1194,9 +1196,9 @@ class TyrTableConfigModal extends React.Component<
       fields: columnFields
     });
 
-    await newTableConfig.$save();
+    const dbTableConfig = await newTableConfig.$save();
 
-    onUpdate && onUpdate(newTableConfig);
+    onUpdate && onUpdate(dbTableConfig);
     onCancel();
   };
 
@@ -1345,24 +1347,15 @@ const ensureTableConfig = async (
     })) as TyrTableConfigType;
 
     if (!tableConfig) {
-      const columnFields = compact(
-        columns.map(c => {
-          if (c.defaultHidden) {
-            return null;
-          }
-
-          return getFieldName(c.field);
-        })
-      ) as string[];
-
       tableConfig = new Tyr.byName.tyrTableConfig({
         documentUid,
         collectionId,
         userId,
         key,
-        fields: columnFields.map(c => {
+        fields: columns.map(c => {
           return {
-            name: c
+            name: c,
+            hidden: !!c.defaultHidden
           };
         })
       }) as TyrTableConfigType;
@@ -1373,7 +1366,6 @@ const ensureTableConfig = async (
     tableConfig.fields,
     columns.filter(column => {
       const fieldName = getFieldName(column.field);
-
       const configField = tableConfig.fields.find(f => f.name === fieldName);
 
       return fieldName && (!configField || !configField.hidden);
