@@ -1,6 +1,7 @@
 /*
  - link typeahead is not showing characters as being typed--- values are not passing to <Select>
  - Form validation is not working.
+   - shows, but does not prevent submission.
 
  - after save, links are coming back as "Unknown"
  
