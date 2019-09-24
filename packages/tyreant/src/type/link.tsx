@@ -38,7 +38,7 @@ const linkFor = (path: Tyr.NamePathInstance) => {
   }
 };
 
-// TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search...
+// TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search....
 const findByLabel = (collection: Tyr.CollectionInstance, label: string) => {
   label = label.toLowerCase();
 
