@@ -307,12 +307,20 @@ export const withTypeContext = <T extends {} = {}>(
 
       const collection = document.$model;
 
-      const path = Tyr.NamePath.resolve(
+      let path = Tyr.NamePath.resolve(
         collection,
         parentProps && parentProps.path,
         props.path
       );
-      if (!path && !props.extra) return <div className="no-path" />;
+      if (!path && !props.extra) {
+        let { field } = props;
+        if (typeof field === 'string') field = document.$model.paths[field];
+        if (field) {
+          path = field.namePath;
+        } else {
+          return <div className="no-path" />;
+        }
+      }
 
       return React.createElement(TypeControl, {
         ...props,
