@@ -992,6 +992,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     showHeader={true}
                     dataSource={[newDocument]}
                     columns={this.getColumns(true)}
+                    scroll={fieldCount > 1 ? scroll : undefined}
                   />
                 )}
 
