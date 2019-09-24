@@ -31,9 +31,9 @@ import './core/field';
 import './core/function';
 import './core/index';
 import './core/instance';
+import './core/namePath';
 import './core/subscription';
 import './core/validationError';
-import './core/namePath';
 import './core/query';
 import './core/update';
 
