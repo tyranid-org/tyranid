@@ -158,7 +158,7 @@ export namespace Tyr {
     pathName(idx: number): string;
     uniq(obj: any): any[];
     get(obj: any): any;
-    set<D extends Tyr.Document>(
+    set<D extends Tyr.Document<AnyIdType>>(
       obj: D,
       value: any,
       opts?: { create?: boolean; ignore?: boolean }
@@ -178,7 +178,7 @@ export namespace Tyr {
     count(opts: any): Promise<number>;
     def: any /* collection def */;
     exists(opts: any): Promise<boolean>;
-    fields: { [fieldName: string]: FieldDefinition };
+    fields: { [fieldName: string]: FieldInstance };
     findAll(args: any): Promise<T[] & { count?: number }>;
     findOne(args: any): Promise<T | null>;
     id: string;
@@ -198,7 +198,7 @@ export namespace Tyr {
     labels(_: any): Promise<T[]>;
     on(opts: any): () => void;
     parsePath(text: string): NamePathInstance;
-    paths: { [fieldPathName: string]: FieldDefinition };
+    paths: { [fieldPathName: string]: FieldInstance };
     push(id: IdType, path: string, value: any, opts: any): Promise<void>;
     remove(id: IdType, justOne: boolean): Promise<void>;
     remove(

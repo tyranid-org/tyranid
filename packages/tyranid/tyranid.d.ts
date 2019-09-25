@@ -498,6 +498,49 @@ export namespace Tyr {
     defaultMatchIdOnInsert?: boolean;
   }
 
+  export interface ApiParameterDefinition {
+    is?: string;
+    label?: string;
+    help?: string;
+    deprecated?: string | boolean;
+    note?: string;
+    required?: boolean;
+    of?: string | ApiParameterDefinition;
+
+    cardinality?: string;
+
+    fields?: FieldsObject;
+    keys?: string | ApiParameterDefinition;
+
+    link?: string;
+    where?: any;
+
+    in?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+
+    pattern?: RegExp;
+    minlength?: number;
+    maxlength?: number;
+
+    granularity?: string;
+  }
+
+  export interface ApiMethodDefinition {
+    help?: string;
+    note?: string;
+    deprecated?: string | boolean;
+    params: {
+      [parameterName: string]: {};
+    };
+    returns: {};
+  }
+
+  export interface ApiDefinition {
+    [methodName: string]: ApiMethodDefinition;
+  }
+
   /**
    * collection.def
    */
@@ -559,6 +602,7 @@ export namespace Tyr {
     fromClient?: (opts: Options_FromClient) => void;
     toClient?: (opts: Options_ToClient) => void;
     routes?: (app: Express.Application, auth: Express.RequestHandler) => void;
+    api?: ApiDefinition;
   }
 
   export type CollectionCurriedMethodReturn =

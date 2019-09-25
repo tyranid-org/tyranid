@@ -66,8 +66,8 @@ declare module 'tyranid/client' {
 
       resolve(
         collection: CollectionInstance,
-        parentPath?: NamePathInstance,
-        path?: NamePathInstance | string
+        parentPath?: Isomorphic.NamePathInstance,
+        path?: Isomorphic.NamePathInstance | string
       ): NamePathInstance;
     }
 
@@ -77,7 +77,7 @@ declare module 'tyranid/client' {
       tail: FieldInstance;
 
       parsePath(path: string): NamePathInstance;
-      set<D extends Tyr.Document>(
+      set<D extends Isomorphic.Document<any>>(
         obj: D,
         value: any,
         opts?: { create?: boolean; ignore?: boolean }
@@ -199,8 +199,7 @@ declare module 'tyranid/client' {
     }
 
     export interface Inserted<IdType extends AnyIdType = AnyIdType>
-      extends Document<IdType>,
-        Isomorphic.Inserted<IdType> {
+      extends Document<IdType> {
       _id: IdType;
     }
   }
