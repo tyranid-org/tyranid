@@ -211,7 +211,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       );
     }
 
-    const { detail: field } = path!;
+    const { tail: field } = path!;
 
     let mode: typeof selectProps.mode;
     // TODO:  'tags', 'combobox'
