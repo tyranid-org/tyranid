@@ -125,7 +125,10 @@ export interface TyrTableProps extends TyrComponentProps {
   canEditDocument?: (document: Tyr.Document) => boolean;
   size?: 'default' | 'middle' | 'small';
   saveDocument?: (document: Tyr.Document) => Promise<Tyr.Document>;
-  onAfterSaveDocument?: (document: Tyr.Document) => void;
+  onAfterSaveDocument?: (
+    document: Tyr.Document,
+    changedFields?: string[]
+  ) => void;
   onBeforeSaveDocument?: (document: Tyr.Document) => void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
@@ -519,6 +522,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const docIdx = documents.indexOf(document);
     const collection = document.$model;
 
+    const orig = document.$orig;
+    const changedFields: string[] = [];
+
     form.validateFields(async (err: Error, values: TyrFormFields) => {
       try {
         if (err || !document) return;
@@ -527,6 +533,24 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           const value = values[pathName];
           const field = collection.paths[pathName];
           type.mapFormValueToDocument(field.namePath, value, document);
+        }
+
+        for (const column of this.props.fields) {
+          const pathName = getFieldName(column.field);
+          const field = pathName && collection.paths[pathName];
+
+          if (field) {
+            const oldValue = field.namePath.get(orig);
+            const newValue = field.namePath.get(document);
+
+            if (!isEqual(oldValue, newValue)) {
+              if (typeof column.label === 'string') {
+                changedFields.push(column.label as string);
+              } else if (typeof field.label === 'string') {
+                changedFields.push(field.label);
+              }
+            }
+          }
         }
 
         onBeforeSaveDocument && onBeforeSaveDocument(document);
@@ -696,7 +720,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 noLabel: true,
                 tabIndex: columnIdx,
                 dropdownClassName: column.dropdownClassName,
-                className: column.className
+                className: column.className,
+                searchRange: column.searchRange
               };
 
               return (
@@ -1152,7 +1177,7 @@ class TyrTableConfigModal extends React.Component<
       }) as any;
     }
 
-    const { documentUid, collectionId } = tableConfig;
+    const { collectionId } = tableConfig;
     const collection = Tyr.byId[collectionId];
     const orderedFields = orderedArray(tableConfig.fields, columns, true);
 

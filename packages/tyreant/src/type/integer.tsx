@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { Tyr } from 'tyranid/client';
 
-import { Input, Slider, Button } from 'antd';
+import { Slider, Button, InputNumber } from 'antd';
 
 import {
   mapPropsToForm,
@@ -23,12 +23,18 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
   }, []);
 
   return decorateField('integer', props, () => (
-    <Input
-      step="1"
-      type="number"
+    <InputNumber
+      {...(props.searchRange
+        ? {
+            min: props.searchRange[0] as number,
+            max: props.searchRange[1] as number
+          }
+        : {})}
+      onChange={n => onTypeChange(props, n, null)}
       placeholder={props.placeholder}
-      onChange={ev => onTypeChange(props, ev.target.value, ev)}
       tabIndex={props.tabIndex}
+      precision={0}
+      step="1"
     />
   ));
 }) as React.ComponentType<TyrTypeProps>;
