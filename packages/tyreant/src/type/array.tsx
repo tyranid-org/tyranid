@@ -8,7 +8,8 @@ import {
   TyrTypeProps,
   mapDocumentValueToFormValue,
   withTypeContext,
-  mapFormValueToDocument
+  mapFormValueToDocument,
+  mapFormValueToDocumentValue
 } from './type';
 import { TyrArrayKeyValue } from './array.key-value';
 import { TyrArrayList } from './array.list';
@@ -46,13 +47,23 @@ byName.array = {
     if (value && value.slice) value = value.slice();
 
     if (value) {
-      value = (value as any[]).map(value =>
-        mapDocumentValueToFormValue(path, value)
+      value = (value as any[]).map((value, idx) =>
+        mapDocumentValueToFormValue(path.walk(idx), value)
       );
     }
 
     return value;
   },
+  mapFormValueToDocumentValue(path: Tyr.NamePathInstance, arrayValue?: any[]) {
+    if (arrayValue) {
+      return arrayValue.map((val, idx) =>
+        mapFormValueToDocumentValue(path.walk(idx), val)
+      );
+    }
+
+    return arrayValue;
+  },
+
   mapFormValueToDocument(
     path: Tyr.NamePathInstance,
     arrayValue: any,

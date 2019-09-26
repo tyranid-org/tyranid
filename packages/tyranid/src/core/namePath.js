@@ -348,7 +348,9 @@ NamePath.prototype.set = function(obj, value, opts) {
         } else if (name && name.match(NamePath._numberRegex)) {
           let v = obj[name];
           if (!v && opts && opts.create) {
-            v = obj[name] = fields[pi].type.name === 'array' ? [] : {};
+            obj[name] = fields[pi].type.name === 'array' ? [] : {};
+            // Re-read value because mobx proxies
+            v = obj[name];
           }
 
           walk(pi + 1, v);
@@ -372,7 +374,9 @@ NamePath.prototype.set = function(obj, value, opts) {
           const key = path[pi];
           let v = obj[key];
           if (!v && opts && opts.create) {
-            v = obj[key] = fields[pi].type.name === 'array' ? [] : {};
+            obj[key] = fields[pi].type.name === 'array' ? [] : {};
+            // Re-read value because mobx proxies
+            v = obj[key];
           }
           walk(pi + 1, v);
         }

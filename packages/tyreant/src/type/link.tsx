@@ -244,6 +244,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       dropdownClassName: this.props.dropdownClassName
     };
 
+    const onTypeChangeFunc = (ev: any) => onTypeChange(props, ev, ev);
+
     if (mode === 'tags') {
       selectProps.onChange = async value => {
         const values = value as string[];
@@ -272,6 +274,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
             })
           );
         }
+
+        onTypeChange(props, value, value);
       };
     }
 
@@ -294,7 +298,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     return decorateField('link', props, () => (
       <Select
         {...selectProps}
-        onChange={(ev: any) => onTypeChange(props, ev, ev)}
+        onChange={selectProps.onChange || onTypeChangeFunc}
       >
         {compact(documents.map(this.createOption))}
       </Select>
@@ -505,15 +509,8 @@ byName.link = {
   },
   // Given labels, return the ids
   mapFormValueToDocumentValue(path: Tyr.NamePathInstance, value: any) {
-    if (Array.isArray(value)) {
-      value = value.map(v => {
-        const nv = findByLabel(linkFor(path)!, v);
-        return nv ? nv.$id : v;
-      });
-    } else {
-      const nv = findByLabel(linkFor(path)!, value);
-      if (nv) value = nv.$id;
-    }
+    const nv = findByLabel(linkFor(path)!, value);
+    if (nv) value = nv.$id;
 
     return value && value.key ? value.key : value;
   },
