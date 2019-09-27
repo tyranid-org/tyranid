@@ -1,8 +1,4 @@
 /*
- - link typeahead is not showing characters as being typed--- values are not passing to <Select>
- - Form validation is not working.
-   - shows, but does not prevent submission.
-
  - after save, links are coming back as "Unknown"
  
  - Add resizeable columns: "re-resizable": "4.4.4",
@@ -65,7 +61,6 @@ import {
 } from './field';
 import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from './form';
-import * as type from '../type/type';
 
 const ObsTable = observer(Table);
 
@@ -132,6 +127,7 @@ export interface TyrTableProps extends TyrComponentProps {
   onBeforeSaveDocument?: (document: Tyr.Document) => void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
+  onChangeTableConfiguration?: (fields: TyrTableConfigFields) => void;
   scroll?: {
     x?: boolean | number | string;
     y?: boolean | number | string;
@@ -154,7 +150,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       [pathName: string]: string | undefined;
     };
     pageSize: number;
-    editingKey: Tyr.AnyIdType;
+    editingDocument?: Tyr.Document;
     isSavingDocument: boolean;
     tableDefn: TableDefinition;
     showConfig: boolean;
@@ -167,7 +163,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     count: this.props.documents ? this.props.documents.length : 0,
     workingSearchValues: {},
     pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE,
-    editingKey: '',
     isSavingDocument: false,
     tableDefn: {},
     showConfig: false,
@@ -252,7 +247,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   addNewDocument = (doc: Tyr.Document) => {
     this.store.newDocument = doc;
-    this.store.editingKey = '';
+    delete this.store.editingDocument;
 
     if (this._mounted) {
       this.setState({});
@@ -482,44 +477,62 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }
   }
 
-  private onUpdateTableConfig = async (tableConfig: any) => {
-    if (this.props.config) {
-      const config = await ensureTableConfig(
-        this.props.fields,
-        this.props.config,
-        tableConfig
+  private onUpdateTableConfig = async (savedTableConfig: any) => {
+    const { config, fields, onChangeTableConfiguration } = this.props;
+
+    if (config) {
+      const tableConfig = await ensureTableConfig(
+        fields,
+        config,
+        savedTableConfig
       );
 
-      if (config) {
-        this.store.tableConfig = config.tableConfig;
-        this.store.fields = config.newColumns;
+      if (tableConfig) {
+        this.store.tableConfig = tableConfig.tableConfig;
+        this.store.fields = tableConfig.newColumns;
+
+        onChangeTableConfiguration &&
+          onChangeTableConfiguration(
+            (tableConfig.tableConfig as any).fields.map(
+              (f: TyrTableConfigField) => {
+                return {
+                  name: f.name,
+                  hidden: !!f.hidden
+                } as TyrTableConfigField;
+              }
+            )
+          );
       }
     }
   };
 
-  private isEditing = (document: Tyr.Document) =>
-    !document.$id || document.$id === this.store.editingKey;
+  private isEditing = (document: Tyr.Document) => {
+    const { editingDocument } = this.store;
 
-  private saveDocument = (form: WrappedFormUtils, docId?: Tyr.AnyIdType) => {
+    return (
+      !document.$id || (editingDocument && document.$id === editingDocument.$id)
+    );
+  };
+
+  private saveDocument = (form: WrappedFormUtils, doc: Tyr.Document) => {
     const {
       saveDocument,
       onAfterSaveDocument,
       onBeforeSaveDocument
     } = this.props;
 
-    const { documents, newDocument } = this.store;
+    const store = this.store;
+    const { documents, newDocument, editingDocument } = store;
 
-    let document = docId ? documents.find(d => d.$id === docId) : newDocument;
+    let document = newDocument || editingDocument;
 
     if (!document) {
-      this.store.editingKey = '';
-      delete this.store.newDocument;
-      message.error(`Unable to find document ${docId} to save!`);
+      message.error(`No document to save!`);
       return;
     }
 
-    this.store.isSavingDocument = true;
-    const docIdx = documents.indexOf(document);
+    store.isSavingDocument = true;
+    const docIdx = findIndex(documents, d => d.$id === document!.$id);
     const collection = document.$model;
 
     const orig = document.$orig;
@@ -527,27 +540,36 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     form.validateFields(async (err: Error, values: TyrFormFields) => {
       try {
-        if (err || !document) return;
-
-        for (const pathName in values) {
-          const value = values[pathName];
-          const field = collection.paths[pathName];
-          type.mapFormValueToDocument(field.namePath, value, document);
+        if (err || !document) {
+          store.isSavingDocument = false;
+          return;
         }
 
-        for (const column of this.props.fields) {
-          const pathName = getFieldName(column.field);
-          const field = pathName && collection.paths[pathName];
+        // Don't think this is needed anymore
+        // Plus, for some reason, field leafs are called, xxx_yyy in values,
+        // not xxx.yyy - this causes field not to be found below
 
-          if (field) {
-            const oldValue = field.namePath.get(orig);
-            const newValue = field.namePath.get(document);
+        // for (const pathName in values) {
+        //   const value = values[pathName];
+        //   const field = collection.paths[pathName];
+        //   type.mapFormValueToDocument(field.namePath, value, document);
+        // }
 
-            if (!isEqual(oldValue, newValue)) {
-              if (typeof column.label === 'string') {
-                changedFields.push(column.label as string);
-              } else if (typeof field.label === 'string') {
-                changedFields.push(field.label);
+        if (orig) {
+          for (const column of this.props.fields) {
+            const pathName = getFieldName(column.field);
+            const field = pathName && collection.paths[pathName];
+
+            if (field) {
+              const oldValue = field.namePath.get(orig);
+              const newValue = field.namePath.get(document);
+
+              if (!isEqual(oldValue, newValue)) {
+                if (typeof column.label === 'string') {
+                  changedFields.push(column.label as string);
+                } else if (typeof field.label === 'string') {
+                  changedFields.push(field.label);
+                }
               }
             }
           }
@@ -565,58 +587,62 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           document.$cache();
 
           if (docIdx > -1) {
-            this.store.documents = [
+            store.documents = [
               ...documents.slice(0, docIdx),
               document,
               ...documents.slice(docIdx + 1)
             ];
           }
 
-          if (!this.props.documents) {
+          if (!documents) {
             this.findAll();
           }
         }
 
-        onAfterSaveDocument && onAfterSaveDocument(document);
-        this.store.isSavingDocument = false;
-        delete this.store.newDocument;
+        onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
+        store.isSavingDocument = false;
+        delete store.editingDocument;
+        delete store.newDocument;
       } catch (saveError) {
         if (saveError.message) message.error(saveError.message);
         message.error(saveError);
-        this.store.isSavingDocument = false;
+        store.isSavingDocument = false;
         throw saveError;
       }
     });
-
-    this.store.editingKey = '';
   };
 
-  private cancelEdit = (document: Tyr.Document) => {
+  private cancelEdit = () => {
     const { onCancelAddNew } = this.props;
     const store = this.store;
-    const { documents } = store;
+    const { documents, editingDocument, newDocument } = store;
 
-    store.editingKey = '';
-    delete store.newDocument;
+    if (!newDocument && !editingDocument) {
+      return;
+    }
 
-    if (!document.$id) {
+    if (newDocument) {
       onCancelAddNew && onCancelAddNew();
-
-      const docIdx = documents.indexOf(document);
-
-      if (docIdx > -1) {
-        store.documents = [
-          ...documents.slice(0, docIdx),
-          ...documents.slice(docIdx + 1)
-        ];
-      }
+      delete store.newDocument;
 
       // Find on server
       if (!this.props.documents) {
         this.findAll();
       }
-    } else if (document && document.$orig) {
-      document.$revert();
+    } else if (editingDocument) {
+      editingDocument.$revert();
+
+      const docIdx = findIndex(documents, d => d.$id === editingDocument.$id);
+
+      if (docIdx > -1) {
+        store.documents = [
+          ...documents.slice(0, docIdx),
+          editingDocument,
+          ...documents.slice(docIdx + 1)
+        ];
+      }
+
+      delete store.editingDocument;
     }
 
     this.setState({});
@@ -631,17 +657,20 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       actionTrigger,
       actionColumnClassName
     } = this.props;
+
+    const store = this.store;
+
     const {
       workingSearchValues,
       fields: columns,
       tableDefn,
       newDocument,
-      editingKey
-    } = this.store;
+      editingDocument
+    } = store;
 
     const localSearch = !!this.props.documents;
     const fieldCount = columns.length;
-    const isEditingAnything = newDocumentTable || editingKey;
+    const isEditingAnything = newDocumentTable || editingDocument;
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(
       (column, columnIdx) => {
@@ -676,7 +705,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             }
           },
           localSearch,
-          localDocuments: this.store.documents
+          localDocuments: store.documents
         };
 
         const np = field ? field.namePath : undefined;
@@ -702,10 +731,18 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         return {
           dataIndex: pathName,
           //key: pathName,
-          render: (text: string, document: Tyr.Document) => {
-            const editable = newDocumentTable || this.isEditing(document);
+          render: (text: string, doc: Tyr.Document) => {
+            const editable = newDocumentTable || this.isEditing(doc);
+            const document =
+              editingDocument && doc.$id === editingDocument.$id
+                ? editingDocument!
+                : doc;
 
-            if (editable && !column.readonly) {
+            if (
+              editable &&
+              !column.readonly &&
+              (!column.isEditable || column.isEditable(document))
+            ) {
               const fieldProps = {
                 placeholder: column.placeholder,
                 autoFocus: column.autoFocus,
@@ -721,7 +758,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 tabIndex: columnIdx,
                 dropdownClassName: column.dropdownClassName,
                 className: column.className,
-                searchRange: column.searchRange
+                searchRange: column.searchRange,
+                onChange: () => {
+                  this.setState({});
+                }
               };
 
               return (
@@ -779,11 +819,15 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           actionColumnClassName ? ' ' + actionColumnClassName : ''
         }`,
         title: !newDocumentTable ? actionHeaderLabel || '' : '',
-        render: (text: string, document: Tyr.Document) => {
-          const editable = newDocumentTable || this.isEditing(document);
+        render: (text: string, doc: Tyr.Document) => {
+          const editable = newDocumentTable || this.isEditing(doc);
+          const document =
+            editingDocument && doc.$id === editingDocument.$id
+              ? editingDocument!
+              : doc;
 
           if (editable) {
-            if (this.store.isSavingDocument) {
+            if (store.isSavingDocument) {
               return <Spin tip="Saving..." />;
             }
 
@@ -793,14 +837,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   style={{ width: '60px', marginRight: 8, zIndex: 1 }}
                   size="small"
                   type="default"
-                  onClick={() => this.cancelEdit(document)}
+                  onClick={() => this.cancelEdit()}
                 >
                   Cancel
                 </Button>
 
                 <EditableContext.Consumer>
-                  {ctxProps => {
-                    if (!ctxProps.form) {
+                  {({ form }) => {
+                    if (!form) {
                       return <span>No Form!</span>;
                     }
 
@@ -809,9 +853,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                         size="small"
                         style={{ width: '60px', zIndex: 1 }}
                         type="primary"
-                        onClick={() =>
-                          this.saveDocument(ctxProps.form!, document.$id)
-                        }
+                        onClick={() => this.saveDocument(form, document)}
                       >
                         Save
                       </Button>
@@ -857,7 +899,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         sorter: undefined,
         sortOrder: undefined,
         width: '40px',
-        ...(!!pinActionsRight ? { fixed: 'right' } : {})
+        ...(!isEditingAnything && !!pinActionsRight ? { fixed: 'right' } : {})
       });
     }
 
@@ -875,7 +917,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   ) => {
     const store = this.store;
 
-    store.editingKey = '';
+    delete store.editingDocument;
+    delete store.newDocument;
     const defn: TableDefinition = {};
 
     if (pagination.current) {
@@ -945,7 +988,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   private onEditRow = (document: Tyr.Document, rowIndex: number) => {
     // Callback and check perms?
-    this.store.editingKey = document.$id;
+    this.store.editingDocument = document;
     document.$snapshot();
   };
 
@@ -955,7 +998,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       loading,
       showConfig,
       fields,
-      editingKey,
+      editingDocument,
       newDocument
     } = this.store;
     const {
@@ -975,7 +1018,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     } = this.props;
 
     const fieldCount = fields.length;
-    const isEditingRow = !!editingKey;
+    const isEditingRow = !!editingDocument;
     const netClassName = `tyr-table${className ? ' ' + className : ''}${
       isEditingRow ? ' tyr-table-editing-row' : ''
     }`;
@@ -1012,6 +1055,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     loading={loading}
                     components={components}
                     rowKey={() => 'new'}
+                    title={title}
                     size={size || 'small'}
                     pagination={false}
                     showHeader={true}
@@ -1030,7 +1074,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   pagination={this.pagination()}
                   onChange={this.handleTableChange}
                   footer={footer}
-                  title={title}
+                  title={newDocument ? undefined : title}
                   showHeader={newDocument ? false : showHeader}
                   // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
                   dataSource={documents.slice()}
@@ -1044,13 +1088,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                         onClick: () => {
                           onActionLabelClick && onActionLabelClick();
                           this.store.showConfig = true;
-                        }
-                      };
-                    } else if (isEditingRow) {
-                      return {
-                        onClick: (e: React.MouseEvent<HTMLElement>) => {
-                          e.preventDefault();
-                          e.stopPropagation();
                         }
                       };
                     }
@@ -1117,10 +1154,17 @@ const EditableRow: React.StatelessComponent<EditableRowProps> = ({
 
 export const EditableFormRow = Form.create()(EditableRow);
 
+type TyrTableConfigField = {
+  name: string;
+  hidden?: boolean;
+};
+
+export type TyrTableConfigFields = TyrTableConfigField[];
+
 type TyrTableConfigType = Tyr.Document & {
   key?: string;
   name?: string;
-  fields: { name: string; hidden?: boolean }[];
+  fields: TyrTableConfigFields;
   documentUid: string;
   userId: string;
   collectionId: string;
@@ -1222,9 +1266,7 @@ class TyrTableConfigModal extends React.Component<
       fields: columnFields
     });
 
-    const dbTableConfig = await newTableConfig.$save();
-
-    onUpdate && onUpdate(dbTableConfig);
+    onUpdate(await newTableConfig.$save());
     onCancel();
   };
 

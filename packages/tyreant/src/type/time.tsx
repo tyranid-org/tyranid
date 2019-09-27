@@ -15,13 +15,20 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return decorateField('time', props, () => (
-    <TimePicker
-      placeholder={props.placeholder}
-      onChange={ev => onTypeChange(props, ev, ev)}
-      {...{ tabIndex: props.tabIndex }}
-    />
-  ));
+  return decorateField('time', props, () => {
+    const onTypeChangeFunc = (ev: any) => {
+      onTypeChange(props, ev, ev);
+      props.onChange && props.onChange(ev, ev, props);
+    };
+
+    return (
+      <TimePicker
+        placeholder={props.placeholder}
+        onChange={onTypeChangeFunc}
+        {...{ tabIndex: props.tabIndex }}
+      />
+    );
+  });
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrTime = withTypeContext(TyrTimeBase);

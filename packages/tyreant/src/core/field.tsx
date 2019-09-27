@@ -73,6 +73,7 @@ export interface TyrFieldProps {
   liveSearch?: boolean;
   defaultHidden?: boolean;
   readonly?: boolean;
+  isEditable?: (document: Tyr.Document) => boolean;
   translateForWhiteLabel?: (label: string) => string;
 }
 

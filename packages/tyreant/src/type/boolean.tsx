@@ -24,14 +24,21 @@ export const TyrBooleanBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return decorateField('boolean', props, () => (
-    <Checkbox
-      // autoComplete="off"
-      autoFocus={props.autoFocus}
-      onChange={ev => onTypeChange(props, ev.target.value, ev)}
-      // tabIndex={props.tabIndex}
-    />
-  ));
+  return decorateField('boolean', props, () => {
+    const onTypeChangeFunc = (ev: any) => {
+      onTypeChange(props, ev.target.value, ev);
+      props.onChange && props.onChange(ev.target.value, ev, props);
+    };
+
+    return (
+      <Checkbox
+        // autoComplete="off"
+        autoFocus={props.autoFocus}
+        onChange={onTypeChangeFunc}
+        // tabIndex={props.tabIndex}
+      />
+    );
+  });
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrBoolean = withTypeContext(TyrBooleanBase);

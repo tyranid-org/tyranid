@@ -15,15 +15,22 @@ export const TyrDateTimeBase = ((props: TyrTypeProps) => {
     mapPropsToForm(props);
   }, []);
 
-  return decorateField('datetime', props, () => (
-    <DatePicker
-      allowClear={false}
-      placeholder={props.placeholder}
-      autoFocus={props.autoFocus}
-      onChange={ev => onTypeChange(props, ev, ev)}
-      {...{ tabIndex: props.tabIndex }}
-    />
-  ));
+  return decorateField('datetime', props, () => {
+    const onTypeChangeFunc = (ev: any) => {
+      onTypeChange(props, ev, ev);
+      props.onChange && props.onChange(ev, ev, props);
+    };
+
+    return (
+      <DatePicker
+        allowClear={false}
+        placeholder={props.placeholder}
+        autoFocus={props.autoFocus}
+        onChange={onTypeChangeFunc}
+        {...{ tabIndex: props.tabIndex }}
+      />
+    );
+  });
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrDateTime = withTypeContext(TyrDateTimeBase);

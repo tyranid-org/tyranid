@@ -1,4 +1,4 @@
-import { compact, debounce, uniq } from 'lodash';
+import { compact, filter, debounce, uniq } from 'lodash';
 import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
@@ -57,13 +57,14 @@ interface Label {
 }
 
 const sortLabels = (labels: any[], searchSortById?: boolean) => {
-  (labels as Label[]).sort((a, b) => {
+  filter(labels as Label[], l => !!l.$label).sort((a, b) => {
     if (searchSortById) {
       return a.$id - b.$id;
     }
 
     const aLabel = a.$label.toLowerCase();
     const bLabel = b.$label.toLowerCase();
+
     if (aLabel < bLabel) {
       return -1;
     }
@@ -113,7 +114,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (link!.isStatic()) {
       this.setState({
-        documents: sortLabels(link!.values, props.searchSortById)
+        documents: sortLabels(link!.values, !!props.searchSortById)
       });
     } else {
       await this.search();
@@ -180,21 +181,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (this.mounted) {
       this.setState({
-        documents: documents.sort((a, b) => {
-          if (this.props.searchSortById) {
-            return (a as any).$id - (b as any).$id;
-          }
-
-          const aLabel = a.$label.toLowerCase();
-          const bLabel = b.$label.toLowerCase();
-          if (aLabel < bLabel) {
-            return -1;
-          }
-          if (aLabel > bLabel) {
-            return 1;
-          }
-          return 0;
-        }),
+        documents: sortLabels(documents, !!this.props.searchSortById),
         loading: false
       });
     }
@@ -241,10 +228,14 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       autoFocus: this.props.autoFocus,
       tabIndex: this.props.tabIndex,
       className: this.props.className,
-      dropdownClassName: this.props.dropdownClassName
+      dropdownClassName: this.props.dropdownClassName,
+      filterOption: false
     };
 
-    const onTypeChangeFunc = (ev: any) => onTypeChange(props, ev, ev);
+    const onTypeChangeFunc = (ev: any) => {
+      onTypeChange(props, ev, ev);
+      this.props.onChange && this.props.onChange(ev, ev, props);
+    };
 
     if (mode === 'tags') {
       selectProps.onChange = async value => {
@@ -275,7 +266,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
           );
         }
 
-        onTypeChange(props, value, value);
+        onTypeChangeFunc(value);
       };
     }
 
@@ -300,7 +291,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         {...selectProps}
         onChange={selectProps.onChange || onTypeChangeFunc}
       >
-        {compact(documents.map(this.createOption))}
+        {documents.map(this.createOption)}
       </Select>
     ));
   }
