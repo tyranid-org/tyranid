@@ -1,6 +1,7 @@
 import { Tyr } from 'tyranid';
 import * as names from './names';
 import { pad, wordWrap } from './util';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 /**
  * generate base interface for tyranid document type
@@ -40,8 +41,12 @@ export function baseInterface(
       });
 
       properties.push(
-        addComment(def, indent - 1, commentLineWidth) +
-          `${required ? fieldName : fieldName + '?'}: ${fieldType};`
+        addComment(def, indent - 1, undefined, commentLineWidth) +
+          '\n' +
+          pad(
+            `${required ? fieldName : fieldName + '?'}: ${fieldType};`,
+            indent - 1
+          )
       );
     }
   }
@@ -51,8 +56,9 @@ export function baseInterface(
      * Base interface from which documents in collection
      * "${name}" <${names.collection(name)}> are derived
      */
-    export interface ${interfaceName}<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
-      ${properties.join('\n' + pad('', 3))}
+    export interface ${interfaceName}<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {${properties.join(
+    ''
+  )}
     }
     `;
 }
@@ -70,23 +76,55 @@ function assignableToString(fieldName: string) {
   return false;
 }
 
+export function commentsFor({
+  note,
+  help
+}: { note?: string; help?: string } = {}) {
+  let comment = '';
+
+  if (help) comment += help;
+
+  if (note) {
+    if (comment) comment += '\n';
+    comment += note;
+  }
+
+  return comment;
+}
+
 export function addComment(
-  field: Tyr.FieldDefinition,
+  obj: { note?: string; help?: string },
   indent: number,
+  tags: {
+    tag: string;
+    text: string;
+  }[] = [],
   width = 80
 ) {
   let out = '';
-  if (field.note) {
-    const lines = wordWrap(field.note, width);
 
-    out += '/*\n';
+  const comment = commentsFor(obj);
+
+  if (comment) {
+    const lines = wordWrap(comment, width);
+
+    out += '\n' + pad('/**\n', indent);
     let line: string | undefined = '';
     while ((line = lines.shift())) {
       out += pad(' * ' + line + (lines.length === 0 ? '' : '\n'), indent);
     }
+    for (const tag of tags) {
+      const lines = wordWrap(tag.text, width - 5);
+      out += '\n' + pad(' * @' + tag.tag + ' ' + lines[0], indent);
+      for (let i = 1; i < lines.length; i++) {
+        out +=
+          '\n' + pad(' * ', indent) + ' '.repeat(2 + tag.tag.length) + lines[i];
+      }
+    }
+
     out += '\n';
     out += pad(' */', indent);
-    out += '\n' + pad('', indent);
+    //out += '\n' + pad('', indent);
   }
   return out;
 }
@@ -234,7 +272,8 @@ export function addField({
         });
         const fieldDef = `${subName}: ${subType};`;
         const comment =
-          (subDef && addComment(subDef, indent, commentLineWidth)) || '';
+          (subDef && addComment(subDef, indent, undefined, commentLineWidth)) ||
+          '';
         obj += comment ? pad(comment, indent) : '';
         obj += comment ? fieldDef : pad(fieldDef, indent);
       }

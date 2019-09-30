@@ -316,7 +316,7 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
         }
       });
 
-      it('should support api methods()', async () => {
+      it('should support service methods()', async () => {
         let result = await page.evaluate(`Tyr.byName.user.canServe(2)`);
         expect(result).to.eql(true);
 

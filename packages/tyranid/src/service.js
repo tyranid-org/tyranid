@@ -1,11 +1,19 @@
-export function instrumentServerApi(col) {
+export function instrumentServerServices(col) {
+  // col.def.service = service metadata
+  // col.service = implementation of services
   const { def: cdef } = col;
-  const { api } = cdef;
+  const { service } = cdef;
 
-  if (api) {
-    for (const methodName in api) {
+  if (service) {
+    for (const methodName in service) {
+      const method = service[methodName];
+
+      if (!method.route) {
+        method.route = `/api/${col.def.name}/${methodName}`;
+      }
+
       col[methodName] = function() {
-        return col.api[methodName].apply(
+        return col.service[methodName].apply(
           {
             source: 'server',
             user: undefined, // TODO:  figure out some way to pass in the user ?
@@ -19,15 +27,15 @@ export function instrumentServerApi(col) {
   }
 }
 
-export function instrumentExpressApi(col, app, auth) {
-  const { api } = col.def;
+export function instrumentExpressServices(col, app, auth) {
+  const { service } = col.def;
 
-  for (const methodName in api) {
-    const method = api[methodName];
-    const { params, return: returns } = method;
+  for (const methodName in service) {
+    const method = service[methodName];
+    const { params, return: returns, route } = method;
 
     app
-      .route(`/api/${col.def.name}/${methodName}`)
+      .route(route)
       .all(auth)
       .post(async (req, res) => {
         try {
@@ -42,9 +50,10 @@ export function instrumentExpressApi(col, app, auth) {
             }
           }
 
-          const result = await col.api[methodName].apply(
+          const result = await col.service[methodName].apply(
             {
               source: 'client',
+              auth: req.user,
               user: req.user,
               req: req,
               collection: col
@@ -63,19 +72,19 @@ export function instrumentExpressApi(col, app, auth) {
   }
 }
 
-export const apiClientCode = () => `
+export const serviceClientCode = () => `
 for (const col of Tyr.collections) {
   const { def: cdef } = col;
-  const { api } = cdef;
+  const { service } = cdef;
 
-  if (api) {
-    for (const methodName in api) {
-      const method = api[methodName];
+  if (service) {
+    for (const methodName in service) {
+      const method = service[methodName];
 
       col[methodName] = function() {
         return ajax({
           method: 'POST',
-          url: '/api/' + col.def.name + '/' + methodName,
+          url: method.route,
           data: JSON.stringify(arguments),
           contentType: 'application/json'
         }).then(result => {

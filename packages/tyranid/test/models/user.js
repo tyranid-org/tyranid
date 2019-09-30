@@ -142,7 +142,7 @@ var User = new tyr.Collection({
       }
     }
   },
-  api: {
+  service: {
     canServe: {
       params: {
         user: {
@@ -168,7 +168,7 @@ var User = new tyr.Collection({
   customMeta2: { name: 'bar' }
 });
 
-User.api = {
+User.service = {
   async canServe(id) {
     const user = await User.byId(id);
     return user.age >= 21;

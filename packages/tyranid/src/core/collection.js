@@ -2061,7 +2061,7 @@ export default class Collection {
         if (!_.isObject(defMethod))
           throw compiler.err(
             path,
-            '"api.${methodName}" should be an object, got: ' + defMethod
+            '"service.${methodName}" should be an object, got: ' + defMethod
           );
 
         const { params, return: returns } = defMethod;
@@ -2091,14 +2091,17 @@ export default class Collection {
         }
       },
 
-      api(defApi) {
-        if (!defApi) return;
+      service(defService) {
+        if (!defService) return;
 
-        if (!_.isObject(defApi))
-          throw compiler.err(path, '"api" should be an object, got: ' + defApi);
+        if (!_.isObject(defService))
+          throw compiler.err(
+            path,
+            '"service" should be an object, got: ' + defService
+          );
 
-        for (const name in defApi) {
-          compiler.method(name, defApi[name]);
+        for (const name in defService) {
+          compiler.method(name, defService[name]);
         }
       }
     };
@@ -2147,7 +2150,7 @@ export default class Collection {
       }
     }
 
-    compiler.api(collection.def.api);
+    compiler.service(collection.def.service);
 
     if (stage === 'link') {
       if (collection.def.historical) {

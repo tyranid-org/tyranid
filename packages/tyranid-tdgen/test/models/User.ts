@@ -28,12 +28,20 @@ export default new Tyr.Collection({
     },
     linkedId: { link: 'linked?' }
   },
-  api: {
+  service: {
     myMethod1: {
+      help: 'myMethod1 help comment.',
+      note: 'myMethod1 developer comment.',
       params: {
-        name: { is: 'string', required: true },
+        name: {
+          help:
+            'help comment ... this is actually a pretty, sort of very long, actually it is an even longer comment that should, well, no, definitely have to be wrapped.',
+          is: 'string',
+          required: true
+        },
         structure: {
           is: 'object',
+          note: 'developer comment.',
           fields: {
             a: 'integer',
             b: { is: 'array', of: 'string' }
@@ -42,6 +50,7 @@ export default new Tyr.Collection({
         friend: { link: 'user' }
       },
       return: {
+        help: 'This returns a special string.',
         is: 'string'
       }
     },

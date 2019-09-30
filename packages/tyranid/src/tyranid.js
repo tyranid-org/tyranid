@@ -37,7 +37,7 @@ import './core/validationError';
 import './core/query';
 import './core/update';
 
-import { instrumentServerApi } from './api';
+import { instrumentServerServices } from './service';
 import './excel';
 import './fake';
 import './migrator';
@@ -306,7 +306,7 @@ _.assign(Tyr, {
     await bootstrap('post-link');
 
     for (const col of Tyr.collections) {
-      instrumentServerApi(col);
+      instrumentServerServices(col);
     }
 
     const migration = options.migration;

@@ -15,7 +15,7 @@ import Type from './core/type';
 import local from './local/local';
 import SecureError from './secure/secureError';
 import BooleanType from './type/boolean';
-import { instrumentExpressApi, apiClientCode } from './api';
+import { instrumentExpressServices, serviceClientCode } from './service';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -203,14 +203,18 @@ class Serializer {
     this.file += '}';
   }
 
-  apiMethod(methodName, method) {
+  serviceMethod(methodName, method) {
     this.newline();
     this.file += this.k(methodName) + ': {';
     this.depth++;
 
-    const { params, return: returns } = method;
+    const { params, return: returns, route } = method;
+    this.file += this.k('route') + ': "' + route + '"';
+
     if (params) {
-      this.file += 'params: {';
+      this.file += ',';
+      this.newline();
+      this.file += this.k('params') + ': {';
       this.depth++;
 
       let i = 0;
@@ -228,6 +232,7 @@ class Serializer {
     }
 
     if (returns) {
+      this.file += ',';
       this.newline();
       this.file += this.k('return');
       this.field(returns);
@@ -237,13 +242,13 @@ class Serializer {
     this.file += '}';
   }
 
-  api(api) {
+  service(service) {
     this.newline();
-    this.file += this.k('api') + ': {';
+    this.file += this.k('service') + ': {';
     this.depth++;
 
-    for (const methodName in api) {
-      this.apiMethod(methodName, api[methodName]);
+    for (const methodName in service) {
+      this.serviceMethod(methodName, service[methodName]);
     }
 
     this.depth--;
@@ -1396,7 +1401,7 @@ export function generateClientLibrary() {
       const ser = new Serializer('.', 2);
       ser.fields(col.fields);
       if (def.methods) ser.methods(def.methods);
-      if (def.api) ser.api(def.api);
+      if (def.service) ser.service(def.service);
       file += ser.file;
 
       file += `
@@ -1439,7 +1444,7 @@ export function generateClientLibrary() {
     }
   });
 
-  file += apiClientCode();
+  file += serviceClientCode();
 
   file += `
 }//... end Tyr.init();
@@ -2090,8 +2095,8 @@ Collection.prototype.connect = function({ app, auth, http }) {
       col.route(app, auth);
     }
 
-    if (col.api) {
-      instrumentExpressApi(col, app, auth);
+    if (col.service) {
+      instrumentExpressServices(col, app, auth);
     }
   }
 };

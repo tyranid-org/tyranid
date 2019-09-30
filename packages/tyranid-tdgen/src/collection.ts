@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import { Tyr } from 'tyranid';
 import * as names from './names';
 import { escapeString, pad, wrappedUnionType } from './util';
-import { addField } from './base';
+import { addField, addComment, commentsFor } from './base';
 
 /**
  * produce union type alias for enum id values
@@ -116,17 +116,42 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
   `;
 }
 
-export function colApiMethods(col: Tyr.CollectionInstance) {
+export function colServiceMethods(col: Tyr.CollectionInstance) {
   const { def: cdef } = col;
-  const { api } = cdef;
+  const { service } = cdef;
 
-  if (!api) return '';
+  if (!service) return '';
 
   let s = '';
 
-  for (const methodName in api) {
-    const mdef = api[methodName];
+  for (const methodName in service) {
+    const mdef = service[methodName];
     const { params, return: returns } = mdef;
+
+    const tags = [];
+    for (const paramName in params) {
+      const param = params[paramName] as Tyr.FieldInstance;
+
+      const comments = commentsFor(param.def);
+      if (comments) {
+        tags.push({
+          tag: 'param ' + paramName,
+          text: comments
+        });
+      }
+    }
+
+    if (returns) {
+      const comments = commentsFor(returns.def);
+      if (comments) {
+        tags.push({
+          tag: 'return',
+          text: comments
+        });
+      }
+    }
+
+    s += addComment(mdef, 3, tags);
 
     s += `
       ${methodName}(`;
@@ -135,15 +160,16 @@ export function colApiMethods(col: Tyr.CollectionInstance) {
       let i = 0;
       for (const paramName in params) {
         const param = params[paramName] as Tyr.FieldInstance;
-        if (i++) s += ', ';
-        s += paramName;
+        if (i++) s += ',';
+        s += '\n';
+        s += pad(paramName, 4);
         if (!param.def.required) s += '?';
         s += ': ';
 
         s += addField({
           name: paramName,
           field: param,
-          indent: 4,
+          indent: 5,
           noPopulatedProperty: true
         });
       }
@@ -165,16 +191,16 @@ export function colApiMethods(col: Tyr.CollectionInstance) {
 }
 
 /**
- * generate the internal API interface for a tyranid collection
+ * generate the internal service interface for a tyranid collection
  */
-export function colApi(
+export function colService(
   col: Tyr.CollectionInstance,
   mode: 'server' | 'client' | 'isomorphic'
 ) {
   const { def: cdef } = col;
-  const { api, name } = cdef;
+  const { service, name } = cdef;
 
-  if (!api) return '';
+  if (!service) return '';
 
   const colName = names.collection(name);
 
@@ -182,17 +208,19 @@ export function colApi(
     case 'isomorphic':
       return `
     /**
-     * API definition for "${name}" collection
+     * Service definition for "${name}" collection
      */
-    export interface ${colName}Api<ObjIdType = 'string'> {${colApiMethods(col)} 
+    export interface ${colName}Service<ObjIdType = 'string'> {${colServiceMethods(
+        col
+      )} 
     }\n`;
 
     case 'client':
       return `
-    export interface ${colName}Api extends Isomorphic.${colName}Api<ObjIdType> {}`;
+    export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
 
     case 'server':
       return `
-    export interface ${colName}Api extends Isomorphic.${colName}Api<ObjIdType> {}`;
+    export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
   }
 }

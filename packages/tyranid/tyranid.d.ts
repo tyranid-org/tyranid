@@ -498,19 +498,19 @@ export namespace Tyr {
     defaultMatchIdOnInsert?: boolean;
   }
 
-  export interface ApiParameterDefinition {
+  export interface ServiceParameterDefinition {
     is?: string;
     label?: string;
     help?: string;
     deprecated?: string | boolean;
     note?: string;
     required?: boolean;
-    of?: string | ApiParameterDefinition;
+    of?: string | ServiceParameterDefinition;
 
     cardinality?: string;
 
     fields?: FieldsObject;
-    keys?: string | ApiParameterDefinition;
+    keys?: string | ServiceParameterDefinition;
 
     link?: string;
     where?: any;
@@ -527,18 +527,24 @@ export namespace Tyr {
     granularity?: string;
   }
 
-  export interface ApiMethodDefinition {
+  export interface ServiceMethodDefinition {
     help?: string;
     note?: string;
     deprecated?: string | boolean;
+    /**
+     * This is the full URL path for this service.  This will be automatically generated
+     * if you do not specify one.  Recommended to leave this blank and go with auto-generated
+     * URL.
+     */
+    route?: string;
     params?: {
       [parameterName: string]: FieldDefinition | FieldInstance;
     };
     return?: FieldDefinition | FieldInstance;
   }
 
-  export interface ApiDefinition {
-    [methodName: string]: ApiMethodDefinition;
+  export interface ServiceDefinition {
+    [methodName: string]: ServiceMethodDefinition;
   }
 
   /**
@@ -563,7 +569,7 @@ export namespace Tyr {
     values?: any[][];
     db?: mongodb.Db;
     internal?: boolean;
-    api?: ApiDefinition;
+    service?: ServiceDefinition;
   }
 
   /**
@@ -603,7 +609,7 @@ export namespace Tyr {
     fromClient?: (opts: Options_FromClient) => void;
     toClient?: (opts: Options_ToClient) => void;
     routes?: (app: Express.Application, auth: Express.RequestHandler) => void;
-    api?: ApiDefinition;
+    service?: ServiceDefinition;
   }
 
   export type CollectionCurriedMethodReturn =

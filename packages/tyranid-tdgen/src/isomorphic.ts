@@ -5,7 +5,7 @@ import {
   colInterface,
   enumIdAlias,
   enumStaticInterface,
-  colApi
+  colService
 } from './collection';
 import { docInterface } from './document';
 import * as names from './names';
@@ -64,7 +64,7 @@ export function generateIsomorphicInterfaces(
 
     bases.push(baseInterface(col, { commentLineWidth }));
     docs.push(docInterface(col));
-    if (col.def.api) cols.push(colApi(col, 'isomorphic'));
+    if (col.def.service) cols.push(colService(col, 'isomorphic'));
     cols.push(colInterface(col));
     if (alias) enumIds.push(alias);
     if (alias) statics.push(enumStaticInterface(col));
@@ -198,15 +198,15 @@ export function generateCommonTypes(
      */
     ${output === 'client' ? 'export ' : ''}interface ${colName}
       extends Tyr.CollectionInstance<${idType}, ${docName}>${staticName}`;
-    if (c.def.api)
+    if (c.def.service)
       cs += `,
-              ${colName}Api`;
+              ${colName}Service`;
 
     cs += ' {';
-    if (c.def.api) {
+    if (c.def.service) {
       if (output === 'server')
         cs += `
-      api: ${colName}Api;`;
+      service: ${colName}Service;`;
     }
 
     cs += `
@@ -216,7 +216,7 @@ export function generateCommonTypes(
     if (c.def.enum)
       aliases.push(pad(`export type ${aliasName} = ${isoAlias};`, 2));
 
-    if (c.def.api) cols.push(colApi(c, output));
+    if (c.def.service) cols.push(colService(c, output));
   });
 
   return `

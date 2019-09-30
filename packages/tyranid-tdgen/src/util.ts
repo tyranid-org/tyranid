@@ -25,9 +25,7 @@ export function pad(str: string, n: number) {
   let indent = '';
   let curr = '  ';
   while (true) {
-    // tslint:disable-next-line
     if (n & 1) indent += curr;
-    // tslint:disable-next-line
     n >>>= 1;
     if (n <= 0) break;
     curr += curr;
