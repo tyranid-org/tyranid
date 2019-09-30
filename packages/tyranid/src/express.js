@@ -1,4 +1,4 @@
-import * as _ from 'lodash'; 
+import * as _ from 'lodash';
 import * as moment from 'moment';
 import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
