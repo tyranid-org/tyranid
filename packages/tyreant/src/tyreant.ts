@@ -2,7 +2,7 @@
      tyreant =
      TYRanid +
        REAct +
-         ANT
+         ANT 
 */
 
 export * from './type';
