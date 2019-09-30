@@ -10,6 +10,8 @@ const MAX_BITS = Math.log2(Number.MAX_SAFE_INTEGER); // usually 53
 const BitmaskType = new Type({
   name: 'bitmask',
 
+  typescript: 'number',
+
   compile(compiler, field) {
     compileRelate(compiler, field);
 

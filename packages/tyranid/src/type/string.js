@@ -4,6 +4,8 @@ import Type from '../core/type';
 const StringType = new Type({
   name: 'string',
 
+  typescript: 'string',
+
   compare(field, a, b) {
     return a.localeCompare(b, undefined, { sensitivity: 'base' });
   },

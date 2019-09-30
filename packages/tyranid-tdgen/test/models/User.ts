@@ -27,5 +27,27 @@ export default new Tyr.Collection({
       }
     },
     linkedId: { link: 'linked?' }
+  },
+  api: {
+    myMethod1: {
+      params: {
+        name: { is: 'string', required: true },
+        structure: {
+          is: 'object',
+          fields: {
+            a: 'integer',
+            b: { is: 'array', of: 'string' }
+          }
+        },
+        friend: { link: 'user' }
+      },
+      return: {
+        is: 'string'
+      }
+    },
+    myMethod2: {
+      return: { is: 'array', of: 'string' }
+    },
+    myMethod3: {}
   }
 });

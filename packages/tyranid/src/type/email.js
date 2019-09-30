@@ -3,6 +3,7 @@ import Type from '../core/type';
 
 const EmailType = new Type({
   name: 'email',
+  typescript: 'string',
   compare(field, a, b) {
     return a.localeCompare(b, undefined, { sensitivity: 'base' });
   },

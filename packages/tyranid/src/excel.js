@@ -309,9 +309,11 @@ async function fromExcel(opts) {
     const label = cell.value;
 
     const column = columns.find(column => column.label === label);
-    if (!column) throw `Could not parse column "${label}"`;
-
-    columnsByColNumber[colNumber] = column;
+    if (!column) {
+      console.log(`ignoring column "${label}"`);
+    } else {
+      columnsByColNumber[colNumber] = column;
+    }
   });
 
   const documents = [];

@@ -2568,6 +2568,13 @@ describe('tyranid', () => {
       });
     });
 
+    describe('api', () => {
+      it('should invoke server-side methods', async () => {
+        expect(await User.canServe(2)).to.equal(true);
+        expect(await User.canServe(3)).to.equal(false);
+      });
+    });
+
     /**
      *
      * tests of code generated for express route

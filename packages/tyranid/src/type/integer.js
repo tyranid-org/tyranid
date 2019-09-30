@@ -5,6 +5,8 @@ import ValidationError from '../core/validationError';
 const IntegerType = new Type({
   name: 'integer',
 
+  typescript: 'number',
+
   compare(field, a, b) {
     if (a) {
       return b ? a - b : 1;

@@ -35,7 +35,6 @@ export function baseInterface(
         name: fieldName,
         field,
         indent,
-        siblingFields: fields,
         colName: name,
         commentLineWidth
       });
@@ -97,27 +96,24 @@ export function addComment(
  * given an field definition, emit a type definition
  *
  */
-export function addField(opts: {
+export function addField({
+  name,
+  field,
+  indent = 0,
+  parent,
+  colName,
+  commentLineWidth,
+  noPopulatedProperty = false
+}: {
   name: string;
   field: Tyr.FieldInstance;
   indent: number;
   parent?: string;
   colName?: string;
-  siblingFields?: { [key: string]: any };
   noPopulatedProperty?: boolean;
   commentLineWidth?: number;
 }): string {
-  const {
-    name,
-    indent = 0,
-    parent,
-    siblingFields,
-    colName,
-    commentLineWidth,
-    noPopulatedProperty = false
-  } = opts;
-  const { field } = opts;
-  const { def } = field;
+  const { def, type } = field;
 
   // if the field is `_id` and the collection is an enum, use the type alias
   if (name === '_id' && colName && def.enum) return names.id(colName);
@@ -133,7 +129,7 @@ export function addField(opts: {
     if (!link)
       throw new Error(`No collection for link: ${colName}.${field.path}`);
 
-    const linkIdType = link.def.enum ? names.id(link.def.name) : 'ObjIdType';
+    const linkIdType = names.idType(link);
 
     // add populated prop too
     if (parent === 'array' || noPopulatedProperty) return linkIdType;
@@ -159,25 +155,10 @@ export function addField(opts: {
    * general types
    *
    */
+  const tsName = type.def.typescript;
+  if (tsName) return tsName;
+
   switch (def.is) {
-    case 'string':
-    case 'url':
-    case 'email':
-    case 'image':
-    case 'password':
-    case 'uid':
-      return 'string';
-
-    case 'boolean':
-      return 'boolean';
-
-    case 'double':
-    case 'integer':
-      return 'number';
-
-    case 'date':
-      return 'Date';
-
     case 'mongoid':
       return 'ObjIdType';
 
@@ -249,8 +230,7 @@ export function addField(opts: {
         const subType = addField({
           name: sub,
           field: subField,
-          indent: indent + 1,
-          siblingFields: subFields
+          indent: indent + 1
         });
         const fieldDef = `${subName}: ${subType};`;
         const comment =

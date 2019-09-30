@@ -142,6 +142,17 @@ var User = new tyr.Collection({
       }
     }
   },
+  api: {
+    canServe: {
+      params: {
+        user: {
+          required: true,
+          link: 'user'
+        }
+      },
+      return: 'boolean'
+    }
+  },
   projections: {
     nameAndAge: {
       name: 1,
@@ -156,6 +167,13 @@ var User = new tyr.Collection({
   customMeta1: { name: 'foo' },
   customMeta2: { name: 'bar' }
 });
+
+User.api = {
+  async canServe(id) {
+    const user = await User.byId(id);
+    return user.age >= 21;
+  }
+};
 
 User.Sibling = Sibling;
 

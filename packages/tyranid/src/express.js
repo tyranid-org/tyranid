@@ -1,4 +1,4 @@
-import * as _ from 'lodash'; 
+import * as _ from 'lodash';
 import * as moment from 'moment';
 import { ObjectId } from 'mongodb';
 import * as uglify from 'uglify-js';
@@ -15,6 +15,7 @@ import Type from './core/type';
 import local from './local/local';
 import SecureError from './secure/secureError';
 import BooleanType from './type/boolean';
+import { instrumentExpressApi, apiClientCode } from './api';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -183,7 +184,7 @@ class Serializer {
 
   methods(methods) {
     this.newline();
-    this.file += 'methods: {';
+    this.file += this.k('methods') + ': {';
 
     this.depth++;
     _.each(methods, method => {
@@ -199,6 +200,53 @@ class Serializer {
     });
     this.depth--;
     this.newline();
+    this.file += '}';
+  }
+
+  apiMethod(methodName, method) {
+    this.newline();
+    this.file += this.k(methodName) + ': {';
+    this.depth++;
+
+    const { params, return: returns } = method;
+    if (params) {
+      this.file += 'params: {';
+      this.depth++;
+
+      let i = 0;
+      for (const paramName in params) {
+        const param = params[paramName];
+
+        if (i++) this.file += ',';
+        this.newline();
+        this.file += this.k(paramName);
+        this.field(param);
+      }
+
+      this.depth--;
+      this.file += '}';
+    }
+
+    if (returns) {
+      this.newline();
+      this.file += this.k('return');
+      this.field(returns);
+    }
+
+    this.depth--;
+    this.file += '}';
+  }
+
+  api(api) {
+    this.newline();
+    this.file += this.k('api') + ': {';
+    this.depth++;
+
+    for (const methodName in api) {
+      this.apiMethod(methodName, api[methodName]);
+    }
+
+    this.depth--;
     this.file += '}';
   }
 }
@@ -1347,9 +1395,8 @@ export function generateClientLibrary() {
       }
       const ser = new Serializer('.', 2);
       ser.fields(col.fields);
-      if (def.methods) {
-        ser.methods(def.methods);
-      }
+      if (def.methods) ser.methods(def.methods);
+      if (def.api) ser.api(def.api);
       file += ser.file;
 
       file += `
@@ -1391,6 +1438,8 @@ export function generateClientLibrary() {
       file = comp.clientCode(file);
     }
   });
+
+  file += apiClientCode();
 
   file += `
 }//... end Tyr.init();
@@ -2039,6 +2088,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
     if (col.route) {
       col.route(app, auth);
+    }
+
+    if (col.api) {
+      instrumentExpressApi(col, app, auth);
     }
   }
 };

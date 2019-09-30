@@ -6,12 +6,14 @@
     "clean": "sh ./scripts/clean.sh",
     "build": "sh ./scripts/build.sh",
     "build-tyranid": "sh ./scripts/build-tyranid.sh",
+    "build-tdgen": "sh ./scripts/build-tdgen.sh",
     "build-tyreant": "sh ./scripts/build-tyreant.sh",
     "nd": "npm run clean && yarn",
     "quick-test": "npm run build && sh ./scripts/test.sh",
     "test":
       "npm run build && npm run prettier && npm run lint && sh ./scripts/test.sh",
     "test-tyranid": "npm run build-tyranid && sh ./scripts/test-tyranid.sh",
+    "test-tdgen": "npm run build-tdgen && sh ./scripts/test-tdgen.sh",
     "lint":
       "tslint './packages/*/{test,src}/{!typings}/*.{ts,js}' --format stylish --fix",
     "prettier":
