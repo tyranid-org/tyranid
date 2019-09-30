@@ -143,6 +143,7 @@ export interface TyrTableProps extends TyrComponentProps {
   onLoad?: (tableControl: TyrTableControl) => void;
   rowSelection?: boolean;
   loading?: boolean;
+  setEditing?: (editing: boolean) => void;
 }
 
 @observer
@@ -288,6 +289,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     if (this._mounted) {
       this.setState({});
     }
+
+    this.props.setEditing && this.props.setEditing(true);
 
     return true;
   };
@@ -554,7 +557,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const {
       saveDocument,
       onAfterSaveDocument,
-      onBeforeSaveDocument
+      onBeforeSaveDocument,
+      setEditing
     } = this.props;
 
     const store = this.store;
@@ -563,6 +567,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     let document = newDocument || editingDocument;
 
     if (!document) {
+      setEditing && setEditing(false);
       message.error(`No document to save!`);
       return;
     }
@@ -637,6 +642,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
         onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
         store.isSavingDocument = false;
+        setEditing && setEditing(false);
         delete store.editingDocument;
         delete store.newDocument;
       } catch (saveError) {
@@ -649,16 +655,18 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   };
 
   private cancelEdit = () => {
-    const { onCancelAddNew } = this.props;
+    const { onCancelAddNew, setEditing } = this.props;
     const store = this.store;
     const { documents, editingDocument, newDocument } = store;
 
     if (!newDocument && !editingDocument) {
+      setEditing && setEditing(false);
       return;
     }
 
     if (newDocument) {
       onCancelAddNew && onCancelAddNew();
+      setEditing && setEditing(false);
       delete store.newDocument;
 
       // Find on server
@@ -678,6 +686,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         ];
       }
 
+      setEditing && setEditing(false);
       delete store.editingDocument;
     }
 
@@ -1042,6 +1051,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   private onEditRow = (document: Tyr.Document, rowIndex: number) => {
     this.store.editingDocument = document;
+    this.props.setEditing && this.props.setEditing(true);
     document.$snapshot();
   };
 
@@ -1692,6 +1702,7 @@ const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
 export interface TyrTableControl {
   addNewDocument: (doc: Tyr.Document) => boolean;
   setFieldValue: (fieldName: string, value: any) => void;
+  refresh: () => void;
 }
 
 /**
@@ -1709,6 +1720,10 @@ class TyrTableControlImpl implements TyrTableControl {
   };
 
   setFieldValue = (fieldName: string, value: any) => {
-    return this.table.setFieldValue(fieldName, value);
+    this.table.setFieldValue(fieldName, value);
+  };
+
+  refresh = () => {
+    this.table.setState({});
   };
 }
