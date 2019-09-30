@@ -813,7 +813,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 mapDocumentValueToForm: column.mapDocumentValueToForm,
                 mapFormValueToDocument: column.mapFormValueToDocument,
                 getSearchIds: column.getSearchIds,
-                labelInValue: column.labelInValue
+                labelInValue: column.labelInValue,
+                onFilter: column.onFilter
               };
 
               return (

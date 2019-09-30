@@ -473,10 +473,28 @@ export const linkFilter: Filter = (
         return props.onFilter(value, doc);
       }
 
-      const val = String(path.get(doc));
+      const val = path.get(doc);
 
       if (Array.isArray(value)) {
-        return (value as any[]).indexOf(val) > -1;
+        if (!value.length) {
+          return true;
+        }
+
+        if (Array.isArray(val)) {
+          for (const v of val) {
+            if (value.indexOf(v) > -1) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+
+        return value.indexOf(val) > -1;
+      }
+
+      if (Array.isArray(val)) {
+        return val.indexOf(value) > -1;
       }
 
       return val === value;
