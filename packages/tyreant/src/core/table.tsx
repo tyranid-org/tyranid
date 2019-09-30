@@ -1,6 +1,4 @@
 /*
- - after save, links are coming back as "Unknown"
- 
  - Add resizeable columns: "re-resizable": "4.4.4",
    - https://ant.design/components/table/#components-table-demo-resizable-column
    - store in tableConfig
