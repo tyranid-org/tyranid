@@ -334,7 +334,12 @@ async function fromExcel(opts) {
         v = v.text;
       }
 
-      column.namePath.set(doc, v, { create: true });
+      const np = column.namePath;
+      const field = np.tail;
+
+      if (typeof v === 'string') v = field.fromClient(v);
+
+      np.set(doc, v, { create: true });
     });
   });
 
