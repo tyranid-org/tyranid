@@ -125,11 +125,16 @@ export const stringFilter: Filter = (
     ),
     onFilter: (value: string, doc: Tyr.Document) => {
       if (value !== undefined) {
-        return path
-          .get(doc)
-          .toString()
-          .toLowerCase()
-          .includes(value.toLowerCase());
+        const v = path.get(doc);
+
+        if (v) {
+          return v
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase());
+        }
+
+        return false;
       }
 
       return true;

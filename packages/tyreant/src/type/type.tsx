@@ -79,6 +79,7 @@ export type TyrTypeProps = {
   document?: Tyr.Document;
   value?: { value?: any };
   path?: Tyr.NamePathInstance;
+  searchPath?: Tyr.NamePathInstance;
   extra?: string;
   children?: React.ReactNode;
 } & Omit<TyrFieldProps, 'field'>;
@@ -88,12 +89,17 @@ export interface TypeUi {
   component: React.ComponentType<TyrTypeProps>;
 
   // mapping between Tyr.Document and ant forms
-  mapDocumentValueToFormValue?(path: Tyr.NamePathInstance, value: any): any;
+  mapDocumentValueToFormValue?(
+    path: Tyr.NamePathInstance,
+    value: any,
+    props?: TyrTypeProps
+  ): any;
   mapFormValueToDocumentValue?(path: Tyr.NamePathInstance, value: any): any;
   mapFormValueToDocument?(
     path: Tyr.NamePathInstance,
     value: any,
-    document: Tyr.Document
+    document: Tyr.Document,
+    props?: TyrTypeProps
   ): any;
 
   // table-related values
@@ -118,13 +124,17 @@ export const assertTypeUi = (typeName: string) => {
 
 export const mapDocumentValueToFormValue = (
   path: Tyr.NamePathInstance,
-  value: any
+  value: any,
+  props?: TyrTypeProps
 ) => {
   const { tail: field } = path;
   const { type } = field;
-  const { mapDocumentValueToFormValue } = assertTypeUi(type.name);
+  const { mapDocumentValueToFormValue } = assertTypeUi(
+    props ? props.typeUi || type.name : type.name
+  );
+
   if (mapDocumentValueToFormValue) {
-    value = mapDocumentValueToFormValue(path, value);
+    value = mapDocumentValueToFormValue(path, value, props);
   }
 
   return value;
@@ -190,19 +200,25 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
       });
     }
   } else {
-    mapDocumentToForm(path!, document!, form);
+    mapDocumentToForm(path!, document!, form, props);
   }
 };
 
 export const mapDocumentToForm = (
   path: Tyr.NamePathInstance,
   document: Tyr.Document,
-  form: WrappedFormUtils
+  form: WrappedFormUtils,
+  props?: TyrTypeProps
 ) => {
   const pathid = path.identifier;
   const oldValue = form.getFieldsValue([pathid])[pathid];
+  let newValue: any;
 
-  const newValue = mapDocumentValueToFormValue(path, path.get(document));
+  if (props && props.mapDocumentValueToForm) {
+    newValue = props.mapDocumentValueToForm(path.get(document), document);
+  } else {
+    newValue = mapDocumentValueToFormValue(path, path.get(document), props);
+  }
 
   if (oldValue !== newValue) {
     form.setFieldsValue({
@@ -217,6 +233,7 @@ export const mapFormValueToDocumentValue = (
 ) => {
   const { tail: field } = path;
   const { type } = field;
+
   const { mapFormValueToDocumentValue } = assertTypeUi(type.name);
 
   return mapFormValueToDocumentValue
@@ -227,19 +244,27 @@ export const mapFormValueToDocumentValue = (
 export const mapFormValueToDocument = (
   path: Tyr.NamePathInstance,
   value: any,
-  document: Tyr.Document
+  document: Tyr.Document,
+  props?: TyrTypeProps
 ) => {
   const { tail: field } = path;
   const { type } = field;
-  const typeUi = assertTypeUi(type.name);
 
-  const { mapFormValueToDocument } = typeUi;
-  if (mapFormValueToDocument) {
-    mapFormValueToDocument(path, value, document);
-    return;
+  if (props && props.mapFormValueToDocument) {
+    value = props.mapFormValueToDocument(value, document);
+  } else {
+    const typeUi = assertTypeUi(props ? props.typeUi || type.name : type.name);
+
+    const { mapFormValueToDocument } = typeUi;
+    if (mapFormValueToDocument) {
+      mapFormValueToDocument(path, value, document, props);
+      return;
+    }
+
+    value = mapFormValueToDocumentValue(path, value);
   }
 
-  path.set(document, mapFormValueToDocumentValue(path, value), {
+  path.set(document, value, {
     create: true
   });
 };
@@ -257,7 +282,7 @@ export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
     if (extra) {
       (document as any)[extra] = value;
     } else if (!props.value) {
-      mapFormValueToDocument(props.path!, value, document);
+      mapFormValueToDocument(props.path!, value, document, props);
     }
 
     onChange && onChange(value, event, props);
@@ -269,7 +294,7 @@ export const getFilter = (
   filterable: Filterable,
   props: TyrFieldLaxProps
 ) => {
-  const { filter } = assertTypeUi(path.tail.type.name);
+  const { filter } = assertTypeUi(props.typeUi || path.tail.type.name);
 
   return filter ? filter(path, filterable, props) : undefined;
 };

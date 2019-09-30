@@ -111,7 +111,8 @@ class Serializer {
       'readonly',
       'relate',
       'required',
-      'step'
+      'step',
+      'labelField'
     ]) {
       const v = def[field];
       if (v !== undefined) {

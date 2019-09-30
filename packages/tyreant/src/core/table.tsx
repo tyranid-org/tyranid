@@ -15,7 +15,9 @@
 */
 
 import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 
+import { createRef } from 'react';
 import { Tyr } from 'tyranid/client';
 import { tyreant } from '../tyreant';
 
@@ -43,7 +45,8 @@ import {
   Spin,
   Modal,
   Switch,
-  Button
+  Button,
+  Drawer
 } from 'antd';
 
 import { PaginationProps } from 'antd/es/pagination';
@@ -61,6 +64,7 @@ import {
 } from './field';
 import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from './form';
+import { ReactText } from 'react';
 
 const ObsTable = observer(Table);
 
@@ -101,6 +105,8 @@ export type TyrTableConfig = {
   lockedLeft: number;
   title?: string;
   key?: string;
+  asDrawer?: boolean;
+  compact?: boolean;
 };
 
 export interface TyrTableProps extends TyrComponentProps {
@@ -137,6 +143,8 @@ export interface TyrTableProps extends TyrComponentProps {
   showHeader?: boolean;
   config?: TyrTableConfig;
   onLoad?: (tableControl: TyrTableControl) => void;
+  rowSelection?: boolean;
+  loading?: boolean;
 }
 
 @observer
@@ -244,6 +252,36 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       this.store.count = nextProps.documents.length;
     }
   }
+
+  setFieldValue = (fieldName: string, value: any) => {
+    const document = this.store.newDocument || this.store.editingDocument;
+
+    if (!document) {
+      console.error(
+        'Unable to setFieldValue, there is document available to set a value in!'
+      );
+      return;
+    }
+
+    const pathName = getFieldName(fieldName);
+
+    if (!pathName) {
+      console.error('Unable to setFieldValue, no field name found!');
+      return;
+    }
+
+    const collection = document.$model;
+    const field = pathName && collection.paths[pathName];
+
+    if (!field) {
+      console.error(
+        `Unable to setFieldValue, no field found for ${fieldName}!`
+      );
+      return;
+    }
+
+    field.namePath.set(document, value);
+  };
 
   addNewDocument = (doc: Tyr.Document) => {
     this.store.newDocument = doc;
@@ -671,11 +709,15 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const localSearch = !!this.props.documents;
     const fieldCount = columns.length;
     const isEditingAnything = newDocumentTable || editingDocument;
+    const allWidthsDefined = columns.some(c => c.width);
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(
       (column, columnIdx) => {
         const pathName = getFieldName(column.field);
         const field = pathName && collection.paths[pathName];
+
+        const searchPathName = getFieldName(column.searchField);
+        const searchField = searchPathName && collection.paths[searchPathName];
 
         if (field) (field as any).column = column;
 
@@ -683,6 +725,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         const { sortDirection } = fieldDefn || {
           sortDirection: undefined
         };
+
+        const isLast = columnIdx === fieldCount - 1;
+        const colWidth = isLast
+          ? allWidthsDefined ? undefined : column.width
+          : fieldCount > 1 ? column.width : undefined;
 
         const filterable = {
           searchValues: workingSearchValues,
@@ -709,6 +756,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         };
 
         const np = field ? field.namePath : undefined;
+        const searchNp = searchField ? searchField.namePath : undefined;
+
         let sorter = undefined;
 
         if (field) {
@@ -747,7 +796,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 placeholder: column.placeholder,
                 autoFocus: column.autoFocus,
                 required: column.required,
-                width: column.width,
+                width: colWidth,
                 multiple: column.multiple,
                 mode: column.mode,
                 searchOptionRenderer: column.searchOptionRenderer,
@@ -761,7 +810,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 searchRange: column.searchRange,
                 onChange: () => {
                   this.setState({});
-                }
+                },
+                typeUi: column.typeUi,
+                mapDocumentValueToForm: column.mapDocumentValueToForm,
+                mapFormValueToDocument: column.mapFormValueToDocument,
+                getSearchIds: column.getSearchIds,
+                labelInValue: column.labelInValue
               };
 
               return (
@@ -772,6 +826,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     return (
                       <TyrFieldBase
                         path={np!}
+                        searchPath={searchNp}
                         form={form}
                         document={document}
                         {...fieldProps}
@@ -793,7 +848,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           sorter: !newDocumentTable ? sorter : undefined,
           sortOrder: !newDocumentTable ? sortDirection : undefined,
           title: column.label || (field && field.label),
-          width: (fieldCount > 1 && column.width) || undefined,
+          width: colWidth,
           className: column.className,
           ellipsis: column.ellipsis,
           ...(!newDocumentTable && filteredValue
@@ -987,10 +1042,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   };
 
   private onEditRow = (document: Tyr.Document, rowIndex: number) => {
-    // Callback and check perms?
     this.store.editingDocument = document;
     document.$snapshot();
   };
+
+  tableWrapper: React.RefObject<HTMLDivElement> | null = createRef();
 
   render() {
     const {
@@ -1066,67 +1122,76 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 )}
 
               {fields && (
-                <ObsTable
-                  loading={loading}
-                  components={components}
-                  rowKey={(doc: any) => doc.$id || doc.$id}
-                  size={size || 'small'}
-                  pagination={this.pagination()}
-                  onChange={this.handleTableChange}
-                  footer={footer}
-                  title={newDocument ? undefined : title}
-                  showHeader={newDocument ? false : showHeader}
-                  // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
-                  dataSource={documents.slice()}
-                  columns={this.getColumns()}
-                  scroll={fieldCount > 1 ? scroll : undefined}
-                  onHeaderRow={(columns, index) => {
-                    const column = columns[index];
-
-                    if (column.key === '$actions') {
-                      return {
-                        onClick: () => {
-                          onActionLabelClick && onActionLabelClick();
-                          this.store.showConfig = true;
-                        }
-                      };
-                    }
+                <div
+                  style={{
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}
-                  onRow={
-                    rowEdit
-                      ? (record, rowIndex) => {
-                          return {
-                            onDoubleClick: () => {
-                              if (
-                                record.$id &&
-                                (!canEditDocument || canEditDocument(record))
-                              ) {
-                                this.onEditRow(record, rowIndex);
+                  ref={this.tableWrapper}
+                >
+                  <ObsTable
+                    loading={loading || this.props.loading}
+                    components={components}
+                    rowKey={(doc: any) => doc.$id || doc.$id}
+                    size={size || 'small'}
+                    pagination={this.pagination()}
+                    onChange={this.handleTableChange}
+                    footer={footer}
+                    title={newDocument ? undefined : title}
+                    showHeader={newDocument ? false : showHeader}
+                    // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
+                    dataSource={documents.slice()}
+                    columns={this.getColumns()}
+                    scroll={fieldCount > 1 ? scroll : undefined}
+                    onHeaderRow={(columns, index) => {
+                      const column = columns[index];
 
-                                if (newDocument) {
-                                  onCancelAddNew && onCancelAddNew();
-                                  delete this.store.newDocument;
-                                }
+                      if (column.key === '$actions') {
+                        return {
+                          onClick: () => {
+                            onActionLabelClick && onActionLabelClick();
+                            this.store.showConfig = true;
+                          }
+                        };
+                      }
+                    }}
+                    onRow={
+                      rowEdit
+                        ? (record, rowIndex) => {
+                            return {
+                              onDoubleClick: () => {
+                                if (
+                                  record.$id &&
+                                  (!canEditDocument || canEditDocument(record))
+                                ) {
+                                  this.onEditRow(record, rowIndex);
 
-                                if (this._mounted) {
-                                  this.setState({});
+                                  if (newDocument) {
+                                    onCancelAddNew && onCancelAddNew();
+                                    delete this.store.newDocument;
+                                  }
+
+                                  if (this._mounted) {
+                                    this.setState({});
+                                  }
                                 }
                               }
-                            }
-                          };
-                        }
-                      : undefined
-                  }
-                />
+                            };
+                          }
+                        : undefined
+                    }
+                  />
+                </div>
               )}
               {showConfig &&
                 tableConfig && (
-                  <TyrTableConfigModal
+                  <TyrTableConfigComponent
                     columns={this.props.fields}
                     config={tableConfig}
                     tableConfig={this.store.tableConfig}
                     onCancel={() => (this.store.showConfig = false)}
                     onUpdate={this.onUpdateTableConfig}
+                    containerEl={this.tableWrapper!}
                   />
                 )}
             </Col>
@@ -1176,6 +1241,7 @@ type TyrTableConfigProps = {
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
   columns: TyrTableColumnFieldProps[];
+  containerEl: React.RefObject<HTMLDivElement>;
 };
 
 type ColumnConfigField = {
@@ -1190,7 +1256,7 @@ type TyrTableConfigState = {
   columnFields: ColumnConfigField[];
 };
 
-class TyrTableConfigModal extends React.Component<
+class TyrTableConfigComponent extends React.Component<
   TyrTableConfigProps,
   TyrTableConfigState
 > {
@@ -1198,8 +1264,15 @@ class TyrTableConfigModal extends React.Component<
     columnFields: []
   };
 
+  tableBody: HTMLElement | null = null;
+
   componentWillMount() {
-    const { columns, config, tableConfig: incomingTableConfig } = this.props;
+    const {
+      columns,
+      config,
+      tableConfig: incomingTableConfig,
+      containerEl
+    } = this.props;
     let tableConfig: TyrTableConfigType;
 
     if (incomingTableConfig) {
@@ -1250,6 +1323,13 @@ class TyrTableConfigModal extends React.Component<
         return null;
       })
     );
+
+    if (config.asDrawer) {
+      const container = ReactDOM.findDOMNode(containerEl!.current);
+      this.tableBody = (container! as Element).querySelector(
+        '.ant-table.ant-table-middle'
+      ) as HTMLElement;
+    }
 
     this.setState({
       tableConfig,
@@ -1310,8 +1390,8 @@ class TyrTableConfigModal extends React.Component<
     }
   };
 
-  render() {
-    const { onCancel, config, tableConfig } = this.props;
+  private renderBody = () => {
+    const { config, tableConfig } = this.props;
     const { columnFields } = this.state;
 
     const lockedFields = columnFields.slice(0, config.lockedLeft);
@@ -1321,15 +1401,7 @@ class TyrTableConfigModal extends React.Component<
     );
 
     return (
-      <Modal
-        className="tyr-modal tyr-config-columns"
-        visible={true}
-        onCancel={onCancel}
-        onOk={this.onSave}
-        okText="Save"
-        cancelText="Cancel"
-        title={config.title || 'Column Visibility'}
-      >
+      <div>
         {!tableConfig && <span>No config!</span>}
 
         {tableConfig && <h3 />}
@@ -1337,7 +1409,11 @@ class TyrTableConfigModal extends React.Component<
         {tableConfig && (
           <div className="tyr-config-columns-list tyr-config-columns-list-locked">
             {lockedFields.map(f => (
-              <TyrTableColumnConfigItem key={f.name} field={f} />
+              <TyrTableColumnConfigItem
+                key={f.name}
+                field={f}
+                compact={config.compact}
+              />
             ))}
           </div>
         )}
@@ -1370,6 +1446,7 @@ class TyrTableConfigModal extends React.Component<
                             provided={provided}
                             snapshot={snapshot}
                             onChangeVisibility={this.onChangeVisibility}
+                            compact={config.compact}
                           />
                         )}
                       </Draggable>
@@ -1381,6 +1458,71 @@ class TyrTableConfigModal extends React.Component<
             </Droppable>
           </DragDropContext>
         )}
+      </div>
+    );
+  };
+
+  renderDrawerFooter() {
+    const { onCancel } = this.props;
+
+    return (
+      <div className="tyr-footer" style={{ textAlign: 'center' }}>
+        <Button key="back" onClick={onCancel}>
+          Close
+        </Button>
+        <Button
+          key="submit"
+          type="primary"
+          onClick={this.onSave}
+          style={{ marginLeft: '10px' }}
+        >
+          Save
+        </Button>
+      </div>
+    );
+  }
+
+  render() {
+    const { onCancel, config } = this.props;
+
+    if (config.asDrawer) {
+      return (
+        <Drawer
+          title={
+            <div style={{ textAlign: 'center' }}>
+              {config.title || 'Edit Columns'}
+            </div>
+          }
+          visible={true}
+          closable={false}
+          getContainer={this.tableBody!}
+          placement="right"
+          style={{ position: 'absolute', right: '1px' }}
+          maskClosable={false}
+          className="tyr-config-columns"
+          destroyOnClose={false}
+        >
+          <div className="tyr-drawer-container">
+            <div className="tyr-drawer">
+              {this.renderBody()}
+              {this.renderDrawerFooter()}
+            </div>
+          </div>
+        </Drawer>
+      );
+    }
+
+    return (
+      <Modal
+        className="tyr-modal tyr-config-columns"
+        visible={true}
+        onCancel={onCancel}
+        onOk={this.onSave}
+        okText="Save"
+        cancelText="Cancel"
+        title={config.title || 'Edit Columns'}
+      >
+        {this.renderBody()}
       </Modal>
     );
   }
@@ -1485,10 +1627,17 @@ type TyrTableColumnConfigItemProps = {
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;
   onChangeVisibility?: (field: ColumnConfigField) => void;
+  compact?: boolean;
 };
 
 const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
-  const { field, provided, snapshot, onChangeVisibility } = props;
+  const {
+    field,
+    provided,
+    snapshot,
+    onChangeVisibility,
+    compact: small
+  } = props;
   const { locked, name, label, hidden } = field;
   const isDragging = snapshot ? snapshot.isDragging : false;
   const innerRef = provided ? provided.innerRef : undefined;
@@ -1503,7 +1652,7 @@ const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
   return (
     <div
       ref={innerRef}
-      className={`tyr-column-config-item${
+      className={`tyr-column-config-item${small ? ' compact' : ''}${
         hidden ? ' tyr-column-config-item-hidden' : ''
       }${locked ? ' tyr-column-config-item-locked' : ''}${
         isDragging ? ' tyr-column-config-item-dragging' : ''
@@ -1543,6 +1692,7 @@ const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
 
 export interface TyrTableControl {
   addNewDocument: (doc: Tyr.Document) => boolean;
+  setFieldValue: (fieldName: string, value: any) => void;
 }
 
 /**
@@ -1557,5 +1707,9 @@ class TyrTableControlImpl implements TyrTableControl {
 
   addNewDocument = (doc: Tyr.Document) => {
     return this.table.addNewDocument(doc);
+  };
+
+  setFieldValue = (fieldName: string, value: any) => {
+    return this.table.setFieldValue(fieldName, value);
   };
 }

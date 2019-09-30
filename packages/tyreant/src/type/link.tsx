@@ -1,4 +1,4 @@
-import { compact, filter, debounce, uniq } from 'lodash';
+import { compact, debounce, uniq } from 'lodash';
 import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
@@ -26,6 +26,7 @@ import Checkbox from 'antd/es/checkbox';
 export interface TyrLinkState {
   documents: Tyr.Document[];
   loading: boolean;
+  initialLoading: boolean;
 }
 
 const linkFor = (path: Tyr.NamePathInstance) => {
@@ -51,34 +52,35 @@ const findByLabel = (collection: Tyr.CollectionInstance, label: string) => {
 const findById = (collection: Tyr.CollectionInstance, id: string) =>
   collection.values.find(lv => lv.$id === id);
 
-interface Label {
-  $id: any;
-  $label: string;
-}
-
 const sortLabels = (labels: any[], searchSortById?: boolean) => {
-  filter(labels as Label[], l => !!l.$label).sort((a, b) => {
+  labels.sort((a, b) => {
     if (searchSortById) {
       return a.$id - b.$id;
     }
 
-    const aLabel = a.$label.toLowerCase();
-    const bLabel = b.$label.toLowerCase();
+    if (a.$label === b.$label) {
+      return 0;
+    }
 
-    if (aLabel < bLabel) {
+    if (a.$label === undefined && b.$label !== undefined) {
       return -1;
     }
-    if (aLabel > bLabel) {
+
+    if (b.$label === undefined && a.$label !== undefined) {
       return 1;
     }
-    return 0;
+
+    const aLabel = a.$label.toLowerCase ? a.$label.toLowerCase() : '';
+    const bLabel = b.$label.toLowerCase ? b.$label.toLowerCase() : '';
+
+    return aLabel.localeCompare(bLabel);
   });
 
   return labels;
 };
 
 export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
-  state: TyrLinkState = { documents: [], loading: false };
+  state: TyrLinkState = { documents: [], loading: false, initialLoading: true };
 
   protected lastFetchId = 0;
 
@@ -102,19 +104,28 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     const props = this.props;
 
     this.mounted = true;
-    const { path } = props;
-    const { detail: field } = path!;
+    const { path, searchPath } = props;
 
-    const link = linkFor(path!);
+    if (!path) throw new Error('TyrLink not passed a path!');
 
-    if (!link) throw new Error('TyrLink passed a non-link');
+    if (searchPath) {
+      const { detail: searchField } = searchPath;
+      this.linkField =
+        searchField.type.name === 'array' ? searchField.of : searchField;
 
-    this.link = link;
-    this.linkField = field.type.name === 'array' ? field.of : field;
+      this.link = linkFor(searchPath);
+    } else {
+      const { detail: field } = path;
+      this.linkField = field.type.name === 'array' ? field.of : field;
+      this.link = linkFor(path);
+    }
 
-    if (link!.isStatic()) {
+    if (!this.link) throw new Error('TyrLink passed a non-link');
+
+    if (this.link.isStatic()) {
       this.setState({
-        documents: sortLabels(link!.values, !!props.searchSortById)
+        initialLoading: false,
+        documents: sortLabels(this.link.values, !!props.searchSortById)
       });
     } else {
       await this.search();
@@ -138,7 +149,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }
 
   search = debounce(async (text?: string) => {
-    const { document } = this.props;
+    const { document, getSearchIds } = this.props;
     const link = this.link!;
 
     if (this.mounted) {
@@ -147,9 +158,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     const fetchId = ++this.lastFetchId;
 
-    const promises: Promise<Tyr.Document[]>[] = [];
-
-    promises.push(this.linkField!.labels(document!, text));
+    const promises: Promise<Tyr.Document[]>[] = [
+      this.linkField!.labels(document!, text)
+    ];
 
     // include the current value
     const val = this.getValue();
@@ -157,12 +168,13 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     if (val) {
       const fields = link.labelProjection();
 
-      promises.push(
-        // switch to simple Array.isArray() once we move to mobx 5
-        link.byIds(typeof val === 'string' ? [val] : val, {
-          fields
-        })
-      );
+      // switch to simple Array.isArray() once we move to mobx 5
+      const ids =
+        typeof val === 'string'
+          ? [val]
+          : getSearchIds ? getSearchIds(val) : val;
+
+      promises.push(link.byIds(ids, { fields }));
     }
 
     const [documents, addDocuments] = await Promise.all(promises);
@@ -182,7 +194,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     if (this.mounted) {
       this.setState({
         documents: sortLabels(documents, !!this.props.searchSortById),
-        loading: false
+        loading: false,
+        initialLoading: false
       });
     }
   }, 200);
@@ -190,7 +203,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   render(): React.ReactNode {
     const { props } = this;
     const { mode: controlMode, path, multiple, onSelect, onDeselect } = props;
-    const { documents, loading } = this.state;
+    const { documents, loading, initialLoading } = this.state;
 
     if (controlMode === 'view') {
       return (
@@ -204,7 +217,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     // TODO:  'tags', 'combobox'
     if (field.type.name === 'array') {
       mode =
-        field.of!.link!.def.tag && this.props.mode !== 'search'
+        field.of!.link &&
+        field.of!.link!.def.tag &&
+        this.props.mode !== 'search'
           ? 'tags'
           : 'multiple';
 
@@ -218,8 +233,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     const selectProps: SelectProps = {
       mode,
-      labelInValue: false,
-      notFoundContent: loading ? <Spin size="small" /> : null,
+      labelInValue: !!props.labelInValue,
+      notFoundContent: loading ? (
+        <Spin size="small" style={{ position: 'static' }} />
+      ) : null,
       showSearch: true,
       onSearch: this.search,
       placeholder: this.props.placeholder,
@@ -229,7 +246,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       tabIndex: this.props.tabIndex,
       className: this.props.className,
       dropdownClassName: this.props.dropdownClassName,
-      filterOption: false
+      filterOption: false,
+      loading: !!initialLoading
     };
 
     const onTypeChangeFunc = (ev: any) => {
@@ -323,13 +341,23 @@ export const linkFilter: Filter = (
 
   if (localSearch && localDocuments && props.filterOptionLabel) {
     // Go get all the values for the filter
-    filterValues = uniq(
-      compact(localDocuments.map((d: any) => props.filterOptionLabel!(d)) as {
-        $id: any;
-        $label: string;
-      }[]),
-      '$id'
-    );
+
+    const allLabels: {
+      $id: any;
+      $label: string;
+    }[] = [];
+
+    localDocuments.forEach(d => {
+      const values = props.filterOptionLabel!(d);
+
+      if (Array.isArray(values)) {
+        allLabels.push(...values);
+      } else if (values) {
+        allLabels.push(values);
+      }
+    });
+
+    filterValues = uniq(compact(allLabels), '$id');
   } else {
     const link = linkFor(path)!;
 
@@ -359,7 +387,7 @@ export const linkFilter: Filter = (
       <div className="search-box" style={{ padding: 0 }}>
         <Menu
           className="ant-table-filter-dropdown ant-dropdown-menu"
-          style={{ maxHeight: '400px', overflowX: 'hidden', padding: 0 }}
+          style={{ maxHeight: '360px', overflowX: 'hidden', padding: 0 }}
           selectedKeys={filterable.searchValues[pathName]}
           mode="vertical"
           multiple={true}
@@ -502,7 +530,6 @@ byName.link = {
   mapFormValueToDocumentValue(path: Tyr.NamePathInstance, value: any) {
     const nv = findByLabel(linkFor(path)!, value);
     if (nv) value = nv.$id;
-
     return value && value.key ? value.key : value;
   },
   filter: linkFilter,
@@ -536,8 +563,8 @@ byName.link = {
       const populatedObject = (document as any)[populatedName];
 
       return populatedObject ? populatedObject[link.labelField.name] : '';
-    } else {
-      return field.type.format(field, path.get(document));
     }
+
+    return field.type.format(field, path.get(document));
   }
 };

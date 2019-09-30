@@ -20,6 +20,9 @@ export type TyrSortDirection = 'ascend' | 'descend';
 
 export interface TyrFieldProps {
   field?: Tyr.FieldInstance;
+  searchField?: Tyr.FieldInstance;
+  getSearchIds?: (val: any) => any[];
+
   label?: string | React.ReactNode;
   className?: string;
   placeholder?: string;
@@ -67,7 +70,10 @@ export interface TyrFieldProps {
   filterOptionRenderer?: (value: any) => React.ReactElement;
   filterOptionLabel?: (
     doc: Tyr.Document
-  ) => { $id: any; $label: string } | undefined;
+  ) =>
+    | { $id: any; $label: string }
+    | { $id: any; $label: string }[]
+    | undefined;
   searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
   searchSortById?: boolean;
   liveSearch?: boolean;
@@ -75,6 +81,10 @@ export interface TyrFieldProps {
   readonly?: boolean;
   isEditable?: (document: Tyr.Document) => boolean;
   translateForWhiteLabel?: (label: string) => string;
+  typeUi?: 'link' | 'string' | 'integer' | 'boolean';
+  mapDocumentValueToForm?: (value: any, document: Tyr.Document) => any;
+  mapFormValueToDocument?: (value: any, document: Tyr.Document) => any;
+  labelInValue?: boolean;
 }
 
 export type TyrFieldExistsProps = Omit<TyrFieldProps, 'field'> & {
@@ -87,8 +97,9 @@ export const getFieldName = (field: string | Tyr.FieldInstance | undefined) => {
   //return undefined;
 };
 
-export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field'> & {
+export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field' | 'searchField'> & {
   field?: Tyr.FieldInstance | string;
+  searchField?: Tyr.FieldInstance | string;
 };
 
 export const labelForProps = (props: TyrTypeProps) => {
@@ -164,7 +175,7 @@ export const TyrFieldBase = (props: TyrTypeProps) => {
   const { path } = props;
   const { tail: field } = path!;
   const { type } = field;
-  const typeUi = assertTypeUi(type.name);
+  const typeUi = assertTypeUi(props.typeUi || type.name);
   return React.createElement(typeUi.component, props);
 };
 

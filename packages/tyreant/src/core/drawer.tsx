@@ -124,6 +124,7 @@ export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
           visible={visible}
           closable={false}
           placement={placement || 'right'}
+          className={'tyr'}
         >
           {visible && (
             <div className="tyr-drawer-container">
