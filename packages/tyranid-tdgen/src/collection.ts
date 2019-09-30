@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { Tyr } from 'tyranid';
 import * as names from './names';
 import { escapeString, pad, wrappedUnionType } from './util';
+import { addField } from './base';
 
 /**
  * produce union type alias for enum id values
@@ -113,4 +114,85 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
   }`
   }
   `;
+}
+
+export function colApiMethods(col: Tyr.CollectionInstance) {
+  const { def: cdef } = col;
+  const { api } = cdef;
+
+  if (!api) return '';
+
+  let s = '';
+
+  for (const methodName in api) {
+    const mdef = api[methodName];
+    const { params, return: returns } = mdef;
+
+    s += `
+      ${methodName}(`;
+
+    if (params) {
+      let i = 0;
+      for (const paramName in params) {
+        const param = params[paramName] as Tyr.FieldInstance;
+        if (i++) s += ', ';
+        s += paramName;
+        if (!param.def.required) s += '?';
+        s += ': ';
+
+        s += addField({
+          name: paramName,
+          field: param,
+          indent: 4,
+          noPopulatedProperty: true
+        });
+      }
+    }
+
+    s += '): Promise<';
+    s += returns
+      ? addField({
+          name: 'return',
+          field: returns as Tyr.FieldInstance,
+          indent: 4,
+          noPopulatedProperty: true
+        })
+      : 'void';
+    s += '>;';
+  }
+
+  return s;
+}
+
+/**
+ * generate the internal API interface for a tyranid collection
+ */
+export function colApi(
+  col: Tyr.CollectionInstance,
+  mode: 'server' | 'client' | 'isomorphic'
+) {
+  const { def: cdef } = col;
+  const { api, name } = cdef;
+
+  if (!api) return '';
+
+  const colName = names.collection(name);
+
+  switch (mode) {
+    case 'isomorphic':
+      return `
+    /**
+     * API definition for "${name}" collection
+     */
+    export interface ${colName}Api<ObjIdType = 'string'> {${colApiMethods(col)} 
+    }\n`;
+
+    case 'client':
+      return `
+    export interface ${colName}Api extends Isomorphic.${colName}Api<ObjIdType> {}`;
+
+    case 'server':
+      return `
+    export interface ${colName}Api extends Isomorphic.${colName}Api<ObjIdType> {}`;
+  }
 }

@@ -30,6 +30,7 @@ function validateUidCollection(validator, path, collection) {
 
 const UidType = new Type({
   name: 'uid',
+  typescript: 'string',
   compile(compiler, field) {
     if (compiler.stage !== 'link') return;
     let of = field.def.of;

@@ -1805,7 +1805,7 @@ export default class Collection {
           field.group = fieldDef.group;
         }
 
-        if (!dynamic) {
+        if (!dynamic && !field.method) {
           collection.paths[path] = field;
         }
         const lastDot = path.lastIndexOf('.');
@@ -2053,6 +2053,53 @@ export default class Collection {
 
           compiler.field(path ? path + '.' + name : name, field);
         }
+      },
+
+      method(methodName, defMethod) {
+        if (!defMethod) return;
+
+        if (!_.isObject(defMethod))
+          throw compiler.err(
+            path,
+            '"api.${methodName}" should be an object, got: ' + defMethod
+          );
+
+        const { params, return: returns } = defMethod;
+
+        for (const paramName in params) {
+          let field = params[paramName];
+
+          if (_.isString(field)) field = { is: field };
+
+          if (!(field instanceof Field)) {
+            field = params[paramName] = new Field(field, { method: true });
+          }
+
+          compiler.field(paramName, field);
+        }
+
+        let field = returns;
+
+        if (field) {
+          if (_.isString(field)) field = { is: field };
+
+          if (!(field instanceof Field)) {
+            field = defMethod.return = new Field(field, { method: true });
+          }
+
+          compiler.field('return', field);
+        }
+      },
+
+      api(defApi) {
+        if (!defApi) return;
+
+        if (!_.isObject(defApi))
+          throw compiler.err(path, '"api" should be an object, got: ' + defApi);
+
+        for (const name in defApi) {
+          compiler.method(name, defApi[name]);
+        }
       }
     };
 
@@ -2099,6 +2146,8 @@ export default class Collection {
         );
       }
     }
+
+    compiler.api(collection.def.api);
 
     if (stage === 'link') {
       if (collection.def.historical) {

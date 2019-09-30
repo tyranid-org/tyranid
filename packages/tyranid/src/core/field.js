@@ -6,13 +6,14 @@ import ValidationError from './validationError';
 import LinkType from '../type/link';
 
 export default class Field {
-  constructor(def) {
+  constructor(def, opts) {
     // "job: Job" is equivalent to "job: { link: Job }"
     if (def instanceof Tyr.Collection) {
       def = { link: def };
     }
 
     this.def = def;
+    if (opts) Object.assign(this, opts);
   }
 
   get computed() {
@@ -26,6 +27,14 @@ export default class Field {
 
   get readonly() {
     return this.def.readonly || this.computed;
+  }
+
+  fromClient(value) {
+    return this.type.fromClient(this, value);
+  }
+
+  toClient(value, doc, opts, proj) {
+    return this.type.toClient(this, value, doc, opts, proj);
   }
 
   get label() {

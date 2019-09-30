@@ -531,10 +531,10 @@ export namespace Tyr {
     help?: string;
     note?: string;
     deprecated?: string | boolean;
-    params: {
-      [parameterName: string]: {};
+    params?: {
+      [parameterName: string]: FieldDefinition | FieldInstance;
     };
-    returns: {};
+    return?: FieldDefinition | FieldInstance;
   }
 
   export interface ApiDefinition {
@@ -563,6 +563,7 @@ export namespace Tyr {
     values?: any[][];
     db?: mongodb.Db;
     internal?: boolean;
+    api?: ApiDefinition;
   }
 
   /**

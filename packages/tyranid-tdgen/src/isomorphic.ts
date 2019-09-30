@@ -1,7 +1,12 @@
 import * as _ from 'lodash';
 import { Tyr } from 'tyranid';
 import { baseInterface } from './base';
-import { colInterface, enumIdAlias, enumStaticInterface } from './collection';
+import {
+  colInterface,
+  enumIdAlias,
+  enumStaticInterface,
+  colApi
+} from './collection';
 import { docInterface } from './document';
 import * as names from './names';
 import { generateDefinitionPreamble } from './preamble';
@@ -59,6 +64,7 @@ export function generateIsomorphicInterfaces(
 
     bases.push(baseInterface(col, { commentLineWidth }));
     docs.push(docInterface(col));
+    if (col.def.api) cols.push(colApi(col, 'isomorphic'));
     cols.push(colInterface(col));
     if (alias) enumIds.push(alias);
     if (alias) statics.push(enumStaticInterface(col));
@@ -186,16 +192,31 @@ export function generateCommonTypes(
               ${names.base(name)} {}
     `);
 
-    cols.push(`
+    let cs = `
     /**
      * ${names.format(output)} collection definition.
      */
     ${output === 'client' ? 'export ' : ''}interface ${colName}
-      extends Tyr.CollectionInstance<${idType}, ${docName}>${staticName} {}
-    `);
+      extends Tyr.CollectionInstance<${idType}, ${docName}>${staticName}`;
+    if (c.def.api)
+      cs += `,
+              ${colName}Api`;
+
+    cs += ' {';
+    if (c.def.api) {
+      if (output === 'server')
+        cs += `
+      api: ${colName}Api;`;
+    }
+
+    cs += `
+    }`;
+    cols.push(cs);
 
     if (c.def.enum)
       aliases.push(pad(`export type ${aliasName} = ${isoAlias};`, 2));
+
+    if (c.def.api) cols.push(colApi(c, output));
   });
 
   return `

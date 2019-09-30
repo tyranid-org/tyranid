@@ -32,6 +32,7 @@ export namespace Tyr {
 
   export interface TypeDefinition {
     name: string;
+    typescript?: string;
   }
 
   export interface TypeInstance {

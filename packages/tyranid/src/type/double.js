@@ -5,6 +5,8 @@ import Type from '../core/type';
 const DoubleType = new Type({
   name: 'double',
 
+  typescript: 'number',
+
   compare(field, a, b) {
     if (a) {
       return b ? a - b : 1;

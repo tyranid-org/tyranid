@@ -315,6 +315,14 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
           await cleanup();
         }
       });
+
+      it('should support api methods()', async () => {
+        let result = await page.evaluate(`Tyr.byName.user.canServe(2)`);
+        expect(result).to.eql(true);
+
+        result = await page.evaluate(`Tyr.byName.user.canServe(3)`);
+        expect(result).to.eql(false);
+      });
     });
   });
 }

@@ -34,6 +34,8 @@ function fromString(s) {
 const BooleanType = new Type({
   name: 'boolean',
 
+  typescript: 'boolean',
+
   fromString,
 
   fromClient(field, value) {

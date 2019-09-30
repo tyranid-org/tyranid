@@ -8,6 +8,8 @@ const Tyr = require('../tyr').default;
 const DateType = new Type({
   name: 'date',
 
+  typescript: 'Date',
+
   // @isomorphic
   compare(field, a, b) {
     return new Date(a).getTime() - new Date(b).getTime();
