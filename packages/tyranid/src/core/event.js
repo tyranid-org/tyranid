@@ -4,6 +4,8 @@ import Tyr from '../tyr';
 import Collection from './collection';
 import Instance from './instance';
 
+const EVENT_HANDLER_TIMEOUT_MS = 5000;
+
 /** @isomorphic */
 Collection.prototype.on = function(opts) {
   const { type } = opts;
@@ -228,17 +230,26 @@ export default class Event {
                 event = new Event(event);
               }
 
-              const rslt = await onOpts.handler(event);
-              //if (rslt.then) {
-              //await rslt;
-              //}
+              const rslt = await Tyr.promiseWithTimeout(
+                onOpts.handler(event),
+                EVENT_HANDLER_TIMEOUT_MS
+              );
 
               if (rslt === false) {
                 event.preventDefault();
               }
             } catch (err) {
               event.preventDefault();
-              throw err;
+
+              if (err.message === 'timed out') {
+                throw new Error(
+                  `${event.type} handler on collection "${
+                    event.collection.name
+                  }" timed out after ${EVENT_HANDLER_TIMEOUT_MS}ms`
+                );
+              } else {
+                throw err;
+              }
             }
 
             if (event.canceled) {

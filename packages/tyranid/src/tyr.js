@@ -270,6 +270,16 @@ const Tyr = {
     await Promise.all(array);
   },
 
+  async promiseWithTimeout(promise, timeoutMs /*: number */ = 10000) {
+    const rslt = await Promise.race([
+      promise,
+      new Promise(resolve => setTimeout(() => resolve('timeout'), timeoutMs))
+    ]);
+
+    if (rslt === 'timeout') throw new Error('timed out');
+    return rslt;
+  },
+
   mapAwait(value, fn) {
     if (value.then) {
       return value.then(value => {
