@@ -581,16 +581,22 @@ describe('tyranid', () => {
       });
 
       it('should support matching fieldsFor()', async () => {
-        const fields = await User.fieldsFor({ organization: 1 });
+        const fields = await User.fieldsFor({
+          match: { organization: 1 },
+          static: true
+        });
         expect(_.values(fields).length).to.be.eql(27);
       });
 
       it('should support unmatching fieldsFor()', async () => {
-        const fields = await User.fieldsFor({ organization: 2 });
+        const fields = await User.fieldsFor({
+          match: { organization: 2 },
+          static: true
+        });
         expect(_.values(fields).length).to.be.eql(25);
       });
 
-      it('should set dyn fields on insert for matching objects', async () => {
+      it('should set dyn fields when inserting for matching objects', async () => {
         return User.insert({
           _id: dynUserId,
           organization: 1,

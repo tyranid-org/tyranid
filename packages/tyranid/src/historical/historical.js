@@ -3,7 +3,6 @@ import * as _ from 'lodash';
 import diff from '../diff/diff';
 
 import Tyr from '../tyr';
-import { OperationCanceledException } from '../../../../node_modules/typescript';
 
 export function link(collection) {
   const _historicalFields = {};

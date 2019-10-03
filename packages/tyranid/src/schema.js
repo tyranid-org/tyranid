@@ -115,7 +115,7 @@ function mergeSchema(fields, name, field) {
   return false;
 }
 
-Collection.prototype.fieldsFor = async function(obj) {
+Collection.prototype.fieldsFor = async function(opts) {
   let missing = false;
 
   if (!schemaCache) {
@@ -147,11 +147,20 @@ Collection.prototype.fieldsFor = async function(obj) {
 
   const fields = {};
 
-  _.assign(fields, this.def.fields);
+  if (opts.static) {
+    _.assign(fields, this.def.fields);
+  }
+
+  const { match, query } = opts;
+
+  const test = query
+    ? schema => queryMatches(query, schema.match)
+    : schema => schema.objMatcher(match);
 
   schemaCache.forEach(schema => {
-    if (schema.collection === this.id && schema.objMatcher(obj)) {
+    if (schema.collection === this.id && test(schema)) {
       _.each(schema.def.fields, (field, name) => {
+        if (opts.custom && !field.def.custom) return;
         mergeSchema(fields, name, field);
       });
     }
