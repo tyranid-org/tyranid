@@ -143,6 +143,12 @@ declare module 'tyranid/client' {
       def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
       fields: { [fieldName: string]: Tyr.FieldInstance };
+      fieldsFor(opts: {
+        match?: MongoObject;
+        query?: MongoQuery;
+        custom?: boolean;
+        static?: boolean;
+      }): Promise<{ [key: string]: FieldInstance }>;
       findAll(args: any): Promise<T[] & { count?: number }>;
       findOne(args: any): Promise<T | null>;
       id: string;

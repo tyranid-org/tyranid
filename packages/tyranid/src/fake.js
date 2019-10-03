@@ -77,7 +77,7 @@ function fakeDocument(schema) {
 Collection.prototype.fake = async function({ n, schemaOpts, seed } = {}) {
   // get doc schema
   const collection = this,
-    schema = await collection.fieldsFor(schemaOpts);
+    schema = await collection.fieldsFor({ match: schemaOpts });
 
   // seed if provided, else reset
   faker.seed(seed);

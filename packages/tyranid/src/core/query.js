@@ -26,6 +26,18 @@ function isOpObject(obj) {
   return true;
 }
 
+const queryPattern = /^\$/;
+
+const isQuery = value => {
+  if (true) return false;
+
+  if (Tyr.isObject(value))
+    for (const name in value)
+      if (queryPattern.test(name) || isQuery(value[name])) return true;
+
+  return false;
+};
+
 function validateInArray(arr) {
   if (!_.isArray(arr)) {
     throw new Error(`Invalid query, $in did not contain an array: "${arr}"`);
@@ -635,6 +647,7 @@ Collection.prototype.fromClientQuery = function(query) {
 };
 
 const query = {
+  isQuery,
   merge,
   intersection: queryIntersection,
   matches: queryMatches

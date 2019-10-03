@@ -113,15 +113,15 @@ export function add() {
       // the custom fields not already be in the base fields
       expect(User.fields.custom.fields).to.be.undefined;
 
-      let result = await fetch(urlPrefix + '/api/user/custom', {
+      let result = await fetch(urlPrefix + '/api/user/fieldsFor', {
         method: 'put',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ organization: 1 })
+        body: JSON.stringify({ match: { organization: 1 }, custom: true })
       });
       let json = await result.json();
-      expect(_.keys(json.fields)).to.eql(['custom', 'acmeY']);
+      expect(_.keys(json.fields)).to.eql(['acmeY', 'custom']);
 
       // should also merge nested fields
       expect(_.keys(json.fields.custom.fields)).to.eql(['nested1', 'nested2']);
@@ -131,12 +131,12 @@ export function add() {
 
       expect(json.fields.custom.fields.nested1.label).to.eql('Nested 1');
 
-      result = await fetch(urlPrefix + '/api/organization/custom', {
+      result = await fetch(urlPrefix + '/api/organization/fieldsFor', {
         method: 'put',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ foo: 1 })
+        body: JSON.stringify({ match: { foo: 1 } })
       });
 
       json = await result.json();

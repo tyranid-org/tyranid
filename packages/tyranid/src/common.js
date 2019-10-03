@@ -164,7 +164,7 @@ export function extractAuthorization(opts) {
 
 export async function parseInsertObj(col, obj, opts) {
   const def = col.def,
-    fields = await col.fieldsFor(obj),
+    fields = await col.fieldsFor({ match: obj, static: true }),
     insertObj = new col();
 
   _.each(col.denormal, function(field, name) {

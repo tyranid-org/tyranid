@@ -764,8 +764,6 @@ export namespace Tyr {
 
     count(opts: Options_Count): Promise<number>;
 
-    customFields(): Promise<{ [key: string]: FieldInstance }>;
-
     db: mongodb.Collection;
     def: CollectionDefinitionHydrated;
     denormal?: MongoDocument;
@@ -774,7 +772,12 @@ export namespace Tyr {
 
     fields: { [key: string]: FieldInstance };
     fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
-    fieldsFor(obj: any): Promise<{ [key: string]: FieldInstance }>;
+    fieldsFor(opts: {
+      match?: MongoObject;
+      query?: MongoQuery;
+      custom?: boolean;
+      static?: boolean;
+    }): Promise<{ [key: string]: FieldInstance }>;
 
     fake(options: { n?: number; schemaOpts?: any; seed?: number }): Promise<T>;
 
@@ -1074,6 +1077,7 @@ export namespace Tyr {
   }
 
   export interface QueryStatic {
+    isQuery(doc: MongoQuery): boolean;
     matches(doc: MongoQuery, b: RawMongoDocument): boolean;
     merge(
       a: MongoQuery | null | undefined,

@@ -1194,24 +1194,26 @@ export function generateClientLibrary() {
     }).then(docs => Array.isArray(docs) ? docs.map(doc => new this(doc)) : new this(docs));
   };
 
-  Collection.prototype.customFields = function(objMatch) {
-    var col = this,
-        cf = col._customFields;
-    if (cf) {
+  Collection.prototype.fieldsFor = async function(opts) {
+    var col = this;
+        //cf = col._customFields;
+    //if (cf) {
       // we cannot use this cache because we're using the document as a match instead of the user now ...
       // we could do the objMatcher logic on the client instead of the server, then we could cache all
       // fields for a custom collection and filter them on the client, saving this extra server call
       //return Promise.resolve(cf);
-    }
+    //}
 
-    return ajax({
-      type: 'put',
-      url: '/api/' + col.def.name + '/custom',
-      data: JSON.stringify(objMatch),
-      contentType: 'application/json'
-    }).then(function(def) {
+    try {
+      let def = await ajax({
+        type: 'put',
+        url: '/api/' + col.def.name + '/fieldsFor',
+        data: JSON.stringify(opts),
+        contentType: 'application/json'
+      });
+
       def = JSON.parse(def);
-      var fields = def.fields;
+      const fields = def.fields;
 
       _.each(fields, function(fieldDef, fieldName) {
         var field = new Field(fieldDef);
@@ -1219,12 +1221,11 @@ export function generateClientLibrary() {
         fields[fieldName] = field;
       });
 
-      col._customFields = fields;
+      //col._customFields = fields;
       return fields;
-
-    }).catch(function(err) {
+    } catch (err) {
       console.error(err);
-    });
+    }
   };
 
   function fireDocUpdate(doc, type) {
@@ -1789,26 +1790,25 @@ Collection.prototype.connect = function({ app, auth, http }) {
       }
 
       /*
-       *     /api/NAME/custom
+       *     /api/NAME/fieldsFor
        */
 
-      r = app.route('/api/' + name + '/custom');
+      r = app.route('/api/' + name + '/fieldsFor');
       r.all(auth);
 
       if (express.rest || express.fields) {
         r.put(async (req, res) => {
           try {
-            let obj = req.body;
-            if (obj) {
-              obj = await col.fromClient(obj, undefined, { req });
-            } else {
-              obj = req.user;
-            }
+            let opts = req.body;
 
-            const fields = _.filter(
-              await col.fieldsFor(obj),
-              f => f.def.custom
-            );
+            const m = opts.match;
+            if (m) opts.match = await col.fromClient(m, undefined, { req });
+
+            const q = opts.query;
+            if (q)
+              opts.query = await col.fromClientQuery(q, undefined, { req });
+
+            const fields = await col.fieldsFor(opts);
             const ser = new Serializer('.', 2, true);
             ser.fields(fields);
             res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
