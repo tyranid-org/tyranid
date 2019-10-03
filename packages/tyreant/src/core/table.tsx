@@ -720,11 +720,31 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(
       (column, columnIdx) => {
-        const pathName = getFieldName(column.field);
-        const field = pathName && collection.paths[pathName];
+        let field: Tyr.FieldInstance | undefined = undefined;
+        let pathName: string | undefined = undefined;
+        let searchField: Tyr.FieldInstance | undefined = undefined;
+        let searchPathName: string | undefined = undefined;
 
-        const searchPathName = getFieldName(column.searchField);
-        const searchField = searchPathName && collection.paths[searchPathName];
+        if (column.field && (column.field as Tyr.FieldInstance).collection) {
+          field = column.field as Tyr.FieldInstance;
+          pathName = field.path;
+        } else {
+          pathName = getFieldName(column.field);
+          field = pathName ? collection.paths[pathName] : undefined;
+        }
+
+        if (
+          column.searchField &&
+          (column.searchField as Tyr.FieldInstance).collection
+        ) {
+          searchField = column.searchField as Tyr.FieldInstance;
+          searchPathName = searchField.path;
+        } else {
+          searchPathName = getFieldName(column.searchField);
+          searchField = searchPathName
+            ? collection.paths[searchPathName]
+            : undefined;
+        }
 
         if (field) (field as any).column = column;
 
@@ -775,7 +795,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               const av = np && np.get(a);
               const bv = np && np.get(b);
 
-              return field.type.compare(field, av, bv);
+              return field!.type.compare(field!, av, bv);
             };
           }
         }
