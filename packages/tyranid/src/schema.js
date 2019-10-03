@@ -152,6 +152,7 @@ Collection.prototype.fieldsFor = async function(opts) {
   }
 
   const { match, query } = opts;
+  const queryMatches = Tyr.query.matches;
 
   const test = query
     ? schema => queryMatches(query, schema.match)
