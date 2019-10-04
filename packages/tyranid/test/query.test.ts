@@ -330,6 +330,15 @@ export function add() {
         test({ _id: O(i1) }, { _id: O(i1) }, true);
       });
 
+      it('should work with $exists', () => {
+        test(
+          { foo: { $exists: { bar: false } } },
+          { foo: { bar: true } },
+          false
+        );
+        test({ foo: { $exists: { bar: true } } }, { foo: { bar: true } }, true);
+      });
+
       it('should work with $in', () => {
         test({ foo: { $in: [1] } }, { foo: [2, 1] }, true);
         test({ foo: { $in: [3, 1] } }, { foo: [2, 1] }, true);
