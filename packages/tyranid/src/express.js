@@ -775,7 +775,7 @@ export function generateClientLibrary() {
       if (fieldDef instanceof Field) {
         field = fieldDef;
       } else {
-        field = defFields[name] = new Field(fieldDef);
+        field = fieldDefs[name] = new Field(fieldDef);
         field.name = name;
       }
 
