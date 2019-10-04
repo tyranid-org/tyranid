@@ -707,6 +707,14 @@ export function generateClientLibrary() {
     paths: ${es5Fn(Tyr.functions.paths)}
   };
 
+  Object.defineProperties(Collection.prototype, {
+    collection: {
+      get() { return this; }
+      enumerable:   false,
+      configurable: false,
+    }
+  });
+
   Collection.prototype.parsePath = function(path) {
     return new NamePath(this, path);
   };
@@ -730,6 +738,58 @@ export function generateClientLibrary() {
     }
 
     return obj;
+  }
+
+  function compileField(path, parent, field, dynamic) {
+    const collection = parent.collection;
+    field.path = path;
+    field.parent = parent;
+    if (!dynamic) collection.paths[path] = field;
+    field.collection = collection;
+
+    var def = field.def;
+    if (def.is === 'array' || def.is === 'object') {
+      if (!field.of && def.of) {
+        var of = new Field(def.of);
+        field.of = of;
+        compileField(path + '._', field, of, dynamic);
+      }
+    }
+
+    if (def.is === 'object') {
+      if (def.fields) {
+        compileFields(path, field, def.fields, dynamic);
+      }
+
+      if (def.keys) {
+        let keys = new Field(def.keys);
+        field.keys = keys;
+        compileField(path + '._key', field, keys, dynamic);
+      }
+    }
+  }
+
+  function compileFields(path, parent, fieldDefs, dynamic) {
+    _.each(fieldDefs, function(fieldDef, name) {
+      let field;
+      if (fieldDef instanceof Field) {
+        field = fieldDef;
+      } else {
+        field = new Field(fieldDef);
+        field.name = name;
+      }
+
+      let p = path ? path + '.' + name : name;
+
+      if (!dynamic) {
+        let parentFields = parent.fields = parent.fields || {};
+        parentFields[name] = field;
+      }
+
+      field.parent = parent;
+
+      compileField(p, parent, field, dynamic);
+    });
   }
 
   function Collection(def) {
@@ -800,51 +860,9 @@ export function generateClientLibrary() {
       });
     }
 
-    var fbp = CollectionInstance.paths = {};
+    CollectionInstance.paths = {};
 
-    function vField(path, parent, field) {
-      field.path = path;
-      field.parent = parent;
-      fbp[path] = field;
-      field.collection = CollectionInstance;
-
-      var def = field.def;
-      if (def.is === 'array' || def.is === 'object') {
-        if (def.of) {
-          var of = new Field(def.of);
-          field.of = of;
-          vField(path + '._', field, of);
-        }
-      }
-
-      if (def.is === 'object') {
-        if (def.fields) {
-          vFields(path, field, def.fields);
-        }
-
-        if (def.keys) {
-          let keys = new Field(def.keys);
-          field.keys = keys;
-          vField(path + '._key', field, keys);
-        }
-      }
-    }
-
-    function vFields(path, parent, fieldDefs) {
-      _.each(fieldDefs, function(fieldDef, name) {
-        var p = path ? path + '.' + name : name;
-        var field = new Field(fieldDef);
-        field.name = name;
-
-        var parentFields = parent.fields = parent.fields || {};
-        parentFields[name] = field;
-        field.parent = parent;
-
-        vField(p, parent, field);
-      });
-    }
-
-    vFields('', CollectionInstance, def.fields);
+    compileFields('', CollectionInstance, def.fields);
 
     _.each(CollectionInstance.fields, function(field, name) {
       const fdef  = field.def,
@@ -1215,11 +1233,7 @@ export function generateClientLibrary() {
       def = JSON.parse(def);
       const fields = def.fields;
 
-      _.each(fields, function(fieldDef, fieldName) {
-        var field = new Field(fieldDef);
-        field.name = name;
-        fields[fieldName] = field;
-      });
+      compileFields('', this, fields, true);
 
       //col._customFields = fields;
       return fields;
