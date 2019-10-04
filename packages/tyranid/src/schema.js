@@ -79,6 +79,8 @@ function schemaCloneCustomizer(obj) {
     }
 
     return cfield;
+  } else if (obj instanceof Collection) {
+    return obj;
   }
 
   //return undefined;
