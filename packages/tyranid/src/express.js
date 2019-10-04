@@ -79,7 +79,7 @@ class Serializer {
 
     if (field.link) {
       this.newline();
-      this.file += 'link: "';
+      this.file += this.k('link') + ': "';
       this.file += field.link.def.name;
       this.file += '",';
     }
