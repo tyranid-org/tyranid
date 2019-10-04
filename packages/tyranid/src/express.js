@@ -744,7 +744,7 @@ export function generateClientLibrary() {
     const collection = parent.collection;
     field.path = path;
     field.parent = parent;
-    if (!dynamic) collection.paths[path] = field;
+    collection.paths[path] = field;
     field.collection = collection;
 
     var def = field.def;
@@ -776,15 +776,14 @@ export function generateClientLibrary() {
         field = fieldDef;
       } else {
         field = fieldDefs[name] = new Field(fieldDef);
+        if (dynamic) field.dynamic = true;
         field.name = name;
       }
 
       let p = path ? path + '.' + name : name;
 
-      if (!dynamic) {
-        let parentFields = parent.fields = parent.fields || {};
-        parentFields[name] = field;
-      }
+      let parentFields = parent.fields = parent.fields || {};
+      parentFields[name] = field;
 
       field.parent = parent;
 
