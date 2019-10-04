@@ -67,7 +67,7 @@ function arrayIncludes(arr, v) {
 
 // _.intersection doesn't work with ObjectIds, TODO: replace with _.intersectionWith(..., Tyr.isEqual) when lodash upgraded
 function arrayIntersection(arr1, arr2) {
-  if (_.isEqual(arr1, arr2)) {
+  if (Tyr.isEqual(arr1, arr2)) {
     return arr1;
   }
 
@@ -506,13 +506,15 @@ function valueMatches(match, value) {
           break;
 
         case '$in':
-          if (
-            !value ||
-            !match.$in.length ||
-            !arrayIntersection(match.$in, value).length
-          ) {
-            return false;
+          if (!value || !match.$in.length) return false;
+
+          const $in = match.$in;
+          if (Array.isArray(value)) {
+            if (!arrayIntersection($in, value).length) return false;
+          } else {
+            if (!arrayIncludes($in, value)) return false;
           }
+
           break;
 
         case '$bitsAllClear':
