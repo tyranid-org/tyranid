@@ -70,6 +70,8 @@ function schemaCloneCustomizer(obj) {
           case 'type':
             cfield[name] = v;
             break;
+          case '_np':
+            break;
           default:
             cfield[name] = cloneSchema(v);
         }
