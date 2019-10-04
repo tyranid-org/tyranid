@@ -348,6 +348,7 @@ export function add() {
         test({ foo: { $in: [1] } }, { foo: [2, 1] }, true);
         test({ foo: { $in: [3, 1] } }, { foo: [2, 1] }, true);
         test({ foo: { $in: [1, 2] } }, { foo: [1] }, true);
+        test({ foo: { $in: [1, 2] } }, { foo: 1 }, true);
         test({ foo: { $in: [1, 2] } }, { foo: [3] }, false);
         test({ foo: { $in: [1, 2] } }, {}, false);
         test({ foo: { $in: [] } }, { foo: [1] }, false);
