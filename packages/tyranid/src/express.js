@@ -125,7 +125,7 @@ class Serializer {
     const of = field.of;
     if (of) {
       this.newline();
-      this.file += 'of';
+      this.file += this.k('of');
       if (of instanceof Tyr.Field) {
         this.field(of);
       } else {
@@ -137,18 +137,18 @@ class Serializer {
     var get = def.getClient || def.get;
     if (get) {
       this.newline();
-      this.file += 'get: ' + es5Fn(get) + ',';
+      this.file += this.k('get') + ': ' + es5Fn(get) + ',';
     }
 
     if (def.db) {
       this.newline();
-      this.file += 'db: ' + def.db + ',';
+      this.file += this.k('db') + ': ' + def.db + ',';
     }
 
     var set = def.setClient || def.set;
     if (set) {
       this.newline();
-      this.file += 'set: ' + es5Fn(set) + ',';
+      this.file += this.k('set') + ': ' + es5Fn(set) + ',';
     }
     if (field.fields) {
       this.fields(field.fields);
