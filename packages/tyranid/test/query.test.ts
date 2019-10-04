@@ -332,11 +332,16 @@ export function add() {
 
       it('should work with $exists', () => {
         test(
-          { foo: { $exists: { bar: false } } },
+          { foo: { bar: { $exists: false } } },
           { foo: { bar: true } },
           false
         );
-        test({ foo: { $exists: { bar: true } } }, { foo: { bar: true } }, true);
+        test({ foo: { bar: { $exists: true } } }, { foo: { bar: true } }, true),
+          test(
+            { foo: { bar: { $exists: false } } },
+            { foo: { baz: true } },
+            true
+          );
       });
 
       it('should work with $in', () => {

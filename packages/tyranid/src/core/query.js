@@ -489,19 +489,12 @@ function valueMatches(match, value) {
     } else {
       switch (op) {
         case '$exists':
-          const exists = match.$exists;
-          if (!Tyr.isObject(exists))
-            throw new Error(
-              '$exists needs an object operand, but got: ' + exists
-            );
+          const matchValue = match.$exists;
 
-          for (const name in exists) {
-            const v = value[name];
-            if (exists[name]) {
-              return v !== undefined && v !== null;
-            } else {
-              return v === undefined || v === null;
-            }
+          if (matchValue) {
+            return value !== undefined && value !== null;
+          } else {
+            return value === undefined || value === null;
           }
 
           break;
