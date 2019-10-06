@@ -62,7 +62,6 @@ import {
 } from './field';
 import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from './form';
-import { ReactText } from 'react';
 
 const ObsTable = observer(Table);
 
