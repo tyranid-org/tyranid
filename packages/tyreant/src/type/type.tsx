@@ -306,10 +306,25 @@ export const getFinder = (path: Tyr.NamePathInstance) => {
 
 export const getCellValue = (
   path: Tyr.NamePathInstance,
-  document: Tyr.Document
+  document: Tyr.Document,
+  props: TyrFieldLaxProps
 ) => {
   const { tail: field } = path;
+
+  if (props.typeUi) {
+    const { cellValue } = assertTypeUi(props.typeUi);
+
+    if (cellValue) {
+      return cellValue(path, document);
+    }
+  }
+
+  if (!field.type) {
+    return 'Unknown';
+  }
+
   const { cellValue } = assertTypeUi(field.type.name);
+
   return cellValue
     ? cellValue(path, document)
     : field.type.format(field, field.namePath.get(document));

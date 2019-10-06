@@ -869,7 +869,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
             return (
               <div className="tyr-table-cell">
-                {render ? render(document) : getCellValue(np!, document)}
+                {render
+                  ? render(document)
+                  : getCellValue(np!, document, column)}
               </div>
             );
           },
@@ -883,7 +885,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             ? { filteredValue: [filteredValue] }
             : {}),
           ...((!newDocumentTable &&
-            (np && getFilter(np, filterable, column))) ||
+            (!column.noFilter && np && getFilter(np, filterable, column))) ||
             {}),
           ...(!isEditingAnything && column.pinned && fieldCount > 1
             ? { fixed: column.pinned }
@@ -1329,9 +1331,13 @@ class TyrTableConfigComponent extends React.Component<
 
     const columnFields = compact(
       orderedFields.map((column: TyrTableColumnFieldProps, index: number) => {
-        const savedField = tableConfig.fields.find(
-          c => column.field === c.name
-        );
+        const savedField = tableConfig.fields.find(c => {
+          if (column.field && (column.field as Tyr.FieldInstance).collection) {
+            return c.name === (column.field as Tyr.FieldInstance).path;
+          }
+
+          return column.field === c.name;
+        });
         const pathName = getFieldName(column!.field);
 
         if (pathName) {

@@ -583,6 +583,8 @@ byName.link = {
       return populatedObject ? populatedObject[link.labelField.name] : '';
     }
 
-    return field.type.format(field, path.get(document));
+    return field.type
+      ? field.type.format(field, path.get(document))
+      : 'Unknown Link';
   }
 };

@@ -7,29 +7,77 @@ import {
   Draggable
 } from 'react-beautiful-dnd';
 
+const cardData: CardData[] = [
+  {
+    $id: '1',
+    $label: 'card 1',
+    columnId: '1'
+  },
+  {
+    $id: '2',
+    $label: 'card 2',
+    columnId: '1'
+  },
+  {
+    $id: '3',
+    $label: 'card 3',
+    columnId: '2'
+  }
+];
+
+const columnData: ColumnData[] = [
+  {
+    id: '1',
+    label: 'Column 1'
+  },
+  {
+    id: '2',
+    label: 'Column 2'
+  }
+];
+
 type CardData = {
   $label: string;
   $id: string;
+  columnId: string;
+};
+
+type ColumnData = { id: string; label: string; data?: CardData[] };
+
+type KanbanData = {
+  cards: CardData[];
+  columns: ColumnData[];
+};
+
+const kanbanData: KanbanData = {
+  cards: cardData,
+  columns: columnData
+};
+
+const kanbanStyle = {
+  display: 'flex'
 };
 
 export type TyrKanbanProps = Readonly<{
-  data: CardData[];
+  data: KanbanData;
   across?: string;
   cardRenderer?: (data: CardData) => JSX.Element;
 }>;
 
 type TyrKanbanState = {
-  columns: { [Identifier: string]: ColumnData };
+  // columns: { [Identifier: string]: ColumnData };
+  data: KanbanData;
 };
 
+// <TyrKanban data={kanbanData}/>
 export class TyrKanban extends React.Component<TyrKanbanProps, TyrKanbanState> {
   state: TyrKanbanState = {
-    columns: {}
+    data: this.props.data
   };
 
   onDragEnd(result: DropResult, provided: ResponderProvided) {
-    const { data } = this.props;
-    const { columns } = this.state;
+    const { data } = this.state;
+    const { columns, cards } = data;
     const { destination, source, draggableId } = result;
 
     if (!destination) {
@@ -43,86 +91,155 @@ export class TyrKanban extends React.Component<TyrKanbanProps, TyrKanbanState> {
       return;
     }
 
-    const droppedCard = data.find(d => d.$id === draggableId);
+    const droppedCard = cards.find(d => d.$id === draggableId);
 
     if (!droppedCard) {
+      console.log('Dropped card not found!');
       return;
     }
 
-    const column = columns[source.droppableId];
+    const startColumn = columns.find(c => c.id === source.droppableId);
 
-    const newCards = Array.from(column.data);
-    newCards.splice(source.index, 1);
-    newCards.splice(source.index, 0, droppedCard);
+    if (!startColumn) {
+      console.log('Droppable start column not found!');
+      return;
+    }
 
-    const newColumn = {
-      ...column,
-      data: newCards
+    const finishColumn = columns.find(c => c.id === destination.droppableId);
+
+    if (!finishColumn) {
+      console.log('Droppable finish column not found!');
+      return;
+    }
+
+    /*
+    if (startColumn === finishColumn) {
+      const newCards = cards.filter(card => card.columnId === startColumn.id);
+      newCards.splice(source.index, 1);
+      newCards.splice(source.index, 0, droppedCard);
+
+      const newColumn = {
+        ...startColumn,
+        data: newCards
+      };
+
+      const newState = {
+        ...this.state,
+        columns: {
+          ...columns,
+          [newColumn.id]: newColumn
+        }
+      };
+
+      this.setState(newState);
+      return;
+    }
+
+    const startCards = cards.filter(card => card.columnId === startColumn.id);
+    startCards.splice(source.index, 1);
+
+    const newStartColumn = {
+      ...startColumn,
+      data: startCards
+    };
+
+    const finishCards = cards.filter(card => card.columnId === finishColumn.id);
+    finishCards.splice(destination.index, 0, droppedCard);
+
+    const newFinishColumn = {
+      ...finishColumn,
+      data: finishCards
     };
 
     const newState = {
       ...this.state,
       columns: {
-        ...columns,
-        [newColumn.id]: newColumn
+        ...this.state.columns,
+        [newStartColumn.id]: newStartColumn,
+        [newFinishColumn.id]: newFinishColumn
       }
     };
 
     this.setState(newState);
+    */
   }
 
   render() {
     const { cardRenderer } = this.props;
-    const columns: ColumnData[] = [
-      {
-        id: '1',
-        label: 'first column',
-        data: [
-          {
-            $label: 'first card',
-            $id: '1'
-          }
-        ]
-      }
-    ];
+    const { data } = this.state;
+    const { columns, cards } = data;
 
     return (
       <DragDropContext onDragEnd={this.onDragEnd}>
-        >
-        {columns.map((column, index) => (
-          <Column
-            key={column.id}
-            column={column}
-            cardRenderer={cardRenderer}
-            index={index}
-          />
-        ))}
+        <div className="tyr-kanban" style={kanbanStyle}>
+          {columns.map((column, index) => (
+            <Column
+              key={column.id}
+              column={column}
+              cards={cards.filter(card => card.columnId === column.id)}
+              cardRenderer={cardRenderer}
+              index={index}
+            />
+          ))}
+        </div>
       </DragDropContext>
     );
   }
 }
 
-type ColumnData = { id: string; label: string; data: CardData[] };
+const columnStyle = {
+  display: 'flex',
+  flexDirection: 'column' as any,
+  minWidth: '200px',
+  margin: '8px',
+
+  border: '1px solid grey',
+  borderRadius: '2px'
+};
+
+const columnBodyStyle = {
+  minHeight: '100px',
+  padding: '8px',
+  flexGrow: 1,
+
+  transition: 'background-color 0.2s ease'
+};
+
+const columnTitleStyle = {
+  padding: '8px'
+};
 
 export type ColumnProps = Readonly<{
   column: ColumnData;
+  cards: CardData[];
   index: number;
   cardRenderer?: (data: CardData) => JSX.Element;
 }>;
 
-const ColumnTitle = (props: { label: string }) => <div>{props.label}</div>;
+const ColumnTitle = (props: { label: string }) => (
+  <div className="tyr-kanban-column-title" style={columnTitleStyle}>
+    {props.label}
+  </div>
+);
 
 export class Column extends React.Component<ColumnProps> {
   render() {
-    const { column } = this.props;
+    const { column, cards } = this.props;
 
     return (
-      <div>
+      <div className="tyr-kanban-column" style={columnStyle}>
         <ColumnTitle label={column.label} />
         <Droppable droppableId={column.id}>
           {(provided, snapshot) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
-              {column.data.map((card, index) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              className={`tyr-kanban-column-body${
+                snapshot.isDraggingOver ? ' is-dragging-over' : ''
+              }`}
+              style={columnBodyStyle}
+            >
+              {cards.map((card, index) => (
                 <Card key={card.$id} data={card} index={index} />
               ))}
               {provided.placeholder}

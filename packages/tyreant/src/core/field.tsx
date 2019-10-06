@@ -56,7 +56,6 @@ export interface TyrFieldProps {
   defaultSort?: TyrSortDirection;
   dropdownClassName?: string;
   width?: string;
-  filter?: (string | number)[];
   onChange?: (value: any, event: any, props: TyrTypeProps) => void;
   onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
   onDeselect?: (value: SelectedValue) => any;
@@ -66,6 +65,7 @@ export interface TyrFieldProps {
   sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
   searchRange?: [number, number] | [Moment, Moment];
   tabIndex?: number;
+  noFilter?: boolean;
   onFilter?: (value: any, doc: Tyr.Document) => boolean;
   filterOptionRenderer?: (value: any) => React.ReactElement;
   filterOptionLabel?: (
@@ -81,7 +81,15 @@ export interface TyrFieldProps {
   readonly?: boolean;
   isEditable?: (document: Tyr.Document) => boolean;
   translateForWhiteLabel?: (label: string) => string;
-  typeUi?: 'link' | 'string' | 'integer' | 'boolean';
+  typeUi?:
+    | 'link'
+    | 'string'
+    | 'integer'
+    | 'boolean'
+    | 'date'
+    | 'datetime'
+    | 'email'
+    | undefined;
   mapDocumentValueToForm?: (value: any, document: Tyr.Document) => any;
   mapFormValueToDocument?: (value: any, document: Tyr.Document) => any;
   labelInValue?: boolean;
