@@ -473,7 +473,7 @@ export const linkFilter: Filter = (
         return props.onFilter(value, doc);
       }
 
-      const val = path.get(doc);
+      const val = String(path.get(doc));
 
       if (Array.isArray(value)) {
         if (!value.length) {
