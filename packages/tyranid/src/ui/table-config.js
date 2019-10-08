@@ -25,7 +25,8 @@ const TableConfig = new Collection({
     key: { is: 'string' },
     documentUid: { is: 'string', requried: true },
     userId: { link: 'user?' },
-    collectionId: { is: 'string', requried: true }
+    collectionId: { is: 'string', requried: true },
+    pageSize: { is: 'integer', defaultValue: 10 }
   },
   indexes: [
     {

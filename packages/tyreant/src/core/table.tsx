@@ -143,6 +143,7 @@ export interface TyrTableProps extends TyrComponentProps {
   rowSelection?: boolean;
   loading?: boolean;
   setEditing?: (editing: boolean) => void;
+  onSelectRows?: (selectedRowIds: string[]) => void;
 }
 
 @observer
@@ -163,6 +164,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     fields: TyrTableColumnFieldProps[];
     tableConfig?: any;
     newDocument?: Tyr.Document;
+    selectedRowKeys: string[];
   } = {
     documents: this.props.documents || [],
     loading: false,
@@ -172,7 +174,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     isSavingDocument: false,
     tableDefn: {},
     showConfig: false,
-    fields: []
+    fields: [],
+    selectedRowKeys: []
   };
 
   async componentDidMount() {
@@ -1078,6 +1081,27 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   tableWrapper: React.RefObject<HTMLDivElement> | null = createRef();
 
+  selectRow = (doc: Tyr.Document) => {
+    const { onSelectRows } = this.props;
+    const selectedRowKeys = [...this.store.selectedRowKeys];
+    const key = doc.$id as string;
+
+    if (selectedRowKeys.indexOf(key) >= 0) {
+      selectedRowKeys.splice(selectedRowKeys.indexOf(key), 1);
+    } else {
+      selectedRowKeys.push(key);
+    }
+
+    this.store.selectedRowKeys = selectedRowKeys;
+    onSelectRows && onSelectRows(selectedRowKeys);
+  };
+
+  onSelectedRowKeysChange = (selectedRowKeys: string[] | number[]) => {
+    const { onSelectRows } = this.props;
+    this.store.selectedRowKeys = selectedRowKeys as string[];
+    onSelectRows && onSelectRows(selectedRowKeys as string[]);
+  };
+
   render() {
     const {
       documents,
@@ -1085,7 +1109,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       showConfig,
       fields,
       editingDocument,
-      newDocument
+      newDocument,
+      selectedRowKeys
     } = this.store;
     const {
       className,
@@ -1100,7 +1125,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       showHeader,
       config: tableConfig,
       onCancelAddNew,
-      decorator
+      decorator,
+      onSelectRows
     } = this.props;
 
     const fieldCount = fields.length;
@@ -1108,6 +1134,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const netClassName = `tyr-table${className ? ' ' + className : ''}${
       isEditingRow ? ' tyr-table-editing-row' : ''
     }`;
+
+    const rowsSelectable = !!onSelectRows;
 
     return this.wrap(() => {
       if (decorator && (!this.decorator || !this.decorator.visible))
@@ -1160,6 +1188,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   ref={this.tableWrapper}
                 >
                   <ObsTable
+                    rowSelection={
+                      rowsSelectable
+                        ? {
+                            selectedRowKeys,
+                            onChange: this.onSelectedRowKeysChange
+                          }
+                        : undefined
+                    }
                     loading={loading || this.props.loading}
                     components={components}
                     rowKey={(doc: any) => doc.$id || doc.$id}
@@ -1185,31 +1221,31 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                         };
                       }
                     }}
-                    onRow={
-                      rowEdit
-                        ? (record, rowIndex) => {
-                            return {
-                              onDoubleClick: () => {
-                                if (
-                                  record.$id &&
-                                  (!canEditDocument || canEditDocument(record))
-                                ) {
-                                  this.onEditRow(record, rowIndex);
+                    onRow={(record, rowIndex) => {
+                      return {
+                        onClick: () => {
+                          rowsSelectable && this.selectRow(record);
+                        },
+                        onDoubleClick: () => {
+                          if (
+                            rowEdit &&
+                            record.$id &&
+                            (!canEditDocument || canEditDocument(record))
+                          ) {
+                            this.onEditRow(record, rowIndex);
 
-                                  if (newDocument) {
-                                    onCancelAddNew && onCancelAddNew();
-                                    delete this.store.newDocument;
-                                  }
+                            if (newDocument) {
+                              onCancelAddNew && onCancelAddNew();
+                              delete this.store.newDocument;
+                            }
 
-                                  if (this._mounted) {
-                                    this.setState({});
-                                  }
-                                }
-                              }
-                            };
+                            if (this._mounted) {
+                              this.setState({});
+                            }
                           }
-                        : undefined
-                    }
+                        }
+                      };
+                    }}
                   />
                 </div>
               )}
