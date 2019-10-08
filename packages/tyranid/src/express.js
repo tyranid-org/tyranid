@@ -496,6 +496,7 @@ export function generateClientLibrary() {
       return plain;
     }
 
+    
     $update(...args) {
       return this.$model.updateDoc(this, ...args);
     },
