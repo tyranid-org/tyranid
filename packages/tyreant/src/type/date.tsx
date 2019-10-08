@@ -14,7 +14,8 @@ import {
   Finder,
   Filter,
   Filterable,
-  onTypeChange
+  onTypeChange,
+  TyrTypeLaxProps
 } from './type';
 import { withTypeContext } from './type';
 import { TyrFieldLaxProps, decorateField } from '../core';
@@ -39,6 +40,7 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
         autoFocus={props.autoFocus}
         placeholder={props.placeholder}
         onChange={onTypeChangeFunc}
+        format={((props.dateFormat as string) || DATE_FORMAT).toUpperCase()}
         {...{ tabIndex: props.tabIndex }}
       />
     );
@@ -74,7 +76,7 @@ export const dateFilter: Filter = (
       <div className="search-box">
         <RangePicker
           value={filterable.searchValues[pathName]}
-          format={DATE_FORMAT}
+          format={props.dateFormat || DATE_FORMAT}
           onChange={v => {
             filterable.searchValues[pathName] = v;
 
@@ -153,5 +155,20 @@ byName.date = {
   mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: Tyr.anny) {
     return value ? moment(value) : null;
   },
-  filter: dateFilter
+  filter: dateFilter,
+  cellValue: (
+    path: Tyr.NamePathInstance,
+    document: Tyr.Document,
+    props: TyrTypeLaxProps
+  ) => {
+    const v = path.get(document);
+
+    if (!v) {
+      return '';
+    }
+
+    return moment(v).format(
+      ((props.dateFormat as string) || DATE_FORMAT).toUpperCase()
+    );
+  }
 };
