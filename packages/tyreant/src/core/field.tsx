@@ -143,7 +143,6 @@ export const decorateField = (
 
      If you inject other components/dom objects (like a div) in between any of those three ant's form handling
      breaks down.
-
    */
 
   let label;
