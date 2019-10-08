@@ -728,6 +728,13 @@ export namespace Tyr {
     noClient?: boolean;
   }
 
+  export interface Component {
+    boot(stage: string, pass: number): Promise<string | string[] | void>;
+    clientCode(code: string): string;
+    compileCollection(compiler: any, field: CollectionStatic): void;
+    compileField(compiler: any, field: FieldInstance): void;
+  }
+
   export interface CollectionStatic {
     // Collection instance constructor
     new <
@@ -736,13 +743,6 @@ export namespace Tyr {
     >(
       def: CollectionDefinition
     ): CollectionInstance<IdType, T>;
-  }
-
-  export interface Component {
-    boot(stage: string, pass: number): Promise<string | string[] | void>;
-    clientCode(code: string): string;
-    compileCollection(compiler: any, field: CollectionStatic): void;
-    compileField(compiler: any, field: FieldInstance): void;
   }
 
   /**
