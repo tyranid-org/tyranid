@@ -845,7 +845,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 mapFormValueToDocument: column.mapFormValueToDocument,
                 getSearchIds: column.getSearchIds,
                 labelInValue: column.labelInValue,
-                onFilter: column.onFilter
+                onFilter: column.onFilter,
+                dateFormat: column.dateFormat
               };
 
               return (
@@ -1055,6 +1056,22 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }
   };
 
+  private paginationItemRenderer = (
+    page: number,
+    type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next',
+    originalElement: React.ReactElement<HTMLElement>
+  ) => {
+    if (type === 'prev') {
+      return <a>Previous</a>;
+    }
+
+    if (type === 'next') {
+      return <a>Next</a>;
+    }
+
+    return originalElement;
+  };
+
   private pagination = () => {
     const store = this.store;
     const { skip = 0, limit = store.pageSize } = store.tableDefn;
@@ -1068,7 +1085,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           defaultCurrent: Math.floor(skip / limit) + 1,
           total: totalCount,
           defaultPageSize: limit,
-          size: 'default'
+          size: 'default',
+          itemRender: this.paginationItemRenderer
         }
       : false;
   };

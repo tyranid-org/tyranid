@@ -26,6 +26,7 @@ export interface TyrFieldProps {
   label?: string | React.ReactNode;
   className?: string;
   placeholder?: string;
+  dateFormat?: string | string[];
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
 

@@ -107,7 +107,8 @@ export interface TypeUi {
   finder?: Finder;
   cellValue?: (
     path: Tyr.NamePathInstance,
-    document: Tyr.Document
+    document: Tyr.Document,
+    props: TyrTypeLaxProps
   ) => React.ReactNode;
 }
 
@@ -315,7 +316,7 @@ export const getCellValue = (
     const { cellValue } = assertTypeUi(props.typeUi);
 
     if (cellValue) {
-      return cellValue(path, document);
+      return cellValue(path, document, props);
     }
   }
 
@@ -326,7 +327,7 @@ export const getCellValue = (
   const { cellValue } = assertTypeUi(field.type.name);
 
   return cellValue
-    ? cellValue(path, document)
+    ? cellValue(path, document, props)
     : field.type.format(field, field.namePath.get(document));
 };
 

@@ -16,7 +16,8 @@ import {
   byName,
   Filterable,
   TyrTypeProps,
-  withTypeContext
+  withTypeContext,
+  TyrTypeLaxProps
 } from './type';
 
 import { TyrFieldLaxProps, decorateField } from '../core';
@@ -572,7 +573,11 @@ byName.link = {
       opts.populate[path.name] = link.labelProjection();
     }
   },
-  cellValue: (path: Tyr.NamePathInstance, document: Tyr.Document) => {
+  cellValue: (
+    path: Tyr.NamePathInstance,
+    document: Tyr.Document,
+    props: TyrTypeLaxProps
+  ) => {
     const link = linkFor(path);
     const { detail: field } = path;
 
