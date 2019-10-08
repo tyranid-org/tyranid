@@ -1,6 +1,8 @@
 {
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "docs": "ts-node ./doc/doc.js",
     "clean": "sh ./scripts/clean.sh",
@@ -10,14 +12,11 @@
     "build-tyreant": "sh ./scripts/build-tyreant.sh",
     "nd": "npm run clean && yarn",
     "quick-test": "npm run build && sh ./scripts/test.sh",
-    "test":
-      "npm run build && npm run prettier && npm run lint && sh ./scripts/test.sh",
+    "test": "npm run build && npm run prettier && npm run lint && sh ./scripts/test.sh",
     "test-tyranid": "npm run build-tyranid && sh ./scripts/test-tyranid.sh",
     "test-tdgen": "npm run build-tdgen && sh ./scripts/test-tdgen.sh",
-    "lint":
-      "tslint './packages/*/{test,src}/{!typings}/*.{ts,js}' --format stylish --fix",
-    "prettier":
-      "prettier --write --loglevel error --single-quote true \"./packages/*/{test,src}/**/*.{ts,js}\"",
+    "lint": "tslint './packages/*/{test,src}/{!typings}/*.{ts,js}' --format stylish --fix",
+    "prettier": "prettier --write --loglevel error --single-quote true \"./packages/*/{test,src}/**/*.{ts,js}\"",
     "watch": "cd ./packages/tyranid && npm run watch",
     "bump": "npm run test && lerna publish"
   },
@@ -49,7 +48,6 @@
     "graphql-tools": "^2.19.0",
     "jquery": "3.1.1",
     "jsdom": "9.8.3",
-    "lerna": "^2.9.1",
     "mocha": "2.5.3",
     "mongodb": "3.1.10",
     "node-fetch": "1.7.1",
