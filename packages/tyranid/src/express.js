@@ -769,6 +769,9 @@ export function generateClientLibrary() {
         compileField(path + '._key', field, keys, dynamic);
       }
     }
+
+    const { dynamicMatch } = def;
+    if (dynamicMatch) field.dynamicMatch = dynamicMatch;
   }
 
   function compileFields(path, parent, fieldDefs, dynamic) {
