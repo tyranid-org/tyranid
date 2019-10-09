@@ -1938,7 +1938,7 @@ export default class Collection {
           }
         }
 
-        if (dynamicSchema) field.match = dynamicSchema.match;
+        if (dynamicSchema) field.dynamicMatch = dynamicSchema.match;
       },
 
       fields(path, parent, defFields) {

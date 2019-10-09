@@ -108,6 +108,7 @@ export namespace Tyr {
     computed: boolean;
     db: boolean;
     def: FieldDefinition;
+    dynamicSchema?: any;
     name: string;
     namePath: NamePathInstance;
     of?: FieldInstance;
