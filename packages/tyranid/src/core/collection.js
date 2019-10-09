@@ -1735,7 +1735,7 @@ export default class Collection {
     return new NamePath(this, path);
   }
 
-  createCompiler(collection, def, stage, dynamic) {
+  createCompiler(collection, def, stage, dynamicSchema) {
     const compiler = {
       stage: stage,
 
@@ -1805,7 +1805,7 @@ export default class Collection {
           field.group = fieldDef.group;
         }
 
-        if (!dynamic && !field.method) {
+        if (!dynamicSchema && !field.method) {
           collection.paths[path] = field;
         }
         const lastDot = path.lastIndexOf('.');
@@ -1937,6 +1937,8 @@ export default class Collection {
             );
           }
         }
+
+        if (dynamicSchema) field.match = dynamicSchema.match;
       },
 
       fields(path, parent, defFields) {
@@ -2046,7 +2048,7 @@ export default class Collection {
           }
 
           const parentFields = (parent.fields = parent.fields || {});
-          //if (!dynamic) {
+          //if (!dynamicSchema) {
           parentFields[name] = field;
           //}
           field.parent = parent;

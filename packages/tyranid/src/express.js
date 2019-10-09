@@ -97,6 +97,7 @@ class Serializer {
       'custom',
       'defaultValue',
       'denormal',
+      'dynamicSchema',
       'granularity',
       'group',
       'help',

@@ -134,12 +134,12 @@ Collection.prototype.fieldsFor = async function(opts) {
         return;
       }
 
-      this.createCompiler(collection, def, 'compile', true).fields(
+      this.createCompiler(collection, def, 'compile', schema).fields(
         '',
         def,
         def.fields
       );
-      this.createCompiler(collection, def, 'link', true).fields(
+      this.createCompiler(collection, def, 'link', schema).fields(
         '',
         def,
         def.fields
