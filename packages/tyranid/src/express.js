@@ -91,13 +91,12 @@ class Serializer {
       }
     }
 
-    for (const field of [
+    for (const fieldName of [
       'cardinality',
       'computed',
       'custom',
       'defaultValue',
       'denormal',
-      'dynamicMatch',
       'granularity',
       'group',
       'help',
@@ -116,10 +115,18 @@ class Serializer {
       'step',
       'labelField'
     ]) {
-      const v = def[field];
+      const v = def[fieldName];
       if (v !== undefined) {
         this.newline();
-        this.file += this.k(field) + ': ' + stringify(v) + ',';
+        this.file += this.k(fieldName) + ': ' + stringify(v) + ',';
+      }
+    }
+
+    for (const fieldName of ['dynamicMatch']) {
+      const v = field[fieldName];
+      if (v !== undefined) {
+        this.newline();
+        this.file += this.k(fieldName) + ': ' + stringify(v) + ',';
       }
     }
 
