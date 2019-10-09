@@ -100,6 +100,7 @@ export type TyrTableConfig = {
   required: string[];
   lockedLeft: number;
   title?: string;
+  header?: string | React.ReactNode;
   key?: string;
   asDrawer?: boolean;
   compact?: boolean;
@@ -1119,6 +1120,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     onSelectRows && onSelectRows(selectedRowKeys as string[]);
   };
 
+  closeConfigModal = () => {
+    this.store.showConfig = false;
+  };
+
   render() {
     const {
       documents,
@@ -1491,7 +1496,7 @@ class TyrTableConfigComponent extends React.Component<
       <div>
         {!tableConfig && <span>No config!</span>}
 
-        {tableConfig && <h3 />}
+        {config.header && config.header}
 
         {tableConfig && (
           <div className="tyr-config-columns-list tyr-config-columns-list-locked">
@@ -1781,6 +1786,7 @@ export interface TyrTableControl {
   addNewDocument: (doc: Tyr.Document) => boolean;
   setFieldValue: (fieldName: string, value: any) => void;
   refresh: () => void;
+  closeConfigModal: () => void;
 }
 
 /**
@@ -1803,5 +1809,9 @@ class TyrTableControlImpl implements TyrTableControl {
 
   refresh = () => {
     this.table.setState({});
+  };
+
+  closeConfigModal = () => {
+    this.table.closeConfigModal();
   };
 }
