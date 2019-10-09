@@ -255,6 +255,18 @@ describe('tyranid', () => {
         expect(Tyr.isCompliant(testCase[0])(testCase[1])).to.equal(testCase[2]);
       }
     });
+
+    it('should support stringify', () => {
+      const tests = [
+        [[3, 2], '[3,2]'],
+        [oid1, `"${oid1.toString()}"`],
+        [{ foo: oid1, bar: 3 }, `{"foo":"${oid1.toString()}","bar":3}`]
+      ];
+
+      for (const testCase of tests) {
+        expect(Tyr.stringify(testCase[0])).to.equal(testCase[1]);
+      }
+    });
   });
 
   describe('projection utilities', () => {

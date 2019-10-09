@@ -30,7 +30,7 @@ function stringify(v) {
     return JSON.stringify({ $regex: v.source, $options: v.flags });
   }
 
-  return JSON.stringify(v);
+  return Tyr.stringify(v);
 }
 
 class Serializer {

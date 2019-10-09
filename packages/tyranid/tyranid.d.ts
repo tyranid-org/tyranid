@@ -154,6 +154,11 @@ export namespace Tyr {
     maxMs?: number,
     everyMs?: number
   ): Promise<void>;
+  export function stringify(
+    value: any,
+    replacer?: (key: string | symbol, value: any) => any,
+    spacing?: string | number
+  ): string;
 
   export function forget(id: string): void;
 

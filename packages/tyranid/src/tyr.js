@@ -434,6 +434,15 @@ const Tyr = {
     }
 
     array.length = tai;
+  },
+
+  stringify(value, replacer, spacing) {
+    return JSON.stringify(value, (k, v) => {
+      if (replacer) v = replacer(k, v);
+      return v && v.constructor && v.constructor.name === 'ObjectId'
+        ? v.toString()
+        : v;
+    });
   }
 };
 
