@@ -79,7 +79,10 @@ function schemaCloneCustomizer(obj) {
     }
 
     return cfield;
-  } else if (obj instanceof Collection) {
+  } else if (
+    obj instanceof Collection ||
+    (obj && obj.constructor.name === 'ObjectID')
+  ) {
     return obj;
   }
 
