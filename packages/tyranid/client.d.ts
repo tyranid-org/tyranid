@@ -44,6 +44,8 @@ declare module 'tyranid/client' {
       [key: string]: CollectionInstance;
     }
 
+    export const aux = (collectionDefinition: CollectionDefinition) =>
+      CollectionStatic;
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
     export const collections: CollectionInstance[] & CollectionsByClassName;
@@ -134,6 +136,7 @@ declare module 'tyranid/client' {
       IdType extends AnyIdType = AnyIdType,
       T extends Document<IdType> = Document<IdType>
     > extends Class<T> {
+      aux(fields: { [key: string]: FieldDefinition });
       byId(id: IdType, opts?: any): Promise<T | null>;
       byIds(ids: IdType[], opts?: any): Promise<T[]>;
       byIdIndex: { [id: string]: T };

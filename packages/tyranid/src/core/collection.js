@@ -365,13 +365,10 @@ export default class Collection {
 
     Type.validateType(CollectionInstance);
 
-    if (!def.dbName) {
-      def.dbName = def.name;
-    }
+    if (!def.dbName) def.dbName = def.name;
 
-    if (Tyr.db && !def.enum && !def.static) {
+    if (Tyr.db && !def.enum && !def.static && !def.aux)
       CollectionInstance.db = Tyr.db.collection(def.dbName);
-    }
 
     if (!def.primaryKey) {
       def.primaryKey = {
@@ -387,9 +384,8 @@ export default class Collection {
 
     const db = def.db || Tyr.options.db;
 
-    if (db) {
+    if (db)
       CollectionInstance.db = db.collection(CollectionInstance.def.dbName);
-    }
 
     collections.push(CollectionInstance);
     collections[capitalizedName] = CollectionInstance;
@@ -530,18 +526,14 @@ export default class Collection {
   }
 
   idToLabel(id) {
-    if (this.isStatic()) {
-      if (!id) {
-        return '';
-      }
+    if (!this.isDb()) {
+      if (!id) return '';
 
       const doc = this.byIdIndex[id];
       return doc ? doc.$label : 'Unknown';
     }
 
-    if (!id) {
-      return Promise.resolve('');
-    }
+    if (!id) return Promise.resolve('');
 
     const lf = this.labelField;
     if (lf.def.get || lf.def.getServer) {
@@ -565,13 +557,17 @@ export default class Collection {
     return !!this.def.enum || !!this.def.static;
   }
 
+  /** @isomorphic */
+  isDb() {
+    return !this.isStatic() && !this.def.aux;
+  }
+
   byId(id, options) {
-    if (this.isStatic()) {
+    if (!this.isDb()) {
       return this.byIdIndex[id];
     } else {
-      if (typeof id === 'string') {
+      if (typeof id === 'string')
         id = this.fields[this.def.primaryKey.field].type.fromString(id);
-      }
 
       return this.findOne({ [this.def.primaryKey.field]: id }, options);
     }
@@ -580,7 +576,7 @@ export default class Collection {
   async byIds(ids, options) {
     const collection = this;
 
-    if (collection.isStatic()) {
+    if (!collection.isDb()) {
       return ids.map(id => collection.byIdIndex[id]);
     } else {
       const idFieldName = this.def.primaryKey.field;
@@ -611,7 +607,7 @@ export default class Collection {
       findName = collection.labelField.path,
       matchLower = n.toLowerCase();
 
-    if (collection.isStatic()) {
+    if (!collection.isDb()) {
       const value = _.find(collection.def.values, function(v) {
         const name = v[findName];
         return name && name.toLowerCase() === matchLower;
@@ -1792,6 +1788,21 @@ export default class Collection {
             path,
             `Invalid field definition, expected an object, got: "${fieldDef}"`
           );
+        }
+
+        let { db, aux } = fieldDef;
+        if (db !== undefined) {
+          if (aux !== undefined) {
+            if (aux === db)
+              throw compiler.err(
+                path,
+                `Invalid field definition, db and aux are mutually exclusived`
+              );
+          }
+
+          if (!db) fieldDef.aux = aux = true;
+        } else if (aux) {
+          fieldDef.db = db = false;
         }
 
         if (fieldDef.labelField) {

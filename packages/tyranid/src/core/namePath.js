@@ -1,3 +1,5 @@
+import { paths } from './function';
+
 // cannot use import because @isomorphic
 const _ = require('lodash');
 
@@ -12,12 +14,63 @@ function NamePath(base, pathName, skipArray) {
   this.base = base;
   this.name = pathName;
 
-  if (base instanceof NamePath) {
-    base = base.tail;
+  if (base instanceof NamePath) base = base.tail;
+
+  const path = (this.path = []);
+
+  if (!pathName) pathName = '';
+  let starti = 0,
+    si = 0;
+  let collectionName = undefined;
+  for (; si < pathName.length; si++) {
+    const ch = pathName[si];
+
+    switch (ch) {
+      case ':':
+        if (path.length)
+          throw new Error(
+            `Collection name cannot have a "." in "${pathName}".`
+          );
+
+        if (collectionName)
+          throw new Error(
+            `Two collections being specified in "${pathName}", only one is allowed.`
+          );
+
+        collectionName = pathName.substring(starti, si);
+        starti = si + 1;
+        break;
+
+      case '.':
+        path.push(pathName.substring(starti, si));
+        starti = si + 1;
+        break;
+    }
   }
 
-  const path = (this.path = pathName.length ? pathName.split('.') : []),
-    plen = path.length,
+  if (starti < si) path.push(pathName.substring(starti));
+
+  if (collectionName) {
+    this.base = base = Tyr.byName[collectionName];
+    this.collectionSpecified = true;
+
+    if (!base)
+      throw new Error(
+        `Unknown collection "${collectionName}" in "${pathName}".`
+      );
+
+    if (base.isDb())
+      throw new Error(
+        `Collection "${collectionName}" in "${pathName}" is not an auxiliary or static collection.`
+      );
+
+    if (!base.def.singleton)
+      throw new Error(
+        `Collection "${collectionName}" in "${pathName}" is not a singleton.`
+      );
+  }
+
+  const plen = path.length,
     pathFields = (this.fields = new Array(plen));
 
   let at = base;
@@ -121,9 +174,9 @@ function NamePath(base, pathName, skipArray) {
 
     if (!at) {
       throw new Error(
-        `Cannot find field "${this.pathName(
-          pi
-        )}" in path "${base.toString()}::${this.name}"`
+        `Cannot find field "${this.pathName(pi)}" in path "${base.toString()}:${
+          this.name
+        }"`
       );
     }
 
@@ -241,7 +294,21 @@ NamePath.prototype.isHistorical = function() {
   return fields.length && fields[0].def.historical;
 };
 
+NamePath.prototype.resolveObj = function(obj) {
+  if (this.collectionSpecified) {
+    // singleton behavior
+    let values = this.base.values;
+    if (!values) values = this.base.values = [];
+    if (!values.length) values.push(new this.base({}));
+    return values[0];
+  }
+
+  return obj;
+};
+
 NamePath.prototype.get = function(obj) {
+  obj = this.resolveObj(obj);
+
   const np = this,
     path = np.path,
     fields = np.fields,
@@ -322,6 +389,8 @@ NamePath.prototype.get = function(obj) {
 };
 
 NamePath.prototype.set = function(obj, value, opts) {
+  obj = this.resolveObj(obj);
+
   const np = this,
     path = np.path,
     fields = np.fields,

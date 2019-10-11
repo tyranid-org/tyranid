@@ -658,7 +658,7 @@ export function generateClientLibrary() {
 
   Field.prototype.labels = function(doc, search, opts) {
     const to = this.link;
-    if (to && to.isStatic()) {
+    if (to && !to.isDb()) {
       var values = to.def.values;
 
       if (search) {
@@ -750,7 +750,7 @@ export function generateClientLibrary() {
     return obj;
   }
 
-  function compileField(path, parent, field, dynamic) {
+  function compileField(path, parent, field, dynamic, aux) {
     const collection = parent.collection;
     field.path = path;
     field.parent = parent;
@@ -758,23 +758,25 @@ export function generateClientLibrary() {
     field.collection = collection;
 
     var def = field.def;
+    if (aux) def.aux = true;
+
     if (def.is === 'array' || def.is === 'object') {
       if (!field.of && def.of) {
         var of = new Field(def.of);
         field.of = of;
-        compileField(path + '._', field, of, dynamic);
+        compileField(path + '._', field, of, dynamic, aux);
       }
     }
 
     if (def.is === 'object') {
       if (def.fields) {
-        compileFields(path, field, def.fields, dynamic);
+        compileFields(path, field, def.fields, dynamic, aux);
       }
 
       if (def.keys) {
         let keys = new Field(def.keys);
         field.keys = keys;
-        compileField(path + '._key', field, keys, dynamic);
+        compileField(path + '._key', field, keys, dynamic, aux);
       }
     }
 
@@ -782,7 +784,7 @@ export function generateClientLibrary() {
     if (dynamicMatch) field.dynamicMatch = dynamicMatch;
   }
 
-  function compileFields(path, parent, fieldDefs, dynamic) {
+  function compileFields(path, parent, fieldDefs, dynamic, aux) {
     _.each(fieldDefs, function(fieldDef, name) {
       let field;
       if (fieldDef instanceof Field) {
@@ -800,7 +802,9 @@ export function generateClientLibrary() {
 
       field.parent = parent;
 
-      compileField(p, parent, field, dynamic);
+      if (aux) parent.def.fields[name] = fieldDef;
+
+      compileField(p, parent, field, dynamic, aux);
     });
   }
 
@@ -858,14 +862,14 @@ export function generateClientLibrary() {
 
     lock(dp);
 
-    var vals = def.values;
+    let vals = def.values;
 
     if (vals) {
       vals = def.values = def.values.map(function(v) {
         return new CollectionInstance(v);
       });
 
-      var byIdIndex = CollectionInstance.byIdIndex;
+      const byIdIndex = CollectionInstance.byIdIndex;
       vals.forEach(function(v) {
         CollectionInstance[_.snakeCase(v.name).toUpperCase()] = v;
         byIdIndex[v._id] = v;
@@ -877,7 +881,7 @@ export function generateClientLibrary() {
     compileFields('', CollectionInstance, def.fields);
 
     _.each(CollectionInstance.fields, function(field, name) {
-      const fdef  = field.def,
+      const fdef = field.def,
             get  = fdef.get,
             set  = fdef.set,
             isDb = fdef.db;
@@ -888,14 +892,8 @@ export function generateClientLibrary() {
           configurable: false
         };
 
-        if (get) {
-          prop.get = get;
-        }
-
-        if (set) {
-          prop.set = set;
-        }
-
+        if (get) prop.get = get;
+        if (set) prop.set = set;
         Object.defineProperty(dp, name, prop);
       }
     });
@@ -943,11 +941,21 @@ export function generateClientLibrary() {
     });
   };
 
+  Collection.prototype.aux = function(def) {
+    compileFields('', this, def, undefined, true);
+  };
+
+  Tyr.aux = function(def) {
+    const col = new Collection(def);
+    col.compile();
+    return col;
+  };
+
   Collection.prototype.idToUid = ${es5Fn(Collection.prototype.idToUid)};
   Collection.prototype.isUid = ${es5Fn(Collection.prototype.isUid)};
 
   Collection.prototype.idToLabel = function(id) {
-    if (this.isStatic()) {
+    if (!this.isDb()) {
       if (!id) return '';
       const doc = this.byIdIndex[id];
       return doc ? doc.$label : 'Unknown';
@@ -960,6 +968,7 @@ export function generateClientLibrary() {
   }
 
   Collection.prototype.isStatic = ${es5Fn(Collection.prototype.isStatic)};
+  Collection.prototype.isDb = ${es5Fn(Collection.prototype.isDb)};
 
   Collection.prototype.labelFor = ${es5Fn(Collection.prototype.labelFor)};
   Collection.prototype.labelProjection = ${es5Fn(
@@ -969,7 +978,7 @@ export function generateClientLibrary() {
   Collection.prototype.byId = function(id, opts) {
     var col = this;
 
-    if (col.isStatic()) {
+    if (!col.isDb()) {
       return col.byIdIndex[id];
     } else {
       if (opts && opts.cached) {
@@ -986,7 +995,7 @@ export function generateClientLibrary() {
   Collection.prototype.byIds = function(ids, opts) {
     var col = this;
 
-    if (col.isStatic()) {
+    if (!col.isDb()) {
       return ids.map(id => col.byIdIndex[id]);
     } else {
       if (opts && opts.cached) {
@@ -1124,7 +1133,7 @@ export function generateClientLibrary() {
 
     if (Array.isArray(search)) {
       const byIdIndex = this.byIdIndex;
-      if (this.isStatic()) {
+      if (!this.isDb()) {
         return search.map(id => byIdIndex[id]);
       }
 
@@ -1147,7 +1156,7 @@ export function generateClientLibrary() {
       });
 
     } else {
-      if (this.isStatic() ) {
+      if (!this.isDb() ) {
         var values = this.def.values;
 
         if (search) {
@@ -1401,30 +1410,20 @@ export function generateClientLibrary() {
     name: '${name}',
     label: '${col.label}',`;
 
-      if (col.def.enum) {
-        file += `
-    enum: true;`;
+      for (const key of [
+        'enum',
+        'tag',
+        'static',
+        'aux',
+        'singleton',
+        'internal',
+        'generated'
+      ]) {
+        if (col.def[key])
+          file += `
+    ${key}: true;`;
       }
 
-      if (col.def.tag) {
-        file += `
-    tag: true;`;
-      }
-
-      if (col.def.static) {
-        file += `
-    static: true;`;
-      }
-
-      if (col.def.internal) {
-        file += `
-    internal: true;`;
-      }
-
-      if (col.def.generated) {
-        file += `
-    generated: true;`;
-      }
       const ser = new Serializer('.', 2);
       ser.fields(col.fields);
       if (def.methods) ser.methods(def.methods);
@@ -1434,9 +1433,10 @@ export function generateClientLibrary() {
       file += `
   };`;
 
-      if (def.enum || def.static) {
+      const values = !col.isDb() && def.values;
+      if (values) {
         file += `
-  def.values = ${JSON.stringify(def.values.map(v => v.$toClient()))};`;
+  def.values = ${JSON.stringify(values.map(v => v.$toClient()))};`;
       }
       if (col.labelField) {
         file += `

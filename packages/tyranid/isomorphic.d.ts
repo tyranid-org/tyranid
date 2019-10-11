@@ -49,6 +49,7 @@ export namespace Tyr {
     client?: boolean | (() => boolean);
     custom?: boolean;
     db?: boolean;
+    aux?: boolean;
     historical?: boolean;
     defaultValue?: any;
 

@@ -323,6 +323,30 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
         result = await page.evaluate(`Tyr.byName.user.canServe(3)`);
         expect(result).to.eql(false);
       });
+
+      it('should support collection.aux()', async () => {
+        const result = await page.evaluate(`
+const { User } = Tyr.collections;
+User.aux({
+  bonus: { is: 'integer' }
+});
+User.fields.bonus.def.aux;`);
+
+        expect(result).to.eql(true);
+      });
+
+      it('should support Tyr.aux()', async () => {
+        const result = await page.evaluate(`
+const col = Tyr.aux({
+  name: 'uiFields',
+  fields: {
+    bonus: { is: 'integer' }
+  }
+});
+col.name + '|' + col.fields.bonus.name;`);
+
+        expect(result).to.eql('UiFields|bonus');
+      });
     });
   });
 }

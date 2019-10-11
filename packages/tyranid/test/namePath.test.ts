@@ -13,12 +13,14 @@ export function add() {
   describe('namePath.js (NamePath)', () => {
     let User: Tyr.UserCollection,
       Department: Tyr.DepartmentCollection,
-      Task: Tyr.TaskCollection;
+      Task: Tyr.TaskCollection,
+      Global: Tyr.GlobalCollection;
 
     before(() => {
       User = Tyr.byName.user;
       Department = Tyr.byName.department;
       Task = Tyr.byName.task;
+      Global = Tyr.byName.global;
     });
 
     it('should parse arrays', () => {
@@ -302,6 +304,20 @@ export function add() {
 
       expect(u!.$`organization.owner.name.first`).to.eql('Jane');
       expect(u!.$`organization.${'owner.name'}.first`).to.eql('Jane');
+    });
+
+    it('should support collection: syntax', () => {
+      const np = User.parsePath('global:count');
+      expect(np.fields.length).to.eql(1);
+      expect(np.fields[0].collection.name).to.eql('Global');
+
+      const user = new User({});
+
+      np.set(user, 3);
+
+      expect(Global.values[0].count).to.eql(3);
+
+      expect(np.get(user)).to.eql(3);
     });
   });
 }

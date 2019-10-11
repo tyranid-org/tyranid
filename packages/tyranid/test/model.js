@@ -7,6 +7,7 @@ import Role from './models/role'; // require to get extra link in prototype chai
 import './models/application';
 import './models/book';
 import './models/department';
+import './models/global';
 import './models/organization';
 import './models/tasks/task';
 import './models/user';

@@ -562,6 +562,8 @@ export namespace Tyr {
     name: string;
     fields: { [key: string]: FieldInstance };
     dbName?: string;
+    aux?: boolean;
+    singleton?: boolean;
     label?: string;
     help?: string;
     note?: string;
@@ -585,6 +587,7 @@ export namespace Tyr {
     id: string;
     name: string;
     dbName?: string;
+    aux?: boolean;
     label?: string;
     help?: string;
     note?: string;
