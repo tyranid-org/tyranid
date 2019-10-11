@@ -15,10 +15,19 @@ export function generateRules(props: TyrTypeProps) {
   const { path } = props;
   if (path) {
     const { tail: field } = path;
+    if (props.max !== undefined) {
+      rules.push({
+        max: props.max,
+        message: `The ${props.label || field.label} must be ${
+          props.max
+        } characters or less!`
+      });
+    }
+
     if (props.required || field.def.required) {
       rules.push({
         required: true,
-        message: `${field.label} is required.`
+        message: `${props.label || field.label} is required.`
       });
     }
   }
@@ -94,7 +103,11 @@ export interface TypeUi {
     value: any,
     props?: TyrTypeProps
   ): any;
-  mapFormValueToDocumentValue?(path: Tyr.NamePathInstance, value: any): any;
+  mapFormValueToDocumentValue?(
+    path: Tyr.NamePathInstance,
+    value: any,
+    props: TyrTypeProps
+  ): any;
   mapFormValueToDocument?(
     path: Tyr.NamePathInstance,
     value: any,
@@ -230,7 +243,8 @@ export const mapDocumentToForm = (
 
 export const mapFormValueToDocumentValue = (
   path: Tyr.NamePathInstance,
-  value: any
+  value: any,
+  props: TyrTypeProps
 ) => {
   const { tail: field } = path;
   const { type } = field;
@@ -238,7 +252,7 @@ export const mapFormValueToDocumentValue = (
   const { mapFormValueToDocumentValue } = assertTypeUi(type.name);
 
   return mapFormValueToDocumentValue
-    ? mapFormValueToDocumentValue(path, value)
+    ? mapFormValueToDocumentValue(path, value, props)
     : value;
 };
 
@@ -246,7 +260,7 @@ export const mapFormValueToDocument = (
   path: Tyr.NamePathInstance,
   value: any,
   document: Tyr.Document,
-  props?: TyrTypeProps
+  props: TyrTypeProps
 ) => {
   const { tail: field } = path;
   const { type } = field;
@@ -262,7 +276,7 @@ export const mapFormValueToDocument = (
       return;
     }
 
-    value = mapFormValueToDocumentValue(path, value);
+    value = mapFormValueToDocumentValue(path, value, props);
   }
 
   path.set(document, value, {
@@ -276,6 +290,12 @@ export const mapFormValueToDocument = (
  */
 export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
   const { document, onChange } = props;
+
+  // if (event) {
+  //   event.stopPropagation();
+  //   event.preventDefault();
+  //   return false;
+  // }
 
   if (document) {
     const { extra } = props;

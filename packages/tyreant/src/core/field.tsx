@@ -14,7 +14,6 @@ import { SelectedValue } from 'antd/lib/select';
 import { Moment } from 'moment';
 import FormItem from 'antd/lib/form/FormItem';
 import { Tooltip, Icon } from 'antd';
-import { reportObserved } from 'mobx/lib/internal';
 
 export type TyrSortDirection = 'ascend' | 'descend';
 
@@ -63,6 +62,7 @@ export interface TyrFieldProps {
   onStateChange?: (value: FieldState) => void;
   autoFocus?: boolean;
   required?: boolean;
+  max?: number;
   sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
   searchRange?: [number, number] | [Moment, Moment];
   tabIndex?: number;
@@ -94,6 +94,8 @@ export interface TyrFieldProps {
   mapDocumentValueToForm?: (value: any, document: Tyr.Document) => any;
   mapFormValueToDocument?: (value: any, document: Tyr.Document) => any;
   labelInValue?: boolean;
+  linkLabels?: { $id: any; $label: string }[];
+  manuallySortedLabels?: boolean;
 }
 
 export type TyrFieldExistsProps = Omit<TyrFieldProps, 'field'> & {

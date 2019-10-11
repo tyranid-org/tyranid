@@ -244,15 +244,90 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps) {
-    if (
-      this.props.documents &&
-      nextProps.documents
-      //&& this.props.documents.length !== nextProps.documents.length
-    ) {
-      this.store.documents = nextProps.documents;
-      this.store.count = nextProps.documents.length;
+    if (this.props.documents && nextProps.documents) {
+      this.setSortedDocuments(nextProps.documents);
     }
   }
+
+  // Sort the documents according to the current sort
+  //
+  // We need to do this so that when we enter editing mode
+  // and disable sorting, the natural sort of the rows is
+  // not any different than what the sort currently is.
+  setSortedDocuments = (docs: Tyr.Document[]) => {
+    let documents = docs;
+    let sortColumn: TyrTableColumnFieldProps | undefined;
+
+    if (this.store.tableDefn) {
+      let sortColumnName: string | null = null;
+
+      for (let name in this.store.tableDefn) {
+        if (
+          name !== 'skip' &&
+          name !== 'limit' &&
+          this.store.tableDefn[name] !== undefined
+        ) {
+          sortColumnName = name;
+          break;
+        }
+      }
+
+      // Find column
+      if (sortColumnName) {
+        sortColumn = this.props.fields.find(f => {
+          const fName = getFieldName(f.field);
+          return fName === sortColumnName;
+        });
+      }
+    } else {
+      sortColumn = this.props.fields.find(column => !!column.defaultSort);
+    }
+
+    if (sortColumn) {
+      let field: Tyr.FieldInstance | undefined = undefined;
+      let pathName: string | undefined = undefined;
+
+      if (
+        sortColumn.field &&
+        (sortColumn.field as Tyr.FieldInstance).collection
+      ) {
+        field = sortColumn.field as Tyr.FieldInstance;
+        pathName = field.path;
+      } else {
+        pathName = getFieldName(sortColumn.field);
+        field = pathName ? this.props.collection.paths[pathName] : undefined;
+      }
+
+      const np = field ? field.namePath : undefined;
+
+      docs.sort(
+        sortColumn.sortComparator
+          ? sortColumn.sortComparator
+          : (a: Tyr.Document, b: Tyr.Document) => {
+              const av = np && np.get(a);
+              const bv = np && np.get(b);
+
+              return field!.type.compare(field!, av, bv);
+            }
+      );
+
+      if (pathName) {
+        const fieldDef = this.store.tableDefn[pathName];
+
+        if (
+          fieldDef &&
+          (fieldDef as FieldDefinition).sortDirection === 'descend'
+        ) {
+          docs.reverse();
+        }
+      }
+
+      documents = docs;
+    }
+
+    this.store.documents = documents;
+    this.store.count = documents.length;
+  };
 
   setFieldValue = (fieldName: string, value: any) => {
     const document = this.store.newDocument || this.store.editingDocument;
@@ -300,9 +375,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   private defaultToTableDefinition() {
     const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
 
-    const defaultSortColumn = this.store.fields.find(
+    const defaultSortColumn = this.props.fields.find(
       column => !!column.defaultSort
     );
+
     if (defaultSortColumn) {
       const fieldName = getFieldName(defaultSortColumn.field);
 
@@ -789,7 +865,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
         let sorter = undefined;
 
-        if (field) {
+        if (field && !newDocumentTable) {
           if (column.sortComparator) {
             sorter = column.sortComparator;
           } else {
@@ -846,7 +922,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 getSearchIds: column.getSearchIds,
                 labelInValue: column.labelInValue,
                 onFilter: column.onFilter,
-                dateFormat: column.dateFormat
+                dateFormat: column.dateFormat,
+                linkLabels: column.linkLabels,
+                max: column.max,
+                label: column.label
               };
 
               return (
@@ -878,8 +957,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               </div>
             );
           },
-          sorter: !newDocumentTable ? sorter : undefined,
-          sortOrder: !newDocumentTable ? sortDirection : undefined,
+          sorter: !editingDocument && !newDocumentTable ? sorter : undefined,
+          sortOrder:
+            !editingDocument && !newDocumentTable ? sortDirection : undefined,
           title: column.label || (field && field.label),
           width: colWidth,
           className: column.className,
@@ -1007,7 +1087,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     delete store.editingDocument;
     delete store.newDocument;
-    const defn: TableDefinition = {};
+    let defn: TableDefinition = {};
 
     if (pagination.current) {
       defn.skip = (pagination.current! - 1) * this.store.pageSize;
@@ -1023,13 +1103,22 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }
 
     const sortFieldName = sorter.columnKey;
+
     if (sortFieldName) {
       // table doesn't appear to support multiple sort columns currently, so unselect any existing sort
       for (const pathName in store.tableDefn) {
-        const fieldDefn = store.tableDefn[pathName] as FieldDefinition;
+        if (pathName === 'skip' || pathName === 'limit') {
+          continue;
+        }
 
-        if (fieldDefn && fieldDefn.sortDirection) {
-          defn[pathName] = _.omit(fieldDefn, 'sortDirection');
+        if (pathName !== sortFieldName) {
+          store.tableDefn[pathName] = undefined;
+        } else {
+          const fieldDefn = store.tableDefn[pathName] as FieldDefinition;
+
+          if (fieldDefn && fieldDefn.sortDirection) {
+            defn[pathName] = _.omit(fieldDefn, 'sortDirection');
+          }
         }
       }
 
@@ -1038,20 +1127,22 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         sortDirection: sorter.order
       };
     } else {
-      // Sort is cleared
       for (const pathName in store.tableDefn) {
-        const fieldDefn = store.tableDefn[pathName] as FieldDefinition;
-
-        if (fieldDefn && fieldDefn.sortDirection) {
-          delete fieldDefn.sortDirection;
+        if (pathName === 'skip' || pathName === 'limit') {
+          continue;
         }
+        store.tableDefn[pathName] = undefined;
       }
     }
 
-    if (this.props.route) this.goToRoute(defn);
-    else store.tableDefn = { ...store.tableDefn, ...defn };
+    if (this.props.route) {
+      this.goToRoute(defn);
+    } else {
+      store.tableDefn = { ...store.tableDefn, ...defn };
+    }
 
     if (this._mounted) {
+      this.setSortedDocuments(this.store.documents.slice());
       this.setState({}); // Hack to force a table re-render
     }
   };
@@ -1250,6 +1341,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                         },
                         onDoubleClick: () => {
                           if (
+                            !editingDocument &&
                             rowEdit &&
                             record.$id &&
                             (!canEditDocument || canEditDocument(record))

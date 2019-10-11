@@ -54,10 +54,14 @@ byName.array = {
 
     return value;
   },
-  mapFormValueToDocumentValue(path: Tyr.NamePathInstance, arrayValue?: any[]) {
+  mapFormValueToDocumentValue(
+    path: Tyr.NamePathInstance,
+    arrayValue: any[],
+    props: TyrTypeProps
+  ) {
     if (arrayValue) {
       return arrayValue.map((val, idx) =>
-        mapFormValueToDocumentValue(path.walk(idx), val)
+        mapFormValueToDocumentValue(path.walk(idx), val, props)
       );
     }
 
@@ -67,7 +71,8 @@ byName.array = {
   mapFormValueToDocument(
     path: Tyr.NamePathInstance,
     arrayValue: any,
-    document: Tyr.Document
+    document: Tyr.Document,
+    props: TyrTypeProps
   ) {
     if (arrayValue) {
       // the form values don't represent the nested values as arrays
@@ -86,7 +91,7 @@ byName.array = {
 
       let i = 0;
       for (; (v = arrayValue[i]) !== undefined; i++) {
-        mapFormValueToDocument(path.walk(i), v, document);
+        mapFormValueToDocument(path.walk(i), v, document, props);
       }
 
       if (i === 0) {

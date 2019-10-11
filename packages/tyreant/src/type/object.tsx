@@ -59,7 +59,11 @@ export const TyrObject = withTypeContext<TyrObjectExtraProps>(TyrObjectBase);
 
 byName.object = {
   component: TyrObject,
-  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: any) {
+  mapDocumentValueToFormValue(
+    path: Tyr.NamePathInstance,
+    value: any,
+    props: TyrTypeProps
+  ) {
     const { detail: field } = path;
 
     /*
@@ -75,10 +79,16 @@ byName.object = {
   mapFormValueToDocument(
     path: Tyr.NamePathInstance,
     values: any,
-    document: Tyr.Document
+    document: Tyr.Document,
+    props: TyrTypeProps
   ) {
     for (const pathName in values) {
-      mapFormValueToDocument(path.walk(pathName), values[pathName], document);
+      mapFormValueToDocument(
+        path.walk(pathName),
+        values[pathName],
+        document,
+        props
+      );
     }
   }
 };

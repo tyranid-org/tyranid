@@ -41,20 +41,37 @@ const linkFor = (path: Tyr.NamePathInstance) => {
 };
 
 // TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search....
-const findByLabel = (collection: Tyr.CollectionInstance, label: string) => {
+const findByLabel = (
+  props: TyrTypeProps,
+  collection: Tyr.CollectionInstance,
+  label: string
+) => {
   label = label.toLowerCase();
+  const values = props.linkLabels || collection.values;
 
-  return collection.values.find(lv => {
+  return values.find(lv => {
     const l = lv.$label;
     return l ? l.toLowerCase() === label : false;
   });
 };
 
-const findById = (collection: Tyr.CollectionInstance, id: string) =>
-  collection.values.find(lv => lv.$id === id);
+const findById = (
+  props: TyrTypeProps,
+  collection: Tyr.CollectionInstance,
+  id: string
+) => {
+  const values = props.linkLabels || collection.values;
+  return values.find(lv => lv.$id === id);
+};
 
-const sortLabels = (labels: any[], searchSortById?: boolean) => {
-  labels.sort((a, b) => {
+const sortLabels = (labels: any[], props: TyrFieldLaxProps) => {
+  if (!!props.manuallySortedLabels) {
+    return labels.slice();
+  }
+
+  const searchSortById = !!props.searchSortById;
+
+  labels.slice().sort((a, b) => {
     if (searchSortById) {
       return a.$id - b.$id;
     }
@@ -121,15 +138,24 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       this.link = linkFor(path);
     }
 
-    if (!this.link) throw new Error('TyrLink passed a non-link');
-
-    if (this.link.isStatic()) {
-      this.setState({
-        initialLoading: false,
-        documents: sortLabels(this.link.values, !!props.searchSortById)
-      });
+    if (!this.link) {
+      if (props.linkLabels) {
+        this.setState({
+          initialLoading: false,
+          documents: sortLabels(props.linkLabels, props)
+        });
+      } else {
+        throw new Error('TyrLink passed a non-link');
+      }
     } else {
-      await this.search();
+      if (this.link.isStatic()) {
+        this.setState({
+          initialLoading: false,
+          documents: sortLabels(this.link.values, props)
+        });
+      } else {
+        await this.search();
+      }
     }
 
     mapPropsToForm(props);
@@ -194,7 +220,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (this.mounted) {
       this.setState({
-        documents: sortLabels(documents, !!this.props.searchSortById),
+        documents: sortLabels(documents, this.props),
         loading: false,
         initialLoading: false
       });
@@ -268,7 +294,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
               let label = (this.link as any).byIdIndex[value];
 
               if (!label) {
-                label = findByLabel(this.link!, value);
+                label = findByLabel(props, this.link!, value);
 
                 if (!label) {
                   onStateChange && onStateChange({ ready: false });
@@ -294,7 +320,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         value: SelectedValue,
         option: React.ReactElement<any>
       ) => {
-        const v = findByLabel(this.link!, value as string);
+        const v = findByLabel(props, this.link!, value as string);
 
         onSelect(
           v
@@ -413,31 +439,30 @@ export const linkFilter: Filter = (
             }
           }}
         >
-          {sortLabels(
-            filterValues || linkFor(path)!.values,
-            props.searchSortById
-          ).map((v: any) => {
-            const values = filterable.searchValues[pathName];
-            const isChecked = values && values.indexOf(v.$id) > -1;
+          {sortLabels(filterValues || linkFor(path)!.values, props).map(
+            (v: any) => {
+              const values = filterable.searchValues[pathName];
+              const isChecked = values && values.indexOf(v.$id) > -1;
 
-            return (
-              <Menu.Item
-                key={v.$id}
-                className="ant-dropdown-menu-item"
-                style={{
-                  marginBottom: 0,
-                  marginTop: 0,
-                  lineHeight: '30px',
-                  height: '30px'
-                }}
-              >
-                <Checkbox checked={isChecked} />
-                {props.filterOptionRenderer
-                  ? props.filterOptionRenderer(v)
-                  : v.$label}
-              </Menu.Item>
-            );
-          })}
+              return (
+                <Menu.Item
+                  key={v.$id}
+                  className="ant-dropdown-menu-item"
+                  style={{
+                    marginBottom: 0,
+                    marginTop: 0,
+                    lineHeight: '30px',
+                    height: '30px'
+                  }}
+                >
+                  <Checkbox checked={isChecked} />
+                  {props.filterOptionRenderer
+                    ? props.filterOptionRenderer(v)
+                    : v.$label}
+                </Menu.Item>
+              );
+            }
+          )}
         </Menu>
         <div className="search-box-footer" style={{ padding: '8px' }}>
           <Button
@@ -514,10 +539,14 @@ byName.link = {
   component: TyrLinkBase,
 
   // Given ids, return the labels
-  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: any) {
+  mapDocumentValueToFormValue(
+    path: Tyr.NamePathInstance,
+    value: any,
+    props: TyrTypeProps
+  ) {
     if (Array.isArray(value)) {
       value = value.map(v => {
-        const nv = findById(linkFor(path)!, v);
+        const nv = findById(props, linkFor(path)!, v);
         if (nv) {
           const column = (path.tail as any).column;
           if (column && column.translateForWhiteLabel) {
@@ -530,7 +559,7 @@ byName.link = {
         return v;
       });
     } else {
-      const nv = findById(linkFor(path)!, value as string);
+      const nv = findById(props, linkFor(path)!, value as string);
 
       if (nv) {
         const column = (path.tail as any).column;
@@ -546,8 +575,12 @@ byName.link = {
     return value && value.label ? value.label : value;
   },
   // Given labels, return the ids
-  mapFormValueToDocumentValue(path: Tyr.NamePathInstance, value: any) {
-    const nv = findByLabel(linkFor(path)!, value);
+  mapFormValueToDocumentValue(
+    path: Tyr.NamePathInstance,
+    value: any,
+    props: TyrTypeProps
+  ) {
+    const nv = findByLabel(props, linkFor(path)!, value);
     if (nv) value = nv.$id;
     return value && value.key ? value.key : value;
   },

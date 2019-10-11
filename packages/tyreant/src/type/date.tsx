@@ -118,6 +118,10 @@ export const dateFilter: Filter = (
       </div>
     ),
     onFilter: (value: number[], doc: Tyr.Document) => {
+      if (props.onFilter) {
+        return props.onFilter(value, doc);
+      }
+
       const val = path.get(doc);
 
       if (val) {
