@@ -135,8 +135,8 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
           traits: ['edit'],
           name: this.collection!.label,
           component: this,
-          action: opts => {
-            this.find(opts.document!);
+          action: async opts => {
+            await this.find(opts.document!);
 
             if (!this.document) {
               this.setState({ document: this.createDocument(opts) });

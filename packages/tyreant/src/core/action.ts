@@ -75,7 +75,7 @@ export class TyrAction {
             break;
           default:
             result.then(promisedResult => {
-              if (promisedResult) {
+              if (promisedResult === undefined || promisedResult) {
                 opts.action!(fnOpts);
               }
             });

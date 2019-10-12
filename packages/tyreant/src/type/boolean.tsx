@@ -20,9 +20,7 @@ import { FilterDropdownProps } from 'antd/es/table';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 export const TyrBooleanBase = ((props: TyrTypeProps) => {
-  useEffect(() => {
-    mapPropsToForm(props);
-  }, []);
+  useEffect(() => mapPropsToForm(props), [props.path!.name]);
 
   return decorateField('boolean', props, () => {
     const onTypeChangeFunc = (ev: any) => {
