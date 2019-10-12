@@ -47,7 +47,8 @@ const findByLabel = (
   label: string
 ) => {
   label = label.toLowerCase();
-  const values = props.linkLabels || collection.values;
+  const values =
+    props && props.linkLabels ? props.linkLabels : collection.values;
 
   return values.find(lv => {
     const l = lv.$label;
@@ -60,7 +61,8 @@ const findById = (
   collection: Tyr.CollectionInstance,
   id: string
 ) => {
-  const values = props.linkLabels || collection.values;
+  const values =
+    props && props.linkLabels ? props.linkLabels : collection.values;
   return values.find(lv => lv.$id === id);
 };
 
@@ -70,8 +72,9 @@ const sortLabels = (labels: any[], props: TyrFieldLaxProps) => {
   }
 
   const searchSortById = !!props.searchSortById;
+  const sortedLabels = labels.slice();
 
-  labels.slice().sort((a, b) => {
+  sortedLabels.sort((a, b) => {
     if (searchSortById) {
       return a.$id - b.$id;
     }
@@ -94,7 +97,7 @@ const sortLabels = (labels: any[], props: TyrFieldLaxProps) => {
     return aLabel.localeCompare(bLabel);
   });
 
-  return labels;
+  return sortedLabels;
 };
 
 export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
@@ -106,7 +109,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     const { $label, $id } = val;
 
     return (
-      <Option key={$id}>
+      <Option key={this.mode === 'tags' ? $label : $id}>
         {this.props.searchOptionRenderer
           ? this.props.searchOptionRenderer(val)
           : $label}
@@ -117,6 +120,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   link?: Tyr.CollectionInstance;
   linkField?: Tyr.FieldInstance;
   mounted = false;
+  mode: 'default' | 'multiple' | 'tags' | 'combobox' | string = 'default';
 
   async componentDidMount() {
     const props = this.props;
@@ -157,6 +161,28 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         await this.search();
       }
     }
+
+    const { tail: field } = path!;
+
+    let mode: any;
+    // TODO:  'tags', 'combobox'
+    if (field.type.name === 'array') {
+      mode =
+        field.of!.link &&
+        field.of!.link!.def.tag &&
+        this.props.mode !== 'search'
+          ? 'tags'
+          : 'multiple';
+
+      // if mode is search, but you do not want multiple selection, then override
+      if (this.props.multiple === false && this.props.mode === 'search') {
+        mode = 'default';
+      }
+    } else {
+      mode = 'default';
+    }
+
+    this.mode = mode;
 
     mapPropsToForm(props);
   }
@@ -229,7 +255,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
   render(): React.ReactNode {
     const { props } = this;
-    const { mode: controlMode, path, multiple, onSelect, onDeselect } = props;
+    const { mode: controlMode, path, onSelect, onDeselect } = props;
     const { documents, loading, initialLoading } = this.state;
 
     if (controlMode === 'view') {
@@ -238,28 +264,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       );
     }
 
-    const { tail: field } = path!;
-
-    let mode: typeof selectProps.mode;
-    // TODO:  'tags', 'combobox'
-    if (field.type.name === 'array') {
-      mode =
-        field.of!.link &&
-        field.of!.link!.def.tag &&
-        this.props.mode !== 'search'
-          ? 'tags'
-          : 'multiple';
-
-      // if mode is search, but you do not want multiple selection, then override
-      if (multiple === false && this.props.mode === 'search') {
-        mode = 'default';
-      }
-    } else {
-      mode = 'default';
-    }
-
     const selectProps: SelectProps = {
-      mode,
+      mode: this.mode,
       labelInValue: !!props.labelInValue,
       notFoundContent: loading ? (
         <Spin size="small" style={{ position: 'static' }} />
@@ -282,7 +288,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       this.props.onChange && this.props.onChange(ev, ev, props);
     };
 
-    if (mode === 'tags') {
+    if (this.mode === 'tags') {
       selectProps.onChange = async value => {
         const values = value as string[];
         const link = this.link!;

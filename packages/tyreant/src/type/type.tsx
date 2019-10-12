@@ -106,7 +106,7 @@ export interface TypeUi {
   mapFormValueToDocumentValue?(
     path: Tyr.NamePathInstance,
     value: any,
-    props: TyrTypeProps
+    props?: TyrTypeProps
   ): any;
   mapFormValueToDocument?(
     path: Tyr.NamePathInstance,
@@ -244,7 +244,7 @@ export const mapDocumentToForm = (
 export const mapFormValueToDocumentValue = (
   path: Tyr.NamePathInstance,
   value: any,
-  props: TyrTypeProps
+  props?: TyrTypeProps
 ) => {
   const { tail: field } = path;
   const { type } = field;

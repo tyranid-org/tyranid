@@ -42,13 +42,17 @@ export const TyrArray = withTypeContext(TyrArrayBase);
 
 byName.array = {
   component: TyrArray,
-  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: any) {
+  mapDocumentValueToFormValue(
+    path: Tyr.NamePathInstance,
+    value: any,
+    props?: TyrTypeProps
+  ) {
     // TODO:  remove slice when upgrading to mobx 5
     if (value && value.slice) value = value.slice();
 
     if (value) {
       value = (value as any[]).map((value, idx) =>
-        mapDocumentValueToFormValue(path.walk(idx), value)
+        mapDocumentValueToFormValue(path.walk(idx), value, props)
       );
     }
 
