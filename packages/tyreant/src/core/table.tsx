@@ -1139,11 +1139,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       this.goToRoute(defn);
     } else {
       store.tableDefn = { ...store.tableDefn, ...defn };
-    }
 
-    if (this._mounted) {
-      this.setSortedDocuments(this.store.documents.slice());
-      this.setState({}); // Hack to force a table re-render
+      if (this._mounted) {
+        this.setSortedDocuments(this.store.documents.slice());
+        this.setState({}); // Hack to force a table re-render
+      }
     }
   };
 
@@ -1176,6 +1176,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           defaultCurrent: Math.floor(skip / limit) + 1,
           total: totalCount,
           defaultPageSize: limit,
+          pageSize: limit,
           size: 'default',
           itemRender: this.paginationItemRenderer
         }
