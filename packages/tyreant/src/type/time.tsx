@@ -11,7 +11,7 @@ import { withTypeContext } from './type';
 import { decorateField } from '../core';
 
 export const TyrTimeBase = ((props: TyrTypeProps) => {
-  useEffect(() => mapPropsToForm(props), [props.path!.name]);
+  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('time', props, () => {
     const onTypeChangeFunc = (ev: any) => {

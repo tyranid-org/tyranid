@@ -24,7 +24,7 @@ import { FilterDropdownProps } from 'antd/es/table';
 const DATE_FORMAT = 'MM/DD/YYYY';
 
 export const TyrDateBase = ((props: TyrTypeProps) => {
-  useEffect(() => mapPropsToForm(props), [props.path!.name]);
+  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('date', props, () => {
     const onTypeChangeFunc = (ev: any) => {
