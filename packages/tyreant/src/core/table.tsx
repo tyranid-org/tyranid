@@ -24,11 +24,21 @@ import { observer } from 'mobx-react';
 import { compact, findIndex, isEqual } from 'lodash';
 
 import {
+  DragDropContextProvider,
+  DragSource,
+  DropTarget,
+  DropTargetMonitor
+} from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+
+import {
   DragDropContext,
   Draggable,
   Droppable,
   DraggableProvided,
-  DraggableStateSnapshot
+  DraggableStateSnapshot,
+  DropResult,
+  ResponderProvided
 } from 'react-beautiful-dnd';
 
 import {
@@ -61,6 +71,7 @@ import {
 } from './field';
 import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from './form';
+import { string } from 'prop-types';
 
 const ObsTable = observer(Table);
 
@@ -144,6 +155,7 @@ export interface TyrTableProps extends TyrComponentProps {
   loading?: boolean;
   setEditing?: (editing: boolean) => void;
   onSelectRows?: (selectedRowIds: string[]) => void;
+  orderable?: boolean;
 }
 
 @observer
@@ -244,7 +256,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps) {
-    if (this.props.documents && nextProps.documents) {
+    if (this.props.documents && nextProps.documents && !this.props.orderable) {
       this.setSortedDocuments(nextProps.documents);
     }
   }
@@ -283,7 +295,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       sortColumn = this.props.fields.find(column => !!column.defaultSort);
     }
 
-    if (sortColumn) {
+    if (!this.props.orderable && sortColumn) {
       let field: Tyr.FieldInstance | undefined = undefined;
       let pathName: string | undefined = undefined;
 
@@ -778,7 +790,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       pinActionsRight,
       actionHeaderLabel,
       actionTrigger,
-      actionColumnClassName
+      actionColumnClassName,
+      orderable
     } = this.props;
 
     const store = this.store;
@@ -957,17 +970,23 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               </div>
             );
           },
-          sorter: !editingDocument && !newDocumentTable ? sorter : undefined,
+          sorter:
+            !orderable && !editingDocument && !newDocumentTable
+              ? sorter
+              : undefined,
           sortOrder:
-            !editingDocument && !newDocumentTable ? sortDirection : undefined,
+            !orderable && !editingDocument && !newDocumentTable
+              ? sortDirection
+              : undefined,
           title: column.label || (field && field.label),
           width: colWidth,
           className: column.className,
           ellipsis: column.ellipsis,
-          ...(!newDocumentTable && filteredValue
+          ...(!orderable && !newDocumentTable && filteredValue
             ? { filteredValue: [filteredValue] }
             : {}),
-          ...((!newDocumentTable &&
+          ...((!orderable &&
+            !newDocumentTable &&
             (!column.noFilter && np && getFilter(np, filterable, column))) ||
             {}),
           ...(!isEditingAnything && column.pinned && fieldCount > 1
@@ -1215,6 +1234,15 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.store.showConfig = false;
   };
 
+  moveRow = (dragIndex: number, hoverIndex: number) => {
+    const { documents } = this.store;
+
+    const [removed] = documents.splice(dragIndex, 1);
+    documents.splice(hoverIndex, 0, removed);
+    this.store.documents = documents;
+    this.setState({});
+  };
+
   render() {
     const {
       documents,
@@ -1239,7 +1267,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       config: tableConfig,
       onCancelAddNew,
       decorator,
-      onSelectRows
+      onSelectRows,
+      orderable
     } = this.props;
 
     const fieldCount = fields.length;
@@ -1259,10 +1288,80 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       const components = rowEdit
         ? {
             body: {
-              row: EditableFormRow
+              row: orderable ? DraggableBodyRow : EditableFormRow
             }
           }
         : undefined;
+
+      const mainTable = fields ? (
+        <ObsTable
+          rowSelection={
+            rowsSelectable
+              ? {
+                  selectedRowKeys,
+                  onChange: this.onSelectedRowKeysChange
+                }
+              : undefined
+          }
+          loading={loading || this.props.loading}
+          components={components}
+          rowKey={(doc: any) => doc.$id || doc.$id}
+          size={size || 'small'}
+          pagination={this.pagination()}
+          onChange={this.handleTableChange}
+          footer={footer}
+          title={newDocument ? undefined : title}
+          showHeader={newDocument ? false : showHeader}
+          // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
+          dataSource={documents.slice()}
+          columns={this.getColumns()}
+          scroll={fieldCount > 1 ? scroll : undefined}
+          onHeaderRow={(columns, index) => {
+            const column = columns[index];
+
+            if (column.key === '$actions') {
+              return {
+                onClick: () => {
+                  onActionLabelClick && onActionLabelClick();
+                  this.store.showConfig = true;
+                }
+              };
+            }
+          }}
+          onRow={(record, rowIndex) => {
+            return {
+              onClick: () => {
+                rowsSelectable && this.selectRow(record);
+              },
+
+              index: rowIndex,
+              moveRow: this.moveRow,
+
+              onDoubleClick: () => {
+                if (
+                  !editingDocument &&
+                  rowEdit &&
+                  record.$id &&
+                  (!canEditDocument || canEditDocument(record))
+                ) {
+                  this.onEditRow(record, rowIndex);
+
+                  if (newDocument) {
+                    onCancelAddNew && onCancelAddNew();
+                    delete this.store.newDocument;
+                  }
+
+                  if (this._mounted) {
+                    this.setState({});
+                  }
+                }
+              }
+            };
+          }}
+        />
+      ) : (
+        undefined
+      );
 
       return (
         <div className={netClassName}>
@@ -1300,67 +1399,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   }}
                   ref={this.tableWrapper}
                 >
-                  <ObsTable
-                    rowSelection={
-                      rowsSelectable
-                        ? {
-                            selectedRowKeys,
-                            onChange: this.onSelectedRowKeysChange
-                          }
-                        : undefined
-                    }
-                    loading={loading || this.props.loading}
-                    components={components}
-                    rowKey={(doc: any) => doc.$id || doc.$id}
-                    size={size || 'small'}
-                    pagination={this.pagination()}
-                    onChange={this.handleTableChange}
-                    footer={footer}
-                    title={newDocument ? undefined : title}
-                    showHeader={newDocument ? false : showHeader}
-                    // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
-                    dataSource={documents.slice()}
-                    columns={this.getColumns()}
-                    scroll={fieldCount > 1 ? scroll : undefined}
-                    onHeaderRow={(columns, index) => {
-                      const column = columns[index];
-
-                      if (column.key === '$actions') {
-                        return {
-                          onClick: () => {
-                            onActionLabelClick && onActionLabelClick();
-                            this.store.showConfig = true;
-                          }
-                        };
-                      }
-                    }}
-                    onRow={(record, rowIndex) => {
-                      return {
-                        onClick: () => {
-                          rowsSelectable && this.selectRow(record);
-                        },
-                        onDoubleClick: () => {
-                          if (
-                            !editingDocument &&
-                            rowEdit &&
-                            record.$id &&
-                            (!canEditDocument || canEditDocument(record))
-                          ) {
-                            this.onEditRow(record, rowIndex);
-
-                            if (newDocument) {
-                              onCancelAddNew && onCancelAddNew();
-                              delete this.store.newDocument;
-                            }
-
-                            if (this._mounted) {
-                              this.setState({});
-                            }
-                          }
-                        }
-                      };
-                    }}
-                  />
+                  {orderable && (
+                    <DragDropContextProvider backend={HTML5Backend}>
+                      {mainTable}
+                    </DragDropContextProvider>
+                  )}
+                  {!orderable && mainTable}
                 </div>
               )}
               {showConfig &&
@@ -1385,6 +1429,7 @@ interface EditableRowProps {
   form: WrappedFormUtils;
   index: number;
   props: {};
+  moveRow: (dragIndex: number, hoverIndex: number) => void;
 }
 
 const EditableRow: React.StatelessComponent<EditableRowProps> = ({
@@ -1547,7 +1592,7 @@ class TyrTableConfigComponent extends React.Component<
     return [...lockedItems, ...orderableItems];
   };
 
-  onDragEnd = (result: any) => {
+  onDragEnd = (result: DropResult, provided: ResponderProvided) => {
     // dropped outside the list
     if (!result.destination) {
       return;
@@ -1907,3 +1952,92 @@ class TyrTableControlImpl implements TyrTableControl {
     this.table.closeConfigModal();
   };
 }
+
+type BodyRowProps = {
+  connectDragSource: (component: React.ReactNode) => React.ReactElement<any>;
+  connectDropTarget: (component: React.ReactNode) => React.ReactElement<any>;
+  moveRow: (dragIndex: number, hoverIndex: number) => void;
+  isOver: boolean;
+  isDragging: boolean;
+  className: string;
+  style: any;
+  index: number;
+};
+
+// export type DragProps = {
+//   type: DragDropTypes;
+// };
+
+let draggingIndex = -1;
+
+class BodyRow extends React.Component<BodyRowProps> {
+  render() {
+    const {
+      isOver,
+      connectDragSource,
+      connectDropTarget,
+      moveRow,
+      ...restProps
+    } = this.props;
+    const style = { ...restProps.style, cursor: 'move' };
+
+    let { className } = restProps;
+    if (isOver) {
+      if (restProps.index > draggingIndex) {
+        className += ' drop-over-downward';
+      }
+      if (restProps.index < draggingIndex) {
+        className += ' drop-over-upward';
+      }
+    }
+
+    return connectDragSource(
+      connectDropTarget(
+        <tr {...restProps} className={className} style={style} />
+      )
+    );
+  }
+}
+
+const DraggableBodyRow = DropTarget(
+  'row',
+  {
+    drop(props: BodyRowProps, monitor: DropTargetMonitor) {
+      const dragIndex = (monitor.getItem() as BodyRowProps).index;
+      const hoverIndex = props.index;
+
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+
+      // Time to actually perform the action
+      props.moveRow(dragIndex, hoverIndex);
+
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      (monitor.getItem() as BodyRowProps).index = hoverIndex;
+    }
+  },
+  (connect, monitor) => ({
+    connectDropTarget: connect.dropTarget(),
+    isOver: monitor.isOver()
+  })
+)(
+  DragSource(
+    'row',
+    {
+      beginDrag(props: BodyRowProps) {
+        draggingIndex = props.index;
+        return {
+          index: props.index
+        };
+      }
+    },
+    connect => ({
+      connectDragSource: connect.dragSource()
+    })
+  )(BodyRow)
+);
