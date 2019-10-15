@@ -26,6 +26,7 @@ export interface TyrFieldProps {
   className?: string;
   placeholder?: string;
   dateFormat?: string | string[];
+  default?: any;
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
 
