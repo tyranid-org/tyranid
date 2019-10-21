@@ -51,6 +51,7 @@ declare module 'tyranid/client' {
     export const collections: CollectionInstance[] & CollectionsByClassName;
 
     export const init: () => void;
+    export const ajax: (url: string, opts: any) => Promise<any>;
     export function parseUid(
       uid: string
     ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
