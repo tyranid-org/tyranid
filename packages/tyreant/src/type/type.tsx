@@ -179,10 +179,13 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
 
   const path = props.path!;
   v = path.get(document!);
-  if (!v && defaultValue !== undefined) {
-    v = defaultValue;
-    path.set(document!, v, { create: true });
-    v = path.get(document); // doing this until we can update mobx to 5+
+  if (v === undefined) {
+    const dv = defaultValue || props.default;
+    if (dv !== undefined) {
+      v = dv;
+      path.set(document!, v, { create: true });
+      v = path.get(document); // doing this until we can update mobx to 5+
+    }
   }
 
   return v;

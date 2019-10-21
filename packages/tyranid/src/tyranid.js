@@ -18,6 +18,7 @@ import './type/object';
 import './type/password';
 import './type/string';
 import './type/time';
+import './type/timezone';
 import './type/uid';
 import './type/units';
 import './type/url';

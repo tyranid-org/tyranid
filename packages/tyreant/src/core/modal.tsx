@@ -33,6 +33,7 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
       this.create = action.decorate({
         action: () => this.openModal()
       });
+      this.setState({});
     } else if (action.is('edit')) {
       const edit = action.decorate({
         action: () => this.openModal()

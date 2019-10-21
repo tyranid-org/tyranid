@@ -1,7 +1,8 @@
 {
   "name": "tyranid",
   "version": "0.6.81",
-  "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
+  "description":
+    "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "homepage": "http://tyranid.org",
   "main": "dist/src/tyranid.js",
   "typings": "tyranid.d.ts",
@@ -16,7 +17,8 @@
     "watch": "rm -rf ./dist/ && tsc -w",
     "tsc:tests": "npm run generate-typings && tsc -p ./test",
     "tsc": "rm -rf ./dist/ && tsc",
-    "mocha": "npm run tsc:tests && mocha \"./dist/test/test.js\" --read false -t 100000",
+    "mocha":
+      "npm run tsc:tests && mocha \"./dist/test/test.js\" --read false -t 100000",
     "mocha-coverage": "nyc mocha \"./dist/test/test.js\" --read false",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "server": "node ./test/serverBoot.js"
@@ -31,6 +33,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@types/moment-timezone": "0.5.12",
     "aws-s3-promisified": "2.0.0",
     "aws-sdk": "2.125.0",
     "chalk": "^2.1.0",
@@ -41,7 +44,8 @@
     "glob": "7.0.5",
     "json-stable-stringify": "1.0.1",
     "lodash": "^3.10.1",
-    "moment": "2.20.1",
+    "moment": "2.24.0",
+    "moment-timezone": "0.5.23",
     "node-fetch": "1.7.1",
     "on-finished": "2.3.0",
     "socket.io": "2.2.0",

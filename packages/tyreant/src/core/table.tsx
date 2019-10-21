@@ -534,7 +534,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     });
   }
 
-  private async findAll() {
+  async refresh() {
+    return this.findAll(true);
+  }
+
+  async findAll(reset?: boolean) {
     const {
       documents,
       route,
@@ -564,7 +568,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         [name: string]: string;
       });
 
-      if (isEqual(store.tableDefn, defn)) return;
+      if (!reset && isEqual(store.tableDefn, defn)) return;
       store.tableDefn = defn;
     }
 

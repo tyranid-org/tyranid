@@ -150,8 +150,8 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
           traits: ['edit'],
           name: 'edit',
           component: this,
-          action: opts => {
-            this.find(opts.document!);
+          action: async opts => {
+            await this.find(opts.document!);
           }
         })
       );
@@ -184,7 +184,7 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
         name: 'save',
         component: this,
         action: (opts: TyrActionFnOpts) =>
-          submitForm(this.form!, this.state.document!)
+          submitForm(this, this.state.document!)
       })
     );
   }
@@ -214,11 +214,13 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
  * returns Promise<true> if the save was successful, Promise<false> if there were validation errors.
  */
 export function submitForm(
-  form: WrappedFormUtils,
+  tyrForm: TyrForm,
   document: Tyr.Document
 ): Promise<boolean> {
+  const { form } = tyrForm;
+
   return new Promise((resolve, reject) => {
-    form.validateFields(async (err: Error, values: TyrFormFields) => {
+    form!.validateFields(async (err: Error, values: TyrFormFields) => {
       try {
         if (err) {
           resolve(false);
@@ -229,6 +231,10 @@ export function submitForm(
 
         await document.$save();
         document.$cache();
+
+        const { parent } = tyrForm;
+        parent && parent.refresh();
+
         resolve(true);
       } catch (saveError) {
         if (saveError.message) message.error(saveError.message);

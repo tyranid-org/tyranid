@@ -1,49 +1,53 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect } from 'react';
 
 import Checkbox from 'antd/es/checkbox';
 
-import { byName, TyrTypeProps, getTypeValue } from './type';
+import { byName, TyrTypeProps, onTypeChange, mapPropsToForm } from './type';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
 
 export const TyrBitmaskBase = ((props: TyrTypeProps) => {
-  return decorateField('bitmask', props, () => {
-    const path = props.path!;
-    const { document } = props;
-    const { tail: field } = path;
-    const { link } = field;
-    const { values } = link!;
-    const [mask, setMask] = useState(getTypeValue(props, 0x0) as number);
+  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
-    const check = (id: number, checked: boolean) => {
-      const bit = 1 << (id - 1);
-      const newMask = checked ? mask | bit : mask & ~bit;
-      path.set(document!, newMask, { create: true });
-      setMask(newMask);
-    };
-
-    return (
-      <>
-        {values.map(value => {
-          const checked = (mask & (1 << ((value.$id as number) - 1))) !== 0x0;
-          return (
-            <Checkbox
-              key={value.$id}
-              checked={checked}
-              onChange={e => check(value.$id as number, e.target.checked)}
-            >
-              {value.$label}
-            </Checkbox>
-          );
-        })}
-      </>
-    );
-  });
+  return decorateField('bitmask', props, () => (
+    <Checkbox.Group
+      options={props.path!.tail.link!.values.map(value => ({
+        label: value.$label,
+        value: value.$id
+      }))}
+      onChange={e => onTypeChange(props, e, e)}
+    />
+  ));
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrBitmask = withTypeContext(TyrBitmaskBase);
 
 byName.bitmask = {
-  component: TyrBitmaskBase
+  component: TyrBitmaskBase,
+  mapDocumentValueToFormValue(path, value, props) {
+    const arr = [];
+
+    for (const doc of path.tail.link!.values) {
+      const { $id } = doc;
+      const checked = (value & (1 << (($id as number) - 1))) !== 0x0;
+
+      if (checked) arr.push($id);
+    }
+
+    return arr;
+  },
+  mapFormValueToDocumentValue(path, value, props) {
+    if (Array.isArray(value)) {
+      let mask = 0x0;
+
+      for (const v of value) {
+        mask |= 1 << ((v as number) - 1);
+      }
+
+      return mask;
+    } else {
+      return 0x0;
+    }
+  }
 };

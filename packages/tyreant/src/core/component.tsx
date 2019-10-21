@@ -142,6 +142,8 @@ export class TyrComponent<
     return new this.collection!(obj);
   }
 
+  async refresh() {}
+
   async find(document: Tyr.Document) {
     const { collection, linkToParent } = this;
     let updatedDocument: Tyr.Document | null | undefined;

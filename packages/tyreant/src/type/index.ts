@@ -13,3 +13,4 @@ export * from './link';
 export * from './object';
 export * from './string';
 export * from './time';
+export * from './timezone';
