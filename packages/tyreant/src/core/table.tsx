@@ -4,11 +4,6 @@
    - store in tableConfig
  - store filters in tableConfig
  - store sort in tableConfig
- - Add d&d
-   - https://ant.design/components/table/#components-table-demo-drag-sorting
-   - Maybe see if we can do this with beautiful d&d
- - Row selection
-   - https://ant.design/components/table/#components-table-demo-row-selection
 */
 
 import * as React from 'react';
@@ -29,6 +24,7 @@ import {
   DropTarget,
   DropTargetMonitor
 } from 'react-dnd';
+
 import HTML5Backend from 'react-dnd-html5-backend';
 
 import {
@@ -77,6 +73,8 @@ const ObsTable = observer(Table);
 
 const DEFAULT_PAGE_SIZE = 20;
 
+let dndBackend: __ReactDnd.Backend;
+
 interface EditableContextProps {
   form?: WrappedFormUtils;
 }
@@ -112,9 +110,9 @@ export type TyrTableConfig = {
   lockedLeft: number;
   title?: string;
   header?: string | React.ReactNode;
-  key?: string;
   asDrawer?: boolean;
   compact?: boolean;
+  key: string;
 };
 
 export interface TyrTableProps extends TyrComponentProps {
@@ -156,6 +154,10 @@ export interface TyrTableProps extends TyrComponentProps {
   setEditing?: (editing: boolean) => void;
   onSelectRows?: (selectedRowIds: string[]) => void;
   orderable?: boolean;
+  dndBackend?: __ReactDnd.Backend;
+  moveRow?: (dragIndex: number, hoverIndex: number) => void;
+  notifyFilterExists?: (exists: boolean) => void;
+  notifySortSet?: (columnName?: string, order?: TyrSortDirection) => void;
 }
 
 @observer
@@ -182,7 +184,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     loading: false,
     count: this.props.documents ? this.props.documents.length : 0,
     workingSearchValues: {},
-    pageSize: this.props.pageSize || DEFAULT_PAGE_SIZE,
+    pageSize:
+      this.props.pageSize !== undefined
+        ? this.props.pageSize
+        : DEFAULT_PAGE_SIZE,
     isSavingDocument: false,
     tableDefn: {},
     showConfig: false,
@@ -193,6 +198,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   async componentDidMount() {
     const { linkToParent } = this;
     const { actions } = this.props;
+
+    if (!dndBackend) {
+      dndBackend = this.props.dndBackend || HTML5Backend;
+    }
 
     if (!this.collection) {
       throw new Error('could not determine collection for TyrForm');
@@ -256,8 +265,29 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps) {
-    if (this.props.documents && nextProps.documents && !this.props.orderable) {
-      this.setSortedDocuments(nextProps.documents);
+    if (this.props.documents && nextProps.documents) {
+      if (this.props.orderable) {
+        this.store.documents = nextProps.documents;
+        this.store.count = nextProps.documents.length;
+      } else {
+        this.setSortedDocuments(nextProps.documents);
+      }
+    }
+
+    if (this.store.fields.length && nextProps.fields) {
+      this.store.fields = compact(
+        nextProps.fields.map(f => {
+          const fld = this.store.fields.find(sf => sf.field === f.field);
+
+          if (fld) {
+            return f;
+          }
+
+          return null;
+        })
+      ) as TyrTableColumnFieldProps[];
+    } else {
+      this.store.fields = nextProps.fields;
     }
   }
 
@@ -295,7 +325,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       sortColumn = this.props.fields.find(column => !!column.defaultSort);
     }
 
-    if (!this.props.orderable && sortColumn) {
+    if (sortColumn) {
       let field: Tyr.FieldInstance | undefined = undefined;
       let pathName: string | undefined = undefined;
 
@@ -791,7 +821,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       actionHeaderLabel,
       actionTrigger,
       actionColumnClassName,
-      orderable
+      notifyFilterExists
     } = this.props;
 
     const store = this.store;
@@ -806,8 +836,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     const localSearch = !!this.props.documents;
     const fieldCount = columns.length;
-    const isEditingAnything = newDocumentTable || editingDocument;
+    const isEditingAnything = !!newDocumentTable || !!editingDocument;
     const allWidthsDefined = columns.some(c => c.width);
+    let hasAnyFilter = false;
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(
       (column, columnIdx) => {
@@ -878,10 +909,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
         let sorter = undefined;
 
-        if (field && !newDocumentTable) {
+        if (!newDocumentTable) {
           if (column.sortComparator) {
             sorter = column.sortComparator;
-          } else {
+          } else if (field) {
             sorter = (a: Tyr.Document, b: Tyr.Document) => {
               const av = np && np.get(a);
               const bv = np && np.get(b);
@@ -894,6 +925,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         const filteredValue = pathName
           ? filterable.searchValues[pathName]
           : undefined;
+
+        hasAnyFilter = hasAnyFilter || filteredValue !== undefined;
+
+        const sortingEnabled = !editingDocument && !newDocumentTable;
+        const filteringEnabled = !newDocumentTable;
 
         return {
           dataIndex: pathName,
@@ -970,23 +1006,16 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               </div>
             );
           },
-          sorter:
-            !orderable && !editingDocument && !newDocumentTable
-              ? sorter
-              : undefined,
-          sortOrder:
-            !orderable && !editingDocument && !newDocumentTable
-              ? sortDirection
-              : undefined,
+          sorter: sortingEnabled ? sorter : undefined,
+          sortOrder: sortingEnabled ? sortDirection : undefined,
           title: column.label || (field && field.label),
           width: colWidth,
           className: column.className,
           ellipsis: column.ellipsis,
-          ...(!orderable && !newDocumentTable && filteredValue
+          ...(filteringEnabled && filteredValue
             ? { filteredValue: [filteredValue] }
             : {}),
-          ...((!orderable &&
-            !newDocumentTable &&
+          ...((filteringEnabled &&
             (!column.noFilter && np && getFilter(np, filterable, column))) ||
             {}),
           ...(!isEditingAnything && column.pinned && fieldCount > 1
@@ -1063,6 +1092,39 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             return <span />;
           }
 
+          if (this.actions.length === 1) {
+            const action = this.actions[0];
+            const label = action.label;
+
+            if (label instanceof string) {
+              return (
+                <a
+                  className="action-item"
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    action.act({ document });
+                  }}
+                >
+                  {label}
+                </a>
+              );
+            }
+
+            return (
+              <span
+                className="action-item"
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  action.act({ document });
+                }}
+              >
+                {action.label as React.ReactNode}
+              </span>
+            );
+          }
+
           const menu = (
             <Menu className="tyr-menu">
               {thisActions.map(action => (
@@ -1085,9 +1147,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         },
         sorter: undefined,
         sortOrder: undefined,
-        width: '40px',
+        width: 40,
         ...(!isEditingAnything && !!pinActionsRight ? { fixed: 'right' } : {})
       });
+    }
+
+    if (notifyFilterExists) {
+      setTimeout(() => notifyFilterExists(hasAnyFilter));
     }
 
     return antColumns;
@@ -1158,12 +1224,15 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       this.goToRoute(defn);
     } else {
       store.tableDefn = { ...store.tableDefn, ...defn };
+
+      if (this._mounted) {
+        this.setSortedDocuments(this.store.documents.slice());
+        this.setState({}); // Hack to force a table re-render
+      }
     }
 
-    if (this._mounted) {
-      this.setSortedDocuments(this.store.documents.slice());
-      this.setState({}); // Hack to force a table re-render
-    }
+    this.props.notifySortSet &&
+      this.props.notifySortSet(sortFieldName, sorter.order);
   };
 
   private paginationItemRenderer = (
@@ -1183,6 +1252,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   };
 
   private pagination = () => {
+    if (this.props.pageSize === 0) {
+      return undefined;
+    }
+
     const store = this.store;
     const { skip = 0, limit = store.pageSize } = store.tableDefn;
     const totalCount = store.count || 0;
@@ -1195,6 +1268,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           defaultCurrent: Math.floor(skip / limit) + 1,
           total: totalCount,
           defaultPageSize: limit,
+          pageSize: limit,
           size: 'default',
           itemRender: this.paginationItemRenderer
         }
@@ -1234,13 +1308,42 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.store.showConfig = false;
   };
 
+  resetFiltersAndSort = () => {
+    const { notifyFilterExists, notifySortSet } = this.props;
+    this.store.workingSearchValues = {};
+
+    const tableDefn = this.store.tableDefn;
+    this.store.tableDefn = {
+      ...(tableDefn.limit ? { limit: tableDefn.limit } : {}),
+      ...(tableDefn.skip ? { skip: tableDefn.skip } : {})
+    };
+
+    this.setSortedDocuments(this.store.documents.slice());
+    this.setState({});
+
+    notifyFilterExists && notifyFilterExists(false);
+
+    if (notifySortSet) {
+      const sortColumn = this.props.fields.find(column => !!column.defaultSort);
+      notifySortSet(
+        sortColumn ? (sortColumn.field as string) : undefined,
+        sortColumn ? sortColumn.defaultSort : undefined
+      );
+    }
+  };
+
   moveRow = (dragIndex: number, hoverIndex: number) => {
+    if (dragIndex === hoverIndex) return;
+
+    const { moveRow } = this.props;
     const { documents } = this.store;
 
     const [removed] = documents.splice(dragIndex, 1);
     documents.splice(hoverIndex, 0, removed);
     this.store.documents = documents;
     this.setState({});
+
+    moveRow && moveRow(dragIndex, hoverIndex);
   };
 
   render() {
@@ -1268,7 +1371,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       onCancelAddNew,
       decorator,
       onSelectRows,
-      orderable
+      orderable,
+      pageSize
     } = this.props;
 
     const fieldCount = fields.length;
@@ -1285,13 +1389,19 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
       this.startFinding(); // want to delay finding until the control is actually shown
 
-      const components = rowEdit
-        ? {
-            body: {
-              row: orderable ? DraggableBodyRow : EditableFormRow
+      const dndEnabled = !isEditingRow && !newDocument && orderable;
+
+      const components =
+        rowEdit || dndEnabled
+          ? {
+              body: {
+                row:
+                  rowEdit && dndEnabled
+                    ? EditableDraggableBodyRow
+                    : rowEdit ? EditableFormRow : DraggableBodyRow
+              }
             }
-          }
-        : undefined;
+          : undefined;
 
       const mainTable = fields ? (
         <ObsTable
@@ -1307,7 +1417,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           components={components}
           rowKey={(doc: any) => doc.$id || doc.$id}
           size={size || 'small'}
-          pagination={this.pagination()}
+          pagination={pageSize === 0 ? false : this.pagination()}
           onChange={this.handleTableChange}
           footer={footer}
           title={newDocument ? undefined : title}
@@ -1335,7 +1445,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               },
 
               index: rowIndex,
-              moveRow: this.moveRow,
+              ...(rowEdit || dndEnabled ? { moveRow: this.moveRow } : {}),
 
               onDoubleClick: () => {
                 if (
@@ -1399,12 +1509,13 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   }}
                   ref={this.tableWrapper}
                 >
-                  {orderable && (
-                    <DragDropContextProvider backend={HTML5Backend}>
-                      {mainTable}
-                    </DragDropContextProvider>
-                  )}
-                  {!orderable && mainTable}
+                  {dndEnabled &&
+                    dndBackend && (
+                      <DragDropContextProvider backend={dndBackend}>
+                        {mainTable}
+                      </DragDropContextProvider>
+                    )}
+                  {!dndEnabled && mainTable}
                 </div>
               )}
               {showConfig &&
@@ -1425,24 +1536,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     });
   }
 }
-interface EditableRowProps {
-  form: WrappedFormUtils;
-  index: number;
-  props: {};
-  moveRow: (dragIndex: number, hoverIndex: number) => void;
-}
-
-const EditableRow: React.StatelessComponent<EditableRowProps> = ({
-  form,
-  index,
-  ...props
-}) => (
-  <EditableContext.Provider value={{ form }}>
-    <tr key={`form-${index}`} {...props} />
-  </EditableContext.Provider>
-);
-
-export const EditableFormRow = Form.create()(EditableRow);
 
 type TyrTableConfigField = {
   name: string;
@@ -1779,7 +1872,7 @@ const ensureTableConfig = async (
     tableConfig = (await Tyr.byName.tyrTableConfig.findOne({
       query: {
         userId,
-        ...(key ? { key } : {}),
+        key,
         documentUid,
         collectionId
       }
@@ -1924,6 +2017,7 @@ export interface TyrTableControl {
   setFieldValue: (fieldName: string, value: any) => void;
   refresh: () => void;
   closeConfigModal: () => void;
+  resetFiltersAndSort: () => void;
 }
 
 /**
@@ -1951,7 +2045,13 @@ class TyrTableControlImpl implements TyrTableControl {
   closeConfigModal = () => {
     this.table.closeConfigModal();
   };
+
+  resetFiltersAndSort = () => {
+    this.table.resetFiltersAndSort();
+  };
 }
+
+// EditableRow, DraggableRow, EditableDraggableRow
 
 type BodyRowProps = {
   connectDragSource: (component: React.ReactNode) => React.ReactElement<any>;
@@ -1962,11 +2062,8 @@ type BodyRowProps = {
   className: string;
   style: any;
   index: number;
+  form: WrappedFormUtils;
 };
-
-// export type DragProps = {
-//   type: DragDropTypes;
-// };
 
 let draggingIndex = -1;
 
@@ -1977,9 +2074,14 @@ class BodyRow extends React.Component<BodyRowProps> {
       connectDragSource,
       connectDropTarget,
       moveRow,
+      form,
       ...restProps
     } = this.props;
-    const style = { ...restProps.style, cursor: 'move' };
+
+    const style = {
+      ...restProps.style,
+      cursor: connectDragSource ? 'move' : form ? 'pointer' : 'default'
+    };
 
     let { className } = restProps;
     if (isOver) {
@@ -1991,10 +2093,48 @@ class BodyRow extends React.Component<BodyRowProps> {
       }
     }
 
-    return connectDragSource(
-      connectDropTarget(
-        <tr {...restProps} className={className} style={style} />
-      )
+    // Just the edit row
+    if (form && !connectDragSource) {
+      return (
+        <EditableContext.Provider value={{ form }}>
+          <tr
+            key={`form-${restProps.index}`}
+            {...restProps}
+            className={className}
+            style={style}
+          />
+        </EditableContext.Provider>
+      );
+    }
+
+    // Just the draggableRow
+    if (connectDragSource && !form) {
+      return connectDragSource(
+        connectDropTarget(
+          <tr
+            key={`form-${restProps.index}`}
+            {...restProps}
+            className={className}
+            style={style}
+          />
+        )
+      );
+    }
+
+    // Both editable and draggable
+    return (
+      <EditableContext.Provider value={{ form }}>
+        {connectDragSource(
+          connectDropTarget(
+            <tr
+              key={`form-${restProps.index}`}
+              {...restProps}
+              className={className}
+              style={style}
+            />
+          )
+        )}
+      </EditableContext.Provider>
     );
   }
 }
@@ -2041,3 +2181,6 @@ const DraggableBodyRow = DropTarget(
     })
   )(BodyRow)
 );
+
+const EditableFormRow = Form.create()(BodyRow);
+const EditableDraggableBodyRow = Form.create()(DraggableBodyRow);

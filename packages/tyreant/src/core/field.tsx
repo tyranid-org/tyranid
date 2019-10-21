@@ -26,6 +26,7 @@ export interface TyrFieldProps {
   className?: string;
   placeholder?: string;
   dateFormat?: string | string[];
+  default?: any;
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
 
@@ -55,7 +56,7 @@ export interface TyrFieldProps {
 
   defaultSort?: TyrSortDirection;
   dropdownClassName?: string;
-  width?: string;
+  width?: number | string;
   onChange?: (value: any, event: any, props: TyrTypeProps) => void;
   onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
   onDeselect?: (value: SelectedValue) => any;

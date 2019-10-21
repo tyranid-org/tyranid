@@ -151,6 +151,11 @@ export const mapDocumentValueToFormValue = (
     value = mapDocumentValueToFormValue(path, value, props);
   }
 
+  if (value === undefined && props) {
+    const { default: defaultValue } = props;
+    if (defaultValue) return defaultValue;
+  }
+
   return value;
 };
 
@@ -189,13 +194,13 @@ export const fieldDecoratorName = (props: TyrTypeProps) => {
 };
 
 export const mapPropsToForm = (props: TyrTypeProps) => {
-  const { path, document, form, value, extra } = props;
+  const { path, document, form, value, extra, default: defaultValue } = props;
 
   if (value !== undefined) {
     const pathid = path!.identifier;
     // TODO:  this should be [pathid] instead of .value ?
     const oldValue = form.getFieldsValue([pathid]).value;
-    const newValue = value.value;
+    const newValue = value.value || defaultValue;
 
     if (oldValue !== newValue) {
       form.setFieldsValue({
@@ -205,7 +210,7 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
     }
   } else if (extra) {
     const oldValue = form.getFieldsValue([extra])[extra];
-    const newValue = (document as any)[extra];
+    const newValue = (document as any)[extra] || defaultValue;
 
     if (oldValue !== newValue) {
       form.setFieldsValue({
