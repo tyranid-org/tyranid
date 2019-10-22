@@ -217,6 +217,14 @@ export function defineDocumentProperties(dp) {
       configurable: false
     },
 
+    $isNew: {
+      get() {
+        return !this.$id;
+      },
+      enumerable: false,
+      configurable: false
+    },
+
     $: {
       get() {
         return NamePath.taggedTemplateLiteral.bind(this);

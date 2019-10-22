@@ -221,6 +221,7 @@ export namespace Tyr {
     $clone(): this;
     $cloneDeep(): this;
     $id: IdType;
+    $isNew: boolean;
     $label: string;
     $model: CollectionInstance<IdType, this>;
     $remove(opts: any): Promise<void>;

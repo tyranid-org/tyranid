@@ -528,6 +528,14 @@ export function generateClientLibrary() {
       configurable: false
     },
 
+    $isNew: {
+      get() {
+        return !this.$id;
+      },
+      enumerable:   false,
+      configurable: false
+    },
+
     $label: {
       get() {
         return this.$model.labelFor(this);

@@ -41,6 +41,11 @@ export interface TyrFieldProps {
   renderDisplay?: (doc: Tyr.Document) => React.ReactElement | string;
 
   /**
+   * Do not show this field when creating new documents.
+   */
+  hideOnCreate?: boolean;
+
+  /**
    * Suppress the default generation of field labels.
    */
   noLabel?: boolean;
@@ -133,6 +138,10 @@ export const decorateField = (
   const field = path && path.tail;
 
   const identifier = extra || path!.identifier;
+
+  if (props.hideOnCreate && props.document && props.document.$isNew) {
+    return <div className="hide-on-create" />;
+  }
 
   /*
      WARNING!
