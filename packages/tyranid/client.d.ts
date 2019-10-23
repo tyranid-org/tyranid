@@ -55,6 +55,10 @@ declare module 'tyranid/client' {
     export function parseUid(
       uid: string
     ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
+    export function isSameId(
+      a: AnyIdType | null | undefined,
+      b: AnyIdType | null | undefined
+    ): boolean;
     export function labelize(name: string): string;
     export function pluralize(str: string): string;
     export function singularize(str: string): string;
