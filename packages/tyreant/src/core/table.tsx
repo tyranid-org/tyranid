@@ -197,9 +197,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   async componentDidMount() {
     const { linkToParent } = this;
-    const { actions } = this.props;
+    const { actions, orderable } = this.props;
 
-    if (!dndBackend) {
+    if (orderable && !dndBackend) {
       dndBackend = this.props.dndBackend || HTML5Backend;
     }
 
@@ -1395,17 +1395,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
       const dndEnabled = !isEditingRow && !newDocument && orderable;
 
-      const components =
-        rowEdit || dndEnabled
-          ? {
-              body: {
-                row:
-                  rowEdit && dndEnabled
-                    ? EditableDraggableBodyRow
-                    : rowEdit ? EditableFormRow : DraggableBodyRow
-              }
-            }
-          : undefined;
+      const components = {
+        body: {
+          row: dndEnabled ? EditableDraggableBodyRow : EditableFormRow
+        }
+      };
 
       const mainTable = fields ? (
         <ObsTable
@@ -1449,7 +1443,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               },
 
               index: rowIndex,
-              ...(rowEdit || dndEnabled ? { moveRow: this.moveRow } : {}),
+              moveRow: this.moveRow,
+              dndEnabled,
 
               onDoubleClick: () => {
                 if (
@@ -1513,13 +1508,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   }}
                   ref={this.tableWrapper}
                 >
-                  {dndEnabled &&
-                    dndBackend && (
-                      <DragDropContextProvider backend={dndBackend}>
-                        {mainTable}
-                      </DragDropContextProvider>
-                    )}
-                  {!dndEnabled && mainTable}
+                  {dndBackend && (
+                    <DragDropContextProvider backend={dndBackend}>
+                      {mainTable}
+                    </DragDropContextProvider>
+                  )}
+                  {!dndBackend && mainTable}
                 </div>
               )}
               {showConfig &&
@@ -2066,6 +2060,7 @@ type BodyRowProps = {
   className: string;
   style: any;
   index: number;
+  dndEnabled: boolean;
   form: WrappedFormUtils;
 };
 
@@ -2079,12 +2074,14 @@ class BodyRow extends React.Component<BodyRowProps> {
       connectDropTarget,
       moveRow,
       form,
+      dndEnabled,
       ...restProps
     } = this.props;
 
     const style = {
       ...restProps.style,
-      cursor: connectDragSource ? 'move' : form ? 'pointer' : 'default'
+      cursor:
+        dndEnabled && connectDragSource ? 'move' : form ? 'pointer' : 'default'
     };
 
     let { className } = restProps;
@@ -2173,6 +2170,10 @@ const DraggableBodyRow = DropTarget(
   DragSource(
     'row',
     {
+      canDrag(props: BodyRowProps) {
+        return props.dndEnabled;
+      },
+
       beginDrag(props: BodyRowProps) {
         draggingIndex = props.index;
         return {
