@@ -1398,7 +1398,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
       const components = {
         body: {
-          row: dndEnabled ? EditableDraggableBodyRow : EditableFormRow
+          row:
+            dndEnabled && dndBackend
+              ? EditableDraggableBodyRow
+              : EditableFormRow
         }
       };
 
