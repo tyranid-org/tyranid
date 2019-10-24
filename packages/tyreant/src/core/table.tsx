@@ -1186,7 +1186,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       for (const pathName in filters) {
         defn[pathName] = {
           ...((store.tableDefn[pathName] as FieldDefinition) || {}),
-          searchValue: filters[pathName].join('.')
+          searchValue: filters[pathName].join('.'),
+          sortDirection: undefined
         };
       }
     }
