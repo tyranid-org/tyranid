@@ -1765,7 +1765,7 @@ describe('tyranid', () => {
           await Book.fields.pages.validate(book);
           throw new Error('said an invalid book was valid');
         } catch (err) {
-          expect(/too big for the library/.test(err.reason)).to.eql(true);
+          expect(/too big for the library/.test(err.message)).to.eql(true);
         }
       });
 
@@ -1777,7 +1777,7 @@ describe('tyranid', () => {
           await Book.remove({ query: { pages: 15000 } });
           throw new Error('saved an invalid book');
         } catch (err) {
-          expect(/too big for the library/.test(err.reason)).to.eql(true);
+          expect(/too big for the library/.test(err.message)).to.eql(true);
         }
       });
     });

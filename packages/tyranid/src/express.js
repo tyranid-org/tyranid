@@ -11,7 +11,8 @@ import Collection from './core/collection';
 import Field from './core/field';
 import NamePath from './core/namePath';
 import Population from './core/population';
-import ValidationError from './core/validationError';
+import { AppError } from './core/appError';
+import { UserError } from './core/userError';
 import Type from './core/type';
 import local from './local/local';
 import SecureError from './secure/secureError';
@@ -377,7 +378,7 @@ export function generateClientLibrary() {
   var byName = {};
 
   function cookie(key) {
-    var result;
+    let result;
     return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? (result[1]) : null;
   }
 
@@ -389,13 +390,22 @@ export function generateClientLibrary() {
       headers[csrf.header] = cookie(csrf.cookie);
     }
 
-    var deferred = $.ajax(opts);
+    const deferred = $.ajax(opts);
 
     return new Promise(function(resolve, reject) {
       deferred.then(function(data, textStatus, jqXHR) {
         resolve(data);
-      }, function(jqXHR, textStatus, errorThrown) {
-        reject(errorThrown);
+      }, (jqXHR, textStatus, errorThrown) => {
+        const { responseJSON } = jqXHR;
+        if (responseJSON && responseJSON.message) {
+          // TODO:  need to parse responseJSON.field as a FieldInstance somehow
+          switch (status) {
+            case 401: reject(new SecureError(responseJSON)); break;
+            default: reject(status < 500 ? new UserError(responseJSON) : new AppError(responseJSON));
+          }
+        } else {
+          reject(errorThrown);
+        }
       });
     });
   }
@@ -700,11 +710,16 @@ export function generateClientLibrary() {
     }));
   };
 
+  ${AppError.toString()}
+  Tyr.AppError = AppError;
 
-  ${ValidationError.toString()}
-  Tyr.ValidationError = ValidationError;
+  ${SecureError.toString()}
+  Tyr.SecureError = SecureError;
 
-  Field.prototype.validate = function(doc) {
+  ${UserError.toString()}
+  Tyr.UserError = UserError;
+
+  Field.prototype.validatSecure = function(doc) {
     if (this.def.validate) {
       return ajax({
         url: '/api/' + this.collection.def.name + '/' + this.path + '/validate/'
@@ -713,7 +728,7 @@ export function generateClientLibrary() {
         contentType: 'application/json'
       }).then(function(result) {
         if (result) {
-          throw new ValidationError(this, result);
+          throw new UserError({ field: this, message: result });
         }
       });
     }
@@ -1674,6 +1689,20 @@ Tyr.connect = Tyr.express /* deprecated */ = connect;
 
 connect.middleware = local.express.bind(local);
 
+export function handleException(res, err) {
+  if (err instanceof UserError) {
+    res.status(400).json(err.toPlain());
+  } else if (err instanceof AppError) {
+    console.error(err);
+    res.status(400).json(err.toPlain());
+  } else if (err instanceof SecureError) {
+    res.status(401).json(err.toPlain());
+  } else {
+    console.error(err);
+    res.status(500).json(err);
+  }
+}
+
 /**
  * @private ... clients should use Tyr.connect()
  *
@@ -1713,17 +1742,12 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             if (projection) opts.projection = projection;
 
-            if (rOpts.populate) {
+            if (rOpts.populate)
               opts.populate = await Population.fromClient(rOpts.populate);
-            }
 
-            if (rOpts.limit) {
-              opts.limit = parseInt(rOpts.limit, 10);
-            }
+            if (rOpts.limit) opts.limit = parseInt(rOpts.limit, 10);
 
-            if (rOpts.skip) {
-              opts.skip = parseInt(rOpts.skip, 10);
-            }
+            if (rOpts.skip) opts.skip = parseInt(rOpts.skip, 10);
 
             if (rOpts.count) {
               opts.count =
@@ -1732,9 +1756,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   : rOpts.count;
             }
 
-            if (rOpts.sort) {
-              opts.sort = rOpts.sort;
-            }
+            if (rOpts.sort) opts.sort = rOpts.sort;
 
             const docs = await col.findAll(opts),
               cDocs = col.toClient(docs);
@@ -1748,8 +1770,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               return res.json(cDocs);
             }
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1775,8 +1796,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(col.toClient(doc));
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1792,8 +1812,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.sendStatus(200);
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1817,8 +1836,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             return res.json(await col.count(opts));
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1847,8 +1865,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             ser.fields(fields);
             res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1873,13 +1890,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             );
             res.sendStatus(200);
           } catch (err) {
-            console.error(err);
-
-            if (err instanceof SecureError) {
-              res.status(401).send(err.message);
-            } else {
-              res.sendStatus(500);
-            }
+            handleException(res, err);
           }
         });
       }
@@ -1908,8 +1919,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1932,8 +1942,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(await col.update(opts));
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1956,8 +1965,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             res.json(await col.updateDoc(doc, opts));
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -1971,13 +1979,17 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
       if (express.rest || express.get) {
         r.get(async (req, res) => {
-          const doc = await col.byId(req.params.id, {
-            auth: req.user,
-            user: req.user,
-            req
-          });
-          if (doc) res.json(doc.$toClient());
-          else res.sendStatus(404);
+          try {
+            const doc = await col.byId(req.params.id, {
+              auth: req.user,
+              user: req.user,
+              req
+            });
+            if (doc) res.json(doc.$toClient());
+            else res.sendStatus(404);
+          } catch (err) {
+            handleException(res, err);
+          }
         });
       }
 
@@ -1992,8 +2004,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.sendStatus(200);
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -2033,8 +2044,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 res.json(field.get(doc.$toClient()));
               } catch (err) {
-                console.error(err);
-                res.sendStatus(500);
+                handleException(res, err);
               }
             });
           }
@@ -2057,8 +2067,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             });
             res.json(results.map(r => r.$toClient()));
           } catch (err) {
-            console.error(err);
-            res.sendStatus(500);
+            handleException(res, err);
           }
         });
       }
@@ -2095,8 +2104,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
                 res.json(results.map(r => r.$toClient()));
               } catch (err) {
-                console.error(err);
-                res.sendStatus(500);
+                handleException(res, err);
               }
             });
           }
@@ -2112,12 +2120,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 );
                 res.json('');
               } catch (err) {
-                if (err instanceof ValidationError) {
-                  res.json(err.reason);
-                } else {
-                  console.error(err);
-                  res.sendStatus(500);
-                }
+                handleException(res, err);
               }
             });
           }

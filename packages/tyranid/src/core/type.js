@@ -2,7 +2,8 @@ import * as _ from 'lodash';
 
 import { evaluateClient } from '../common';
 import Tyr from '../tyr';
-import ValidationError from './validationError';
+import { AppError } from './appError';
+import { UserError } from './userError';
 
 export default class Type {
   constructor(def) {
@@ -57,7 +58,7 @@ export default class Type {
 
   validate(field, value) {
     if (field.def.required && value === undefined) {
-      return new ValidationError(field, 'is required');
+      return new UserError({ field, suffix: 'is required' });
     }
 
     const fn = this.def.validate;
@@ -69,7 +70,7 @@ export default class Type {
     if (f) {
       return f();
     } else {
-      throw new Error(
+      throw new AppError(
         `Type "${this.name}" does not support generatePrimaryKeyVal()`
       );
     }
@@ -128,19 +129,19 @@ export default class Type {
     const def = type.def;
 
     if (!def) {
-      throw new Error('Missing schema definition.');
+      throw new AppError('Missing schema definition.');
     }
 
     if (!def.name) {
-      throw new Error('Missing "name" field in schema definition.');
+      throw new AppError('Missing "name" field in schema definition.');
     }
 
     if (!_.isString(def.name)) {
-      throw new Error('"name" should be a string in schema definition.');
+      throw new AppError('"name" should be a string in schema definition.');
     }
 
     if (Type.byName[def.name]) {
-      throw new Error('Type ' + def.name + ' redefined.');
+      throw new AppError('Type ' + def.name + ' redefined.');
     }
 
     Type.byName[def.name] = type;

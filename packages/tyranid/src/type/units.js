@@ -1,6 +1,5 @@
-import * as moment from 'moment';
 import Type from '../core/type';
-import ValidationError from '../core/validationError';
+import { UserError } from '../core/userError';
 import { Units } from '../unit/units';
 
 const UnitsType = new Type({
@@ -32,7 +31,7 @@ const UnitsType = new Type({
 
   validate(field, value) {
     if (value !== undefined && !(value instanceof Units)) {
-      return new ValidationError(field, 'is not a units');
+      return new UserError({ field, suffix: 'is not a units' });
     }
   }
 });

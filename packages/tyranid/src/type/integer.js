@@ -1,6 +1,6 @@
 import Tyr from '../tyr';
 import Type from '../core/type';
-import ValidationError from '../core/validationError';
+import { UserError } from '../core/userError';
 
 const IntegerType = new Type({
   name: 'integer',
@@ -30,15 +30,12 @@ const IntegerType = new Type({
 
   fromClient(field, value) {
     if (typeof value === 'string') {
-      if (!value.length) {
-        return undefined;
-      }
+      if (!value.length) return undefined;
 
       const v = parseInt(value, 10);
 
-      if (v.toString() !== value) {
-        throw new Error(`Invalid integer on field ${field.name}: ${value}`);
-      }
+      if (v.toString() !== value)
+        throw new UserError(`Invalid integer on field ${field.name}: ${value}`);
 
       return v;
     } else {
@@ -78,7 +75,7 @@ const IntegerType = new Type({
 
   validate(field, value) {
     if (value !== undefined && (typeof value !== 'number' || value % 1 !== 0)) {
-      return new ValidationError(field, 'is not an integer');
+      return new UserError({ field, suffix: 'is not an integer' });
     }
   }
 });

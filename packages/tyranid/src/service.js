@@ -1,3 +1,5 @@
+import { handleException } from './express';
+
 export function instrumentServerServices(col) {
   // col.def.service = service metadata
   // col.service = implementation of services
@@ -65,8 +67,7 @@ export function instrumentExpressServices(col, app, auth) {
             res.json(returns.toClient(result));
           }
         } catch (err) {
-          console.error(err);
-          res.sendStatus(500);
+          handleException(res, err);
         }
       });
   }

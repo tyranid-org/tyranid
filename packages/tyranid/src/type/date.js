@@ -1,5 +1,5 @@
 import Type from '../core/type';
-import ValidationError from '../core/validationError';
+import { UserError } from '../core/userError';
 
 // cannot use import because compare and format are @isomorphic
 const moment = require('moment');
@@ -52,7 +52,7 @@ const DateType = new Type({
 
   validate(field, value) {
     if (value !== undefined && !(value instanceof Date)) {
-      return new ValidationError(field, 'is not a date');
+      return new UserError({ field, suffix: 'is not a date' });
     }
   }
 });

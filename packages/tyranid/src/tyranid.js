@@ -25,6 +25,7 @@ import './type/url';
 
 import Type from './core/type';
 
+import './core/appError';
 import './core/component';
 import './core/collection';
 import './core/event';
@@ -34,7 +35,7 @@ import './core/index';
 import './core/instance';
 import './core/namePath';
 import './core/subscription';
-import './core/validationError';
+import './core/userError';
 import './core/query';
 import './core/update';
 
@@ -51,6 +52,7 @@ import './log/log';
 
 import './diff/diff';
 import './secure/secure';
+import './secure/secureError';
 
 import './ui/table-config';
 

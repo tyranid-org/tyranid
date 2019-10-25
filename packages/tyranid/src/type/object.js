@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import Type from '../core/type';
-import ValidationError from '../core/validationError';
+import { UserError } from '../core/userError';
 
 const ObjectType = new Type({
   name: 'object',
@@ -73,7 +73,7 @@ const ObjectType = new Type({
 
           const error = type.validate(field, obj[fieldName]);
 
-          if (error instanceof ValidationError) {
+          if (error instanceof UserError) {
             errors.push(error);
           } else if (Array.isArray(error)) {
             Array.prototype.push.apply(errors, error);

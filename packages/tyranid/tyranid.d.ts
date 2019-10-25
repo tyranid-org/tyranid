@@ -210,7 +210,7 @@ export namespace Tyr {
     $tyr: typeof Tyr;
     $uid: string;
     $update(fields?: any): Promise<this>;
-    $validate(): ValidationError[];
+    $validate(): UserError[];
   }
 
   export interface Inserted<IdType extends AnyIdType = AnyIdType>
@@ -1052,21 +1052,44 @@ export namespace Tyr {
     ): Promise<void>;
     sortValue(namePath: NamePathInstance, value: any): any;
     toClient(field: FieldInstance, value: any): any;
-    validate(field: FieldInstance, value: any): ValidationError;
+    validate(field: FieldInstance, value: any): UserError;
   }
 
-  /**
-   *  Error thrown in validation failure
-   */
-  export interface ValidationErrorStatic {
-    new (...args: any[]): ValidationError;
+  interface ErrorOptions {
+    message?: string;
+    suffix?: string;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
   }
 
-  export interface ValidationError {
-    reason: string;
-    field: FieldInstance;
+  export interface AppErrorStatic {
+    new (opts: string | ErrorOptions): UserError;
+  }
+
+  export interface AppError {
     message: string;
-    tostring(): string;
+    field?: FieldInstance;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
+    toString(): string;
+  }
+
+  export interface UserErrorStatic {
+    new (opts: string | ErrorOptions): UserError;
+  }
+
+  export interface UserError {
+    message: string;
+    field?: FieldInstance;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
+    toString(): string;
   }
 
   export interface DiffStatic {

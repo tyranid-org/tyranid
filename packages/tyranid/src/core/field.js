@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 
 import Tyr from '../tyr';
 import NamePath from './namePath';
-import ValidationError from './validationError';
+import { UserError } from './userError';
 import LinkType from '../type/link';
 
 export default class Field {
@@ -111,10 +111,7 @@ export default class Field {
 
     if (validateFn) {
       const reason = await validateFn.apply(doc, this);
-
-      if (reason) {
-        throw new ValidationError(this, reason);
-      }
+      if (reason) throw new UserError({ field: this, suffix: reason });
     }
   }
 }

@@ -1,19 +1,21 @@
 import Tyr from '../tyr';
 
 /** @isomorphic */
-export default class SecureError extends Error {
-  constructor(msg) {
-    let message;
-
+export class AppError extends Error {
+  constructor(value) {
     if (typeof value === 'string') {
-      message = value || 'Security violation';
-      super(message);
+      super(value);
     } else if (value && typeof value === 'object') {
-      message = value.message || 'Security violation';
+      const { suffix, field } = value;
+
+      let message = suffix
+        ? `The value at ${field.path} ${value.suffix}`
+        : value.message;
       super(message);
 
       for (const propName in value) {
         switch (propName) {
+          case 'suffix':
           case 'message':
             break;
           default:
@@ -22,18 +24,21 @@ export default class SecureError extends Error {
         }
       }
     } else {
-      super('Security violation');
+      super();
     }
   }
 
   toPlain() {
-    const { field, technical } = this;
+    const { field, lineNumber, rowNumber, columnNumber, technical } = this;
 
     const o = { message: this.message };
     if (field) o.field = field.path.name;
+    if (lineNumber !== undefined) o.lineNumber = lineNumber;
+    if (columnNumber !== undefined) o.columnNumber = columnNumber;
+    if (rowNumber !== undefined) o.rowNumber = rowNumber;
     if (technical !== undefined) o.technical = technical;
     return o;
   }
 }
 
-Tyr.SecureError = SecureError;
+Tyr.AppError = AppError;
