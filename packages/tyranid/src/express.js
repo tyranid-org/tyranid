@@ -704,7 +704,14 @@ export function generateClientLibrary() {
       data: JSON.stringify(data),
       contentType: 'application/json'
     }).then(docs => docs.map(doc => {
-      doc = new to(doc);
+      if (to ) {
+        doc = new to(doc);
+      } else {
+        const col = Tyr.byId[doc._colId];
+        doc = new col(doc);
+        delete doc._colId;
+      }
+
       doc.$cache();
       return doc;
     }));
@@ -2077,7 +2084,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
        *     /api/NAME/FIELD_PATH/validate
        */
 
-      if (express.rest || express.get) {
+      if (express.rest || express.put) {
         _.each(col.paths, field => {
           const to = field.link;
           if ((to && to.labelField) || field.type.name === 'uid') {

@@ -680,8 +680,9 @@ export default class Collection {
         };
 
     const fields = this.labelProjection();
+    const labels = await this.findAll({ query, projection: fields, ...opts });
 
-    return await this.findAll({ query, projection: fields, ...opts });
+    return labels.filter(l => !!l.$label);
   }
 
   find(...args) {

@@ -63,7 +63,19 @@ export default class Field {
       const cols = field.of;
 
       if (cols) {
-        return _.flatten(await Promise.all(cols.map(col => col.labels(text))));
+        return _.flatten(
+          await Promise.all(
+            cols.map(async col => {
+              const labels = (await col.labels(text)).filter(t => !!t.$label);
+
+              for (const label of labels) {
+                label._colId = col.id;
+              }
+
+              return labels;
+            })
+          )
+        );
       }
     }
 
