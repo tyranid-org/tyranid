@@ -242,7 +242,11 @@ async function toExcel(opts) {
       }
 
       const cellStyle = column.cell;
-      if (cellStyle) assignCellStyle(cell, cellStyle);
+      if (cellStyle)
+        assignCellStyle(
+          cell,
+          typeof cellStyle === 'function' ? cellStyle(document) : cellStyle
+        );
 
       ci++;
     }

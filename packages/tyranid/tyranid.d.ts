@@ -1232,7 +1232,7 @@ export namespace Tyr {
     field: string;
     get?(this: this, doc: T): any;
     label?: string;
-    cell?: ExcelStyle;
+    cell?: ExcelStyle | ((doc: T) => ExcelStyle);
     header?: ExcelStyle;
     width?: number;
   };
