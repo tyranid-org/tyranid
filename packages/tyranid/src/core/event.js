@@ -1,10 +1,11 @@
 import * as moment from 'moment';
 
 import Tyr from '../tyr';
+import { AppError } from './appError';
 import Collection from './collection';
 import Instance from './instance';
 
-const EVENT_HANDLER_TIMEOUT_MS = 5000;
+const EVENT_HANDLER_TIMEOUT_MS = 30000;
 
 /** @isomorphic */
 Collection.prototype.on = function(opts) {
@@ -52,7 +53,7 @@ Collection.prototype.on = function(opts) {
       switch (type) {
         case 'find':
           if (opts.when === 'pre') {
-            throw new Error(`"find" event does not support "when: pre"`);
+            throw new AppError(`"find" event does not support "when: pre"`);
           }
       }
     }
@@ -242,7 +243,7 @@ export default class Event {
               event.preventDefault();
 
               if (err.message === 'timed out') {
-                throw new Error(
+                throw new AppError(
                   `${event.type} handler on collection "${
                     event.collection.name
                   }" timed out after ${EVENT_HANDLER_TIMEOUT_MS}ms`
