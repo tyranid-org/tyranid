@@ -679,6 +679,11 @@ export namespace Tyr {
 
   export type LogLevel = 'TRACE' | 'LOG' | 'INFO' | 'WARN' | 'ERROR' | 'FATAL';
 
+  export interface ExceptionOptions {
+    defaultMessage: string;
+    httpCode: number;
+  }
+
   export interface ConfigOptions {
     aws?: {
       bucket?: string;
@@ -692,6 +697,11 @@ export namespace Tyr {
     };
     db?: mongodb.Db;
     dbLogLevel?: LogLevel | false;
+    exceptions?: {
+      app?: ExceptionOptions;
+      secure?: ExceptionOptions;
+      user?: ExceptionOptions;
+    };
     externalLogger?: (obj: any) => void | Promise<void>;
     externalLogLevel?: LogLevel | false;
     fixer?: {

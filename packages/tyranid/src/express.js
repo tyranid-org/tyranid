@@ -370,6 +370,11 @@ export function generateClientLibrary() {
       : ''
   }
   ${
+    Tyr.options.exceptions
+      ? `Tyr.options.exceptions = ${JSON.stringify(Tyr.options.exceptions)};`
+      : ''
+  }
+  ${
     Tyr.options.formats
       ? `Tyr.options.formats = ${JSON.stringify(Tyr.options.formats)};`
       : ''
@@ -399,9 +404,14 @@ export function generateClientLibrary() {
         const { responseJSON } = jqXHR;
         if (responseJSON && responseJSON.message) {
           // TODO:  need to parse responseJSON.field as a FieldInstance somehow
-          switch (status) {
-            case 401: reject(new SecureError(responseJSON)); break;
-            default: reject(status < 500 ? new UserError(responseJSON) : new AppError(responseJSON));
+
+          const status = jqXHR.status;
+
+          const authCode = _.ge†(Tyr.options, 'exceptions.secure.httpCode') || 403;
+          if (status === authCode) {
+            reject(new SecureError(responseJSON));
+          } else {
+            reject(status < 500 ? new UserError(responseJSON) : new AppError(responseJSON));
           }
         } else {
           reject(errorThrown);
@@ -1698,12 +1708,18 @@ connect.middleware = local.express.bind(local);
 
 export function handleException(res, err) {
   if (err instanceof UserError) {
-    res.status(400).json(err.toPlain());
+    res
+      .status(_.get(Tyr.options, 'exceptions.user.httpCode') || 400)
+      .json(err.toPlain());
   } else if (err instanceof AppError) {
     console.error(err);
-    res.status(400).json(err.toPlain());
+    res
+      .status(_.get(Tyr.options, 'exceptions.app.httpCode') || 500)
+      .json(err.toPlain());
   } else if (err instanceof SecureError) {
-    res.status(401).json(err.toPlain());
+    res
+      .status(_.get(Tyr.options, 'exceptions.secure.httpCode') || 403)
+      .json(err.toPlain());
   } else {
     console.error(err);
     res.status(500).json(err);

@@ -39,6 +39,15 @@ export class UserError extends Error {
     if (technical !== undefined) o.technical = technical;
     return o;
   }
+
+  toString() {
+    let s = '';
+    if (this.technical) s += this.technical + '\n';
+    s += this.message;
+    const st = this.stack;
+    if (st) s += '\n' + st;
+    return s;
+  }
 }
 
 Tyr.UserError = UserError;
