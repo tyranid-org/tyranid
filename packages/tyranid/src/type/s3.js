@@ -100,17 +100,17 @@ function keyForTmp(field, tmpId, filename) {
 
     const s3 = this;
 
-    if (field.collection.name === 'CollectionImport')
-      collection.on({
-        type: 'change',
-        when: 'post',
-        order: 0,
-        async handler(event) {
-          for (const doc of await event.documents) {
-            await s3.def.updateS3(doc);
-          }
+    // TODO:  if there are multiple s3 fields on a collection, we want to make sure this only gets called once
+    collection.on({
+      type: 'change',
+      when: 'post',
+      order: 0,
+      async handler(event) {
+        for (const doc of await event.documents) {
+          await s3.def.updateS3(doc);
         }
-      });
+      }
+    });
 
     collection.on({
       type: 'remove',
