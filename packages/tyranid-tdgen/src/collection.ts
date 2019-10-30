@@ -166,12 +166,14 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
         if (!param.def.required) s += '?';
         s += ': ';
 
+        (global as any).LOG = true;
         s += addField({
           name: paramName,
           field: param,
           indent: 5,
           noPopulatedProperty: true
         });
+        (global as any).LOG = false;
       }
     }
 

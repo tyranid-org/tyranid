@@ -322,6 +322,9 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
 
         result = await page.evaluate(`Tyr.byName.user.canServe(3)`);
         expect(result).to.eql(false);
+
+        result = await page.evaluate(`Tyr.byName.user.canServeArray([2, 3])`);
+        expect(result).to.eql(1);
       });
 
       it('should support collection.aux()', async () => {

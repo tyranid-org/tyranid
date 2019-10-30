@@ -169,10 +169,10 @@ export function addField({
 
     const linkIdType = names.idType(link);
 
-    // add populated prop too
-    if (parent === 'array' || noPopulatedProperty) return linkIdType;
-
     let out = isArray ? `${linkIdType}[]` : linkIdType;
+    if (parent === 'array' || noPopulatedProperty) return out;
+
+    // add populated prop too
     out += ';\n';
 
     const popName = Tyr.NamePath.populateNameFor(name);

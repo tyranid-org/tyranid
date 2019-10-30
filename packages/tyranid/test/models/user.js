@@ -151,6 +151,18 @@ var User = new tyr.Collection({
         }
       },
       return: 'boolean'
+    },
+    canServeArray: {
+      params: {
+        users: {
+          is: 'array',
+          required: true,
+          of: {
+            link: 'user'
+          }
+        }
+      },
+      return: 'integer'
     }
   },
   projections: {
@@ -172,6 +184,11 @@ User.service = {
   async canServe(id) {
     const user = await User.byId(id);
     return user.age >= 21;
+  },
+
+  async canServeArray(ids) {
+    const users = await User.byIds(ids);
+    return users.filter(user => user.age >= 21).length;
   }
 };
 
