@@ -10,9 +10,11 @@ const Tyr = require('../tyr').default;
  *
  * @isomorphic
  */
-function NamePath(base, pathName, skipArray) {
+function NamePath(base, pathName, opts) {
   this.base = base;
   this.name = pathName;
+
+  const skipArray = opts && opts.skipArray;
 
   if (base instanceof NamePath) base = base.tail;
 
@@ -75,8 +77,13 @@ function NamePath(base, pathName, skipArray) {
 
   let at = base;
 
-  let pi = 0,
-    denormal;
+  if (opts && opts.method) {
+    at = base.def.service;
+    console.log('at service', at);
+  }
+
+  let pi = 0;
+  //denormal;
 
   nextPath: while (pi < plen) {
     const name = path[pi];
@@ -199,7 +206,7 @@ NamePath._skipArray = function(field) {
 };
 
 NamePath.prototype.parsePath = function(path, skipArray) {
-  return new NamePath(this, path, skipArray);
+  return new NamePath(this, path, { skipArray });
 };
 
 NamePath.decode = function(path) {

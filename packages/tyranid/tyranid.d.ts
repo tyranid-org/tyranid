@@ -917,7 +917,7 @@ export namespace Tyr {
       Isomorphic.FieldDefinition {}
 
   export interface FieldStatic extends Isomorphic.FieldStatic {
-    new (...args: any[]): FieldInstance;
+    new (def: FieldDefinition, opts?: { [optionName]: any }): FieldInstance;
   }
 
   export interface FieldInstance extends Isomorphic.FieldInstance {
@@ -941,6 +941,24 @@ export namespace Tyr {
       text?: string,
       opts?: any
     ): Promise<Tyr.Document[]>;
+  }
+
+  export interface NamePathStatic {
+    new (
+      base: CollectionInstance | FieldInstance,
+      pathName: string,
+      opts?: {
+        skipArray?: boolean;
+        method?: string;
+      }
+    ): NamePathInstance;
+
+    resolve(
+      collection: CollectionInstance,
+      parentPath: NamePathInstance,
+      path?: Tyr.NamePathInstance | string
+    ): NamePathInstance;
+    populateNameFor(name: string, denormal?: boolean): string;
   }
 
   export interface NamePathInstance extends Isomorphic.NamePathInstance {

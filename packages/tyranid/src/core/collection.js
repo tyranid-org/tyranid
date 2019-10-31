@@ -1753,15 +1753,15 @@ export default class Collection {
           type = field.def[name];
 
           if (!type) {
-            if (required) {
+            if (required)
               throw this.err(field.path, 'Missing "${name}" property');
-            }
 
             return;
           }
 
           if (_.isPlainObject(type)) {
             type = field[name] = new Field(type);
+            if (field.method) type.method = field.method;
           } else if (_.isString(type)) {
             type = Type.byName[type];
             if (!type) {
@@ -2064,6 +2064,7 @@ export default class Collection {
           parentFields[name] = field;
           //}
           field.parent = parent;
+          if (parent.method) field.method = parent.method;
 
           compiler.field(path ? path + '.' + name : name, field);
         }
@@ -2081,13 +2082,17 @@ export default class Collection {
         const { params, return: returns } = defMethod;
 
         for (const paramName in params) {
+          if (paramName === 'return')
+            throw compiler.err(path, '"return" is a reserved parameter name');
+
           let field = params[paramName];
 
           if (_.isString(field)) field = { is: field };
 
-          if (!(field instanceof Field)) {
-            field = params[paramName] = new Field(field, { method: true });
-          }
+          if (!(field instanceof Field))
+            field = params[paramName] = new Field(field, {
+              method: methodName
+            });
 
           compiler.field(paramName, field);
         }
@@ -2097,26 +2102,23 @@ export default class Collection {
         if (field) {
           if (_.isString(field)) field = { is: field };
 
-          if (!(field instanceof Field)) {
-            field = defMethod.return = new Field(field, { method: true });
-          }
+          if (!(field instanceof Field))
+            field = defMethod.return = new Field(field, { method: methodName });
 
           compiler.field('return', field);
         }
       },
 
-      service(defService) {
-        if (!defService) return;
+      service(serviceDef) {
+        if (!serviceDef) return;
 
-        if (!_.isObject(defService))
+        if (!_.isObject(serviceDef))
           throw compiler.err(
             path,
-            '"service" should be an object, got: ' + defService
+            '"service" should be an object, got: ' + serviceDef
           );
 
-        for (const name in defService) {
-          compiler.method(name, defService[name]);
-        }
+        for (const name in serviceDef) compiler.method(name, serviceDef[name]);
       }
     };
 

@@ -125,6 +125,7 @@ export namespace Tyr {
     relate?: 'owns' | 'ownedBy' | 'associate';
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance };
+    method: string;
 
     labelify(value: any): Promise<any>;
     labels(

@@ -29,7 +29,7 @@ export function add() {
       expect(np.fields[0].type.def.name).to.eql('array');
       expect(np.fields[1].type.def.name).to.eql('object');
 
-      np = new NamePath(User, 'roles', true);
+      np = new NamePath(User, 'roles', { skipArray: true });
       expect(np.fields.length).to.eql(1);
       expect(np.fields[0].type.def.name).to.eql('object');
 
