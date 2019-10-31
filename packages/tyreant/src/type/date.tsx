@@ -47,6 +47,16 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
 
 export const TyrDate = withTypeContext(TyrDateBase);
 
+function parseSearchValue(value: any) {
+  if (typeof value === 'string') value = value.split(',');
+  return value
+    ? ((value as string[]).map(v => moment(v)) as [
+        moment.Moment,
+        moment.Moment
+      ])
+    : undefined;
+}
+
 export const dateFilter: Filter = (
   path: Tyr.NamePathInstance,
   filterable: Filterable,
@@ -68,52 +78,62 @@ export const dateFilter: Filter = (
   };
 
   return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => (
-      <div className="search-box">
-        <RangePicker
-          value={filterable.searchValues[pathName]}
-          format={props.dateFormat || DATE_FORMAT}
-          onChange={v => {
-            filterable.searchValues[pathName] = v;
+    filterDropdown: (filterDdProps: FilterDropdownProps) => {
+      const sv = parseSearchValue(filterable.searchValues[pathName]);
 
-            if (props.liveSearch) {
-              filterable.onFilterChange();
-              filterDdProps.confirm && filterDdProps.confirm();
-            }
-          }}
-          //style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <div className="search-box-footer">
-          <Button
-            onClick={() => onClearFilters(filterDdProps.clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Reset
-          </Button>
-          {!props.liveSearch && (
-            <Button
-              type="primary"
-              onClick={() => {
-                if (localSearch) {
-                  filterable.onFilterChange();
-                } else {
-                  filterable.onSearch();
-                }
+      return (
+        <div className="search-box">
+          <RangePicker
+            value={sv}
+            format={props.dateFormat || DATE_FORMAT}
+            onChange={v => {
+              filterable.searchValues[pathName] = v
+                ? (v as moment.Moment[]).map(m => m.format())
+                : undefined;
 
+              if (props.liveSearch) {
+                filterable.onFilterChange();
                 filterDdProps.confirm && filterDdProps.confirm();
-              }}
-              icon="search"
+              } else {
+                filterable.onSearch();
+              }
+            }}
+            //style={{ width: 188, marginBottom: 8, display: 'block' }}
+          />
+          <div className="search-box-footer">
+            <Button
+              onClick={() => onClearFilters(filterDdProps.clearFilters)}
               size="small"
               style={{ width: 90 }}
             >
-              Search
+              Reset
             </Button>
-          )}
+            {!props.liveSearch && (
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (localSearch) {
+                    filterable.onFilterChange();
+                  } else {
+                    filterable.onSearch();
+                  }
+
+                  filterDdProps.confirm && filterDdProps.confirm();
+                }}
+                icon="search"
+                size="small"
+                style={{ width: 90 }}
+              >
+                Search
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    ),
-    onFilter: (value: number[], doc: Tyr.Document) => {
+      );
+    },
+    onFilter: (value: any, doc: Tyr.Document) => {
+      value = parseSearchValue(value);
+
       if (props.onFilter) {
         return props.onFilter(value, doc);
       }
@@ -142,10 +162,12 @@ export const dateFinder: Finder = (
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {
-  if (searchValue) {
+  const sv = parseSearchValue(searchValue);
+  if (sv) {
     if (!opts.query) opts.query = {};
     opts.query[path.name] = {
-      $and: [{ $gte: searchValue[0] }, { $lte: searchValue[1] }]
+      $gte: sv[0],
+      $lte: sv[1]
     };
   }
 };
@@ -156,6 +178,7 @@ byName.date = {
     return value ? moment(value) : null;
   },
   filter: dateFilter,
+  finder: dateFinder,
   cellValue: (
     path: Tyr.NamePathInstance,
     document: Tyr.Document,
