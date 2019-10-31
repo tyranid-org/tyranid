@@ -1018,7 +1018,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           ellipsis: column.ellipsis,
           ...(filteringEnabled && filteredValue
             ? { filteredValue: [filteredValue] }
-            : {}),
+            : { filteredValue: [] }),
           ...((filteringEnabled &&
             (!column.noFilter && np && getFilter(np, filterable, column))) ||
             {}),
