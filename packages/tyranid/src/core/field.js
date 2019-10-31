@@ -66,7 +66,7 @@ export default class Field {
         return _.flatten(
           await Promise.all(
             cols.map(async col => {
-              const labels = (await col.labels(text)).filter(t => !!t.$label);
+              const labels = await col.labels(text);
 
               for (const label of labels) {
                 label._colId = col.id;
