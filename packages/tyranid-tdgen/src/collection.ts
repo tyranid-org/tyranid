@@ -153,6 +153,55 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
 
     s += addComment(mdef, 3, tags);
 
+    /*
+       TODO:  the typing of "this" here is sort of complicated ...
+
+       when IMPLEMENTING a service, this has { auth?, source?, user?, req?, res? }
+
+       but when INVOKING a service, there is no special requirement on this
+
+       furthermore, a service can be invoked from the server, so it's not enough to just
+       add the this stuff in the server definition and not in the client/isomorphic ones, since
+       invokers on the server will run into a problem that their this does not implement { auth?, ... }
+
+       this is a "implementation" vs "invoker" issue, not a "client" vs "server" issue
+
+       right now we're just dodging the issue by typing this to any
+
+       possible solutions:
+
+       o. generate a special implementor signature in the d.ts files
+          that adds "this: ServiceThis" which is properly typed?
+
+       o. have the service method request which context it needs (and/or scan the service method to look for references) and
+          avoid using "this", i.e.:
+
+          myServiceMethod: {
+            params: {
+              myParam: { is: 'string' },
+              user: true,
+              req: true,
+              ...
+            }
+          }
+
+          -. does not provide a way to pass in user/req/etc. to the service unless threadlocal is present
+
+          this would generate a service like:
+           
+            implementor:           myServiceMethod(myParam: string, user: Tyr.User, req: express.Request, ...)
+
+            server:                myServiceMethod(myParam: string, user: Tyr.User, req: express.Request, ...)
+            server w/ threadlocal: myServiceMethod(myParam: string, ...)
+
+            client:                myServiceMethod(myParam: string, ...)
+
+            -. one caveat of this that unless we have threadlocal, the server and client apis are not isomorphic
+            +. solves the issue of passing in user/req/etc. to the method when invoking service from the server
+
+            !. solve threadlocal issue before tackling this issue?
+
+     */
     s += `
       ${methodName}(
         this: any`;

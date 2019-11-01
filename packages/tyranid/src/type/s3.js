@@ -168,7 +168,7 @@ function keyForTmp(field, tmpId, filename) {
           fs.unlink(file.path);
           res.status(200).json({ key, tmpId });
         } catch (err) {
-          console.log(err.stack);
+          console.error(err.stack);
           res.sendStatus(500);
         }
       });
