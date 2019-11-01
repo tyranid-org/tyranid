@@ -56,12 +56,15 @@ export namespace Tyr {
   export import MongoQuery = Isomorphic.MongoQuery;
   export import MongoUpdate = Isomorphic.MongoUpdate;
 
+  export const AppError: AppErrorStatic;
   export const Collection: CollectionStatic;
   export const Event: EventStatic;
   export const Field: FieldStatic;
   export const Log: CollectionInstance;
   export const NamePath: NamePathStatic;
+  export const SecureError: SecureErrorStatic;
   export const Type: TypeStatic;
+  export const UserError: UserErrorStatic;
 
   export type anny = any;
 
@@ -1093,10 +1096,24 @@ export namespace Tyr {
   }
 
   export interface AppErrorStatic {
-    new (opts: string | ErrorOptions): UserError;
+    new (opts?: string | ErrorOptions): UserError;
   }
 
   export interface AppError {
+    message: string;
+    field?: FieldInstance;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
+    toString(): string;
+  }
+
+  export interface SecureErrorStatic {
+    new (opts?: string | ErrorOptions): SecureError;
+  }
+
+  export interface SecureError {
     message: string;
     field?: FieldInstance;
     technical?: string;

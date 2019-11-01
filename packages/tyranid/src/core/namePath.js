@@ -502,7 +502,27 @@ Object.defineProperty(NamePath.prototype, 'spath', {
   get: function() {
     let sp = this._spath;
     if (!sp) {
-      sp = this._spath = this.name.replace(/\._/g, '');
+      sp = '';
+
+      const { fields } = this;
+      let parentField;
+
+      for (let fi = 0, flen = fields.length; fi < flen; fi++) {
+        const field = fields[fi];
+        const { name } = field;
+
+        if (name === '_') continue;
+
+        if (fi) {
+          // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
+          if (parentField.link) sp += '_';
+          sp += '.';
+        }
+        sp += name;
+        parentField = field;
+      }
+
+      //sp = this._spath = this.name.replace(/\._/g, '');
     }
     return sp;
   }

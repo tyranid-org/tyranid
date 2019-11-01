@@ -154,6 +154,7 @@ export namespace Tyr {
     name: string;
     identifier: string;
     path: string[];
+    spath: string;
     fields: FieldInstance[];
     pathLabel: string;
     tail: FieldInstance;

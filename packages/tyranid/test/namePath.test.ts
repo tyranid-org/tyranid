@@ -189,6 +189,19 @@ export function add() {
       expect(field.name).to.be.eql('name');
     });
 
+    it('should support arrays in spath', () => {
+      const np = new NamePath(User, 'roles._');
+      expect(np.spath).to.eql('roles');
+    });
+
+    it('should support spath resolving a denormalized path', () => {
+      const np = new NamePath(User, 'organization.name'),
+        field = np.detail;
+      expect(field.collection).to.be.eql(Tyr.byName.organization);
+      expect(field.name).to.be.eql('name');
+      expect(np.spath).to.be.eql('organization_.name');
+    });
+
     it('should support walk', () => {
       const np = User.parsePath('name');
       const np2 = np.walk('first');

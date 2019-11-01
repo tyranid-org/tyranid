@@ -92,6 +92,10 @@ export const documentPrototype = (Tyr.documentPrototype = {
     return this.$model.parsePath(path).get(this);
   },
 
+  $set(path, value) {
+    return this.$model.parsePath(path).set(this, value, { create: true });
+  },
+
   $redact() {
     const access = this.$access;
     if (access) {

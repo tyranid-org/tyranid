@@ -154,13 +154,14 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
     s += addComment(mdef, 3, tags);
 
     s += `
-      ${methodName}(`;
+      ${methodName}(
+        this: any`;
 
     if (params) {
       let i = 0;
       for (const paramName in params) {
         const param = params[paramName] as Tyr.FieldInstance;
-        if (i++) s += ',';
+        /*if (i++) */ s += ',';
         s += '\n';
         s += pad(paramName, 4);
         if (!param.def.required) s += '?';

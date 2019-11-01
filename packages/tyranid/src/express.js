@@ -459,6 +459,10 @@ export function generateClientLibrary() {
       return this.$model.parsePath(path).get(this);
     },
 
+    $set(path, value) {
+      return this.$model.parsePath(path).set(this, value, { create: true });
+    },
+
     $remove() {
       if (this._id) {
         return this.$model.remove({ _id: this._id });
