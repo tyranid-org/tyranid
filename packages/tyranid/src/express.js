@@ -794,11 +794,11 @@ export function generateClientLibrary() {
     return obj;
   }
 
-  function compileField(path, parent, field, dynamic, aux) {
+  function compileField(path, parent, field, dynamic, aux, method) {
     const collection = parent.collection;
     field.path = path;
     field.parent = parent;
-    collection.paths[path] = field;
+    if (!method) collection.paths[path] = field;
     field.collection = collection;
 
     var def = field.def;
@@ -808,19 +808,19 @@ export function generateClientLibrary() {
       if (!field.of && def.of) {
         var of = new Field(def.of);
         field.of = of;
-        compileField(path + '._', field, of, dynamic, aux);
+        compileField(path + '._', field, of, dynamic, aux, method);
       }
     }
 
     if (def.is === 'object') {
       if (def.fields) {
-        compileFields(path, field, def.fields, dynamic, aux);
+        compileFields(path, field, def.fields, dynamic, aux, method);
       }
 
       if (def.keys) {
         let keys = new Field(def.keys);
         field.keys = keys;
-        compileField(path + '._key', field, keys, dynamic, aux);
+        compileField(path + '._key', field, keys, dynamic, aux, method);
       }
     }
 
@@ -828,7 +828,7 @@ export function generateClientLibrary() {
     if (dynamicMatch) field.dynamicMatch = dynamicMatch;
   }
 
-  function compileFields(path, parent, fieldDefs, dynamic, aux) {
+  function compileFields(path, parent, fieldDefs, dynamic, aux, method) {
     _.each(fieldDefs, function(fieldDef, name) {
       let field;
       if (fieldDef instanceof Field) {
@@ -848,8 +848,35 @@ export function generateClientLibrary() {
 
       if (aux) parent.def.fields[name] = fieldDef;
 
-      compileField(p, parent, field, dynamic, aux);
+      compileField(p, parent, field, dynamic, aux, method);
     });
+  }
+
+  function compileMethod(collection, method) {
+    const { params, return: returns } = method;
+    _.each(params, function(paramDef, name) {
+      let field;
+      if (paramDef instanceof Field) {
+        field = paramDef;
+      } else {
+        field = params[name] = new Field(paramDef);
+        field.name = name;
+      }
+
+      compileField(name, method, field, false, false, true);
+    });
+
+    if (returns) {
+      let field;
+      if (returns instanceof Field) {
+        field = returns;
+      } else {
+        field = method.return = new Field(returns);
+        field.name = 'return';
+      }
+
+      compileField('return', method, field, false, false, true);
+    }
   }
 
   function Collection(def) {
@@ -951,6 +978,10 @@ export function generateClientLibrary() {
         configurable: false,
         value:        fn
       });
+    });
+
+    _.each(def.service, function(method, name) {
+      compileMethod(CollectionInstance, method);
     });
 
     Tyr.collections.push(CollectionInstance);
