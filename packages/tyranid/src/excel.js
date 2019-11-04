@@ -310,9 +310,9 @@ async function fromExcel(opts) {
 
   const columnsByColNumber = {};
   sheet.getRow(headerRowNumber).eachCell((cell, colNumber) => {
-    const label = cell.value;
+    const label = (cell.value || '').toLowerCase();
 
-    const column = columns.find(column => column.label === label);
+    const column = columns.find(column => column.label.toLowerCase() === label);
     if (!column) {
       console.log(`ignoring column "${label}"`);
     } else {
