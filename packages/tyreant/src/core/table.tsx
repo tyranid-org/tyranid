@@ -4,6 +4,7 @@
    - store in tableConfig
  - store filters in tableConfig
  - store sort in tableConfig
+ 
 */
 
 import * as React from 'react';
