@@ -273,6 +273,8 @@ async function toExcel(opts) {
   }
 }
 
+const simplifyLabel = label => label.toLowerCase().replace(/\s/g, '');
+
 async function fromExcel(opts) {
   const { collection, stream, filename, header } = opts;
 
@@ -310,9 +312,11 @@ async function fromExcel(opts) {
 
   const columnsByColNumber = {};
   sheet.getRow(headerRowNumber).eachCell((cell, colNumber) => {
-    const label = (cell.value || '').toLowerCase();
+    const label = simplifyLabel(cell.value || '');
 
-    const column = columns.find(column => column.label.toLowerCase() === label);
+    const column = columns.find(
+      column => simplifyLabel(column.label) === label
+    );
     if (!column) {
       console.log(`ignoring column "${label}"`);
     } else {
