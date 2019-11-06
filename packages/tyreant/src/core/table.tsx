@@ -54,7 +54,7 @@ import {
 } from 'antd';
 
 import { PaginationProps } from 'antd/es/pagination';
-import { ColumnProps } from 'antd/es/table';
+import { ColumnProps, TableRowSelection } from 'antd/es/table';
 import { getFilter, getFinder, getCellValue } from '../type';
 
 import { TyrComponentProps } from './component';
@@ -1314,6 +1314,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.store.showConfig = false;
   };
 
+  setSelectedRows = (ids: string[]) => {
+    this.store.selectedRowKeys = ids;
+  };
+
   resetFiltersAndSort = () => {
     const { notifyFilterExists, notifySortSet } = this.props;
     this.store.workingSearchValues = {};
@@ -1378,7 +1382,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       decorator,
       onSelectRows,
       orderable,
-      pageSize
+      pageSize,
+      rowSelection
     } = this.props;
 
     const fieldCount = fields.length;
@@ -1444,7 +1449,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           onRow={(record, rowIndex) => {
             return {
               onClick: () => {
-                rowsSelectable && this.selectRow(record);
+                !!rowSelection && rowsSelectable && this.selectRow(record);
               },
 
               index: rowIndex,
@@ -2021,6 +2026,7 @@ export interface TyrTableControl {
   refresh: () => void;
   closeConfigModal: () => void;
   resetFiltersAndSort: () => void;
+  setSelectedRows: (ids: string[]) => void;
 }
 
 /**
@@ -2051,6 +2057,10 @@ class TyrTableControlImpl implements TyrTableControl {
 
   resetFiltersAndSort = () => {
     this.table.resetFiltersAndSort();
+  };
+
+  setSelectedRows = (ids: string[]) => {
+    this.table.setSelectedRows(ids);
   };
 }
 
