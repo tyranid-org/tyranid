@@ -2638,6 +2638,10 @@ describe('tyranid', () => {
                 throw new Error('Tyr.pluralize not working on client');
               }
 
+              if (Tyr.unitize(1, 'daisy') !== '1 daisy') {
+                throw new Error('Tyr.unitize not working on client');
+              }
+
               res();
             }
           });

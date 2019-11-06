@@ -439,6 +439,7 @@ export function generateClientLibrary() {
   Tyr.ordinalize = ${es5Fn(Tyr.ordinalize)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
+  Tyr.unitize = ${es5Fn(Tyr.unitize)};
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
 
   const documentPrototype = Tyr.documentPrototype = {

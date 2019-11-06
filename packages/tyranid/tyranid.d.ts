@@ -93,6 +93,7 @@ export namespace Tyr {
   export function labelize(name: string): string;
   export function pluralize(str: string): string;
   export function singularize(str: string): string;
+  export function unitize(count: number, unit: string): string;
   export function config(opts: ConfigOptions): Promise<void>;
   export function connect(opts: ConnectOptions): void;
   export function createIndexes(): Promise<void>;

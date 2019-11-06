@@ -62,6 +62,7 @@ declare module 'tyranid/client' {
     export function labelize(name: string): string;
     export function pluralize(str: string): string;
     export function singularize(str: string): string;
+    export function unitize(count: number, unit: string): string;
     export const setSocketLibrary: (library: typeof io) => void;
     export const reconnectSocket: () => void;
 

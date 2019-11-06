@@ -221,6 +221,10 @@ const Tyr = {
     return number + 'th';
   },
 
+  unitize(count, unit) {
+    return count === 1 ? `1 ${unit}` : `${count} ${Tyr.pluralize(unit)}`;
+  },
+
   //
   // async/await/promise utilities
   //
