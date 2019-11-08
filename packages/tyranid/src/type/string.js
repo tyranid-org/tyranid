@@ -12,7 +12,7 @@ const StringType = new Type({
 
   query(namePath, where, query) {
     if (where) {
-      query[namePath.name] = _.isArray(where) ? { $in: where } : where;
+      query[namePath.spath] = _.isArray(where) ? { $in: where } : where;
     }
   },
 
