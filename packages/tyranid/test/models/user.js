@@ -136,8 +136,8 @@ var User = new tyr.Collection({
   },
   methods: {
     canDrink: {
-      is: 'boolean',
-      fn: function() {
+      return: { is: 'boolean' },
+      fn() {
         return this.age >= 21;
       }
     }

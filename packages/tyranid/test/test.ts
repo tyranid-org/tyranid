@@ -2062,13 +2062,13 @@ describe('tyranid', () => {
           name: { first: 'Jane', last: 'Smith' },
           age: 5
         });
-        expect((child as any).canDrink()).to.be.eql(false);
+        expect(child.canDrink()).to.be.eql(false);
 
         const adult = new User({
           name: { first: 'Jill', last: 'Smith' },
           age: 32
         });
-        expect((adult as any).canDrink()).to.be.eql(true);
+        expect(adult.canDrink()).to.be.eql(true);
       });
 
       it('should work with CollectionInstance.toClient()', () => {

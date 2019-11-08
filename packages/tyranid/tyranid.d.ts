@@ -507,7 +507,7 @@ export namespace Tyr {
     defaultMatchIdOnInsert?: boolean;
   }
 
-  export interface ServiceParameterDefinition {
+  export interface ParameterDefinition {
     is?: string;
     label?: string;
     help?: string;
@@ -536,24 +536,39 @@ export namespace Tyr {
     granularity?: string;
   }
 
-  export interface ServiceMethodDefinition {
+  export interface BaseMethodDefinition {
     help?: string;
     note?: string;
     deprecated?: string | boolean;
-    /**
-     * This is the full URL path for this service.  This will be automatically generated
-     * if you do not specify one.  Recommended to leave this blank and go with auto-generated
-     * URL.
-     */
-    route?: string;
     params?: {
       [parameterName: string]: FieldDefinition | FieldInstance;
     };
     return?: FieldDefinition | FieldInstance;
   }
 
+  export interface ServiceParameterDefinition extends ParameterDefinition {}
+
+  export interface ServiceMethodDefinition extends BaseMethodDefinition {
+    /**
+     * This is the full URL path for this service.  This will be automatically generated
+     * if you do not specify one.  Recommended to leave this blank and go with auto-generated
+     * URL.
+     */
+    route?: string;
+  }
+
   export interface ServiceDefinition {
     [methodName: string]: ServiceMethodDefinition;
+  }
+
+  export interface MethodDefinition extends BaseMethodDefinition {
+    fn: Function;
+    fnClient?: Function;
+    fnServer?: Function;
+  }
+
+  export interface MethodsDefinition {
+    [methodName: string]: MethodDefinition;
   }
 
   /**
@@ -580,6 +595,7 @@ export namespace Tyr {
     values?: any[][];
     db?: mongodb.Db;
     internal?: boolean;
+    methods?: MethodsDefinition;
     service?: ServiceDefinition;
   }
 
@@ -609,14 +625,7 @@ export namespace Tyr {
       labels?: boolean;
     };
     fields?: FieldsObject;
-    methods?: {
-      [methodName: string]: {
-        is: string;
-        fn: Function;
-        fnClient?: Function;
-        fnServer?: Function;
-      };
-    };
+    methods?: MethodsDefinition;
     values?: any[][];
     fromClient?: (opts: Options_FromClient) => void;
     toClient?: (opts: Options_ToClient) => void;

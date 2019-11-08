@@ -2081,20 +2081,24 @@ export default class Collection {
 
         const { params, return: returns } = defMethod;
 
-        for (const paramName in params) {
-          if (paramName === 'return')
-            throw compiler.err(path, '"return" is a reserved parameter name');
+        if (params) {
+          for (const paramName in params) {
+            if (paramName === 'return')
+              throw compiler.err(path, '"return" is a reserved parameter name');
 
-          let field = params[paramName];
+            let field = params[paramName];
 
-          if (_.isString(field)) field = { is: field };
+            if (_.isString(field)) field = { is: field };
 
-          if (!(field instanceof Field))
-            field = params[paramName] = new Field(field, {
-              method: methodName
-            });
+            if (!(field instanceof Field))
+              field = params[paramName] = new Field(field, {
+                method: methodName
+              });
 
-          compiler.field(paramName, field);
+            compiler.field(paramName, field);
+          }
+        } else {
+          defMethod.params = {};
         }
 
         let field = returns;
@@ -2107,6 +2111,18 @@ export default class Collection {
 
           compiler.field('return', field);
         }
+      },
+
+      methods(methodsDef) {
+        if (!methodsDef) return;
+
+        if (!_.isObject(methodsDef))
+          throw compiler.err(
+            path,
+            '"methods" should be an object, got: ' + methodsDef
+          );
+
+        for (const name in methodsDef) compiler.method(name, methodsDef[name]);
       },
 
       service(serviceDef) {
@@ -2166,6 +2182,7 @@ export default class Collection {
       }
     }
 
+    compiler.methods(collection.def.methods);
     compiler.service(collection.def.service);
 
     if (stage === 'link') {

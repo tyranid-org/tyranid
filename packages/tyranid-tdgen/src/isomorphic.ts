@@ -7,7 +7,7 @@ import {
   enumStaticInterface,
   colService
 } from './collection';
-import { docInterface } from './document';
+import { docInterface, docMethods } from './document';
 import * as names from './names';
 import { generateDefinitionPreamble } from './preamble';
 import { pad, wrappedUnionType } from './util';
@@ -181,7 +181,10 @@ export function generateCommonTypes(
      * ${names.format(output)} base document definition for ${colName}.
      */
     ${output === 'client' ? 'export ' : ''}interface ${names.base(name)}
-      extends ${isoName}<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+      extends ${isoName}<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {${docMethods(
+      c,
+      output
+    )}}
 
     /**
      * ${names.format(output)} document definition for ${colName},

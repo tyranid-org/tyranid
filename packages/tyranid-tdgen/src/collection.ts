@@ -53,7 +53,7 @@ export function colInterface(col: Tyr.CollectionInstance) {
 }
 
 export function enumStaticInterface(col: Tyr.CollectionInstance) {
-  const { name, id, fields } = col.def;
+  const { name, fields } = col.def;
   const colName = names.collection(name);
   const docName = names.document(name);
   const staticName = names.enumStatic(name);
