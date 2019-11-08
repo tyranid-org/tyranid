@@ -35,7 +35,7 @@
     "react-dom": "16.8.6"
   },
   "peerDependencies": {
-    "typescript": "^3.5.3",
+    "typescript": "3.7.2",
     "tyranid": "^0.6.0"
   },
   "gitHead": "3f09860429877a2720ff2f5ea1333474192ae367"
