@@ -36,8 +36,10 @@ function keyPathFor(collection, docId) {
 function keyFor(field, docId, filename) {
   const { collection, namePath } = field;
 
+  const safeFileName = filename.replace(/\+/g, '%2B');
+
   // TODO:  what about arrays?
-  return `${keyPathFor(collection, docId)}/${namePath.spath}-${filename}`;
+  return `${keyPathFor(collection, docId)}/${namePath.spath}-${safeFileName}`;
 }
 
 function keyForTmp(field, tmpId, filename) {
@@ -137,13 +139,11 @@ function keyForTmp(field, tmpId, filename) {
 
           const { originalFilename: filename, type: mediaType } = file;
 
-          const idx = filename.lastIndexOf('.');
-          const ext = filename.substring(idx + 1);
+          //const idx = filename.lastIndexOf('.');
+          //const ext = filename.substring(idx + 1);
 
           const col = Tyr.byName[collectionName];
-          if (!col) {
-            return res.sendStatus(404);
-          }
+          if (!col) return res.sendStatus(404);
 
           const np = col.parsePath(path);
           const field = np.detail;
