@@ -194,6 +194,11 @@ export function add() {
       expect(np.spath).to.eql('roles');
     });
 
+    it('should support array positions in spath', () => {
+      const np = new NamePath(User, 'roles.1');
+      expect(np.spath).to.eql('roles.1');
+    });
+
     it('should support spath resolving a denormalized path', () => {
       const np = new NamePath(User, 'organization.name'),
         field = np.detail;
