@@ -247,6 +247,7 @@ function timestampsUpdate(opts, collection, update, doc) {
   }
 }
 
+// TODO:  should what's being done in parseSaveObj() be moved here?
 async function preSave(collection, obj, opts) {
   if (!opts || !opts.preSaveAlreadyDone) {
     const vFields = collection.validatedFields,
@@ -1068,8 +1069,6 @@ export default class Collection {
     return await _exists(collection, query);
   }
 
-  async FOOfindAndModify(opts) {}
-
   async save(obj, opts) {
     const collection = this;
 
@@ -1144,15 +1143,13 @@ export default class Collection {
           auth
         );
 
+      Object.assign(obj, Tyr.cloneDeep(updOpts.query));
+
+      const update = await parseSaveObj(collection, obj, updOpts);
+
       // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
       // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
-      let update = _.omit(obj, '_id');
-
-      updOpts.update = update = await parseSaveObj(
-        collection,
-        _.merge(Tyr.cloneDeep(updOpts.query), update),
-        updOpts
-      );
+      updOpts.update = _.omit(update, '_id');
 
       /*const result = */ await _findAndModify(collection, updOpts);
 
