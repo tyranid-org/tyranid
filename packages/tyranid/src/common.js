@@ -174,6 +174,8 @@ export function extractAuthorization(opts) {
  *       to be there?
  */
 export async function parseSaveObj(col, obj, opts) {
+  const timestamps = def.timestamps && (!opts || opts.timestamps !== false);
+
   if (timestamps) {
     const now = new Date();
     // Don't overwrite createdAt in case we are coming from an upsert update.
@@ -198,8 +200,6 @@ export async function parseSaveObj(col, obj, opts) {
       insertObj[name] = obj[name];
     }
   });
-
-  const timestamps = def.timestamps && (!opts || opts.timestamps !== false);
 
   _.each(fields, function(field, name) {
     const fieldDef = field.def;
