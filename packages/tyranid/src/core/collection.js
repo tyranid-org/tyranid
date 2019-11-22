@@ -967,15 +967,6 @@ export default class Collection {
         key => !key.startsWith('$')
       );
 
-      if (collection.def.timestamps && opts.timestamps !== false) {
-        if (replaceEntireDoc) {
-          update.updatedAt = new Date();
-        } else {
-          update.$set = update.$set || {};
-          update.$set.updatedAt = new Date();
-        }
-      }
-
       if (opts.upsert) {
         const setOnInsertSrc = replaceEntireDoc ? update : update.$setOnInsert,
           $setOnInsert = await parseSaveObj(
@@ -990,6 +981,15 @@ export default class Collection {
           update.$setOnInsert = _.omit($setOnInsert, (v, k) => {
             return (update.$set && update.$set[k]) || v === undefined;
           });
+        }
+      } else {
+        if (collection.def.timestamps && opts.timestamps !== false) {
+          if (replaceEntireDoc) {
+            update.updatedAt = new Date();
+          } else {
+            update.$set = update.$set || {};
+            update.$set.updatedAt = new Date();
+          }
         }
       }
     }
@@ -1143,9 +1143,6 @@ export default class Collection {
           updOpts.perm || OPTIONS.permissions.update,
           auth
         );
-
-      if (collection.def.timestamps && (!opts || opts.timestamps !== false))
-        obj.updatedAt = new Date();
 
       // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
       // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29

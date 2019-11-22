@@ -174,9 +174,22 @@ export function extractAuthorization(opts) {
  *       to be there?
  */
 export async function parseSaveObj(col, obj, opts) {
+  if (timestamps) {
+    const now = new Date();
+    // Don't overwrite createdAt in case we are coming from an upsert update.
+    obj.createdAt = obj.createdAt || now;
+    obj.updatedAt = now;
+  }
+
   const def = col.def,
     fields = await col.fieldsFor({ match: obj, static: true }),
     insertObj = new col();
+
+  // this handles the case where they set "timestamps: true" but did not define the updatedAt/createdAt fields manually
+  if (timestamps) {
+    insertObj.createdAt = obj.createdAt;
+    insertObj.updatedAt = obj.updatedAt;
+  }
 
   _.each(col.denormal, function(field, name) {
     // we only need to copy it if it is a top-level level, nested values will be copied below
@@ -187,12 +200,6 @@ export async function parseSaveObj(col, obj, opts) {
   });
 
   const timestamps = def.timestamps && (!opts || opts.timestamps !== false);
-
-  // this handles the case where they set "timestamps: true" but did not define the updatedAt/createdAt fields manually
-  if (timestamps) {
-    insertObj.createdAt = obj.createdAt;
-    insertObj.updatedAt = obj.updatedAt;
-  }
 
   _.each(fields, function(field, name) {
     const fieldDef = field.def;
@@ -219,13 +226,6 @@ export async function parseSaveObj(col, obj, opts) {
 
   if (def.primaryKey.defaultMatchIdOnInsert && insertObj._id === undefined) {
     insertObj._id = insertObj[def.primaryKey.field];
-  }
-
-  if (timestamps) {
-    const now = new Date();
-    // Don't overwrite createdAt in case we are coming from an upsert update.
-    insertObj.createdAt = insertObj.createdAt || now;
-    insertObj.updatedAt = now;
   }
 
   if (def.historical && obj._history) {
