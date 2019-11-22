@@ -174,6 +174,8 @@ export function extractAuthorization(opts) {
  *       to be there?
  */
 export async function parseSaveObj(col, obj, opts) {
+  const def = col.def;
+
   const timestamps = def.timestamps && (!opts || opts.timestamps !== false);
 
   if (timestamps) {
@@ -183,8 +185,7 @@ export async function parseSaveObj(col, obj, opts) {
     obj.updatedAt = now;
   }
 
-  const def = col.def,
-    fields = await col.fieldsFor({ match: obj, static: true }),
+  const fields = await col.fieldsFor({ match: obj, static: true }),
     insertObj = new col();
 
   // this handles the case where they set "timestamps: true" but did not define the updatedAt/createdAt fields manually
