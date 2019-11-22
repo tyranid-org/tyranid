@@ -162,7 +162,18 @@ export function extractAuthorization(opts) {
   //return undefined;
 }
 
-export async function parseInsertObj(col, obj, opts) {
+/**
+ * TODO: parseSaveObj() creates a new object and updates it with values to ensure that excess
+ *       stuff on the object does not get written to the database which is good.
+ *
+ *       However, this means that any computed values/timestamp updates made here do not get made
+ *       to the calling object which is the object that is passed around in event handlers.
+ *
+ *       Maybe we should apply all computed values/timestamps to the original object first,
+ *       and then create the new object from that and just copy in the values that are supposed
+ *       to be there?
+ */
+export async function parseSaveObj(col, obj, opts) {
   const def = col.def,
     fields = await col.fieldsFor({ match: obj, static: true }),
     insertObj = new col();
@@ -174,6 +185,14 @@ export async function parseInsertObj(col, obj, opts) {
       insertObj[name] = obj[name];
     }
   });
+
+  const timestamps = def.timestamps && (!opts || opts.timestamps !== false);
+
+  // this handles the case where they set "timestamps: true" but did not define the updatedAt/createdAt fields manually
+  if (timestamps) {
+    insertObj.createdAt = obj.createdAt;
+    insertObj.updatedAt = obj.updatedAt;
+  }
 
   _.each(fields, function(field, name) {
     const fieldDef = field.def;
@@ -202,11 +221,9 @@ export async function parseInsertObj(col, obj, opts) {
     insertObj._id = insertObj[def.primaryKey.field];
   }
 
-  if (def.timestamps && (!opts || opts.timestamps !== false)) {
+  if (timestamps) {
     const now = new Date();
     // Don't overwrite createdAt in case we are coming from an upsert update.
-    // Note it still has to a defined field on the collection.
-    // https://github.com/tyranid-org/tyranid/issues/94
     insertObj.createdAt = insertObj.createdAt || now;
     insertObj.updatedAt = now;
   }

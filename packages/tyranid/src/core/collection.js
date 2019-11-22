@@ -20,7 +20,7 @@ import {
   extractAuthorization,
   extractOptions,
   isOptions,
-  parseInsertObj,
+  parseSaveObj,
   parseProjection,
   toClient,
   hasMongoUpdateOperator,
@@ -978,7 +978,7 @@ export default class Collection {
 
       if (opts.upsert) {
         const setOnInsertSrc = replaceEntireDoc ? update : update.$setOnInsert,
-          $setOnInsert = await parseInsertObj(
+          $setOnInsert = await parseSaveObj(
             collection,
             _.merge(Tyr.cloneDeep(opts.query), setOnInsertSrc),
             opts
@@ -1068,6 +1068,8 @@ export default class Collection {
     return await _exists(collection, query);
   }
 
+  async FOOfindAndModify(opts) {}
+
   async save(obj, opts) {
     const collection = this;
 
@@ -1102,6 +1104,8 @@ export default class Collection {
 
     let historicalPromise;
     if (keyValue) {
+      // update
+
       if (historicalType) {
         if (obj.$historical) {
           throw new Error('Document is read-only due to $historical');
@@ -1124,23 +1128,36 @@ export default class Collection {
         opts
       });
 
-      if (historicalType === 'document') {
+      if (historicalType === 'document')
         historicalPromise = historical.saveSnapshots(collection, obj);
-      }
 
-      // using REPLACE semantics with findAndModify() here
-      const result = await collection.findAndModify(
-        combineOptions(opts, {
-          query: { [keyFieldName]: keyValue },
-          // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
-          // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
-          update: _.omit(obj, '_id'),
-          upsert: true,
-          new: true,
-          historical: false,
-          eventAlreadyDone: true
-        })
+      const updOpts = combineOptions(opts, {
+        query: { [keyFieldName]: keyValue },
+        upsert: true
+      });
+
+      const auth = extractAuthorization(opts);
+      if (auth)
+        updOpts.query = await this.secureFindQuery(
+          updOpts.query,
+          updOpts.perm || OPTIONS.permissions.update,
+          auth
+        );
+
+      if (collection.def.timestamps && (!opts || opts.timestamps !== false))
+        obj.updatedAt = new Date();
+
+      // Mongo error if _id is present in findAndModify and doc exists. Note this slightly
+      // changes save() semantics. See https://github.com/tyranid-org/tyranid/issues/29
+      let update = _.omit(obj, '_id');
+
+      updOpts.update = update = await parseSaveObj(
+        collection,
+        _.merge(Tyr.cloneDeep(updOpts.query), update),
+        updOpts
       );
+
+      /*const result = */ await _findAndModify(collection, updOpts);
 
       await Tyr.Event.fire({
         collection,
@@ -1150,8 +1167,9 @@ export default class Collection {
         opts
       });
 
-      rslt = result.value;
+      rslt = update;
     } else {
+      // insert
       const modOpts = combineOptions(opts, { preSaveAlreadyDone: true });
 
       rslt = await collection.insert(obj, modOpts);
@@ -1174,7 +1192,7 @@ export default class Collection {
 
     if (Array.isArray(obj)) {
       const parsedArr = await Promise.all(
-        _.map(obj, el => parseInsertObj(collection, el))
+        _.map(obj, el => parseSaveObj(collection, el))
       );
 
       if (auth) {
@@ -1222,7 +1240,7 @@ export default class Collection {
       });
       return docs;
     } else {
-      const parsedObj = await parseInsertObj(collection, obj);
+      const parsedObj = await parseSaveObj(collection, obj);
 
       if (auth) {
         const canInsert = await collection.canInsert(
