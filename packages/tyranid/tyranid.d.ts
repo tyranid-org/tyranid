@@ -150,6 +150,7 @@ export namespace Tyr {
   export function indexOf(arr: any[], item: any): number;
   export function addToSet(set: any[], item: any): void;
   export function pullAll(arr: any[], item: any): void;
+  export function clone<T>(obj: T): T;
   export function cloneDeep<T>(obj: T): T;
   export function arraySort(arr: any[], order: { [key: string]: number }): void;
   export function sleep(ms: number): Promise<void>;
@@ -381,8 +382,8 @@ export namespace Tyr {
   }
 
   /*
-     * Options by operation
-     */
+   * Options by operation
+   */
 
   export interface Options_Count extends Options_Exists, OptionsQuery {}
 

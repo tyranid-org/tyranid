@@ -54,14 +54,8 @@ export const stringFilter: Filter = (
 
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
-
-    clearFilters && clearFilters([]);
-
-    if (localSearch) {
-      filterable.onFilterChange();
-    } else {
-      filterable.onSearch();
-    }
+    clearFilters?.([]);
+    filterable.onSearch();
   };
 
   return {
@@ -75,18 +69,11 @@ export const stringFilter: Filter = (
           value={filterable.searchValues[pathName]}
           onChange={e => {
             filterable.searchValues[pathName] = e.target.value;
-
-            if (props.liveSearch) {
-              filterable.onFilterChange();
-            }
+            if (props.liveSearch) filterable.onSearch();
           }}
           onPressEnter={() => {
-            if (localSearch) {
-              filterDdProps.confirm && filterDdProps.confirm();
-              filterable.onFilterChange();
-            } else {
-              filterable.onSearch();
-            }
+            filterDdProps.confirm?.();
+            filterable.onSearch();
           }}
           style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
@@ -103,13 +90,8 @@ export const stringFilter: Filter = (
             <Button
               type="primary"
               onClick={() => {
-                if (localSearch) {
-                  filterable.onFilterChange();
-                } else {
-                  filterable.onSearch();
-                }
-
-                filterDdProps.confirm && filterDdProps.confirm();
+                filterable.onSearch();
+                filterDdProps.confirm?.();
               }}
               icon="search"
               size="small"

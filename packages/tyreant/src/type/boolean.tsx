@@ -52,14 +52,8 @@ export const booleanFilter: Filter = (
 
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
-
-    clearFilters && clearFilters([]);
-
-    if (localSearch) {
-      filterable.onFilterChange();
-    } else {
-      filterable.onSearch();
-    }
+    clearFilters?.([]);
+    filterable.onSearch();
   };
 
   return {
@@ -82,9 +76,7 @@ export const booleanFilter: Filter = (
 
               set['no'] = !!e.target.checked;
 
-              if (props.liveSearch) {
-                filterable.onFilterChange();
-              }
+              if (props.liveSearch) filterable.onSearch();
             }}
           >
             No
@@ -105,9 +97,7 @@ export const booleanFilter: Filter = (
 
               set['yes'] = !!e.target.checked;
 
-              if (props.liveSearch) {
-                filterable.onFilterChange();
-              }
+              if (props.liveSearch) filterable.onSearch();
             }}
           >
             Yes
@@ -126,13 +116,8 @@ export const booleanFilter: Filter = (
               <Button
                 type="primary"
                 onClick={() => {
-                  if (localSearch) {
-                    filterable.onFilterChange();
-                  } else {
-                    filterable.onSearch();
-                  }
-
-                  filterDdProps.confirm && filterDdProps.confirm();
+                  filterable.onSearch();
+                  filterDdProps.confirm?.();
                 }}
                 icon="search"
                 size="small"

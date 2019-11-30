@@ -293,6 +293,17 @@ export function add() {
       expect(np.get(u)).to.eql('Jane');
     });
 
+    it('should used populated or denormalized values when dereferencing a link even if the link is in an array', async () => {
+      const u = await User.byId(1, {
+        populate: {
+          backupJobs: { name: 1 }
+        }
+      });
+
+      expect(u!.$`backupJobs.0.name`).to.eql('Designer');
+      expect(u!.$`backupJobs._.name`).to.eql(['Designer']);
+    });
+
     it('should support $get()', async () => {
       const u = await User.byId(3, {
         populate: {

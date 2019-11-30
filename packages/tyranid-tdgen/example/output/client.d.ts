@@ -36,9 +36,11 @@ export namespace Tyr {
       [key: string]: CollectionInstance | void;
     };
   export const documentPrototype: any;
+
   export function parseUid(
     uid: string
   ): { collection: CollectionInstance; id: any };
+
   export const init: () => void;
   export const setSocketLibrary: (library: typeof io) => void;
   export const reconnectSocket: () => void;

@@ -4,7 +4,6 @@ import { ObjectId } from 'mongodb';
 import Tyr from '../tyr';
 import Type from '../core/type';
 import Collection from '../core/collection';
-import { func } from 'prop-types';
 
 export const compileRelate = (compiler, field) => {
   const relate = field.def.relate;
@@ -56,7 +55,9 @@ const LinkType = new Type({
 
   toClient(field, value) {
     return value
-      ? ObjectId.isValid(value.toString()) ? value.toString() : value
+      ? ObjectId.isValid(value.toString())
+        ? value.toString()
+        : value
       : value;
   },
 

@@ -21,6 +21,9 @@ const ArrayType = new Type({
   fromClient(field, value) {
     const ofField = field.of,
       ofFieldType = ofField.type;
+
+    if (typeof value === 'string') value = value.split(',');
+
     if (Array.isArray(value)) {
       return value.map(v => ofFieldType.fromClient(ofField, v));
     } else {

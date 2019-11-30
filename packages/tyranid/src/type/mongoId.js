@@ -11,6 +11,9 @@ export const MongoIdType = new Type({
   fromString(str) {
     return ObjectId(str);
   },
+  fromStringClient(str) {
+    return str;
+  },
   fromClient(field, value) {
     if (value instanceof ObjectId) {
       return value;
@@ -20,7 +23,7 @@ export const MongoIdType = new Type({
       const str = value.toString();
       // we don't want to accept 12-byte strings from the client
       if (!Tyr.isValidObjectIdStr(str)) {
-        throw new Error(`Invalid ObjectId for field ${field.name}`);
+        throw new Error(`Invalid ObjectId for field ${field.name}: "${str}"`);
       }
 
       return ObjectId(str);

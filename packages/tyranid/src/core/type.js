@@ -76,6 +76,7 @@ export default class Type {
     }
   }
 
+  /** @isomorphic */
   fromString(s) {
     const f = this.def.fromString;
     return f ? f(s) : s;

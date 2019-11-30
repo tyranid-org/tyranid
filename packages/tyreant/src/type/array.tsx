@@ -9,7 +9,9 @@ import {
   mapDocumentValueToFormValue,
   withTypeContext,
   mapFormValueToDocument,
-  mapFormValueToDocumentValue
+  mapFormValueToDocumentValue,
+  getCellValue,
+  getFinder
 } from './type';
 import { TyrArrayKeyValue } from './array.key-value';
 import { TyrArrayList } from './array.list';
@@ -42,11 +44,7 @@ export const TyrArray = withTypeContext(TyrArrayBase);
 
 byName.array = {
   component: TyrArray,
-  mapDocumentValueToFormValue(
-    path: Tyr.NamePathInstance,
-    value: any,
-    props?: TyrTypeProps
-  ) {
+  mapDocumentValueToFormValue(path, value, props) {
     // TODO:  remove slice when upgrading to mobx 5
     if (value && value.slice) value = value.slice();
 
@@ -58,11 +56,7 @@ byName.array = {
 
     return value;
   },
-  mapFormValueToDocumentValue(
-    path: Tyr.NamePathInstance,
-    arrayValue: any[],
-    props: TyrTypeProps
-  ) {
+  mapFormValueToDocumentValue(path, arrayValue: any[], props) {
     if (arrayValue) {
       return arrayValue.map((val, idx) =>
         mapFormValueToDocumentValue(path.walk(idx), val, props)
@@ -71,13 +65,7 @@ byName.array = {
 
     return arrayValue;
   },
-
-  mapFormValueToDocument(
-    path: Tyr.NamePathInstance,
-    arrayValue: any,
-    document: Tyr.Document,
-    props: TyrTypeProps
-  ) {
+  mapFormValueToDocument(path, arrayValue, document, props) {
     if (arrayValue) {
       // the form values don't represent the nested values as arrays
       // TODO:  do we need to figure out a way to store a length on the form array somewhere to account for a sparse
@@ -103,6 +91,34 @@ byName.array = {
       }
     } else {
       // TODO: do we need to remove the array from the document ?
+    }
+  },
+  filter(path, filterable, props) {
+    const { tail } = path;
+
+    if (tail.of!.link) {
+      return byName.link.filter!(path, filterable, props);
+    } else {
+      // TODO as needed
+      return undefined;
+    }
+  },
+  finder(path, opts, searchValue) {
+    const childPath = path.walk('_');
+
+    const finder = getFinder(childPath);
+
+    if (finder) finder(childPath, opts, searchValue);
+  },
+  cellValue: (path, document, props) => {
+    const arr = path.get(document);
+
+    if (Array.isArray(arr)) {
+      return arr
+        .map((val, idx) => getCellValue(path.walk(idx), document, props))
+        .join(', ');
+    } else {
+      return arr;
     }
   }
 };

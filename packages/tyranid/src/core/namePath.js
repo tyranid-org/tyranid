@@ -79,7 +79,6 @@ function NamePath(base, pathName, opts) {
 
   if (opts && opts.method) {
     at = base.def.service;
-    console.log('at service', at);
   }
 
   let pi = 0;
@@ -90,9 +89,8 @@ function NamePath(base, pathName, opts) {
     let def = at.def;
 
     if (name === '_') {
-      if (!at.of) {
+      if (!at.of)
         throw new Error(`"${name}" in "${pathName}" is not an array or map.`);
-      }
 
       at = at.of;
       pathFields[pi++] = at;
@@ -320,7 +318,7 @@ NamePath.prototype.get = function(obj) {
     path = np.path,
     fields = np.fields,
     plen = path.length;
-  let arrayInPath = false;
+  let arrayOrMapInPath = false;
 
   const values = [];
 
@@ -337,7 +335,7 @@ NamePath.prototype.get = function(obj) {
       if (pi === plen) {
         values.push(obj);
       } else {
-        arrayInPath = true;
+        arrayOrMapInPath = true; // array
         for (let ai = 0, alen = obj.length; ai < alen; ai++) {
           getInner(pi, obj[ai]);
         }
@@ -352,14 +350,22 @@ NamePath.prototype.get = function(obj) {
       );
     } else {
       if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {
-        arrayInPath = true;
+        arrayOrMapInPath = true; // map
         pi++;
         _.each(obj, v => getInner(pi, v));
       } else {
         let v,
           name = path[pi];
 
-        if (pi < plen - 1 && fields[pi].link) {
+        if (
+          pi < plen - 1 &&
+          // link
+          (fields[pi].link ||
+            // array of link
+            (pi < plen - 2 &&
+              fields[pi].type.name === 'array' &&
+              fields[pi + 1].link))
+        ) {
           // if they are dereferencing a link, look for a populated or denormalized value
           let popName = NamePath.populateNameFor(name, false);
           v = obj[popName];
@@ -382,7 +388,7 @@ NamePath.prototype.get = function(obj) {
 
   getInner(0, obj);
 
-  if (!arrayInPath) {
+  if (!arrayOrMapInPath) {
     switch (values.length) {
       case 0:
         return undefined;

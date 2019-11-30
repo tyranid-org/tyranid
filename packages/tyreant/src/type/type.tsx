@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { ColumnFilterItem } from 'antd/lib/table';
+import { ColumnFilterItem, FilterDropdownProps } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFieldLaxProps, TyrFieldProps } from '../core';
 
@@ -39,9 +39,6 @@ export interface Filterable {
   searchValues: { [pathName: string]: any };
   onSearch(): void;
 
-  // TODO: when we upgrade to latest ant, that Table control takes a component, not a react node, so we can
-  //       update via state/props/etc. instead of this callback
-  onFilterChange(): void;
   localSearch: boolean;
   localDocuments?: Tyr.Document<any>[];
 }
@@ -50,14 +47,18 @@ export type Filter = (
   path: Tyr.NamePathInstance,
   filterable: Filterable,
   props: TyrFieldLaxProps
-) => {
-  filterDropdown?: React.ReactNode;
-  filterIcon?: React.ReactNode;
-  onFilter?: (value: any, doc: Tyr.Document) => boolean;
-  onFilterDropdownVisibleChange?: (visible: boolean) => void;
-  filterDropdownVisible?: boolean;
-  filters?: ColumnFilterItem[];
-};
+) =>
+  | {
+      filterDropdown?:
+        | React.ReactNode
+        | ((props: FilterDropdownProps) => React.ReactNode);
+      filterIcon?: React.ReactNode;
+      onFilter?: (value: any, doc: Tyr.Document) => boolean;
+      onFilterDropdownVisibleChange?: (visible: boolean) => void;
+      filterDropdownVisible?: boolean;
+      filters?: ColumnFilterItem[];
+    }
+  | undefined;
 
 export type Finder = (
   path: Tyr.NamePathInstance,
@@ -268,7 +269,7 @@ export const mapFormValueToDocument = (
   path: Tyr.NamePathInstance,
   value: any,
   document: Tyr.Document,
-  props: TyrTypeProps
+  props?: TyrTypeProps
 ) => {
   const { tail: field } = path;
   const { type } = field;

@@ -54,7 +54,7 @@ import {
 } from 'antd';
 
 import { PaginationProps } from 'antd/es/pagination';
-import { ColumnProps, TableRowSelection } from 'antd/es/table';
+import { ColumnProps } from 'antd/es/table';
 import { getFilter, getFinder, getCellValue } from '../type';
 
 import { TyrComponentProps } from './component';
@@ -81,17 +81,6 @@ interface EditableContextProps {
 }
 const EditableContext = React.createContext<EditableContextProps>({});
 
-interface FieldDefinition {
-  sortDirection?: TyrSortDirection;
-  searchValue?: string;
-}
-
-interface TableDefinition {
-  [pathName: string]: FieldDefinition | number | undefined;
-  skip?: number;
-  limit?: number;
-}
-
 export interface TyrTableColumnFieldProps extends TyrFieldLaxProps {
   pinned?: 'left' | 'right';
   align?: 'left' | 'right' | 'center';
@@ -103,7 +92,7 @@ export interface TyrTableColumnFieldProps extends TyrFieldLaxProps {
   group?: string;
 }
 
-export type TyrTableConfig = {
+export interface TyrTableConfig {
   userId: string;
   documentUid: string;
   collectionId: string;
@@ -114,7 +103,7 @@ export type TyrTableConfig = {
   asDrawer?: boolean;
   compact?: boolean;
   key: string;
-};
+}
 
 export interface TyrTableProps extends TyrComponentProps {
   className?: string;
@@ -127,7 +116,7 @@ export interface TyrTableProps extends TyrComponentProps {
   actionIconType?: string;
   actionTrigger?: 'hover' | 'click';
   actionColumnClassName?: string;
-  pageSize?: number;
+  pageSize?: number; // a.k.a. limit
   pinActionsRight?: boolean;
   rowEdit?: boolean;
   canEditDocument?: (document: Tyr.Document) => boolean;
@@ -163,18 +152,34 @@ export interface TyrTableProps extends TyrComponentProps {
 
 @observer
 export class TyrTable extends TyrComponent<TyrTableProps> {
+  skip?: number;
+  limit?: number;
+  /**
+   * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
+   * search value while it is being edited in the search control, it needs to keep that copy locally.
+   */
+  searchValues: {
+    [pathName: string]: any;
+  } = {};
+  sortDirections: { [pathName: string]: TyrSortDirection } = {};
+
+  /**
+   * TODO:  probably a lot of the stuff that is in this store should be moved out since changing anything in here will
+   *        trigger a findAll() change but usually we want to call execute() when something is changed so that the
+   *        route will change
+   *
+   *        examples of things that SHOULD be in here are documents, so that if a document changes we want to re-render
+   *        the table ... however, even in this case we probably don't want to trigger a findAll() ... we just want to re-render
+   *        the table with the local documents
+   */
   @observable
   private store: {
     documents: Tyr.Document[] & { count?: number };
     loading: boolean;
     count: number;
-    workingSearchValues: {
-      [pathName: string]: string | undefined;
-    };
     pageSize: number;
     editingDocument?: Tyr.Document;
     isSavingDocument: boolean;
-    tableDefn: TableDefinition;
     showConfig: boolean;
     fields: TyrTableColumnFieldProps[];
     tableConfig?: any;
@@ -184,13 +189,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     documents: this.props.documents || [],
     loading: false,
     count: this.props.documents ? this.props.documents.length : 0,
-    workingSearchValues: {},
     pageSize:
       this.props.pageSize !== undefined
         ? this.props.pageSize
         : DEFAULT_PAGE_SIZE,
     isSavingDocument: false,
-    tableDefn: {},
     showConfig: false,
     fields: [],
     selectedRowKeys: []
@@ -301,15 +304,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     let documents = docs;
     let sortColumn: TyrTableColumnFieldProps | undefined;
 
-    if (this.store.tableDefn) {
+    if (this.sortDirections) {
       let sortColumnName: string | null = null;
 
-      for (let name in this.store.tableDefn) {
-        if (
-          name !== 'skip' &&
-          name !== 'limit' &&
-          this.store.tableDefn[name] !== undefined
-        ) {
+      for (const name in this.sortDirections) {
+        if (this.sortDirections[name] !== undefined) {
           sortColumnName = name;
           break;
         }
@@ -327,8 +326,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }
 
     if (sortColumn) {
-      let field: Tyr.FieldInstance | undefined = undefined;
-      let pathName: string | undefined = undefined;
+      let field: Tyr.FieldInstance | undefined;
+      let pathName: string | undefined;
 
       if (
         sortColumn.field &&
@@ -354,16 +353,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             }
       );
 
-      if (pathName) {
-        const fieldDef = this.store.tableDefn[pathName];
-
-        if (
-          fieldDef &&
-          (fieldDef as FieldDefinition).sortDirection === 'descend'
-        ) {
-          docs.reverse();
-        }
-      }
+      if (pathName && this.sortDirections[pathName] === 'descend')
+        docs.reverse();
 
       documents = docs;
     }
@@ -406,17 +397,17 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.store.newDocument = doc;
     delete this.store.editingDocument;
 
-    if (this._mounted) {
-      this.setState({});
-    }
+    if (this._mounted) this.setState({});
 
     this.props.setEditing && this.props.setEditing(true);
-
     return true;
   };
 
-  private defaultToTableDefinition() {
-    const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
+  // TODO:  where should this be called?  or get rid of it?
+  private setDefaults() {
+    this.skip = 0;
+    this.limit = this.store.pageSize;
+    this.searchValues = {}; // TODO:  should we clear the keys if this already exists to maintain same reference?
 
     const defaultSortColumn = this.props.fields.find(
       column => !!column.defaultSort
@@ -425,22 +416,17 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     if (defaultSortColumn) {
       const fieldName = getFieldName(defaultSortColumn.field);
 
-      if (fieldName) {
-        let fieldDefn = defn[fieldName] as FieldDefinition;
-
-        if (!fieldDefn) {
-          fieldDefn = defn[fieldName] = {};
-        }
-
-        fieldDefn!.sortDirection = defaultSortColumn.defaultSort;
-      }
+      if (fieldName)
+        this.sortDirections = {
+          [fieldName]: defaultSortColumn.defaultSort!
+        };
     }
-
-    return defn;
   }
 
-  private urlQueryToTableDefinition(query: { [name: string]: string }) {
-    const defn: TableDefinition = { skip: 0, limit: this.store.pageSize };
+  private fromUrlQuery(query: { [name: string]: string }) {
+    this.skip = 0;
+    this.limit = this.store.pageSize;
+    this.searchValues = {};
     let sortFound = false;
 
     for (const name in query) {
@@ -449,7 +435,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       switch (name) {
         case 'skip':
         case 'limit':
-          defn[name] = parseInt(value, 10);
+          this[name] = parseInt(value, 10);
           break;
         default: {
           const dot = value.indexOf('.');
@@ -462,12 +448,16 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             sortDirection = value as TyrSortDirection;
           }
 
-          const obj: { [name: string]: string } = {
-            sortDirection: sortDirection as TyrSortDirection
-          };
-          if (searchValue) obj.searchValue = searchValue;
+          this.sortDirections[name] = sortDirection || undefined;
 
-          defn[name] = obj;
+          if (searchValue) {
+            // TODO:  we need to know the Field here because of it is a link or array of links we need to split the search value on '.'
+            const canBeArray = searchValue.indexOf(',') >= 0; // this is not right -- need the Field
+            this.searchValues[name] = canBeArray
+              ? searchValue.split(',')
+              : searchValue;
+          }
+
           if (sortDirection) sortFound = true;
         }
       }
@@ -481,109 +471,62 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       if (defaultSortColumn) {
         const fieldName = getFieldName(defaultSortColumn.field);
 
-        if (fieldName) {
-          let fieldDefn = defn[fieldName] as FieldDefinition;
-
-          if (!fieldDefn) {
-            fieldDefn = defn[fieldName] = {};
-          }
-
-          fieldDefn!.sortDirection = defaultSortColumn.defaultSort;
-        }
+        if (fieldName)
+          this.sortDirections[fieldName] = defaultSortColumn.defaultSort!;
       }
     }
-
-    return defn;
   }
 
-  private tableDefinitionToUrlQuery(tableDefn: TableDefinition) {
+  private getUrlQuery() {
     const query: { [name: string]: string } = {};
 
-    for (const name in tableDefn) {
-      const value = tableDefn[name];
+    const { searchValues, sortDirections, skip, limit } = this;
 
-      switch (name) {
-        case 'skip':
-          if (value) query.skip = '' + value;
-          break;
+    if (skip) query.skip = String(skip);
+    if (limit !== undefined && limit !== DEFAULT_PAGE_SIZE)
+      query.limit = String(limit);
 
-        case 'limit':
-          if (value !== DEFAULT_PAGE_SIZE) query.limit = '' + value;
-          break;
+    for (const fieldName of _.uniq([
+      ...Object.keys(searchValues),
+      ...Object.keys(sortDirections)
+    ])) {
+      const searchValue = searchValues[fieldName];
+      const sortDirection = sortDirections[fieldName];
 
-        default: {
-          const { sortDirection, searchValue } = value as FieldDefinition;
-
-          if (sortDirection || searchValue) {
-            query[name] =
-              (sortDirection || '') + (searchValue ? '.' + searchValue : '');
-          }
-        }
+      if (sortDirection || searchValue) {
+        query[fieldName] =
+          (sortDirection || '') +
+          (searchValue
+            ? '.' +
+              (Array.isArray(searchValue) ? searchValue.join(',') : searchValue)
+            : '');
       }
     }
 
     return query;
   }
 
-  private goToRoute(tableDefn: TableDefinition) {
-    const defn = { ...this.store.tableDefn, ...tableDefn };
-    const newQuery = this.tableDefinitionToUrlQuery(defn);
-
-    tyreant.router.go({
-      route: this.props.route,
-      query: newQuery
-    });
+  private execute() {
+    if (this.props.route) {
+      tyreant.router.go({
+        route: this.props.route,
+        query: this.getUrlQuery()
+      });
+    } else {
+      if (this._mounted) {
+        this.setSortedDocuments(this.store.documents.slice());
+        this.setState({}); // Hack to force a table re-render
+      }
+    }
   }
 
   async refresh() {
-    return this.findAll(true);
+    return this.findAll();
   }
 
-  async findAll(reset?: boolean) {
-    const {
-      documents,
-      route,
-      collection,
-      query: baseQuery,
-      fields: columns
-    } = this.props;
-    const store = this.store;
-
-    if (documents) {
-      const defn = {
-        ...this.defaultToTableDefinition(),
-        ...store.tableDefn
-      };
-
-      if (isEqual(store.tableDefn, defn)) return;
-      store.tableDefn = defn;
-
-      return;
-    }
-
-    if (route) {
-      const location = tyreant.router.location!;
-      if (location.route !== route) return;
-
-      const defn = this.urlQueryToTableDefinition(location.query! as {
-        [name: string]: string;
-      });
-
-      if (!reset && isEqual(store.tableDefn, defn)) return;
-      store.tableDefn = defn;
-    }
-
-    const defn = store.tableDefn;
-
-    for (const pathName in defn) {
-      const field = defn[pathName] as FieldDefinition;
-
-      if (field.searchValue) {
-        store.workingSearchValues[pathName] = field.searchValue;
-      }
-    }
-
-    const { skip, limit } = defn;
+  async findAll() {
+    const { collection, query: baseQuery, fields: columns } = this.props;
+    const { skip, limit, searchValues, sortDirections, store } = this;
 
     try {
       store.loading = true;
@@ -603,22 +546,17 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       };
 
       for (const column of columns) {
-        const pathName = getFieldName(column.field),
-          field = pathName && collection.paths[pathName],
-          finder = field && getFinder(field.namePath),
-          fieldDefn = pathName && (defn[pathName] as FieldDefinition),
-          searchValue = fieldDefn && fieldDefn.searchValue;
+        const pathName = getFieldName(column.field) || undefined,
+          field = pathName ? collection.paths[pathName] : undefined,
+          namePath = field?.namePath,
+          finder = namePath && getFinder(namePath),
+          searchValue = pathName && searchValues[pathName],
+          sortDirection = pathName && sortDirections[pathName];
 
-        if (finder)
-          finder((field as Tyr.FieldInstance).namePath, opts, searchValue);
+        if (finder) finder(namePath!, opts, searchValue);
 
-        if (fieldDefn) {
-          const { sortDirection } = fieldDefn;
-
-          if (sortDirection) {
-            sort[pathName!] = sortDirection === 'ascend' ? 1 : -1;
-          }
-        }
+        if (sortDirection)
+          sort[pathName!] = sortDirection === 'ascend' ? 1 : -1;
       }
 
       const docs = await collection.findAll(opts);
@@ -635,9 +573,30 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   private cancelAutorun?: () => void;
   private _mounted: boolean = false;
 
-  private startFinding() {
+  private startReacting() {
     if (!this.cancelAutorun) {
-      this.cancelAutorun = autorun(() => this.findAll());
+      this.cancelAutorun = autorun(() => {
+        const { route } = this.props;
+
+        if (route) {
+          const location = tyreant.router.location!;
+          if (location.route !== route) return;
+
+          const currentUrl = this.getUrlQuery();
+          this.fromUrlQuery(
+            location.query! as {
+              [name: string]: string;
+            }
+          );
+          const newUrl = this.getUrlQuery();
+
+          if (currentUrl === newUrl) return;
+        }
+
+        if (!this.limit && this.store.pageSize)
+          this.limit = this.store.pageSize;
+        this.findAll();
+      });
     }
   }
 
@@ -829,17 +788,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       notifyFilterExists
     } = this.props;
 
-    const store = this.store;
+    const { searchValues, sortDirections, store } = this;
 
-    const {
-      workingSearchValues,
-      fields: columns,
-      tableDefn,
-      newDocument,
-      editingDocument
-    } = store;
+    const { fields: columns, newDocument, editingDocument } = store;
 
-    const localSearch = !!this.props.documents;
+    const localDocuments = !!this.props.documents;
+    const localSearch = localDocuments;
     const fieldCount = columns.length;
     const isEditingAnything = !!newDocumentTable || !!editingDocument;
     const allWidthsDefined = columns.some(c => c.width);
@@ -847,12 +801,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     const antColumns: ColumnProps<Tyr.Document>[] = columns.map(
       (column, columnIdx) => {
-        let field: Tyr.FieldInstance | undefined = undefined;
-        let pathName: string | undefined = undefined;
-        let searchField: Tyr.FieldInstance | undefined = undefined;
-        let searchPathName: string | undefined = undefined;
+        let field: Tyr.FieldInstance | undefined;
+        let pathName: string | undefined;
+        let searchField: Tyr.FieldInstance | undefined;
+        let searchPathName: string | undefined;
 
-        if (column.field && (column.field as Tyr.FieldInstance).collection) {
+        if ((column.field as Tyr.FieldInstance)?.collection) {
           field = column.field as Tyr.FieldInstance;
           pathName = field.path;
         } else {
@@ -860,10 +814,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           field = pathName ? collection.paths[pathName] : undefined;
         }
 
-        if (
-          column.searchField &&
-          (column.searchField as Tyr.FieldInstance).collection
-        ) {
+        if ((column.searchField as Tyr.FieldInstance)?.collection) {
           searchField = column.searchField as Tyr.FieldInstance;
           searchPathName = searchField.path;
         } else {
@@ -875,55 +826,38 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
         if (field) (field as any).column = column;
 
-        const fieldDefn = pathName && (tableDefn[pathName] as FieldDefinition);
-        const { sortDirection } = fieldDefn || {
-          sortDirection: undefined
-        };
+        const sortDirection = pathName ? sortDirections[pathName] : undefined;
 
         const isLast = columnIdx === fieldCount - 1;
         const colWidth = isLast
-          ? allWidthsDefined ? undefined : column.width
-          : fieldCount > 1 ? column.width : undefined;
+          ? allWidthsDefined
+            ? undefined
+            : column.width
+          : fieldCount > 1
+          ? column.width
+          : undefined;
 
         const filterable = {
-          searchValues: workingSearchValues,
-          onFilterChange: () => {
-            // TODO:  remove this hack once we upgrade to latest ant
-            if (this._mounted) {
-              this.setState({});
-            }
-          },
-          onSearch: () => {
-            if (!localSearch) {
-              const defn: TableDefinition = {
-                [pathName!]: {
-                  ...((tableDefn[pathName!] as FieldDefinition) || {}),
-                  searchValue: workingSearchValues[pathName!] || ''
-                }
-              };
-
-              this.goToRoute(defn);
-            }
-          },
+          searchValues,
+          onSearch: () => this.execute(),
           localSearch,
           localDocuments: store.documents
         };
 
         const np = field ? field.namePath : undefined;
-        const searchNp = searchField ? searchField.namePath : undefined;
+        const searchNp = searchField?.namePath;
 
-        let sorter = undefined;
+        let sorter;
 
         if (!newDocumentTable) {
           if (column.sortComparator) {
             sorter = column.sortComparator;
           } else if (field) {
-            sorter = (a: Tyr.Document, b: Tyr.Document) => {
-              const av = np && np.get(a);
-              const bv = np && np.get(b);
-
-              return field!.type.compare(field!, av, bv);
-            };
+            // TODO:  can remove this restriction if a denormalized value is available or if
+            //        we convert findAll() to be an aggregation that links to the foreign keys
+            if (np && !field.link && !field.of?.link && !localDocuments)
+              sorter = (a: Tyr.Document, b: Tyr.Document) =>
+                field!.type.compare(field!, np.get(a), np.get(b));
           }
         }
 
@@ -967,9 +901,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 dropdownClassName: column.dropdownClassName,
                 className: column.className,
                 searchRange: column.searchRange,
-                onChange: () => {
-                  this.setState({});
-                },
+                onChange: () => this.setState({}),
                 typeUi: column.typeUi,
                 mapDocumentValueToForm: column.mapDocumentValueToForm,
                 mapFormValueToDocument: column.mapFormValueToDocument,
@@ -1013,7 +945,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           },
           sorter: sortingEnabled ? sorter : undefined,
           sortOrder: sortingEnabled ? sortDirection : undefined,
-          title: column.label || (field && field.label),
+          title: column.label || field?.label,
           width: colWidth,
           className: column.className,
           ellipsis: column.ellipsis,
@@ -1021,7 +953,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             ? { filteredValue: [filteredValue] }
             : { filteredValue: [] }),
           ...((filteringEnabled &&
-            (!column.noFilter && np && getFilter(np, filterable, column))) ||
+            !column.noFilter &&
+            np &&
+            getFilter(np, filterable, column)) ||
             {}),
           ...(!isEditingAnything && column.pinned && fieldCount > 1
             ? { fixed: column.pinned }
@@ -1173,69 +1107,34 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     },
     extra: { currentDataSource: any[] }
   ) => {
-    const store = this.store;
+    const { sortDirections, store } = this;
 
     delete store.editingDocument;
     delete store.newDocument;
-    let defn: TableDefinition = {};
 
-    if (pagination.current) {
-      defn.skip = (pagination.current! - 1) * this.store.pageSize;
-    }
+    if (pagination.current)
+      this.skip = (pagination.current! - 1) * this.store.pageSize;
 
+    /* TODO:  is this needed? -- shouldn't these already be the same?
     if (filters) {
       for (const pathName in filters) {
-        defn[pathName] = {
-          ...((store.tableDefn[pathName] as FieldDefinition) || {}),
-          searchValue: filters[pathName].join('.'),
-          sortDirection: undefined
-        };
+        searchValues[pathName] = filters[pathName];
       }
     }
+    */
 
     const sortFieldName = sorter.columnKey;
 
-    if (sortFieldName) {
-      // table doesn't appear to support multiple sort columns currently, so unselect any existing sort
-      for (const pathName in store.tableDefn) {
-        if (pathName === 'skip' || pathName === 'limit') {
-          continue;
-        }
-
-        if (pathName !== sortFieldName) {
-          store.tableDefn[pathName] = undefined;
-        } else {
-          const fieldDefn = store.tableDefn[pathName] as FieldDefinition;
-
-          if (fieldDefn && fieldDefn.sortDirection) {
-            defn[pathName] = _.omit(fieldDefn, 'sortDirection');
-          }
-        }
-      }
-
-      defn[sortFieldName] = {
-        ...((store.tableDefn[sortFieldName] as FieldDefinition) || {}),
-        sortDirection: sorter.order
-      };
-    } else {
-      for (const pathName in store.tableDefn) {
-        if (pathName === 'skip' || pathName === 'limit') {
-          continue;
-        }
-        store.tableDefn[pathName] = undefined;
+    // table doesn't appear to support multiple sort columns currently, so unselect any existing sort
+    for (const pathName in sortDirections) {
+      if (pathName !== sortFieldName) {
+        delete sortDirections[pathName];
+      } else {
+        sortDirections[pathName] = sorter.order!;
       }
     }
 
-    if (this.props.route) {
-      this.goToRoute(defn);
-    } else {
-      store.tableDefn = { ...store.tableDefn, ...defn };
-
-      if (this._mounted) {
-        this.setSortedDocuments(this.store.documents.slice());
-        this.setState({}); // Hack to force a table re-render
-      }
-    }
+    this.execute();
 
     this.props.notifySortSet &&
       this.props.notifySortSet(sortFieldName, sorter.order);
@@ -1263,7 +1162,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }
 
     const store = this.store;
-    const { skip = 0, limit = store.pageSize } = store.tableDefn;
+    const { skip = 0, limit = store.pageSize } = this;
     const totalCount = store.count || 0;
 
     // there appears to be a bug in ant table when you switch from paged to non-paging and then back again
@@ -1320,13 +1219,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   resetFiltersAndSort = () => {
     const { notifyFilterExists, notifySortSet } = this.props;
-    this.store.workingSearchValues = {};
-
-    const tableDefn = this.store.tableDefn;
-    this.store.tableDefn = {
-      ...(tableDefn.limit ? { limit: tableDefn.limit } : {}),
-      ...(tableDefn.skip ? { skip: tableDefn.skip } : {})
-    };
+    const { searchValues } = this;
+    for (const key of Object.keys(searchValues)) delete searchValues[key];
 
     this.setSortedDocuments(this.store.documents.slice());
     this.setState({});
@@ -1398,7 +1292,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       if (decorator && (!this.decorator || !this.decorator.visible))
         return <div />;
 
-      this.startFinding(); // want to delay finding until the control is actually shown
+      this.startReacting(); // want to delay finding until the control is actually shown
 
       const dndEnabled = !isEditingRow && !newDocument && orderable;
 
@@ -1493,22 +1387,21 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           )}
           <Row>
             <Col span={24}>
-              {fields &&
-                newDocument && (
-                  <ObsTable
-                    className="tyr-table-new-document"
-                    loading={loading}
-                    components={components}
-                    rowKey={() => 'new'}
-                    title={title}
-                    size={size || 'small'}
-                    pagination={false}
-                    showHeader={true}
-                    dataSource={[newDocument]}
-                    columns={this.getColumns(true)}
-                    scroll={fieldCount > 1 ? scroll : undefined}
-                  />
-                )}
+              {fields && newDocument && (
+                <ObsTable
+                  className="tyr-table-new-document"
+                  loading={loading}
+                  components={components}
+                  rowKey={() => 'new'}
+                  title={title}
+                  size={size || 'small'}
+                  pagination={false}
+                  showHeader={true}
+                  dataSource={[newDocument]}
+                  columns={this.getColumns(true)}
+                  scroll={fieldCount > 1 ? scroll : undefined}
+                />
+              )}
 
               {fields && (
                 <div
@@ -1526,17 +1419,16 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   {!dndBackend && mainTable}
                 </div>
               )}
-              {showConfig &&
-                tableConfig && (
-                  <TyrTableConfigComponent
-                    columns={this.props.fields}
-                    config={tableConfig}
-                    tableConfig={this.store.tableConfig}
-                    onCancel={() => (this.store.showConfig = false)}
-                    onUpdate={this.onUpdateTableConfig}
-                    containerEl={this.tableWrapper!}
-                  />
-                )}
+              {showConfig && tableConfig && (
+                <TyrTableConfigComponent
+                  columns={this.props.fields}
+                  config={tableConfig}
+                  tableConfig={this.store.tableConfig}
+                  onCancel={() => (this.store.showConfig = false)}
+                  onUpdate={this.onUpdateTableConfig}
+                  containerEl={this.tableWrapper!}
+                />
+              )}
             </Col>
           </Row>
         </div>
@@ -1545,10 +1437,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 }
 
-type TyrTableConfigField = {
+interface TyrTableConfigField {
   name: string;
   hidden?: boolean;
-};
+}
 
 export type TyrTableConfigFields = TyrTableConfigField[];
 
@@ -1561,26 +1453,26 @@ type TyrTableConfigType = Tyr.Document & {
   collectionId: string;
 };
 
-type TyrTableConfigProps = {
+interface TyrTableConfigProps {
   config: TyrTableConfig;
   tableConfig?: TyrTableConfigType;
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
   columns: TyrTableColumnFieldProps[];
   containerEl: React.RefObject<HTMLDivElement>;
-};
+}
 
-type ColumnConfigField = {
+interface ColumnConfigField {
   name: string;
   label: string;
   locked: boolean;
   hidden: boolean;
-};
+}
 
-type TyrTableConfigState = {
+interface TyrTableConfigState {
   tableConfig?: any;
   columnFields: ColumnConfigField[];
-};
+}
 
 class TyrTableConfigComponent extends React.Component<
   TyrTableConfigProps,
@@ -1929,7 +1821,7 @@ const orderedArray = (
     const fieldName = getFieldName(current.field);
 
     if (fieldName) {
-      let index = findIndex(arrayWithOrder, f => f.name == fieldName);
+      const index = findIndex(arrayWithOrder, f => f.name === fieldName);
 
       if (index > -1) {
         orderedArray[index] = current;
@@ -1952,13 +1844,13 @@ const fieldStyle = {
   width: '100%'
 };
 
-type TyrTableColumnConfigItemProps = {
+interface TyrTableColumnConfigItemProps {
   field: ColumnConfigField;
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;
   onChangeVisibility?: (field: ColumnConfigField) => void;
   compact?: boolean;
-};
+}
 
 const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
   const {
@@ -2066,7 +1958,7 @@ class TyrTableControlImpl implements TyrTableControl {
 
 // EditableRow, DraggableRow, EditableDraggableRow
 
-type BodyRowProps = {
+interface BodyRowProps {
   connectDragSource: (component: React.ReactNode) => React.ReactElement<any>;
   connectDropTarget: (component: React.ReactNode) => React.ReactElement<any>;
   moveRow: (dragIndex: number, hoverIndex: number) => void;
@@ -2077,7 +1969,7 @@ type BodyRowProps = {
   index: number;
   dndEnabled: boolean;
   form: WrappedFormUtils;
-};
+}
 
 let draggingIndex = -1;
 

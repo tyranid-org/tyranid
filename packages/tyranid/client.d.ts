@@ -44,27 +44,29 @@ declare module 'tyranid/client' {
       [key: string]: CollectionInstance;
     }
 
+    export const ajax: (url: string, opts: any) => Promise<any>;
     export const aux = (collectionDefinition: CollectionDefinition) =>
       CollectionStatic;
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
+    export function clone<T>(obj: T): T;
+    export function cloneDeep<T>(obj: T): T;
     export const collections: CollectionInstance[] & CollectionsByClassName;
 
     export const init: () => void;
-    export const ajax: (url: string, opts: any) => Promise<any>;
-    export function parseUid(
-      uid: string
-    ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
     export function isSameId(
       a: AnyIdType | null | undefined,
       b: AnyIdType | null | undefined
     ): boolean;
     export function labelize(name: string): string;
+    export function parseUid(
+      uid: string
+    ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
     export function pluralize(str: string): string;
+    export const reconnectSocket: () => void;
+    export const setSocketLibrary: (library: typeof io) => void;
     export function singularize(str: string): string;
     export function unitize(count: number, unit: string): string;
-    export const setSocketLibrary: (library: typeof io) => void;
-    export const reconnectSocket: () => void;
 
     export type AnyIdType = string | number;
     export type ObjIdType = string;
@@ -102,6 +104,7 @@ declare module 'tyranid/client' {
       def: TypeDefinition;
       create(field: FieldInstance): any;
       compare(field: FieldInstance, a: any, b: any): number;
+      fromString(value: any): string;
       format(field: FieldInstance, value: any): string;
     }
 

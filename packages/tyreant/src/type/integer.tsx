@@ -60,14 +60,8 @@ export const integerFilter: Filter = (
 
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
-
-    clearFilters && clearFilters([]);
-
-    if (localSearch) {
-      filterable.onFilterChange();
-    } else {
-      filterable.onSearch();
-    }
+    clearFilters?.([]);
+    filterable.onSearch();
   };
 
   const sliderProps = {
@@ -90,9 +84,7 @@ export const integerFilter: Filter = (
           onChange={(e: SliderValue) => {
             filterable.searchValues[pathName] = e;
 
-            if (props.liveSearch) {
-              filterable.onFilterChange();
-            }
+            if (props.liveSearch) filterable.onSearch();
           }}
           style={{ width: 188 }}
         />
@@ -108,13 +100,8 @@ export const integerFilter: Filter = (
             <Button
               type="primary"
               onClick={() => {
-                if (localSearch) {
-                  filterable.onFilterChange();
-                } else {
-                  filterable.onSearch();
-                }
-
-                filterDdProps.confirm && filterDdProps.confirm();
+                filterable.onSearch();
+                filterDdProps.confirm?.();
               }}
               icon="search"
               size="small"

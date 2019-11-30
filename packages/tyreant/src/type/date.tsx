@@ -62,19 +62,12 @@ export const dateFilter: Filter = (
   filterable: Filterable,
   props: TyrFieldLaxProps
 ) => {
-  const { localSearch } = filterable;
   const pathName = path.name;
 
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
-
-    clearFilters && clearFilters([]);
-
-    if (localSearch) {
-      filterable.onFilterChange();
-    } else {
-      filterable.onSearch();
-    }
+    clearFilters?.([]);
+    filterable.onSearch();
   };
 
   return {
@@ -92,10 +85,8 @@ export const dateFilter: Filter = (
                 : undefined;
 
               if (props.liveSearch) {
-                filterable.onFilterChange();
-                filterDdProps.confirm && filterDdProps.confirm();
-              } else {
                 filterable.onSearch();
+                filterDdProps.confirm?.();
               }
             }}
             //style={{ width: 188, marginBottom: 8, display: 'block' }}
@@ -112,13 +103,8 @@ export const dateFilter: Filter = (
               <Button
                 type="primary"
                 onClick={() => {
-                  if (localSearch) {
-                    filterable.onFilterChange();
-                  } else {
-                    filterable.onSearch();
-                  }
-
-                  filterDdProps.confirm && filterDdProps.confirm();
+                  filterable.onSearch();
+                  filterDdProps.confirm?.();
                 }}
                 icon="search"
                 size="small"

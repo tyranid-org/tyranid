@@ -359,9 +359,7 @@ export function generateClientLibrary() {
 
   ${
     Tyr.options.aws && Tyr.options.aws.cloudfrontPrefix
-      ? `Tyr.options.aws = { cloudfrontPrefix: '${
-          Tyr.options.aws.cloudfrontPrefix
-        }' };\n`
+      ? `Tyr.options.aws = { cloudfrontPrefix: '${Tyr.options.aws.cloudfrontPrefix}' };\n`
       : ''
   }
   ${
@@ -433,6 +431,8 @@ export function generateClientLibrary() {
     }
   }
 
+  Tyr.clone = obj => _.clone(obj);
+  Tyr.cloneDeep = obj => _.cloneDeep(obj);
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
@@ -601,29 +601,34 @@ export function generateClientLibrary() {
   }
   Type.prototype.compare = ${es5Fn(Type.prototype.compare)};
   Type.prototype.format = ${es5Fn(Type.prototype.format)};
+  Type.prototype.fromString = ${es5Fn(Type.prototype.fromString)};
   Type.prototype.create = ${es5Fn(Type.prototype.create)};
   Type.byName = {};
   Tyr.Type = Type;
 `;
 
   _.each(Type.byName, type => {
+    const def = type.def;
+
     file += `  new Type({
       name: '${type.name}',`;
 
-    if (type.def.create) {
+    if (def.create)
       file += `
-      compare: ${es5Fn(type.def.create)},`;
-    }
+      create: ${es5Fn(def.create)},`;
 
-    if (type.def.compare) {
+    const fromString = def.fromStringClient || def.fromString;
+    if (fromString)
       file += `
-      compare: ${es5Fn(type.def.compare)},`;
-    }
+      fromString: ${es5Fn(fromString)},`;
 
-    if (type.def.format) {
+    if (def.compare)
       file += `
-      format: ${es5Fn(type.def.format)},`;
-    }
+      compare: ${es5Fn(def.compare)},`;
+
+    if (def.format)
+      file += `
+      format: ${es5Fn(def.format)},`;
 
     file += `});\n`;
   });
@@ -808,6 +813,7 @@ export function generateClientLibrary() {
     if (def.is === 'array' || def.is === 'object') {
       if (!field.of && def.of) {
         var of = new Field(def.of);
+        of.name = '_';
         field.of = of;
         compileField(path + '._', field, of, dynamic, aux, method);
       }
@@ -1776,7 +1782,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
     if (
       express.rest ||
-      (express.get || express.put || express.array || express.fields)
+      express.get ||
+      express.put ||
+      express.array ||
+      express.fields
     ) {
       /*
        *     /api/NAME
