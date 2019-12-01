@@ -454,7 +454,7 @@ byName.link = {
 
     let values = filterable.searchValues[pathName];
     if (!Array.isArray(values)) values = values ? [values] : [];
-    // we clone the searchvalues here so that modifying them does not trigger a findAll() in the source control (i.e. table, etc.) from mobx
+    // we clone the searchvalues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
     values = Tyr.cloneDeep(values);
 
     return {
@@ -541,23 +541,15 @@ byName.link = {
         );
       },
       onFilter: (value, doc) => {
-        if (props.onFilter) {
-          return props.onFilter(value, doc);
-        }
+        if (props.onFilter) return props.onFilter(value, doc);
 
         const val = String(path.get(doc));
 
         if (Array.isArray(value)) {
-          if (!value.length) {
-            return true;
-          }
+          if (!value.length) return true;
 
           if (Array.isArray(val)) {
-            for (const v of val) {
-              if (value.indexOf(v) > -1) {
-                return true;
-              }
-            }
+            for (const v of val) if (value.indexOf(v) > -1) return true;
 
             return false;
           }
@@ -565,9 +557,7 @@ byName.link = {
           return value.indexOf(val) > -1;
         }
 
-        if (Array.isArray(val)) {
-          return val.indexOf(value) > -1;
-        }
+        if (Array.isArray(val)) return val.indexOf(value) > -1;
 
         return val === value;
       }

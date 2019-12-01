@@ -1175,7 +1175,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           defaultPageSize: limit,
           pageSize: limit,
           size: 'default',
-          itemRender: this.paginationItemRenderer
+          itemRender: this.paginationItemRenderer,
+          showSizeChanger: true
         }
       : false;
   };
