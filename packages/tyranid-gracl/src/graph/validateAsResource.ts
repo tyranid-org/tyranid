@@ -15,9 +15,7 @@ export function validateAsResource(
 
   if (!plugin.graclHierarchy.resources.has(collection.def.name)) {
     plugin.error(
-      `Attempted to set/get permission using ${
-        collection.def.name
-      } as resource, ` +
+      `Attempted to set/get permission using ${collection.def.name} as resource, ` +
         `no relevant resource class found in tyranid-gracl plugin!`
     );
   }

@@ -32,9 +32,7 @@ async function updateExchangeRates() {
 
     if (!exchangeRates || cutoff.isAfter(exchangeRates.updatedOn)) {
       const result = await fetch(
-        `http://data.fixer.io/api/latest?access_key=${
-          Tyr.options.fixer.accessKey
-        }`
+        `http://data.fixer.io/api/latest?access_key=${Tyr.options.fixer.accessKey}`
       );
 
       const json = await result.json();

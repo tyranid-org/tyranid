@@ -13,9 +13,7 @@ export function link(collection) {
       break;
     default:
       throw new Error(
-        `Collection ${collection.def.name} has invalid historical value: "${
-          collection.def.historical
-        }" must be either 'document' or 'patch'.`
+        `Collection ${collection.def.name} has invalid historical value: "${collection.def.historical}" must be either 'document' or 'patch'.`
       );
   }
 
@@ -204,12 +202,14 @@ export function historicalDb(collection) {
 
 export async function saveSnapshots(collection, docs) {
   if (Array.isArray(docs)) {
-    const snapshots = docs.filter(doc => doc && doc.$_snapshot).map(doc => {
-      const snapshot = doc.$_snapshot;
-      delete doc.$_snapshot;
-      snapshot.__id = doc._id;
-      return snapshot;
-    });
+    const snapshots = docs
+      .filter(doc => doc && doc.$_snapshot)
+      .map(doc => {
+        const snapshot = doc.$_snapshot;
+        delete doc.$_snapshot;
+        snapshot.__id = doc._id;
+        return snapshot;
+      });
 
     if (snapshots.length) {
       await historicalDb(collection).insertMany(snapshots);
@@ -305,15 +305,17 @@ export async function asOf(collection, doc, date, props) {
         if (datePredatesDocument) {
           priorSnapshots = [earliest];
         } else {
-          priorSnapshots = await (await hDb
-            .find({
-              __id: doc._id,
-              _on: {
-                $gte: earliest._on,
-                $lte: date
-              }
-            })
-            .sort({ _on: 1 })).toArray();
+          priorSnapshots = await (
+            await hDb
+              .find({
+                __id: doc._id,
+                _on: {
+                  $gte: earliest._on,
+                  $lte: date
+                }
+              })
+              .sort({ _on: 1 })
+          ).toArray();
         }
 
         for (const snapshot of priorSnapshots) {

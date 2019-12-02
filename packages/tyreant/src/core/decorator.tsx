@@ -1,4 +1,7 @@
 import * as React from 'react';
+
+import { Tyr } from 'tyranid/client';
+
 import { TyrAction } from './action';
 import { TyrComponent } from './component';
 
@@ -35,7 +38,8 @@ export abstract class TyrDecorator<
   }
 
   connect(component: TyrComponent) {
-    if (this.component) throw new Error('decorator was already connected');
+    if (this.component)
+      throw new Tyr.AppError('decorator was already connected');
 
     this.component = component;
   }

@@ -58,13 +58,13 @@ async function _exists(collection, query) {
       m: 'findOne/exists',
       q: query
     });
-    const result = !!await collection.db.findOne(query, {
+    const result = !!(await collection.db.findOne(query, {
       projection: { _id: 1 }
-    });
+    }));
     Tyr.Log.updateDuration(logPromise);
     return result;
   } else {
-    return !!await collection.db.findOne(query, { projection: { _id: 1 } });
+    return !!(await collection.db.findOne(query, { projection: { _id: 1 } }));
   }
 }
 
@@ -298,19 +298,13 @@ export default class Collection {
 
     if (colId.length !== 3) {
       throw new Error(
-        `Collection ${
-          def.name
-        }: The collection "id" should be three characters long.`
+        `Collection ${def.name}: The collection "id" should be three characters long.`
       );
     }
 
     if (Tyr.byId[colId]) {
       throw new Error(
-        `Collection ${
-          def.name
-        }: The collection id "${colId}" is already in use by ${
-          Tyr.byId[colId].def.name
-        }.`
+        `Collection ${def.name}: The collection id "${colId}" is already in use by ${Tyr.byId[colId].def.name}.`
       );
     }
 
@@ -695,11 +689,7 @@ export default class Collection {
       (args.length !== 1 || (!isOptions(args[0]) && _.keys(args[0]).length))
     ) {
       console.warn(
-        `*** ${
-          this.name
-        }.find(<query>, <fields>?, <opts>?) is deprecated ... use ${
-          this.name
-        }.find/findAll(<opts>)`
+        `*** ${this.name}.find(<query>, <fields>?, <opts>?) is deprecated ... use ${this.name}.find/findAll(<opts>)`
       );
     }
 
@@ -793,11 +783,7 @@ export default class Collection {
       (args.length !== 1 || (!isOptions(args[0]) && _.keys(args[0]).length))
     ) {
       console.warn(
-        `*** ${
-          this.name
-        }.findAll(<query>, <fields>?, <opts>?) is deprecated ... use ${
-          this.name
-        }.find/findAll(<opts>)`
+        `*** ${this.name}.findAll(<query>, <fields>?, <opts>?) is deprecated ... use ${this.name}.find/findAll(<opts>)`
       );
     }
 
@@ -2012,9 +1998,7 @@ export default class Collection {
               if (newDefFields[name]) {
                 throw compiler.err(
                   path,
-                  `field "${name}" is being redefined (was originally defined in group "${
-                    newDefFields[name].group
-                  }"`
+                  `field "${name}" is being redefined (was originally defined in group "${newDefFields[name].group}"`
                 );
               }
 
@@ -2178,18 +2162,14 @@ export default class Collection {
       !collection.labelField
     ) {
       throw new Error(
-        `Some string field must have the label property set if the collection "${
-          collection.def.name
-        }" is an enumeration or static.`
+        `Some string field must have the label property set if the collection "${collection.def.name}" is an enumeration or static.`
       );
     }
 
     for (const fnName of ['fromClient', 'toClient']) {
       if (collection.def[fnName] && isArrow(collection.def[fnName])) {
         throw new Error(
-          `Collection "${
-            collection.def.name
-          }" has a "${fnName}" arrow function; use a regular function so the document can be passed as "this"`
+          `Collection "${collection.def.name}" has a "${fnName}" arrow function; use a regular function so the document can be passed as "this"`
         );
       }
     }

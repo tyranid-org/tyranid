@@ -137,7 +137,9 @@ function schemaType(
   const methods = new Set(
     Array.isArray(opts.include)
       ? opts.include
-      : opts.include === 'read' ? ['get'] : ['get', 'put', 'post', 'delete']
+      : opts.include === 'read'
+      ? ['get']
+      : ['get', 'put', 'post', 'delete']
   );
 
   const readOnly =

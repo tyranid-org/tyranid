@@ -83,9 +83,9 @@ export function add() {
         w.alternate = 'Red';
         await w.$save();
 
-        const history = await (await widgetHistoryDb
-          .find({})
-          .sort({ _on: 1 })).toArray();
+        const history = await (
+          await widgetHistoryDb.find({}).sort({ _on: 1 })
+        ).toArray();
         expect(history.length).to.eql(2);
         expect(_.keys(history[0]).length).to.eql(6);
         expect(_.keys(history[1]).length).to.eql(7);
@@ -103,9 +103,9 @@ export function add() {
         const w = widget1();
         await w.$insert();
 
-        const history = await (await widgetHistoryDb
-          .find({})
-          .sort({ _on: 1 })).toArray();
+        const history = await (
+          await widgetHistoryDb.find({}).sort({ _on: 1 })
+        ).toArray();
         expect(history.length).to.eql(1);
 
         for (const snapshot of history) {
@@ -129,9 +129,9 @@ export function add() {
         w.alternate = 'Red';
         await w.$update();
 
-        const history = await (await widgetHistoryDb
-          .find({})
-          .sort({ _on: 1 })).toArray();
+        const history = await (
+          await widgetHistoryDb.find({}).sort({ _on: 1 })
+        ).toArray();
         expect(history.length).to.eql(2);
         expect(_.keys(history[0]).length).to.eql(6);
         expect(_.keys(history[1]).length).to.eql(5);
@@ -155,9 +155,9 @@ export function add() {
         w.alternate = 'Red';
         await w.$update({ fields: { name: 1, alternate: 1 } });
 
-        const history = await (await widgetHistoryDb
-          .find({})
-          .sort({ _on: 1 })).toArray();
+        const history = await (
+          await widgetHistoryDb.find({}).sort({ _on: 1 })
+        ).toArray();
         expect(history.length).to.eql(2);
         expect(_.keys(history[0]).length).to.eql(6);
         expect(history[0]._partial).to.eql(false);
@@ -185,9 +185,9 @@ export function add() {
           historical: 'partial'
         });
 
-        const history = await (await widgetHistoryDb
-          .find({})
-          .sort({ _on: 1 })).toArray();
+        const history = await (
+          await widgetHistoryDb.find({}).sort({ _on: 1 })
+        ).toArray();
         expect(history.length).to.eql(2);
         expect(_.keys(history[0]).length).to.eql(6);
         expect(history[0]._partial).to.eql(false);

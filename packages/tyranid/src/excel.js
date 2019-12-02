@@ -154,9 +154,7 @@ async function toExcel(opts) {
         case 'png':
           break;
         default:
-          throw `image "${
-            image.path
-          }" does not have a valid image extension (must be .gif, .jpeg, .jpg, or .png)`;
+          throw `image "${image.path}" does not have a valid image extension (must be .gif, .jpeg, .jpg, or .png)`;
       }
 
       image.id = workbook.addImage({

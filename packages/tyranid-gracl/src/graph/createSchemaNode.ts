@@ -108,7 +108,9 @@ export function createSchemaNode(
 
               let linkIds: ObjectID[] = !idProp
                 ? []
-                : Array.isArray(idProp) ? idProp : [idProp];
+                : Array.isArray(idProp)
+                ? idProp
+                : [idProp];
 
               // this potential path has found a dead end,
               // we need to try another upper level resource

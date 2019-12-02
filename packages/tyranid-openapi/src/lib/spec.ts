@@ -77,21 +77,18 @@ export function spec(Tyr: typeof Tyranid, opts: Options = {}): Spec | string {
   /**
    * create Open API object schemas for relevant collections / properties
    */
-  const specList = collections.reduce(
-    (out, col) => {
-      const virtualList = getIndividualOpts(col).map(individualOpts => {
-        const result = schema(col.def, individualOpts);
-        return {
-          name: result.pascalName,
-          result,
-          schema: result.schema
-        };
-      });
+  const specList = collections.reduce((out, col) => {
+    const virtualList = getIndividualOpts(col).map(individualOpts => {
+      const result = schema(col.def, individualOpts);
+      return {
+        name: result.pascalName,
+        result,
+        schema: result.schema
+      };
+    });
 
-      return [...virtualList, ...out];
-    },
-    [] as { name: string; schema: ExtendedSchema; result: SchemaContainer }[]
-  );
+    return [...virtualList, ...out];
+  }, [] as { name: string; schema: ExtendedSchema; result: SchemaContainer }[]);
 
   /**
    * sort results by public name

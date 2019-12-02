@@ -215,8 +215,7 @@ _.assign(Tyr, {
             ? new RegExp(dirOpts.fileMatch)
             : undefined;
 
-          fs
-            .readdirSync(dirOpts.dir)
+          fs.readdirSync(dirOpts.dir)
             .filter(file => !fileRe || fileRe.test(file))
             .forEach(file => {
               const fileName = dirOpts.dir + '/' + file;

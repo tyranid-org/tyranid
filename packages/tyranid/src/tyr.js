@@ -308,7 +308,7 @@ const Tyr = {
     maxMs = 5000,
     everyMs = 5
   ) {
-    for (let totalMs = 0; !await fn(); totalMs += everyMs) {
+    for (let totalMs = 0; !(await fn()); totalMs += everyMs) {
       if (totalMs >= maxMs) {
         throw new Error(`Condition failed to occur within ${maxMs}ms`);
       }

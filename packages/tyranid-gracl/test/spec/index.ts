@@ -1372,7 +1372,13 @@ test.serial(
     await chopped.$allow('edit-organization', ben);
 
     const {
-      $or: [{ organizationId: { $in: [organizationId] } }]
+      $or: [
+        {
+          organizationId: {
+            $in: [organizationId]
+          }
+        }
+      ]
     } = await Tyr.byName.blog.secureQuery({}, 'view-organization', ben);
 
     t.is(organizationId.toString(), chopped.$id.toString());

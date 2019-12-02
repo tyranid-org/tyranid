@@ -22,9 +22,7 @@ export function validatePermissionExists(plugin: GraclPlugin, perm: string) {
   ) {
     return plugin.error(
       `Collection "${components.collection}" has no ` +
-        `resource class and thus can't be used with permission "${
-          components.action
-        }"`
+        `resource class and thus can't be used with permission "${components.action}"`
     );
   }
 }

@@ -391,7 +391,7 @@ Units.prototype.convert = function(value, targetUnit) {
           if (from === Unit.CELSIUS) {
             value = value + 273.15;
           } else if (from === Unit.FAHRENHEIT) {
-            value = (value - 32) * 5 / 9 + 273.15;
+            value = ((value - 32) * 5) / 9 + 273.15;
           }
 
           // Step 2:  convert from Kelvin to the target temperature if it's not Kelvin
@@ -399,7 +399,7 @@ Units.prototype.convert = function(value, targetUnit) {
           if (to === Unit.CELSIUS) {
             value -= 273.15;
           } else if (to === Unit.FAHRENHEIT) {
-            value = (value - 273.15) * 9 / 5 + 32;
+            value = ((value - 273.15) * 9) / 5 + 32;
           }
 
           conversion = MANUAL;

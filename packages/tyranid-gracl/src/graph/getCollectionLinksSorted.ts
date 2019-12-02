@@ -55,9 +55,7 @@ export function getCollectionLinksSorted<
           return filtered;
         } else {
           throw new Error(
-            `Multiple links to ${colName} for collection ${
-              col.def.name
-            } have graclTypes`
+            `Multiple links to ${colName} for collection ${col.def.name} have graclTypes`
           );
         }
       } else {

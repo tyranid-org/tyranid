@@ -14,7 +14,11 @@ export const SchemaType = new Collection({
     _id: { is: 'integer' },
     name: { is: 'string', labelField: true }
   },
-  values: [['_id', 'name'], [1, 'Full'], [2, 'Partial']]
+  values: [
+    ['_id', 'name'],
+    [1, 'Full'],
+    [2, 'Partial']
+  ]
 });
 
 const Schema = new Collection({

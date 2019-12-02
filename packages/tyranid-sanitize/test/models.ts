@@ -160,5 +160,9 @@ export const UserStatus = new Tyr.Collection({
     _id: { is: 'integer' },
     name: { is: 'string', labelField: true }
   },
-  values: [['_id', 'name'], [1, 'Active'], [2, 'Deleted']]
+  values: [
+    ['_id', 'name'],
+    [1, 'Active'],
+    [2, 'Deleted']
+  ]
 });

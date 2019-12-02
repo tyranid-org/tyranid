@@ -60,9 +60,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
   if (seed) faker.seed(seed);
 
   log(
-    `Creating santized version of ${
-      Tyr.db.databaseName
-    } in new database: ${outDbName}`
+    `Creating santized version of ${Tyr.db.databaseName} in new database: ${outDbName}`
   );
 
   const outDb = Tyr.mongoClient.db(outDbName);
@@ -125,9 +123,7 @@ function createDocumentSanitizer(
 
   const skip = (state: WalkState, value: Tyr.RawMongoDocument) => {
     warn(
-      `skipping field ${state.path} on document id=${state.$id} (${
-        def.name
-      }) as it doesn't match the schema`
+      `skipping field ${state.path} on document id=${state.$id} (${def.name}) as it doesn't match the schema`
     );
     return value;
   };

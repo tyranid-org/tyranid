@@ -244,9 +244,7 @@ export default class Event {
 
               if (err.message === 'timed out') {
                 throw new AppError(
-                  `${event.type} handler on collection "${
-                    event.collection.name
-                  }" timed out after ${EVENT_HANDLER_TIMEOUT_MS}ms`
+                  `${event.type} handler on collection "${event.collection.name}" timed out after ${EVENT_HANDLER_TIMEOUT_MS}ms`
                 );
               } else {
                 throw err;

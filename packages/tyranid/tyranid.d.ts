@@ -56,15 +56,14 @@ export namespace Tyr {
   export import MongoQuery = Isomorphic.MongoQuery;
   export import MongoUpdate = Isomorphic.MongoUpdate;
 
-  export const AppError: AppErrorStatic;
   export const Collection: CollectionStatic;
   export const Event: EventStatic;
   export const Field: FieldStatic;
   export const Log: CollectionInstance;
   export const NamePath: NamePathStatic;
-  export const SecureError: SecureErrorStatic;
   export const Type: TypeStatic;
-  export const UserError: UserErrorStatic;
+
+  export { AppError, SecureError, UserError } from Isomorphic;
 
   export type anny = any;
 
@@ -1095,57 +1094,6 @@ export namespace Tyr {
     sortValue(namePath: NamePathInstance, value: any): any;
     toClient(field: FieldInstance, value: any): any;
     validate(field: FieldInstance, value: any): UserError;
-  }
-
-  interface ErrorOptions {
-    message?: string;
-    suffix?: string;
-    technical?: string;
-    rowNumber?: number;
-    lineNumber?: number;
-    columnNumber?: number;
-  }
-
-  export interface AppErrorStatic {
-    new (opts?: string | ErrorOptions): UserError;
-  }
-
-  export interface AppError {
-    message: string;
-    field?: FieldInstance;
-    technical?: string;
-    rowNumber?: number;
-    lineNumber?: number;
-    columnNumber?: number;
-    toString(): string;
-  }
-
-  export interface SecureErrorStatic {
-    new (opts?: string | ErrorOptions): SecureError;
-  }
-
-  export interface SecureError {
-    message: string;
-    field?: FieldInstance;
-    technical?: string;
-    rowNumber?: number;
-    lineNumber?: number;
-    columnNumber?: number;
-    toString(): string;
-  }
-
-  export interface UserErrorStatic {
-    new (opts: string | ErrorOptions): UserError;
-  }
-
-  export interface UserError {
-    message: string;
-    field?: FieldInstance;
-    technical?: string;
-    rowNumber?: number;
-    lineNumber?: number;
-    columnNumber?: number;
-    toString(): string;
   }
 
   export interface DiffStatic {

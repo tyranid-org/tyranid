@@ -158,9 +158,18 @@ describe('tyranid', () => {
         [{ $foo: 1 }, { _$foo: 1 }],
         [{ 'foo.bar': 1 }, { 'foo:bar': 1 }],
         [r1, { foo: 1, bar: '_recurse' }],
-        [{ foo: 1, bar: r1 }, { foo: 1, bar: { foo: 1, bar: '_recurse' } }],
-        [{ $foo: 1, bar: r1 }, { _$foo: 1, bar: { foo: 1, bar: '_recurse' } }],
-        [{ foo: 1, bar: { $foo: 1 } }, { foo: 1, bar: { _$foo: 1 } }],
+        [
+          { foo: 1, bar: r1 },
+          { foo: 1, bar: { foo: 1, bar: '_recurse' } }
+        ],
+        [
+          { $foo: 1, bar: r1 },
+          { _$foo: 1, bar: { foo: 1, bar: '_recurse' } }
+        ],
+        [
+          { foo: 1, bar: { $foo: 1 } },
+          { foo: 1, bar: { _$foo: 1 } }
+        ],
         [
           {
             $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }]
@@ -659,42 +668,50 @@ describe('tyranid', () => {
 
       it('should support secured find()s', async () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
-        let books = await (await Book.find({
-          query: {},
-          projection: { title: 1 },
-          auth: anon
-        })).toArray();
+        let books = await (
+          await Book.find({
+            query: {},
+            projection: { title: 1 },
+            auth: anon
+          })
+        ).toArray();
 
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
 
         const jane = await User.findOne({ query: { 'name.first': 'John' } });
-        books = await (await Book.find({
-          query: {},
-          projection: { title: 1 },
-          auth: jane
-        })).toArray();
+        books = await (
+          await Book.find({
+            query: {},
+            projection: { title: 1 },
+            auth: jane
+          })
+        ).toArray();
         expect(books.length).to.eql(2);
       });
 
       it('should support secured find()s with a single options argument', async () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
-        const books = await (await Book.find({
-          query: {},
-          projection: { title: 1 },
-          auth: anon
-        })).toArray();
+        const books = await (
+          await Book.find({
+            query: {},
+            projection: { title: 1 },
+            auth: anon
+          })
+        ).toArray();
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
       });
 
       it('should support secured find()s with a query and an options argument', async () => {
         const anon = await User.findOne({ query: { 'name.first': 'An' } });
-        const books = await (await Book.find({
-          query: {},
-          projection: { title: 1 },
-          auth: anon
-        })).toArray();
+        const books = await (
+          await Book.find({
+            query: {},
+            projection: { title: 1 },
+            auth: anon
+          })
+        ).toArray();
         expect(books.length).to.eql(1);
         expect(books[0].title).to.eql('Tyranid User Guide');
       });
@@ -706,10 +723,12 @@ describe('tyranid', () => {
 
       it('should not find() with an _id contradiction', async () => {
         const jane = await User.findOne({ query: { 'name.first': 'Jane' } });
-        let books = await (await Book.find({
-          query: {},
-          auth: jane
-        })).toArray();
+        let books = await (
+          await Book.find({
+            query: {},
+            auth: jane
+          })
+        ).toArray();
         expect(books.length).to.eql(0);
 
         books = await (await Book.find({ query: {} })).toArray();
@@ -733,9 +752,11 @@ describe('tyranid', () => {
       });
 
       it('should find wrapped objects', async () => {
-        const docs = await (await User.find({
-          query: { 'name.first': 'An' }
-        })).toArray();
+        const docs = await (
+          await User.find({
+            query: { 'name.first': 'An' }
+          })
+        ).toArray();
         expect(docs.length).to.be.eql(1);
         expect(docs[0]).to.be.an.instanceof(User);
       });
@@ -942,7 +963,10 @@ describe('tyranid', () => {
       });
 
       it('should support support pluralize', async () => {
-        for (const test of [['cat', 'cats'], ['quiz', 'quizzes']]) {
+        for (const test of [
+          ['cat', 'cats'],
+          ['quiz', 'quizzes']
+        ]) {
           expect(Tyr.pluralize(test[0])).to.eql(test[1]);
         }
       });
@@ -958,10 +982,12 @@ describe('tyranid', () => {
       });
 
       it('should support projections', async () => {
-        const docs = await (await User.db.find(
-          { 'name.first': 'An' },
-          { projection: { name: 1 } }
-        )).toArray();
+        const docs = await (
+          await User.db.find(
+            { 'name.first': 'An' },
+            { projection: { name: 1 } }
+          )
+        ).toArray();
         expect(docs.length).to.be.eql(1);
         expect(_.keys(docs[0]).length).to.be.eql(2);
       });
@@ -2368,7 +2394,12 @@ describe('tyranid', () => {
 
     describe('isObject', () => {
       it('test if something is an object', () => {
-        const tests = [[1, false], [{}, true], [oid1, false], [{ a: 1 }, true]];
+        const tests = [
+          [1, false],
+          [{}, true],
+          [oid1, false],
+          [{ a: 1 }, true]
+        ];
 
         for (const test of tests) {
           expect(Tyr.isObject(test[0])).to.be.eql(test[1]);

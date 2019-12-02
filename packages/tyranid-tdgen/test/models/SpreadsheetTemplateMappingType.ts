@@ -9,5 +9,10 @@ export const SpreadsheetTemplateMappingType = new Tyr.Collection({
   enum: true,
   fields: { _id: { is: 'integer' }, name: { is: 'string', labelField: true } },
   // single quote added to ensure that string escaping is done
-  values: [['_id', 'name'], [0, 'None'], [1, "'Tabular"], [2, 'Cell']]
+  values: [
+    ['_id', 'name'],
+    [0, 'None'],
+    [1, "'Tabular"],
+    [2, 'Cell']
+  ]
 });

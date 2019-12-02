@@ -152,8 +152,13 @@ export interface TyrTableProps extends TyrComponentProps {
 
 @observer
 export class TyrTable extends TyrComponent<TyrTableProps> {
+  canMultiple = true;
+
+  defaultPageSize = this.props.pageSize || DEFAULT_PAGE_SIZE;
+
   skip?: number;
-  limit?: number;
+  limit: number = this.defaultPageSize;
+
   /**
    * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
    * search value while it is being edited in the search control, it needs to keep that copy locally.
@@ -177,7 +182,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     documents: Tyr.Document[] & { count?: number };
     loading: boolean;
     count: number;
-    pageSize: number;
     editingDocument?: Tyr.Document;
     isSavingDocument: boolean;
     showConfig: boolean;
@@ -189,10 +193,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     documents: this.props.documents || [],
     loading: false,
     count: this.props.documents ? this.props.documents.length : 0,
-    pageSize:
-      this.props.pageSize !== undefined
-        ? this.props.pageSize
-        : DEFAULT_PAGE_SIZE,
     isSavingDocument: false,
     showConfig: false,
     fields: [],
@@ -200,44 +200,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   };
 
   async componentDidMount() {
-    const { linkToParent } = this;
-    const { actions, orderable } = this.props;
+    super.componentDidMount();
 
-    if (orderable && !dndBackend) {
+    const { orderable } = this.props;
+
+    if (orderable && !dndBackend)
       dndBackend = this.props.dndBackend || HTML5Backend;
-    }
-
-    if (!this.collection) {
-      throw new Error('could not determine collection for TyrForm');
-    }
-
-    if (actions) {
-      for (const action of actions) {
-        this.enact(action);
-      }
-    }
-
-    if (linkToParent) {
-      this.enactUp(
-        new TyrAction({
-          traits: ['edit'],
-          name: Tyr.pluralize(this.collection!.label),
-          component: this,
-          action: (opts: TyrActionFnOpts) => {
-            this.find(opts.document!);
-          }
-        })
-      );
-
-      this.enactUp(
-        new TyrAction({
-          traits: ['cancel'],
-          name: 'done',
-          component: this,
-          action: (opts: TyrActionFnOpts) => {}
-        })
-      );
-    }
 
     const { config, fields, onLoad } = this.props;
     const store = this.store;
@@ -406,7 +374,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   // TODO:  where should this be called?  or get rid of it?
   private setDefaults() {
     this.skip = 0;
-    this.limit = this.store.pageSize;
+    this.limit = this.defaultPageSize;
     this.searchValues = {}; // TODO:  should we clear the keys if this already exists to maintain same reference?
 
     const defaultSortColumn = this.props.fields.find(
@@ -425,7 +393,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   private fromUrlQuery(query: { [name: string]: string }) {
     this.skip = 0;
-    this.limit = this.store.pageSize;
+    this.limit = this.defaultPageSize;
     this.searchValues = {};
     let sortFound = false;
 
@@ -593,8 +561,6 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           if (currentUrl === newUrl) return;
         }
 
-        if (!this.limit && this.store.pageSize)
-          this.limit = this.store.pageSize;
         this.findAll();
       });
     }
@@ -965,7 +931,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       }
     );
 
-    if (this.actions.length) {
+    const singularActions = this.actions.filter(a => !a.multiple);
+    if (singularActions.length) {
       antColumns.push({
         key: '$actions',
         dataIndex: '$actions',
@@ -1023,7 +990,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             return <span />;
           }
 
-          const thisActions = this.actions.filter(
+          const thisActions = singularActions.filter(
             action => !action.hide || !action.hide(document)
           );
 
@@ -1112,16 +1079,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     delete store.editingDocument;
     delete store.newDocument;
 
-    if (pagination.current)
-      this.skip = (pagination.current! - 1) * this.store.pageSize;
+    if (pagination.current) this.skip = (pagination.current! - 1) * this.limit;
 
-    /* TODO:  is this needed? -- shouldn't these already be the same?
-    if (filters) {
-      for (const pathName in filters) {
-        searchValues[pathName] = filters[pathName];
-      }
-    }
-    */
+    const { pageSize } = pagination;
+    if (pageSize !== this.limit) this.limit = pageSize || this.defaultPageSize;
 
     const sortFieldName = sorter.columnKey;
 
@@ -1136,8 +1097,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     this.execute();
 
-    this.props.notifySortSet &&
-      this.props.notifySortSet(sortFieldName, sorter.order);
+    this.props.notifySortSet?.(sortFieldName, sorter.order);
   };
 
   private paginationItemRenderer = (
@@ -1145,30 +1105,24 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next',
     originalElement: React.ReactElement<HTMLElement>
   ) => {
-    if (type === 'prev') {
-      return <a>Previous</a>;
-    }
-
-    if (type === 'next') {
-      return <a>Next</a>;
-    }
-
+    if (type === 'prev') return <a>Previous</a>;
+    if (type === 'next') return <a>Next</a>;
     return originalElement;
   };
 
   private pagination = () => {
-    if (this.props.pageSize === 0) {
+    if (this.limit === 0) {
       return undefined;
     }
 
     const store = this.store;
-    const { skip = 0, limit = store.pageSize } = this;
+    const { skip = 0, limit = this.defaultPageSize } = this;
     const totalCount = store.count || 0;
 
     // there appears to be a bug in ant table when you switch from paged to non-paging and then back again
     // (forces a 10 row page size) ?
-    //return true || totalCount > this.store.pageSize
-    return totalCount > store.pageSize
+    //return true || totalCount > this.limit
+    return totalCount > limit
       ? {
           defaultCurrent: Math.floor(skip / limit) + 1,
           total: totalCount,
@@ -1207,7 +1161,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   onSelectedRowKeysChange = (selectedRowKeys: string[] | number[]) => {
     const { onSelectRows } = this.props;
     this.store.selectedRowKeys = selectedRowKeys as string[];
-    onSelectRows && onSelectRows(selectedRowKeys as string[]);
+    onSelectRows?.(selectedRowKeys as string[]);
   };
 
   closeConfigModal = () => {
@@ -1287,7 +1241,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       isEditingRow ? ' tyr-table-editing-row' : ''
     }`;
 
-    const rowsSelectable = !!onSelectRows;
+    const multiActions = this.actions.filter(a => a.multiple);
+    const rowsSelectable = onSelectRows || multiActions.length;
 
     return this.wrap(() => {
       if (decorator && (!this.decorator || !this.decorator.visible))
@@ -1379,10 +1334,25 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
       return (
         <div className={netClassName}>
-          {children && (
+          {(children || multiActions.length > 0) && (
             <Row>
               <Col span={24} className="tyr-table-header">
                 {children}
+                {multiActions.map(a => (
+                  <Button
+                    disabled={!this.store.selectedRowKeys?.length}
+                    key={`a_${a.name}`}
+                    onClick={() =>
+                      a.act({
+                        documents: this.store.selectedRowKeys.map(
+                          id => this.collection!.byIdIndex[id]
+                        )
+                      })
+                    }
+                  >
+                    {a.label}
+                  </Button>
+                ))}
               </Col>
             </Row>
           )}

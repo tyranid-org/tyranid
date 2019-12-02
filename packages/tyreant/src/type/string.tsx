@@ -50,7 +50,6 @@ export const stringFilter: Filter = (
   const pathName = path.name;
   let searchInputRef: Input | null = null;
   const { detail: field } = path;
-  const { localSearch } = filterable;
 
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
@@ -58,51 +57,56 @@ export const stringFilter: Filter = (
     filterable.onSearch();
   };
 
-  return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => (
-      <div className="search-box">
-        <Input
-          ref={node => {
-            searchInputRef = node;
-          }}
-          placeholder={`Search ${props.label || field.label}`}
-          value={filterable.searchValues[pathName]}
-          onChange={e => {
-            filterable.searchValues[pathName] = e.target.value;
-            if (props.liveSearch) filterable.onSearch();
-          }}
-          onPressEnter={() => {
-            filterDdProps.confirm?.();
-            filterable.onSearch();
-          }}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <div className="search-box-footer">
-          <Button
-            onClick={() => onClearFilters(filterDdProps.clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Reset
-          </Button>
+  let localValue = filterable.searchValues[pathName];
 
-          {!props.liveSearch && (
+  return {
+    filterDropdown: (filterDdProps: FilterDropdownProps) => {
+      const search = () => {
+        filterable.searchValues[pathName] = localValue;
+        filterable.onSearch();
+        filterDdProps.confirm?.();
+      };
+
+      return (
+        <div className="search-box">
+          <Input
+            ref={node => {
+              searchInputRef = node;
+            }}
+            placeholder={`Search ${props.label || field.label}`}
+            value={localValue}
+            onChange={e => {
+              localValue = e.target.value;
+              if (props.liveSearch) search();
+              else filterDdProps.setSelectedKeys?.([localValue]);
+            }}
+            onPressEnter={() => search()}
+            style={{ width: 188, marginBottom: 8, display: 'block' }}
+          />
+          <div className="search-box-footer">
             <Button
-              type="primary"
-              onClick={() => {
-                filterable.onSearch();
-                filterDdProps.confirm?.();
-              }}
-              icon="search"
+              onClick={() => onClearFilters(filterDdProps.clearFilters)}
               size="small"
               style={{ width: 90 }}
             >
-              Search
+              Reset
             </Button>
-          )}
+
+            {!props.liveSearch && (
+              <Button
+                type="primary"
+                onClick={() => search()}
+                icon="search"
+                size="small"
+                style={{ width: 90 }}
+              >
+                Search
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
     onFilter: (value: string, doc: Tyr.Document) => {
       if (value !== undefined) {
         const v = path.get(doc);

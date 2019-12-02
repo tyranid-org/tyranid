@@ -72,9 +72,7 @@ async function syncIndexes(col) {
       const name = toName(index);
       if (createIndexesByName[name] !== index) {
         throw new Error(
-          `Tried to create two indexes named ${name} for collection ${
-            col.def.name
-          }`
+          `Tried to create two indexes named ${name} for collection ${col.def.name}`
         );
       }
     }

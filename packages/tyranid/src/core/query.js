@@ -597,7 +597,7 @@ Collection.prototype.fromClientQuery = function(query) {
   const col = this;
 
   function convertValue(field, value) {
-    if (_.isArray(value)) {
+    if (_.isArray(value) && field.type.name !== 'array') {
       return value.map(v => field.type.fromClient(field, v));
     } else {
       return field.type.fromClient(field, value);

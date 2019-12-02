@@ -258,7 +258,10 @@ export async function query(
       const node = nodes.pop()!;
       if (!node.hierarchyRoot()) {
         const parents = await node.getParents();
-        debugSubjectGraph.set(node.getId(), parents.map(n => n.getId()));
+        debugSubjectGraph.set(
+          node.getId(),
+          parents.map(n => n.getId())
+        );
         nodes.push(...parents);
       } else {
         debugSubjectGraph.set(node.getId(), []);

@@ -36,9 +36,9 @@ declare module 'tyranid/isomorphic' {
   export namespace Tyr {
 
 ${generateIsomorphicInterfaces(collections, {
-    client: true,
-    commentLineWidth: passedOptions.commentLineWidth
-  })}
+  client: true,
+  commentLineWidth: passedOptions.commentLineWidth
+})}
   }
 
 }

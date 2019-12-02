@@ -4,6 +4,11 @@ import { TyrComponent } from './component';
 
 export interface TyrActionFnOpts {
   document?: Tyr.Document;
+
+  /**
+   * if action.multiple === true
+   */
+  documents?: Tyr.Document[];
 }
 
 export type TyrActionTrait = 'create' | 'edit' | 'save' | 'cancel';
@@ -13,6 +18,7 @@ export interface TyrActionOpts {
   name: string;
   label?: string | React.ReactNode;
   component?: TyrComponent<any>;
+  multiple?: boolean;
 
   /**
    * If an action returns false or Promise<false> then the decorator action will not
@@ -24,19 +30,33 @@ export interface TyrActionOpts {
 }
 
 export class TyrAction {
+  static get(action: TyrAction | TyrActionOpts) {
+    return action instanceof TyrAction ? action : new TyrAction(action);
+  }
+
   traits: TyrActionTrait[];
   name: string;
   label: string | React.ReactNode;
   component?: TyrComponent;
+  multiple: boolean;
   action?: (opts: TyrActionFnOpts) => void | boolean | Promise<void | boolean>;
   hide?: (doc: Tyr.Document) => boolean;
 
-  constructor({ traits, name, component, label, action, hide }: TyrActionOpts) {
+  constructor({
+    traits,
+    name,
+    component,
+    label,
+    multiple,
+    action,
+    hide
+  }: TyrActionOpts) {
     this.traits = traits || [];
     this.name = name;
     this.component = component;
     this.label = label || Tyr.labelize(name);
     this.action = action;
+    this.multiple = multiple ?? false;
     this.hide = hide;
   }
 
@@ -45,7 +65,7 @@ export class TyrAction {
   }
 
   act(opts: TyrActionFnOpts) {
-    this.action && this.action(opts);
+    this.action?.(opts);
   }
 
   decorate(opts: Partial<TyrActionOpts>) {

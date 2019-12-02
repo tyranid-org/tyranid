@@ -24,6 +24,57 @@ export namespace Tyr {
     };
   }
 
+  interface ErrorOptions {
+    message?: string;
+    suffix?: string;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
+  }
+
+  export interface AppErrorStatic {
+    new (opts?: string | ErrorOptions): UserError;
+  }
+  export const AppError: AppErrorStatic;
+  export interface AppError {
+    message: string;
+    field?: FieldInstance;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
+    toString(): string;
+  }
+
+  export interface SecureErrorStatic {
+    new (opts?: string | ErrorOptions): SecureError;
+  }
+  export const SecureError: SecureErrorStatic;
+  export interface SecureError {
+    message: string;
+    field?: FieldInstance;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
+    toString(): string;
+  }
+
+  export interface UserErrorStatic {
+    new (opts: string | ErrorOptions): UserError;
+  }
+  export const UserError: UserErrorStatic;
+  export interface UserError {
+    message: string;
+    field?: FieldInstance;
+    technical?: string;
+    rowNumber?: number;
+    lineNumber?: number;
+    columnNumber?: number;
+    toString(): string;
+  }
+
   export interface TypeStatic {
     byName: { [key: string]: TypeInstance };
 

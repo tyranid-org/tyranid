@@ -443,10 +443,12 @@ export class PermissionsModel extends PermissionsBaseCollection {
       retrievedDocumentMatrix,
       (out, documentList, index) => {
         const permission = permissionsToCheck[index];
-        out[permission] = new Set(_.chain(documentList)
-          .map('$uid')
-          .compact()
-          .value() as string[]);
+        out[permission] = new Set(
+          _.chain(documentList)
+            .map('$uid')
+            .compact()
+            .value() as string[]
+        );
         return out;
       },
       {} as Hash<Set<string>>
@@ -537,9 +539,9 @@ export class PermissionsModel extends PermissionsBaseCollection {
 
     // get all subjects with direct permissions set for this resource,
     // does not yet include _all_ subjects down the heirarchy
-    const subjectDocuments = await Tyr.byUids(permissionsAsResource.map(
-      p => p.subjectId
-    ) as string[]);
+    const subjectDocuments = await Tyr.byUids(
+      permissionsAsResource.map(p => p.subjectId) as string[]
+    );
 
     const subjectsByCollection: Hash<Tyr.Document[]> = {};
     _.each(subjectDocuments, subject => {
@@ -591,9 +593,10 @@ export class PermissionsModel extends PermissionsBaseCollection {
 
       await Promise.all(
         _.map(collections, async collectionName => {
-          const subjects = (subjectsByCollection[collectionName] = _.filter(
-            subjectsByCollection[collectionName],
-            s => filterAccess(s)
+          const subjects = (subjectsByCollection[
+            collectionName
+          ] = _.filter(subjectsByCollection[collectionName], s =>
+            filterAccess(s)
           ));
 
           const query: Tyr.MongoQuery = {

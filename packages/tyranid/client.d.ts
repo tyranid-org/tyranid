@@ -9,6 +9,8 @@ declare module 'tyranid/client' {
     export const NamePath: NamePathStatic;
     export const Type: TypeStatic;
 
+    export { AppError, SecureError, UserError } from Isomorphic;
+
     export type anny = any;
 
     export interface MongoDocument {
