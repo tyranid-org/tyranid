@@ -105,6 +105,7 @@ export interface TyrTableConfig {
 }
 
 export interface TyrTableProps extends TyrComponentProps {
+  bordered?: boolean;
   className?: string;
   collection: Tyr.CollectionInstance;
   documents?: Tyr.Document[] & { count?: number };
@@ -1213,6 +1214,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       loading
     } = this;
     const {
+      bordered,
       className,
       children,
       rowEdit,
@@ -1259,6 +1261,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
       const mainTable = fields ? (
         <ObsTable
+          bordered={bordered}
           rowSelection={
             rowsSelectable
               ? {
@@ -1356,6 +1359,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             <Col span={24}>
               {fields && newDocument && (
                 <ObsTable
+                  bordered={bordered}
                   className="tyr-table-new-document"
                   loading={loading}
                   components={components}
