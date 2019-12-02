@@ -2,12 +2,7 @@ import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import {
-  TyrAction,
-  TyrActionFnOpts,
-  TyrActionOpts,
-  TyrActionTrait
-} from './action';
+import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
 import { TyrDecorator } from './decorator';
 import { TyrFieldProps, TyrFieldLaxProps } from './field';
 

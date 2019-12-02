@@ -61,10 +61,10 @@ export const stringFilter: Filter = (
 
   return {
     filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      const search = () => {
+      const search = (onChange?: boolean) => {
         filterable.searchValues[pathName] = localValue;
         filterable.onSearch();
-        filterDdProps.confirm?.();
+        if (!onChange) filterDdProps.confirm?.();
       };
 
       return (
@@ -77,7 +77,7 @@ export const stringFilter: Filter = (
             value={localValue}
             onChange={e => {
               localValue = e.target.value;
-              if (props.liveSearch) search();
+              if (props.liveSearch) search(true);
               else filterDdProps.setSelectedKeys?.([localValue]);
             }}
             onPressEnter={() => search()}

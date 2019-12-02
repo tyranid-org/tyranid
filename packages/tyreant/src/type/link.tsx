@@ -464,10 +464,10 @@ byName.link = {
         clearFilters,
         confirm
       }) => {
-        const search = () => {
+        const search = (onChange?: boolean) => {
           filterable.searchValues[pathName] = Tyr.cloneDeep(values);
           filterable.onSearch();
-          confirm?.();
+          if (!onChange) confirm?.();
         };
 
         return (
@@ -491,7 +491,7 @@ byName.link = {
                 }
 
                 setSelectedKeys?.(values);
-                if (props.liveSearch) search();
+                if (props.liveSearch) search(true);
               })}
             >
               {sortLabels(filterValues || link.values, props).map(v => {

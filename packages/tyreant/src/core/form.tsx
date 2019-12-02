@@ -24,7 +24,7 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
   componentDidUpdate(prevProps: any, prevState: any) {
     Object.entries(this.props).forEach(
       ([key, val]) =>
-        prevProps[key] !== val && console.log(`Prop '${key}' changed`)
+        prevProps[key] !== val && console.log(`Prop '${key}' changed from`, prevProps[key], ' to ', val)
     );
     if (this.state && prevState) {
       Object.entries(this.state).forEach(
