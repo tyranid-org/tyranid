@@ -1055,7 +1055,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         sorter: undefined,
         sortOrder: undefined,
         width: 40,
-        ...(!isEditingAnything && !!pinActionsRight ? { fixed: 'right' } : {})
+        ...(!!pinActionsRight ? { fixed: 'right' } : {})
       });
     }
 
@@ -1304,6 +1304,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               index: rowIndex,
               moveRow: this.moveRow,
               dndEnabled,
+              className:
+                editingDocument && editingDocument.$id === record.$id
+                  ? 'tyr-editable-row'
+                  : undefined,
 
               onDoubleClick: () => {
                 if (
