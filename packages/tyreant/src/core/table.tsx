@@ -309,11 +309,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       });
 
       if (!existingCol) {
-        // Is it visible?
         const fld = this.tableConfig?.fields.find(
           f => f.name === nextOtherFieldName
         );
 
+        // If it is hidden, then don't add it to my fields
         if (!fld?.hidden) {
           newOtherFields.push(nextOtherField);
         }
