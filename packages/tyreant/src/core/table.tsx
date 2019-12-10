@@ -205,7 +205,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   showConfig = false;
 
   @observable
-  tableConfig?: any;
+  tableConfig?: TyrTableConfigType;
 
   constructor(props: TyrTableProps, state: TyrComponentState) {
     super(props, state);
@@ -260,24 +260,67 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps) {
-    if (this.props.documents && nextProps.documents) {
+    const { documents } = this.props;
+    const { documents: newDocuments } = nextProps;
+
+    if (documents && newDocuments) {
       if (this.props.orderable) {
-        this.documents = nextProps.documents;
-        this.count = nextProps.documents.length;
+        this.documents = newDocuments;
+        this.count = newDocuments.length;
       } else {
-        this.setSortedDocuments(nextProps.documents);
+        this.setSortedDocuments(newDocuments);
       }
     }
 
-    if (this.otherFields.length && nextProps.fields) {
-      this.otherFields = compact(
-        nextProps.fields.map(
-          f => this.otherFields.find(sf => sf.field === f.field) && f
-        )
-      ) as TyrTableColumnFieldProps[];
-    } else {
-      this.otherFields = nextProps.fields;
+    // ensure any fields in nextProps.fields are in this.otherFields (add to end it not there)
+    // remove any fields from this.otherFields not in nextProps.fields
+
+    const nextOtherFields = nextProps.fields;
+    // Replace all existing fields, and remove any not in new fields
+    const newOtherFields = compact(
+      this.otherFields.map(otherField => {
+        const otherFieldName = getFieldName(otherField.field);
+
+        return nextOtherFields.find(column => {
+          const colFieldName = getFieldName(column.field);
+
+          if (otherFieldName === colFieldName) {
+            return column;
+          }
+
+          return null;
+        });
+      })
+    ) as TyrTableColumnFieldProps[];
+
+    // Add any new fields (unless they are hidden)
+    for (let i = 0; i < nextOtherFields.length; i++) {
+      const nextOtherField = nextOtherFields[i];
+      const nextOtherFieldName = getFieldName(nextOtherField.field);
+
+      const existingCol = newOtherFields.find(column => {
+        const colFieldName = getFieldName(column.field);
+
+        if (nextOtherFieldName === colFieldName) {
+          return column;
+        }
+
+        return null;
+      });
+
+      if (!existingCol) {
+        const fld = this.tableConfig?.fields.find(
+          f => f.name === nextOtherFieldName
+        );
+
+        // If it is hidden, then don't add it to my fields
+        if (!fld?.hidden) {
+          newOtherFields.push(nextOtherField);
+        }
+      }
     }
+
+    this.otherFields = newOtherFields;
   }
 
   // Sort the documents according to the current sort
@@ -1055,7 +1098,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         sorter: undefined,
         sortOrder: undefined,
         width: 40,
-        ...(!isEditingAnything && !!pinActionsRight ? { fixed: 'right' } : {})
+        ...(!!pinActionsRight ? { fixed: 'right' } : {})
       });
     }
 
@@ -1304,6 +1347,10 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
               index: rowIndex,
               moveRow: this.moveRow,
               dndEnabled,
+              className:
+                editingDocument && editingDocument.$id === record.$id
+                  ? 'tyr-editable-row'
+                  : undefined,
 
               onDoubleClick: () => {
                 if (
