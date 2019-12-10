@@ -1,0 +1,32 @@
+{
+  "name": "tyranid-cli",
+  "version": "1.0.0",
+  "description": "Tyranid command line tool",
+  "main": "./bin/src/index.js",
+  "homepage": "http://tyranid.org",
+  "bin": {
+    "tyr": "./bin/src/index.js"
+  },
+  "scripts": {
+    "run": "node ./bin/src/index.js",
+    "build": "npm run tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "rm -rf ./bin && tsc"
+  },
+  "author": "Ted Halmrast",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@types/yargs": "13.0.3",
+    "boxen": "4.2.0",
+    "chalk": "3.0.0",
+    "mongodb": "3.1.10",
+    "yargs": "15.0.2"
+  },
+  "devDependencies": {
+    "typescript": "3.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tyranid-org/tyranid"
+  }
+}
