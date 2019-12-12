@@ -52,7 +52,6 @@ export const integerFilter: Filter = (
   props: TyrFieldLaxProps
 ) => {
   const pathName = path.name;
-  const { localSearch } = filterable;
 
   const defaultValue = (props.searchRange
     ? (props.searchRange as [number, number])
@@ -80,7 +79,6 @@ export const integerFilter: Filter = (
           range
           {...sliderProps}
           defaultValue={defaultValue.slice() as [number, number]}
-          value={(filterable.searchValues[pathName] || defaultValue).slice()}
           onChange={(e: SliderValue) => {
             filterable.searchValues[pathName] = e;
 
@@ -134,9 +132,17 @@ export const integerFinder: Finder = (
 ) => {
   if (searchValue) {
     if (!opts.query) opts.query = {};
-    opts.query[path.name] = {
-      $and: [{ $gte: searchValue[0] }, { $lte: searchValue[1] }]
-    };
+
+    const searchParams = [
+      { [path.name]: { $gte: searchValue[0] } },
+      { [path.name]: { $lte: searchValue[1] } }
+    ];
+
+    if (opts.query.$and) {
+      opts.query.$and = [...opts.query.$and, ...searchParams];
+    } else {
+      opts.query.$and = searchParams;
+    }
   }
 };
 
