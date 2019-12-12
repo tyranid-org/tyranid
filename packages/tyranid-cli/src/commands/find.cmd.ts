@@ -3,8 +3,8 @@ import * as yargs from 'yargs';
 import { connect, exit, fail, query } from '..';
 
 yargs.command({
-  command: 'extract-string [collection] [field]',
-  describe: 'extracts a string out of the database',
+  command: 'find [collection] [field]',
+  describe: 'finds a document database',
   builder: yargs =>
     yargs
       .positional('collection', {
@@ -13,7 +13,7 @@ yargs.command({
       })
       .positional('field', {
         type: 'string',
-        describe: 'The field to extract'
+        describe: 'The field to project'
       }),
   async handler(argv) {
     const { collection, field } = argv;
