@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "es2017",
+    "module": "commonjs",
+    "strict": true,
+    "allowJs": true,
+    "outDir": "bin",
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "lib": ["es2017"],
+    "resolveJsonModule": true
+  },
+  "include": ["src"]
+}

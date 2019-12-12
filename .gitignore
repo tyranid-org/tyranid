@@ -7,3 +7,5 @@
 **/npm-debug.log
 **/yarn-error.log
 **/packages/tyranid/foo.xlsx
+**/packages/tyranid-cli/bin
+tyranid-org.github.com
