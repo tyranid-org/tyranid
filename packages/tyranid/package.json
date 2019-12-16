@@ -56,5 +56,8 @@
     "mongodb": "3.1.10",
     "typescript": "3.7.2"
   },
-  "gitHead": "a9a0d726c8210cc7f71da7a540baa361e883b71d"
+  "devDependencies": {
+    "mocha": "2.5.3"
+  },
+  "gitHead": "9845d93a999aa5a2fe0271d5d2b9b81bd2007ee3"
 }
