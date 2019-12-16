@@ -84,6 +84,7 @@ export interface TyrTableColumnFieldProps extends TyrFieldLaxProps {
   pinned?: 'left' | 'right';
   align?: 'left' | 'right' | 'center';
   ellipsis?: boolean;
+  editClassName?: string;
 
   /**
    * What table column grouping should this be grouped under.
@@ -314,7 +315,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         );
 
         // If it is hidden, then don't add it to my fields
-        if (!fld?.hidden) {
+        if (!fld?.hidden && !nextOtherField.defaultHidden) {
           newOtherFields.push(nextOtherField);
         }
       }
@@ -369,7 +370,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         sortColumn.sortComparator
           ? sortColumn.sortComparator
           : (a: Tyr.Document, b: Tyr.Document) =>
-              np ? field!.type.compare(field!, np.get(a), np.get(b)) : 0
+            np ? field!.type.compare(field!, np.get(a), np.get(b)) : 0
       );
 
       if (pathName && this.sortDirections[pathName] === 'descend')
@@ -495,7 +496,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           (sortDirection || '') +
           (searchValue
             ? '.' +
-              (Array.isArray(searchValue) ? searchValue.join(',') : searchValue)
+            (Array.isArray(searchValue) ? searchValue.join(',') : searchValue)
             : '');
       }
     }
@@ -848,8 +849,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             ? undefined
             : column.width
           : fieldCount > 1
-          ? column.width
-          : undefined;
+            ? column.width
+            : undefined;
 
         const np = field ? field.namePath : undefined;
         const searchNp = searchField?.namePath;
@@ -913,7 +914,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 noLabel: true,
                 tabIndex: columnIdx,
                 dropdownClassName: column.dropdownClassName,
-                className: column.className,
+                className: column.editClassName,
                 searchRange: column.searchRange,
                 onChange: () => this.setState({}),
                 typeUi: column.typeUi,
@@ -983,7 +984,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
         align: 'center',
         className: `tyr-action-column${
           actionColumnClassName ? ' ' + actionColumnClassName : ''
-        }`,
+          }`,
         title: !newDocumentTable ? actionHeaderLabel || '' : '',
         render: (text: string, doc: Tyr.Document) => {
           const editable = newDocumentTable || this.isEditing(doc);
@@ -1164,14 +1165,14 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     //return true || totalCount > this.limit
     return totalCount > limit
       ? {
-          defaultCurrent: Math.floor(skip / limit) + 1,
-          total: totalCount,
-          defaultPageSize: limit,
-          pageSize: limit,
-          size: 'default',
-          itemRender: this.paginationItemRenderer,
-          showSizeChanger: true
-        }
+        defaultCurrent: Math.floor(skip / limit) + 1,
+        total: totalCount,
+        defaultPageSize: limit,
+        pageSize: limit,
+        size: 'default',
+        itemRender: this.paginationItemRenderer,
+        showSizeChanger: true
+      }
       : false;
   };
 
@@ -1179,6 +1180,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this.editingDocument = document;
     this.props.setEditing && this.props.setEditing(true);
     document.$snapshot();
+
+    // Trigger redraw
+    setTimeout(() => {
+      this.setState({});
+    }, 250);
   };
 
   tableWrapper: React.RefObject<HTMLDivElement> | null = createRef();
@@ -1280,7 +1286,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const isEditingRow = !!editingDocument;
     const netClassName = `tyr-table${className ? ' ' + className : ''}${
       isEditingRow ? ' tyr-table-editing-row' : ''
-    }`;
+      }`;
 
     const multiActions = this.actions.filter(a => a.multiple);
     const rowsSelectable = onSelectRows || multiActions.length;
@@ -1308,9 +1314,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           rowSelection={
             rowsSelectable
               ? {
-                  selectedRowKeys,
-                  onChange: this.onSelectedRowKeysChange
-                }
+                selectedRowKeys,
+                onChange: this.onSelectedRowKeysChange
+              }
               : undefined
           }
           loading={loading || this.props.loading}
@@ -1375,8 +1381,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           }}
         />
       ) : (
-        undefined
-      );
+          undefined
+        );
 
       return (
         <div className={netClassName}>
@@ -1496,7 +1502,7 @@ interface TyrTableConfigState {
 class TyrTableConfigComponent extends React.Component<
   TyrTableConfigProps,
   TyrTableConfigState
-> {
+  > {
   state: TyrTableConfigState = {
     columnFields: []
   };
@@ -1670,7 +1676,7 @@ class TyrTableConfigComponent extends React.Component<
                     snapshot.isDraggingOver
                       ? ' tyr-config-columns-list-dragging'
                       : ''
-                  }`}
+                    }`}
                 >
                   {draggableFields.map(
                     (f: ColumnConfigField, index: number) => (
@@ -1895,9 +1901,9 @@ const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
       ref={innerRef}
       className={`tyr-column-config-item${small ? ' compact' : ''}${
         hidden ? ' tyr-column-config-item-hidden' : ''
-      }${locked ? ' tyr-column-config-item-locked' : ''}${
+        }${locked ? ' tyr-column-config-item-locked' : ''}${
         isDragging ? ' tyr-column-config-item-dragging' : ''
-      }`}
+        }`}
       key={name}
       {...(provided ? provided.draggableProps : {})}
       style={getItemStyle(provided ? provided.draggableProps.style : {})}
@@ -1905,7 +1911,7 @@ const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
       <div
         className={`tyr-column-config-item-handle${
           isDragging ? ' tyr-column-config-item-dragging' : ''
-        }`}
+          }`}
         {...(provided ? provided.dragHandleProps : {})}
       >
         {!locked && <Icon type="menu" />}
