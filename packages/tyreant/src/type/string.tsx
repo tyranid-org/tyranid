@@ -35,6 +35,7 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
         placeholder={props.placeholder}
         onChange={onTypeChangeFunc}
         tabIndex={props.tabIndex}
+        className={props.className}
       />
     );
   });
