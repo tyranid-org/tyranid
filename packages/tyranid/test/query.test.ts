@@ -324,6 +324,7 @@ export function add() {
         test({ foo: 1 }, { foo: 1 }, true);
         test({ foo: 1, bar: 2 }, { foo: 1 }, false);
         test({ foo: 1, bar: 2 }, { foo: 1, bar: 2 }, true);
+        test({ foo: [1] }, { foo: 1 }, true);
         test({ foo: [1, 2] }, { foo: 1 }, false);
         test({ foo: [1, 2] }, { foo: [1] }, false);
         test({ foo: [1, 2] }, { foo: [1, 2] }, true);

@@ -476,9 +476,26 @@ function queryIntersection(a, b) {
 // Query Matching
 //
 
+function arrayMatchesAny(arr, value) {
+  return Array.isArray(value)
+    ? !!arrayIntersection(arr, value).length
+    : arrayIncludes(arr, value);
+}
+function arrayMatchesFull(arr, value) {
+  return Array.isArray(value)
+    ? arrayIntersection(arr, value).length === arr.length
+    : arr.length === 1
+    ? arrayIncludes(arr, value)
+    : false;
+}
+
 function valueMatches(match, value) {
   if (isValue(match)) {
     return Tyr.isEqual(match, value);
+  }
+
+  if (Array.isArray(match)) {
+    return arrayMatchesFull(match, value);
   }
 
   for (const op in match) {
@@ -497,7 +514,7 @@ function valueMatches(match, value) {
             return value === undefined || value === null;
           }
 
-          break;
+        //break;
 
         case '$eq':
           if (!Tyr.isEqual(match.$eq, value)) {
@@ -506,14 +523,8 @@ function valueMatches(match, value) {
           break;
 
         case '$in':
-          if (!value || !match.$in.length) return false;
-
-          const $in = match.$in;
-          if (Array.isArray(value)) {
-            if (!arrayIntersection($in, value).length) return false;
-          } else {
-            if (!arrayIncludes($in, value)) return false;
-          }
+          if (!value || !match.$in.length || !arrayMatchesAny(match.$in, value))
+            return false;
 
           break;
 
