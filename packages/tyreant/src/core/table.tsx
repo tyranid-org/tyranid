@@ -900,7 +900,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           {};
 
         let netClassName = column.className;
-        //if (colWidth && ) {
+        //if (colWidth && !editable && !fixedLeft && !fixedRight && !no fixed headers ) {
 
         //}
 

@@ -198,7 +198,7 @@ export namespace Tyr {
     $get(path: string): any;
     $(strings: TemplateStringsArray, ...keys: string[]): any;
     $id: IdType;
-    $insert(opts?: { auth?: Tyr.Document }): Promise<this>;
+    $insert(opts?: Options_Insert): Promise<this>;
     $label: string;
     $model: CollectionInstance<IdType, this>;
     $options: Options_AllFind;
@@ -436,7 +436,8 @@ export namespace Tyr {
   export interface Options_Insert
     extends OptionsAuth,
       OptionsHistorical,
-      OptionsTimestamps {}
+      OptionsTimestamps,
+      OptionsHttpRequest {}
 
   export interface Options_Pushpull
     extends OptionsAuth,

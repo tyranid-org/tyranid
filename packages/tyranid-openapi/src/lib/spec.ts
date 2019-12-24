@@ -105,7 +105,7 @@ export function spec(Tyr: typeof Tyranid, opts: Options = {}): Spec | string {
    * add error refs
    */
   each(ErrorResponse, (schema, name) => {
-    specObject.definitions[name] = schema;
+    (specObject.definitions as any)[name] = schema;
   });
 
   /**

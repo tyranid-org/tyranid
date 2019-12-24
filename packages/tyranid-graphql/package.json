@@ -28,5 +28,6 @@
     "files": [
       "dist/test/index.js"
     ]
-  }
+  },
+  "gitHead": "0471fcd1d566d5924dfe6ef506ce38c43dd65f3c"
 }

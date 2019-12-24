@@ -214,7 +214,7 @@ export function path(
     baseRoutes.path.get = {
       ...common,
       ...returns,
-      ...parameters(...baseParameters.DEFAULT_PARAMETERS),
+      ...parameters(...(baseParameters.DEFAULT_PARAMETERS as any)),
       ...addScopes('read'),
       summary: `retrieve multiple ${pascalName} objects`,
       responses: {
@@ -256,7 +256,7 @@ export function path(
                 return props;
               })()
             }
-          }
+          } as any
         )
       }
     };
