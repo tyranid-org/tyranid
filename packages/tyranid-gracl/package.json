@@ -40,6 +40,7 @@
     "tyranid-tdgen": "^0.5.0"
   },
   "devDependencies": {
+    "ava": "0.16.0",
     "typescript": "3.7.2"
   },
   "ava": {
@@ -47,5 +48,5 @@
       "dist/test/spec/**/*.js"
     ]
   },
-  "gitHead": "ef7ee432cc699d64c15a57505ffff791998601de"
+  "gitHead": "ec575137c59d2eb7d881c618ffe0eb7793b596de"
 }
