@@ -24,10 +24,13 @@
   "dependencies": {
     "graphql": "^0.12.3"
   },
+  "devDependencies": {
+    "typescript": "3.7.2"
+  },
   "ava": {
     "files": [
       "dist/test/index.js"
     ]
   },
-  "gitHead": "0471fcd1d566d5924dfe6ef506ce38c43dd65f3c"
+  "gitHead": "7c11364fa8c56b7d371d9e341613907943818e47"
 }

@@ -57,7 +57,8 @@
     "typescript": "3.7.2"
   },
   "devDependencies": {
-    "mocha": "2.5.3"
+    "mocha": "2.5.3",
+    "typescript": "3.7.2"
   },
-  "gitHead": "0471fcd1d566d5924dfe6ef506ce38c43dd65f3c"
+  "gitHead": "7c11364fa8c56b7d371d9e341613907943818e47"
 }

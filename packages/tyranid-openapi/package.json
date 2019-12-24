@@ -28,9 +28,13 @@
   "peerDependencies": {
     "tyranid": "^0.5.0"
   },
+  "devDependencies": {
+    "typescript": "3.7.2"
+  },
   "ava": {
     "files": [
       "dist/test/index.js"
     ]
-  }
+  },
+  "gitHead": "7c11364fa8c56b7d371d9e341613907943818e47"
 }
