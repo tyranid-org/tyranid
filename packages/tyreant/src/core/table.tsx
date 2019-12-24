@@ -1038,7 +1038,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           }
 
           if (newDocument) {
-            return <span />;
+            // Room for the save/cancel buttons, so column is same width
+            return <span style={{ width: '128px', display: 'inline-block' }} />;
           }
 
           const thisActions = singularActions.filter(
@@ -1295,7 +1296,8 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     }`;
 
     const multiActions = this.actions.filter(a => a.multiple);
-    const rowsSelectable = onSelectRows || multiActions.length;
+    const rowsSelectable =
+      (!newDocument && onSelectRows) || multiActions.length;
 
     return this.wrap(() => {
       if (decorator && (!this.decorator || !this.decorator.visible))
