@@ -1,6 +1,6 @@
 {
   "name": "tyranid-graphql",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "description": "GraphQL plugin for tyranid",
   "repository": {
     "type": "git",
@@ -22,8 +22,8 @@
     "graphql": "^0.12.3"
   },
   "peerDependencies": {
-    "tyranid": "^0.6.0",
-    "typescript": "3.7.2"
+    "typescript": "3.7.2",
+    "tyranid": "^0.6.0"
   },
   "devDependencies": {
     "typescript": "3.7.2"
