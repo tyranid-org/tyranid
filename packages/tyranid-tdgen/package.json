@@ -41,10 +41,11 @@
   },
   "dependencies": {
     "commander": "2.9.0",
-    "lodash": "4.17.2"
+    "lodash": "4.17.2",
+    "typescript": "3.7.2"
   },
   "devDependencies": {
     "@types/lodash": "4.14.65"
   },
-  "gitHead": "ec575137c59d2eb7d881c618ffe0eb7793b596de"
+  "gitHead": "45e8be15eb82557c1b546da1e1407b801e620170"
 }
