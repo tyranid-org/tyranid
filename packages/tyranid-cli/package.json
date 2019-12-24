@@ -23,6 +23,9 @@
     "mongodb": "3.1.10",
     "yargs": "15.0.2"
   },
+  "peerDependencies": {
+    "tyranid": "^0.6.0"
+  },
   "devDependencies": {
     "typescript": "3.7.2"
   },
