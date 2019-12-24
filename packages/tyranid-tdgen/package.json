@@ -40,6 +40,7 @@
     "tyranid": "^0.6.0"
   },
   "dependencies": {
+    "ava": "0.16.0",
     "commander": "2.9.0",
     "lodash": "4.17.2",
     "typescript": "3.7.2"
@@ -47,5 +48,5 @@
   "devDependencies": {
     "@types/lodash": "4.14.65"
   },
-  "gitHead": "d436f28dbffa0ddd96eb29c0c16618ae0fff9e84"
+  "gitHead": "5b8c0de22c2b1e9ecd11a6f24b25f730612b4c6c"
 }
