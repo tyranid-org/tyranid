@@ -1,6 +1,6 @@
 {
   "name": "tyranid-tdgen",
-  "version": "0.5.34",
+  "version": "0.5.35",
   "description": "Generate type definition files from tyranid schemas",
   "repository": {
     "type": "git",
