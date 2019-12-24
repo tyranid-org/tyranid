@@ -19,7 +19,7 @@
   "author": "bsouthga@gmail.com",
   "license": "Apache-2.0",
   "peerDependencies": {
-    "tyranid": "^0.5.0"
+    "tyranid": "^0.6.0"
   },
   "dependencies": {
     "graphql": "^0.12.3"

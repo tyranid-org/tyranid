@@ -15,3 +15,5 @@ run_tsc tyreant
 
 echo "building tyranid-gracl..."
 cd ./packages/tyranid-gracl && npm run build --silent
+
+cd ./packages/tyreant && npm run build-css

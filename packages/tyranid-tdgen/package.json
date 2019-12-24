@@ -37,7 +37,7 @@
     ]
   },
   "peerDependencies": {
-    "tyranid": "^0.5.0"
+    "tyranid": "^0.6.0"
   },
   "dependencies": {
     "commander": "2.9.0",

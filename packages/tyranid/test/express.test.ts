@@ -34,7 +34,7 @@ export function add() {
 
       app = express();
 
-      const MongoStore = connectMongo(session);
+      const MongoStore = connectMongo(session as any);
       const store = new MongoStore({
         url: 'mongodb://localhost:27017/tyranid_test',
         stringify: false
@@ -42,7 +42,7 @@ export function add() {
 
       const COOKIE_SECRET = 'tyranid-test-secret';
 
-      const sessionHandler = session({
+      const sessionHandler = (session as any)({
         secret: COOKIE_SECRET,
         resave: false,
         rolling: true,

@@ -7,3 +7,5 @@ run_tsc() {
 }
 
 run_tsc tyreant
+
+cd ./packages/tyreant && npm run build-css

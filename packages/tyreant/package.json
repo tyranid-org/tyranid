@@ -6,7 +6,9 @@
   "main": "dist/tyreant.js",
   "typings": "dist/tyreant.d.ts",
   "scripts": {
-    "build": "npm run tsc",
+    "build": "npm run build-js && npm run build-css",
+    "build-js": "npm run tsc",
+    "build-css": "$(npm bin)/postcss --use precss -o tyreant.css tyreant.scss",
     "tsc": "rm -rf ./dist/ && tsc"
   },
   "repository": {
@@ -37,6 +39,10 @@
   "peerDependencies": {
     "typescript": "3.7.2",
     "tyranid": "^0.6.0"
+  },
+  "devDependencies": {
+    "precss": "^4.0.0",
+    "postcss-cli": "^6.1.3"
   },
   "gitHead": "9845d93a999aa5a2fe0271d5d2b9b81bd2007ee3"
 }
