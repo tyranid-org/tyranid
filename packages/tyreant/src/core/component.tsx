@@ -258,6 +258,8 @@ export class TyrComponent<
 
   async refresh() {}
 
+  async requery() {}
+
   async find(document: Tyr.Document) {
     const { collection, linkToParent } = this;
     let updatedDocument: Tyr.Document | null | undefined;

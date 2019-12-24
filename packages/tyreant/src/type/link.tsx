@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Tyr } from 'tyranid/client';
 
 import { Select, Spin, Button, Menu } from 'antd';
-import { SelectProps, SelectedValue } from 'antd/lib/select';
+import { SelectProps, SelectValue, ModeOption } from 'antd/lib/select';
 const { Option } = Select;
 
 import { FilterDropdownProps } from 'antd/es/table';
@@ -118,7 +118,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   link?: Tyr.CollectionInstance;
   linkField?: Tyr.FieldInstance;
   mounted = false;
-  mode: 'default' | 'multiple' | 'tags' | 'combobox' | string = 'default';
+  mode: ModeOption = 'default';
 
   async componentDidMount() {
     const props = this.props;
@@ -323,14 +323,14 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (onSelect) {
       selectProps.onSelect = (
-        value: SelectedValue,
+        value: SelectValue,
         option: React.ReactElement<any>
       ) => {
         const v = findByLabel(props, this.link!, value as string);
 
         onSelect(
           v
-            ? ({ key: v.$id, label: v.$label, document: v } as SelectedValue)
+            ? ({ key: v.$id, label: v.$label, document: v } as SelectValue)
             : value,
           option
         );

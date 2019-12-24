@@ -65,14 +65,13 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
     return (
       <div className="tyr-modal-header">
         <h4>{create ? create.label : edit ? edit!.label : 'unknown'}</h4>
-        {!loading &&
-          cancel && (
-            <Icon
-              type="close"
-              className="tyr-modal-close-icon"
-              onClick={() => cancel.act({})}
-            />
-          )}
+        {!loading && cancel && (
+          <Icon
+            type="close"
+            className="tyr-modal-close-icon"
+            onClick={() => cancel.act({ component: this.component })}
+          />
+        )}
       </div>
     );
   }
@@ -84,7 +83,11 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
     return (
       <div>
         {cancel && (
-          <Button key="back" onClick={() => cancel.act({})} loading={loading}>
+          <Button
+            key="back"
+            onClick={() => cancel.act({ component: this.component })}
+            loading={loading}
+          >
             {cancel.label}
           </Button>
         )}
@@ -92,7 +95,7 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
           <Button
             key="submit"
             type="primary"
-            onClick={() => save.act({})}
+            onClick={() => save.act({ component: this.component })}
             loading={loading}
           >
             {save.label}
@@ -112,7 +115,7 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
         {create && (
           <Button
             type="primary"
-            onClick={() => create.act({})}
+            onClick={() => create.act({ component: this.component })}
             className="tyr-primary-btn"
           >
             {create.label}
@@ -122,7 +125,7 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
         <Modal
           className="tyr-modal"
           visible={visible}
-          onCancel={() => cancel!.act({})}
+          onCancel={() => cancel!.act({ component: this.component })}
           title={this.renderHeader()}
           footer={this.renderFooter()}
           maskClosable={!loading}

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { TyrLink } from './link';
 import { TyrTypeProps, getTypeValue, TypeContext } from './type';
-import { SelectedValue, LabeledValue } from 'antd/lib/select';
+import { SelectValue, LabeledValue } from 'antd/lib/select';
 
 /**
  * This control renders an array as a key - value editor
@@ -73,17 +73,14 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
   };
 
   if (keyFieldDefaultLabel) {
-    useEffect(
-      () => {
-        (async () => {
-          const labels = await keyField.labels(document!, keyFieldDefaultLabel);
-          if (labels.length) {
-            selectKeyValue(labels[0].$id);
-          }
-        })();
-      },
-      [path!.name]
-    );
+    useEffect(() => {
+      (async () => {
+        const labels = await keyField.labels(document!, keyFieldDefaultLabel);
+        if (labels.length) {
+          selectKeyValue(labels[0].$id);
+        }
+      })();
+    }, [path!.name]);
   }
 
   const [keyValue, setKeyValue] = useState<{ value?: any }>({
@@ -91,7 +88,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
   });
 
   const onSelect = (
-    selectedValue: SelectedValue
+    selectedValue: SelectValue
     //option: React.ReactElement<any>
   ) => selectKeyValue((selectedValue as LabeledValue).key || selectedValue);
 

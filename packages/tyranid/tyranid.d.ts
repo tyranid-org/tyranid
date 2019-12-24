@@ -474,6 +474,7 @@ export namespace Tyr {
   export interface Options_All
     extends OptionsAuth,
       OptionsHistorical,
+      OptionsHttpRequest,
       OptionsQuery,
       OptionsParallel,
       OptionsPlain,

@@ -3,6 +3,7 @@ import { Tyr } from 'tyranid/client';
 import { TyrComponent } from './component';
 
 export interface TyrActionFnOpts {
+  component: TyrComponent;
   document?: Tyr.Document;
 
   /**

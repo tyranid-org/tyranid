@@ -24,7 +24,7 @@ export abstract class TyrDecorator<
   Props extends TyrDecoratorProps = TyrDecoratorProps,
   State extends TyrDecoratorState = TyrDecoratorState
 > extends React.Component<Props, State> {
-  component?: TyrComponent;
+  component!: TyrComponent;
 
   get visible() {
     return this.state && this.state.visible;

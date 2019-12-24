@@ -65,14 +65,13 @@ export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
 
     return (
       <div className="tyr-header">
-        {!loading &&
-          cancel && (
-            <Icon
-              type="close"
-              className="tyr-drawer-close-icon"
-              onClick={() => cancel.act({})}
-            />
-          )}
+        {!loading && cancel && (
+          <Icon
+            type="close"
+            className="tyr-drawer-close-icon"
+            onClick={() => cancel.act({ component: this.component })}
+          />
+        )}
         <h4>{create ? create.label : edit ? edit!.label : 'unknown'}</h4>
       </div>
     );
@@ -85,7 +84,11 @@ export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
     return (
       <div className="tyr-footer">
         {cancel && (
-          <Button key="back" onClick={() => cancel.act({})} loading={loading}>
+          <Button
+            key="back"
+            onClick={() => cancel.act({ component: this.component })}
+            loading={loading}
+          >
             {cancel.label}
           </Button>
         )}
@@ -93,7 +96,7 @@ export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
           <Button
             key="submit"
             type="primary"
-            onClick={() => save.act({})}
+            onClick={() => save.act({ component: this.component })}
             loading={loading}
           >
             {save.label}
@@ -114,7 +117,7 @@ export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
         {create && (
           <Button
             type="primary"
-            onClick={() => create.act({})}
+            onClick={() => create.act({ component: this.component })}
             className="tyr-primary-btn"
           >
             {create.label}

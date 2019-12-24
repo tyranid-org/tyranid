@@ -69,6 +69,9 @@ import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from './form';
 import { string } from 'prop-types';
 
+// FIXED-HEADER-HACK
+const supportedWidths = [240];
+
 const ObsTable = observer(Table);
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -523,7 +526,12 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   }
 
   async refresh() {
-    return this.findAll();
+    this.setState({});
+  }
+
+  async requery() {
+    if (this.isLocal) this.refresh();
+    else this.findAll();
   }
 
   // TODO:  rename this to "find()" and move this up to
@@ -891,6 +899,11 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             this.getFilter(np, column)) ||
           {};
 
+        let netClassName = column.className;
+        //if (colWidth && ) {
+
+        //}
+
         return {
           dataIndex: pathName,
           //key: pathName,
@@ -968,7 +981,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           sortOrder: sortingEnabled ? sortDirection : undefined,
           title: column.label || field?.label,
           width: colWidth,
-          className: column.className,
+          className: netClassName,
           ellipsis: column.ellipsis,
           ...(filteringEnabled && filteredValue
             ? { filteredValue: [filteredValue] }
@@ -1061,7 +1074,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
-                    action.act({ document });
+                    action.act({ component: this, document });
                   }}
                 >
                   {label}
@@ -1075,7 +1088,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
-                  action.act({ document });
+                  action.act({ component: this, document });
                 }}
               >
                 {action.label as React.ReactNode}
@@ -1087,7 +1100,9 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
             <Menu className="tyr-menu">
               {thisActions.map(action => (
                 <Menu.Item className="tyr-menu-item" key={action.name}>
-                  <button onClick={() => action.act({ document })}>
+                  <button
+                    onClick={() => action.act({ component: this, document })}
+                  >
                     {action.label}
                   </button>
                 </Menu.Item>
@@ -1332,7 +1347,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           rowKey={(doc: any) => doc.$id || doc.$id}
           size={size || 'small'}
           pagination={!this.limit ? false : this.pagination()}
-          onChange={this.handleTableChange}
+          onChange={this.handleTableChange as any}
           footer={footer}
           title={newDocument ? undefined : title}
           showHeader={newDocument ? false : showHeader}
@@ -1340,18 +1355,31 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           dataSource={documents.slice()}
           columns={this.getColumns()}
           scroll={fieldCount > 1 ? scroll : undefined}
-          onHeaderRow={(columns, index) => {
-            const column = columns[index];
+          onHeaderRow={
+            /*
+              ant 3.26.4 changed the signature around this and the new way it works does not match the typescript definitions
 
-            if (column.key === '$actions') {
-              return {
-                onClick: () => {
-                  onActionLabelClick && onActionLabelClick();
-                  this.showConfig = true;
-                }
-              };
-            }
-          }}
+              the typescript says:
+              
+                 old:                 (columns[], index: number)
+                 new:                 (columns[])
+                 help documentation:  (column)
+
+              i think the help documentation is correct ... if this fails here try and see if it is just passing in a single column
+             */
+            ((columns: any, index: any) => {
+              const column = columns[index];
+
+              if (column.key === '$actions') {
+                return {
+                  onClick: () => {
+                    onActionLabelClick && onActionLabelClick();
+                    this.showConfig = true;
+                  }
+                };
+              }
+            }) as any
+          }
           onRow={(record, rowIndex) => {
             return {
               onClick: () => {
@@ -1404,6 +1432,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                     key={`a_${a.name}`}
                     onClick={() =>
                       a.act({
+                        component: this,
                         documents: this.selectedRowKeys.map(
                           id => this.collection!.byIdIndex[id]
                         )
@@ -1949,6 +1978,7 @@ export interface TyrTableControl {
   addNewDocument: (doc: Tyr.Document) => boolean;
   setFieldValue: (fieldName: string, value: any) => void;
   refresh: () => void;
+  requery: () => void;
   closeConfigModal: () => void;
   resetFiltersAndSort: () => void;
   setSelectedRows: (ids: string[]) => void;
@@ -1972,9 +2002,9 @@ class TyrTableControlImpl implements TyrTableControl {
     this.table.setFieldValue(fieldName, value);
   };
 
-  refresh = () => {
-    this.table.setState({});
-  };
+  refresh = () => this.table.refresh();
+
+  requery = () => this.table.requery();
 
   closeConfigModal = () => {
     this.table.closeConfigModal();

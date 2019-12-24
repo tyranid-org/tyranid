@@ -10,7 +10,7 @@ import {
   generateRules,
   className
 } from '../type/type';
-import { SelectedValue } from 'antd/lib/select';
+import { SelectValue } from 'antd/lib/select';
 import { Moment } from 'moment';
 import FormItem from 'antd/lib/form/FormItem';
 import { Tooltip, Icon } from 'antd';
@@ -63,8 +63,8 @@ export interface TyrFieldProps {
   dropdownClassName?: string;
   width?: number | string;
   onChange?: (value: any, event: any, props: TyrTypeProps) => void;
-  onSelect?: (value: SelectedValue, option: React.ReactElement<any>) => any;
-  onDeselect?: (value: SelectedValue) => any;
+  onSelect?: (value: SelectValue, option: React.ReactElement<any>) => any;
+  onDeselect?: (value: SelectValue) => any;
   onStateChange?: (value: FieldState) => void;
   autoFocus?: boolean;
   required?: boolean;
@@ -166,7 +166,8 @@ export const decorateField = (
         {labelForProps(props)}
         {help && (
           <Tooltip title={help}>
-            &nbsp;<Icon type="exclamation-circle" />
+            &nbsp;
+            <Icon type="exclamation-circle" />
           </Tooltip>
         )}
       </>
