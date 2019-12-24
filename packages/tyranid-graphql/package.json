@@ -18,11 +18,12 @@
   },
   "author": "bsouthga@gmail.com",
   "license": "Apache-2.0",
-  "peerDependencies": {
-    "tyranid": "^0.6.0"
-  },
   "dependencies": {
     "graphql": "^0.12.3"
+  },
+  "peerDependencies": {
+    "tyranid": "^0.6.0",
+    "typescript": "3.7.2"
   },
   "devDependencies": {
     "typescript": "3.7.2"
@@ -32,5 +33,5 @@
       "dist/test/index.js"
     ]
   },
-  "gitHead": "7c11364fa8c56b7d371d9e341613907943818e47"
+  "gitHead": "ef7ee432cc699d64c15a57505ffff791998601de"
 }
