@@ -1,6 +1,6 @@
 {
   "name": "tyranid-gracl",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "description": "tyranid.js plugin for gracl",
   "keywords": [
     "graph",
