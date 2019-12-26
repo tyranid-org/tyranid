@@ -386,7 +386,7 @@ export const withTypeContext = <T extends {} = {}>(
         let { field } = props;
         if (typeof field === 'string') field = document.$model.paths[field];
         if (field) {
-          path = field.namePath;
+          path = (field as Tyr.FieldInstance).namePath;
         } else {
           return <div className="no-path" />;
         }

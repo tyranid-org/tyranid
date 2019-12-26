@@ -8,6 +8,7 @@ import {
   TyrDecoratorProps,
   TyrDecoratorState
 } from './decorator';
+import { Tyr } from 'tyranid/client';
 
 export interface TyrModalProps extends TyrDecoratorProps {}
 
@@ -15,18 +16,22 @@ export interface TyrModalState extends TyrDecoratorState {
   loading: boolean;
 }
 
-export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
+export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
+  D,
+  TyrModalProps,
+  TyrModalState
+> {
   state: TyrModalState = {
     visible: false,
     loading: false
   };
 
-  create?: TyrAction;
-  edit?: TyrAction;
-  save?: TyrAction;
-  cancel?: TyrAction;
+  create?: TyrAction<D>;
+  edit?: TyrAction<D>;
+  save?: TyrAction<D>;
+  cancel?: TyrAction<D>;
 
-  enact(action: TyrAction) {
+  enact(action: TyrAction<D>) {
     if (!this.component) throw new Error('modal not connected');
 
     if (action.is('create')) {
@@ -41,7 +46,7 @@ export class TyrModal extends TyrDecorator<TyrModalProps, TyrModalState> {
       this.edit = edit;
 
       const parent = this.component.parent;
-      if (parent) parent.enact(edit);
+      if (parent) parent.enact(edit as any);
     } else if (action.is('save')) {
       this.save = action.decorate({
         action: () => {

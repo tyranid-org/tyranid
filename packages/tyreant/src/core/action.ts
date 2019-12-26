@@ -2,23 +2,23 @@ import { Tyr } from 'tyranid/client';
 
 import { TyrComponent } from './component';
 
-export interface TyrActionFnOpts {
-  component: TyrComponent;
-  document?: Tyr.Document;
+export interface TyrActionFnOpts<D extends Tyr.Document> {
+  component: TyrComponent<D>;
+  document?: D;
 
   /**
    * if action.multiple === true
    */
-  documents?: Tyr.Document[];
+  documents?: D[];
 }
 
 export type TyrActionTrait = 'create' | 'edit' | 'save' | 'cancel';
 
-export interface TyrActionOpts {
+export interface TyrActionOpts<D extends Tyr.Document> {
   traits?: TyrActionTrait[];
   name: string;
   label?: string | React.ReactNode;
-  component?: TyrComponent<any>;
+  component?: TyrComponent<D>;
   multiple?: boolean;
 
   /**
@@ -26,22 +26,30 @@ export interface TyrActionOpts {
    * be applied.  Note that undefined/void is treated as returning true (i.e. the
    * decorated action should be performed.
    */
-  action?: (opts: TyrActionFnOpts) => void | boolean | Promise<void | boolean>;
-  hide?: (doc: Tyr.Document) => boolean;
+  action?: (
+    opts: TyrActionFnOpts<D>
+  ) => void | boolean | Promise<void | boolean>;
+  hide?: (doc: D) => boolean;
 }
 
-export class TyrAction {
-  static get(action: TyrAction | TyrActionOpts) {
-    return action instanceof TyrAction ? action : new TyrAction(action);
+export class TyrAction<D extends Tyr.Document = Tyr.Document> {
+  static get<D extends Tyr.Document = Tyr.Document>(
+    action: TyrAction<D> | TyrActionOpts<D>
+  ) {
+    return action instanceof TyrAction
+      ? action
+      : new TyrAction<D>(action as any);
   }
 
   traits: TyrActionTrait[];
   name: string;
   label: string | React.ReactNode;
-  component?: TyrComponent;
+  component?: TyrComponent<D>;
   multiple: boolean;
-  action?: (opts: TyrActionFnOpts) => void | boolean | Promise<void | boolean>;
-  hide?: (doc: Tyr.Document) => boolean;
+  action?: (
+    opts: TyrActionFnOpts<D>
+  ) => void | boolean | Promise<void | boolean>;
+  hide?: (doc: D) => boolean;
 
   constructor({
     traits,
@@ -51,7 +59,7 @@ export class TyrAction {
     multiple,
     action,
     hide
-  }: TyrActionOpts) {
+  }: TyrActionOpts<D>) {
     this.traits = traits || [];
     this.name = name;
     this.component = component;
@@ -65,12 +73,12 @@ export class TyrAction {
     return this.traits.indexOf(trait) >= 0;
   }
 
-  act(opts: TyrActionFnOpts) {
+  act(opts: TyrActionFnOpts<D>) {
     this.action?.(opts);
   }
 
-  decorate(opts: Partial<TyrActionOpts>) {
-    const newOpts: TyrActionOpts = {
+  decorate(opts: Partial<TyrActionOpts<D>>) {
+    const newOpts: TyrActionOpts<D> = {
       traits: this.traits,
       name: this.name,
       label: this.label,
@@ -82,7 +90,7 @@ export class TyrAction {
     Object.assign(newOpts, opts);
 
     if (opts.action && this.action) {
-      newOpts.action = (fnOpts: TyrActionFnOpts) => {
+      newOpts.action = (fnOpts: TyrActionFnOpts<D>) => {
         const result = this.action && this.action(fnOpts);
 
         switch (typeof result) {
@@ -104,6 +112,6 @@ export class TyrAction {
       };
     }
 
-    return new TyrAction(newOpts);
+    return new TyrAction<D>(newOpts as any);
   }
 }

@@ -9,9 +9,7 @@ declare module 'tyranid/client' {
     export const NamePath: NamePathStatic;
     export const Type: TypeStatic;
 
-    export { AppError, SecureError, UserError } from Isomorphic;
-
-    export type anny = any;
+    export { anny, AppError, SecureError, UserError } from Isomorphic;
 
     export interface MongoDocument {
       [key: string]: any;
@@ -63,7 +61,7 @@ declare module 'tyranid/client' {
     export function labelize(name: string): string;
     export function parseUid(
       uid: string
-    ): { collection: CollectionInstance<AnyIdType>; id: AnyIdType };
+    ): { collection: CollectionInstance; id: AnyIdType };
     export function pluralize(str: string): string;
     export const reconnectSocket: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
@@ -143,16 +141,19 @@ declare module 'tyranid/client' {
 
     export interface CollectionStatic extends Isomorphic.CollectionStatic {}
 
+    export type IdType<D extends Document> = D extends Document<infer ID>
+      ? ID
+      : never;
+
     export interface CollectionInstance<
-      IdType extends AnyIdType = AnyIdType,
-      T extends Document<IdType> = Document<IdType>
-    > extends Class<T> {
+      D extends Document<AnyIdType> = Document<AnyIdType>
+    > extends Class<D> {
       aux(fields: { [key: string]: FieldDefinition });
-      byId(id: IdType, opts?: any): Promise<T | null>;
-      byIds(ids: IdType[], opts?: any): Promise<T[]>;
-      byIdIndex: { [id: string]: T };
-      byLabel(label: string): Promise<T | null>;
-      cache(document: T): void;
+      byId(id: IdType<D>, opts?: any): Promise<D | null>;
+      byIds(ids: IdType<D>[], opts?: any): Promise<D[]>;
+      byIdIndex: { [id: string]: D };
+      byLabel(label: string): Promise<D | null>;
+      cache(document: D): void;
       count(opts: any): Promise<number>;
       def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
@@ -163,49 +164,49 @@ declare module 'tyranid/client' {
         custom?: boolean;
         static?: boolean;
       }): Promise<{ [key: string]: FieldInstance }>;
-      findAll(args: any): Promise<T[] & { count?: number }>;
-      findOne(args: any): Promise<T | null>;
+      findAll(args: any): Promise<D[] & { count?: number }>;
+      findOne(args: any): Promise<D | null>;
       id: string;
-      idToLabel(id: IdType): Promise<string>;
-      idToUid(id: IdType | string): string;
-      insert<I, A extends I[]>(docs: A, opts?: any): Promise<T[]>;
-      insert<I>(doc: I): Promise<T>;
+      idToLabel(id: IdType<D>): Promise<string>;
+      idToUid(id: IdType<D> | string): string;
+      insert<I, A extends I[]>(docs: A, opts?: any): Promise<D[]>;
+      insert<I>(doc: I): Promise<D>;
       insert(doc: any): Promise<any>;
       isStatic(): boolean;
       isUid(uid: string): boolean;
       label: string;
       labelField: any;
-      labelFor(doc: T | object): string;
+      labelFor(doc: D | object): string;
       labelProjection(): any; // Mongo Projection
-      labels(text: string): Promise<T[]>;
-      labels(ids: string[]): Promise<T[]>;
-      labels(_: any): Promise<T[]>;
+      labels(text: string): Promise<D[]>;
+      labels(ids: string[]): Promise<D[]>;
+      labels(_: any): Promise<D[]>;
       on(opts: any): () => void;
       parsePath(text: string): Tyr.NamePathInstance;
       paths: { [fieldPathName: string]: Tyr.FieldInstance };
-      push(id: IdType, path: string, value: any, opts: any): Promise<void>;
-      remove(id: IdType, justOne: boolean): Promise<void>;
+      push(id: IdType<D>, path: string, value: any, opts: any): Promise<void>;
+      remove(id: IdType<D>, justOne: boolean): Promise<void>;
       remove(
         query: any /* MongoDB-style query */,
         justOne: boolean
       ): Promise<void>;
-      save(doc: T | object): Promise<T>;
-      save(doc: T[] | object[]): Promise<T[]>;
+      save(doc: D | object): Promise<D>;
+      save(doc: D[] | object[]): Promise<D[]>;
       save(doc: any): Promise<any>;
       subscribe(query: MongoQuery | undefined, cancel?: boolean): Promise<void>;
-      updateDoc(doc: T | MongoDocument, opts: any): Promise<T>;
-      values: T[];
+      updateDoc(doc: D | MongoDocument, opts: any): Promise<D>;
+      values: D[];
     }
 
-    export interface Document<IdType extends AnyIdType = AnyIdType>
-      extends Isomorphic.Document<IdType> {
+    export interface Document<ID extends AnyIdType = AnyIdType>
+      extends Isomorphic.Document<ID> {
       $access?: AccessResult;
       $cache(): this;
       $clone(): this;
       $cloneDeep(): this;
-      $id: IdType;
+      $id: IdType<this>; // using "ID" wasn't working as well for some weird reason
       $label: string;
-      $model: CollectionInstance<IdType, this>;
+      $model: CollectionInstance<this>;
       $orig?: this;
       $remove(opts: any): Promise<void>;
       $revert(): void;
@@ -218,9 +219,9 @@ declare module 'tyranid/client' {
       $update(opts: any): Promise<this>;
     }
 
-    export interface Inserted<IdType extends AnyIdType = AnyIdType>
-      extends Document<IdType> {
-      _id: IdType;
+    export interface Inserted<ID extends AnyIdType = AnyIdType>
+      extends Document<ID> {
+      _id: ID;
     }
   }
 }

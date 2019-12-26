@@ -5,15 +5,13 @@ import { GraclPlugin } from '../classes/GraclPlugin';
 import { findLinkInCollection } from './findLinkInCollection';
 
 export async function stepThroughCollectionPath<
-  PIdType extends Tyr.AnyIdType,
-  P extends Tyr.Document<PIdType>,
-  NIdType extends Tyr.AnyIdType,
-  N extends Tyr.Document<NIdType>
+  P extends Tyr.Document,
+  N extends Tyr.Document
 >(
   plugin: GraclPlugin,
   ids: ObjectID[],
-  previousCollection: Tyr.CollectionInstance<PIdType, P>,
-  nextCollection: Tyr.CollectionInstance<NIdType, N>,
+  previousCollection: Tyr.CollectionInstance<P>,
+  nextCollection: Tyr.CollectionInstance<N>,
   debug?: boolean
 ) {
   // find the field in the current path collection which we need to get

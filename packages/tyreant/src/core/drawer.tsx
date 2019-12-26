@@ -8,6 +8,7 @@ import {
   TyrDecoratorProps,
   TyrDecoratorState
 } from './decorator';
+import { Tyr } from 'tyranid/client';
 
 export interface TyrDrawerProps extends TyrDecoratorProps {
   placement?: 'top' | 'right' | 'bottom' | 'left';
@@ -17,18 +18,22 @@ export interface TyrDrawerState extends TyrDecoratorState {
   loading: boolean;
 }
 
-export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
+export class TyrDrawer<D extends Tyr.Document> extends TyrDecorator<
+  D,
+  TyrDrawerProps,
+  TyrDrawerState
+> {
   state: TyrDrawerState = {
     visible: false,
     loading: false
   };
 
-  create?: TyrAction;
-  edit?: TyrAction;
-  save?: TyrAction;
-  cancel?: TyrAction;
+  create?: TyrAction<D>;
+  edit?: TyrAction<D>;
+  save?: TyrAction<D>;
+  cancel?: TyrAction<D>;
 
-  enact(action: TyrAction) {
+  enact(action: TyrAction<D>) {
     if (!this.component) throw new Error('drawer not connected');
 
     if (action.is('create')) {
@@ -42,7 +47,7 @@ export class TyrDrawer extends TyrDecorator<TyrDrawerProps, TyrDrawerState> {
       this.edit = edit;
 
       const parent = this.component.parent;
-      if (parent) parent.enact(edit);
+      if (parent) parent.enact(edit as any);
     } else if (action.is('save')) {
       this.save = action.decorate({
         action: () => {

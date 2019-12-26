@@ -19,14 +19,12 @@ function compareCollectionWithField(
     and binary search for feild search => O(log(n)) lookup
  */
 export function findLinkInCollection<
-  DIdType extends Tyr.AnyIdType,
-  D extends Tyr.Document<DIdType>,
-  LIdType extends Tyr.AnyIdType,
-  L extends Tyr.Document<LIdType>
+  D extends Tyr.Document,
+  L extends Tyr.Document
 >(
   plugin: GraclPlugin,
-  col: Tyr.CollectionInstance<DIdType, D>,
-  linkCollection: Tyr.CollectionInstance<LIdType, L>
+  col: Tyr.CollectionInstance<D>,
+  linkCollection: Tyr.CollectionInstance<L>
 ): Tyr.FieldInstance {
   const links = getCollectionLinksSorted(plugin, col);
   const index = binaryIndexOf(

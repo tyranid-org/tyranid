@@ -8,6 +8,7 @@ import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 import { TypeContext, TyrTypeProps } from '../type/type';
 import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
 import { TyrComponentProps, TyrComponent } from './component';
+import { TyrRouter } from './router';
 
 type TyrFormBaseProps = {
   document: Tyr.Document;
@@ -82,9 +83,12 @@ const TyrWrappedForm = Form.create<TyrFormBaseProps>(/*{ name: 'todo' }*/)(
  *
  *        TyrForm(TyrWrappedForm(TyrFormBase))
  */
-export interface TyrFormProps extends TyrComponentProps {}
+export interface TyrFormProps<D extends Tyr.Document>
+  extends TyrComponentProps<D> {}
 
-export class TyrForm extends TyrComponent<TyrFormProps> {
+export class TyrForm<
+  D extends Tyr.Document<Tyr.AnyIdType>
+> extends TyrComponent<D, TyrFormProps<D>> {
   canEdit = true;
 
   form?: WrappedFormUtils;
@@ -117,9 +121,9 @@ export class TyrForm extends TyrComponent<TyrFormProps> {
 /**
  * returns Promise<true> if the save was successful, Promise<false> if there were validation errors.
  */
-export function submitForm(
-  tyrForm: TyrForm,
-  document: Tyr.Document
+export function submitForm<D extends Tyr.Document>(
+  tyrForm: TyrForm<D>,
+  document: D
 ): Promise<boolean> {
   const { form } = tyrForm;
 

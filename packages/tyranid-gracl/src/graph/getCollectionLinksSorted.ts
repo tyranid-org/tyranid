@@ -6,12 +6,9 @@ import { GraclPlugin } from '../classes/GraclPlugin';
  * Get a list of all links in a given collection schema,
  * sorted by the name of the linked collection -- cached
  */
-export function getCollectionLinksSorted<
-  IdType extends Tyr.AnyIdType,
-  D extends Tyr.Document<IdType>
->(
+export function getCollectionLinksSorted<D extends Tyr.Document>(
   plugin: GraclPlugin,
-  col: Tyr.CollectionInstance<IdType, D>,
+  col: Tyr.CollectionInstance<D>,
   opts: { direction: string; relate?: string } = { direction: 'outgoing' }
 ): Tyr.FieldInstance[] {
   const collectionFieldCache = plugin.sortedLinkCache;

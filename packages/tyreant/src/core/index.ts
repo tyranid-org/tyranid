@@ -7,4 +7,3 @@ export * from './form';
 export * from './modal';
 export * from './router';
 export * from './table';
-export { TyrTableControl } from './table';

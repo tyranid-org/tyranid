@@ -125,8 +125,8 @@ export class GraclPlugin {
     return PermissionsModel.createIndexes();
   }
 
-  public query<IdType extends Tyr.AnyIdType, T extends Tyr.Document<IdType>>(
-    queriedCollection: Tyr.CollectionInstance<IdType, T>,
+  public query<D extends Tyr.Document>(
+    queriedCollection: Tyr.CollectionInstance<D>,
     permissionType: string,
     subjectDocument?: Tyr.Document
   ) {

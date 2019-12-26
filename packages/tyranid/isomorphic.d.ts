@@ -1,6 +1,19 @@
 import { TypeReference } from 'typescript';
 
 export namespace Tyr {
+  /**
+   * This is meant as a trigger to indicate that you are typing something
+   * as "any" for now but which might have a better type for it but you do not
+   * have time at the moment to figure out the right type.
+   *
+   * For example, read:
+   *
+   * ... = (something as Tyr.anny);
+   *
+   * as:
+   *
+   * ... = (something as any); // TODO:  figure out a better type
+   */
   export type anny = any;
 
   export interface MongoDocument {
@@ -222,61 +235,64 @@ export namespace Tyr {
     walk(path: string | number): NamePathInstance;
   }
 
+  export type IdType<D extends Document> = D extends Document<infer ID>
+    ? ID
+    : never;
+
   export interface CollectionStatic {}
 
   export interface CollectionInstance<
-    IdType,
-    T extends Document<IdType> = Document<IdType>
-  > extends Class<T> {
-    byId(id: IdType, opts?: any): Promise<T | null>;
-    byIds(ids: IdType[], opts?: any): Promise<T[]>;
-    byLabel(label: string): Promise<T | null>;
+    D extends Document<AnyIdType> = Document<AnyIdType>
+  > extends Class<D> {
+    byId(id: IdType<D>, opts?: any): Promise<D | null>;
+    byIds(ids: IdType<D>[], opts?: any): Promise<D[]>;
+    byLabel(label: string): Promise<D | null>;
     count(opts: any): Promise<number>;
     def: any /* collection def */;
     exists(opts: any): Promise<boolean>;
     fields: { [fieldName: string]: FieldInstance };
-    findAll(args: any): Promise<T[] & { count?: number }>;
-    findOne(args: any): Promise<T | null>;
+    findAll(args: any): Promise<D[] & { count?: number }>;
+    findOne(args: any): Promise<D | null>;
     id: string;
-    idToLabel(id: IdType): Promise<string>;
-    idToUid(id: IdType | string): string;
-    insert<I, A extends I[]>(docs: A, opts?: any): Promise<T[]>;
-    insert<I>(doc: I): Promise<T>;
+    idToLabel(id: IdType<D>): Promise<string>;
+    idToUid(id: IdType<D> | string): string;
+    insert<I, A extends I[]>(docs: A, opts?: any): Promise<D[]>;
+    insert<I>(doc: I): Promise<D>;
     insert(doc: any): Promise<any>;
     isStatic(): boolean;
     isUid(uid: string): boolean;
     label: string;
     labelField: any;
-    labelFor(doc: T | object): string;
+    labelFor(doc: D | object): string;
     labelProjection(): any; // Mongo Projection
-    labels(text: string): Promise<T[]>;
-    labels(ids: string[]): Promise<T[]>;
-    labels(_: any): Promise<T[]>;
+    labels(text: string): Promise<D[]>;
+    labels(ids: string[]): Promise<D[]>;
+    labels(_: any): Promise<D[]>;
     on(opts: any): () => void;
     parsePath(text: string): NamePathInstance;
     paths: { [fieldPathName: string]: FieldInstance };
-    push(id: IdType, path: string, value: any, opts: any): Promise<void>;
-    remove(id: IdType, justOne: boolean): Promise<void>;
+    push(id: IdType<D>, path: string, value: any, opts: any): Promise<void>;
+    remove(id: IdType<D>, justOne: boolean): Promise<void>;
     remove(
       query: any /* MongoDB-style query */,
       justOne: boolean
     ): Promise<void>;
-    save(doc: T | object): Promise<T>;
-    save(doc: T[] | object[]): Promise<T[]>;
+    save(doc: D | object): Promise<D>;
+    save(doc: D[] | object[]): Promise<D[]>;
     save(doc: any): Promise<any>;
     subscribe(query: MongoQuery, cancel: boolean): Promise<void>;
-    updateDoc(doc: T | MongoDocument, opts: any): Promise<T>;
-    values: T[];
+    updateDoc(doc: D | MongoDocument, opts: any): Promise<D>;
+    values: D[];
   }
 
-  export interface Document<IdType> {
+  export interface Document<ID extends AnyIdType = AnyIdType> {
     $access?: AccessResult;
     $clone(): this;
     $cloneDeep(): this;
-    $id: IdType;
+    $id: ID;
     $isNew: boolean;
     $label: string;
-    $model: CollectionInstance<IdType, this>;
+    $model: CollectionInstance<this>;
     $remove(opts: any): Promise<void>;
     $save(opts: any): Promise<this>;
     $slice(path: string, opts: any): Promise<void>;
@@ -286,7 +302,7 @@ export namespace Tyr {
     $update(opts: any): Promise<this>;
   }
 
-  export interface Inserted<IdType> extends Document<IdType> {
-    _id: IdType;
+  export interface Inserted<ID> extends Document<ID> {
+    _id: ID;
   }
 }

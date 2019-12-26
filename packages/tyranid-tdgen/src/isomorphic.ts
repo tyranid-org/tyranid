@@ -200,7 +200,7 @@ export function generateCommonTypes(
      * ${names.format(output)} collection definition.
      */
     ${output === 'client' ? 'export ' : ''}interface ${colName}
-      extends Tyr.CollectionInstance<${idType}, ${docName}>${staticName}`;
+      extends Tyr.CollectionInstance<${docName}>${staticName}`;
     if (c.def.service)
       cs += `,
               ${colName}Service`;

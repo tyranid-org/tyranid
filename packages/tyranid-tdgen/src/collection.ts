@@ -46,9 +46,7 @@ export function colInterface(col: Tyr.CollectionInstance) {
      * Type definition for "${name}" collection
      */
     export interface ${colName}<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
-      extends CollectionInstance<${names.idType(
-        col
-      )}, ${docName}<ObjIdType, ObjContainer, NumContainer>>${staticProps} {}
+      extends CollectionInstance<${docName}<ObjIdType, ObjContainer, NumContainer>>${staticProps} {}
     `;
 }
 

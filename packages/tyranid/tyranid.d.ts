@@ -63,9 +63,7 @@ export namespace Tyr {
   export const NamePath: NamePathStatic;
   export const Type: TypeStatic;
 
-  export { AppError, SecureError, UserError } from Isomorphic;
-
-  export type anny = any;
+  export { anny, AppError, SecureError, UserError } from Isomorphic;
 
   export const $all: '$all';
   export const byId: CollectionsById;
@@ -166,10 +164,10 @@ export namespace Tyr {
 
   export function forget(id: string): void;
 
-  export interface Cursor<T> extends mongodb.Cursor {
-    next(): Promise<T>;
-    next(cb: mongodb.MongoCallback<T>): void;
-    toArray(): Promise<T[]>;
+  export interface Cursor<D> extends mongodb.Cursor {
+    next(): Promise<D>;
+    next(cb: mongodb.MongoCallback<D>): void;
+    toArray(): Promise<D[]>;
   }
 
   export interface RawMongoDocument {
@@ -188,7 +186,7 @@ export namespace Tyr {
   /**
    *  Generic tyranid document object.
    */
-  export interface Document<IdType extends AnyIdType = AnyIdType> {
+  export interface Document<ID extends AnyIdType = AnyIdType> {
     $access?: AccessResult;
     $asOf(time: Date, fields?: any): void;
     $checkAccess(opts: { perm?: string; auth?: Tyr.Document }): this;
@@ -197,10 +195,10 @@ export namespace Tyr {
     $copy(replacements: any, props?: Array<keyof this> | '$all'): this;
     $get(path: string): any;
     $(strings: TemplateStringsArray, ...keys: string[]): any;
-    $id: IdType;
+    $id: ID;
     $insert(opts?: Options_Insert): Promise<this>;
     $label: string;
-    $model: CollectionInstance<IdType, this>;
+    $model: CollectionInstance<this>;
     $options: Options_AllFind;
     $populate(fields: any, denormal?: boolean): Promise<this>;
     $redact(): void;
@@ -217,9 +215,9 @@ export namespace Tyr {
     $validate(): UserError[];
   }
 
-  export interface Inserted<IdType extends AnyIdType = AnyIdType>
-    extends Document<IdType> {
-    _id: IdType;
+  export interface Inserted<ID extends AnyIdType = AnyIdType>
+    extends Document<ID> {
+    _id: ID;
   }
 
   /*
@@ -246,6 +244,11 @@ export namespace Tyr {
      */
     count?: boolean;
   }
+
+  /**
+   * This provides a place to define options that are universal to all options methods
+   */
+  export interface OptionsCommon {}
 
   export interface OptionsHistorical {
     /**
@@ -389,11 +392,13 @@ export namespace Tyr {
   export interface Options_Exists
     extends OptionsAuth,
       OptionsCount,
+      OptionsCommon,
       OptionsQuery {}
 
   export interface Options_FindById
     extends OptionsAuth,
       OptionsCaching,
+      OptionsCommon,
       OptionsHistorical,
       OptionsKeepNonAccessible,
       OptionsPopulate,
@@ -419,6 +424,7 @@ export namespace Tyr {
 
   export interface Options_FindAndModify
     extends OptionsAuth,
+      OptionsCommon,
       OptionsQuery,
       OptionsUpdate,
       OptionsProjection {
@@ -435,45 +441,58 @@ export namespace Tyr {
 
   export interface Options_Insert
     extends OptionsAuth,
+      OptionsCommon,
       OptionsHistorical,
       OptionsTimestamps,
       OptionsHttpRequest {}
 
   export interface Options_Pushpull
     extends OptionsAuth,
+      OptionsCommon,
       OptionsHistorical,
       OptionsTimestamps {}
 
-  export interface Options_Remove extends OptionsAuth, OptionsQuery {}
+  export interface Options_Remove
+    extends OptionsAuth,
+      OptionsCommon,
+      OptionsQuery {}
 
   export interface Options_Save extends Options_Insert, Options_UpdateDoc {}
 
   export interface Options_Slice
     extends OptionsAuth,
+      OptionsCommon,
       OptionsPopulate,
       OptionsWhere,
       OptionsWindow {}
 
-  export interface Options_FromClient extends OptionsAuth, OptionsHttpRequest {}
+  export interface Options_FromClient
+    extends OptionsAuth,
+      OptionsCommon,
+      OptionsHttpRequest {}
 
   export interface Options_ToClient
     extends OptionsAuth,
+      OptionsCommon,
       OptionsPost,
       OptionsProjection {}
 
   export interface Options_Update
     extends OptionsAuth,
+      OptionsCommon,
       OptionsQuery,
       OptionsTimestamps,
       OptionsUpdate {}
 
   export interface Options_UpdateDoc
     extends OptionsAuth,
+      OptionsCommon,
       OptionsHistorical,
       OptionsTimestamps {}
 
   export interface Options_All
     extends OptionsAuth,
+      OptionsCommon,
       OptionsHistorical,
       OptionsHttpRequest,
       OptionsQuery,
@@ -768,32 +787,32 @@ export namespace Tyr {
     compileField(compiler: any, field: FieldInstance): void;
   }
 
+  export type IdType<D extends Document> = D extends Document<infer ID>
+    ? ID
+    : never;
+
   export interface CollectionStatic {
     // Collection instance constructor
-    new <
-      IdType extends AnyIdType = AnyIdType,
-      T extends Document<IdType> = Document<IdType>
-    >(
+    new <D extends Document<AnyIdType> = Document<AnyIdType>>(
       def: CollectionDefinition
-    ): CollectionInstance<IdType, T>;
+    ): CollectionInstance<D>;
   }
 
   /**
    *  Tyranid collection class
    */
   export interface CollectionInstance<
-    IdType extends AnyIdType = AnyIdType,
-    T extends Tyr.Document<IdType> = Tyr.Document<IdType>
-  > extends Component, Class<T> {
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > extends Component, Class<D> {
     // Collection instance constructor
-    new (doc?: RawMongoDocument): T;
+    new (doc?: RawMongoDocument): D;
 
-    byId(id: IdType | string, options?: Options_FindById): Promise<T | null>;
+    byId(id: IdType<D> | string, options?: Options_FindById): Promise<D | null>;
     byIds(
-      ids: Array<IdType | string>,
+      ids: Array<IdType<D> | string>,
       options?: Options_FindByIds
-    ): Promise<T[]>;
-    byLabel(label: string, forcePromise?: boolean): Promise<T | null>;
+    ): Promise<D[]>;
+    byLabel(label: string, forcePromise?: boolean): Promise<D | null>;
 
     count(opts: Options_Count): Promise<number>;
 
@@ -812,22 +831,22 @@ export namespace Tyr {
       static?: boolean;
     }): Promise<{ [key: string]: FieldInstance }>;
 
-    fake(options: { n?: number; schemaOpts?: any; seed?: number }): Promise<T>;
+    fake(options: { n?: number; schemaOpts?: any; seed?: number }): Promise<D>;
 
-    find(opts: Options_FindCursor): Promise<Cursor<T>>;
-    findAll(opts?: Options_FindMany): Promise<T[] & { count?: number }>;
-    findOne(opts: Options_FindOne): Promise<T | null>;
+    find(opts: Options_FindCursor): Promise<Cursor<D>>;
+    findAll(opts?: Options_FindMany): Promise<D[] & { count?: number }>;
+    findOne(opts: Options_FindOne): Promise<D | null>;
     findReferences(opts: {
       id?: any;
       ids?: any;
       idsOnly?: boolean;
-      exclude?: Array<CollectionInstance<AnyIdType, Tyr.Document>>;
-    }): Promise<Tyr.Document[]>;
+      exclude?: Array<CollectionInstance<Document>>;
+    }): Promise<Document[]>;
 
     /** @deprecated */
-    findOne(id: IdType, proj?: any): Promise<T | null>;
+    findOne(id: IdType<D>, proj?: any): Promise<D | null>;
 
-    findAndModify(opts: Options_FindAndModify): Promise<{ value: T } | null>;
+    findAndModify(opts: Options_FindAndModify): Promise<{ value: D } | null>;
 
     fire(event: EventInstance | EventDefinition): void;
 
@@ -835,16 +854,16 @@ export namespace Tyr {
       doc: RawMongoDocument,
       path?: string,
       opts?: Options_FromClient
-    ): Promise<T>;
+    ): Promise<D>;
     fromClientQuery(query: MongoQuery): MongoQuery;
     fromClientUpdate(update: MongoQuery): MongoUpdate;
 
     id: string;
     idToLabel(id: any): Promise<string>;
-    idToUid(id: IdType | string): string;
+    idToUid(id: IdType<D> | string): string;
 
-    insert<I, A extends I[]>(docs: A, opts?: Options_Insert): Promise<T[]>;
-    insert<I extends object>(doc: I): Promise<T>;
+    insert<I, A extends I[]>(docs: A, opts?: Options_Insert): Promise<D[]>;
+    insert<I extends object>(doc: I): Promise<D>;
     insert(doc: any): Promise<any>;
 
     isStatic(): boolean;
@@ -856,14 +875,14 @@ export namespace Tyr {
     label: string;
     labelField: FieldInstance;
     labelFor(doc: MaybeRawDocument): string;
-    labels(text: string): Promise<T[]>;
-    labels(ids: string[]): Promise<T[]>;
-    labels(_: any): Promise<T[]>;
+    labels(text: string): Promise<D[]>;
+    labels(ids: string[]): Promise<D[]>;
+    labels(_: any): Promise<D[]>;
 
     migratePatchToDocument(progress?: (count: number) => void): Promise<void>;
     mixin(def: FieldDefinition): void;
 
-    on(opts: EventOnOptions<T>): () => void;
+    on(opts: EventOnOptions<D>): () => void;
 
     parsePath(text: string): NamePathInstance;
 
@@ -872,17 +891,17 @@ export namespace Tyr {
     populate<R>(
       fields: string | string[] | { [key: string]: any }
     ): (docs: R) => Promise<R>;
-    populate(fields: any, document: T, denormal?: boolean): Promise<T>;
-    populate(fields: any, documents: T[], denormal?: boolean): Promise<T[]>;
+    populate(fields: any, document: D, denormal?: boolean): Promise<D>;
+    populate(fields: any, documents: D[], denormal?: boolean): Promise<D[]>;
 
     push(
-      id: IdType | string | number,
+      id: IdType<D> | string | number,
       path: string,
       prop: any,
       opts?: Options_Pushpull
     ): Promise<void>;
     pull(
-      id: IdType | string | number,
+      id: IdType<D> | string | number,
       path: string,
       fn: (p: any) => boolean,
       opts?: Options_Pushpull
@@ -892,7 +911,7 @@ export namespace Tyr {
     removeReferences(opts: {
       id?: any;
       ids?: any;
-      exclude?: Array<CollectionInstance<AnyIdType, Tyr.Document>>;
+      exclude?: Array<CollectionInstance<Document>>;
     }): Promise<void>;
 
     secureQuery(
@@ -901,8 +920,8 @@ export namespace Tyr {
       auth: Document
     ): Promise<MongoQuery>;
 
-    save(rawDoc: T, opts?: Options_Save): Promise<T>;
-    save(rawDoc: T[], opts?: Options_Save): Promise<T[]>;
+    save(rawDoc: D, opts?: Options_Save): Promise<D>;
+    save(rawDoc: D[], opts?: Options_Save): Promise<D[]>;
     save(rawDoc: any, opts?: Options_Save): Promise<any>;
 
     subscribe(query: MongoQuery, cancel?: boolean): Promise<void>;
@@ -917,10 +936,10 @@ export namespace Tyr {
         | RawMongoDocument[]
     ): RawMongoDocument;
 
-    update(opts: Options_Update & { query: MongoQuery }): Promise<T[]>;
-    updateDoc(doc: MaybeRawDocument, opts?: Options_UpdateDoc): Promise<T>;
+    update(opts: Options_Update & { query: MongoQuery }): Promise<D[]>;
+    updateDoc(doc: MaybeRawDocument, opts?: Options_UpdateDoc): Promise<D>;
 
-    values: T[];
+    values: D[];
 
     valuesFor(fields: FieldInstance[]): Promise<any[]>;
   }
@@ -1233,18 +1252,18 @@ export namespace Tyr {
   };
 
   export type ExcelColumn<
-    T extends Tyr.Document<IdType> = Tyr.Document<IdType>
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
   > = {
     field: string;
-    get?(this: this, doc: T): any;
+    get?(this: this, doc: D): any;
     label?: string;
-    cell?: ExcelStyle | ((doc: T) => ExcelStyle);
+    cell?: ExcelStyle | ((doc: D) => ExcelStyle);
     header?: ExcelStyle;
     width?: number;
   };
 
   export type ExcelDef<
-    T extends Tyr.Document<IdType> = Tyr.Document<IdType>
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
   > = {
     collection: CollectionInstance;
     header?: {
@@ -1259,7 +1278,7 @@ export namespace Tyr {
         }
       ];
     };
-    columns: ExcelColumn<T>[];
+    columns: ExcelColumn<D>[];
     stream?: stream.Writable;
     filename?: string;
     images?: {
@@ -1276,11 +1295,11 @@ export namespace Tyr {
   };
 
   export interface ExcelStatic {
-    toExcel<T extends Tyr.Document<IdType> = Tyr.Document<IdType>>(
-      opts: ExcelDef<T> & { documents: T[] }
+    toExcel<D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>>(
+      opts: ExcelDef<D> & { documents: D[] }
     ): Promise<void>;
-    fromExcel<T extends Tyr.Document<IdType> = Tyr.Document<IdType>>(
-      opts: ExcelDef<T>
-    ): Promise<T[]>;
+    fromExcel<D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>>(
+      opts: ExcelDef<D>
+    ): Promise<D[]>;
   }
 }

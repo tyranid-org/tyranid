@@ -10,16 +10,16 @@ export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
 );
 
-export interface TyrComponentProps {
-  collection?: Tyr.CollectionInstance;
+export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
+  collection?: Tyr.CollectionInstance<D>;
   fields?: TyrFieldLaxProps[];
   decorator?: React.ReactElement;
-  actions?: (TyrAction | TyrActionOpts)[];
+  actions?: (TyrAction<D> | TyrActionOpts<D>)[];
 }
 
-export interface TyrComponentState {
-  document?: Tyr.Document; // forms
-  documents?: Tyr.Document[]; // tables
+export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {
+  document?: D; // forms
+  documents?: D[]; // tables
   visible?: boolean;
 }
 
@@ -28,14 +28,15 @@ export interface TyrComponentState {
  * are TyrTable and TyrForm.
  */
 export class TyrComponent<
-  Props extends TyrComponentProps = TyrComponentProps,
-  State extends TyrComponentState = TyrComponentState
+  D extends Tyr.Document = Tyr.Document,
+  Props extends TyrComponentProps<D> = TyrComponentProps<D>,
+  State extends TyrComponentState<D> = TyrComponentState<D>
 > extends React.Component<Props, State> {
-  collection?: Tyr.CollectionInstance;
+  collection?: Tyr.CollectionInstance<D>;
   fields: TyrFieldProps[] = [];
   parent?: TyrComponent;
   children: TyrComponent[] = [];
-  decorator?: TyrDecorator;
+  decorator?: TyrDecorator<D>;
   _linkToParent?: any /* Field */;
 
   /**
@@ -68,7 +69,7 @@ export class TyrComponent<
       );
 
     const props = this.props as Props;
-    const actions = (props.actions || []).map(TyrAction.get);
+    const actions = (props.actions || []).map(TyrAction.get) as TyrAction<D>[];
     const { linkToParent } = this;
 
     //
@@ -106,14 +107,14 @@ export class TyrComponent<
     // Automatically-Added Actions
     //
 
-    const enactUp = (action: TyrActionOpts) => {
+    const enactUp = (action: TyrActionOpts<D>) => {
       const { traits } = action;
       action.component = this;
 
       const trait = traits?.[0];
       if (!trait || !actions.find(action => action.is(trait))) {
-        action = TyrAction.get(action);
-        actions.push(action as TyrAction);
+        action = TyrAction.get(action) as TyrAction<D>;
+        actions.push(action as TyrAction<D>);
         this.enactUp(action);
       }
     };
@@ -159,8 +160,8 @@ export class TyrComponent<
     }
   }
 
-  actions: TyrAction[] = [];
-  enact(action: TyrAction | TyrActionOpts) {
+  actions: TyrAction<D>[] = [];
+  enact(action: TyrAction<D> | TyrActionOpts<D>) {
     const _action = TyrAction.get(action);
 
     const { actions } = this;
@@ -176,7 +177,7 @@ export class TyrComponent<
     this.actions.push(_action);
   }
 
-  enactUp(action: TyrAction | TyrActionOpts) {
+  enactUp(action: TyrAction<D> | TyrActionOpts<D>) {
     const _action = TyrAction.get(action);
 
     const { decorator } = this;
@@ -186,7 +187,7 @@ export class TyrComponent<
     } else {
       const { parent } = this;
 
-      if (parent) parent.enact(_action);
+      if (parent) parent.enact(_action as any);
     }
   }
 
@@ -202,10 +203,11 @@ export class TyrComponent<
       const { collection: propsCollection, fields: propsFields } = this.props;
 
       this.parent = parent;
-      parent.children.push(this);
+      parent.children.push(this as any);
 
       const parentCollection = parent.collection;
-      collection = this.collection = propsCollection || parentCollection;
+      collection = this.collection =
+        propsCollection || (parentCollection as Tyr.CollectionInstance<D>);
 
       const fields =
         propsFields || (collection === parentCollection && parent.props.fields);
@@ -244,7 +246,7 @@ export class TyrComponent<
    * This creates a new document for this control that is related to the parent documents
    * according to how the component hierarchy.
    */
-  createDocument(actionOpts: TyrActionFnOpts) {
+  createDocument(actionOpts: TyrActionFnOpts<D>) {
     const { linkToParent } = this;
 
     const obj = {};
@@ -260,24 +262,24 @@ export class TyrComponent<
 
   async requery() {}
 
-  async find(document: Tyr.Document) {
+  async find(document: D) {
     const { collection, linkToParent } = this;
-    let updatedDocument: Tyr.Document | null | undefined;
+    let updatedDocument: D | null | undefined;
 
     if (!collection) throw new Error('no collection');
 
     if (linkToParent) {
-      updatedDocument = await collection.findOne({
+      updatedDocument = (await collection.findOne({
         query: {
           [linkToParent.namePath.spath]: document.$id
         }
-      });
+      })) as D;
     } else {
       if (collection.id !== document.$model.id) {
         throw new Error('mismatched collection ids');
       }
 
-      updatedDocument = await collection.byId(document.$id);
+      updatedDocument = (await collection.byId(document.$id)) as D;
       if (!updatedDocument) {
         throw new Error('could not find document');
       }
@@ -293,7 +295,7 @@ export class TyrComponent<
    *
    * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "Order::lineItems"
    */
-  get linkToParent(): any /* Field */ | undefined {
+  get linkToParent(): Tyr.anny /* Field */ | undefined {
     return this._linkToParent;
   }
 
@@ -311,18 +313,18 @@ export class TyrComponent<
     //return undefined;
   }
 
-  get document(): Tyr.Document | undefined {
+  get document(): D | undefined {
     const { state } = this;
 
     if (state) {
       const { document } = state;
-      if (document) return document;
+      if (document) return document as D;
     }
 
     //return undefined;
   }
 
-  getDecoratorRef = (decorator: TyrDecorator | null) => {
+  getDecoratorRef = (decorator: TyrDecorator<D> | null) => {
     if (decorator) {
       this.decorator = decorator;
       decorator.connect(this);
@@ -337,7 +339,7 @@ export class TyrComponent<
         {parent => {
           this.connect(parent);
           return (
-            <ComponentContext.Provider value={this}>
+            <ComponentContext.Provider value={this as any}>
               {decorator
                 ? React.cloneElement(
                     decorator!,

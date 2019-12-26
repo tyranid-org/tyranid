@@ -68,6 +68,7 @@ import {
 import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from './form';
 import { string } from 'prop-types';
+import { TyrRouter } from './router';
 
 // FIXED-HEADER-HACK
 const supportedWidths = [240];
@@ -108,11 +109,12 @@ export interface TyrTableConfig {
   key: string;
 }
 
-export interface TyrTableProps extends TyrComponentProps {
+export interface TyrTableProps<D extends Tyr.Document>
+  extends TyrComponentProps<D> {
   bordered?: boolean;
   className?: string;
-  collection: Tyr.CollectionInstance;
-  documents?: Tyr.Document[] & { count?: number };
+  collection: Tyr.CollectionInstance<D>;
+  documents?: D[] & { count?: number };
   fields: TyrTableColumnFieldProps[];
   query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
   route?: string;
@@ -123,14 +125,11 @@ export interface TyrTableProps extends TyrComponentProps {
   pageSize?: number; // a.k.a. limit
   pinActionsRight?: boolean;
   rowEdit?: boolean;
-  canEditDocument?: (document: Tyr.Document) => boolean;
+  canEditDocument?: (document: D) => boolean;
   size?: 'default' | 'middle' | 'small';
-  saveDocument?: (document: Tyr.Document) => Promise<Tyr.Document>;
-  onAfterSaveDocument?: (
-    document: Tyr.Document,
-    changedFields?: string[]
-  ) => void;
-  onBeforeSaveDocument?: (document: Tyr.Document) => void;
+  saveDocument?: (document: D) => Promise<D>;
+  onAfterSaveDocument?: (document: D, changedFields?: string[]) => void;
+  onBeforeSaveDocument?: (document: D) => void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
   onChangeTableConfiguration?: (fields: TyrTableConfigFields) => void;
@@ -142,7 +141,7 @@ export interface TyrTableProps extends TyrComponentProps {
   title?: (currentPageData: Object[]) => React.ReactNode;
   showHeader?: boolean;
   config?: TyrTableConfig;
-  onLoad?: (tableControl: TyrTableControl) => void;
+  onLoad?: (table: TyrTable<Tyr.anny>) => void;
   rowSelection?: boolean;
   loading?: boolean;
   setEditing?: (editing: boolean) => void;
@@ -157,7 +156,9 @@ export interface TyrTableProps extends TyrComponentProps {
 // TODO:  if they specify a sort function for a column and we're not local report an error
 
 @observer
-export class TyrTable extends TyrComponent<TyrTableProps> {
+export class TyrTable<
+  D extends Tyr.Document = Tyr.Document
+> extends TyrComponent<D, TyrTableProps<D>> {
   canMultiple = true;
 
   defaultPageSize = this.props.pageSize || DEFAULT_PAGE_SIZE;
@@ -187,18 +188,18 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   @observable
   otherFields: TyrTableColumnFieldProps[] = [];
 
-  newDocument?: Tyr.Document;
+  newDocument?: D;
 
   @observable
   selectedRowKeys: string[] = [];
 
-  editingDocument?: Tyr.Document;
+  editingDocument?: D;
 
   /**
    * if isLocal then this has *all* the data, otherwise it just has the current page
    */
   @observable
-  documents: Tyr.Document[] & { count?: number } = this.props.documents || [];
+  documents: D[] & { count?: number } = this.props.documents || [];
 
   @observable
   loading = false;
@@ -211,7 +212,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   @observable
   tableConfig?: TyrTableConfigType;
 
-  constructor(props: TyrTableProps, state: TyrComponentState) {
+  constructor(props: TyrTableProps<D>, state: TyrComponentState<D>) {
     super(props, state);
 
     this.setDefaultSort();
@@ -255,7 +256,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
     this._mounted = true;
 
-    onLoad && onLoad(new TyrTableControlImpl(this));
+    onLoad && onLoad(this);
   }
 
   componentWillUnmount() {
@@ -263,7 +264,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     this._mounted = false;
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps) {
+  UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps<D>) {
     const { documents } = this.props;
     const { documents: newDocuments } = nextProps;
 
@@ -298,8 +299,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     ) as TyrTableColumnFieldProps[];
 
     // Add any new fields (unless they are hidden)
-    for (let i = 0; i < nextOtherFields.length; i++) {
-      const nextOtherField = nextOtherFields[i];
+    for (const nextOtherField of nextOtherFields) {
       const nextOtherFieldName = getFieldName(nextOtherField.field);
 
       const existingCol = newOtherFields.find(column => {
@@ -332,7 +332,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
   // We need to do this so that when we enter editing mode
   // and disable sorting, the natural sort of the rows is
   // not any different than what the sort currently is.
-  setSortedDocuments = (docs: Tyr.Document[]) => {
+  setSortedDocuments = (docs: D[]) => {
     let documents = docs;
     let sortColumn: TyrTableColumnFieldProps | undefined;
 
@@ -414,7 +414,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     field.namePath.set(document, value);
   };
 
-  addNewDocument = (doc: Tyr.Document) => {
+  addNewDocument = (doc: D) => {
     this.newDocument = doc;
     delete this.editingDocument;
 
@@ -803,7 +803,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     return filter;
   }
 
-  private getColumns(newDocumentTable?: boolean): ColumnProps<Tyr.Document>[] {
+  private getColumns(newDocumentTable?: boolean): ColumnProps<D>[] {
     const {
       collection,
       actionIconType,
@@ -822,178 +822,172 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
     const allWidthsDefined = columns.some(c => c.width);
     let hasAnyFilter = false;
 
-    const antColumns: ColumnProps<Tyr.Document>[] = columns.map(
-      (column, columnIdx) => {
-        let field: Tyr.FieldInstance | undefined;
-        let pathName: string | undefined;
-        let searchField: Tyr.FieldInstance | undefined;
-        let searchPathName: string | undefined;
+    const antColumns: ColumnProps<D>[] = columns.map((column, columnIdx) => {
+      let field: Tyr.FieldInstance | undefined;
+      let pathName: string | undefined;
+      let searchField: Tyr.FieldInstance | undefined;
+      let searchPathName: string | undefined;
 
-        if ((column.field as Tyr.FieldInstance)?.collection) {
-          field = column.field as Tyr.FieldInstance;
-          pathName = field.path;
-        } else {
-          pathName = getFieldName(column.field);
-          if (pathName) {
-            field = collection.paths[pathName];
-            if (!field)
-              throw new Tyr.AppError(
-                `Could not resolve path "${pathName}" in table`
-              );
-          }
+      if ((column.field as Tyr.FieldInstance)?.collection) {
+        field = column.field as Tyr.FieldInstance;
+        pathName = field.path;
+      } else {
+        pathName = getFieldName(column.field);
+        if (pathName) {
+          field = collection.paths[pathName];
+          if (!field)
+            throw new Tyr.AppError(
+              `Could not resolve path "${pathName}" in table`
+            );
         }
+      }
 
-        if ((column.searchField as Tyr.FieldInstance)?.collection) {
-          searchField = column.searchField as Tyr.FieldInstance;
-          searchPathName = searchField.path;
-        } else {
-          searchPathName = getFieldName(column.searchField);
-          searchField = searchPathName
-            ? collection.paths[searchPathName]
-            : undefined;
-        }
-
-        if (field) (field as any).column = column;
-
-        const sortDirection = pathName ? sortDirections[pathName] : undefined;
-
-        const isLast = columnIdx === fieldCount - 1;
-        const colWidth = isLast
-          ? allWidthsDefined
-            ? undefined
-            : column.width
-          : fieldCount > 1
-          ? column.width
+      if ((column.searchField as Tyr.FieldInstance)?.collection) {
+        searchField = column.searchField as Tyr.FieldInstance;
+        searchPathName = searchField.path;
+      } else {
+        searchPathName = getFieldName(column.searchField);
+        searchField = searchPathName
+          ? collection.paths[searchPathName]
           : undefined;
+      }
 
-        const np = field ? field.namePath : undefined;
-        const searchNp = searchField?.namePath;
+      if (field) (field as any).column = column;
 
-        let sorter;
+      const sortDirection = pathName ? sortDirections[pathName] : undefined;
 
-        if (!newDocumentTable) {
-          if (column.sortComparator) {
-            sorter = column.sortComparator;
-          } else if (field) {
-            // TODO:  can remove this restriction if a denormalized value is available or if
-            //        we convert findAll() to be an aggregation that links to the foreign keys
-            if (np && (isLocal || (!field.link && !field.of?.link)))
-              sorter = (a: Tyr.Document, b: Tyr.Document) =>
-                field!.type.compare(field!, np.get(a), np.get(b));
-          }
+      const isLast = columnIdx === fieldCount - 1;
+      const colWidth = isLast
+        ? allWidthsDefined
+          ? undefined
+          : column.width
+        : fieldCount > 1
+        ? column.width
+        : undefined;
+
+      const np = field ? field.namePath : undefined;
+      const searchNp = searchField?.namePath;
+
+      let sorter;
+
+      if (!newDocumentTable) {
+        if (column.sortComparator) {
+          sorter = column.sortComparator;
+        } else if (field) {
+          // TODO:  can remove this restriction if a denormalized value is available or if
+          //        we convert findAll() to be an aggregation that links to the foreign keys
+          if (np && (isLocal || (!field.link && !field.of?.link)))
+            sorter = (a: Tyr.Document, b: Tyr.Document) =>
+              field!.type.compare(field!, np.get(a), np.get(b));
         }
+      }
 
-        const filteredValue = pathName
-          ? this.searchValues[pathName]
-          : undefined;
+      const filteredValue = pathName ? this.searchValues[pathName] : undefined;
 
-        hasAnyFilter = hasAnyFilter || filteredValue !== undefined;
+      hasAnyFilter = hasAnyFilter || filteredValue !== undefined;
 
-        const sortingEnabled = !editingDocument && !newDocumentTable;
-        const filteringEnabled = !newDocumentTable;
+      const sortingEnabled = !editingDocument && !newDocumentTable;
+      const filteringEnabled = !newDocumentTable;
 
-        const filter =
-          (filteringEnabled &&
-            !column.noFilter &&
-            np &&
-            this.getFilter(np, column)) ||
-          {};
+      const filter =
+        (filteringEnabled &&
+          !column.noFilter &&
+          np &&
+          this.getFilter(np, column)) ||
+        {};
 
-        let netClassName = column.className;
-        //if (colWidth && !editable && !fixedLeft && !fixedRight && !no fixed headers ) {
+      let netClassName = column.className;
+      //if (colWidth && !editable && !fixedLeft && !fixedRight && !no fixed headers ) {
 
-        //}
+      //}
 
-        return {
-          dataIndex: pathName,
-          //key: pathName,
-          render: (text: string, doc: Tyr.Document) => {
-            const editable = newDocumentTable || this.isEditing(doc);
-            const document =
-              editingDocument && doc.$id === editingDocument.$id
-                ? editingDocument!
-                : doc;
+      return {
+        dataIndex: pathName,
+        //key: pathName,
+        render: (text: string, doc: D) => {
+          const editable = newDocumentTable || this.isEditing(doc);
+          const document =
+            editingDocument && doc.$id === editingDocument.$id
+              ? editingDocument!
+              : doc;
 
-            if (
-              editable &&
-              !column.readonly &&
-              (!column.isEditable || column.isEditable(document))
-            ) {
-              const fieldProps = {
-                placeholder: column.placeholder,
-                autoFocus: column.autoFocus,
-                required: column.required,
-                width: colWidth,
-                multiple: column.multiple,
-                mode: column.mode,
-                searchOptionRenderer: column.searchOptionRenderer,
-                searchSortById: column.searchSortById,
-                renderField: column.renderField,
-                renderDisplay: column.renderDisplay,
-                noLabel: true,
-                tabIndex: columnIdx,
-                dropdownClassName: column.dropdownClassName,
-                className: column.editClassName,
-                searchRange: column.searchRange,
-                onChange: () => this.setState({}),
-                typeUi: column.typeUi,
-                mapDocumentValueToForm: column.mapDocumentValueToForm,
-                mapFormValueToDocument: column.mapFormValueToDocument,
-                getSearchIds: column.getSearchIds,
-                labelInValue: column.labelInValue,
-                onFilter: column.onFilter,
-                dateFormat: column.dateFormat,
-                linkLabels: column.linkLabels,
-                max: column.max,
-                label: column.label
-              };
-
-              return (
-                <EditableContext.Consumer>
-                  {({ form }) => {
-                    if (!form || !pathName) return <span />;
-
-                    return (
-                      <TyrFieldBase
-                        path={np!}
-                        searchPath={searchNp}
-                        form={form}
-                        document={document}
-                        {...fieldProps}
-                      />
-                    );
-                  }}
-                </EditableContext.Consumer>
-              );
-            }
-
-            const render = column.renderDisplay;
+          if (
+            editable &&
+            !column.readonly &&
+            (!column.isEditable || column.isEditable(document))
+          ) {
+            const fieldProps = {
+              placeholder: column.placeholder,
+              autoFocus: column.autoFocus,
+              required: column.required,
+              width: colWidth,
+              multiple: column.multiple,
+              mode: column.mode,
+              searchOptionRenderer: column.searchOptionRenderer,
+              searchSortById: column.searchSortById,
+              renderField: column.renderField,
+              renderDisplay: column.renderDisplay,
+              noLabel: true,
+              tabIndex: columnIdx,
+              dropdownClassName: column.dropdownClassName,
+              className: column.editClassName,
+              searchRange: column.searchRange,
+              onChange: () => this.setState({}),
+              typeUi: column.typeUi,
+              mapDocumentValueToForm: column.mapDocumentValueToForm,
+              mapFormValueToDocument: column.mapFormValueToDocument,
+              getSearchIds: column.getSearchIds,
+              labelInValue: column.labelInValue,
+              onFilter: column.onFilter,
+              dateFormat: column.dateFormat,
+              linkLabels: column.linkLabels,
+              max: column.max,
+              label: column.label
+            };
 
             return (
-              <div className="tyr-table-cell">
-                {render
-                  ? render(document)
-                  : getCellValue(np!, document, column)}
-              </div>
+              <EditableContext.Consumer>
+                {({ form }) => {
+                  if (!form || !pathName) return <span />;
+
+                  return (
+                    <TyrFieldBase
+                      path={np!}
+                      searchPath={searchNp}
+                      form={form}
+                      document={document}
+                      {...fieldProps}
+                    />
+                  );
+                }}
+              </EditableContext.Consumer>
             );
-          },
-          sorter: sortingEnabled ? sorter : undefined,
-          sortOrder: sortingEnabled ? sortDirection : undefined,
-          title: column.label || field?.label,
-          width: colWidth,
-          className: netClassName,
-          ellipsis: column.ellipsis,
-          ...(filteringEnabled && filteredValue
-            ? { filteredValue: [filteredValue] }
-            : { filteredValue: [] }),
-          ...filter,
-          ...(!isEditingAnything && column.pinned && fieldCount > 1
-            ? { fixed: column.pinned }
-            : {}),
-          ...(column.align ? { align: column.align } : {})
-        };
-      }
-    );
+          }
+
+          const render = column.renderDisplay;
+
+          return (
+            <div className="tyr-table-cell">
+              {render ? render(document) : getCellValue(np!, document, column)}
+            </div>
+          );
+        },
+        sorter: sortingEnabled ? sorter : undefined,
+        sortOrder: sortingEnabled ? sortDirection : undefined,
+        title: column.label || field?.label,
+        width: colWidth,
+        className: netClassName,
+        ellipsis: column.ellipsis,
+        ...(filteringEnabled && filteredValue
+          ? { filteredValue: [filteredValue] }
+          : { filteredValue: [] }),
+        ...filter,
+        ...(!isEditingAnything && column.pinned && fieldCount > 1
+          ? { fixed: column.pinned }
+          : {}),
+        ...(column.align ? { align: column.align } : {})
+      };
+    });
 
     const singularActions = this.actions.filter(a => !a.multiple);
     if (singularActions.length) {
@@ -1005,7 +999,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
           actionColumnClassName ? ' ' + actionColumnClassName : ''
         }`,
         title: !newDocumentTable ? actionHeaderLabel || '' : '',
-        render: (text: string, doc: Tyr.Document) => {
+        render: (text: string, doc: D) => {
           const editable = newDocumentTable || this.isEditing(doc);
           const document =
             editingDocument && doc.$id === editingDocument.$id
@@ -1198,7 +1192,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
       : false;
   };
 
-  private onEditRow = (document: Tyr.Document, rowIndex: number) => {
+  private onEditRow = (document: D, rowIndex: number) => {
     this.editingDocument = document;
     this.props.setEditing && this.props.setEditing(true);
     document.$snapshot();
@@ -1211,7 +1205,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
 
   tableWrapper: React.RefObject<HTMLDivElement> | null = createRef();
 
-  selectRow = (doc: Tyr.Document) => {
+  selectRow = (doc: D) => {
     const { onSelectRows } = this.props;
     const selectedRowKeys = [...this.selectedRowKeys];
     const key = doc.$id as string;
@@ -1399,7 +1393,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                   !editingDocument &&
                   rowEdit &&
                   record.$id &&
-                  (!canEditDocument || canEditDocument(record))
+                  (!canEditDocument || canEditDocument(record as any))
                 ) {
                   this.onEditRow(record, rowIndex);
 
@@ -1435,7 +1429,7 @@ export class TyrTable extends TyrComponent<TyrTableProps> {
                         component: this,
                         documents: this.selectedRowKeys.map(
                           id => this.collection!.byIdIndex[id]
-                        )
+                        ) as D[]
                       })
                     }
                   >
@@ -1973,51 +1967,6 @@ const TyrTableColumnConfigItem = (props: TyrTableColumnConfigItemProps) => {
     </div>
   );
 };
-
-export interface TyrTableControl {
-  addNewDocument: (doc: Tyr.Document) => boolean;
-  setFieldValue: (fieldName: string, value: any) => void;
-  refresh: () => void;
-  requery: () => void;
-  closeConfigModal: () => void;
-  resetFiltersAndSort: () => void;
-  setSelectedRows: (ids: string[]) => void;
-}
-
-/**
-  Control functions passed back to the table client
-*/
-class TyrTableControlImpl implements TyrTableControl {
-  table: TyrTable;
-
-  constructor(table: TyrTable) {
-    this.table = table;
-  }
-
-  addNewDocument = (doc: Tyr.Document) => {
-    return this.table.addNewDocument(doc);
-  };
-
-  setFieldValue = (fieldName: string, value: any) => {
-    this.table.setFieldValue(fieldName, value);
-  };
-
-  refresh = () => this.table.refresh();
-
-  requery = () => this.table.requery();
-
-  closeConfigModal = () => {
-    this.table.closeConfigModal();
-  };
-
-  resetFiltersAndSort = () => {
-    this.table.resetFiltersAndSort();
-  };
-
-  setSelectedRows = (ids: string[]) => {
-    this.table.setSelectedRows(ids);
-  };
-}
 
 // EditableRow, DraggableRow, EditableDraggableRow
 

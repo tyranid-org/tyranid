@@ -10,8 +10,8 @@ export interface TyrDecoratorState {
   visible: boolean;
 }
 
-export interface TyrDecorator {
-  enact(action: TyrAction): void;
+export interface TyrDecorator<D extends Tyr.Document> {
+  enact(action: TyrAction<D>): void;
 }
 
 /**
@@ -21,10 +21,11 @@ export interface TyrDecorator {
  * Examples of Decorators are modals, drawers, panels, and so on.
  */
 export abstract class TyrDecorator<
+  D extends Tyr.Document,
   Props extends TyrDecoratorProps = TyrDecoratorProps,
   State extends TyrDecoratorState = TyrDecoratorState
 > extends React.Component<Props, State> {
-  component!: TyrComponent;
+  component!: TyrComponent<D>;
 
   get visible() {
     return this.state && this.state.visible;
@@ -37,7 +38,7 @@ export abstract class TyrDecorator<
     }
   }
 
-  connect(component: TyrComponent) {
+  connect(component: TyrComponent<D>) {
     if (this.component)
       throw new Tyr.AppError('decorator was already connected');
 
