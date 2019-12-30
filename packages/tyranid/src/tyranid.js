@@ -25,6 +25,8 @@ import './type/url';
 
 import Type from './core/type';
 
+import './catalog';
+
 import './core/appError';
 import './core/component';
 import './core/collection';

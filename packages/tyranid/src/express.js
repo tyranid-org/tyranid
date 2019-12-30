@@ -103,6 +103,7 @@ class Serializer {
       'group',
       'help',
       'if',
+      'inverse',
       'keys',
       'min',
       'minlength',
@@ -437,6 +438,7 @@ export function generateClientLibrary() {
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
   Tyr.ordinalize = ${es5Fn(Tyr.ordinalize)};
+  Tyr.mapAwait = ${es5Fn(Tyr.mapAwait)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
   Tyr.unitize = ${es5Fn(Tyr.unitize)};

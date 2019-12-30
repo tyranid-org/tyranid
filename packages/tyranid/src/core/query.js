@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
 import Tyr from '../tyr';
+import Type from './type';
 import Collection from './collection';
 
 //
@@ -669,6 +670,41 @@ Collection.prototype.fromClientQuery = function(query) {
 
   return convert(col, '', query);
 };
+
+//
+// Query Type
+//
+
+/*const QueryType = */ new Type({
+  name: 'query',
+
+  compile(compiler, field) {
+    if (compiler.stage === 'link') {
+      const collectionName = field.def.collection;
+
+      if (collectionName && typeof collectionName === 'string') {
+        const collection = Type.byName[collection];
+
+        if (!collection)
+          throw compiler.err(
+            field.path,
+            `No collection named "${collectionName}" found`
+          );
+
+        field.def.collection = collection;
+      }
+    }
+  },
+
+  fromClient(field, value) {
+    return (field.def.collection || field.collection).fromClientQuery(value);
+  }
+
+  //toClient(field, value) {
+  // TODO:  maybe need a "toClientQuery" equivalent to "fromClientQuery"
+  //return value;
+  //}
+});
 
 const query = {
   isQuery,

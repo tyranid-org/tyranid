@@ -570,6 +570,7 @@ export class TyrTable<
           sort[pathName!] = sortDirection === 'ascend' ? 1 : -1;
       }
 
+      this.findOpts = opts;
       const docs = await collection.findAll(opts);
 
       this.count = docs.count!;
@@ -602,6 +603,7 @@ export class TyrTable<
           const newUrl = this.getUrlQuery();
 
           if (currentUrl === newUrl) return;
+          this.findAll();
         } else if (!this.isLocal) {
           this.findAll();
         }
