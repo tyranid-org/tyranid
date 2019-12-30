@@ -56,6 +56,8 @@ export namespace Tyr {
   export import MongoQuery = Isomorphic.MongoQuery;
   export import MongoUpdate = Isomorphic.MongoUpdate;
 
+  export const mapAwait = Isomorphic.mapAwait;
+
   export const Collection: CollectionStatic;
   export const Event: EventStatic;
   export const Field: FieldStatic;
@@ -63,12 +65,7 @@ export namespace Tyr {
   export const NamePath: NamePathStatic;
   export const Type: TypeStatic;
 
-  export {
-    anny,
-    AppError,
-    /* mapAwait, */ SecureError,
-    UserError
-  } from Isomorphic;
+  export { AppError, SecureError, UserError } from Isomorphic;
 
   export const $all: '$all';
   export const byId: CollectionsById;

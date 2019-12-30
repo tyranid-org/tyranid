@@ -93,7 +93,7 @@ const BitmaskType = new Type({
     const { link, inverse } = field;
     const { values } = link.def;
 
-    if (inverse) value = ~value >>> 0;
+    if (inverse) value = ~value;
 
     let str = '';
     for (let i = 0; i < values.length; i++) {

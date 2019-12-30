@@ -675,7 +675,7 @@ Collection.prototype.fromClientQuery = function(query) {
 // Query Type
 //
 
-/*const QueryType = */ new Type({
+new Type({
   name: 'query',
 
   compile(compiler, field) {

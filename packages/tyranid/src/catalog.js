@@ -1,7 +1,7 @@
 import Tyr from './tyr';
 
 Tyr.catalog = {
-  FindOpts: /*Object.freeze(*/ {
+  FindOpts: Object.freeze({
     is: 'object',
     fields: {
       query: {
@@ -22,5 +22,5 @@ Tyr.catalog = {
         is: 'boolean'
       }
     }
-  } //)
+  })
 };
