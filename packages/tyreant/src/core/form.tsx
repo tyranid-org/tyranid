@@ -100,7 +100,7 @@ export interface FormRenderComponentProps<D extends Tyr.Document> {
 export interface TyrFormProps<D extends Tyr.Document>
   extends TyrComponentProps<D> {
   children?:
-    | JSX.Element
+    | React.ReactNode
     | ((props: FormRenderComponentProps<D>) => JSX.Element);
   render?: (props: FormRenderComponentProps<D>) => JSX.Element;
 }
