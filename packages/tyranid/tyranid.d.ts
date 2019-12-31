@@ -58,6 +58,8 @@ export namespace Tyr {
 
   export const mapAwait = Isomorphic.mapAwait;
 
+  export type anny = any;
+
   export const Collection: CollectionStatic;
   export const Event: EventStatic;
   export const Field: FieldStatic;
