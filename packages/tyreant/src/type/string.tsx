@@ -51,19 +51,21 @@ export const stringFilter: Filter = (
   const pathName = path.name;
   let searchInputRef: Input | null = null;
   const { detail: field } = path;
+  let localValue = filterable.searchValues[pathName];
+  let searchValue = localValue;
 
   const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
     delete filterable.searchValues[pathName];
+    localValue = undefined;
+    searchValue = undefined;
     clearFilters?.([]);
     filterable.onSearch();
   };
 
-  let localValue = filterable.searchValues[pathName];
-
   return {
     filterDropdown: (filterDdProps: FilterDropdownProps) => {
       const search = (onChange?: boolean) => {
-        filterable.searchValues[pathName] = localValue;
+        filterable.searchValues[pathName] = searchValue;
         filterable.onSearch();
         if (!onChange) filterDdProps.confirm?.();
       };
@@ -75,11 +77,11 @@ export const stringFilter: Filter = (
               searchInputRef = node;
             }}
             placeholder={`Search ${props.label || field.label}`}
-            value={localValue}
+            defaultValue={localValue}
             onChange={e => {
-              localValue = e.target.value;
+              searchValue = e.target.value;
               if (props.liveSearch) search(true);
-              else filterDdProps.setSelectedKeys?.([localValue]);
+              else filterDdProps.setSelectedKeys?.([searchValue]);
             }}
             onPressEnter={() => search()}
             style={{ width: 188, marginBottom: 8, display: 'block' }}

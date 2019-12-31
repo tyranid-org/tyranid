@@ -73,44 +73,47 @@ export const integerFilter: Filter = (
   };
 
   return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => (
-      <div className="search-box">
-        <Slider
-          range
-          {...sliderProps}
-          defaultValue={defaultValue.slice() as [number, number]}
-          onChange={(e: SliderValue) => {
-            filterable.searchValues[pathName] = e;
+    filterDropdown: (filterDdProps: FilterDropdownProps) => {
+      const values = filterable.searchValues[pathName];
+      return (
+        <div className="search-box">
+          <Slider
+            range
+            {...sliderProps}
+            value={values || (defaultValue.slice() as [number, number])}
+            onChange={(e: SliderValue) => {
+              filterable.searchValues[pathName] = e;
 
-            if (props.liveSearch) filterable.onSearch();
-          }}
-          style={{ width: 188 }}
-        />
-        <div className="search-box-footer">
-          <Button
-            onClick={() => onClearFilters(filterDdProps.clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Reset
-          </Button>
-          {!props.liveSearch && (
+              if (props.liveSearch) filterable.onSearch();
+            }}
+            style={{ width: 188 }}
+          />
+          <div className="search-box-footer">
             <Button
-              type="primary"
-              onClick={() => {
-                filterable.onSearch();
-                filterDdProps.confirm?.();
-              }}
-              icon="search"
+              onClick={() => onClearFilters(filterDdProps.clearFilters)}
               size="small"
               style={{ width: 90 }}
             >
-              Search
+              Reset
             </Button>
-          )}
+            {!props.liveSearch && (
+              <Button
+                type="primary"
+                onClick={() => {
+                  filterable.onSearch();
+                  filterDdProps.confirm?.();
+                }}
+                icon="search"
+                size="small"
+                style={{ width: 90 }}
+              >
+                Search
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
     onFilter: (value: number[], doc: Tyr.Document) => {
       const intVal = (path.get(doc) as number) || 0;
       return intVal >= value[0] && intVal <= value[1];
