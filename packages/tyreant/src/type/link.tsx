@@ -498,6 +498,7 @@ byName.link = {
                   values.push(strKey);
                 }
 
+                filterable.searchValues[pathName] = values;
                 setSelectedKeys?.(values);
                 if (props.liveSearch) search(true);
               })}
