@@ -15,7 +15,7 @@ const BitmaskType = new Type({
   compile(compiler, field) {
     compileRelate(compiler, field);
 
-    const { link } = field;
+    const { link, inverse } = field;
     if (!link)
       throw compiler.err(field.namePath, `bitmask value missing link field`);
 
@@ -60,6 +60,13 @@ const BitmaskType = new Type({
           );
       }
     }
+
+    if (inverse !== undefined && inverse !== true && inverse !== false) {
+      throw compiler.err(
+        field.namePath,
+        `bitmask inverse value must be undefined, true, or false -- found: ${inverse}`
+      );
+    }
   },
 
   fromClient(field, value) {
@@ -83,8 +90,10 @@ const BitmaskType = new Type({
   },
 
   format(field, value) {
-    const { link } = field;
+    const { link, inverse } = field;
     const { values } = link.def;
+
+    if (inverse) value = ~value;
 
     let str = '';
     for (let i = 0; i < values.length; i++) {

@@ -23,12 +23,17 @@ export const TyrBitmaskBase = ((props: TyrTypeProps) => {
 
 export const TyrBitmask = withTypeContext(TyrBitmaskBase);
 
+const invert = (v: number) => ~v >>> 0;
+
 byName.bitmask = {
   component: TyrBitmaskBase,
   mapDocumentValueToFormValue(path, value, props) {
-    const arr = [];
+    const arr = [],
+      field = path.tail;
 
-    for (const doc of path.tail.link!.values) {
+    if (field.def.inverse) value = invert(value);
+
+    for (const doc of field.link!.values) {
       const { $id } = doc;
       const checked = (value & (1 << (($id as number) - 1))) !== 0x0;
 
@@ -38,6 +43,8 @@ byName.bitmask = {
     return arr;
   },
   mapFormValueToDocumentValue(path, value, props) {
+    const invertNeeded = path.tail.def.inverse;
+
     if (Array.isArray(value)) {
       let mask = 0x0;
 
@@ -45,9 +52,9 @@ byName.bitmask = {
         mask |= 1 << ((v as number) - 1);
       }
 
-      return mask;
+      return invertNeeded ? invert(mask) : mask;
     } else {
-      return 0x0;
+      return invertNeeded ? invert(0x0) : 0x0;
     }
   }
 };

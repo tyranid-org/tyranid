@@ -56,6 +56,10 @@ export namespace Tyr {
   export import MongoQuery = Isomorphic.MongoQuery;
   export import MongoUpdate = Isomorphic.MongoUpdate;
 
+  export const mapAwait = Isomorphic.mapAwait;
+
+  export type anny = any;
+
   export const Collection: CollectionStatic;
   export const Event: EventStatic;
   export const Field: FieldStatic;
@@ -63,7 +67,7 @@ export namespace Tyr {
   export const NamePath: NamePathStatic;
   export const Type: TypeStatic;
 
-  export { anny, AppError, SecureError, UserError } from Isomorphic;
+  export { AppError, SecureError, UserError } from Isomorphic;
 
   export const $all: '$all';
   export const byId: CollectionsById;
@@ -1302,4 +1306,14 @@ export namespace Tyr {
       opts: ExcelDef<D>
     ): Promise<D[]>;
   }
+
+  export const catalog = {
+    /**
+     * This contains the type definition for the options field passed to a "findOne/findAll"-style query.
+     *
+     * This is useful for when you want to pass up to the server the current configuration of a Tyreant
+     * TyrTable.
+     */
+    FindOpts: any
+  };
 }

@@ -105,7 +105,7 @@ export function addComment(
 
   const comment = commentsFor(obj);
 
-  if (comment) {
+  if (comment || tags?.length) {
     const lines = wordWrap(comment, width);
 
     out += '\n' + pad('/**\n', indent);
@@ -113,19 +113,22 @@ export function addComment(
     while ((line = lines.shift())) {
       out += pad(' * ' + line + (lines.length === 0 ? '' : '\n'), indent);
     }
+
+    if (comment && tags?.length) out += '/n';
+
     for (const tag of tags) {
       const lines = wordWrap(tag.text, width - 5);
-      out += '\n' + pad(' * @' + tag.tag + ' ' + lines[0], indent);
+      out += pad(' * @' + tag.tag + ' ' + lines[0], indent) + '\n';
       for (let i = 1; i < lines.length; i++) {
         out +=
-          '\n' + pad(' * ', indent) + ' '.repeat(2 + tag.tag.length) + lines[i];
+          pad(' * ', indent) + ' '.repeat(2 + tag.tag.length) + lines[i] + '\n';
       }
     }
 
-    out += '\n';
     out += pad(' */', indent);
     //out += '\n' + pad('', indent);
   }
+
   return out;
 }
 

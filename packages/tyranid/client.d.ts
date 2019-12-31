@@ -11,6 +11,11 @@ declare module 'tyranid/client' {
 
     export { anny, AppError, SecureError, UserError } from Isomorphic;
 
+    export function mapAwait<T, U>(
+      val: Promise<T> | T,
+      map: (val: T) => U
+    ): Promise<U> | U;
+
     export interface MongoDocument {
       [key: string]: any;
     }

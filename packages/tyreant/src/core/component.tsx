@@ -10,6 +10,8 @@ export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
 );
 
+export const useComponent = () => React.useContext(ComponentContext);
+
 export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   collection?: Tyr.CollectionInstance<D>;
   fields?: TyrFieldLaxProps[];
@@ -261,6 +263,16 @@ export class TyrComponent<
   async refresh() {}
 
   async requery() {}
+
+  /**
+   * These are the options that were passed to the most recent query().
+   *
+   * This is useful if you want to query what the user was looking at in a server
+   * method in a background worker.
+   *
+   * For example, the query is "table.findOpts.query".
+   */
+  findOpts?: any;
 
   async find(document: D) {
     const { collection, linkToParent } = this;

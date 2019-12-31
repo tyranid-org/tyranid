@@ -1,11 +1,10 @@
 import { compact, debounce, uniq } from 'lodash';
 import * as React from 'react';
-import { useState } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
 import { Select, Spin, Button, Menu } from 'antd';
-import { SelectProps, SelectValue, ModeOption } from 'antd/lib/select';
+import { SelectProps, SelectValue } from 'antd/lib/select';
 const { Option } = Select;
 
 import { FilterDropdownProps } from 'antd/es/table';
@@ -22,10 +21,14 @@ import { TyrFieldLaxProps, decorateField } from '../core';
 
 import Checkbox from 'antd/es/checkbox';
 
+// TODO:  replace with antd's ModeOption when we upgrade ant
+type ModeOption = 'default' | 'multiple' | 'tags';
+
 export interface TyrLinkState {
   documents: Tyr.Document[];
   loading: boolean;
   initialLoading: boolean;
+  viewLabel?: string;
 }
 
 const linkFieldFor = (path: Tyr.NamePathInstance) => {
@@ -124,7 +127,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     const props = this.props;
 
     this.mounted = true;
-    const { path, searchPath } = props;
+    const { path, searchPath, mode: controlMode } = props;
 
     if (!path) throw new Error('TyrLink not passed a path!');
 
@@ -150,13 +153,20 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         throw new Error('TyrLink passed a non-link');
       }
     } else {
-      if (this.link.isStatic()) {
-        this.setState({
-          initialLoading: false,
-          documents: sortLabels(this.link.values, props)
-        });
+      if (controlMode === 'view') {
+        Tyr.mapAwait(
+          path.tail.link!.idToLabel(path!.get(props.document)),
+          label => this.setState({ viewLabel: label })
+        );
       } else {
-        await this.search();
+        if (this.link.isStatic()) {
+          this.setState({
+            initialLoading: false,
+            documents: sortLabels(this.link.values, props)
+          });
+        } else {
+          await this.search();
+        }
       }
     }
 
@@ -256,12 +266,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   render(): React.ReactNode {
     const { props } = this;
     const { mode: controlMode, path, onSelect, onDeselect } = props;
-    const { documents, loading, initialLoading } = this.state;
+    const { documents, loading, initialLoading, viewLabel } = this.state;
 
     if (controlMode === 'view') {
-      return (
-        <label>{path!.tail.link!.idToLabel(path!.get(props.document))}</label>
-      );
+      return <label>{viewLabel}</label>;
     }
 
     const selectProps: SelectProps = {

@@ -117,6 +117,8 @@ export namespace Tyr {
     historical?: boolean;
     defaultValue?: any;
 
+    //inverse?: boolean;
+
     label?: string | (() => string);
     help?: string;
     placeholder?: string;

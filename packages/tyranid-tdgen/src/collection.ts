@@ -162,11 +162,15 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
        add the this stuff in the server definition and not in the client/isomorphic ones, since
        invokers on the server will run into a problem that their this does not implement { auth?, ... }
 
-       this is a "implementation" vs "invoker" issue, not a "client" vs "server" issue
+       this is a "implementer" vs "invoker" issue, not a "client" vs "server" issue
+       j
 
        right now we're just dodging the issue by typing this to any
 
        possible solutions:
+
+       *. solve threadlocal issue before tackling this issue
+          - this is the cleanest solution and is also needed for other things
 
        o. generate a special implementor signature in the d.ts files
           that adds "this: ServiceThis" which is properly typed?
@@ -197,19 +201,15 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
             -. one caveat of this that unless we have threadlocal, the server and client apis are not isomorphic
             +. solves the issue of passing in user/req/etc. to the method when invoking service from the server
 
-            !. solve threadlocal issue before tackling this issue?
-
      */
     s += `
       ${methodName}(
         this: any`;
 
     if (params) {
-      let i = 0;
       for (const paramName in params) {
         const param = params[paramName] as Tyr.FieldInstance;
-        /*if (i++) */ s += ',';
-        s += '\n';
+        s += ',\n';
         s += pad(paramName, 4);
         if (!param.def.required) s += '?';
         s += ': ';
