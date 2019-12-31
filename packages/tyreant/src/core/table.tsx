@@ -70,8 +70,9 @@ import { TyrFormFields } from './form';
 import { string } from 'prop-types';
 import { TyrRouter } from './router';
 
-// FIXED-HEADER-HACK
-const supportedWidths = [240];
+export interface OurColumnProps<T> extends ColumnProps<T> {
+  field: Tyr.FieldInstance;
+}
 
 const ObsTable = observer(Table);
 
@@ -111,6 +112,7 @@ export interface TyrTableConfig {
 
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrComponentProps<D> {
+  fixedWidthHack?: boolean;
   bordered?: boolean;
   className?: string;
   collection: Tyr.CollectionInstance<D>;
@@ -824,7 +826,11 @@ export class TyrTable<
     const allWidthsDefined = columns.some(c => c.width);
     let hasAnyFilter = false;
 
-    const antColumns: ColumnProps<D>[] = columns.map((column, columnIdx) => {
+    const antColumns: ColumnProps<D>[] = [];
+    let curGroupColumn: ColumnProps<D>;
+    let curGroupName: string | undefined;
+
+    columns.forEach((column, columnIdx) => {
       let field: Tyr.FieldInstance | undefined;
       let pathName: string | undefined;
       let searchField: Tyr.FieldInstance | undefined;
@@ -898,12 +904,12 @@ export class TyrTable<
           this.getFilter(np, column)) ||
         {};
 
-      let netClassName = column.className;
+      const netClassName = column.className;
       //if (colWidth && !editable && !fixedLeft && !fixedRight && !no fixed headers ) {
 
       //}
 
-      return {
+      const tableColumn = {
         dataIndex: pathName,
         //key: pathName,
         render: (text: string, doc: D) => {
@@ -987,9 +993,31 @@ export class TyrTable<
         ...(!isEditingAnything && column.pinned && fieldCount > 1
           ? { fixed: column.pinned }
           : {}),
-        ...(column.align ? { align: column.align } : {})
+        ...(column.align ? { align: column.align } : {}),
+        field
       };
+
+      const { group } = column;
+
+      if (group) {
+        if (curGroupName === group) {
+          curGroupColumn.children!.push(tableColumn);
+        } else {
+          curGroupColumn = {
+            title: group,
+            children: [tableColumn]
+          };
+          curGroupName = group;
+
+          antColumns.push(curGroupColumn);
+        }
+      } else {
+        antColumns.push(tableColumn);
+        curGroupName = undefined;
+      }
     });
+
+    if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
 
     const singularActions = this.actions.filter(a => !a.multiple);
     if (singularActions.length) {
@@ -1491,6 +1519,62 @@ export class TyrTable<
         </div>
       );
     });
+  }
+
+  /*
+   * Currently in ant tables, if you have a fixed height (scroll: { y: something } }, it messes up the column headers, and you need to make sure
+   * that every column header/cell has a width and a min-width ... search for "width not working?" on ant table webpage for more information
+   */
+  applyFixedWidthHack(columns: ColumnProps<D>[]) {
+    function classify(column: ColumnProps<D>) {
+      let defaultWidth;
+
+      // TODO:  move this type of functionality to the type class
+      switch ((column as OurColumnProps<D>).field?.type.name) {
+        case 'boolean':
+        case 'integer':
+          defaultWidth = 100;
+          break;
+        case 'date':
+        case 'time':
+          defaultWidth = 120;
+          break;
+        case 'datetime':
+          defaultWidth = 240;
+          break;
+        case 'string':
+          defaultWidth = 120;
+          break;
+        default:
+          defaultWidth = 120;
+      }
+
+      const { width: cwidth } = column;
+      const width =
+        (typeof cwidth === 'string'
+          ? parseInt(cwidth || '' + defaultWidth, 10)
+          : (cwidth as number)) || defaultWidth;
+      delete column.width;
+      const className = 'td-width td-width-' + width;
+      column.className = column.className
+        ? column.className + ' ' + className
+        : className;
+
+      return width;
+    }
+
+    for (const column of columns) {
+      const { children } = column;
+
+      if (children) {
+        let sum = 0;
+        for (const child of children) sum += classify(child);
+        column.width = sum;
+        classify(column);
+      } else {
+        classify(column);
+      }
+    }
   }
 }
 
