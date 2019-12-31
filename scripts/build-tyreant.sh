@@ -6,6 +6,4 @@ run_tsc() {
   `npm bin`/tsc --pretty -p ./packages/$PACKAGE
 }
 
-run_tsc tyreant
-
-cd ./packages/tyreant && npm run build-css
+run_tsc tyreant && cd ./packages/tyreant && npm run build-css

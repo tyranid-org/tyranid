@@ -452,11 +452,6 @@ byName.link = {
       }
     }
 
-    let values = filterable.searchValues[pathName];
-    if (!Array.isArray(values)) values = values ? [values] : [];
-    // we clone the searchvalues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
-    values = Tyr.cloneDeep(values);
-
     return {
       filterDropdown: ({
         //selectedKeys,
@@ -464,6 +459,11 @@ byName.link = {
         clearFilters,
         confirm
       }) => {
+        let values = filterable.searchValues[pathName];
+        if (!Array.isArray(values)) values = values ? [values] : [];
+        // we clone the searchvalues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
+        values = Tyr.cloneDeep(values);
+
         const search = (onChange?: boolean) => {
           filterable.searchValues[pathName] = Tyr.cloneDeep(values);
           filterable.onSearch();
