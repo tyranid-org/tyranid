@@ -9,6 +9,7 @@ $text-highlight-color: #7f3f00;
 $primary-background-color: #6a8fbe;
 
 .tyr-table {
+  // see applyFixedWidthHack
   .td-width {
     overflow: hidden;
 

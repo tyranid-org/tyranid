@@ -7,8 +7,6 @@ import { Select, Spin, Button, Menu } from 'antd';
 import { SelectProps, SelectValue } from 'antd/lib/select';
 const { Option } = Select;
 
-import { FilterDropdownProps } from 'antd/es/table';
-
 import {
   mapPropsToForm,
   onTypeChange,
@@ -269,7 +267,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     const { documents, loading, initialLoading, viewLabel } = this.state;
 
     if (controlMode === 'view') {
-      return <label>{viewLabel}</label>;
+      return decorateField('link', props, () => (
+        <span className="tyr-value">{viewLabel}</span>
+      ));
     }
 
     const selectProps: SelectProps = {

@@ -1560,6 +1560,11 @@ export class TyrTable<
         ? column.className + ' ' + className
         : className;
 
+      if (width > 2000 || width % 20)
+        throw new Tyr.AppError(
+          `fixed width hack width of ${width} not supported`
+        );
+
       return width;
     }
 

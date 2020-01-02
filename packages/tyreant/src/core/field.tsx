@@ -135,11 +135,11 @@ export const decorateField = (
   component: () => React.ReactElement
 ) => {
   const { path, form, extra } = props;
-  const field = path && path.tail;
+  const field = path?.tail;
 
   const identifier = extra || path!.identifier;
 
-  if (props.hideOnCreate && props.document && props.document.$isNew) {
+  if (props.hideOnCreate && props.document?.$isNew) {
     return <div className="hide-on-create" />;
   }
 
@@ -159,7 +159,7 @@ export const decorateField = (
 
   let label;
   if (!props.noLabel) {
-    const help = field && field.def && field.def.help;
+    const help = field?.def?.help;
 
     label = (
       <>
