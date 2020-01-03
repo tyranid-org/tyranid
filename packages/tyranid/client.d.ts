@@ -9,7 +9,9 @@ declare module 'tyranid/client' {
     export const NamePath: NamePathStatic;
     export const Type: TypeStatic;
 
-    export { anny, AppError, SecureError, UserError } from Isomorphic;
+    export { AppError, SecureError, UserError } from Isomorphic;
+
+    export type anny = any;
 
     export function mapAwait<T, U>(
       val: Promise<T> | T,
