@@ -94,7 +94,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   size?: 'default' | 'middle' | 'small';
   saveDocument?: (document: D) => Promise<D>;
   onAfterSaveDocument?: (document: D, changedFields?: string[]) => void;
-  onBeforeSaveDocument?: (document: D) => void;
+  onBeforeSaveDocument?: (document: D) => boolean;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
   onChangeTableConfiguration?: (fields: TyrTableConfigFields) => void;
@@ -176,6 +176,8 @@ export class TyrTable<
 
   @observable
   tableConfig?: TyrTableConfigType;
+
+  currentRowForm?: WrappedFormUtils;
 
   constructor(props: TyrTableProps<D>, state: TyrComponentState<D>) {
     super(props, state);
@@ -613,7 +615,7 @@ export class TyrTable<
     );
   };
 
-  private saveDocument = (form: WrappedFormUtils, doc: Tyr.Document) => {
+  private saveDocument = async (form: WrappedFormUtils) => {
     const {
       saveDocument,
       onAfterSaveDocument,
@@ -638,78 +640,89 @@ export class TyrTable<
     const orig = document.$orig;
     const changedFields: string[] = [];
 
-    form.validateFields(async (err: Error, values: TyrFormFields) => {
-      try {
-        if (err || !document) {
-          this.isSavingDocument = false;
-          return;
-        }
+    return new Promise((resolve, reject) => {
+      form.validateFields(async (err: Error, values: TyrFormFields) => {
+        try {
+          if (err || !document) {
+            this.isSavingDocument = false;
+            return resolve();
+          }
 
-        // Don't think this is needed anymore
-        // Plus, for some reason, field leafs are called, xxx_yyy in values,
-        // not xxx.yyy - this causes field not to be found below
+          // Don't think this is needed anymore
+          // Plus, for some reason, field leafs are called, xxx_yyy in values,
+          // not xxx.yyy - this causes field not to be found below
 
-        // for (const pathName in values) {
-        //   const value = values[pathName];
-        //   const field = collection.paths[pathName];
-        //   type.mapFormValueToDocument(field.namePath, value, document);
-        // }
+          // for (const pathName in values) {
+          //   const value = values[pathName];
+          //   const field = collection.paths[pathName];
+          //   type.mapFormValueToDocument(field.namePath, value, document);
+          // }
 
-        if (orig) {
-          for (const column of this.props.fields) {
-            const pathName = getFieldName(column.field);
-            const field = pathName && collection.paths[pathName];
+          if (orig) {
+            for (const column of this.props.fields) {
+              const pathName = getFieldName(column.field);
+              const field = pathName && collection.paths[pathName];
 
-            if (field) {
-              const oldValue = field.namePath.get(orig);
-              const newValue = field.namePath.get(document);
+              if (field) {
+                const oldValue = field.namePath.get(orig);
+                const newValue = field.namePath.get(document);
 
-              if (!isEqual(oldValue, newValue)) {
-                if (typeof column.label === 'string') {
-                  changedFields.push(column.label as string);
-                } else if (typeof field.label === 'string') {
-                  changedFields.push(field.label);
+                if (!isEqual(oldValue, newValue)) {
+                  if (typeof column.label === 'string') {
+                    changedFields.push(column.label as string);
+                  } else if (typeof field.label === 'string') {
+                    changedFields.push(field.label);
+                  }
                 }
               }
             }
           }
-        }
 
-        onBeforeSaveDocument && onBeforeSaveDocument(document);
+          const canSave =
+            !onBeforeSaveDocument || onBeforeSaveDocument(document);
 
-        if (saveDocument) {
-          document = await saveDocument(document);
-        } else {
-          document = await document.$save();
-        }
-
-        if (document) {
-          document.$cache();
-
-          if (docIdx > -1) {
-            this.documents = [
-              ...documents.slice(0, docIdx),
-              document,
-              ...documents.slice(docIdx + 1)
-            ];
+          if (!canSave) {
+            this.isSavingDocument = false;
+            // No error to show, hopefully validation error is shown
+            // or merror message by onBeforeSaveDocument
+            return resolve();
           }
 
-          if (!documents) {
-            this.findAll();
+          if (saveDocument) {
+            document = await saveDocument(document);
+          } else {
+            document = await document.$save();
           }
-        }
 
-        onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
-        this.isSavingDocument = false;
-        setEditing && setEditing(false);
-        delete this.editingDocument;
-        delete this.newDocument;
-      } catch (saveError) {
-        if (saveError.message) message.error(saveError.message);
-        message.error(saveError);
-        this.isSavingDocument = false;
-        throw saveError;
-      }
+          if (document) {
+            document.$cache();
+
+            if (docIdx > -1) {
+              this.documents = [
+                ...documents.slice(0, docIdx),
+                document,
+                ...documents.slice(docIdx + 1)
+              ];
+            }
+
+            if (!documents) {
+              this.findAll();
+            }
+          }
+
+          onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
+          this.isSavingDocument = false;
+          setEditing && setEditing(false);
+          delete this.editingDocument;
+          delete this.newDocument;
+          resolve();
+        } catch (saveError) {
+          if (saveError.message) message.error(saveError.message);
+          message.error(saveError);
+          this.isSavingDocument = false;
+          reject(saveError);
+        }
+      });
     });
   };
 
@@ -1021,12 +1034,14 @@ export class TyrTable<
                       return <span>No Form!</span>;
                     }
 
+                    this.currentRowForm = form;
+
                     return (
                       <Button
                         size="small"
                         style={{ width: '60px', zIndex: 1 }}
                         type="primary"
-                        onClick={() => this.saveDocument(form, document)}
+                        onClick={() => this.saveDocument(form)}
                       >
                         Save
                       </Button>
@@ -1381,19 +1396,22 @@ export class TyrTable<
                   ? 'tyr-editable-row'
                   : undefined,
 
-              onDoubleClick: () => {
+              onDoubleClick: async () => {
                 if (
-                  !editingDocument &&
                   rowEdit &&
                   record.$id &&
                   (!canEditDocument || canEditDocument(record as any))
                 ) {
+                  if ((editingDocument || newDocument) && this.currentRowForm) {
+                    await this.saveDocument(this.currentRowForm);
+                  }
+
                   this.onEditRow(record, rowIndex);
 
-                  if (newDocument) {
-                    onCancelAddNew && onCancelAddNew();
-                    delete this.newDocument;
-                  }
+                  //if (newDocument) {
+                  //  onCancelAddNew && onCancelAddNew();
+                  //  delete this.newDocument;
+                  //}
 
                   if (this._mounted) {
                     this.setState({});
