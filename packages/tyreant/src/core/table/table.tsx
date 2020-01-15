@@ -1408,11 +1408,6 @@ export class TyrTable<
 
                   this.onEditRow(record, rowIndex);
 
-                  //if (newDocument) {
-                  //  onCancelAddNew && onCancelAddNew();
-                  //  delete this.newDocument;
-                  //}
-
                   if (this._mounted) {
                     this.setState({});
                   }
