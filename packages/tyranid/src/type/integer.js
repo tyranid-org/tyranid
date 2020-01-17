@@ -8,11 +8,7 @@ const IntegerType = new Type({
   typescript: 'number',
 
   compare(field, a, b) {
-    if (a) {
-      return b ? a - b : 1;
-    } else {
-      return b ? -1 : 0;
-    }
+    return a - b;
   },
 
   compile(compiler, field) {

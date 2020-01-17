@@ -37,8 +37,7 @@ export const TyrDoubleBase = ((props: TyrTypeProps) => {
         onChange={onTypeChangeFunc}
         placeholder={props.placeholder}
         tabIndex={props.tabIndex}
-        precision={0}
-        step="1"
+        step={0.1}
       />
     );
   });

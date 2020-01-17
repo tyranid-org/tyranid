@@ -1403,6 +1403,14 @@ export class TyrTable<
                   (!canEditDocument || canEditDocument(record as any))
                 ) {
                   if ((editingDocument || newDocument) && this.currentRowForm) {
+                    if (
+                      editingDocument?.$id === record.$id ||
+                      newDocument?.$id === record.$id
+                    ) {
+                      // same document
+                      return;
+                    }
+
                     await this.saveDocument(this.currentRowForm);
                   }
 
