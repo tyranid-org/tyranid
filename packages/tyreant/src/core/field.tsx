@@ -92,6 +92,7 @@ export interface TyrFieldProps {
     | 'link'
     | 'string'
     | 'integer'
+    | 'double'
     | 'boolean'
     | 'date'
     | 'datetime'

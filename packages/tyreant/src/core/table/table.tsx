@@ -1508,6 +1508,7 @@ export class TyrTable<
       // TODO:  move this type of functionality to the type class
       switch ((column as OurColumnProps<D>).field?.type.name) {
         case 'boolean':
+        case 'double':
         case 'integer':
           defaultWidth = 100;
           break;
