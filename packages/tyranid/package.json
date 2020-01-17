@@ -1,6 +1,6 @@
 {
   "name": "tyranid",
-  "version": "0.6.124",
+  "version": "0.6.125",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "homepage": "http://tyranid.org",
   "main": "dist/src/tyranid.js",
@@ -53,9 +53,9 @@
     "uuid": "^3.1.0"
   },
   "peerDependencies": {
+    "fast-csv": "^2.5.0",
     "mongodb": "3.1.10",
-    "typescript": "3.7.2",
-    "fast-csv": "^2.5.0"
+    "typescript": "3.7.2"
   },
   "devDependencies": {
     "mocha": "2.5.3",
