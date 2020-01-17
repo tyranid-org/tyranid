@@ -9,6 +9,7 @@ export * from './date';
 export * from './datetime';
 export * from './email';
 export * from './integer';
+export * from './double';
 export * from './link';
 export * from './object';
 export * from './string';
