@@ -1,6 +1,6 @@
 {
   "name": "tyreant",
-  "version": "0.0.121",
+  "version": "0.0.122",
   "description": "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
   "homepage": "http://tyranid.org/tyreant",
   "main": "dist/tyreant.js",
@@ -42,7 +42,7 @@
   "devDependencies": {
     "node-sass": "4.13.0",
     "typescript": "3.7.2",
-    "tyranid": "^0.6.125"
+    "tyranid": "^0.6.126"
   },
   "gitHead": "5b8c0de22c2b1e9ecd11a6f24b25f730612b4c6c"
 }
