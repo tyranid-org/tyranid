@@ -16,6 +16,8 @@ export default class Field {
     if (opts) Object.assign(this, opts);
   }
 
+  metaType = 'field';
+
   get computed() {
     const def = this.def;
     return (

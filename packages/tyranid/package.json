@@ -6,11 +6,11 @@
   "main": "dist/src/tyranid.js",
   "typings": "tyranid.d.ts",
   "scripts": {
-    "docs": "ts-node ./scripts/generate-docs.js",
+    "docs": "node ./scripts/generate-docs.js",
     "test": "npm run mocha",
     "build": "npm run tsc",
     "test-travis": "npm run pretest && npm run mocha-coverage",
-    "generate-typings": "ts-node ./scripts/generate-typings.js",
+    "generate-typings": "node ./scripts/generate-typings.js",
     "pretest": "npm run tsc",
     "prepublish": "npm run test",
     "watch": "rm -rf ./dist/ && tsc -w",
@@ -54,7 +54,8 @@
   },
   "peerDependencies": {
     "mongodb": "3.1.10",
-    "typescript": "3.7.2"
+    "typescript": "3.7.2",
+    "fast-csv": "^2.5.0"
   },
   "devDependencies": {
     "mocha": "2.5.3",

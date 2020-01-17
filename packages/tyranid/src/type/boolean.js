@@ -2,11 +2,11 @@ import Type from '../core/type';
 
 function fromString(s) {
   if (s && s.length) {
-    if (/^(f|false|no|off|null|0)$/i.test(s)) {
+    if (/^(f|n|false|no|off|null|0)$/i.test(s)) {
       return false;
     }
 
-    if (/^(t|true|yes|on|1)$/i.test(s)) {
+    if (/^(t|y|true|yes|on|1)$/i.test(s)) {
       return true;
     }
 

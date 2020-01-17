@@ -34,7 +34,7 @@ export class TyrComponent<
   Props extends TyrComponentProps<D> = TyrComponentProps<D>,
   State extends TyrComponentState<D> = TyrComponentState<D>
 > extends React.Component<Props, State> {
-  collection?: Tyr.CollectionInstance<D>;
+  collection!: Tyr.CollectionInstance<D>;
   fields: TyrFieldProps[] = [];
   parent?: TyrComponent;
   children: TyrComponent[] = [];
@@ -59,7 +59,7 @@ export class TyrComponent<
   constructor(props: Props, state: State) {
     super(props, state);
 
-    this.collection = this.props.collection;
+    this.collection = this.props.collection!;
   }
 
   componentDidMount() {
@@ -208,8 +208,8 @@ export class TyrComponent<
       parent.children.push(this as any);
 
       const parentCollection = parent.collection;
-      collection = this.collection =
-        propsCollection || (parentCollection as Tyr.CollectionInstance<D>);
+      collection = this.collection = (propsCollection ||
+        (parentCollection as Tyr.CollectionInstance<D>))!;
 
       const fields =
         propsFields || (collection === parentCollection && parent.props.fields);

@@ -284,7 +284,11 @@ function es5Fn(fn) {
 }
 
 function translateValue(v) {
-  return _.isFunction(v) ? es5Fn(v) : v.toString();
+  return _.isFunction(v)
+    ? es5Fn(v)
+    : typeof v === 'string'
+    ? JSON.stringify(v)
+    : v.toString();
 }
 
 function translateClass(cls) {
@@ -377,7 +381,14 @@ export function generateClientLibrary() {
     Tyr.options.formats
       ? `Tyr.options.formats = ${JSON.stringify(Tyr.options.formats)};`
       : ''
-  }
+  }`;
+
+  const whiteLabelFn = Tyr.options.whiteLabelClient || Tyr.options.whiteLabel;
+  if (whiteLabelFn)
+    file += `
+  Tyr.options.whiteLabel = ${es5Fn(whiteLabelFn)};`;
+
+  file += `
 
   var byName = {};
 
@@ -443,6 +454,8 @@ export function generateClientLibrary() {
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
   Tyr.unitize = ${es5Fn(Tyr.unitize)};
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
+
+  const local = Tyr.local = {};
 
   const documentPrototype = Tyr.documentPrototype = {
     $cache() {
@@ -647,6 +660,8 @@ export function generateClientLibrary() {
   }
   Tyr.Field = Field;
 
+  Field.prototype.metaType = 'field';
+
   Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
 
   Object.defineProperties(Field.prototype, {
@@ -662,7 +677,7 @@ export function generateClientLibrary() {
     },
 
     label: {
-      get() { return this.def.label; }
+      get() { return (Tyr.options.whiteLabel && Tyr.options.whiteLabel(this)) || this.def.label; }
     },
 
     namePath: {
@@ -937,6 +952,13 @@ export function generateClientLibrary() {
     CollectionInstance.def = def;
     CollectionInstance.id = def.id;
     CollectionInstance.label = def.label;
+    Object.defineProperty(CollectionInstance, 'label', {
+      enumerable: false,
+      configurable: false,
+      get() {
+        return (Tyr.options.whiteLabel && Tyr.options.whiteLabel(this)) || this.def.name;
+      }
+    });
     CollectionInstance.byIdIndex = {};
     delete def.label;
 
@@ -1006,6 +1028,8 @@ export function generateClientLibrary() {
 
     return CollectionInstance;
   }
+
+  Collection.prototype.metaType = 'collection';
 
   Collection.prototype.compile = function() {
 
@@ -2041,6 +2065,42 @@ Collection.prototype.connect = function({ app, auth, http }) {
       }
 
       /*
+       *     /api/NAME/export
+       */
+
+      if (express.rest || express.post) {
+        app
+          .route('/api/' + name + '/export')
+          .all(auth)
+          .get(async (req, res) => {
+            try {
+              const opts = JSON.parse(req.query.opts);
+
+              const documents = await this.findAll({
+                query: opts.query && this.fromClientQuery(opts.query),
+                fields: opts.fields.reduce(
+                  (fields, fieldName) => (fields[fieldName] = 1) && fields,
+                  {}
+                ),
+                limit: opts.query ? undefined : 1000
+              });
+
+              res.setHeader('content-type', 'text/csv');
+              await Tyr.csv.toCsv({
+                collection: this,
+                documents,
+                columns: opts.fields.map(fieldName => ({
+                  field: fieldName
+                })),
+                stream: res
+              });
+            } catch (err) {
+              handleException(res, err);
+            }
+          });
+      }
+
+      /*
        *     /api/NAME/:id
        */
 
@@ -2096,27 +2156,28 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.slice) {
         _.each(col.paths, field => {
           if (field.type.name === 'array') {
-            r = app.route('/api/' + name + '/:id/' + field.path + '/slice');
-            r.all(auth);
-            r.get(async (req, res) => {
-              try {
-                const doc = await col.byId(req.params.id, {
-                  auth: req.user,
-                  fields: {
-                    [field.spath]: 1
-                  },
-                  user: req.user,
-                  req
-                });
-                if (!doc) return res.sendStatus(404);
+            app
+              .route('/api/' + name + '/:id/' + field.path + '/slice')
+              .all(auth)
+              .get(async (req, res) => {
+                try {
+                  const doc = await col.byId(req.params.id, {
+                    auth: req.user,
+                    fields: {
+                      [field.spath]: 1
+                    },
+                    user: req.user,
+                    req
+                  });
+                  if (!doc) return res.sendStatus(404);
 
-                doc.$slice(field.path, req.body);
+                  doc.$slice(field.path, req.body);
 
-                res.json(field.get(doc.$toClient()));
-              } catch (err) {
-                handleException(res, err);
-              }
-            });
+                  res.json(field.get(doc.$toClient()));
+                } catch (err) {
+                  handleException(res, err);
+                }
+              });
           }
         });
       }
@@ -2126,20 +2187,21 @@ Collection.prototype.connect = function({ app, auth, http }) {
        */
 
       if (col.labelField && (express.rest || express.get || express.labels)) {
-        r = app.route('/api/' + name + '/label/:search');
-        r.all(auth);
-        r.get(async (req, res) => {
-          try {
-            const results = await col.labels(req.params.search, {
-              auth: req.user,
-              user: req.user,
-              req
-            });
-            res.json(results.map(r => r.$toClient()));
-          } catch (err) {
-            handleException(res, err);
-          }
-        });
+        app
+          .route('/api/' + name + '/label/:search')
+          .all(auth)
+          .get(async (req, res) => {
+            try {
+              const results = await col.labels(req.params.search, {
+                auth: req.user,
+                user: req.user,
+                req
+              });
+              res.json(results.map(r => r.$toClient()));
+            } catch (err) {
+              handleException(res, err);
+            }
+          });
       }
 
       /*
@@ -2151,48 +2213,48 @@ Collection.prototype.connect = function({ app, auth, http }) {
         _.each(col.paths, field => {
           const to = field.link;
           if ((to && to.labelField) || field.type.name === 'uid') {
-            r = app.route(
-              '/api/' + name + '/' + field.path + '/label/:search?'
-            );
-            r.all(auth);
-            r.put(async (req, res) => {
-              try {
-                const data = req.body;
-                let { doc, opts } = data;
-                doc = await col.fromClient(doc, undefined, { req });
+            app
+              .route('/api/' + name + '/' + field.path + '/label/:search?')
+              .all(auth)
+              .put(async (req, res) => {
+                try {
+                  const data = req.body;
+                  let { doc, opts } = data;
+                  doc = await col.fromClient(doc, undefined, { req });
 
-                let limit = 30;
-                if (opts && opts.limit !== undefined) limit = opts.limit;
+                  let limit = 30;
+                  if (opts && opts.limit !== undefined) limit = opts.limit;
 
-                const results = await field.labels(doc, req.params.search, {
-                  auth: req.user,
-                  user: req.user,
-                  req,
-                  limit,
-                  sort: { [field.spath]: 1 }
-                });
+                  const results = await field.labels(doc, req.params.search, {
+                    auth: req.user,
+                    user: req.user,
+                    req,
+                    limit,
+                    sort: { [field.spath]: 1 }
+                  });
 
-                res.json(results.map(r => r.$toClient()));
-              } catch (err) {
-                handleException(res, err);
-              }
-            });
+                  res.json(results.map(r => r.$toClient()));
+                } catch (err) {
+                  handleException(res, err);
+                }
+              });
           }
 
           const validateFn = field.def.validate;
           if (validateFn) {
-            r = app.route('/api/' + name + '/' + field.spath + '/validate');
-            r.all(auth);
-            r.put(async (req, res) => {
-              try {
-                await field.validate(
-                  await col.fromClient(req.body, undefined, { req })
-                );
-                res.json('');
-              } catch (err) {
-                handleException(res, err);
-              }
-            });
+            app
+              .route('/api/' + name + '/' + field.spath + '/validate')
+              .all(auth)
+              .put(async (req, res) => {
+                try {
+                  await field.validate(
+                    await col.fromClient(req.body, undefined, { req })
+                  );
+                  res.json('');
+                } catch (err) {
+                  handleException(res, err);
+                }
+              });
           }
         });
       }

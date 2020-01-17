@@ -203,6 +203,8 @@ NamePath._skipArray = function(field) {
   return field;
 };
 
+NamePath.prototype.metaType = 'path';
+
 NamePath.prototype.parsePath = function(path, skipArray) {
   return new NamePath(this, path, { skipArray });
 };
@@ -236,10 +238,12 @@ NamePath.populateNameFor = function(name, denormal) {
 
 NamePath.prototype.walk = function(path /*: string | number*/) {
   /*
-      TODO:  change NamePath to be immutable (it already is for the most part) and to
-             support a parent NamePath then avoid having to pse the entire path here and
-             just use the existing NamePath object embedded in a new NamePath object that
-             just processes the child path
+      TODO NAMEPATH-1:
+
+        change NamePath to be immutable (it already is for the most part) and to
+        support a parent NamePath then avoid having to pse the entire path here and
+        just use the existing NamePath object embedded in a new NamePath object that
+        just processes the child path
    */
   return this.base.parsePath(this.name + '.' + path);
 };
@@ -481,8 +485,15 @@ NamePath.prototype.uniq = function(obj) {
 Object.defineProperty(NamePath.prototype, 'pathLabel', {
   get: function() {
     const pf = this.fields;
+    if (!pf.length) return this.base.label;
     let i = 0,
       label = '';
+    const wlFn = Tyr.options.whiteLabel;
+    if (wlFn) {
+      const l = wlFn(this);
+      if (l) return l;
+    }
+
     while (i < pf.length - 1) {
       const f = pf[i++];
 

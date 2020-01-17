@@ -37,6 +37,8 @@ export namespace Tyr {
     };
   }
 
+  export type Metadata = CollectionInstance | FieldInstance | NamePathInstance;
+
   interface ErrorOptions {
     message?: string;
     suffix?: string;
@@ -171,6 +173,8 @@ export namespace Tyr {
   }
 
   export interface FieldInstance {
+    metaType: 'field';
+
     collection: CollectionInstance;
     computed: boolean;
     db: boolean;
@@ -216,6 +220,8 @@ export namespace Tyr {
   }
 
   export interface NamePathInstance {
+    metaType: 'path';
+
     detail: FieldInstance;
     name: string;
     identifier: string;
@@ -246,6 +252,8 @@ export namespace Tyr {
   export interface CollectionInstance<
     D extends Document<AnyIdType> = Document<AnyIdType>
   > extends Class<D> {
+    metaType: 'collection';
+
     byId(id: IdType<D>, opts?: any): Promise<D | null>;
     byIds(ids: IdType<D>[], opts?: any): Promise<D[]>;
     byLabel(label: string): Promise<D | null>;

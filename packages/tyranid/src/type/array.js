@@ -31,6 +31,21 @@ const ArrayType = new Type({
     }
   },
 
+  fromClientQuery(field, value) {
+    const ofField = field.of,
+      ofFieldType = ofField.type;
+
+    // only promote a string to an array if it contains a semi-colon
+    if (typeof value === 'string' && value.indexOf(',') >= 0)
+      value = value.split(',');
+
+    if (Array.isArray(value)) {
+      return value.map(v => ofFieldType.fromClient(ofField, v));
+    } else {
+      return ofFieldType.fromClient(ofField, value);
+    }
+  },
+
   async query(namePath, where, query) {
     if (!where.length) {
       // TODO:  need to figure out a cleaner way to handle this case?

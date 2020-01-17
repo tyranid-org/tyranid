@@ -79,7 +79,7 @@ export default class Type {
   /** @isomorphic */
   fromString(s) {
     const f = this.def.fromString;
-    return f ? f(s) : s;
+    return f ? f(s) : s && s.toString ? s.toString() : s;
   }
 
   fromClient(field, value) {
@@ -87,6 +87,13 @@ export default class Type {
 
     const f = this.def.fromClient;
     return f ? f(field, value) : value;
+  }
+
+  fromClientQuery(field, value) {
+    // TODO:  should we be looking at field.def.client here ? ... see common.js:evaluateClient()
+
+    const f = this.def.fromClientQuery;
+    return f ? f(field, value) : this.fromClient(field, value);
   }
 
   /** @isomorphic */

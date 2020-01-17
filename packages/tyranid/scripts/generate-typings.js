@@ -1,7 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { generateFile } from 'tyranid-tdgen';
-import { Tyr } from '../';
+const fs = require('fs');
+const path = require('path');
+
+const { generateFile } = require('tyranid-tdgen');
+const { Tyr } = require('../');
 
 main().catch(err => {
   console.log(err);

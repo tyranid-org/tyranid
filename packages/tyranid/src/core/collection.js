@@ -489,6 +489,8 @@ export default class Collection {
     return CollectionInstance;
   }
 
+  metaType = 'collection';
+
   toString() {
     return this.def.name;
   }
@@ -1727,10 +1729,13 @@ export default class Collection {
   }
 
   parsePath(path) {
+    // TODO NAMEPATH-1 ... return immutable shared value here
     return new NamePath(this, path);
   }
 
-  createCompiler(collection, def, stage, dynamicSchema) {
+  createCompiler(def, stage, dynamicSchema) {
+    const collection = this;
+
     const compiler = {
       stage: stage,
 
@@ -2140,11 +2145,7 @@ export default class Collection {
   compile(stage) {
     const collection = this;
 
-    const compiler = collection.createCompiler(
-      collection,
-      collection.def,
-      stage
-    );
+    const compiler = collection.createCompiler(collection.def, stage);
     compiler.fields('', collection, collection.def.fields);
 
     if (!collection.def.fields[collection.def.primaryKey.field]) {

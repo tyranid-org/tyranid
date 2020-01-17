@@ -12,6 +12,8 @@ import * as io from 'socket.io-client';
 export namespace Tyr {
   export const $all: '$all';
 
+  export import Metadata = Isomorphic.Metadata;
+
   export interface CollectionsByName {
     [key: string]: CollectionInstance;
   }

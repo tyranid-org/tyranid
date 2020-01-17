@@ -25,9 +25,12 @@ import {
 } from 'react-beautiful-dnd';
 
 import TyrTableColumnConfigItem from './table-config-item';
+import { TyrTable } from './table';
 
-interface TyrTableConfigProps {
+interface TyrTableConfigProps<D extends Tyr.Document> {
+  table: TyrTable<D>;
   config: TyrTableConfig;
+  export?: boolean;
   tableConfig?: TyrTableConfigType;
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
@@ -35,31 +38,36 @@ interface TyrTableConfigProps {
   containerEl: React.RefObject<HTMLDivElement>;
 }
 
-const TyrTableConfigComponent = ({
+const TyrTableConfigComponent = <D extends Tyr.Document>({
+  table,
   config,
+  export: exportProp,
   tableConfig: incomingTableConfig,
   onCancel,
   onUpdate,
   columns,
   containerEl
-}: TyrTableConfigProps) => {
+}: TyrTableConfigProps<D>) => {
   const [columnFields, setColumnFields] = useState([] as ColumnConfigField[]);
   let tableBody: HTMLElement | null = null;
+
+  const { collection } = table;
 
   // Only runs once
   useEffect(() => {
     let tableConfig: TyrTableConfigType;
+    const userId = Tyr.local.user.$id;
 
     if (incomingTableConfig) {
       tableConfig = incomingTableConfig;
     } else {
-      const { documentUid, collectionId, userId } = config;
+      const { documentUid } = config;
       const columnFields = compact(
         columns.map(c => getFieldName(c.field))
       ) as string[];
       tableConfig = new Tyr.byName.tyrTableConfig({
         documentUid,
-        collectionId,
+        collection: collection.id,
         userId,
         fields: columnFields.map(c => {
           return {
@@ -69,8 +77,6 @@ const TyrTableConfigComponent = ({
       }) as any;
     }
 
-    const { collectionId } = tableConfig;
-    const collection = Tyr.byId[collectionId];
     const orderedFields = orderedArray(tableConfig.fields, columns, true);
 
     const columnFields = compact(
@@ -165,7 +171,7 @@ const TyrTableConfigComponent = ({
       <div>
         {!incomingTableConfig && <span>No config!</span>}
 
-        {config.header && config.header}
+        {exportProp ? 'Include data from ...' : config.header}
 
         {incomingTableConfig && (
           <div className="tyr-config-columns-list tyr-config-columns-list-locked">
@@ -223,32 +229,53 @@ const TyrTableConfigComponent = ({
     );
   };
 
+  const actionLabel = exportProp ? 'Export' : 'Save';
+  const actionButton = exportProp ? (
+    <a
+      className="ant-btn ant-btn-primary tyr-link-btn"
+      href={`/api/${collection.def.name}/export?opts=${encodeURIComponent(
+        JSON.stringify({
+          query: table.findOpts?.query,
+          fields: columnFields.filter(f => !f.hidden).map(f => f.name)
+        })
+      )}`}
+      role="button"
+      onClick={onCancel}
+      target="_blank"
+      download={Tyr.pluralize(collection.label.toLowerCase()) + '.csv'}
+    >
+      {actionLabel}
+    </a>
+  ) : (
+    <Button
+      key="submit"
+      type="primary"
+      onClick={onSave}
+      style={{ marginLeft: '10px' }}
+    >
+      {actionLabel}
+    </Button>
+  );
+
   const renderDrawerFooter = () => {
     return (
       <div className="tyr-footer" style={{ textAlign: 'center' }}>
         <Button key="back" onClick={onCancel}>
           Close
         </Button>
-        <Button
-          key="submit"
-          type="primary"
-          onClick={onSave}
-          style={{ marginLeft: '10px' }}
-        >
-          Save
-        </Button>
+        {actionButton}
       </div>
     );
   };
 
+  const title = exportProp
+    ? Tyr.pluralize(collection.label) + ' CSV Exporter'
+    : config.title || 'Edit Columns';
+
   if (config.asDrawer) {
     return (
       <Drawer
-        title={
-          <div style={{ textAlign: 'center' }}>
-            {config.title || 'Edit Columns'}
-          </div>
-        }
+        title={<div style={{ textAlign: 'center' }}>{title}</div>}
         visible={true}
         closable={false}
         getContainer={tableBody!}
@@ -272,18 +299,23 @@ const TyrTableConfigComponent = ({
     <Modal
       className="tyr-modal tyr-config-columns"
       visible={true}
-      onCancel={onCancel}
-      onOk={onSave}
-      okText="Save"
-      cancelText="Cancel"
-      title={config.title || 'Edit Columns'}
+      title={title}
+      footer={
+        <>
+          <Button key="back" onClick={onCancel}>
+            Cancel
+          </Button>
+          {actionButton}
+        </>
+      }
     >
       {renderBody()}
     </Modal>
   );
 };
 
-export const ensureTableConfig = async (
+export const ensureTableConfig = async <D extends Tyr.Document>(
+  table: TyrTable<D>,
   columns: TyrTableColumnFieldProps[],
   config: TyrTableConfig,
   existingTableConfig?: any
@@ -293,28 +325,30 @@ export const ensureTableConfig = async (
   if (existingTableConfig) {
     tableConfig = existingTableConfig;
   } else {
-    const { documentUid, collectionId, userId, key } = config;
+    const { documentUid, key } = config;
 
-    if (!documentUid || !collectionId) {
+    if (!documentUid) {
       console.error(
-        'Unable to load table configuration.  Need both the documentUid and the collectionId.'
+        'Unable to load table configuration -- need a documentUid.'
       );
       return Promise.resolve(undefined);
     }
+
+    const userId = Tyr.local.user.$id;
 
     tableConfig = (await Tyr.byName.tyrTableConfig.findOne({
       query: {
         userId,
         key,
         documentUid,
-        collectionId
+        collectionId: table.collection.id
       }
     })) as TyrTableConfigType;
 
     if (!tableConfig) {
       tableConfig = new Tyr.byName.tyrTableConfig({
         documentUid,
-        collectionId,
+        collectionId: table.collection.id,
         userId,
         key,
         fields: columns.map(c => {

@@ -14,6 +14,7 @@ import * as projection from '../src/core/projection';
 import { generateClientLibrary } from '../src/express';
 import './models/user';
 
+import * as testCsv from './csv.test';
 import * as testDiff from './diff.test';
 import * as testEvent from './event.test';
 import * as testExcel from './excel.test';
@@ -1876,20 +1877,20 @@ describe('tyranid', () => {
         });
       });
 
-      it('should support findAndModify() with complete doc replacement', () => {
+      it('should support findAndModify() with complete doc replacement', async () => {
         const createdAt = new Date('Jan 9 1986');
-        return User.findAndModify({
+        const result = await User.findAndModify({
           query: { _id: 1003 },
           update: { title: 'Good Boy', goldStars: 3, createdAt },
           upsert: true,
           new: true
-        }).then(result => {
-          const user = result!.value;
-          expect(user.createdAt).to.be.eql(createdAt);
-          expect(user.name).to.not.exist;
-          expect(user.goldStars).to.be.eql(3);
-          expect(user.title).to.be.eql('Good Boy');
         });
+
+        const user = result!.value;
+        expect(user.createdAt).to.be.eql(createdAt);
+        expect(user.name).to.not.exist;
+        expect(user.goldStars).to.be.eql(3);
+        expect(user.title).to.be.eql('Good Boy');
       });
 
       it('should support findAndModify() upsert with complete doc replacement', () => {
@@ -2681,6 +2682,7 @@ describe('tyranid', () => {
     });
 
     testNamePath.add();
+    testCsv.add();
     testExcel.add();
     testExpress.add();
     testEvent.add();

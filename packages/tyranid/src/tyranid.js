@@ -42,6 +42,7 @@ import './core/query';
 import './core/update';
 
 import { instrumentServerServices } from './service';
+import './csv';
 import './excel';
 import './fake';
 import './migrator';

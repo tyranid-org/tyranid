@@ -23,10 +23,16 @@ declare module 'tyranid/isomorphic' {
      */
     export type anny = any;
 
+    export interface Metadata {
+      metaType: 'field' | 'collection' | 'path';
+    }
+
     export interface CollectionInstance<
       IdType = string,
       T extends Document<IdType> = Document<IdType>
-    > {
+    > extends Metadata {
+      metaType: 'collection';
+
       findAll(args: any): Promise<T[]>;
       findOne(args: any): Promise<T | null>;
       idToUid(id: IdType): string;

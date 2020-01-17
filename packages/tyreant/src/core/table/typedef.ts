@@ -2,9 +2,7 @@ import { TyrFieldLaxProps } from '../field';
 import { Tyr } from 'tyranid/client';
 
 export interface TyrTableConfig {
-  userId: string;
   documentUid: string;
-  collectionId: string;
   required: string[];
   lockedLeft: number;
   title?: string;

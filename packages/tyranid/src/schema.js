@@ -126,36 +126,55 @@ function mergeSchema(fields, name, field) {
   return false;
 }
 
-Collection.prototype.fieldsFor = async function(opts) {
+async function ensureCache() {
   let missing = false;
 
   if (!schemaCache) {
     schemaCache = await (await Schema.db.find()).toArray();
 
-    schemaCache.forEach(schema => {
+    for (const schema of schemaCache) {
       const collection = Tyr.byId[schema.collection],
         def = schema.def;
 
       if (!collection) {
         missing = true;
-        return;
+        continue;
       }
 
-      this.createCompiler(collection, def, 'compile', schema).fields(
-        '',
-        def,
-        def.fields
-      );
-      this.createCompiler(collection, def, 'link', schema).fields(
-        '',
-        def,
-        def.fields
-      );
+      collection
+        .createCompiler(def, 'compile', schema)
+        .fields('', def, def.fields);
+      collection
+        .createCompiler(def, 'link', schema)
+        .fields('', def, def.fields);
 
       schema.objMatcher = Tyr.isCompliant(schema.match);
-    });
+    }
   }
 
+  return missing;
+}
+
+// undocumented for now since this bypasses schema matching
+Collection.prototype.findField = async function(pathName) {
+  const missing = await ensureCache();
+
+  for (const schema of schemaCache) {
+    if (schema.collection === this.id) {
+      const { fields } = schema.def;
+      for (const name in fields) {
+        const field = fields[name];
+        if (pathName === field.path) return field;
+      }
+    }
+  }
+
+  if (missing) schemaCache = null;
+  //return undefined;
+};
+
+Collection.prototype.fieldsFor = async function(opts) {
+  const missing = await ensureCache();
   const fields = {};
 
   if (opts.static) {
@@ -169,35 +188,24 @@ Collection.prototype.fieldsFor = async function(opts) {
     ? schema => queryMatches(query, schema.match)
     : schema => schema.objMatcher(match);
 
-  schemaCache.forEach(schema => {
+  for (const schema of schemaCache) {
     if (schema.collection === this.id && test(schema)) {
       _.each(schema.def.fields, (field, name) => {
         if (opts.custom && !field.def.custom) return;
         mergeSchema(fields, name, field);
       });
     }
-  });
-
-  if (missing) {
-    schemaCache = null;
   }
 
+  if (missing) schemaCache = null;
   return fields;
 };
 
 Collection.prototype.mixin = function(def) {
   const collection = this;
 
-  this.createCompiler(collection, def, 'compile').fields(
-    '',
-    collection,
-    def.fields
-  );
-  this.createCompiler(collection, def, 'link').fields(
-    '',
-    collection,
-    def.fields
-  );
+  this.createCompiler(def, 'compile').fields('', collection, def.fields);
+  this.createCompiler(def, 'link').fields('', collection, def.fields);
 
   const baseDefFields = collection.def.fields;
 

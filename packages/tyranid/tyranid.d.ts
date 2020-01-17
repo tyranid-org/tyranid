@@ -56,6 +56,8 @@ export namespace Tyr {
   export import MongoQuery = Isomorphic.MongoQuery;
   export import MongoUpdate = Isomorphic.MongoUpdate;
 
+  export type Metadata = CollectionInstance | FieldInstance | NamePathInstance;
+
   export const mapAwait = Isomorphic.mapAwait;
 
   export type anny = any;
@@ -73,6 +75,7 @@ export namespace Tyr {
   export const byId: CollectionsById;
   export const byName: CollectionsByName;
   export const collections: CollectionInstance[] & CollectionsByClassName;
+  export const csv: CsvStatic;
   export const diff: DiffStatic;
   export const excel: ExcelStatic;
   export const mongoClient: mongodb.MongoClient;
@@ -774,6 +777,8 @@ export namespace Tyr {
     pregenerateClient?: boolean;
     secure?: Secure;
     validate?: ValidationPattern[];
+    whiteLabel?: (metadata: Metadata) => string;
+    whiteLabelClient?: (metadata: Metadata) => string;
   }
 
   export interface ConnectOptions {
@@ -810,6 +815,8 @@ export namespace Tyr {
   > extends Component, Class<D> {
     // Collection instance constructor
     new (doc?: RawMongoDocument): D;
+
+    metaType: 'collection';
 
     byId(id: IdType<D> | string, options?: Options_FindById): Promise<D | null>;
     byIds(
@@ -965,6 +972,7 @@ export namespace Tyr {
     keys?: FieldInstance;
     label: string | (() => string);
     link?: CollectionInstance;
+    metaType: 'field';
     name: string;
     namePath: NamePathInstance;
     of?: FieldInstance;
@@ -1003,6 +1011,7 @@ export namespace Tyr {
     detail: FieldInstance;
     fields: FieldInstance[];
     tail: FieldInstance;
+    metaType: 'path';
 
     parsePath(path: string): NamePathInstance;
     set<D extends Tyr.Document>(
@@ -1150,7 +1159,47 @@ export namespace Tyr {
   }
 
   //
-  // Excel
+  // File Formats
+  //
+
+  export interface FileFormatColumn<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
+    field: string;
+    get?(this: this, doc: D): any;
+    label?: string;
+  }
+
+  export interface FileFormatDef<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
+    collection: CollectionInstance<D>;
+    columns: FileFormatColumn<D>[];
+    filename?: string;
+    stream?: stream.Writable;
+  }
+
+  //
+  // File Format: Csv
+  //
+
+  export type CsvDef<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > = FileFormatDef<D> & {};
+
+  export interface CsvStatic {
+    toCsv<D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>>(
+      opts: CsvDev<D> & {
+        documents: D[];
+      }
+    ): Promise<void>;
+    fromCsv<D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>>(
+      opts: CsvDef<D> & { collection: CollectionInstance<D> }
+    ): Promise<D[]>;
+  }
+
+  //
+  // File Format: Excel
   //
 
   export type ExcelAlignment = {
@@ -1255,20 +1304,17 @@ export namespace Tyr {
     font?: ExcelFont;
   };
 
-  export type ExcelColumn<
+  export interface ExcelColumn<
     D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > = {
-    field: string;
-    get?(this: this, doc: D): any;
-    label?: string;
+  > extends FileFormatColumn<D> {
     cell?: ExcelStyle | ((doc: D) => ExcelStyle);
     header?: ExcelStyle;
     width?: number;
-  };
+  }
 
-  export type ExcelDef<
+  export interface ExcelDef<
     D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > = {
+  > extends FileFormatDef<D> {
     collection: CollectionInstance;
     header?: {
       height?: number;
@@ -1283,8 +1329,6 @@ export namespace Tyr {
       ];
     };
     columns: ExcelColumn<D>[];
-    stream?: stream.Writable;
-    filename?: string;
     images?: {
       path: string;
       location:
@@ -1296,7 +1340,7 @@ export namespace Tyr {
             ext?: { height: number; width: number };
           };
     }[];
-  };
+  }
 
   export interface ExcelStatic {
     toExcel<D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>>(
@@ -1306,6 +1350,10 @@ export namespace Tyr {
       opts: ExcelDef<D>
     ): Promise<D[]>;
   }
+
+  //
+  // Type Catalog
+  //
 
   export const catalog = {
     /**

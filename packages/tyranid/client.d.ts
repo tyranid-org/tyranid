@@ -13,6 +13,19 @@ declare module 'tyranid/client' {
 
     export type anny = any;
 
+    export type Metadata =
+      | CollectionInstance
+      | FieldInstance
+      | NamePathInstance;
+
+    export const local: {
+      // TODO:  get this typed as "User" instead of "Document" via td-gen
+      /*
+       * The currently-logged in user.
+       */
+      user: Document;
+    };
+
     export function mapAwait<T, U>(
       val: Promise<T> | T,
       map: (val: T) => U
@@ -59,6 +72,10 @@ declare module 'tyranid/client' {
     export function clone<T>(obj: T): T;
     export function cloneDeep<T>(obj: T): T;
     export const collections: CollectionInstance[] & CollectionsByClassName;
+
+    export const options: {
+      whiteLabel?: (metadata: Metadata) => string | undefined;
+    } = {};
 
     export const init: () => void;
     export function isSameId(
@@ -188,6 +205,7 @@ declare module 'tyranid/client' {
       labels(text: string): Promise<D[]>;
       labels(ids: string[]): Promise<D[]>;
       labels(_: any): Promise<D[]>;
+      metaType: 'collection';
       on(opts: any): () => void;
       parsePath(text: string): Tyr.NamePathInstance;
       paths: { [fieldPathName: string]: Tyr.FieldInstance };

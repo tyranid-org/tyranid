@@ -21,7 +21,7 @@ const IntegerType = new Type({
   },
 
   fromString(s) {
-    return parseInt(s, 10);
+    return s !== undefined && s !== '' ? parseInt(s, 10) : undefined;
   },
 
   fromClient(field, value) {

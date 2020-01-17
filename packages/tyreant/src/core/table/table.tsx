@@ -79,6 +79,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   bordered?: boolean;
   className?: string;
   collection: Tyr.CollectionInstance<D>;
+  export?: boolean;
   documents?: D[] & { count?: number };
   fields: TyrTableColumnFieldProps[];
   query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
@@ -102,8 +103,8 @@ export interface TyrTableProps<D extends Tyr.Document>
     x?: boolean | number | string;
     y?: boolean | number | string;
   };
-  footer?: (currentPageData: Object[]) => React.ReactNode;
-  title?: (currentPageData: Object[]) => React.ReactNode;
+  footer?: (currentPageData: D[]) => React.ReactNode;
+  title?: (currentPageData: D[]) => React.ReactNode;
   showHeader?: boolean;
   config?: TyrTableConfig;
   onLoad?: (table: TyrTable<Tyr.anny>) => void;
@@ -175,6 +176,9 @@ export class TyrTable<
   showConfig = false;
 
   @observable
+  showExport = false;
+
+  @observable
   tableConfig?: TyrTableConfigType;
 
   currentRowForm?: WrappedFormUtils;
@@ -203,11 +207,16 @@ export class TyrTable<
     if (orderable && !dndBackend)
       dndBackend = this.props.dndBackend || HTML5Backend;
 
-    const { config, fields, onLoad } = this.props;
+    const { config, fields, onLoad, documents, query } = this.props;
+
+    if (documents && query) {
+      // we need to know the query even for in-memory tables because when we run an csv export we need to query the same rows
+      this.findOpts = { query };
+    }
 
     if (config) {
       this.loading = true;
-      const existingConfig = await ensureTableConfig(fields, config);
+      const existingConfig = await ensureTableConfig(this, fields, config);
 
       if (existingConfig) {
         this.otherFields = existingConfig.newColumns;
@@ -583,6 +592,7 @@ export class TyrTable<
 
     if (config) {
       const tableConfig = await ensureTableConfig(
+        this,
         fields,
         config,
         savedTableConfig
@@ -1283,6 +1293,7 @@ export class TyrTable<
       newDocument,
       otherFields: fields,
       showConfig,
+      showExport,
       selectedRowKeys,
       loading
     } = this;
@@ -1291,6 +1302,7 @@ export class TyrTable<
       className,
       children,
       rowEdit,
+      export: exportProp,
       canEditDocument,
       size,
       onActionLabelClick,
@@ -1333,6 +1345,19 @@ export class TyrTable<
         }
       };
 
+      let netFooter = footer;
+
+      if (exportProp) {
+        netFooter = (docs: D[]) => (
+          <>
+            <Button onClick={() => (this.showExport = true)}>
+              <Icon type="upload" /> Export
+            </Button>
+            {footer?.(docs)}
+          </>
+        );
+      }
+
       const mainTable = fields ? (
         <ObsTable
           bordered={bordered}
@@ -1350,8 +1375,12 @@ export class TyrTable<
           size={size || 'small'}
           pagination={!this.limit ? false : this.pagination()}
           onChange={this.handleTableChange as any}
-          footer={footer}
-          title={newDocument ? undefined : title}
+          footer={netFooter as (rows: Object[]) => React.ReactNode}
+          title={
+            newDocument
+              ? undefined
+              : (title as (rows: Object[]) => React.ReactNode)
+          }
           showHeader={newDocument ? false : showHeader}
           // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
           dataSource={documents.slice()}
@@ -1462,7 +1491,7 @@ export class TyrTable<
                   loading={loading}
                   components={components}
                   rowKey={() => 'new'}
-                  title={title}
+                  title={title as (docs: Object[]) => React.ReactNode}
                   size={size || 'small'}
                   pagination={false}
                   showHeader={true}
@@ -1490,10 +1519,23 @@ export class TyrTable<
               )}
               {showConfig && tableConfig && (
                 <TyrTableConfigComponent
+                  table={this}
                   columns={this.props.fields}
                   config={tableConfig}
                   tableConfig={this.tableConfig}
                   onCancel={() => (this.showConfig = false)}
+                  onUpdate={this.onUpdateTableConfig}
+                  containerEl={this.tableWrapper!}
+                />
+              )}
+              {showExport && tableConfig && (
+                <TyrTableConfigComponent
+                  table={this}
+                  columns={this.props.fields}
+                  config={tableConfig}
+                  export={true}
+                  tableConfig={this.tableConfig}
+                  onCancel={() => (this.showExport = false)}
                   onUpdate={this.onUpdateTableConfig}
                   containerEl={this.tableWrapper!}
                 />

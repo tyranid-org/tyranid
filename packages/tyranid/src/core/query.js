@@ -610,9 +610,9 @@ Collection.prototype.fromClientQuery = function(query) {
 
   function convertValue(field, value) {
     if (_.isArray(value) && field.type.name !== 'array') {
-      return value.map(v => field.type.fromClient(field, v));
+      return value.map(v => field.type.fromClientQuery(field, v));
     } else {
-      return field.type.fromClient(field, value);
+      return field.type.fromClientQuery(field, value);
     }
   }
 
