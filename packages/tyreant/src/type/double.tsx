@@ -73,6 +73,7 @@ export const doubleFilter: Filter = (
   };
 
   return {
+    // maybe use a different UI than integer?
     filterDropdown: (filterDdProps: FilterDropdownProps) => {
       const values = filterable.searchValues[pathName];
       return (
