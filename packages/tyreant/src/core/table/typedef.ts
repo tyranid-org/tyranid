@@ -2,14 +2,14 @@ import { TyrFieldLaxProps } from '../field';
 import { Tyr } from 'tyranid/client';
 
 export interface TyrTableConfig {
-  documentUid: string;
-  required: string[];
-  lockedLeft: number;
+  key: string;
+  documentUid?: string;
+  required?: string[];
+  lockedLeft?: number;
   title?: string;
   header?: string | React.ReactNode;
   asDrawer?: boolean;
   compact?: boolean;
-  key: string;
 }
 
 export interface TyrTableConfigField {

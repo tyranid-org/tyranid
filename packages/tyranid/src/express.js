@@ -623,29 +623,31 @@ export function generateClientLibrary() {
 `;
 
   _.each(Type.byName, type => {
-    const def = type.def;
+    if (type instanceof Tyr.Type) {
+      const def = type.def;
 
-    file += `  new Type({
-      name: '${type.name}',`;
+      file += `  new Type({
+        name: '${type.name}',`;
 
-    if (def.create)
-      file += `
-      create: ${es5Fn(def.create)},`;
+      if (def.create)
+        file += `
+        create: ${es5Fn(def.create)},`;
 
-    const fromString = def.fromStringClient || def.fromString;
-    if (fromString)
-      file += `
-      fromString: ${es5Fn(fromString)},`;
+      const fromString = def.fromStringClient || def.fromString;
+      if (fromString)
+        file += `
+        fromString: ${es5Fn(fromString)},`;
 
-    if (def.compare)
-      file += `
-      compare: ${es5Fn(def.compare)},`;
+      if (def.compare)
+        file += `
+        compare: ${es5Fn(def.compare)},`;
 
-    if (def.format)
-      file += `
-      format: ${es5Fn(def.format)},`;
+      if (def.format)
+        file += `
+        format: ${es5Fn(def.format)},`;
 
-    file += `});\n`;
+      file += `});\n`;
+    }
   });
 
   file += `
@@ -951,16 +953,14 @@ export function generateClientLibrary() {
 
     CollectionInstance.def = def;
     CollectionInstance.id = def.id;
-    CollectionInstance.label = def.label;
     Object.defineProperty(CollectionInstance, 'label', {
       enumerable: false,
       configurable: false,
       get() {
-        return (Tyr.options.whiteLabel && Tyr.options.whiteLabel(this)) || this.def.name;
+        return (Tyr.options.whiteLabel && Tyr.options.whiteLabel(this)) || this.def.label;
       }
     });
     CollectionInstance.byIdIndex = {};
-    delete def.label;
 
     lock(dp);
 
@@ -1502,7 +1502,6 @@ export function generateClientLibrary() {
   };
 
   Tyr.Collection = Collection;
-  var def;
 `;
 
   Tyr.collections.forEach(col => {
@@ -1512,11 +1511,15 @@ export function generateClientLibrary() {
       const name = def.name;
 
       file += `
-  def = {
+  new Collection({
     id: ${JSON.stringify(def.id)},
     primaryKey: ${JSON.stringify(def.primaryKey)},
     name: '${name}',
     label: '${col.label}',`;
+
+      if (col.labelField)
+        file += `
+    labelField: ${JSON.stringify(col.labelField.path)},`;
 
       for (const key of [
         'enum',
@@ -1529,7 +1532,13 @@ export function generateClientLibrary() {
       ]) {
         if (col.def[key])
           file += `
-    ${key}: true;`;
+    ${key}: true,`;
+      }
+
+      const values = !col.isDb() && def.values;
+      if (values) {
+        file += `
+    values: ${JSON.stringify(values.map(v => v.$toClient()))},`;
       }
 
       const ser = new Serializer('.', 2);
@@ -1538,34 +1547,19 @@ export function generateClientLibrary() {
       if (def.service) ser.service(def.service);
       file += ser.file;
 
-      file += `
-  };`;
-
-      const values = !col.isDb() && def.values;
-      if (values) {
-        file += `
-  def.values = ${JSON.stringify(values.map(v => v.$toClient()))};`;
-      }
-      if (col.labelField) {
-        file += `
-  def.labelField = ${JSON.stringify(col.labelField.path)};`;
-      }
-
       const colMeta = Tyr.options.meta && Tyr.options.meta.collection;
       if (colMeta) {
         for (const fieldName in colMeta) {
           const fieldDef = colMeta[fieldName];
 
-          if (fieldDef.client) {
+          if (fieldDef.client)
             file += `
-  def.${fieldName} = ${JSON.stringify(def[fieldName])}`;
-          }
+    ${fieldName}: ${JSON.stringify(def[fieldName])},`;
         }
       }
 
       file += `
-  new Collection(def);
-`;
+  });`;
     }
   });
 
@@ -2082,7 +2076,8 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   (fields, fieldName) => (fields[fieldName] = 1) && fields,
                   {}
                 ),
-                limit: opts.query ? undefined : 1000
+                limit: opts.query ? undefined : 1000,
+                auth: req.user
               });
 
               res.setHeader('content-type', 'text/csv');

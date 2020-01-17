@@ -29,7 +29,10 @@ import { TyrTable } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
   table: TyrTable<D>;
-  config: TyrTableConfig;
+  config:
+    | TyrTableConfig
+    | string /* the key */
+    | true /* if true, key is "default" */;
   export?: boolean;
   tableConfig?: TyrTableConfigType;
   onCancel: () => void;
@@ -40,7 +43,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
 
 const TyrTableConfigComponent = <D extends Tyr.Document>({
   table,
-  config,
+  config: rawConfig,
   export: exportProp,
   tableConfig: incomingTableConfig,
   onCancel,
@@ -50,6 +53,16 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 }: TyrTableConfigProps<D>) => {
   const [columnFields, setColumnFields] = useState([] as ColumnConfigField[]);
   let tableBody: HTMLElement | null = null;
+
+  if (typeof rawConfig === 'boolean' && rawConfig) rawConfig = 'default';
+  const config =
+    typeof rawConfig === 'string'
+      ? ({
+          key: rawConfig
+        } as TyrTableConfig)
+      : rawConfig;
+
+  const lockedLeft = config.lockedLeft || 0;
 
   const { collection } = table;
 
@@ -100,7 +113,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
             name: pathName,
             label: ((column && column.label) ||
               (field && field.label)) as string,
-            locked: index < config.lockedLeft,
+            locked: index < lockedLeft,
             hidden
           };
         }
@@ -130,10 +143,8 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   };
 
   const reorder = (list: any[], startIndex: number, endIndex: number) => {
-    const lockedItems = Array.from(list.slice(0, config.lockedLeft));
-    const orderableItems = Array.from(
-      list.slice(config.lockedLeft, list.length)
-    );
+    const lockedItems = Array.from(list.slice(0, lockedLeft));
+    const orderableItems = Array.from(list.slice(lockedLeft, list.length));
     const [removed] = orderableItems.splice(startIndex, 1);
     orderableItems.splice(endIndex, 0, removed);
 
@@ -161,11 +172,8 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   };
 
   const renderBody = () => {
-    const lockedFields = columnFields.slice(0, config.lockedLeft);
-    const draggableFields = columnFields.slice(
-      config.lockedLeft,
-      columnFields.length
-    );
+    const lockedFields = columnFields.slice(0, lockedLeft);
+    const draggableFields = columnFields.slice(lockedLeft, columnFields.length);
 
     return (
       <div>
@@ -317,22 +325,18 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 export const ensureTableConfig = async <D extends Tyr.Document>(
   table: TyrTable<D>,
   columns: TyrTableColumnFieldProps[],
-  config: TyrTableConfig,
+  config: TyrTableConfig | string | boolean,
   existingTableConfig?: any
 ) => {
   let tableConfig: TyrTableConfigType;
+
+  if (typeof config === 'boolean') config = 'default';
+  if (typeof config === 'string') config = { key: config };
 
   if (existingTableConfig) {
     tableConfig = existingTableConfig;
   } else {
     const { documentUid, key } = config;
-
-    if (!documentUid) {
-      console.error(
-        'Unable to load table configuration -- need a documentUid.'
-      );
-      return Promise.resolve(undefined);
-    }
 
     const userId = Tyr.local.user.$id;
 
@@ -340,7 +344,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
       query: {
         userId,
         key,
-        documentUid,
+        documentUid: documentUid || { $exists: false },
         collectionId: table.collection.id
       }
     })) as TyrTableConfigType;

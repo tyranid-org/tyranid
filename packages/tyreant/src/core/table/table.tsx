@@ -106,7 +106,11 @@ export interface TyrTableProps<D extends Tyr.Document>
   footer?: (currentPageData: D[]) => React.ReactNode;
   title?: (currentPageData: D[]) => React.ReactNode;
   showHeader?: boolean;
-  config?: TyrTableConfig;
+  /**
+   * If a string is specified, it is the name of the key to use.
+   * If a true is specified, a key of 'default' will be used.
+   */
+  config?: TyrTableConfig | string | boolean;
   onLoad?: (table: TyrTable<Tyr.anny>) => void;
   rowSelection?: boolean;
   loading?: boolean;
