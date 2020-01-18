@@ -308,6 +308,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       className="tyr-modal tyr-config-columns"
       visible={true}
       title={title}
+      onCancel={onCancel}
       footer={
         <>
           <Button key="back" onClick={onCancel}>
