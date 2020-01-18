@@ -806,7 +806,9 @@ export class TyrTable<
       actionHeaderLabel,
       actionTrigger,
       actionColumnClassName,
-      notifyFilterExists
+      notifyFilterExists,
+      onActionLabelClick,
+      config
     } = this.props;
 
     const { sortDirections, editingDocument, newDocument, isLocal } = this;
@@ -1016,6 +1018,19 @@ export class TyrTable<
         key: '$actions',
         dataIndex: '$actions',
         align: 'center',
+        onHeaderCell: (props: ColumnProps<D>) => {
+          if (props.key === '$actions' && !!config) {
+            return {
+              onClick: () => {
+                onActionLabelClick?.();
+                this.showConfig = true;
+              }
+            };
+          }
+
+          return {};
+        },
+
         className: `tyr-action-column${
           actionColumnClassName ? ' ' + actionColumnClassName : ''
         }`,
@@ -1316,7 +1331,6 @@ export class TyrTable<
       export: exportProp,
       canEditDocument,
       size,
-      onActionLabelClick,
       scroll,
       footer,
       title,
@@ -1396,31 +1410,6 @@ export class TyrTable<
           dataSource={documents.slice()}
           columns={this.getColumns()}
           scroll={fieldCount > 1 ? scroll : undefined}
-          onHeaderRow={
-            /*
-              ant 3.26.4 changed the signature around this and the new way it works does not match the typescript definitions
-
-              the typescript says:
-              
-                 old:                 (columns[], index: number)
-                 new:                 (columns[])
-                 help documentation:  (column)
-
-              i think the help documentation is correct ... if this fails here try and see if it is just passing in a single column
-             */
-            (columns, index) => {
-              const column = columns[index];
-
-              if (column.key === '$actions') {
-                return {
-                  onClick: () => {
-                    onActionLabelClick?.();
-                    this.showConfig = true;
-                  }
-                };
-              }
-            }
-          }
           onRow={(record, rowIndex) => {
             return {
               onClick: () => {
