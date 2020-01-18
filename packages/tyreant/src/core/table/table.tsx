@@ -23,15 +23,16 @@ import { DragDropContextProvider } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 
 import {
-  Row,
+  message,
+  Button,
   Col,
   Dropdown,
   Icon,
   Menu,
-  message,
-  Table,
+  Row,
   Spin,
-  Button
+  Table,
+  Tooltip
 } from 'antd';
 
 import { PaginationProps } from 'antd/es/pagination';
@@ -95,7 +96,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   size?: 'default' | 'middle' | 'small';
   saveDocument?: (document: D) => Promise<D>;
   onAfterSaveDocument?: (document: D, changedFields?: string[]) => void;
-  onBeforeSaveDocument?: (document: D) => boolean;
+  onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
   onChangeTableConfiguration?: (fields: TyrTableConfigFields) => void;
@@ -1018,7 +1019,13 @@ export class TyrTable<
         className: `tyr-action-column${
           actionColumnClassName ? ' ' + actionColumnClassName : ''
         }`,
-        title: !newDocumentTable ? actionHeaderLabel || '' : '',
+        title: !newDocumentTable
+          ? actionHeaderLabel || (
+              <Tooltip title="Edit Columns">
+                <Icon type="menu" />
+              </Tooltip>
+            )
+          : '',
         render: (text: string, doc: D) => {
           const editable = newDocumentTable || this.isEditing(doc);
           const document =
@@ -1127,7 +1134,7 @@ export class TyrTable<
           );
 
           return (
-            <Dropdown overlay={menu} trigger={[actionTrigger || 'hover']}>
+            <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
               <span className="tyr-menu-link">
                 <Icon type={actionIconType || 'ellipsis'} />
               </span>
@@ -1315,7 +1322,6 @@ export class TyrTable<
       title,
       showHeader,
       config: tableConfig,
-      onCancelAddNew,
       decorator,
       onSelectRows,
       orderable,
@@ -1402,18 +1408,18 @@ export class TyrTable<
 
               i think the help documentation is correct ... if this fails here try and see if it is just passing in a single column
              */
-            ((columns: any, index: any) => {
+            (columns, index) => {
               const column = columns[index];
 
               if (column.key === '$actions') {
                 return {
                   onClick: () => {
-                    onActionLabelClick && onActionLabelClick();
+                    onActionLabelClick?.();
                     this.showConfig = true;
                   }
                 };
               }
-            }) as any
+            }
           }
           onRow={(record, rowIndex) => {
             return {
@@ -1504,7 +1510,6 @@ export class TyrTable<
                   scroll={fieldCount > 1 ? scroll : undefined}
                 />
               )}
-
               {fields && (
                 <div
                   style={{
@@ -1532,11 +1537,11 @@ export class TyrTable<
                   containerEl={this.tableWrapper!}
                 />
               )}
-              {showExport && tableConfig && (
+              {showExport && (
                 <TyrTableConfigComponent
                   table={this}
                   columns={this.props.fields}
-                  config={tableConfig}
+                  config={tableConfig || true}
                   export={true}
                   tableConfig={this.tableConfig}
                   onCancel={() => (this.showExport = false)}
