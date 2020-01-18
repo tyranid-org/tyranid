@@ -1144,7 +1144,7 @@ export class TyrTable<
         sorter: undefined,
         sortOrder: undefined,
         width: 40,
-        ...(!!pinActionsRight ? { fixed: 'right' } : {})
+        ...(pinActionsRight !== false ? { fixed: 'right' } : {})
       });
     }
 
