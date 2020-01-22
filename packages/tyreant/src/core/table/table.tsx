@@ -1426,7 +1426,12 @@ export class TyrTable<
       );
 
       return (
-        <div className={netClassName}>
+        <div className={netClassName} 
+        onKeyDown={e => {
+          if (e.keyCode === 13 && this.currentRowForm) {
+            this.saveDocument(this.currentRowForm);
+          }}}
+          >
           {(children || multiActions.length > 0) && (
             <Row>
               <Col span={24} className="tyr-table-header">
