@@ -56,6 +56,11 @@ Schema.on({
 });
 
 Collection.prototype.invalidateSchemaCache = function() {
+  // TODO:  only invalidate the cache for this collection
+  schemaCache = null;
+};
+
+Tyr.invalidateSchemaCache = function() {
   schemaCache = null;
 };
 

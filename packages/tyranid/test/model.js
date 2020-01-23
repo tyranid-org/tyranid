@@ -181,5 +181,6 @@ export default async function initModel() {
       }
     }
   ]);
+  Tyr.invalidateSchemaCache();
   await Tyr.Log.remove({});
 }
