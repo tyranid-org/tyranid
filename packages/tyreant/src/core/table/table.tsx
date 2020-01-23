@@ -109,7 +109,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   showHeader?: boolean;
   /**
    * If a string is specified, it is the name of the key to use.
-   * If a true is specified, a key of 'default' will be used.
+   * If true is specified, a key of 'default' will be used.
    */
   config?: TyrTableConfig | string | boolean;
   onLoad?: (table: TyrTable<Tyr.anny>) => void;
