@@ -1428,6 +1428,7 @@ export class TyrTable<
       return (
         <div className={netClassName} 
         onKeyDown={e => {
+          //Enter Key
           if (e.keyCode === 13 && this.currentRowForm) {
             this.saveDocument(this.currentRowForm);
           }}}
