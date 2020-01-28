@@ -56,7 +56,11 @@ export namespace Tyr {
   export import MongoQuery = Isomorphic.MongoQuery;
   export import MongoUpdate = Isomorphic.MongoUpdate;
 
-  export type Metadata = CollectionInstance | FieldInstance | NamePathInstance;
+  export type Metadata =
+    | CollectionInstance
+    | FieldInstance
+    | NamePathInstance
+    | Document;
 
   export const mapAwait = Isomorphic.mapAwait;
 
@@ -205,6 +209,7 @@ export namespace Tyr {
     $id: ID;
     $insert(opts?: Options_Insert): Promise<this>;
     $label: string;
+    $metaType: 'document';
     $model: CollectionInstance<this>;
     $options: Options_AllFind;
     $populate(fields: any, denormal?: boolean): Promise<this>;
@@ -816,7 +821,7 @@ export namespace Tyr {
     // Collection instance constructor
     new (doc?: RawMongoDocument): D;
 
-    metaType: 'collection';
+    $metaType: 'collection';
 
     byId(id: IdType<D> | string, options?: Options_FindById): Promise<D | null>;
     byIds(
@@ -966,13 +971,13 @@ export namespace Tyr {
   }
 
   export interface FieldInstance extends Isomorphic.FieldInstance {
+    $metaType: 'field';
     collection: CollectionInstance;
     def: FieldDefinition;
     fields?: { [key: string]: FieldInstance };
     keys?: FieldInstance;
     label: string | (() => string);
     link?: CollectionInstance;
-    metaType: 'field';
     name: string;
     namePath: NamePathInstance;
     of?: FieldInstance;
@@ -1008,10 +1013,10 @@ export namespace Tyr {
   }
 
   export interface NamePathInstance extends Isomorphic.NamePathInstance {
+    $metaType: 'path';
     detail: FieldInstance;
     fields: FieldInstance[];
     tail: FieldInstance;
-    metaType: 'path';
 
     parsePath(path: string): NamePathInstance;
     set<D extends Tyr.Document>(

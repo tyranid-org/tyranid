@@ -16,7 +16,8 @@ declare module 'tyranid/client' {
     export type Metadata =
       | CollectionInstance
       | FieldInstance
-      | NamePathInstance;
+      | NamePathInstance
+      | Document;
 
     export const local: {
       // TODO:  get this typed as "User" instead of "Document" via td-gen
@@ -172,6 +173,7 @@ declare module 'tyranid/client' {
     export interface CollectionInstance<
       D extends Document<AnyIdType> = Document<AnyIdType>
     > extends Class<D> {
+      $metaType: 'collection';
       aux(fields: { [key: string]: FieldDefinition });
       byId(id: IdType<D>, opts?: any): Promise<D | null>;
       byIds(ids: IdType<D>[], opts?: any): Promise<D[]>;
@@ -205,7 +207,6 @@ declare module 'tyranid/client' {
       labels(text: string): Promise<D[]>;
       labels(ids: string[]): Promise<D[]>;
       labels(_: any): Promise<D[]>;
-      metaType: 'collection';
       on(opts: any): () => void;
       parsePath(text: string): Tyr.NamePathInstance;
       paths: { [fieldPathName: string]: Tyr.FieldInstance };

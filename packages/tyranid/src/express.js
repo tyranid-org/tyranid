@@ -578,10 +578,16 @@ export function generateClientLibrary() {
 
     $label: {
       get() {
-        return this.$model.labelFor(this);
+        return (Tyr.options.whiteLabel && Tyr.options.whiteLabel(this)) || this.$model.labelFor(this);
       },
       enumerable:   false,
       configurable: false
+    },
+
+    $metaType: {
+      enumerable:   false,
+      configurable: false,
+      value: 'document'
     },
 
     $tyr: {
@@ -662,7 +668,7 @@ export function generateClientLibrary() {
   }
   Tyr.Field = Field;
 
-  Field.prototype.metaType = 'field';
+  Field.prototype.$metaType = 'field';
 
   Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
 
@@ -1029,7 +1035,7 @@ export function generateClientLibrary() {
     return CollectionInstance;
   }
 
-  Collection.prototype.metaType = 'collection';
+  Collection.prototype.$metaType = 'collection';
 
   Collection.prototype.compile = function() {
 
