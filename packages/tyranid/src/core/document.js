@@ -59,13 +59,15 @@ export const documentPrototype = (Tyr.documentPrototype = {
     if (keys) {
       if (keys === Tyr.$all) {
         _.each(this.$model.fields, field => {
-          const key = field.name,
-            v = obj[key];
+          if (!field.readonly) {
+            const key = field.name,
+              v = obj[key];
 
-          if (v !== undefined) {
-            this[key] = v;
-          } else {
-            delete this[key];
+            if (v !== undefined) {
+              this[key] = v;
+            } else {
+              delete this[key];
+            }
           }
         });
       } else {
