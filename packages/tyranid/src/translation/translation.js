@@ -1,4 +1,3 @@
-
 import Tyr from '../tyr';
 
 import Collection from './collection';
@@ -11,7 +10,7 @@ const Translation = new Collection({
   timestamps: true,
   fields: {
     _id: { is: 'string' },
-    locale: { is: 'string' },
+    locale: { is: 'string' }
   }
 });
 
@@ -28,6 +27,7 @@ const Term = new Collection({
   }
 });
 
+/*
 Get label for question:
 
 Translation code format:
@@ -69,6 +69,8 @@ Uid: Questions.uid,
 Code: PROFILE_GENDER_ID,
 Locale: ‘en’ 
 });
+
+*/
 
 Tyr.Translation = Translation;
 Tyr.Translation = Translation;
