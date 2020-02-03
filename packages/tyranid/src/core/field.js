@@ -16,7 +16,7 @@ export default class Field {
     if (opts) Object.assign(this, opts);
   }
 
-  metaType = 'field';
+  $metaType = 'field';
 
   get computed() {
     const def = this.def;
@@ -87,7 +87,18 @@ export default class Field {
   get namePath() {
     let np = this._np;
     if (!np) {
-      np = this._np = new NamePath(this.collection, this.path);
+      if (this.dynamicMatch) {
+        let root;
+        for (
+          root = this.parent;
+          root && root instanceof Field;
+          root = root.parent
+        );
+
+        np = this._np = new NamePath(root, this.path);
+      } else {
+        np = this._np = new NamePath(this.collection, this.path);
+      }
     }
     return np;
   }

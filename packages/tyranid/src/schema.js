@@ -146,6 +146,7 @@ async function ensureCache() {
         continue;
       }
 
+      // DYNAMIC-FIELD-ROOT -- do we want to pass in something other than "def" as the parent?
       collection
         .createCompiler(def, 'compile', schema)
         .fields('', def, def.fields);
@@ -170,6 +171,14 @@ Collection.prototype.findField = async function(pathName) {
       for (const name in fields) {
         const field = fields[name];
         if (pathName === field.path) return field;
+
+        if (pathName.startsWith(name)) {
+          const nestedFields = field.def.fields;
+          for (const nestedName in nestedFields) {
+            const nestedField = nestedFields[nestedName];
+            if (pathName === nestedField.path) return nestedField;
+          }
+        }
       }
     }
   }

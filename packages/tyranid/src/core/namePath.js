@@ -86,7 +86,8 @@ function NamePath(base, pathName, opts) {
 
   nextPath: while (pi < plen) {
     const name = path[pi];
-    let def = at.def;
+    // DYNAMIC-FIELD-ROOT: if at is a custom field root, then def won't be defined
+    let def = at.def ?? at;
 
     if (name === '_') {
       if (!at.of)
