@@ -81,6 +81,10 @@ export interface TyrFieldProps {
     | { $id: any; $label: string }
     | { $id: any; $label: string }[]
     | undefined;
+  filterValues?: {
+    $id: any;
+    $label: string;
+  }[];
   searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
   searchSortById?: boolean;
   liveSearch?: boolean;

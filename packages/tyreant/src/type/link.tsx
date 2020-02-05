@@ -419,44 +419,47 @@ byName.link = {
       filterable.onSearch();
     };
 
-    let filterValues: { $id: any; $label: string }[] | undefined;
+    let filterValues: { $id: any; $label: string }[] | undefined =
+      props.filterValues;
 
-    if (localSearch && localDocuments && props.filterOptionLabel) {
-      // Go get all the values for the filter
+    if (!filterValues) {
+      if (localSearch && localDocuments && props.filterOptionLabel) {
+        // Go get all the values for the filter
 
-      const allLabels: {
-        $id: any;
-        $label: string;
-      }[] = [];
+        const allLabels: {
+          $id: any;
+          $label: string;
+        }[] = [];
 
-      localDocuments.forEach(d => {
-        const values = props.filterOptionLabel!(d);
+        localDocuments.forEach(d => {
+          const values = props.filterOptionLabel!(d);
 
-        if (Array.isArray(values)) {
-          allLabels.push(...values);
-        } else if (values) {
-          allLabels.push(values);
-        }
-      });
-
-      filterValues = uniq(compact(allLabels), '$id');
-    } else {
-      if (!link.isStatic()) {
-        linkField.labels(new path.tail.collection({})).then(results => {
-          filterValues = results.map(d => ({
-            ...d,
-            $id: String(d.$id),
-            $label: d.$label
-          }));
+          if (Array.isArray(values)) {
+            allLabels.push(...values);
+          } else if (values) {
+            allLabels.push(values);
+          }
         });
+
+        filterValues = uniq(compact(allLabels), '$id');
       } else {
-        filterValues = linkFor(path)!.values.map(d => {
-          return {
-            ...d,
-            $id: String(d.$id),
-            $label: d.$label
-          };
-        });
+        if (!link.isStatic()) {
+          linkField.labels(new path.tail.collection({})).then(results => {
+            filterValues = results.map(d => ({
+              ...d,
+              $id: String(d.$id),
+              $label: d.$label
+            }));
+          });
+        } else {
+          filterValues = linkFor(path)!.values.map(d => {
+            return {
+              ...d,
+              $id: String(d.$id),
+              $label: d.$label
+            };
+          });
+        }
       }
     }
 

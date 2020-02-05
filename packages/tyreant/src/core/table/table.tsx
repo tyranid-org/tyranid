@@ -92,6 +92,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   pageSize?: number; // a.k.a. limit
   pinActionsRight?: boolean;
   rowEdit?: boolean;
+  emptyTablePlaceholder?: React.ReactNode | ((tableControl: TyrTable<Tyr.anny>) => React.ReactNode), 
   canEditDocument?: (document: D) => boolean;
   size?: 'default' | 'middle' | 'small';
   saveDocument?: (document: D) => Promise<D>;
@@ -1339,7 +1340,8 @@ export class TyrTable<
       decorator,
       onSelectRows,
       orderable,
-      rowSelection
+      rowSelection,
+      emptyTablePlaceholder
     } = this.props;
 
     const fieldCount = fields.length;
@@ -1381,9 +1383,11 @@ export class TyrTable<
           </>
         );
       }
+      const emptyText = typeof emptyTablePlaceholder === 'function' ? emptyTablePlaceholder(this) : emptyTablePlaceholder;
 
       const mainTable = fields ? (
         <ObsTable
+          locale={{emptyText}}
           bordered={bordered}
           rowSelection={
             rowsSelectable
