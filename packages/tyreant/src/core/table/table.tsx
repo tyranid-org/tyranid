@@ -1334,19 +1334,7 @@ export class TyrTable<
               : EditableFormRow
         }
       };
-
-      let netFooter = footer;
-
-      if (exportProp) {
-        netFooter = (docs: D[]) => (
-          <>
-            <Button onClick={() => (this.showExport = true)}>
-              <Icon type="upload" /> Export
-            </Button>
-            {footer?.(docs)}
-          </>
-        );
-      }
+      
       const emptyText = typeof emptyTablePlaceholder === 'function' ? emptyTablePlaceholder(this) : emptyTablePlaceholder;
 
       const mainTable = fields ? (
