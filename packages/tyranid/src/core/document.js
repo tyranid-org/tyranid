@@ -56,9 +56,11 @@ export const documentPrototype = (Tyr.documentPrototype = {
   },
 
   $copy(obj, keys) {
+    const { fields } = this.$model;
+
     if (keys) {
       if (keys === Tyr.$all) {
-        _.each(this.$model.fields, field => {
+        _.each(fields, field => {
           if (!field.readonly) {
             const key = field.name,
               v = obj[key];
@@ -72,14 +74,28 @@ export const documentPrototype = (Tyr.documentPrototype = {
         });
       } else {
         for (const key of keys) {
-          this[key] = obj[key];
+          const field = fields[key];
+
+          if (!field || !field.readonly) {
+            const v = obj[key];
+            if (v !== undefined) {
+              this[key] = v;
+            } else {
+              delete this[key];
+            }
+          }
         }
       }
     } else {
       for (const key in obj) {
-        if (obj.hasOwnProperty(key) && key !== '_history') {
-          const v = obj[key];
+        const field = fields[key];
 
+        if (
+          (!field || !field.readonly) &&
+          obj.hasOwnProperty(key) &&
+          key !== '_history'
+        ) {
+          const v = obj[key];
           if (v !== undefined) {
             this[key] = v;
           } else {
