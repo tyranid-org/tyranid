@@ -202,12 +202,14 @@ Collection.prototype.fieldsFor = async function(opts) {
     ? schema => queryMatches(query, schema.match)
     : schema => schema.objMatcher(match);
 
-  for (const schema of schemaCache) {
-    if (schema.collection === this.id && test(schema)) {
-      _.each(schema.def.fields, (field, name) => {
-        if (opts.custom && !field.def.custom) return;
-        mergeSchema(fields, name, field);
-      });
+  if (schemaCache) {
+    for (const schema of schemaCache) {
+      if (schema.collection === this.id && test(schema)) {
+        _.each(schema.def.fields, (field, name) => {
+          if (opts.custom && !field.def.custom) return;
+          mergeSchema(fields, name, field);
+        });
+      }
     }
   }
 
