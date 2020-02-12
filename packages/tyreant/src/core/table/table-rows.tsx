@@ -36,6 +36,7 @@ class BodyRow extends React.Component<BodyRowProps> {
       moveRow,
       form,
       dndEnabled,
+      isDragging,
       ...restProps
     } = this.props;
 
@@ -53,6 +54,10 @@ class BodyRow extends React.Component<BodyRowProps> {
       if (restProps.index < draggingIndex) {
         className += ' drop-over-upward';
       }
+    }
+
+    if (isDragging) {
+      className += ' tyr-is-dragging';
     }
 
     // Just the edit row
@@ -142,8 +147,9 @@ const DraggableBodyRow = DropTarget(
         };
       }
     },
-    connect => ({
-      connectDragSource: connect.dragSource()
+    (connect, monitor) => ({
+      connectDragSource: connect.dragSource(),
+      isDragging: monitor.isDragging()
     })
   )(BodyRow)
 );
