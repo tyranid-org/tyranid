@@ -1329,6 +1329,7 @@ export class TyrTable<
       className,
       children,
       rowEdit,
+      setEditing,
       export: exportProp,
       canEditDocument,
       size,
@@ -1462,9 +1463,14 @@ export class TyrTable<
 
       return (
         <div className={netClassName} 
+        tabIndex={-1}
         onKeyDown={e => {
           if (e.keyCode === 13 && this.currentRowForm) {
-            this.saveDocument(this.currentRowForm);
+            if(newDocument || editingDocument){
+              this.saveDocument(this.currentRowForm);
+            } else {
+              setEditing && setEditing(false);
+            }
           }}}
           >
           {(children || multiActions.length > 0) && (
