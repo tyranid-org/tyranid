@@ -786,7 +786,10 @@ export class TyrTable<
   private getFilter(path: Tyr.NamePathInstance, props: TyrFieldLaxProps) {
     const filterable = {
       searchValues: this.searchValues,
-      onSearch: () => this.execute(),
+      onSearch: () => {
+        this.skip = 0;
+        this.execute();
+      },
       localSearch: this.isLocal,
       localDocuments: this.documents
     };
@@ -1217,7 +1220,7 @@ export class TyrTable<
   };
 
   private pagination = () => {
-    if (!this.limit) return undefined;
+    if (!this.limit) return false;
 
     const { skip = 0, limit } = this;
     const totalCount = this.count || 0;
@@ -1227,7 +1230,8 @@ export class TyrTable<
     //return true || totalCount > this.limit
     return totalCount > limit
       ? {
-          defaultCurrent: Math.floor(skip / limit) + 1,
+          current: Math.floor(skip / limit) + 1,
+          //defaultCurrent: Math.floor(skip / limit) + 1,
           total: totalCount,
           defaultPageSize: limit,
           pageSize: limit,
@@ -1406,7 +1410,7 @@ export class TyrTable<
           components={components}
           rowKey={(doc: any) => doc.$id || doc.$id}
           size={size || 'small'}
-          pagination={!this.limit ? false : this.pagination()}
+          pagination={this.pagination()}
           onChange={this.handleTableChange as any}
           footer={netFooter as (rows: Object[]) => React.ReactNode}
           title={
