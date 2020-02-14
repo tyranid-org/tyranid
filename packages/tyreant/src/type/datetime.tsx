@@ -9,6 +9,7 @@ import { DatePicker } from 'antd';
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
+import { registerComponent } from '../common';
 
 export const TyrDateTimeBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -39,3 +40,5 @@ byName.datetime = {
     return moment(value);
   }
 };
+
+registerComponent('TyrDateTime', TyrDateTime);

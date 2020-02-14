@@ -59,6 +59,10 @@ import './secure/secureError';
 
 import './ui/table-config';
 
+import './page/markup';
+import './page/markupType';
+import './page/page';
+
 import './unit/unitSystem';
 import './unit/unitFactor';
 import './unit/unitType';
@@ -140,10 +144,7 @@ _.assign(Tyr, {
     }
     this._configCalled = true;
 
-    // clear object but keep reference
-    for (const prop in options) {
-      delete options[prop];
-    }
+    Tyr.clear(options);
 
     _.extend(options, opts);
 

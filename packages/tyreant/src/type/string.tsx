@@ -17,6 +17,7 @@ import {
 } from './type';
 import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
+import { registerComponent } from '../common';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -153,3 +154,5 @@ byName.string = {
   filter: stringFilter,
   finder: stringFinder
 };
+
+registerComponent('TyrString', TyrString);

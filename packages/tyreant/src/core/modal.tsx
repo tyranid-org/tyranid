@@ -112,7 +112,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
 
   render() {
     const { cancel, create } = this;
-    const { children } = this.props;
+    const { children, className } = this.props;
     const { visible, loading } = this.state;
 
     return (
@@ -128,7 +128,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
         )}
 
         <Modal
-          className="tyr-modal"
+          className={'tyr-modal' + (className ? ' ' + className : '')}
           visible={visible}
           onCancel={() => cancel!.act({ component: this.component })}
           title={this.renderHeader()}

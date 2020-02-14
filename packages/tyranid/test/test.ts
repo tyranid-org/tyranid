@@ -47,7 +47,7 @@ const momentSource = fs.readFileSync(
 
 const { ObjectID: ObjectId } = mongodb;
 
-const { NamePath, $all, Log } = Tyr;
+const { $all, Log } = Tyr;
 
 const { expect, assert } = chai;
 
@@ -119,6 +119,8 @@ describe('tyranid', () => {
         }
       }
     });
+
+    await Tyr.db.dropDatabase();
   });
 
   after(() => {

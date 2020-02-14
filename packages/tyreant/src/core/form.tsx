@@ -8,6 +8,7 @@ import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 import { TypeContext, TyrTypeProps } from '../type/type';
 import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
 import { TyrComponentProps, TyrComponent } from './component';
+import { registerComponent } from '../common';
 
 type TyrFormBaseProps = {
   // form is the rc-form, component is the TyrForm
@@ -149,6 +150,8 @@ export class TyrForm<
     );
   }
 }
+
+registerComponent('TyrForm', TyrForm);
 
 /**
  * returns Promise<true> if the save was successful, Promise<false> if there were validation errors.

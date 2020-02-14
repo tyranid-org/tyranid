@@ -598,3 +598,13 @@ $primary-background-color: #6a8fbe;
     margin-left: 5px;
   }
 }
+
+form textarea.tyr-markup-editor {
+  min-height: 500px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.tyr-page-editor {
+  width: calc(100% - 10px) !important;
+}

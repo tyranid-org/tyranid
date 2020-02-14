@@ -13,7 +13,7 @@ const Subscription = new Collection({
   internal: true,
   fields: {
     _id: { is: 'mongoid' },
-    u: { link: 'user', label: 'User' },
+    u: { link: 'user?', label: 'User' },
     c: { is: 'string', label: 'Collection' },
     q: { is: 'string', label: 'Query', note: 'Stringified MongoDB query.' },
     on: { is: 'date' },

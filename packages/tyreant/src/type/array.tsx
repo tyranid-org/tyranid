@@ -16,6 +16,7 @@ import {
 import { TyrArrayKeyValue } from './array.key-value';
 import { TyrArrayList } from './array.list';
 import { TyrArrayFixed } from './array.fixed';
+import { registerComponent } from '../common';
 
 export const TyrArrayBase = (props: TyrTypeProps) => {
   const path = props.path!;
@@ -122,3 +123,5 @@ byName.array = {
     }
   }
 };
+
+registerComponent('TyrArray', TyrArray);

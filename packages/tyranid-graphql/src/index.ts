@@ -461,6 +461,9 @@ export function createGraphQLFieldConfig(
     case 'datetime':
     case 'time':
     case 'uid':
+
+    // TODO:  need to handle markup better here
+    case 'markup':
       return {
         type: wrap(GraphQLString),
         description: note

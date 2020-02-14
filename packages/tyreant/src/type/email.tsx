@@ -7,6 +7,7 @@ import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
+import { registerComponent } from '../common';
 
 export const TyrEmailBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path!.name]);
@@ -37,3 +38,5 @@ byName.email = {
   filter: stringFilter,
   finder: stringFinder
 };
+
+registerComponent('TyrEmail', TyrEmail);

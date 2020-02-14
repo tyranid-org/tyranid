@@ -14,6 +14,7 @@ import { SelectValue } from 'antd/lib/select';
 import { Moment } from 'moment';
 import FormItem from 'antd/lib/form/FormItem';
 import { Tooltip, Icon } from 'antd';
+import { registerComponent } from '../common';
 
 export type TyrSortDirection = 'ascend' | 'descend';
 
@@ -206,3 +207,5 @@ export const TyrFieldBase = (props: TyrTypeProps) => {
 };
 
 export const TyrField = withTypeContext(TyrFieldBase);
+
+registerComponent('TyrField', TyrField);

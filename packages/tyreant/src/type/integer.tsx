@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { Tyr } from 'tyranid/client';
-
 import { Slider, Button, InputNumber } from 'antd';
 
 import {
@@ -16,6 +15,7 @@ import { byName, TyrTypeProps, withTypeContext } from './type';
 import { SliderValue } from 'antd/lib/slider';
 import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
+import { registerComponent } from '../common';
 
 export const TyrIntegerBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -154,3 +154,5 @@ byName.integer = {
   filter: integerFilter,
   finder: integerFinder
 };
+
+registerComponent('TyrInteger', TyrInteger);

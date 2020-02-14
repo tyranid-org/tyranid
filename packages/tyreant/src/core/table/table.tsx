@@ -11,9 +11,13 @@ import * as React from 'react';
 
 import { createRef } from 'react';
 import { Tyr } from 'tyranid/client';
-import { tyreant } from '../../tyreant';
+
+// TODO:  is it possible to import this via tsconfig ?
+import 'tyranid/builtin/isomorphic';
+import 'tyranid/builtin/client';
 
 import { autorun, observable } from 'mobx';
+import { tyreant } from '../../tyreant';
 import { observer } from 'mobx-react';
 
 import { compact, findIndex, isEqual } from 'lodash';
@@ -50,19 +54,14 @@ import {
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from '../form';
 import { string } from 'prop-types';
-import {
-  TyrTableConfigType,
-  TyrTableConfig,
-  TyrTableColumnFieldProps,
-  TyrTableConfigField,
-  TyrTableConfigFields
-} from './typedef';
+import { TyrTableConfig, TyrTableColumnFieldProps } from './typedef';
 import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
 import {
   EditableFormRow,
   EditableDraggableBodyRow,
   EditableContext
 } from './table-rows';
+import { registerComponent } from '../../common';
 
 export interface OurColumnProps<T> extends ColumnProps<T> {
   field: Tyr.FieldInstance;
@@ -92,7 +91,9 @@ export interface TyrTableProps<D extends Tyr.Document>
   pageSize?: number; // a.k.a. limit
   pinActionsRight?: boolean;
   rowEdit?: boolean;
-  emptyTablePlaceholder?: React.ReactNode | ((tableControl: TyrTable<Tyr.anny>) => React.ReactNode), 
+  emptyTablePlaceholder?:
+    | React.ReactNode
+    | ((tableControl: TyrTable<Tyr.anny>) => React.ReactNode);
   canEditDocument?: (document: D) => boolean;
   size?: 'default' | 'middle' | 'small';
   saveDocument?: (document: D) => Promise<D>;
@@ -100,7 +101,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
-  onChangeTableConfiguration?: (fields: TyrTableConfigFields) => void;
+  onChangeTableConfiguration?: (fields: Tyr.TyrTableConfig['fields']) => void;
   scroll?: {
     x?: boolean | number | string;
     y?: boolean | number | string;
@@ -185,7 +186,7 @@ export class TyrTable<
   showExport = false;
 
   @observable
-  tableConfig?: TyrTableConfigType;
+  tableConfig?: Tyr.TyrTableConfig;
 
   currentRowForm?: WrappedFormUtils;
 
@@ -409,7 +410,7 @@ export class TyrTable<
   private fromUrlQuery(query: { [name: string]: string }) {
     this.skip = 0;
     this.limit = this.defaultPageSize;
-    this.searchValues = {};
+    Tyr.clear(this.searchValues);
     let sortFound = false;
 
     for (const name in query) {
@@ -611,11 +612,11 @@ export class TyrTable<
         onChangeTableConfiguration &&
           onChangeTableConfiguration(
             (tableConfig.tableConfig as any).fields.map(
-              (f: TyrTableConfigField) => {
+              (f: Tyr.TyrTableConfig['fields'][0]) => {
                 return {
                   name: f.name,
                   hidden: !!f.hidden
-                } as TyrTableConfigField;
+                };
               }
             )
           );
@@ -1383,11 +1384,14 @@ export class TyrTable<
           </>
         );
       }
-      const emptyText = typeof emptyTablePlaceholder === 'function' ? emptyTablePlaceholder(this) : emptyTablePlaceholder;
+      const emptyText =
+        typeof emptyTablePlaceholder === 'function'
+          ? emptyTablePlaceholder(this)
+          : emptyTablePlaceholder;
 
       const mainTable = fields ? (
         <ObsTable
-          locale={{emptyText}}
+          locale={{ emptyText }}
           bordered={bordered}
           rowSelection={
             rowsSelectable
@@ -1461,12 +1465,14 @@ export class TyrTable<
       );
 
       return (
-        <div className={netClassName} 
-        onKeyDown={e => {
-          if (e.keyCode === 13 && this.currentRowForm) {
-            this.saveDocument(this.currentRowForm);
-          }}}
-          >
+        <div
+          className={netClassName}
+          onKeyDown={e => {
+            if (e.keyCode === 13 && this.currentRowForm) {
+              this.saveDocument(this.currentRowForm);
+            }
+          }}
+        >
           {(children || multiActions.length > 0) && (
             <Row>
               <Col span={24} className="tyr-table-header">
@@ -1616,3 +1622,5 @@ export class TyrTable<
     }
   }
 }
+
+registerComponent('TyrTable', TyrTable);

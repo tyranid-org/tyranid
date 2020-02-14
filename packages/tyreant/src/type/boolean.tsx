@@ -18,6 +18,7 @@ import {
 import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { registerComponent } from '../common';
 
 export const TyrBooleanBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -171,3 +172,5 @@ byName.boolean = {
   filter: booleanFilter,
   finder: booleanFinder
 };
+
+registerComponent('TyrBoolean', TyrBoolean);

@@ -9,8 +9,11 @@ import { compact, findIndex } from 'lodash';
 
 import { getFieldName } from '../field';
 
+// TODO:  is it possible to import this via tsconfig ?
+import 'tyranid/builtin/isomorphic';
+import 'tyranid/builtin/client';
+
 import {
-  TyrTableConfigType,
   TyrTableConfig,
   TyrTableColumnFieldProps,
   ColumnConfigField
@@ -34,7 +37,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | string /* the key */
     | true /* if true, key is "default" */;
   export?: boolean;
-  tableConfig?: TyrTableConfigType;
+  tableConfig?: Tyr.TyrTableConfig;
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
   columns: TyrTableColumnFieldProps[];
@@ -68,7 +71,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   // Only runs once
   useEffect(() => {
-    let tableConfig: TyrTableConfigType;
+    let tableConfig: Tyr.TyrTableConfig;
     const userId = Tyr.local.user.$id;
 
     if (incomingTableConfig) {
@@ -329,7 +332,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
   config: TyrTableConfig | string | boolean,
   existingTableConfig?: any
 ) => {
-  let tableConfig: TyrTableConfigType;
+  let tableConfig: Tyr.TyrTableConfig;
 
   if (typeof config === 'boolean') config = 'default';
   if (typeof config === 'string') config = { key: config };
@@ -348,7 +351,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
         documentUid: documentUid || { $exists: false },
         collectionId: table.collection.id
       }
-    })) as TyrTableConfigType;
+    }))!;
 
     if (!tableConfig) {
       tableConfig = new Tyr.byName.tyrTableConfig({
@@ -362,7 +365,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
             hidden: !!c.defaultHidden
           };
         })
-      }) as TyrTableConfigType;
+      })!;
     }
   }
 

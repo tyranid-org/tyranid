@@ -9,6 +9,7 @@ import { TimePicker } from 'antd';
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { withTypeContext } from './type';
 import { decorateField } from '../core';
+import { registerComponent } from '../common';
 
 export const TyrTimeBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -37,3 +38,5 @@ byName.time = {
     return moment(value);
   }
 };
+
+registerComponent('TyrTime', TyrTime);

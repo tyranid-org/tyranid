@@ -11,6 +11,7 @@ import {
 } from './type';
 import { TyrFieldBase, TyrFieldExistsProps } from '../core';
 import { Row, Col } from 'antd';
+import { registerComponent } from '../common';
 
 interface TyrObjectExtraProps {
   fields?: TyrFieldExistsProps[];
@@ -92,3 +93,5 @@ byName.object = {
     }
   }
 };
+
+registerComponent('TyrObject', TyrObject);

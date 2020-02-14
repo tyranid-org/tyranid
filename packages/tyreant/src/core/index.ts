@@ -5,5 +5,6 @@ export * from './drawer';
 export * from './field';
 export * from './form';
 export * from './modal';
+export * from './page';
 export * from './router';
 export * from './table';

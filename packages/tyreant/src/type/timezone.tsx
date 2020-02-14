@@ -13,6 +13,7 @@ import {
   onTypeChange
 } from './type';
 import { decorateField } from '../core';
+import { registerComponent } from '../common';
 
 const getOffset = (tzName: string) => {
   if (tzName === 'useOrgDefault' || tzName === 'useClient') return 0;
@@ -61,3 +62,5 @@ export const TyrTimeZone = withTypeContext(TyrTimeZoneBase);
 byName.timezone = {
   component: TyrTimeZoneBase
 };
+
+registerComponent('TyrTimeZone', TyrTimeZone);

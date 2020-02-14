@@ -16,6 +16,7 @@ import { byName, TyrTypeProps, withTypeContext } from './type';
 import { SliderValue } from 'antd/lib/slider';
 import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
+import { registerComponent } from '../common';
 
 export const TyrDoubleBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -154,3 +155,5 @@ byName.double = {
   filter: doubleFilter,
   finder: doubleFinder
 };
+
+registerComponent('TyrDouble', TyrDouble);

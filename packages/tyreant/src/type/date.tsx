@@ -20,6 +20,7 @@ import {
 import { withTypeContext } from './type';
 import { TyrFieldLaxProps, decorateField } from '../core';
 import { FilterDropdownProps } from 'antd/es/table';
+import { registerComponent } from '../common';
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -181,3 +182,5 @@ byName.date = {
     );
   }
 };
+
+registerComponent('TyrDate', TyrDate);

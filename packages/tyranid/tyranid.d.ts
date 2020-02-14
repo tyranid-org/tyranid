@@ -150,6 +150,7 @@ export namespace Tyr {
   /**
    * utility methods
    */
+  export function clear(obj: object): void;
   export function isEqual(a: any, b: any): boolean;
   export function isSameId(
     a: AnyIdType | null | undefined,

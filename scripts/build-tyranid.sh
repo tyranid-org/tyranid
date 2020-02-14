@@ -8,3 +8,5 @@ run_tsc() {
 
 run_tsc tyranid
 run_tsc tyranid-tdgen
+
+(cd ./packages/tyranid && npm run generate-builtin-typings)

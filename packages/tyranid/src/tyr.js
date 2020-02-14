@@ -401,6 +401,11 @@ const Tyr = {
     return value;
   },
 
+  /** @isomorphic */
+  clear(obj) {
+    for (const key in obj) if (obj.hasOwnProperty(key)) delete obj[key];
+  },
+
   indexOf(array, value) {
     const an = array.length;
 
@@ -443,6 +448,10 @@ const Tyr = {
   stringify(value, replacer, spacing) {
     return JSON.stringify(value, (k, v) => {
       if (replacer) v = replacer(k, v);
+      if (v instanceof RegExp) {
+        // mongo's format
+        return { $regex: v.source, $options: v.flags };
+      }
       return v && v.constructor && v.constructor.name === 'ObjectId'
         ? v.toString()
         : v;

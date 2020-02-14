@@ -1,5 +1,4 @@
 import { TyrFieldLaxProps } from '../field';
-import { Tyr } from 'tyranid/client';
 
 export interface TyrTableConfig {
   key: string;
@@ -11,13 +10,6 @@ export interface TyrTableConfig {
   asDrawer?: boolean;
   compact?: boolean;
 }
-
-export interface TyrTableConfigField {
-  name: string;
-  hidden?: boolean;
-}
-
-export type TyrTableConfigFields = TyrTableConfigField[];
 
 export interface TyrTableColumnFieldProps extends TyrFieldLaxProps {
   pinned?: 'left' | 'right';
@@ -37,12 +29,3 @@ export interface ColumnConfigField {
   locked: boolean;
   hidden: boolean;
 }
-
-export type TyrTableConfigType = Tyr.Document & {
-  key?: string;
-  name?: string;
-  fields: TyrTableConfigFields;
-  documentUid: string;
-  userId: string;
-  collectionId: string;
-};

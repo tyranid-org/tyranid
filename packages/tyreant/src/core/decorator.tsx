@@ -5,7 +5,9 @@ import { Tyr } from 'tyranid/client';
 import { TyrAction } from './action';
 import { TyrComponent } from './component';
 
-export interface TyrDecoratorProps {}
+export interface TyrDecoratorProps {
+  className?: string;
+}
 export interface TyrDecoratorState {
   visible: boolean;
 }

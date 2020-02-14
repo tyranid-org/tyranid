@@ -23,16 +23,7 @@ const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
 
 function stringify(v) {
-  if (typeof v === 'function') {
-    return es5Fn(v);
-  }
-
-  if (v instanceof RegExp) {
-    // mongo's format
-    return JSON.stringify({ $regex: v.source, $options: v.flags });
-  }
-
-  return Tyr.stringify(v);
+  return typeof v === 'function' ? es5Fn(v) : Tyr.stringify(v);
 }
 
 class Serializer {
@@ -443,6 +434,7 @@ export function generateClientLibrary() {
     }
   }
 
+  Tyr.clear = ${es5Fn(Tyr.clear)};
   Tyr.clone = obj => _.clone(obj);
   Tyr.cloneDeep = obj => _.cloneDeep(obj);
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
@@ -452,6 +444,7 @@ export function generateClientLibrary() {
   Tyr.ordinalize = ${es5Fn(Tyr.ordinalize)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
+  Tyr.stringify = ${es5Fn(Tyr.stringify)};
   Tyr.unitize = ${es5Fn(Tyr.unitize)};
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
 
@@ -1156,7 +1149,7 @@ export function generateClientLibrary() {
     return ajax({
       method: 'POST',
       url: '/api/' + col.def.name,
-      data: JSON.stringify(opts),
+      data: Tyr.stringify(opts),
       contentType: 'application/json'
     }).then(docs => docs && docs.length ? new col(docs[0]) : null);
   };
@@ -1167,7 +1160,7 @@ export function generateClientLibrary() {
     return ajax({
       method: 'POST',
       url: '/api/' + col.def.name,
-      data: JSON.stringify(opts),
+      data: Tyr.stringify(opts),
       contentType: 'application/json'
     }).then(rslt => {
       let docs;

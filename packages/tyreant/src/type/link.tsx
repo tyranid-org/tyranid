@@ -18,6 +18,7 @@ import {
 import { TyrFieldLaxProps, decorateField } from '../core';
 
 import Checkbox from 'antd/es/checkbox';
+import { registerComponent } from '../common';
 
 // TODO:  replace with antd's ModeOption when we upgrade ant
 type ModeOption = 'default' | 'multiple' | 'tags';
@@ -615,3 +616,5 @@ byName.link = {
       : 'Unknown Link';
   }
 };
+
+registerComponent('TyrLink', TyrLink);

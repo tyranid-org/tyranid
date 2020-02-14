@@ -70,6 +70,7 @@ declare module 'tyranid/client' {
       CollectionStatic;
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
+    export function clear(obj: object): void;
     export function clone<T>(obj: T): T;
     export function cloneDeep<T>(obj: T): T;
     export const collections: CollectionInstance[] & CollectionsByClassName;

@@ -11,6 +11,7 @@ export * from './email';
 export * from './integer';
 export * from './double';
 export * from './link';
+export * from './markup';
 export * from './object';
 export * from './string';
 export * from './time';
