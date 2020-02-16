@@ -71,6 +71,16 @@ declare module 'tyranid/client' {
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
     export function clear(obj: object): void;
+    export function compactMap<A, B>(
+      arr: A[] | undefined,
+      mapFn: (v: A) => B
+    ): (B extends false
+      ? never
+      : B extends null
+      ? never
+      : B extends undefined
+      ? never
+      : B)[];
     export function clone<T>(obj: T): T;
     export function cloneDeep<T>(obj: T): T;
     export const collections: CollectionInstance[] & CollectionsByClassName;

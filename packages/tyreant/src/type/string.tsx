@@ -20,7 +20,7 @@ import { FilterDropdownProps } from 'antd/es/table';
 import { registerComponent } from '../common';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('string', props, () => {
     const onTypeChangeFunc = (ev: any) => {

@@ -437,6 +437,7 @@ export function generateClientLibrary() {
   Tyr.clear = ${es5Fn(Tyr.clear)};
   Tyr.clone = obj => _.clone(obj);
   Tyr.cloneDeep = obj => _.cloneDeep(obj);
+  Tyr.compactMap = ${es5Fn(Tyr.compactMap)};
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
@@ -764,7 +765,7 @@ export function generateClientLibrary() {
   ${UserError.toString()}
   Tyr.UserError = UserError;
 
-  Field.prototype.validatSecure = function(doc) {
+  Field.prototype.validate = function(doc) {
     if (this.def.validate) {
       return ajax({
         url: '/api/' + this.collection.def.name + '/' + this.path + '/validate/'

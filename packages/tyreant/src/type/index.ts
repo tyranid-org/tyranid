@@ -14,5 +14,6 @@ export * from './link';
 export * from './markup';
 export * from './object';
 export * from './string';
+export * from './text';
 export * from './time';
 export * from './timezone';

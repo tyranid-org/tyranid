@@ -17,6 +17,7 @@ import './type/mongoId';
 import './type/object';
 import './type/password';
 import './type/string';
+import './type/text';
 import './type/time';
 import './type/timezone';
 import './type/uid';

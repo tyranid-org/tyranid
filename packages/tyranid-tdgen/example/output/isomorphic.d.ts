@@ -23,6 +23,17 @@ declare module 'tyranid/isomorphic' {
      */
     export type anny = any;
 
+    export function compactMap<A, B>(
+      arr: A[],
+      mapFn: (v: A) => B
+    ): (B extends false
+      ? never
+      : B extends null
+      ? never
+      : B extends undefined
+      ? never
+      : B)[];
+
     export interface Metadata {
       $metaType: 'field' | 'collection' | 'path';
     }

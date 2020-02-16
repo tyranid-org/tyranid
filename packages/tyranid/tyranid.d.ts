@@ -151,6 +151,16 @@ export namespace Tyr {
    * utility methods
    */
   export function clear(obj: object): void;
+  export function compactMap<A, B>(
+    arr: A[] | undefined,
+    mapFn: (v: A) => B
+  ): (B extends false
+    ? never
+    : B extends null
+    ? never
+    : B extends undefined
+    ? never
+    : B)[];
   export function isEqual(a: any, b: any): boolean;
   export function isSameId(
     a: AnyIdType | null | undefined,

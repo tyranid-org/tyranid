@@ -406,6 +406,17 @@ const Tyr = {
     for (const key in obj) if (obj.hasOwnProperty(key)) delete obj[key];
   },
 
+  /** @isomorphic */
+  compactMap(arr, mapFn) {
+    if (!arr) return [];
+    const nArr = []; // new Array(arr.length) ?
+    for (const v of arr) {
+      const mv = mapFn(v);
+      if (mv) nArr.push(mv);
+    }
+    return nArr;
+  },
+
   indexOf(array, value) {
     const an = array.length;
 

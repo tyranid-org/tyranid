@@ -9,34 +9,35 @@ import { withTypeContext } from './type';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
-export const TyrEmailBase = ((props: TyrTypeProps) => {
+const { TextArea } = Input;
+
+export const TyrTextBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
-  return decorateField('email', props, () => {
+  return decorateField('text', props, () => {
     const onTypeChangeFunc = (ev: any) => {
       onTypeChange(props, ev.target.value, ev);
       props.onChange && props.onChange(ev.target.value, ev, props);
     };
 
     return (
-      <Input
-        autoComplete="off"
-        type="email"
+      <TextArea
         placeholder={props.placeholder}
         autoFocus={props.autoFocus}
         onChange={onTypeChangeFunc}
         tabIndex={props.tabIndex}
+        rows={6}
       />
     );
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrEmail = withTypeContext(TyrEmailBase);
+export const TyrText = withTypeContext(TyrTextBase);
 
-byName.email = {
-  component: TyrEmailBase,
+byName.text = {
+  component: TyrTextBase,
   filter: stringFilter,
   finder: stringFinder
 };
 
-registerComponent('TyrEmail', TyrEmail);
+registerComponent('TyrText', TyrText);

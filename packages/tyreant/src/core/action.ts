@@ -84,7 +84,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       label: this.label,
       component: this.component,
       action: this.action,
-      hide: this.hide
+      hide: this.hide,
+      multiple: this.multiple
     };
 
     Object.assign(newOpts, opts);
