@@ -59,6 +59,7 @@ export const booleanFilter: Filter = (
 
   return {
     filterDropdown: (filterDdProps: FilterDropdownProps) => {
+      // First values is the "No" label and second is the "Yes" label
       const valueLabels = props.filterValues;
 
       return (
