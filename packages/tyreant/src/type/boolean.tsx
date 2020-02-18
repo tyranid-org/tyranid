@@ -59,6 +59,8 @@ export const booleanFilter: Filter = (
 
   return {
     filterDropdown: (filterDdProps: FilterDropdownProps) => {
+      const valueLabels = props.filterValues;
+
       return (
         <div className="search-box">
           <Checkbox
@@ -75,12 +77,12 @@ export const booleanFilter: Filter = (
                 filterable.searchValues[pathName] = set;
               }
 
-              set['no'] = !!e.target.checked;
+              set['no'] = !set.no;
 
               if (props.liveSearch) filterable.onSearch();
             }}
           >
-            No
+            {valueLabels ? valueLabels[0].$label : 'No'}
           </Checkbox>
           <Checkbox
             style={{ display: 'block' }}
@@ -96,12 +98,12 @@ export const booleanFilter: Filter = (
                 filterable.searchValues[pathName] = set;
               }
 
-              set['yes'] = !!e.target.checked;
+              set['yes'] = !set.yes;
 
               if (props.liveSearch) filterable.onSearch();
             }}
           >
-            Yes
+            {valueLabels ? valueLabels[1].$label : 'Yes'}
           </Checkbox>
 
           <div className="search-box-footer">
@@ -132,6 +134,10 @@ export const booleanFilter: Filter = (
       );
     },
     onFilter: (value: { no: boolean; yes: boolean }, doc: Tyr.Document) => {
+      if (props.onFilter) {
+        return props.onFilter(value, doc);
+      }
+
       if (value !== undefined) {
         const selectYes = !!value.yes;
         const selectNo = !!value.no;
