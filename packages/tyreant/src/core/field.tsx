@@ -129,8 +129,8 @@ export const labelForProps = (props: TyrTypeProps) => {
   const label = props.label;
   if (label) return label;
 
-  const { extra } = props;
-  if (extra) return Tyr.labelize(extra);
+  const { aux } = props;
+  if (aux) return Tyr.labelize(aux);
 
   return props.path!.tail.label;
 };
@@ -140,10 +140,10 @@ export const decorateField = (
   props: TyrTypeProps,
   component: () => React.ReactElement
 ) => {
-  const { path, form, extra } = props;
+  const { path, form, aux } = props;
   const field = path?.tail;
 
-  const identifier = extra || path!.identifier;
+  const identifier = aux || path!.identifier;
 
   if (props.hideOnCreate && props.document?.$isNew) {
     return <div className="hide-on-create" />;
@@ -182,7 +182,7 @@ export const decorateField = (
 
   return (
     <FormItem
-      key={extra || field!.path}
+      key={aux || field!.path}
       className={className('tyr-' + name, props)}
       label={label}
     >
