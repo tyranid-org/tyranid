@@ -79,7 +79,7 @@ export type TyrTypeLaxProps = {
    * if path does not exist, we will use field.path
    */
   path?: string | Tyr.NamePathInstance;
-  extra?: string;
+  aux?: string;
 
   children?: React.ReactNode;
 } & TyrFieldLaxProps;
@@ -90,7 +90,7 @@ export type TyrTypeProps = {
   value?: { value?: any };
   path?: Tyr.NamePathInstance;
   searchPath?: Tyr.NamePathInstance;
-  extra?: string;
+  aux?: string;
   children?: React.ReactNode;
 } & Omit<TyrFieldProps, 'field'>;
 
@@ -173,9 +173,9 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
     return v;
   }
 
-  const { extra, document } = props;
-  if (extra) {
-    return (document as any)[extra];
+  const { aux, document } = props;
+  if (aux) {
+    return (document as any)[aux];
   }
 
   const path = props.path!;
@@ -194,11 +194,11 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
 
 export const fieldDecoratorName = (props: TyrTypeProps) => {
   // ant forms act weird when there are '.'s in the property names
-  return props.extra || props.path!.name.replace(/\./g, '_');
+  return props.aux || props.path!.name.replace(/\./g, '_');
 };
 
 export const mapPropsToForm = (props: TyrTypeProps) => {
-  const { path, document, form, value, extra, default: defaultValue } = props;
+  const { path, document, form, value, aux, default: defaultValue } = props;
 
   if (value !== undefined) {
     const pathid = path!.identifier;
@@ -212,14 +212,14 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
         [pathid]: newValue
       });
     }
-  } else if (extra) {
-    const oldValue = form.getFieldsValue([extra])[extra];
-    const newValue = (document as any)[extra] || defaultValue;
+  } else if (aux) {
+    const oldValue = form.getFieldsValue([aux])[aux];
+    const newValue = (document as any)[aux] || defaultValue;
 
     if (oldValue !== newValue) {
       form.setFieldsValue({
         // TODO:  should this be "value" instead of "newValue" ?
-        [extra]: newValue
+        [aux]: newValue
       });
     }
   } else {
@@ -307,10 +307,10 @@ export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
   // }
 
   if (document) {
-    const { extra } = props;
+    const { aux } = props;
 
-    if (extra) {
-      (document as any)[extra] = value;
+    if (aux) {
+      (document as any)[aux] = value;
     } else if (!props.value) {
       mapFormValueToDocument(props.path!, value, document, props);
     }
@@ -382,7 +382,7 @@ export const withTypeContext = <T extends {} = {}>(
         parentProps && parentProps.path,
         props.path
       );
-      if (!path && !props.extra) {
+      if (!path && !props.aux) {
         let { field } = props;
         if (typeof field === 'string') field = document.$model.paths[field];
         if (field) {
