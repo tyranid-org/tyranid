@@ -924,7 +924,7 @@ export class TyrTable<
           ) {
             const fieldProps = {
               placeholder: column.placeholder,
-              autoFocus: column.autoFocus,
+              autoFocus: !!newDocumentTable && !!column.autoFocus,
               required: column.required,
               width: colWidth,
               multiple: column.multiple,
@@ -1458,7 +1458,9 @@ export class TyrTable<
                   this.onEditRow(record, rowIndex);
 
                   if (this._mounted) {
-                    this.setState({});
+                    setTimeout(() => {
+                      this.setState({});
+                    }, 400);
                   }
                 }
               }
