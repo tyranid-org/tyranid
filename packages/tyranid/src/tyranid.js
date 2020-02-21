@@ -53,6 +53,7 @@ import './media-type';
 import './type/s3';
 
 import './log/log';
+import './import';
 
 import './diff/diff';
 import './secure/secure';

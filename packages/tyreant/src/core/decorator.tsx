@@ -27,7 +27,7 @@ export abstract class TyrDecorator<
   Props extends TyrDecoratorProps = TyrDecoratorProps,
   State extends TyrDecoratorState = TyrDecoratorState
 > extends React.Component<Props, State> {
-  component!: TyrComponent<D>;
+  decorating!: TyrComponent<D>;
 
   get visible() {
     return this.state && this.state.visible;
@@ -35,15 +35,15 @@ export abstract class TyrDecorator<
 
   setVisible(visible: boolean) {
     this.setState({ visible });
-    if (this.component) {
-      this.component.setState({ visible });
+    if (this.decorating) {
+      this.decorating.setState({ visible });
     }
   }
 
   connect(component: TyrComponent<D>) {
-    if (this.component)
+    if (this.decorating)
       throw new Tyr.AppError('decorator was already connected');
 
-    this.component = component;
+    this.decorating = component;
   }
 }

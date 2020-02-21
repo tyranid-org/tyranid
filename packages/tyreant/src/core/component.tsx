@@ -82,12 +82,12 @@ export class TyrComponent<
     const manuallyAddedActions = actions.length > 0;
     for (const action of actions) {
       // TODO:  clone action if component is already defined?  (note: check if TyrAction.get() above created it)
-      action.component = this;
+      action.self = this;
       const actFn = action.action;
 
       if (!actFn && action.is('edit')) {
         action.action = opts => {
-          if (action.multiple) {
+          if (action.input === '*') {
             const { documents } = opts;
             if (documents) this.setState({ documents });
 
@@ -126,7 +126,7 @@ export class TyrComponent<
 
     const enactUp = (action: TyrActionOpts<D>) => {
       const { traits } = action;
-      action.component = this;
+      action.self = this;
 
       const trait = traits?.[0];
       if (!trait || !actions.find(action => action.is(trait))) {
@@ -185,7 +185,7 @@ export class TyrComponent<
 
     for (let ai = 0; ai < actions.length; ai++) {
       const a = actions[ai];
-      if (a.name === action.name && a.component === action.component) {
+      if (a.name === action.name && a.self === action.self) {
         actions[ai] = _action;
         return;
       }
@@ -203,7 +203,6 @@ export class TyrComponent<
       decorator.enact(_action);
     } else {
       const { parent } = this;
-
       if (parent) parent.enact(_action as any);
     }
   }

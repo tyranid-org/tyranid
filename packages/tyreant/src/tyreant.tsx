@@ -10,6 +10,7 @@ import * as React from 'react';
 
 export * from './type';
 export * from './core';
+export * from './util';
 export * from './admin';
 
 import { registerComponent, componentsByName } from './common';

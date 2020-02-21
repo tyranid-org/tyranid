@@ -1017,7 +1017,7 @@ export class TyrTable<
 
     if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
 
-    const singularActions = this.actions.filter(a => !a.multiple);
+    const singularActions = this.actions.filter(a => a.input === 1);
     if (singularActions.length) {
       antColumns.push({
         key: '$actions',
@@ -1117,7 +1117,7 @@ export class TyrTable<
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
-                    action.act({ component: this, document });
+                    action.act({ caller: this, document });
                   }}
                 >
                   {label}
@@ -1131,7 +1131,7 @@ export class TyrTable<
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
-                  action.act({ component: this, document });
+                  action.act({ caller: this, document });
                 }}
               >
                 {action.label as React.ReactNode}
@@ -1144,7 +1144,7 @@ export class TyrTable<
               {thisActions.map(action => (
                 <Menu.Item className="tyr-menu-item" key={action.name}>
                   <button
-                    onClick={() => action.act({ component: this, document })}
+                    onClick={() => action.act({ caller: this, document })}
                   >
                     {action.label}
                   </button>
@@ -1356,7 +1356,8 @@ export class TyrTable<
       isEditingRow ? ' tyr-table-editing-row' : ''
     }`;
 
-    const multiActions = this.actions.filter(a => a.multiple);
+    const multiActions = this.actions.filter(a => a.input === '*');
+    const voidActions = this.actions.filter(a => a.input === 0);
     const rowsSelectable =
       (!newDocument && onSelectRows) || multiActions.length;
 
@@ -1485,7 +1486,7 @@ export class TyrTable<
             }
           }}
         >
-          {(children || multiActions.length > 0) && (
+          {(children || multiActions.length > 0 || voidActions.length > 0) && (
             <Row>
               <Col span={24} className="tyr-table-header">
                 {children}
@@ -1495,12 +1496,20 @@ export class TyrTable<
                     key={`a_${a.name}`}
                     onClick={() =>
                       a.act({
-                        component: this,
+                        caller: this,
                         documents: this.selectedRowKeys.map(
                           id => this.collection!.byIdIndex[id]
                         ) as D[]
                       })
                     }
+                  >
+                    {a.label}
+                  </Button>
+                ))}
+                {voidActions.map(a => (
+                  <Button
+                    key={`a_${a.name}`}
+                    onClick={() => a.act({ caller: this })}
                   >
                     {a.label}
                   </Button>

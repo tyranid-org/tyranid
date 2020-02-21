@@ -32,7 +32,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
   cancel?: TyrAction<D>;
 
   enact(action: TyrAction<D>) {
-    if (!this.component) throw new Error('modal not connected');
+    if (!this.decorating) throw new Error('modal not connected');
 
     if (action.is('create')) {
       this.create = action.decorate({
@@ -45,7 +45,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
       });
       this.edit = edit;
 
-      const parent = this.component.parent;
+      const parent = this.decorating.parent;
       if (parent) parent.enact(edit as any);
     } else if (action.is('save')) {
       this.save = action.decorate({
@@ -74,7 +74,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
           <Icon
             type="close"
             className="tyr-modal-close-icon"
-            onClick={() => cancel.act({ component: this.component })}
+            onClick={() => cancel.act({ caller: this.decorating })}
           />
         )}
       </div>
@@ -90,7 +90,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
         {cancel && (
           <Button
             key="back"
-            onClick={() => cancel.act({ component: this.component })}
+            onClick={() => cancel.act({ caller: this.decorating })}
             loading={loading}
           >
             {cancel.label}
@@ -100,7 +100,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
           <Button
             key="submit"
             type="primary"
-            onClick={() => save.act({ component: this.component })}
+            onClick={() => save.act({ caller: this.decorating })}
             loading={loading}
           >
             {save.label}
@@ -120,7 +120,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
         {create && (
           <Button
             type="primary"
-            onClick={() => create.act({ component: this.component })}
+            onClick={() => create.act({ caller: this.decorating })}
             className="tyr-primary-btn"
           >
             {create.label}
@@ -130,7 +130,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
         <Modal
           className={'tyr-modal' + (className ? ' ' + className : '')}
           visible={visible}
-          onCancel={() => cancel!.act({ component: this.component })}
+          onCancel={() => cancel!.act({ caller: this.decorating })}
           title={this.renderHeader()}
           footer={this.renderFooter()}
           maskClosable={!loading}

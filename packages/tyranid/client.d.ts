@@ -250,7 +250,7 @@ declare module 'tyranid/client' {
       $label: string;
       $model: CollectionInstance<this>;
       $orig?: this;
-      $remove(opts: any): Promise<void>;
+      $remove(opts?: any): Promise<void>;
       $revert(): void;
       $save(opts?: any): Promise<this>;
       $slice(path: string, opts: any): Promise<void>;

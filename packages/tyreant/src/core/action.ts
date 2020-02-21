@@ -3,11 +3,17 @@ import { Tyr } from 'tyranid/client';
 import { TyrComponent } from './component';
 
 export interface TyrActionFnOpts<D extends Tyr.Document> {
-  component: TyrComponent<D>;
+  self: TyrComponent<D>;
+
+  caller: TyrComponent<D>;
+
+  /**
+   * if action.input === 1
+   */
   document?: D;
 
   /**
-   * if action.multiple === true
+   * if action.input === '*'
    */
   documents?: D[];
 }
@@ -17,9 +23,9 @@ export type TyrActionTrait = 'create' | 'edit' | 'save' | 'cancel';
 export interface TyrActionOpts<D extends Tyr.Document> {
   traits?: TyrActionTrait[];
   name: string;
+  self?: TyrComponent<D>;
   label?: string | React.ReactNode;
-  component?: TyrComponent<D>;
-  multiple?: boolean;
+  input?: 0 | 1 | '*';
 
   /**
    * If an action returns false or Promise<false> then the decorator action will not
@@ -44,28 +50,32 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   traits: TyrActionTrait[];
   name: string;
   label: string | React.ReactNode;
-  component?: TyrComponent<D>;
-  multiple: boolean;
+  input: 0 | 1 | '*';
   action?: (
     opts: TyrActionFnOpts<D>
   ) => void | boolean | Promise<void | boolean>;
   hide?: (doc: D) => boolean;
 
+  /**
+   * This is the component the action was defined on.
+   */
+  self?: TyrComponent<D>;
+
   constructor({
     traits,
     name,
-    component,
+    self,
     label,
-    multiple,
+    input,
     action,
     hide
   }: TyrActionOpts<D>) {
     this.traits = traits || [];
     this.name = name;
-    this.component = component;
+    this.self = self;
     this.label = label || Tyr.labelize(name);
     this.action = action;
-    this.multiple = multiple ?? false;
+    this.input = input ?? 1;
     this.hide = hide;
   }
 
@@ -73,8 +83,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return this.traits.indexOf(trait) >= 0;
   }
 
-  act(opts: TyrActionFnOpts<D>) {
-    this.action?.(opts);
+  act(opts: Omit<TyrActionFnOpts<D>, 'self'>) {
+    this.action?.({ self: this.self as TyrComponent<D>, ...opts });
   }
 
   decorate(opts: Partial<TyrActionOpts<D>>) {
@@ -82,10 +92,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       traits: this.traits,
       name: this.name,
       label: this.label,
-      component: this.component,
+      self: this.self,
       action: this.action,
       hide: this.hide,
-      multiple: this.multiple
+      input: this.input
     };
 
     Object.assign(newOpts, opts);
