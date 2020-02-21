@@ -66,8 +66,10 @@ declare module 'tyranid/client' {
     }
 
     export const ajax: (url: string, opts: any) => Promise<any>;
-    export const aux = (collectionDefinition: CollectionDefinition) =>
-      CollectionStatic;
+    export const aux = (
+      collectionDefinition: CollectionDefinition,
+      component?: React.Component
+    ) => CollectionStatic;
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
     export function clear(obj: object): void;
@@ -209,6 +211,9 @@ declare module 'tyranid/client' {
       insert<I, A extends I[]>(docs: A, opts?: any): Promise<D[]>;
       insert<I>(doc: I): Promise<D>;
       insert(doc: any): Promise<any>;
+      isAux(): boolean;
+      isDb(): boolean;
+      isSingleton(): boolean;
       isStatic(): boolean;
       isUid(uid: string): boolean;
       label: string;

@@ -17,6 +17,7 @@ const MigrationStatus = new Collection({
   id: '_m1',
   name: 'tyrMigrationStatus',
   internal: true,
+  client: false,
   fields: {
     _id: { is: 'string' },
     appliedOn: { is: 'date' },

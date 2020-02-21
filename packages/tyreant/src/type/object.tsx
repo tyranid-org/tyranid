@@ -56,7 +56,10 @@ export const TyrObjectBase = (props: TyrObjectProps) => {
   return className ? <div className={className}>{contents}</div> : contents;
 };
 
-export const TyrObject = withTypeContext<TyrObjectExtraProps>(TyrObjectBase);
+export const TyrObject = withTypeContext<TyrObjectExtraProps>(
+  'object',
+  TyrObjectBase
+);
 
 byName.object = {
   component: TyrObject,

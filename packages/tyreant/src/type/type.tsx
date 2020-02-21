@@ -4,7 +4,7 @@ import { Tyr } from 'tyranid/client';
 
 import { ColumnFilterItem, FilterDropdownProps } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { TyrFieldLaxProps, TyrFieldProps } from '../core';
+import { TyrFieldLaxProps, TyrFieldProps, TyrComponent } from '../core';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
@@ -87,6 +87,7 @@ export type TyrTypeLaxProps = {
 export type TyrTypeProps = {
   form: WrappedFormUtils;
   document?: Tyr.Document;
+  component?: TyrComponent;
   value?: { value?: any };
   path?: Tyr.NamePathInstance;
   searchPath?: Tyr.NamePathInstance;
@@ -173,11 +174,7 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
     return v;
   }
 
-  const { aux, document } = props;
-  if (aux) {
-    return (document as any)[aux];
-  }
-
+  const { document } = props;
   const path = props.path!;
   v = path.get(document!);
   if (v === undefined) {
@@ -194,11 +191,11 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
 
 export const fieldDecoratorName = (props: TyrTypeProps) => {
   // ant forms act weird when there are '.'s in the property names
-  return props.aux || props.path!.name.replace(/\./g, '_');
+  return props.path!.name.replace(/\./g, '_');
 };
 
 export const mapPropsToForm = (props: TyrTypeProps) => {
-  const { path, document, form, value, aux, default: defaultValue } = props;
+  const { path, document, form, value, default: defaultValue } = props;
 
   if (value !== undefined) {
     const pathid = path!.identifier;
@@ -210,16 +207,6 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
       form.setFieldsValue({
         // TODO:  should this be "value" instead of "newValue" ?
         [pathid]: newValue
-      });
-    }
-  } else if (aux) {
-    const oldValue = form.getFieldsValue([aux])[aux];
-    const newValue = (document as any)[aux] || defaultValue;
-
-    if (oldValue !== newValue) {
-      form.setFieldsValue({
-        // TODO:  should this be "value" instead of "newValue" ?
-        [aux]: newValue
       });
     }
   } else {
@@ -307,11 +294,7 @@ export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
   // }
 
   if (document) {
-    const { aux } = props;
-
-    if (aux) {
-      (document as any)[aux] = value;
-    } else if (!props.value) {
+    if (!props.value) {
       mapFormValueToDocument(props.path!, value, document, props);
     }
 
@@ -343,18 +326,12 @@ export const getCellValue = (
 
   if (props.typeUi) {
     const { cellValue } = assertTypeUi(props.typeUi);
-
-    if (cellValue) {
-      return cellValue(path, document, props);
-    }
+    if (cellValue) return cellValue(path, document, props);
   }
 
-  if (!field.type) {
-    return 'Unknown';
-  }
+  if (!field.type) return 'Unknown';
 
   const { cellValue } = assertTypeUi(field.type.name);
-
   return cellValue
     ? cellValue(path, document, props)
     : field.type.format(field, field.namePath.get(document));
@@ -365,6 +342,7 @@ export const TypeContext = React.createContext<TyrTypeProps | undefined>(
 );
 
 export const withTypeContext = <T extends {} = {}>(
+  type: string | undefined,
   TypeControl: React.ComponentType<T & TyrTypeProps>
 ) => (props: TyrTypeLaxProps & T) => (
   <TypeContext.Consumer>
@@ -377,12 +355,22 @@ export const withTypeContext = <T extends {} = {}>(
 
       const collection = document.$model;
 
+      const { aux } = props;
+      if (aux) {
+        if (props.path) return <div className="both-aux-and-path-specified" />;
+        if (!type) return <div className="aux-not-valid-on-TyrField" />;
+
+        document.$model.aux({
+          [aux]: { is: type }
+        });
+      }
+
       let path = Tyr.NamePath.resolve(
         collection,
         parentProps && parentProps.path,
-        props.path
+        aux || props.path
       );
-      if (!path && !props.aux) {
+      if (!path) {
         let { field } = props;
         if (typeof field === 'string') field = document.$model.paths[field];
         if (field) {
@@ -396,7 +384,8 @@ export const withTypeContext = <T extends {} = {}>(
         ...props,
         form,
         document,
-        path
+        path,
+        component: parentProps && parentProps.component
       });
     }}
   </TypeContext.Consumer>

@@ -893,6 +893,9 @@ export namespace Tyr {
     insert<I extends object>(doc: I): Promise<D>;
     insert(doc: any): Promise<any>;
 
+    isAux(): boolean;
+    isDb(): boolean;
+    isSingleton(): boolean;
     isStatic(): boolean;
 
     isUid(str: string): boolean;

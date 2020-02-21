@@ -22,7 +22,7 @@ export const TyrBitmaskBase = ((props: TyrTypeProps) => {
   ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrBitmask = withTypeContext(TyrBitmaskBase);
+export const TyrBitmask = withTypeContext('bitmask', TyrBitmaskBase);
 
 const invert = (v: number) => ~v >>> 0;
 

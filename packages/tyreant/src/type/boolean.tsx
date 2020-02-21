@@ -40,7 +40,7 @@ export const TyrBooleanBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrBoolean = withTypeContext(TyrBooleanBase);
+export const TyrBoolean = withTypeContext('boolean', TyrBooleanBase);
 
 export const booleanFilter: Filter = (
   path: Tyr.NamePathInstance,

@@ -127,12 +127,7 @@ export type TyrFieldLaxProps = Omit<TyrFieldProps, 'field' | 'searchField'> & {
 
 export const labelForProps = (props: TyrTypeProps) => {
   const label = props.label;
-  if (label) return label;
-
-  const { aux } = props;
-  if (aux) return Tyr.labelize(aux);
-
-  return props.path!.tail.label;
+  return label || props.path!.tail.label;
 };
 
 export const decorateField = (
@@ -140,10 +135,10 @@ export const decorateField = (
   props: TyrTypeProps,
   component: () => React.ReactElement
 ) => {
-  const { path, form, aux } = props;
+  const { path, form } = props;
   const field = path?.tail;
 
-  const identifier = aux || path!.identifier;
+  const identifier = path!.identifier;
 
   if (props.hideOnCreate && props.document?.$isNew) {
     return <div className="hide-on-create" />;
@@ -182,7 +177,7 @@ export const decorateField = (
 
   return (
     <FormItem
-      key={aux || field!.path}
+      key={field!.path}
       className={className('tyr-' + name, props)}
       label={label}
     >
@@ -206,6 +201,6 @@ export const TyrFieldBase = (props: TyrTypeProps) => {
   return React.createElement(typeUi.component, props);
 };
 
-export const TyrField = withTypeContext(TyrFieldBase);
+export const TyrField = withTypeContext(undefined, TyrFieldBase);
 
 registerComponent('TyrField', TyrField);

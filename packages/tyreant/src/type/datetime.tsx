@@ -32,7 +32,7 @@ export const TyrDateTimeBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrDateTime = withTypeContext(TyrDateTimeBase);
+export const TyrDateTime = withTypeContext('datetime', TyrDateTimeBase);
 
 byName.datetime = {
   component: TyrDateTimeBase,

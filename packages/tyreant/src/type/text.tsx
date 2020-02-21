@@ -14,25 +14,18 @@ const { TextArea } = Input;
 export const TyrTextBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
-  return decorateField('text', props, () => {
-    const onTypeChangeFunc = (ev: any) => {
-      onTypeChange(props, ev.target.value, ev);
-      props.onChange && props.onChange(ev.target.value, ev, props);
-    };
-
-    return (
-      <TextArea
-        placeholder={props.placeholder}
-        autoFocus={props.autoFocus}
-        onChange={onTypeChangeFunc}
-        tabIndex={props.tabIndex}
-        rows={6}
-      />
-    );
-  });
+  return decorateField('text', props, () => (
+    <TextArea
+      placeholder={props.placeholder}
+      autoFocus={props.autoFocus}
+      onChange={ev => onTypeChange(props, ev.target.value, ev)}
+      tabIndex={props.tabIndex}
+      rows={6}
+    />
+  ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrText = withTypeContext(TyrTextBase);
+export const TyrText = withTypeContext('text', TyrTextBase);
 
 byName.text = {
   component: TyrTextBase,

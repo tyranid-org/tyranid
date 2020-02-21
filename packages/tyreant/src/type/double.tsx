@@ -44,7 +44,7 @@ export const TyrDoubleBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrDouble = withTypeContext(TyrDoubleBase);
+export const TyrDouble = withTypeContext('double', TyrDoubleBase);
 
 export const doubleFilter: Filter = (
   path: Tyr.NamePathInstance,

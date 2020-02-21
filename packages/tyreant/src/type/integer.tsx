@@ -21,11 +21,6 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('integer', props, () => {
-    const onTypeChangeFunc = (ev: any) => {
-      onTypeChange(props, ev, null);
-      props.onChange && props.onChange(ev, null, props);
-    };
-
     return (
       <InputNumber
         {...(props.searchRange
@@ -34,7 +29,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
               max: props.searchRange[1] as number
             }
           : {})}
-        onChange={onTypeChangeFunc}
+        onChange={ev => onTypeChange(props, ev, undefined)}
         placeholder={props.placeholder}
         tabIndex={props.tabIndex}
         precision={0}
@@ -44,7 +39,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrInteger = withTypeContext(TyrIntegerBase);
+export const TyrInteger = withTypeContext('integer', TyrIntegerBase);
 
 export const integerFilter: Filter = (
   path: Tyr.NamePathInstance,

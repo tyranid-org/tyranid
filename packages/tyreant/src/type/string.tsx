@@ -22,27 +22,20 @@ import { registerComponent } from '../common';
 export const TyrStringBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
-  return decorateField('string', props, () => {
-    const onTypeChangeFunc = (ev: any) => {
-      onTypeChange(props, ev.target.value, ev);
-      props.onChange && props.onChange(ev.target.value, ev, props);
-    };
-
-    return (
-      <Input
-        autoComplete="off"
-        type="text"
-        autoFocus={props.autoFocus}
-        placeholder={props.placeholder}
-        onChange={onTypeChangeFunc}
-        tabIndex={props.tabIndex}
-        className={props.className}
-      />
-    );
-  });
+  return decorateField('string', props, () => (
+    <Input
+      autoComplete="off"
+      type="text"
+      autoFocus={props.autoFocus}
+      placeholder={props.placeholder}
+      onChange={ev => onTypeChange(props, ev.target.value, ev)}
+      tabIndex={props.tabIndex}
+      className={props.className}
+    />
+  ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrString = withTypeContext(TyrStringBase);
+export const TyrString = withTypeContext('string', TyrStringBase);
 
 export const stringFilter: Filter = (
   path: Tyr.NamePathInstance,

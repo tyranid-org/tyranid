@@ -655,16 +655,16 @@ export function generateClientLibrary() {
   function Field(def) {
     this.def = def;
     this.type = Type.byName[def.link && !def.is ? 'link' : def.is];
-
-    if (def.pattern) {
-      def.pattern = refineJson(def.pattern);
-    }
+    if (def.pattern) def.pattern = refineJson(def.pattern);
   }
   Tyr.Field = Field;
 
   Field.prototype.$metaType = 'field';
 
   Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
+
+  Field.prototype.isAux = ${es5Fn(Field.prototype.isAux)};
+  Field.prototype.isDb = ${es5Fn(Field.prototype.isDb)};
 
   Object.defineProperties(Field.prototype, {
     computed: {
@@ -852,6 +852,8 @@ export function generateClientLibrary() {
 
     const { dynamicMatch } = def;
     if (dynamicMatch) field.dynamicMatch = dynamicMatch;
+
+    if (def.label === undefined && field.name) def.label = Tyr.labelize(field.name);
   }
 
   function compileFields(path, parent, fieldDefs, dynamic, aux, method) {
@@ -1050,12 +1052,40 @@ export function generateClientLibrary() {
   };
 
   Collection.prototype.aux = function(def) {
-    compileFields('', this, def, undefined, true);
+    const { fields } = this.def;
+
+    // TODO-AUX-IDEMPOTENT:  might need a flag to force a resync if the aux() call is passed dynamic data
+    for (const name in def) {
+      if (!fields[name]) {
+        Object.assign(fields, def);
+        compileFields('', this, def, undefined, true);
+        return;
+      }
+    }
   };
 
-  Tyr.aux = function(def) {
+  let _nextCid = 1;
+  const nextCid = () => '~' + (_nextCid++).toString(36).padStart(2, '0');
+
+  const cidMap = new WeakMap();
+  Tyr.aux = function(def, component) {
+    if (component && !def.id) {
+      if (!cidMap.has(component))
+        cidMap.set(component, nextCid());
+      def.id = cidMap.get(component);
+    } else if (!def.id) def.id = nextCid();
+    if (Tyr.byId[def.id]) {
+      // TODO-AUX-IDEMPOTENT:  might need to add a flag to force a resync if the Tyr.aux() call is passed dynamic data
+      return;
+    }
+    if (!def.name) def.name = 'C' + def.id.replace(/~/g, '');
+    if (!def.label) def.label = 'Aux ' + def.name;
+    def.aux = true;
+    def.db = false;
+    if (!def.fields) def.fields = {};
     const col = new Collection(def);
     col.compile();
+    if (!col.fields) col.fields = {};
     return col;
   };
 
@@ -1075,8 +1105,10 @@ export function generateClientLibrary() {
     return this.byId(id).then(doc => doc ? doc.$label : 'Unknown');
   }
 
+  Collection.prototype.isAux = ${es5Fn(Collection.prototype.isAux)};
   Collection.prototype.isStatic = ${es5Fn(Collection.prototype.isStatic)};
   Collection.prototype.isDb = ${es5Fn(Collection.prototype.isDb)};
+  Collection.prototype.isSingleton = ${es5Fn(Collection.prototype.isSingleton)};
 
   Collection.prototype.labelFor = ${es5Fn(Collection.prototype.labelFor)};
   Collection.prototype.labelProjection = ${es5Fn(

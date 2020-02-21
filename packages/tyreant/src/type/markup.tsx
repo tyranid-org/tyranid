@@ -43,7 +43,7 @@ export const TyrMarkupBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrMarkup = withTypeContext(TyrMarkupBase);
+export const TyrMarkup = withTypeContext('markup', TyrMarkupBase);
 
 byName.markup = {
   component: TyrMarkupBase,

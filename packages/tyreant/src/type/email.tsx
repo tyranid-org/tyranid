@@ -31,7 +31,7 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrEmail = withTypeContext(TyrEmailBase);
+export const TyrEmail = withTypeContext('email', TyrEmailBase);
 
 byName.email = {
   component: TyrEmailBase,

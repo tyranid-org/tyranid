@@ -41,7 +41,7 @@ export const TyrArrayBase = (props: TyrTypeProps) => {
   }
 };
 
-export const TyrArray = withTypeContext(TyrArrayBase);
+export const TyrArray = withTypeContext('array', TyrArrayBase);
 
 byName.array = {
   component: TyrArray,

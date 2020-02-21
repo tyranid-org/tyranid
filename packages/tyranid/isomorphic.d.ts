@@ -207,6 +207,8 @@ export namespace Tyr {
       text?: string,
       opts?: any
     ): Promise<Tyr.Document[]>;
+    isAux(): boolean;
+    isDb(): boolean;
     validate(obj: {}): Promise<string | undefined>;
   }
 
@@ -273,6 +275,9 @@ export namespace Tyr {
     insert<I, A extends I[]>(docs: A, opts?: any): Promise<D[]>;
     insert<I>(doc: I): Promise<D>;
     insert(doc: any): Promise<any>;
+    isAux(): boolean;
+    isDb(): boolean;
+    isSingleton(): boolean;
     isStatic(): boolean;
     isUid(uid: string): boolean;
     label: string;

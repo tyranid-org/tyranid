@@ -608,3 +608,19 @@ form textarea.tyr-markup-editor {
 .tyr-page-editor {
   width: calc(100% - 10px) !important;
 }
+
+.tyr-dropzone {
+  border: 1px dashed #888;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.tyr-s3-image {
+  max-width: 100%;
+}

@@ -46,7 +46,7 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrDate = withTypeContext(TyrDateBase);
+export const TyrDate = withTypeContext('date', TyrDateBase);
 
 function parseSearchValue(value: any) {
   if (typeof value === 'string') value = value.split(',');

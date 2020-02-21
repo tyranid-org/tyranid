@@ -111,6 +111,16 @@ export default class Field {
     return this.def.db !== false;
   }
 
+  /** @isopmorphic */
+  isAux() {
+    return !this.isDb();
+  }
+
+  /** @isopmorphic */
+  isDb() {
+    return this.def.db !== false;
+  }
+
   /** @private @isopmorphic */
   _calcPathLabel() {
     const p = this.parent,

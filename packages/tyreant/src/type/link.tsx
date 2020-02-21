@@ -357,7 +357,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }
 }
 
-export const TyrLink = withTypeContext(TyrLinkBase);
+export const TyrLink = withTypeContext('link', TyrLinkBase);
 
 byName.link = {
   component: TyrLinkBase,

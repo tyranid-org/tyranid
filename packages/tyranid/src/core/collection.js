@@ -549,14 +549,24 @@ export default class Collection {
   }
 
   /** @isomorphic */
-  isStatic() {
-    //return !!this.def.values;
-    return !!this.def.enum || !!this.def.static;
+  isAux() {
+    return !isDb();
   }
 
   /** @isomorphic */
   isDb() {
     return !this.isStatic() && !this.def.aux;
+  }
+
+  /** @isomorphic */
+  isSingleton() {
+    return !this.def.singleton;
+  }
+
+  /** @isomorphic */
+  isStatic() {
+    //return !!this.def.values;
+    return !!this.def.enum || !!this.def.static;
   }
 
   byId(id, options) {

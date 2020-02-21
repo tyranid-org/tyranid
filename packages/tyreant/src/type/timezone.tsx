@@ -57,7 +57,7 @@ export const TyrTimeZoneBase = ((props: TyrTypeProps) => {
   ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrTimeZone = withTypeContext(TyrTimeZoneBase);
+export const TyrTimeZone = withTypeContext('timezone', TyrTimeZoneBase);
 
 byName.timezone = {
   component: TyrTimeZoneBase

@@ -17,6 +17,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   fields?: TyrFieldLaxProps[];
   decorator?: React.ReactElement;
   actions?: (TyrAction<D> | TyrActionOpts<D>)[];
+  aux?: { [key: string]: Tyr.FieldDefinition };
 }
 
 export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {
@@ -86,10 +87,24 @@ export class TyrComponent<
 
       if (!actFn && action.is('edit')) {
         action.action = opts => {
-          this.find(opts.document!);
+          if (action.multiple) {
+            const { documents } = opts;
+            if (documents) this.setState({ documents });
 
-          if (!this.document)
-            this.setState({ document: this.createDocument(opts) });
+            if (opts.document) this.find(opts.document);
+
+            if (this.canEdit && !this.document) {
+              const collection = Tyr.aux({ fields: this.props.aux }, this);
+              this.setState({
+                document: new collection({})
+              });
+            }
+          } else {
+            this.find(opts.document!);
+
+            if (!this.document)
+              this.setState({ document: this.createDocument(opts) });
+          }
         };
       } else if (actFn && action.is('save')) {
         action.action = opts => {
@@ -331,6 +346,17 @@ export class TyrComponent<
     if (state) {
       const { document } = state;
       if (document) return document as D;
+    }
+
+    //return undefined;
+  }
+
+  get documents(): D[] | undefined {
+    const { state } = this;
+
+    if (state) {
+      const { documents } = state;
+      if (documents) return documents as D[];
     }
 
     //return undefined;
