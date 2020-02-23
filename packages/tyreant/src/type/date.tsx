@@ -73,17 +73,13 @@ export const dateFilter: Filter = (
 
   return {
     filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      const sv = parseSearchValue(filterable.searchValues[pathName]);
-
       return (
         <div className="search-box">
           <RangePicker
-            value={sv}
+            defaultValue={filterable.searchValues[pathName]}
             format={props.dateFormat || DATE_FORMAT}
             onChange={v => {
-              filterable.searchValues[pathName] = v
-                ? (v as moment.Moment[]).map(m => m.format())
-                : undefined;
+              filterable.searchValues[pathName] = v;
 
               if (props.liveSearch) {
                 filterable.onSearch();

@@ -88,7 +88,10 @@ export interface TyrTableProps<D extends Tyr.Document>
   actionIconType?: string;
   actionTrigger?: 'hover' | 'click';
   actionColumnClassName?: string;
-  pageSize?: number; // a.k.a. limit
+  pageSize?: number; // a.k.a. limit,
+  pageSizeOptions?: string[];
+  showSizeChanger?: boolean;
+  showTotal?: (total: number, range: [number, number]) => React.ReactNode;
   pinActionsRight?: boolean;
   rowEdit?: boolean;
   emptyTablePlaceholder?:
@@ -1222,24 +1225,26 @@ export class TyrTable<
   private pagination = () => {
     if (!this.limit) return false;
 
+    const { showSizeChanger, pageSizeOptions, showTotal } = this.props;
+
     const { skip = 0, limit } = this;
     const totalCount = this.count || 0;
 
-    // there appears to be a bug in ant table when you switch from paged to non-paging and then back again
-    // (forces a 10 row page size) ?
-    //return true || totalCount > this.limit
-    return totalCount > limit
-      ? {
-          current: Math.floor(skip / limit) + 1,
-          //defaultCurrent: Math.floor(skip / limit) + 1,
-          total: totalCount,
-          defaultPageSize: limit,
-          pageSize: limit,
-          size: 'default',
-          itemRender: this.paginationItemRenderer,
-          showSizeChanger: true
-        }
-      : false;
+    //const morePages = totalCount > limit;
+
+    return {
+      current: Math.floor(skip / limit) + 1,
+      //defaultCurrent: Math.floor(skip / limit) + 1,
+      total: totalCount,
+      defaultPageSize: limit,
+      pageSize: limit,
+      size: 'default',
+      itemRender: this.paginationItemRenderer,
+      showSizeChanger: showSizeChanger === false ? false : true,
+      pageSizeOptions,
+      hideOnSinglePage: true,
+      showTotal
+    };
   };
 
   private onEditRow = (document: D, rowIndex: number) => {
