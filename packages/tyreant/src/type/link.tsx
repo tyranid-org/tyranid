@@ -556,7 +556,19 @@ byName.link = {
       onFilter: (value, doc) => {
         if (props.onFilter) return props.onFilter(value, doc);
 
-        const val = String(path.get(doc));
+        const rawVal = path.get(doc);
+
+        if (Array.isArray(rawVal) && Array.isArray(value)) {
+          for (let i = 0; i < value.length; i++) {
+            const v = value[i];
+
+            for (let j = 0; j < rawVal.length; j++) {
+              if (v === rawVal[j]) return true;
+            }
+          }
+        }
+
+        const val = String(rawVal);
 
         if (Array.isArray(value)) {
           if (!value.length) return true;
