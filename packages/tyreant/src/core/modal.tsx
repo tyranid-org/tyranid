@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Modal, Button, Spin, Icon } from 'antd';
 
-import { TyrAction } from './action';
+import { TyrAction, TyrActionFnOpts } from './action';
 import {
   TyrDecorator,
   TyrDecoratorProps,
@@ -30,18 +30,19 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
   edit?: TyrAction<D>;
   save?: TyrAction<D>;
   cancel?: TyrAction<D>;
+  callerOpts?: TyrActionFnOpts<D>;
 
   enact(action: TyrAction<D>) {
     if (!this.decorating) throw new Error('modal not connected');
 
     if (action.is('create')) {
       this.create = action.decorate({
-        action: () => this.openModal()
+        action: opts => this.openModal(opts)
       });
       this.setState({});
     } else if (action.is('edit')) {
       const edit = action.decorate({
-        action: () => this.openModal()
+        action: opts => this.openModal(opts)
       });
       this.edit = edit;
 
@@ -60,16 +61,25 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
     }
   }
 
-  openModal = () => this.setVisible(true);
+  openModal = (opts: TyrActionFnOpts<D>) => {
+    this.callerOpts = opts;
+    this.setVisible(true);
+  };
+
   closeModal = () => this.setVisible(false);
 
   renderHeader() {
     const { loading } = this.state;
-    const { edit, create, cancel } = this;
+    const { edit, create, cancel, callerOpts } = this;
+
+    const label =
+      (edit && callerOpts?.document && edit.label) ||
+      (create && create.label) ||
+      'unknown';
 
     return (
       <div className="tyr-modal-header">
-        <h4>{create ? create.label : edit ? edit!.label : 'unknown'}</h4>
+        <h4>{label}</h4>
         {!loading && cancel && (
           <Icon
             type="close"

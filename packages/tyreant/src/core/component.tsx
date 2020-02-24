@@ -86,12 +86,12 @@ export class TyrComponent<
       const actFn = action.action;
 
       if (!actFn && action.is('edit')) {
-        action.action = opts => {
+        action.action = async opts => {
           if (action.input === '*') {
             const { documents } = opts;
             if (documents) this.setState({ documents });
 
-            if (opts.document) this.find(opts.document);
+            if (opts.document) await this.find(opts.document);
 
             if (this.canEdit && !this.document) {
               const collection = Tyr.aux({ fields: this.props.aux }, this);
@@ -100,7 +100,7 @@ export class TyrComponent<
               });
             }
           } else {
-            this.find(opts.document!);
+            await this.find(opts.document!);
 
             if (!this.document)
               this.setState({ document: this.createDocument(opts) });
@@ -172,7 +172,7 @@ export class TyrComponent<
       enactUp({
         traits: ['save'],
         name: 'save',
-        action: opts => this.submit()
+        action: () => this.submit()
       });
     }
   }

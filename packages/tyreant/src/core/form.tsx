@@ -135,8 +135,9 @@ export class TyrForm<
     });
   }
 
-  submit() {
-    submitForm(this, this.state.document!);
+  async submit() {
+    await submitForm(this, this.state.document!);
+    this.parent?.requery();
   }
 
   static create<D extends Tyr.Document>(
