@@ -128,11 +128,7 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
     return (
       <>
         {create && (
-          <Button
-            type="primary"
-            onClick={() => create.act({ caller: this.decorating })}
-            className="tyr-primary-btn"
-          >
+          <Button onClick={() => create.act({ caller: this.decorating })}>
             {create.label}
           </Button>
         )}
