@@ -597,6 +597,13 @@ $primary-background-color: #6a8fbe;
   button:not(last-child) {
     margin-left: 5px;
   }
+
+  .tyr-filter-search-input {
+    padding: 2px;
+    .ant-input-search-button {
+      margin-left: 0;
+    }
+  }
 }
 
 form textarea.tyr-markup-editor {
