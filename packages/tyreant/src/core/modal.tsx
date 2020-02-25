@@ -72,14 +72,14 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
     const { loading } = this.state;
     const { edit, create, cancel, callerOpts } = this;
 
-    const label =
-      (edit && callerOpts?.document && edit.label) ||
-      (create && create.label) ||
-      'unknown';
+    const title =
+      (edit && callerOpts?.document && edit.title) ||
+      (create && create.title) ||
+      (edit && edit.title);
 
     return (
       <div className="tyr-modal-header">
-        <h4>{label}</h4>
+        <h4>{title}</h4>
         {!loading && cancel && (
           <Icon
             type="close"

@@ -663,6 +663,7 @@ export function generateClientLibrary() {
 
   Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
 
+  Field.prototype.format = ${es5Fn(Field.prototype.format)};
   Field.prototype.isAux = ${es5Fn(Field.prototype.isAux)};
   Field.prototype.isDb = ${es5Fn(Field.prototype.isDb)};
 
@@ -1100,7 +1101,6 @@ export function generateClientLibrary() {
     }
 
     if (!id) return Promise.resolve('');
-    // TODO:  make the server-side version of this isomorphic portions of this once the other functionality is client-side
     // TODO:  narrow this projection to just what is needed for label (including computed labels)
     return this.byId(id).then(doc => doc ? doc.$label : 'Unknown');
   }

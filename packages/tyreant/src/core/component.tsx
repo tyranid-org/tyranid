@@ -152,13 +152,13 @@ export class TyrComponent<
     }
 
     if (!this.canMultiple || linkToParent) {
+      const name = linkToParent ? this.collection!.label : 'edit';
+      const title = 'Edit ' + this.collection!.label;
+
       enactUp({
         traits: ['edit'],
-        name: linkToParent
-          ? this.canMultiple
-            ? Tyr.pluralize(this.collection!.label)
-            : this.collection!.label
-          : 'edit',
+        name,
+        title,
         action: async opts => {
           await this.find(opts.document!);
 

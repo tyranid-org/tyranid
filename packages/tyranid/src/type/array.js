@@ -4,6 +4,7 @@ import Tyr from '../tyr';
 import Type from '../core/type';
 import Population from '../core/population';
 import Populator from '../core/populator';
+import { valueFromAST } from 'graphql';
 
 const ArrayType = new Type({
   name: 'array',
@@ -81,7 +82,16 @@ const ArrayType = new Type({
   },
 
   format(field, value) {
-    return (value && value.length) || '';
+    if (value && value.length) {
+      const of = field.of;
+      const values = value.map(v => of.format(v));
+      return Tyr.mapAwait(values, v => {
+        if (v && v.indexOf(',') >= 0) v = '(' + v + ')';
+        return v.join(', ');
+      });
+    } else {
+      return '';
+    }
   },
 
   sortValue(field, value) {

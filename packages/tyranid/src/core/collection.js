@@ -532,6 +532,14 @@ export default class Collection {
 
     if (!id) return Promise.resolve('');
 
+    // TODO: this code is here to correct for strings being in the database instead of ObjectIDs
+    //       that we encountered ...
+    //       figure out a better way to clean data and get rid of this
+    if (typeof id === 'string') {
+      const nId = this.fields._id?.type.fromString(id);
+      if (nId) id = nId;
+    }
+
     const lf = this.labelField;
     if (lf.def.get || lf.def.getServer) {
       // if the label field is computed, we need to query the whole thing since we don't know what the computation requires

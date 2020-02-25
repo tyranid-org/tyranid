@@ -285,10 +285,16 @@ const Tyr = {
   },
 
   mapAwait(value, fn) {
-    if (value.then) {
-      return value.then(value => {
-        return fn(value);
-      });
+    if (value.length) {
+      for (const v of value) {
+        if (v.then) {
+          return Promise.all(value).then(fn);
+        }
+      }
+
+      return fn(value);
+    } else if (value.then) {
+      return value.then(fn);
     } else {
       return fn(value);
     }

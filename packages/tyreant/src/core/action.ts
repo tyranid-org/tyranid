@@ -25,6 +25,7 @@ export interface TyrActionOpts<D extends Tyr.Document> {
   name: string;
   self?: TyrComponent<D>;
   label?: string | React.ReactNode;
+  title?: string | React.ReactNode;
   input?: 0 | 1 | '*';
 
   /**
@@ -50,6 +51,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   traits: TyrActionTrait[];
   name: string;
   label: string | React.ReactNode;
+  title: string | React.ReactNode;
   input: 0 | 1 | '*';
   action?: (
     opts: TyrActionFnOpts<D>
@@ -66,6 +68,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     name,
     self,
     label,
+    title,
     input,
     action,
     hide
@@ -74,6 +77,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.name = name;
     this.self = self;
     this.label = label || Tyr.labelize(name);
+    this.title = title || this.label;
     this.action = action;
     this.input = input ?? 1;
     this.hide = hide;
@@ -92,6 +96,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       traits: this.traits,
       name: this.name,
       label: this.label,
+      title: this.title,
       self: this.self,
       action: this.action,
       hide: this.hide,

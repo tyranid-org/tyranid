@@ -201,6 +201,7 @@ export namespace Tyr {
     fields?: { [key: string]: FieldInstance };
     method: string;
 
+    format(value: any): string;
     labelify(value: any): Promise<any>;
     labels(
       doc: Tyr.Document,

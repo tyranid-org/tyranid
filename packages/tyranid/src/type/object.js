@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import Type from '../core/type';
 import { UserError } from '../core/userError';
+import Tyr from '../tyr';
 
 const ObjectType = new Type({
   name: 'object',
@@ -58,6 +59,51 @@ const ObjectType = new Type({
       });
 
       return obj;
+    }
+  },
+
+  format(field, value) {
+    const { fields } = field;
+    let s = '';
+    let first = true;
+
+    if (typeof value !== 'object') return value;
+
+    if (fields) {
+      const values = [];
+      for (const name in fields) {
+        const field = fields[name];
+        if (field.type.name === 'mongoid') continue;
+        values.push(field ? field.format(value[name]) : value[name]);
+      }
+
+      return Tyr.mapAwait(values, values => {
+        let i = 0;
+        for (const name in fields) {
+          const field = fields[name];
+          if (field.type.name === 'mongoid') continue;
+          const v = values[i++];
+          if (v === undefined || v === null || v === '') continue;
+
+          if (first) first = false;
+          else s += ', ';
+
+          s += `${field ? field.label : name}: ${v}`;
+        }
+
+        return s;
+      });
+    } else {
+      for (const name in value) {
+        const value = value[name];
+
+        if (first) first = false;
+        else s += ', ';
+
+        s += `${name}: ${value[name]}`;
+      }
+
+      return s;
     }
   },
 

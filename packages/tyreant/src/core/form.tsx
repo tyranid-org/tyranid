@@ -12,6 +12,7 @@ import { registerComponent } from '../common';
 
 type TyrFormBaseProps = {
   // form is the rc-form, component is the TyrForm
+  className?: string;
   component: TyrForm<Tyr.Document>;
   document: Tyr.Document;
   fields: TyrFieldProps[];
@@ -57,10 +58,17 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
   }
 
   render() {
-    const { children, fields, document, component, render } = this.props;
+    const {
+      className,
+      children,
+      fields,
+      document,
+      component,
+      render
+    } = this.props;
 
     return (
-      <Form className="tyr-form">
+      <Form className={'tyr-form' + (className ? ' ' + className : '')}>
         <TypeContext.Provider value={(this.props as unknown) as TyrTypeProps}>
           {render && document && render({ form: component, document })}
           {fields &&
@@ -100,6 +108,7 @@ export interface FormRenderComponentProps<D extends Tyr.Document> {
  */
 export interface TyrFormProps<D extends Tyr.Document>
   extends TyrComponentProps<D> {
+  className?: string;
   children?:
     | React.ReactNode
     | ((props: FormRenderComponentProps<D>) => JSX.Element);
@@ -118,11 +127,12 @@ export class TyrForm<
   };
 
   render() {
-    const { children, render } = this.props;
+    const { className, children, render } = this.props;
 
     return this.wrap(() => {
       return (
         <TyrWrappedForm
+          className={className}
           ref={this.getFormRef as any}
           fields={this.fields}
           document={this.document!}

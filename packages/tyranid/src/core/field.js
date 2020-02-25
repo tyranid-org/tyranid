@@ -39,6 +39,11 @@ export default class Field {
     return this.type.toClient(this, value, doc, opts, proj);
   }
 
+  /** @isomorphic */
+  format(v) {
+    return this.type.format(this, v);
+  }
+
   get label() {
     return _.result(this.def, 'label') || Tyr.labelize(this.name);
   }
