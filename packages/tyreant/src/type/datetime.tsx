@@ -4,21 +4,15 @@ import * as moment from 'moment';
 
 import { Tyr } from 'tyranid/client';
 
-import { DatePicker, Button } from 'antd';
+import { DatePicker } from 'antd';
+import { RangePickerValue } from 'antd/lib/date-picker/interface';
 
-import {
-  byName,
-  TyrTypeProps,
-  mapPropsToForm,
-  onTypeChange,
-  Filter,
-  Finder,
-  Filterable
-} from './type';
+import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
+import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
 import { withTypeContext } from './type';
-import { decorateField, TyrFieldLaxProps } from '../core';
+import { decorateField, TyrFieldProps } from '../core';
 import { registerComponent } from '../common';
-import { FilterDropdownProps } from 'antd/lib/table';
+
 const { RangePicker } = DatePicker;
 
 const DATETIME_FORMAT = 'MM/DD/YYYY HH:mm:ss';
@@ -57,24 +51,22 @@ function parseSearchValue(value: any) {
 }
 
 export const dateTimeFilter: Filter = (
-  path: Tyr.NamePathInstance,
   filterable: Filterable,
-  props: TyrFieldLaxProps
+  props: TyrFieldProps
 ) => {
-  const pathName = path.name;
-
-  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
-    delete filterable.searchValues[pathName];
-    clearFilters?.([]);
-    filterable.onSearch();
-  };
+  const { namePath: path } = props.field!;
 
   return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      return (
-        <div className="search-box">
+    filterDropdown: filterDdProps => (
+      <TyrFilter<RangePickerValue>
+        typeName="datetime"
+        filterable={filterable}
+        filterDdProps={filterDdProps}
+        fieldProps={props}
+      >
+        {(searchValue, setSearchValue, search) => (
           <RangePicker
-            defaultValue={filterable.searchValues[pathName] || []}
+            value={searchValue}
             format={props.dateFormat || DATETIME_FORMAT}
             showTime={{
               defaultValue: [
@@ -83,41 +75,14 @@ export const dateTimeFilter: Filter = (
               ]
             }}
             onChange={v => {
-              filterable.searchValues[pathName] = v;
-
-              if (props.liveSearch) {
-                filterable.onSearch();
-                filterDdProps.confirm?.();
-              }
+              setSearchValue(v);
+              if (props.liveSearch) search(true);
             }}
             //style={{ width: 188, marginBottom: 8, display: 'block' }}
           />
-          <div className="search-box-footer">
-            <Button
-              onClick={() => onClearFilters(filterDdProps.clearFilters)}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-            {!props.liveSearch && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  filterable.onSearch();
-                  filterDdProps.confirm?.();
-                }}
-                icon="search"
-                size="small"
-                style={{ width: 90 }}
-              >
-                Search
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    },
+        )}
+      </TyrFilter>
+    ),
     onFilter: (value: any, doc: Tyr.Document) => {
       value = parseSearchValue(value);
 

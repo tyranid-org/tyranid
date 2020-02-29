@@ -7,8 +7,8 @@ import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 
 import { TypeContext, TyrTypeProps } from '../type/type';
 import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
-import { TyrComponentProps, TyrComponent } from './component';
 import { registerComponent } from '../common';
+import { TyrOneComponent, TyrOneComponentProps } from './one-component';
 
 type TyrFormBaseProps = {
   // form is the rc-form, component is the TyrForm
@@ -107,7 +107,7 @@ export interface FormRenderComponentProps<D extends Tyr.Document> {
  *        TyrForm(TyrWrappedForm(TyrFormBase))
  */
 export interface TyrFormProps<D extends Tyr.Document>
-  extends TyrComponentProps<D> {
+  extends TyrOneComponentProps<D> {
   className?: string;
   children?:
     | React.ReactNode
@@ -117,7 +117,7 @@ export interface TyrFormProps<D extends Tyr.Document>
 
 export class TyrForm<
   D extends Tyr.Document<Tyr.AnyIdType>
-> extends TyrComponent<D, TyrFormProps<D>> {
+> extends TyrOneComponent<D, TyrFormProps<D>> {
   canEdit = true;
 
   form?: WrappedFormUtils;
@@ -146,7 +146,7 @@ export class TyrForm<
   }
 
   async submit() {
-    await submitForm(this, this.state.document!);
+    await submitForm(this, this.document!);
     this.parent?.requery();
   }
 

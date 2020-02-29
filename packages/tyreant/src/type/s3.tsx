@@ -59,6 +59,7 @@ export const TyrS3Base = (props: TyrTypeProps) => {
     }
   }, []);
 
+  // TODO:  look into using Ant Design's Upload control instead?
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false

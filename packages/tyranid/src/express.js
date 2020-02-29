@@ -449,6 +449,11 @@ export function generateClientLibrary() {
   Tyr.unitize = ${es5Fn(Tyr.unitize)};
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
 
+  Tyr.isCompliant = (spec, object) => {
+    // TODO:  implement array matching like server version
+    return _.isMatch(object, spec);
+  };
+
   const local = Tyr.local = {};
 
   const documentPrototype = Tyr.documentPrototype = {

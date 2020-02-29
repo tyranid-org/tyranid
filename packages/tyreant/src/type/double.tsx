@@ -1,21 +1,15 @@
 import * as React from 'react';
 import { useEffect } from 'react';
+
+import { Slider, InputNumber } from 'antd';
+import { SliderValue } from 'antd/lib/slider';
+
 import { Tyr } from 'tyranid/client';
 
-import { Slider, Button, InputNumber } from 'antd';
-
-import {
-  mapPropsToForm,
-  Filter,
-  Filterable,
-  Finder,
-  onTypeChange
-} from './type';
-
+import { mapPropsToForm, onTypeChange } from './type';
+import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
 import { byName, TyrTypeProps, withTypeContext } from './type';
-import { SliderValue } from 'antd/lib/slider';
-import { TyrFieldLaxProps, decorateField } from '../core';
-import { FilterDropdownProps } from 'antd/es/table';
+import { TyrFieldProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrDoubleBase = ((props: TyrTypeProps) => {
@@ -47,21 +41,11 @@ export const TyrDoubleBase = ((props: TyrTypeProps) => {
 export const TyrDouble = withTypeContext('double', TyrDoubleBase);
 
 export const doubleFilter: Filter = (
-  path: Tyr.NamePathInstance,
   filterable: Filterable,
-  props: TyrFieldLaxProps
+  props: TyrFieldProps
 ) => {
+  const { namePath: path } = props.field!;
   const pathName = path.name;
-
-  const defaultValue = (props.searchRange
-    ? (props.searchRange as [number, number])
-    : [0, 100]) as [number, number];
-
-  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
-    delete filterable.searchValues[pathName];
-    clearFilters?.([]);
-    filterable.onSearch();
-  };
 
   const sliderProps = {
     ...(props.searchRange
@@ -72,49 +56,35 @@ export const doubleFilter: Filter = (
       : { max: 100 })
   };
 
+  const defaultValue: SliderValue =
+    filterable.searchValues[pathName] ||
+    ((props.searchRange
+      ? (props.searchRange as SliderValue)
+      : [0, 100]) as SliderValue);
+
   return {
     // maybe use a different UI than integer?
-    filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      const values = filterable.searchValues[pathName];
-      return (
-        <div className="search-box">
+    filterDropdown: filterDdProps => (
+      <TyrFilter<SliderValue>
+        typeName="double"
+        filterable={filterable}
+        filterDdProps={filterDdProps}
+        fieldProps={props}
+      >
+        {(searchValue, setSearchValue, search) => (
           <Slider
             range
             {...sliderProps}
-            value={values || (defaultValue.slice() as [number, number])}
+            value={(searchValue || defaultValue) as SliderValue}
             onChange={(e: SliderValue) => {
-              filterable.searchValues[pathName] = e;
-
-              if (props.liveSearch) filterable.onSearch();
+              setSearchValue(e);
+              if (props.liveSearch) search(true);
             }}
             style={{ width: 188 }}
           />
-          <div className="search-box-footer">
-            <Button
-              onClick={() => onClearFilters(filterDdProps.clearFilters)}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-            {!props.liveSearch && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  filterable.onSearch();
-                  filterDdProps.confirm?.();
-                }}
-                icon="search"
-                size="small"
-                style={{ width: 90 }}
-              >
-                Search
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    },
+        )}
+      </TyrFilter>
+    ),
     onFilter: (value: number[], doc: Tyr.Document) => {
       const intVal = (path.get(doc) as number) || 0;
       return intVal >= value[0] && intVal <= value[1];

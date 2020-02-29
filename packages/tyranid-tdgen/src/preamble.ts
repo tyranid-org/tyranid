@@ -3,7 +3,9 @@ import { InterfaceGenerationOptions, version } from './util';
 export function generateDefinitionPreamble(
   passedOptions: InterfaceGenerationOptions
 ) {
-  const opts = Object.assign({ date: true, header: '' }, passedOptions);
+  // default date to false so that the file becomes idempotent and doesn't trigger a new github commit
+  // everytime it is run
+  const opts = Object.assign({ date: false, header: '' }, passedOptions);
 
   return `${opts.header}/**
  *

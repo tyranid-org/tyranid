@@ -16,11 +16,9 @@ export const TyrImport = TyrForm.create<Tyr.TyrImport>(
         action: ({ caller, self }) => {
           const { collection } = caller;
 
-          self.setState({
-            document: new Tyr.collections.TyrImport({
-              collectionName: collection.name,
-              defaults: new collection()
-            })
+          self.document = new Tyr.collections.TyrImport({
+            collectionName: collection.name,
+            defaults: new collection()
           });
         }
       },

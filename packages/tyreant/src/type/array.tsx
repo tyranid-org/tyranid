@@ -94,11 +94,12 @@ byName.array = {
       // TODO: do we need to remove the array from the document ?
     }
   },
-  filter(path, filterable, props) {
+  filter(filterable, props) {
+    const { namePath: path } = props.field!;
     const { tail } = path;
 
     if (tail.of!.link) {
-      return byName.link.filter!(path, filterable, props);
+      return byName.link.filter!(filterable, props);
     } else {
       // TODO as needed
       return undefined;

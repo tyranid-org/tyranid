@@ -1,20 +1,15 @@
 import * as React from 'react';
 import { useEffect } from 'react';
-import { Tyr } from 'tyranid/client';
-import { Slider, Button, InputNumber } from 'antd';
 
-import {
-  mapPropsToForm,
-  Filter,
-  Filterable,
-  Finder,
-  onTypeChange
-} from './type';
-
-import { byName, TyrTypeProps, withTypeContext } from './type';
+import { Slider, InputNumber } from 'antd';
 import { SliderValue } from 'antd/lib/slider';
-import { TyrFieldLaxProps, decorateField } from '../core';
-import { FilterDropdownProps } from 'antd/es/table';
+
+import { Tyr } from 'tyranid/client';
+
+import { mapPropsToForm, onTypeChange } from './type';
+import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
+import { byName, TyrTypeProps, withTypeContext } from './type';
+import { TyrFieldProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrIntegerBase = ((props: TyrTypeProps) => {
@@ -42,21 +37,14 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
 export const TyrInteger = withTypeContext('integer', TyrIntegerBase);
 
 export const integerFilter: Filter = (
-  path: Tyr.NamePathInstance,
   filterable: Filterable,
-  props: TyrFieldLaxProps
+  props: TyrFieldProps
 ) => {
-  const pathName = path.name;
+  const { namePath: path } = props.field!;
 
   const defaultValue = (props.searchRange
     ? (props.searchRange as [number, number])
     : [0, 100]) as [number, number];
-
-  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
-    delete filterable.searchValues[pathName];
-    clearFilters?.([]);
-    filterable.onSearch();
-  };
 
   const sliderProps = {
     ...(props.searchRange
@@ -68,47 +56,27 @@ export const integerFilter: Filter = (
   };
 
   return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      const values = filterable.searchValues[pathName];
-      return (
-        <div className="search-box">
+    filterDropdown: filterDdProps => (
+      <TyrFilter<SliderValue>
+        typeName="integer"
+        filterable={filterable}
+        filterDdProps={filterDdProps}
+        fieldProps={props}
+      >
+        {(searchValue, setSearchValue, search) => (
           <Slider
             range
             {...sliderProps}
-            value={values || (defaultValue.slice() as [number, number])}
+            value={searchValue || (defaultValue.slice() as [number, number])}
             onChange={(e: SliderValue) => {
-              filterable.searchValues[pathName] = e;
-
-              if (props.liveSearch) filterable.onSearch();
+              setSearchValue(e);
+              if (props.liveSearch) search(true);
+              else filterable.onSearch();
             }}
-            style={{ width: 188 }}
           />
-          <div className="search-box-footer">
-            <Button
-              onClick={() => onClearFilters(filterDdProps.clearFilters)}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-            {!props.liveSearch && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  filterable.onSearch();
-                  filterDdProps.confirm?.();
-                }}
-                icon="search"
-                size="small"
-                style={{ width: 90 }}
-              >
-                Search
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    },
+        )}
+      </TyrFilter>
+    ),
     onFilter: (value: number[], doc: Tyr.Document) => {
       const intVal = (path.get(doc) as number) || 0;
       return intVal >= value[0] && intVal <= value[1];

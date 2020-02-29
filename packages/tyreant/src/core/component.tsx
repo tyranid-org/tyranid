@@ -2,9 +2,12 @@ import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
 
+import { Filter } from './filter';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
 import { TyrDecorator } from './decorator';
-import { TyrFieldProps, TyrFieldLaxProps } from './field';
+import { defaultFieldsProp, TyrFieldProps, TyrFieldLaxProps } from './field';
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -13,6 +16,7 @@ export const ComponentContext = React.createContext<TyrComponent | undefined>(
 export const useComponent = () => React.useContext(ComponentContext);
 
 export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
+  className?: string;
   collection?: Tyr.CollectionInstance<D>;
   fields?: TyrFieldLaxProps[];
   decorator?: React.ReactElement;
@@ -21,8 +25,6 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
 }
 
 export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {
-  document?: D; // forms
-  documents?: D[]; // tables
   visible?: boolean;
 }
 
@@ -30,6 +32,7 @@ export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {
  * A TyrComponent represents a react component that contains documents.  Examples
  * are TyrTable and TyrForm.
  */
+@observer
 export class TyrComponent<
   D extends Tyr.Document = Tyr.Document,
   Props extends TyrComponentProps<D> = TyrComponentProps<D>,
@@ -37,15 +40,23 @@ export class TyrComponent<
 > extends React.Component<Props, State> {
   collection!: Tyr.CollectionInstance<D>;
   fields: TyrFieldProps[] = [];
+
+  /**
+   * "fields" contains all of the fields available to the component,
+   * "activeFields" contains fields that are currently active on the screen
+   *   (e.g. what fields are enabled in table configuration)
+   */
+  get activeFields(): TyrFieldProps[] {
+    return this.fields;
+  }
+
   parent?: TyrComponent;
   children: TyrComponent[] = [];
   decorator?: TyrDecorator<D>;
   _linkToParent?: any /* Field */;
 
-  /**
-   * A partial component is one that augments its parent object
-   */
-  partial = false;
+  @observable
+  loading = false;
 
   /**
    * Can this component edit documents?
@@ -57,13 +68,48 @@ export class TyrComponent<
    */
   canMultiple = false;
 
+  hasPaging = false;
+
+  /*
+   * * * TyrOneComponent properties defined here for convenience in callbacks * * *
+   */
+  @observable
+  document!: D;
+
+  mounted = false;
+
+  /*
+   * * * TyrManyComponent properties defined here for convenience in callbacks * * *
+   */
+
+  get isLocal() {
+    return false;
+  }
+
+  /**
+   * if isLocal then this has *all* the data, otherwise it just has the current page
+   */
+  @observable
+  documents: D[] & { count?: number } = [] as D[] & {
+    count?: number;
+  };
+
   constructor(props: Props, state: State) {
     super(props, state);
 
-    this.collection = this.props.collection!;
+    const collection = (this.collection = this.props.collection!);
+
+    const fields = this.props.fields;
+    if (fields)
+      this.fields = fields.map(laxFieldProps =>
+        this.resolveFieldLaxProps(laxFieldProps)
+      );
+    else if (collection) this.fields = defaultFieldsProp(collection);
   }
 
   componentDidMount() {
+    this.mounted = true;
+
     this.setState({ visible: true });
 
     if (!this.collection)
@@ -89,21 +135,18 @@ export class TyrComponent<
         action.action = async opts => {
           if (action.input === '*') {
             const { documents } = opts;
-            if (documents) this.setState({ documents });
+            if (documents) this.documents = documents;
 
             if (opts.document) await this.find(opts.document);
 
             if (this.canEdit && !this.document) {
               const collection = Tyr.aux({ fields: this.props.aux }, this);
-              this.setState({
-                document: new collection({})
-              });
+              this.document = new collection({});
             }
           } else {
             await this.find(opts.document!);
 
-            if (!this.document)
-              this.setState({ document: this.createDocument(opts) });
+            if (!this.document) this.document = this.createDocument(opts);
           }
         };
       } else if (actFn && action.is('save')) {
@@ -147,7 +190,9 @@ export class TyrComponent<
         traits: ['create'],
         name: 'create',
         label: 'Create ' + this.collection.label,
-        action: opts => this.setState({ document: this.createDocument(opts) })
+        action: opts => {
+          this.document = this.createDocument(opts);
+        }
       });
     }
 
@@ -162,8 +207,7 @@ export class TyrComponent<
         action: async opts => {
           await this.find(opts.document!);
 
-          if (!this.document)
-            this.setState({ document: this.createDocument(opts) });
+          if (!this.document) this.document = this.createDocument(opts);
         }
       });
     }
@@ -175,6 +219,10 @@ export class TyrComponent<
         action: () => this.submit()
       });
     }
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   actions: TyrAction<D>[] = [];
@@ -211,32 +259,41 @@ export class TyrComponent<
     throw new Error('submit() not defined');
   }
 
+  resolveFieldLaxProps(laxFieldProps: TyrFieldLaxProps) {
+    const fieldProps = Object.assign({}, laxFieldProps);
+    const f = fieldProps.field;
+    if (typeof f === 'string') {
+      fieldProps.field = this.collection.paths[f];
+    }
+    return fieldProps as TyrFieldProps;
+  }
+
+  // TODO:  if we switch to creating a HOC for class TyrComponents in order to pick up TyrThemes, also
+  //        pick up the parent component and then move this connect() functionality to ComponentDidMount
+  //        (or the constructor?) and get rid of the connect concept (and the wrap() as well?)
+  //        though also need to account for connecting to the Decorator
   connect(parent?: TyrComponent): boolean | undefined | void {
-    let collection: Tyr.CollectionInstance | undefined;
+    let collection: Tyr.CollectionInstance | undefined = this.props.collection;
     let result: boolean | undefined;
 
     if (parent && !this.parent) {
-      const { collection: propsCollection, fields: propsFields } = this.props;
-
       this.parent = parent;
       parent.children.push(this as any);
 
       const parentCollection = parent.collection;
-      collection = this.collection = (propsCollection ||
-        (parentCollection as Tyr.CollectionInstance<D>))!;
+      if (!collection)
+        collection = this.collection = parentCollection as Tyr.CollectionInstance<
+          D
+        >;
 
-      const fields =
-        propsFields || (collection === parentCollection && parent.props.fields);
+      let fields: TyrFieldProps[] | undefined = this.fields;
+      if (!fields && collection === parentCollection) {
+        fields = parent.props.fields;
 
-      if (fields) {
-        this.fields = fields.map(laxFieldProps => {
-          const fieldProps = Object.assign({}, laxFieldProps);
-          const f = fieldProps.field;
-          if (typeof f === 'string') {
-            fieldProps.field = collection!.paths[f];
-          }
-          return fieldProps as TyrFieldProps;
-        });
+        if (fields)
+          this.fields = fields.map(laxFieldProps =>
+            this.resolveFieldLaxProps(laxFieldProps)
+          );
       }
 
       if (parentCollection !== collection && collection) {
@@ -274,7 +331,9 @@ export class TyrComponent<
     return new this.collection!(obj);
   }
 
-  async refresh() {}
+  async refresh() {
+    this.setState({});
+  }
 
   async requery() {}
 
@@ -312,7 +371,7 @@ export class TyrComponent<
     }
 
     if (updatedDocument) {
-      this.setState({ document: updatedDocument });
+      this.document = updatedDocument;
     }
   }
 
@@ -329,33 +388,11 @@ export class TyrComponent<
     const { parent } = this;
 
     if (parent) {
-      const { document } = parent.state;
+      const { document } = parent;
 
       if (document) {
         return document;
       }
-    }
-
-    //return undefined;
-  }
-
-  get document(): D | undefined {
-    const { state } = this;
-
-    if (state) {
-      const { document } = state;
-      if (document) return document as D;
-    }
-
-    //return undefined;
-  }
-
-  get documents(): D[] | undefined {
-    const { state } = this;
-
-    if (state) {
-      const { documents } = state;
-      if (documents) return documents as D[];
     }
 
     //return undefined;
@@ -367,6 +404,10 @@ export class TyrComponent<
       decorator.connect(this);
     }
   };
+
+  getFilter(props: TyrFieldProps): ReturnType<Filter> {
+    return undefined;
+  }
 
   wrap(children: () => React.ReactNode) {
     const { decorator } = this.props;

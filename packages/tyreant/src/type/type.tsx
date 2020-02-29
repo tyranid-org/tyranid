@@ -2,9 +2,16 @@ import * as React from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { ColumnFilterItem, FilterDropdownProps } from 'antd/lib/table';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
-import { TyrFieldLaxProps, TyrFieldProps, TyrComponent } from '../core';
+
+import {
+  Filter,
+  Finder,
+  Filterable,
+  TyrFieldLaxProps,
+  TyrFieldProps,
+  TyrComponent
+} from '../core';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
@@ -34,37 +41,6 @@ export function generateRules(props: TyrTypeProps) {
 
   return rules;
 }
-
-export interface Filterable {
-  searchValues: { [pathName: string]: any };
-  onSearch(): void;
-
-  localSearch: boolean;
-  localDocuments?: Tyr.Document<any>[];
-}
-
-export type Filter = (
-  path: Tyr.NamePathInstance,
-  filterable: Filterable,
-  props: TyrFieldLaxProps
-) =>
-  | {
-      filterDropdown?:
-        | React.ReactNode
-        | ((props: FilterDropdownProps) => React.ReactNode);
-      filterIcon?: React.ReactNode;
-      onFilter?: (value: any, doc: Tyr.Document) => boolean;
-      onFilterDropdownVisibleChange?: (visible: boolean) => void;
-      filterDropdownVisible?: boolean;
-      filters?: ColumnFilterItem[];
-    }
-  | undefined;
-
-export type Finder = (
-  path: Tyr.NamePathInstance,
-  opts: any /* TODO: add Tyr.Options_Find to client */,
-  searchValue: any
-) => void;
 
 export interface FieldState {
   ready?: boolean;
@@ -123,7 +99,7 @@ export interface TypeUi {
   cellValue?: (
     path: Tyr.NamePathInstance,
     document: Tyr.Document,
-    props: TyrTypeLaxProps
+    props: TyrTypeProps
   ) => React.ReactNode;
 }
 
@@ -302,14 +278,11 @@ export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
   }
 };
 
-export const getFilter = (
-  path: Tyr.NamePathInstance,
-  filterable: Filterable,
-  props: TyrFieldLaxProps
-) => {
+export const getFilter = (filterable: Filterable, props: TyrFieldProps) => {
+  const { namePath: path } = props.field!;
   const { filter } = assertTypeUi(props.typeUi || path.tail.type.name);
 
-  return filter ? filter(path, filterable, props) : undefined;
+  return filter ? filter(filterable, props) : undefined;
 };
 
 export const getFinder = (path: Tyr.NamePathInstance) => {
@@ -320,7 +293,7 @@ export const getFinder = (path: Tyr.NamePathInstance) => {
 export const getCellValue = (
   path: Tyr.NamePathInstance,
   document: Tyr.Document,
-  props: TyrFieldLaxProps
+  props: TyrTypeProps
 ) => {
   const { tail: field } = path;
 

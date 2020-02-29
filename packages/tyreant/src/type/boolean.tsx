@@ -1,23 +1,20 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
-import { Tyr } from 'tyranid/client';
+import { Checkbox } from 'antd';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
-import { Button, Checkbox } from 'antd';
+import { Tyr } from 'tyranid/client';
 
 import {
   byName,
   mapPropsToForm,
   TyrTypeProps,
-  Filter,
-  Filterable,
-  Finder,
   withTypeContext,
   onTypeChange
 } from './type';
-import { TyrFieldLaxProps, decorateField } from '../core';
-import { FilterDropdownProps } from 'antd/es/table';
-import { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
+import { TyrFieldProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrBooleanBase = ((props: TyrTypeProps) => {
@@ -43,97 +40,60 @@ export const TyrBooleanBase = ((props: TyrTypeProps) => {
 export const TyrBoolean = withTypeContext('boolean', TyrBooleanBase);
 
 export const booleanFilter: Filter = (
-  path: Tyr.NamePathInstance,
   filterable: Filterable,
-  props: TyrFieldLaxProps
+  props: TyrFieldProps
 ) => {
+  const { namePath: path } = props.field!;
   const pathName = path.name;
-  // const { detail: field } = path;
-  const { localSearch } = filterable;
-
-  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
-    delete filterable.searchValues[pathName];
-    clearFilters?.([]);
-    filterable.onSearch();
-  };
 
   return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      // First values is the "No" label and second is the "Yes" label
-      const valueLabels = props.filterValues;
+    filterDropdown: filterDdProps => (
+      <TyrFilter<any>
+        typeName="boolean"
+        filterable={filterable}
+        filterDdProps={filterDdProps}
+        fieldProps={props}
+      >
+        {(searchValue, setSearchValue, search) => {
+          const valueLabels = props.filterValues;
 
-      return (
-        <div className="search-box">
-          <Checkbox
-            style={{ display: 'block', marginLeft: '8px' }}
-            checked={
-              filterable.searchValues[pathName] &&
-              !!filterable.searchValues[pathName]['no']
-            }
-            onChange={(e: CheckboxChangeEvent) => {
-              let set = filterable.searchValues[pathName];
+          // First values is the "No" label and second is the "Yes" label
+          return (
+            <>
+              <Checkbox
+                style={{ display: 'block', marginLeft: '8px' }}
+                checked={
+                  filterable.searchValues[pathName] &&
+                  !!filterable.searchValues[pathName]['no']
+                }
+                onChange={(e: CheckboxChangeEvent) => {
+                  if (!searchValue) setSearchValue({});
+                  searchValue['no'] = !searchValue.no;
 
-              if (!set) {
-                set = {};
-                filterable.searchValues[pathName] = set;
-              }
-
-              set['no'] = !set.no;
-
-              if (props.liveSearch) filterable.onSearch();
-            }}
-          >
-            {valueLabels ? valueLabels[0].$label : 'No'}
-          </Checkbox>
-          <Checkbox
-            style={{ display: 'block' }}
-            checked={
-              filterable.searchValues[pathName] &&
-              !!filterable.searchValues[pathName]['yes']
-            }
-            onChange={(e: CheckboxChangeEvent) => {
-              let set = filterable.searchValues[pathName];
-
-              if (!set) {
-                set = {};
-                filterable.searchValues[pathName] = set;
-              }
-
-              set['yes'] = !set.yes;
-
-              if (props.liveSearch) filterable.onSearch();
-            }}
-          >
-            {valueLabels ? valueLabels[1].$label : 'Yes'}
-          </Checkbox>
-
-          <div className="search-box-footer">
-            <Button
-              onClick={() => onClearFilters(filterDdProps.clearFilters)}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-
-            {!props.liveSearch && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  filterable.onSearch();
-                  filterDdProps.confirm?.();
+                  if (props.liveSearch) search(true);
                 }}
-                icon="search"
-                size="small"
-                style={{ width: 90 }}
               >
-                Search
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    },
+                {valueLabels ? valueLabels[0].$label : 'No'}
+              </Checkbox>
+              <Checkbox
+                style={{ display: 'block' }}
+                checked={
+                  filterable.searchValues[pathName] &&
+                  !!filterable.searchValues[pathName]['yes']
+                }
+                onChange={(e: CheckboxChangeEvent) => {
+                  if (!searchValue) setSearchValue({});
+                  searchValue['yes'] = !searchValue.yes;
+                  if (props.liveSearch) search(true);
+                }}
+              >
+                {valueLabels ? valueLabels[1].$label : 'Yes'}
+              </Checkbox>
+            </>
+          );
+        }}
+      </TyrFilter>
+    ),
     onFilter: (value: { no: boolean; yes: boolean }, doc: Tyr.Document) => {
       if (props.onFilter) {
         return props.onFilter(value, doc);

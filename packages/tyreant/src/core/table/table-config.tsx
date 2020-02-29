@@ -13,11 +13,7 @@ import { getFieldName } from '../field';
 import 'tyranid/builtin/isomorphic';
 import 'tyranid/builtin/client';
 
-import {
-  TyrTableConfig,
-  TyrTableColumnFieldProps,
-  ColumnConfigField
-} from './typedef';
+import { TyrTableConfig, ColumnConfigField } from './typedef';
 
 import {
   DragDropContext,
@@ -28,7 +24,7 @@ import {
 } from 'react-beautiful-dnd';
 
 import TyrTableColumnConfigItem from './table-config-item';
-import { TyrTable } from './table';
+import { TyrTable, TyrTableColumnFieldProps } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
   table: TyrTable<D>;
@@ -102,9 +98,9 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
             return c.name === (column.field as Tyr.FieldInstance).path;
           }
 
-          return column.field === c.name;
+          return column.field?.name === c.name;
         });
-        const pathName = getFieldName(column!.field);
+        const pathName = column.field?.name;
 
         if (pathName) {
           const field = pathName && collection.paths[pathName];

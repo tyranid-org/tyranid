@@ -4,22 +4,15 @@ import * as moment from 'moment';
 
 import { Tyr } from 'tyranid/client';
 
-import { DatePicker, Button } from 'antd';
+import { DatePicker } from 'antd';
+import { RangePickerValue } from 'antd/lib/date-picker/interface';
+
 const { RangePicker } = DatePicker;
 
-import {
-  byName,
-  TyrTypeProps,
-  mapPropsToForm,
-  Finder,
-  Filter,
-  Filterable,
-  onTypeChange,
-  TyrTypeLaxProps
-} from './type';
+import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
+import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
 import { withTypeContext } from './type';
-import { TyrFieldLaxProps, decorateField } from '../core';
-import { FilterDropdownProps } from 'antd/es/table';
+import { TyrFieldProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 const DATE_FORMAT = 'MM/DD/YYYY';
@@ -51,69 +44,37 @@ export const TyrDate = withTypeContext('date', TyrDateBase);
 function parseSearchValue(value: any) {
   if (typeof value === 'string') value = value.split(',');
   return value
-    ? ((value as string[]).map(v => moment(v)) as [
-        moment.Moment,
-        moment.Moment
-      ])
+    ? ((value as string[]).map(v => moment(v)) as RangePickerValue)
     : undefined;
 }
 
 export const dateFilter: Filter = (
-  path: Tyr.NamePathInstance,
   filterable: Filterable,
-  props: TyrFieldLaxProps
+  props: TyrFieldProps
 ) => {
-  const pathName = path.name;
-
-  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
-    delete filterable.searchValues[pathName];
-    clearFilters?.([]);
-    filterable.onSearch();
-  };
+  const { namePath: path } = props.field!;
 
   return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      return (
-        <div className="search-box">
+    filterDropdown: filterDdProps => (
+      <TyrFilter<RangePickerValue>
+        typeName="date"
+        filterable={filterable}
+        filterDdProps={filterDdProps}
+        fieldProps={props}
+      >
+        {(searchValue, setSearchValue, search) => (
           <RangePicker
-            defaultValue={filterable.searchValues[pathName]}
+            value={searchValue}
             format={props.dateFormat || DATE_FORMAT}
             onChange={v => {
-              filterable.searchValues[pathName] = v;
-
-              if (props.liveSearch) {
-                filterable.onSearch();
-                filterDdProps.confirm?.();
-              }
+              setSearchValue(v);
+              if (props.liveSearch) search(true);
             }}
             //style={{ width: 188, marginBottom: 8, display: 'block' }}
           />
-          <div className="search-box-footer">
-            <Button
-              onClick={() => onClearFilters(filterDdProps.clearFilters)}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-            {!props.liveSearch && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  filterable.onSearch();
-                  filterDdProps.confirm?.();
-                }}
-                icon="search"
-                size="small"
-                style={{ width: 90 }}
-              >
-                Search
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    },
+        )}
+      </TyrFilter>
+    ),
     onFilter: (value: any, doc: Tyr.Document) => {
       value = parseSearchValue(value);
 
@@ -165,7 +126,7 @@ byName.date = {
   cellValue: (
     path: Tyr.NamePathInstance,
     document: Tyr.Document,
-    props: TyrTypeLaxProps
+    props: TyrTypeProps
   ) => {
     const v = path.get(document);
 

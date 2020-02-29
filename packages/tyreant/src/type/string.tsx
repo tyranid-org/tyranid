@@ -9,14 +9,17 @@ import {
   byName,
   mapPropsToForm,
   TyrTypeProps,
-  Filter,
-  Filterable,
-  Finder,
   withTypeContext,
   onTypeChange
 } from './type';
-import { TyrFieldLaxProps, decorateField } from '../core';
-import { FilterDropdownProps } from 'antd/es/table';
+import {
+  TyrFilter,
+  Filter,
+  Filterable,
+  FilterDdProps,
+  Finder
+} from '../core/filter';
+import { TyrFieldProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
@@ -38,92 +41,49 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
 export const TyrString = withTypeContext('string', TyrStringBase);
 
 export const stringFilter: Filter = (
-  path: Tyr.NamePathInstance,
   filterable: Filterable,
-  props: TyrFieldLaxProps
+  props: TyrFieldProps
 ) => {
-  const pathName = path.name;
+  const { field } = props;
   let searchInputRef: Input | null = null;
-  const { detail: field } = path;
-  let localValue = filterable.searchValues[pathName];
-  let searchValue = localValue;
-
-  const onClearFilters = (clearFilters?: (selectedKeys: string[]) => void) => {
-    delete filterable.searchValues[pathName];
-    localValue = undefined;
-    searchValue = undefined;
-    clearFilters?.([]);
-    filterable.onSearch();
-  };
 
   return {
-    filterDropdown: (filterDdProps: FilterDropdownProps) => {
-      const search = (onChange?: boolean) => {
-        filterable.searchValues[pathName] = searchValue;
-        filterable.onSearch();
-        if (!onChange) filterDdProps.confirm?.();
-      };
-
-      return (
-        <div className="search-box">
+    filterDropdown: (filterDdProps: FilterDdProps) => (
+      <TyrFilter<string>
+        typeName="string"
+        filterable={filterable}
+        filterDdProps={filterDdProps}
+        fieldProps={props}
+      >
+        {(searchValue, setSearchValue, search) => (
           <Input
             ref={node => {
               searchInputRef = node;
             }}
-            placeholder={`Search ${props.label || field.label}`}
-            defaultValue={localValue}
+            placeholder={`Search ${props.label || field!.label}`}
+            value={searchValue}
             onChange={e => {
-              searchValue = e.target.value;
+              setSearchValue(e.target.value);
               if (props.liveSearch) search(true);
-              else filterDdProps.setSelectedKeys?.([searchValue]);
+              else filterDdProps.setSelectedKeys?.([searchValue!]);
             }}
             onPressEnter={() => search()}
             style={{ width: 188, marginBottom: 8, display: 'block' }}
           />
-          <div className="search-box-footer">
-            <Button
-              onClick={() => onClearFilters(filterDdProps.clearFilters)}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-
-            {!props.liveSearch && (
-              <Button
-                type="primary"
-                onClick={() => search()}
-                icon="search"
-                size="small"
-                style={{ width: 90 }}
-              >
-                Search
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    },
+        )}
+      </TyrFilter>
+    ),
     onFilter: (value: string, doc: Tyr.Document) => {
-      if (value !== undefined) {
-        const v = path.get(doc);
-
-        if (v) {
-          return v
-            .toString()
+      return value !== undefined
+        ? props
+            .field!.namePath.get(doc)
+            ?.toString()
             .toLowerCase()
-            .includes(value.toLowerCase());
-        }
-
-        return false;
-      }
-
-      return true;
+            .includes(value.toLowerCase()) ?? false
+        : true;
     },
     onFilterDropdownVisibleChange: (visible: boolean) => {
-      if (visible) {
-        setTimeout(() => searchInputRef!.focus());
-      }
+      if (visible) setTimeout(() => searchInputRef!.focus());
     }
   };
 };

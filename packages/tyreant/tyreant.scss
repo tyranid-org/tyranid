@@ -583,13 +583,13 @@ $primary-background-color: #6a8fbe;
   }
 }
 
-.search-box {
+.tyr-filter {
   background: $background-color;
   border: 1px solid $border-color;
   border-radius: 5px;
   padding: 8px;
 
-  .search-box-footer {
+  .tyr-filter-footer {
     margin-top: 8px;
     text-align: right;
   }
@@ -603,6 +603,72 @@ $primary-background-color: #6a8fbe;
     .ant-input-search-button {
       margin-left: 0;
     }
+  }
+
+  &.tyr-link-filter {
+    padding: 0;
+
+    .ant-menu {
+      max-height: 360px;
+      overflow-x: hidden;
+      padding: 0;
+    }
+  }
+
+  &.tyr-integer-filter .ant-slider {
+    width: 188px;
+  }
+}
+
+.tyr-filters {
+  .ant-popover-title {
+    background-color: #fcfcfc;
+  }
+
+  .ant-popover-inner-content {
+    padding: 0;
+  }
+
+  .tyr-filter-body {
+    max-height: 700px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .tyr-filter-container {
+    margin: 12px;
+    width: 240px;
+
+    h1 {
+      border-top: 1px solid #e8e8e8;
+      font-size: 16px;
+      margin-bottom: 0;
+    }
+
+    .tyr-filter {
+      padding: 8px;
+
+      &.tyr-link-filter {
+        .ant-menu {
+          max-height: 200px;
+        }
+      }
+    }
+  }
+
+  .tyr-filter-footer {
+    border-top: 1px solid #e8e8e8;
+    background-color: #fcfcfc;
+    padding: 12px;
+    text-align: right;
+
+    button {
+      margin-left: 8px;
+    }
+  }
+
+  .tyr-filter {
+    border: none;
   }
 }
 
@@ -630,4 +696,42 @@ form textarea.tyr-markup-editor {
 
 .tyr-s3-image {
   max-width: 100%;
+}
+
+.tyr-kanban {
+  display: flex;
+  height: 800px;
+
+  .tyr-kanban-column {
+    display: flex;
+    flex-direction: column;
+    width: 210px;
+    margin: 8px;
+    border: 1px solid grey;
+    border-radius: 4px;
+
+    .tyr-kanban-column-title {
+      padding: 8px;
+    }
+
+    .tyr-kanban-column-body {
+      min-height: 100px;
+      padding: 8px;
+      flex-grow: 1;
+      overflow-y: scroll;
+      overflow-x: hidden;
+
+      transition: background-color 0.2s ease;
+
+      .tyr-card {
+        border: 1px solid #888;
+        background: #eee;
+        border-radius: 4px;
+        padding: 6px;
+        width: 180px;
+        margin: 4px 0;
+        overflow: hidden;
+      }
+    }
+  }
 }

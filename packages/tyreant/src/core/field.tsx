@@ -16,6 +16,29 @@ import FormItem from 'antd/lib/form/FormItem';
 import { Tooltip, Icon } from 'antd';
 import { registerComponent } from '../common';
 
+/**
+ * This determines a list of default fields to show for a collection if no fields have been specified.
+ *
+ * TODO:  look at / add more properties on Fields to determine more intelligently which fields to show
+ *
+ * TODO:  this should maybe be moved to tyranid ?
+ */
+export function defaultFieldsProp(collection: Tyr.CollectionInstance) {
+  const fieldsArr = [];
+
+  const { fields } = collection;
+  for (const fieldName in fields) {
+    const field = fields[fieldName];
+
+    if (field.type.name === 'mongoid') continue;
+
+    // TODO:  check other metadata like default fields, etc.
+    fieldsArr.push({ field });
+  }
+
+  return fieldsArr;
+}
+
 export type TyrSortDirection = 'ascend' | 'descend';
 
 export interface TyrFieldProps {

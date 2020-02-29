@@ -7,24 +7,15 @@
  
 */
 
-import * as React from 'react';
-
-import { createRef } from 'react';
-import { Tyr } from 'tyranid/client';
-
-// TODO:  is it possible to import this via tsconfig ?
-import 'tyranid/builtin/isomorphic';
-import 'tyranid/builtin/client';
-
-import { autorun, observable } from 'mobx';
-import { tyreant } from '../../tyreant';
-import { observer } from 'mobx-react';
-
 import { compact, findIndex, isEqual } from 'lodash';
 
+import * as React from 'react';
+import { createRef } from 'react';
 import { DragDropContextProvider } from 'react-dnd';
-
 import HTML5Backend from 'react-dnd-html5-backend';
+
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
 
 import {
   message,
@@ -40,21 +31,24 @@ import {
 } from 'antd';
 
 import { PaginationProps } from 'antd/es/pagination';
+import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { ColumnProps } from 'antd/es/table';
-import { getFilter, Filter, getFinder, getCellValue } from '../../type';
+import { Tyr } from 'tyranid/client';
 
-import { TyrComponentProps, TyrComponentState } from '../component';
-import { TyrComponent } from '../../core';
+// TODO:  is it possible to import this via tsconfig ?
+import 'tyranid/builtin/isomorphic';
+import 'tyranid/builtin/client';
+
+import { getCellValue, TyrTypeProps } from '../../type';
+import { TyrComponentState } from '../component';
 import {
   TyrSortDirection,
   TyrFieldLaxProps,
   getFieldName,
   TyrFieldBase
 } from '../field';
-import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { TyrFormFields } from '../form';
-import { string } from 'prop-types';
-import { TyrTableConfig, TyrTableColumnFieldProps } from './typedef';
+import { TyrTableConfig } from './typedef';
 import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
 import {
   EditableFormRow,
@@ -62,6 +56,8 @@ import {
   EditableContext
 } from './table-rows';
 import { registerComponent } from '../../common';
+import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
+import { TyrFieldProps } from '../../core';
 
 export interface OurColumnProps<T> extends ColumnProps<T> {
   field: Tyr.FieldInstance;
@@ -69,29 +65,35 @@ export interface OurColumnProps<T> extends ColumnProps<T> {
 
 const ObsTable = observer(Table);
 
-const DEFAULT_PAGE_SIZE = 20;
-
 let dndBackend: __ReactDnd.Backend;
 
+interface TableColumnFieldProps {
+  pinned?: 'left' | 'right';
+  align?: 'left' | 'right' | 'center';
+  ellipsis?: boolean;
+  editClassName?: string;
+
+  /**
+   * What table column grouping should this be grouped under.
+   */
+  group?: string;
+}
+
+export type TyrTableColumnFieldLaxProps = TableColumnFieldProps &
+  TyrFieldLaxProps;
+export type TyrTableColumnFieldProps = TableColumnFieldProps & TyrFieldProps;
+
 export interface TyrTableProps<D extends Tyr.Document>
-  extends TyrComponentProps<D> {
+  extends TyrManyComponentProps<D> {
   fixedWidthHack?: boolean;
   bordered?: boolean;
-  className?: string;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean;
-  documents?: D[] & { count?: number };
-  fields: TyrTableColumnFieldProps[];
-  query?: Tyr.MongoQuery | (() => Tyr.MongoQuery);
-  route?: string;
+  fields: TyrTableColumnFieldLaxProps[];
   actionHeaderLabel?: string | React.ReactNode;
   actionIconType?: string;
   actionTrigger?: 'hover' | 'click';
   actionColumnClassName?: string;
-  pageSize?: number; // a.k.a. limit,
-  pageSizeOptions?: string[];
-  showSizeChanger?: boolean;
-  showTotal?: (total: number, range: [number, number]) => React.ReactNode;
   pinActionsRight?: boolean;
   rowEdit?: boolean;
   emptyTablePlaceholder?:
@@ -125,8 +127,6 @@ export interface TyrTableProps<D extends Tyr.Document>
   orderable?: boolean;
   dndBackend?: __ReactDnd.Backend;
   moveRow?: (dragIndex: number, hoverIndex: number) => void;
-  notifyFilterExists?: (exists: boolean) => void;
-  notifySortSet?: (columnName?: string, order?: TyrSortDirection) => void;
 }
 
 // TODO:  if they specify a sort function for a column and we're not local report an error
@@ -134,35 +134,14 @@ export interface TyrTableProps<D extends Tyr.Document>
 @observer
 export class TyrTable<
   D extends Tyr.Document = Tyr.Document
-> extends TyrComponent<D, TyrTableProps<D>> {
-  canMultiple = true;
-
-  defaultPageSize = this.props.pageSize || DEFAULT_PAGE_SIZE;
-
-  skip?: number;
-  limit: number = this.defaultPageSize;
-
-  /**
-   * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
-   * search value while it is being edited in the search control, it needs to keep that copy locally.
-   */
-  searchValues: {
-    [pathName: string]: any;
-  } = {};
-  sortDirections: { [pathName: string]: TyrSortDirection } = {};
-
-  /**
-   * "local" means that the data displayed in the table is passed in and we don't do a find() for it
-   */
-  get isLocal() {
-    return !!this.props.documents;
-  }
-
-  count = this.props.documents?.length || 0;
-
+> extends TyrManyComponent<D, TyrTableProps<D>> {
   // TODO:  is this redundant with super().fields ?
   @observable
   otherFields: TyrTableColumnFieldProps[] = [];
+
+  get activeFields(): TyrTableColumnFieldProps[] {
+    return this.otherFields;
+  }
 
   newDocument?: D;
 
@@ -170,15 +149,6 @@ export class TyrTable<
   selectedRowKeys: string[] = [];
 
   editingDocument?: D;
-
-  /**
-   * if isLocal then this has *all* the data, otherwise it just has the current page
-   */
-  @observable
-  documents: D[] & { count?: number } = this.props.documents || [];
-
-  @observable
-  loading = false;
 
   isSavingDocument = false;
 
@@ -195,18 +165,6 @@ export class TyrTable<
 
   constructor(props: TyrTableProps<D>, state: TyrComponentState<D>) {
     super(props, state);
-
-    this.setDefaultSort();
-  }
-
-  setDefaultSort() {
-    const sortColumn = this.props.fields.find(column => !!column.defaultSort);
-
-    if (sortColumn) {
-      this.sortDirections[
-        getFieldName(sortColumn.field)!
-      ] = sortColumn.defaultSort!;
-    }
   }
 
   async componentDidMount() {
@@ -217,37 +175,25 @@ export class TyrTable<
     if (orderable && !dndBackend)
       dndBackend = this.props.dndBackend || HTML5Backend;
 
-    const { config, fields, onLoad, documents, query } = this.props;
-
-    if (documents && query) {
-      // we need to know the query even for in-memory tables because when we run an csv export we need to query the same rows
-      this.findOpts = { query };
-    }
+    const { config, onLoad } = this.props;
 
     if (config) {
       this.loading = true;
-      const existingConfig = await ensureTableConfig(this, fields, config);
+      const existingConfig = await ensureTableConfig(this, this.fields, config);
 
       if (existingConfig) {
         this.otherFields = existingConfig.newColumns;
         this.tableConfig = existingConfig.tableConfig;
       } else {
-        this.otherFields = fields;
+        this.otherFields = this.fields;
       }
 
       this.loading = false;
     } else {
-      this.otherFields = fields;
+      this.otherFields = this.fields;
     }
 
-    this._mounted = true;
-
     onLoad && onLoad(this);
-  }
-
-  componentWillUnmount() {
-    this.cancelAutorun && this.cancelAutorun();
-    this._mounted = false;
   }
 
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps<D>) {
@@ -305,7 +251,7 @@ export class TyrTable<
 
         // If it is hidden, then don't add it to my fields
         if (!fld?.hidden && !nextOtherField.defaultHidden) {
-          newOtherFields.push(nextOtherField);
+          newOtherFields.push(this.resolveFieldLaxProps(nextOtherField));
         }
       }
     }
@@ -313,71 +259,12 @@ export class TyrTable<
     this.otherFields = newOtherFields;
   }
 
-  // Sort the documents according to the current sort
-  //
-  // We need to do this so that when we enter editing mode
-  // and disable sorting, the natural sort of the rows is
-  // not any different than what the sort currently is.
-  setSortedDocuments = (docs: D[]) => {
-    let documents = docs;
-    let sortColumn: TyrTableColumnFieldProps | undefined;
-
-    let sortColumnName: string | null = null;
-
-    for (const name in this.sortDirections) {
-      if (this.sortDirections[name] !== undefined) {
-        sortColumnName = name;
-        break;
-      }
-    }
-
-    // Find column
-    if (sortColumnName) {
-      sortColumn = this.props.fields.find(
-        f => getFieldName(f.field) === sortColumnName
-      );
-    }
-
-    if (sortColumn) {
-      let field: Tyr.FieldInstance | undefined;
-      let pathName: string | undefined;
-
-      if (
-        sortColumn.field &&
-        (sortColumn.field as Tyr.FieldInstance).collection
-      ) {
-        field = sortColumn.field as Tyr.FieldInstance;
-        pathName = field.path;
-      } else {
-        pathName = getFieldName(sortColumn.field);
-        field = pathName ? this.props.collection.paths[pathName] : undefined;
-      }
-
-      const np = field ? field.namePath : undefined;
-
-      docs.sort(
-        sortColumn.sortComparator
-          ? sortColumn.sortComparator
-          : (a: Tyr.Document, b: Tyr.Document) =>
-              np ? field!.type.compare(field!, np.get(a), np.get(b)) : 0
-      );
-
-      if (pathName && this.sortDirections[pathName] === 'descend')
-        docs.reverse();
-
-      documents = docs;
-    }
-
-    this.documents = documents;
-    this.count = documents.length;
-  };
-
   setFieldValue = (fieldName: string, value: any) => {
     const document = this.newDocument || this.editingDocument;
 
     if (!document) {
       console.error(
-        'Unable to setFieldValue, there is document available to set a value in!'
+        'Unable to setFieldValue, there is no document available to set a value in!'
       );
       return;
     }
@@ -404,206 +291,19 @@ export class TyrTable<
     this.newDocument = doc;
     delete this.editingDocument;
 
-    if (this._mounted) this.setState({});
+    if (this.mounted) this.refresh();
 
     this.props.setEditing && this.props.setEditing(true);
     return true;
   };
 
-  private fromUrlQuery(query: { [name: string]: string }) {
-    this.skip = 0;
-    this.limit = this.defaultPageSize;
-    Tyr.clear(this.searchValues);
-    let sortFound = false;
-
-    for (const name in query) {
-      const value = query[name];
-
-      switch (name) {
-        case 'skip':
-        case 'limit':
-          this[name] = parseInt(value, 10);
-          break;
-        default: {
-          const dot = value.indexOf('.');
-          let sortDirection: TyrSortDirection, searchValue: string | undefined;
-
-          if (dot !== -1) {
-            sortDirection = value.substring(0, dot) as TyrSortDirection;
-            searchValue = value.substring(dot + 1);
-          } else {
-            sortDirection = value as TyrSortDirection;
-          }
-
-          this.sortDirections[name] = sortDirection || undefined;
-
-          if (searchValue) {
-            // TODO:  we need to know the Field here because of it is a link or array of links we need to split the search value on '.'
-            const canBeArray = searchValue.indexOf(',') >= 0; // this is not right -- need the Field
-            this.searchValues[name] = canBeArray
-              ? searchValue.split(',')
-              : searchValue;
-          }
-
-          if (sortDirection) sortFound = true;
-        }
-      }
-    }
-
-    // apply any default sort if no sort was supplied
-    if (!sortFound) {
-      const defaultSortColumn = this.otherFields.find(
-        column => !!column.defaultSort
-      );
-      if (defaultSortColumn) {
-        const fieldName = getFieldName(defaultSortColumn.field);
-
-        if (fieldName)
-          this.sortDirections[fieldName] = defaultSortColumn.defaultSort!;
-      }
-    }
-  }
-
-  private getUrlQuery() {
-    const query: { [name: string]: string } = {};
-
-    const { searchValues, sortDirections, skip, limit } = this;
-
-    if (skip) query.skip = String(skip);
-    if (limit !== undefined && limit !== DEFAULT_PAGE_SIZE)
-      query.limit = String(limit);
-
-    for (const fieldName of _.uniq([
-      ...Object.keys(searchValues),
-      ...Object.keys(sortDirections)
-    ])) {
-      const searchValue = searchValues[fieldName];
-      const sortDirection = sortDirections[fieldName];
-
-      if (sortDirection || searchValue) {
-        query[fieldName] =
-          (sortDirection || '') +
-          (searchValue
-            ? '.' +
-              (Array.isArray(searchValue) ? searchValue.join(',') : searchValue)
-            : '');
-      }
-    }
-
-    return query;
-  }
-
-  private execute() {
-    if (this.props.route) {
-      tyreant.router.go({
-        route: this.props.route,
-        query: this.getUrlQuery()
-      });
-    } else {
-      if (this._mounted) {
-        if (this.isLocal) {
-          this.setSortedDocuments(this.documents.slice());
-          this.setState({}); // Hack to force a table re-render
-        } else {
-          this.findAll();
-        }
-      }
-    }
-  }
-
-  async refresh() {
-    this.setState({});
-  }
-
-  async requery() {
-    if (this.isLocal) this.refresh();
-    else this.findAll();
-  }
-
-  // TODO:  rename this to "find()" and move this up to
-  async findAll() {
-    const { collection, query: baseQuery, fields: columns } = this.props;
-    const { skip, limit, searchValues, sortDirections } = this;
-
-    try {
-      this.loading = true;
-
-      const query = {
-        ...(typeof baseQuery === 'function' ? baseQuery() : baseQuery)
-      };
-
-      const sort: { [key: string]: number } = {};
-
-      const opts: Tyr.anny /* Tyr.Options_Find */ = {
-        query,
-        count: true,
-        skip,
-        limit,
-        sort
-      };
-
-      for (const column of columns) {
-        const pathName = getFieldName(column.field) || undefined,
-          field = pathName ? collection.paths[pathName] : undefined,
-          namePath = field?.namePath,
-          finder = namePath && getFinder(namePath),
-          searchValue = pathName && searchValues[pathName],
-          sortDirection = pathName && sortDirections[pathName];
-
-        if (finder) finder(namePath!, opts, searchValue);
-
-        if (sortDirection)
-          sort[pathName!] = sortDirection === 'ascend' ? 1 : -1;
-      }
-
-      this.findOpts = opts;
-      const docs = await collection.findAll(opts);
-
-      this.count = docs.count!;
-      this.documents = docs;
-
-      this.loading = false;
-    } catch (err) {
-      message.error(err.message);
-    }
-  }
-
-  private cancelAutorun?: () => void;
-  private _mounted: boolean = false;
-
-  private startReacting() {
-    if (!this.cancelAutorun) {
-      this.cancelAutorun = autorun(() => {
-        const { route } = this.props;
-
-        if (route) {
-          const location = tyreant.router.location!;
-          if (location.route !== route) return;
-
-          const currentUrl = this.getUrlQuery();
-          this.fromUrlQuery(
-            location.query! as {
-              [name: string]: string;
-            }
-          );
-          const newUrl = this.getUrlQuery();
-
-          if (currentUrl === newUrl) return;
-          this.findAll();
-        } else if (!this.isLocal) {
-          this.findAll();
-        }
-      });
-    }
-  }
-
   private onUpdateTableConfig = async (savedTableConfig: any) => {
-    const { config, fields, onChangeTableConfiguration } = this.props;
+    const { config, onChangeTableConfiguration } = this.props;
 
     if (config) {
       const tableConfig = await ensureTableConfig(
         this,
-        fields,
+        this.fields,
         config,
         savedTableConfig
       );
@@ -783,29 +483,6 @@ export class TyrTable<
     this.setState({});
   };
 
-  // TODO:  this filter functionality should probably be moved up to Component since other components will need
-  //        filters as well
-  filters: { [path: string]: ReturnType<Filter> | undefined } = {};
-  private getFilter(path: Tyr.NamePathInstance, props: TyrFieldLaxProps) {
-    const filterable = {
-      searchValues: this.searchValues,
-      onSearch: () => {
-        this.skip = 0;
-        this.execute();
-      },
-      localSearch: this.isLocal,
-      localDocuments: this.documents
-    };
-
-    const pathName = path.name;
-    const existingFilter = this.filters[pathName];
-    if (existingFilter) return existingFilter;
-
-    const filter = (path && getFilter(path, filterable, props)) || {};
-    this.filters[pathName] = filter;
-    return filter;
-  }
-
   private getColumns(newDocumentTable?: boolean): ColumnProps<D>[] {
     const {
       collection,
@@ -820,7 +497,7 @@ export class TyrTable<
     } = this.props;
 
     const { sortDirections, editingDocument, newDocument, isLocal } = this;
-    const columns = this.otherFields;
+    const columns = this.activeFields;
 
     const fieldCount = columns.length;
     const isEditingAnything = !!newDocumentTable || !!editingDocument;
@@ -902,7 +579,7 @@ export class TyrTable<
         (filteringEnabled &&
           !column.noFilter &&
           np &&
-          this.getFilter(np, column)) ||
+          this.getFilter(column as any)) ||
         {};
 
       const netClassName = column.className;
@@ -977,7 +654,9 @@ export class TyrTable<
 
           return (
             <div className="tyr-table-cell">
-              {render ? render(document) : getCellValue(np!, document, column)}
+              {render
+                ? render(document)
+                : getCellValue(np!, document, column as TyrTypeProps)}
             </div>
           );
         },
@@ -1113,7 +792,7 @@ export class TyrTable<
             const action = this.actions[0];
             const label = action.label;
 
-            if (label instanceof string) {
+            if (typeof label === 'string') {
               return (
                 <a
                   className="action-item"
@@ -1212,41 +891,6 @@ export class TyrTable<
     this.props.notifySortSet?.(sortFieldName, sorter.order);
   };
 
-  private paginationItemRenderer = (
-    page: number,
-    type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next',
-    originalElement: React.ReactElement<HTMLElement>
-  ) => {
-    if (type === 'prev') return <a>Previous</a>;
-    if (type === 'next') return <a>Next</a>;
-    return originalElement;
-  };
-
-  private pagination = () => {
-    if (!this.limit) return false;
-
-    const { showSizeChanger, pageSizeOptions, showTotal } = this.props;
-
-    const { skip = 0, limit } = this;
-    const totalCount = this.count || 0;
-
-    //const morePages = totalCount > limit;
-
-    return {
-      current: Math.floor(skip / limit) + 1,
-      //defaultCurrent: Math.floor(skip / limit) + 1,
-      total: totalCount,
-      defaultPageSize: limit,
-      pageSize: limit,
-      size: 'default',
-      itemRender: this.paginationItemRenderer,
-      showSizeChanger: showSizeChanger === false ? false : true,
-      pageSizeOptions,
-      hideOnSinglePage: true,
-      showTotal
-    };
-  };
-
   private onEditRow = (document: D, rowIndex: number) => {
     this.editingDocument = document;
     this.props.setEditing && this.props.setEditing(true);
@@ -1289,26 +933,6 @@ export class TyrTable<
     this.selectedRowKeys = ids;
   };
 
-  resetFiltersAndSort = () => {
-    const { notifyFilterExists, notifySortSet } = this.props;
-    const { searchValues } = this;
-    for (const key of Object.keys(searchValues)) delete searchValues[key];
-
-    this.setDefaultSort();
-    this.setSortedDocuments(this.documents.slice());
-    this.setState({});
-
-    notifyFilterExists && notifyFilterExists(false);
-
-    if (notifySortSet) {
-      const sortColumn = this.props.fields.find(column => !!column.defaultSort);
-      notifySortSet(
-        sortColumn ? (sortColumn.field as string) : undefined,
-        sortColumn ? sortColumn.defaultSort : undefined
-      );
-    }
-  };
-
   moveRow = (dragIndex: number, hoverIndex: number) => {
     if (dragIndex === hoverIndex) return;
 
@@ -1328,7 +952,7 @@ export class TyrTable<
       documents,
       editingDocument,
       newDocument,
-      otherFields: fields,
+      activeFields: fields,
       showConfig,
       showExport,
       selectedRowKeys,
@@ -1463,10 +1087,8 @@ export class TyrTable<
 
                   this.onEditRow(record, rowIndex);
 
-                  if (this._mounted) {
-                    setTimeout(() => {
-                      this.setState({});
-                    }, 400);
+                  if (this.mounted) {
+                    setTimeout(() => this.refresh(), 400);
                   }
                 }
               }
@@ -1559,7 +1181,7 @@ export class TyrTable<
               {showConfig && tableConfig && (
                 <TyrTableConfigComponent
                   table={this}
-                  columns={this.props.fields}
+                  columns={this.fields}
                   config={tableConfig}
                   tableConfig={this.tableConfig}
                   onCancel={() => (this.showConfig = false)}
@@ -1567,10 +1189,10 @@ export class TyrTable<
                   containerEl={this.tableWrapper!}
                 />
               )}
-              {showExport && (
+              {showExport && this.mounted && (
                 <TyrTableConfigComponent
                   table={this}
-                  columns={this.props.fields}
+                  columns={this.fields}
                   config={tableConfig || true}
                   export={true}
                   tableConfig={this.tableConfig}

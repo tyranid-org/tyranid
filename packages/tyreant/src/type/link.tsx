@@ -1,25 +1,25 @@
 import { compact, debounce, uniq } from 'lodash';
 import * as React from 'react';
+import { useState } from 'react';
 
-import { Tyr } from 'tyranid/client';
-
-import { Select, Spin, Button, Menu, Input } from 'antd';
+import { Select, Spin, Menu, Input } from 'antd';
 import { SelectProps, SelectValue } from 'antd/lib/select';
 const { Option } = Select;
 const { Search } = Input;
+import Checkbox from 'antd/es/checkbox';
+
+import { Tyr } from 'tyranid/client';
 
 import {
   mapPropsToForm,
   onTypeChange,
   byName,
   TyrTypeProps,
-  withTypeContext,
-  TyrTypeLaxProps
+  withTypeContext
 } from './type';
 
-import { TyrFieldLaxProps, decorateField } from '../core';
-
-import Checkbox from 'antd/es/checkbox';
+import { TyrFieldProps, decorateField } from '../core';
+import { TyrFilter, FilterDdProps, Filterable } from '../core/filter';
 import { registerComponent } from '../common';
 
 // TODO:  replace with antd's ModeOption when we upgrade ant
@@ -68,7 +68,7 @@ const findById = (
   return values.find(lv => lv.$id === id);
 };
 
-const sortLabels = (labels: any[], props: TyrFieldLaxProps) => {
+const sortLabels = (labels: any[], props: TyrFieldProps) => {
   if (!!props.manuallySortedLabels) {
     return labels.slice();
   }
@@ -93,8 +93,8 @@ const sortLabels = (labels: any[], props: TyrFieldLaxProps) => {
       return 1;
     }
 
-    const aLabel = a.$label.toLowerCase ? a.$label.toLowerCase() : '';
-    const bLabel = b.$label.toLowerCase ? b.$label.toLowerCase() : '';
+    const aLabel = a.$label.toLowerCase?.() ?? '';
+    const bLabel = b.$label.toLowerCase?.() ?? '';
 
     return aLabel.localeCompare(bLabel);
   });
@@ -407,116 +407,27 @@ byName.link = {
   /**
    * Note that this filter handles both the "link" and the "array of link" cases
    */
-  filter(path, filterable, props) {
-    const pathName = path.name;
-    const linkField = linkFieldFor(path)!;
-    const link = linkField.link!;
-    let filterSearchValue: string = '';
-
-    const { localSearch, localDocuments } = filterable;
-
-    const onClearFilters = (
-      clearFilters?: (selectedKeys: string[]) => void
-    ) => {
-      delete filterable.searchValues[pathName];
-      clearFilters?.([]);
-      filterable.onSearch();
-    };
-
-    let filterValues: { $id: any; $label: string }[] | undefined =
-      props.filterValues;
-
-    if (!filterValues) {
-      if (localSearch && localDocuments && props.filterOptionLabel) {
-        // Go get all the values for the filter
-
-        const allLabels: {
-          $id: any;
-          $label: string;
-        }[] = [];
-
-        localDocuments.forEach(d => {
-          const values = props.filterOptionLabel!(d);
-
-          if (Array.isArray(values)) {
-            allLabels.push(...values);
-          } else if (values) {
-            allLabels.push(values);
-          }
-        });
-
-        filterValues = uniq(compact(allLabels), '$id');
-      } else {
-        if (!link.isStatic()) {
-          linkField
-            .labels(new path.tail.collection({}), filterSearchValue)
-            .then(results => {
-              filterValues = results.map(d => ({
-                ...d,
-                $id: String(d.$id),
-                $label: d.$label
-              }));
-            });
-        } else {
-          filterValues = linkFor(path)!.values.map(d => {
-            return {
-              ...d,
-              $id: String(d.$id),
-              $label: d.$label
-            };
-          });
-        }
-      }
-    }
+  filter(filterable, props) {
+    const field = props.field!;
+    const { namePath: path } = field;
 
     return {
-      filterDropdown: ({
-        //selectedKeys,
-        setSelectedKeys,
-        clearFilters,
-        confirm
-      }) => {
-        let values = filterable.searchValues[pathName];
-
-        if (!Array.isArray(values)) values = values ? [values] : [];
-        // we clone the searchvalues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
-        values = Tyr.cloneDeep(values);
-
-        const search = (onChange?: boolean) => {
-          filterable.searchValues[pathName] = Tyr.cloneDeep(values);
-          filterable.onSearch();
-          if (!onChange) confirm?.();
-        };
-
-        return (
-          <LinkFilterDropdown
-            search={search}
-            values={values}
-            path={path}
-            onClearFilters={() => onClearFilters(clearFilters)}
-            filterValues={filterValues}
-            setSearchValues={values =>
-              (filterable.searchValues[pathName] = values)
-            }
-            props={props}
-            setSelectedKeys={setSelectedKeys}
-            setFilterValues={values => {
-              filterValues = values;
-            }}
-          />
-        );
-      },
+      filterDropdown: filterDdProps => (
+        <LinkFilterDropdown
+          filterable={filterable}
+          filterDdProps={filterDdProps}
+          fieldProps={props}
+        />
+      ),
       onFilter: (value, doc) => {
         if (props.onFilter) return props.onFilter(value, doc);
 
         const rawVal = path.get(doc);
 
         if (Array.isArray(rawVal) && Array.isArray(value)) {
-          for (let i = 0; i < value.length; i++) {
-            const v = value[i];
-
-            for (let j = 0; j < rawVal.length; j++) {
-              if (v === rawVal[j]) return true;
+          for (const v of value) {
+            for (const rv of rawVal) {
+              if (v === rv) return true;
             }
           }
         }
@@ -584,137 +495,171 @@ byName.link = {
 
 registerComponent('TyrLink', TyrLink);
 
-type LinkFilterProps = {
-  props: TyrTypeLaxProps;
-  values: any;
-  filterValues?: { $id: string; $label: string }[];
-  setFilterValues: (values: { $id: string; $label: string }[]) => void;
-  setSearchValues: (values: any) => void;
-  path: Tyr.NamePathInstance;
-  setSelectedKeys?: ((selectedKeys: string[]) => void) | undefined;
-  search: (onChange?: boolean | undefined) => void;
-  onClearFilters: () => void;
-};
+// TODO: use real Tyr.Document's so we can get the portrait image as well ?
+interface LabelDocument {
+  $id: string;
+  $label: string;
+}
+
+interface LinkFilterProps {
+  filterable: Filterable;
+  fieldProps: TyrFieldProps;
+  filterDdProps: FilterDdProps;
+}
 
 const LinkFilterDropdown = ({
-  props,
-  path,
-  values,
-  filterValues: initialFilterValues,
-  setFilterValues: setInitialFilterValues,
-  setSearchValues,
-  setSelectedKeys,
-  search,
-  onClearFilters
+  fieldProps,
+  filterDdProps,
+  filterable
 }: LinkFilterProps) => {
-  const [filterSearchValue, setFilterSearchValue] = React.useState('');
-  const [filterValues, setFilterValues] = React.useState(initialFilterValues);
-
+  const { namePath: path } = fieldProps.field!;
+  const pathName = path.name;
   const linkField = linkFieldFor(path)!;
   const link = linkField.link!;
+  const { localSearch, localDocuments } = filterable;
+
+  const [labels, setLabels] = useState<LabelDocument[] | undefined>(undefined);
+  const [filterSearchValue, setFilterSearchValue] = React.useState('');
+
+  let initialValues = filterable.searchValues[pathName];
+  if (!Array.isArray(initialValues))
+    initialValues = initialValues ? [initialValues] : [];
+  // we clone the searchValues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
+  initialValues = Tyr.cloneDeep(initialValues);
 
   return (
-    <div className="search-box" style={{ padding: 0 }}>
-      {!props.liveSearch && !link.isStatic() && (
-        <Search
-          placeholder="search for..."
-          size="small"
-          className="tyr-filter-search-input"
-          onChange={e => setFilterSearchValue(e.currentTarget.value)}
-          onSearch={value => {
-            linkField
-              .labels(new path.tail.collection({}), value)
-              .then(results => {
-                const newFilterValues = results.map(d => ({
+    <TyrFilter<string[]>
+      typeName="link"
+      filterable={filterable}
+      filterDdProps={filterDdProps}
+      fieldProps={fieldProps}
+    >
+      {(searchValue, setSearchValue, search) => {
+        if (!labels) {
+          if (localSearch && localDocuments && fieldProps.filterOptionLabel) {
+            // Go get all the values for the filter
+
+            const allLabels: LabelDocument[] = [];
+
+            for (const d of localDocuments) {
+              const values = fieldProps.filterOptionLabel!(d);
+
+              if (Array.isArray(values)) {
+                allLabels.push(...values);
+              } else if (values) {
+                allLabels.push(values);
+              }
+            }
+
+            setLabels(uniq(compact(allLabels), '$id'));
+          } else {
+            if (!link.isStatic()) {
+              linkField
+                .labels(new path.tail.collection({}), filterSearchValue)
+                .then(results => {
+                  setLabels(
+                    results.map(d => ({
+                      ...d,
+                      $id: String(d.$id),
+                      $label: d.$label
+                    }))
+                  );
+                });
+            } else {
+              setLabels(
+                linkFor(path)!.values.map(d => ({
                   ...d,
                   $id: String(d.$id),
                   $label: d.$label
-                }));
-
-                // Set it locally
-                setFilterValues(newFilterValues);
-
-                // Update parent
-                setInitialFilterValues(newFilterValues);
-
-                // Set text search for filter values
-                setFilterSearchValue(value);
-              });
-          }}
-          enterButton
-          value={filterSearchValue}
-        />
-      )}
-
-      <Menu
-        className="ant-table-filter-dropdown ant-dropdown-menu"
-        style={{ maxHeight: '360px', overflowX: 'hidden', padding: 0 }}
-        selectedKeys={values}
-        mode="vertical"
-        multiple={true}
-        onClick={_.debounce(({ key }: { key: string }) => {
-          // this debounce is here because if you clicked on the Menu (and not the contained Checkbox) it would fire this event twice
-          const strKey = String(key);
-          const keyIdx = values.indexOf(strKey);
-
-          if (keyIdx > -1) {
-            values.splice(keyIdx, 1);
-          } else {
-            values.push(strKey);
+                }))
+              );
+            }
           }
+        }
 
-          setSearchValues(values);
-          setSelectedKeys?.(values);
-          if (props.liveSearch) search(true);
-        })}
-      >
-        {sortLabels(filterValues || link.values, props).map(v => {
-          const isChecked = values.indexOf(v.$id) > -1;
+        return (
+          <>
+            {!fieldProps.liveSearch && !link.isStatic() && (
+              <Search
+                placeholder="search for..."
+                size="small"
+                className="tyr-filter-search-input"
+                onChange={e => setFilterSearchValue(e.currentTarget.value)}
+                onSearch={async value => {
+                  const results = await linkField.labels(
+                    new path.tail.collection({}),
+                    value
+                  );
+                  setFilterSearchValue(value);
+                  setLabels(
+                    results.map(d => ({
+                      ...d,
+                      $id: String(d.$id),
+                      $label: d.$label
+                    }))
+                  );
+                }}
+                enterButton
+                value={filterSearchValue}
+              />
+            )}
 
-          return (
-            <Menu.Item
-              key={v.$id}
-              className="ant-dropdown-menu-item"
-              style={{
-                marginBottom: 0,
-                marginTop: 0,
-                lineHeight: '30px',
-                height: '30px'
-              }}
+            <Menu
+              className="ant-table-filter-dropdown ant-dropdown-menu"
+              selectedKeys={initialValues}
+              mode="vertical"
+              multiple={true}
+              onClick={
+                // this debounce is here because if you clicked on the Menu (and not the contained Checkbox) it would fire this event twice
+                _.debounce(({ key }: { key: string }) => {
+                  const strKey = String(key);
+
+                  if (searchValue) {
+                    const keyIdx = searchValue.indexOf(strKey);
+
+                    if (keyIdx > -1) {
+                      searchValue.splice(keyIdx, 1);
+                      if (!searchValue.length) searchValue = undefined;
+                    } else {
+                      searchValue.push(strKey);
+                    }
+                  } else {
+                    searchValue = [strKey];
+                  }
+
+                  setSearchValue(searchValue);
+                  filterDdProps.setSelectedKeys?.(searchValue || []);
+                  if (fieldProps.liveSearch) search(true);
+                })
+              }
             >
-              <Checkbox checked={isChecked}>
-                {props.filterOptionRenderer
-                  ? props.filterOptionRenderer(v)
-                  : v.$label}
-              </Checkbox>
-            </Menu.Item>
-          );
-        })}
-      </Menu>
-      <div className="search-box-footer" style={{ padding: '8px' }}>
-        <Button
-          onClick={() => {
-            setFilterSearchValue('');
-            setFilterValues(initialFilterValues);
-            onClearFilters();
-          }}
-          size="small"
-          style={{ width: 90 }}
-        >
-          Reset
-        </Button>
-        {!props.liveSearch && (
-          <Button
-            type="primary"
-            onClick={() => search()}
-            icon="search"
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-        )}
-      </div>
-    </div>
+              {sortLabels(labels || link.values, fieldProps).map(v => {
+                const isChecked =
+                  searchValue && searchValue.indexOf(v.$id) > -1;
+
+                return (
+                  <Menu.Item
+                    key={v.$id}
+                    className="ant-dropdown-menu-item"
+                    style={{
+                      marginBottom: 0,
+                      marginTop: 0,
+                      lineHeight: '30px',
+                      height: '30px'
+                    }}
+                  >
+                    <Checkbox checked={isChecked}>
+                      {fieldProps.filterOptionRenderer
+                        ? fieldProps.filterOptionRenderer(v)
+                        : v.$label}
+                    </Checkbox>
+                  </Menu.Item>
+                );
+              })}
+            </Menu>
+          </>
+        );
+      }}
+    </TyrFilter>
   );
 };
