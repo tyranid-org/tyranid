@@ -100,6 +100,7 @@ export namespace Tyr {
   ): { collection: CollectionInstance; id: AnyIdType };
   export function labelize(name: string): string;
   export function pluralize(str: string): string;
+  export function projectify(obj: object): { [key: string]: number };
   export function singularize(str: string): string;
   export function unitize(count: number, unit: string): string;
   export function config(opts: ConfigOptions): Promise<void>;

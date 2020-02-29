@@ -444,6 +444,7 @@ export function generateClientLibrary() {
   Tyr.mapAwait = ${es5Fn(Tyr.mapAwait)};
   Tyr.ordinalize = ${es5Fn(Tyr.ordinalize)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
+  Tyr.projectify = ${es5Fn(Tyr.projectify)};
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
   Tyr.stringify = ${es5Fn(Tyr.stringify)};
   Tyr.unitize = ${es5Fn(Tyr.unitize)};

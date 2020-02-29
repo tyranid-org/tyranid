@@ -26,6 +26,20 @@ export function add() {
             return this.foo.cat + '--' + this.bar;
           },
           paths: ['foo.cat', 'bar']
+        },
+        {
+          fn(this: { foo: { cat: number }; bar: number }) {
+            return this.foo.cat + '--' + this.bar;
+          },
+          paths: ['foo.cat', 'bar']
+        },
+        {
+          fn(this: { postalCode: string }) {
+            return this.postalCode && this.postalCode.length
+              ? this.postalCode.replace(/\s/g, '')
+              : '';
+          },
+          paths: ['postalCode']
         }
       ];
 

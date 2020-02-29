@@ -16,9 +16,18 @@ const Tyr = require('../tyr').default;
  */
 export function paths(fn) {
   const fns = fn.toString();
-  const terms = fns.match(/this(\.[a-zA-Z_][a-zA-Z0-9_]*)+/g);
+  const terms = fns.match(/this(\.[a-zA-Z_][a-zA-Z0-9_]*)+\(?/g) || [];
 
-  return terms ? terms.map(term => term.substring(5)) : [];
+  return _.uniq(
+    terms.map(term => {
+      let t = term.substring(5);
+
+      if (t.endsWith('(')) t = t.substring(0, t.lastIndexOf('.'));
+      else if (t.endsWith('.length')) t = t.substring(0, t.length - 7);
+
+      return t;
+    })
+  );
 }
 
 Tyr.functions = {

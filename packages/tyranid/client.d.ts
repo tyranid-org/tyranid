@@ -102,6 +102,7 @@ declare module 'tyranid/client' {
       uid: string
     ): { collection: CollectionInstance; id: AnyIdType };
     export function pluralize(str: string): string;
+    export function projectify(obj: object): { [key: string]: number };
     export const reconnectSocket: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
     export function singularize(str: string): string;

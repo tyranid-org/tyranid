@@ -462,6 +462,13 @@ const Tyr = {
     array.length = tai;
   },
 
+  /** @isomorphic */
+  projectify(obj) {
+    const fields = {};
+    for (const name in obj) fields[name] = 1;
+    return fields;
+  },
+
   stringify(value, replacer, spacing) {
     return JSON.stringify(value, (k, v) => {
       if (replacer) v = replacer(k, v);

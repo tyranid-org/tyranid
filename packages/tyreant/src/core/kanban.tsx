@@ -114,8 +114,9 @@ export class TyrKanban<
     const finishCards = finishColumn.cards;
     finishCards.splice(destination.index, 0, droppedCard);
 
-    Object.assign(droppedCard, finishColumn.def.match);
-    await droppedCard.$save();
+    const { match } = finishColumn.def;
+    Object.assign(droppedCard, match);
+    await droppedCard.$update({ fields: Tyr.projectify(match) });
   };
 
   render() {
