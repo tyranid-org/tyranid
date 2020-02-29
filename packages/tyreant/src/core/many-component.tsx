@@ -8,7 +8,6 @@ import {
   TyrSortDirection,
   getFinder,
   Filter,
-  TyrFieldLaxProps
 } from '../tyreant';
 import {
   TyrComponentProps,

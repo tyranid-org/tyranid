@@ -520,11 +520,8 @@ export class TyrTable<
       } else {
         pathName = getFieldName(column.field);
         if (pathName) {
-          field = collection.paths[pathName];
-          if (!field)
-            throw new Tyr.AppError(
-              `Could not resolve path "${pathName}" in table`
-            );
+          field =
+            collection.paths[pathName] || collection.parsePath(pathName).detail;
         }
       }
 

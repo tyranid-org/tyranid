@@ -263,7 +263,8 @@ export class TyrComponent<
     const fieldProps = Object.assign({}, laxFieldProps);
     const f = fieldProps.field;
     if (typeof f === 'string') {
-      fieldProps.field = this.collection.paths[f];
+      const { collection } = this;
+      fieldProps.field = collection.paths[f] || collection.parsePath(f).detail;
     }
     return fieldProps as TyrFieldProps;
   }
