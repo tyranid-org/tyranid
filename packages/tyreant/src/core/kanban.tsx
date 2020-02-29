@@ -150,36 +150,29 @@ export interface TyrKanbanColumnProps<D extends Tyr.Document> {
   cardRenderer?: (document: D) => JSX.Element;
 }
 
-@observer
-export class TyrKanbanColumn<D extends Tyr.Document> extends React.Component<
-  TyrKanbanColumnProps<D>
-> {
-  render() {
-    const { column, cards } = this.props;
-
-    return (
-      <div className="tyr-kanban-column">
-        <div className="tyr-kanban-column-title">{column.def.label}</div>
-        <Droppable droppableId={column.id}>
-          {(provided, snapshot) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className={`tyr-kanban-column-body${
-                snapshot.isDraggingOver ? ' is-dragging-over' : ''
-              }`}
-            >
-              {cards.map((card, index) => (
-                <TyrCard key={card.$id} document={card} index={index} />
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </div>
-    );
-  }
-}
+export const TyrKanbanColumn = observer(
+  <D extends Tyr.Document>({ column, cards }: TyrKanbanColumnProps<D>) => (
+    <div className="tyr-kanban-column">
+      <div className="tyr-kanban-column-title">{column.def.label}</div>
+      <Droppable droppableId={column.id}>
+        {(provided, snapshot) => (
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className={`tyr-kanban-column-body${
+              snapshot.isDraggingOver ? ' is-dragging-over' : ''
+            }`}
+          >
+            {cards.map((card, index) => (
+              <TyrCard key={card.$id} document={card} index={index} />
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </div>
+  )
+);
 
 export interface TyrCardProps<D extends Tyr.Document> {
   document: D;
@@ -187,25 +180,21 @@ export interface TyrCardProps<D extends Tyr.Document> {
   cardRenderer?: (document: D) => JSX.Element;
 }
 
-export class TyrCard<D extends Tyr.Document> extends React.Component<
-  TyrCardProps<D>
-> {
-  render() {
-    const { document, index, cardRenderer } = this.props;
-
-    return (
-      <Draggable draggableId={String(document.$id)} index={index}>
-        {(provided, snapshot) => (
-          <div
-            className="tyr-card"
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-          >
-            {cardRenderer ? cardRenderer(document) : document.$label}
-          </div>
-        )}
-      </Draggable>
-    );
-  }
-}
+export const TyrCard = <D extends Tyr.Document>({
+  document,
+  index,
+  cardRenderer
+}: TyrCardProps<D>) => (
+  <Draggable draggableId={String(document.$id)} index={index}>
+    {(provided, snapshot) => (
+      <div
+        className="tyr-card"
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
+      >
+        {cardRenderer ? cardRenderer(document) : document.$label}
+      </div>
+    )}
+  </Draggable>
+);
