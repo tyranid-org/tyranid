@@ -5,7 +5,7 @@ import { Tyr } from 'tyranid/client';
 import { Filter } from './filter';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
 import { TyrDecorator } from './decorator';
-import { defaultFieldsProp, TyrFieldProps, TyrFieldLaxProps } from './field';
+import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
@@ -18,7 +18,7 @@ export const useComponent = () => React.useContext(ComponentContext);
 export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   className?: string;
   collection?: Tyr.CollectionInstance<D>;
-  fields?: TyrFieldLaxProps[];
+  paths?: TyrPathLaxProps[];
   decorator?: React.ReactElement;
   actions?: (TyrAction<D> | TyrActionOpts<D>)[];
   aux?: { [key: string]: Tyr.FieldDefinition };
@@ -39,15 +39,15 @@ export class TyrComponent<
   State extends TyrComponentState<D> = TyrComponentState<D>
 > extends React.Component<Props, State> {
   collection!: Tyr.CollectionInstance<D>;
-  fields: TyrFieldProps[] = [];
+  paths: TyrPathProps[] = [];
 
   /**
-   * "fields" contains all of the fields available to the component,
-   * "activeFields" contains fields that are currently active on the screen
-   *   (e.g. what fields are enabled in table configuration)
+   * "paths" contains all of the paths available to the component,
+   * "activePaths" contains paths that are currently active on the screen
+   *   (e.g. what paths are enabled in table configuration)
    */
-  get activeFields(): TyrFieldProps[] {
-    return this.fields;
+  get activePaths(): TyrPathProps[] {
+    return this.paths;
   }
 
   parent?: TyrComponent;
@@ -99,12 +99,12 @@ export class TyrComponent<
 
     const collection = (this.collection = this.props.collection!);
 
-    const fields = this.props.fields;
-    if (fields)
-      this.fields = fields.map(laxFieldProps =>
+    const paths = this.props.paths;
+    if (paths)
+      this.paths = paths.map(laxFieldProps =>
         this.resolveFieldLaxProps(laxFieldProps)
       );
-    else if (collection) this.fields = defaultFieldsProp(collection);
+    else if (collection) this.paths = defaultPathsProp(collection);
   }
 
   componentDidMount() {
@@ -259,14 +259,15 @@ export class TyrComponent<
     throw new Error('submit() not defined');
   }
 
-  resolveFieldLaxProps(laxFieldProps: TyrFieldLaxProps) {
+  resolveFieldLaxProps(laxFieldProps: TyrPathLaxProps) {
     const fieldProps = Object.assign({}, laxFieldProps);
-    const f = fieldProps.field;
+    const f = fieldProps.path;
     if (typeof f === 'string') {
       const { collection } = this;
-      fieldProps.field = collection.paths[f] || collection.parsePath(f).detail;
+      fieldProps.path =
+        collection.paths[f]?.namePath || collection.parsePath(f);
     }
-    return fieldProps as TyrFieldProps;
+    return fieldProps as TyrPathProps;
   }
 
   // TODO:  if we switch to creating a HOC for class TyrComponents in order to pick up TyrThemes, also
@@ -287,12 +288,12 @@ export class TyrComponent<
           D
         >;
 
-      let fields: TyrFieldProps[] | undefined = this.fields;
+      let fields: TyrPathProps[] | undefined = this.paths;
       if (!fields && collection === parentCollection) {
-        fields = parent.props.fields;
+        fields = parent.props.paths;
 
         if (fields)
-          this.fields = fields.map(laxFieldProps =>
+          this.paths = fields.map(laxFieldProps =>
             this.resolveFieldLaxProps(laxFieldProps)
           );
       }
@@ -406,7 +407,7 @@ export class TyrComponent<
     }
   };
 
-  getFilter(props: TyrFieldProps): ReturnType<Filter> {
+  getFilter(props: TyrPathProps): ReturnType<Filter> {
     return undefined;
   }
 

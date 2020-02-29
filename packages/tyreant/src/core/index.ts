@@ -4,7 +4,7 @@ export * from './one-component';
 export * from './many-component';
 export * from './decorator';
 export * from './drawer';
-export * from './field';
+export * from './path';
 export * from './filter';
 export * from './form';
 export * from './kanban';

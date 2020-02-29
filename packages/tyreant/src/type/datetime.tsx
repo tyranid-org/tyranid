@@ -10,7 +10,7 @@ import { RangePickerValue } from 'antd/lib/date-picker/interface';
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
 import { withTypeContext } from './type';
-import { decorateField, TyrFieldProps } from '../core';
+import { decorateField, TyrPathProps } from '../core';
 import { registerComponent } from '../common';
 
 const { RangePicker } = DatePicker;
@@ -52,9 +52,9 @@ function parseSearchValue(value: any) {
 
 export const dateTimeFilter: Filter = (
   filterable: Filterable,
-  props: TyrFieldProps
+  props: TyrPathProps
 ) => {
-  const { namePath: path } = props.field!;
+  const path = props.path!;
 
   return {
     filterDropdown: filterDdProps => (
@@ -62,7 +62,7 @@ export const dateTimeFilter: Filter = (
         typeName="datetime"
         filterable={filterable}
         filterDdProps={filterDdProps}
-        fieldProps={props}
+        pathProps={props}
       >
         {(searchValue, setSearchValue, search) => (
           <RangePicker

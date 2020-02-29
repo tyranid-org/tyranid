@@ -18,7 +18,7 @@ import {
   withTypeContext
 } from './type';
 
-import { TyrFieldProps, decorateField } from '../core';
+import { TyrPathProps, decorateField } from '../core';
 import { TyrFilter, FilterDdProps, Filterable } from '../core/filter';
 import { registerComponent } from '../common';
 
@@ -68,7 +68,7 @@ const findById = (
   return values.find(lv => lv.$id === id);
 };
 
-const sortLabels = (labels: any[], props: TyrFieldProps) => {
+const sortLabels = (labels: any[], props: TyrPathProps) => {
   if (!!props.manuallySortedLabels) {
     return labels.slice();
   }
@@ -408,15 +408,14 @@ byName.link = {
    * Note that this filter handles both the "link" and the "array of link" cases
    */
   filter(filterable, props) {
-    const field = props.field!;
-    const { namePath: path } = field;
+    const path = props.path!;
 
     return {
       filterDropdown: filterDdProps => (
         <LinkFilterDropdown
           filterable={filterable}
           filterDdProps={filterDdProps}
-          fieldProps={props}
+          pathProps={props}
         />
       ),
       onFilter: (value, doc) => {
@@ -503,16 +502,16 @@ interface LabelDocument {
 
 interface LinkFilterProps {
   filterable: Filterable;
-  fieldProps: TyrFieldProps;
+  pathProps: TyrPathProps;
   filterDdProps: FilterDdProps;
 }
 
 const LinkFilterDropdown = ({
-  fieldProps,
+  pathProps,
   filterDdProps,
   filterable
 }: LinkFilterProps) => {
-  const { namePath: path } = fieldProps.field!;
+  const path = pathProps.path!;
   const pathName = path.name;
   const linkField = linkFieldFor(path)!;
   const link = linkField.link!;
@@ -532,17 +531,17 @@ const LinkFilterDropdown = ({
       typeName="link"
       filterable={filterable}
       filterDdProps={filterDdProps}
-      fieldProps={fieldProps}
+      pathProps={pathProps}
     >
       {(searchValue, setSearchValue, search) => {
         if (!labels) {
-          if (localSearch && localDocuments && fieldProps.filterOptionLabel) {
+          if (localSearch && localDocuments && pathProps.filterOptionLabel) {
             // Go get all the values for the filter
 
             const allLabels: LabelDocument[] = [];
 
             for (const d of localDocuments) {
-              const values = fieldProps.filterOptionLabel!(d);
+              const values = pathProps.filterOptionLabel!(d);
 
               if (Array.isArray(values)) {
                 allLabels.push(...values);
@@ -579,7 +578,7 @@ const LinkFilterDropdown = ({
 
         return (
           <>
-            {!fieldProps.liveSearch && !link.isStatic() && (
+            {!pathProps.liveSearch && !link.isStatic() && (
               <Search
                 placeholder="search for..."
                 size="small"
@@ -629,11 +628,11 @@ const LinkFilterDropdown = ({
 
                   setSearchValue(searchValue);
                   filterDdProps.setSelectedKeys?.(searchValue || []);
-                  if (fieldProps.liveSearch) search(true);
+                  if (pathProps.liveSearch) search(true);
                 })
               }
             >
-              {sortLabels(labels || link.values, fieldProps).map(v => {
+              {sortLabels(labels || link.values, pathProps).map(v => {
                 const isChecked =
                   searchValue && searchValue.indexOf(v.$id) > -1;
 
@@ -649,8 +648,8 @@ const LinkFilterDropdown = ({
                     }}
                   >
                     <Checkbox checked={isChecked}>
-                      {fieldProps.filterOptionRenderer
-                        ? fieldProps.filterOptionRenderer(v)
+                      {pathProps.filterOptionRenderer
+                        ? pathProps.filterOptionRenderer(v)
                         : v.$label}
                     </Checkbox>
                   </Menu.Item>

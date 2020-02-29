@@ -7,7 +7,7 @@ import { Modal, Button, Drawer } from 'antd';
 import { Tyr } from 'tyranid/client';
 import { compact, findIndex } from 'lodash';
 
-import { getFieldName } from '../field';
+import { getPathName } from '../path';
 
 // TODO:  is it possible to import this via tsconfig ?
 import 'tyranid/builtin/isomorphic';
@@ -24,7 +24,7 @@ import {
 } from 'react-beautiful-dnd';
 
 import TyrTableColumnConfigItem from './table-config-item';
-import { TyrTable, TyrTableColumnFieldProps } from './table';
+import { TyrTable, TyrTableColumnPathProps } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
   table: TyrTable<D>;
@@ -36,7 +36,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
   tableConfig?: Tyr.TyrTableConfig;
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
-  columns: TyrTableColumnFieldProps[];
+  columns: TyrTableColumnPathProps[];
   containerEl: React.RefObject<HTMLDivElement>;
 }
 
@@ -75,7 +75,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     } else {
       const { documentUid } = config;
       const columnFields = compact(
-        columns.map(c => getFieldName(c.field))
+        columns.map(c => getPathName(c.path))
       ) as string[];
       tableConfig = new Tyr.byName.tyrTableConfig({
         documentUid,
@@ -92,15 +92,11 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     const orderedFields = orderedArray(tableConfig.fields, columns, true);
 
     const columnFields = compact(
-      orderedFields.map((column: TyrTableColumnFieldProps, index: number) => {
-        const savedField = tableConfig.fields.find(c => {
-          if (column.field && (column.field as Tyr.FieldInstance).collection) {
-            return c.name === (column.field as Tyr.FieldInstance).path;
-          }
-
-          return column.field?.name === c.name;
-        });
-        const pathName = column.field?.name;
+      orderedFields.map((column: TyrTableColumnPathProps, index: number) => {
+        const savedField = tableConfig.fields.find(
+          c => c.name === column.path?.name
+        );
+        const pathName = column.path?.name;
 
         if (pathName) {
           const field = pathName && collection.paths[pathName];
@@ -324,7 +320,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
 export const ensureTableConfig = async <D extends Tyr.Document>(
   table: TyrTable<D>,
-  columns: TyrTableColumnFieldProps[],
+  columns: TyrTableColumnPathProps[],
   config: TyrTableConfig | string | boolean,
   existingTableConfig?: any
 ) => {
@@ -368,7 +364,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
   const orderedColumns = orderedArray(
     tableConfig.fields,
     columns.filter(column => {
-      const fieldName = getFieldName(column.field);
+      const fieldName = getPathName(column.path);
       const configField = tableConfig.fields.find(f => f.name === fieldName);
 
       return fieldName ? !configField || !configField.hidden : undefined;
@@ -380,16 +376,16 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
 
 const orderedArray = (
   arrayWithOrder: { name: string }[],
-  array: TyrTableColumnFieldProps[],
+  array: TyrTableColumnPathProps[],
   includeHidden?: boolean
 ) => {
   const arrayToOrder = [...array];
-  const orderedArray: TyrTableColumnFieldProps[] = [];
-  const extra: TyrTableColumnFieldProps[] = [];
+  const orderedArray: TyrTableColumnPathProps[] = [];
+  const extra: TyrTableColumnPathProps[] = [];
 
   while (arrayToOrder.length) {
     const current = arrayToOrder[0];
-    const fieldName = getFieldName(current.field);
+    const fieldName = getPathName(current.path);
 
     if (fieldName) {
       const index = findIndex(arrayWithOrder, f => f.name === fieldName);

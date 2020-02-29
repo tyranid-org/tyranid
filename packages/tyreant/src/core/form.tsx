@@ -6,7 +6,7 @@ import { Row, Col, Form, message } from 'antd';
 import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 
 import { TypeContext, TyrTypeProps } from '../type/type';
-import { TyrFieldBase, TyrFieldProps, TyrFieldExistsProps } from './field';
+import { TyrFieldBase, TyrPathProps, TyrPathExistsProps } from './path';
 import { registerComponent } from '../common';
 import { TyrOneComponent, TyrOneComponentProps } from './one-component';
 
@@ -15,7 +15,7 @@ type TyrFormBaseProps = {
   className?: string;
   component: TyrForm<Tyr.Document>;
   document: Tyr.Document;
-  fields: TyrFieldProps[];
+  paths: TyrPathProps[];
   render?: (props: {
     form: TyrForm<Tyr.Document>;
     document: Tyr.Document;
@@ -43,14 +43,14 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
   }
   */
 
-  private renderField(fieldProps: TyrFieldExistsProps) {
+  private renderField(pathProps: TyrPathExistsProps) {
     const { form, document } = this.props;
-    const { field } = fieldProps;
+    const { path } = pathProps;
 
     return (
       <TyrFieldBase
-        {...fieldProps}
-        path={field.namePath}
+        {...pathProps}
+        path={path}
         form={form!}
         document={document!}
       />
@@ -61,7 +61,7 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
     const {
       className,
       children,
-      fields,
+      paths,
       document,
       component,
       render
@@ -71,12 +71,12 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
       <Form className={'tyr-form' + (className ? ' ' + className : '')}>
         <TypeContext.Provider value={(this.props as unknown) as TyrTypeProps}>
           {render && document && render({ form: component, document })}
-          {fields &&
+          {paths &&
             !children &&
             !render &&
-            (fields as TyrFieldExistsProps[]).map(fieldProps => (
-              <Row key={fieldProps.field.path} gutter={10}>
-                <Col span={24}>{this.renderField(fieldProps)} </Col>
+            (paths as TyrPathExistsProps[]).map(pathProps => (
+              <Row key={pathProps.path.name} gutter={10}>
+                <Col span={24}>{this.renderField(pathProps)} </Col>
               </Row>
             ))}
           {typeof children === 'function'
@@ -134,7 +134,7 @@ export class TyrForm<
         <TyrWrappedForm
           className={className}
           ref={this.getFormRef as any}
-          fields={this.fields}
+          paths={this.paths}
           document={this.document!}
           component={this as any}
           render={render as any}

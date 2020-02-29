@@ -5,7 +5,7 @@ import { Button, Icon, Popover } from 'antd';
 import { ColumnFilterItem, FilterDropdownProps } from 'antd/lib/table';
 
 import { Tyr } from '../tyreant';
-import { TyrFieldProps } from './field';
+import { TyrPathProps } from './path';
 import { useComponent, TyrComponent } from './component';
 
 export interface Filterable {
@@ -18,7 +18,7 @@ export interface Filterable {
 
 export type Filter = (
   filterable: Filterable,
-  props: TyrFieldProps
+  props: TyrPathProps
 ) =>
   | {
       filterDropdown?:
@@ -41,7 +41,7 @@ export type Finder = (
 export interface TyrFilterProps<SearchValueType> {
   typeName: string;
   filterable: Filterable;
-  fieldProps: TyrFieldProps;
+  pathProps: TyrPathProps;
   filterDdProps: FilterDdProps;
   children: (
     searchValue: SearchValueType | undefined,
@@ -52,13 +52,13 @@ export interface TyrFilterProps<SearchValueType> {
 
 export function TyrFilter<SearchValueType>({
   typeName,
-  fieldProps,
+  pathProps,
   filterable,
   filterDdProps,
   children
 }: TyrFilterProps<SearchValueType>) {
-  const { field } = fieldProps;
-  const pathName = field!.namePath.name;
+  const { path } = pathProps;
+  const pathName = path!.name;
 
   const [searchValue, setSearchValue] = useState<SearchValueType | undefined>(
     filterable.searchValues[pathName]
@@ -89,7 +89,7 @@ export function TyrFilter<SearchValueType>({
             Reset
           </Button>
 
-          {!fieldProps.liveSearch && (
+          {!pathProps.liveSearch && (
             <Button
               type="primary"
               onClick={() => search()}
@@ -125,8 +125,8 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
   const [visible, setVisible] = useState(false);
   const c = component || useComponent();
   if (!c) return <div className="no-component" />;
-  const fields = c.fields?.filter(f => f.field);
-  if (!fields) return <div className="no-fields"></div>;
+  const paths = c.paths?.filter(f => f.path);
+  if (!paths) return <div className="no-paths"></div>;
 
   return (
     <Popover
@@ -140,8 +140,8 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
       content={
         <>
           <div className="tyr-filter-body">
-            {fields.map(f => {
-              const field = f.field!;
+            {paths.map(f => {
+              const path = f.path!;
 
               const filter = c.getFilter(f);
               if (!filter) return <div className="no-filter" />;
@@ -150,8 +150,8 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
 
               if (filterDropdown) {
                 return (
-                  <div className="tyr-filter-container" key={field.name}>
-                    <h1>{field.label}</h1>
+                  <div className="tyr-filter-container" key={path.name}>
+                    <h1>{path.detail.label}</h1>
                     {typeof filterDropdown === 'function'
                       ? filterDropdown({
                           //prefixCls?: string;
@@ -166,7 +166,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
                           //filters?: ColumnFilterItem[];
                           //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
                           connect: connection => {
-                            connections[field.name] = connection;
+                            connections[path.name] = connection;
                           }
                         })
                       : filterDropdown}
@@ -175,8 +175,8 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
               }
 
               return (
-                <div className="tyr-filter-container" key={f.field!.name}>
-                  {f.field!.name} Filter TODO
+                <div className="tyr-filter-container" key={f.path!.name}>
+                  {f.path!.name} Filter TODO
                 </div>
               );
             })}

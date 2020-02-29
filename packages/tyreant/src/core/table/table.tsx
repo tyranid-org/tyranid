@@ -43,10 +43,10 @@ import { getCellValue, TyrTypeProps } from '../../type';
 import { TyrComponentState } from '../component';
 import {
   TyrSortDirection,
-  TyrFieldLaxProps,
-  getFieldName,
+  TyrPathLaxProps,
+  getPathName,
   TyrFieldBase
-} from '../field';
+} from '../path';
 import { TyrFormFields } from '../form';
 import { TyrTableConfig } from './typedef';
 import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
@@ -57,10 +57,10 @@ import {
 } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
-import { TyrFieldProps } from '../../core';
+import { TyrPathProps } from '../../core';
 
 export interface OurColumnProps<T> extends ColumnProps<T> {
-  field: Tyr.FieldInstance;
+  path: Tyr.NamePathInstance;
 }
 
 const ObsTable = observer(Table);
@@ -79,9 +79,9 @@ interface TableColumnFieldProps {
   group?: string;
 }
 
-export type TyrTableColumnFieldLaxProps = TableColumnFieldProps &
-  TyrFieldLaxProps;
-export type TyrTableColumnFieldProps = TableColumnFieldProps & TyrFieldProps;
+export type TyrTableColumnPathLaxProps = TableColumnFieldProps &
+  TyrPathLaxProps;
+export type TyrTableColumnPathProps = TableColumnFieldProps & TyrPathProps;
 
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
@@ -89,7 +89,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   bordered?: boolean;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean;
-  fields: TyrTableColumnFieldLaxProps[];
+  paths: TyrTableColumnPathLaxProps[];
   actionHeaderLabel?: string | React.ReactNode;
   actionIconType?: string;
   actionTrigger?: 'hover' | 'click';
@@ -137,10 +137,10 @@ export class TyrTable<
 > extends TyrManyComponent<D, TyrTableProps<D>> {
   // TODO:  is this redundant with super().fields ?
   @observable
-  otherFields: TyrTableColumnFieldProps[] = [];
+  otherPaths: TyrTableColumnPathProps[] = [];
 
-  get activeFields(): TyrTableColumnFieldProps[] {
-    return this.otherFields;
+  get activePaths(): TyrTableColumnPathProps[] {
+    return this.otherPaths;
   }
 
   newDocument?: D;
@@ -179,18 +179,18 @@ export class TyrTable<
 
     if (config) {
       this.loading = true;
-      const existingConfig = await ensureTableConfig(this, this.fields, config);
+      const existingConfig = await ensureTableConfig(this, this.paths, config);
 
       if (existingConfig) {
-        this.otherFields = existingConfig.newColumns;
+        this.otherPaths = existingConfig.newColumns;
         this.tableConfig = existingConfig.tableConfig;
       } else {
-        this.otherFields = this.fields;
+        this.otherPaths = this.paths;
       }
 
       this.loading = false;
     } else {
-      this.otherFields = this.fields;
+      this.otherPaths = this.paths;
     }
 
     onLoad && onLoad(this);
@@ -212,14 +212,14 @@ export class TyrTable<
     // ensure any fields in nextProps.fields are in this.otherFields (add to end it not there)
     // remove any fields from this.otherFields not in nextProps.fields
 
-    const nextOtherFields = nextProps.fields;
+    const nextOtherPaths = nextProps.paths;
     // Replace all existing fields, and remove any not in new fields
     const newOtherFields = compact(
-      this.otherFields.map(otherField => {
-        const otherFieldName = getFieldName(otherField.field);
+      this.otherPaths.map(otherPath => {
+        const otherFieldName = getPathName(otherPath.path);
 
-        return nextOtherFields.find(column => {
-          const colFieldName = getFieldName(column.field);
+        return nextOtherPaths.find(column => {
+          const colFieldName = getPathName(column.path);
 
           if (otherFieldName === colFieldName) {
             return column;
@@ -228,14 +228,14 @@ export class TyrTable<
           return null;
         });
       })
-    ) as TyrTableColumnFieldProps[];
+    ) as TyrTableColumnPathProps[];
 
     // Add any new fields (unless they are hidden)
-    for (const nextOtherField of nextOtherFields) {
-      const nextOtherFieldName = getFieldName(nextOtherField.field);
+    for (const nextOtherField of nextOtherPaths) {
+      const nextOtherFieldName = getPathName(nextOtherField.path);
 
       const existingCol = newOtherFields.find(column => {
-        const colFieldName = getFieldName(column.field);
+        const colFieldName = getPathName(column.path);
 
         if (nextOtherFieldName === colFieldName) {
           return column;
@@ -256,7 +256,7 @@ export class TyrTable<
       }
     }
 
-    this.otherFields = newOtherFields;
+    this.otherPaths = newOtherFields;
   }
 
   setFieldValue = (fieldName: string, value: any) => {
@@ -269,7 +269,7 @@ export class TyrTable<
       return;
     }
 
-    const pathName = getFieldName(fieldName);
+    const pathName = getPathName(fieldName);
     if (!pathName) {
       console.error('Unable to setFieldValue, no field name found!');
       return;
@@ -303,14 +303,14 @@ export class TyrTable<
     if (config) {
       const tableConfig = await ensureTableConfig(
         this,
-        this.fields,
+        this.paths,
         config,
         savedTableConfig
       );
 
       if (tableConfig) {
         this.tableConfig = tableConfig.tableConfig;
-        this.otherFields = tableConfig.newColumns;
+        this.otherPaths = tableConfig.newColumns;
 
         onChangeTableConfiguration &&
           onChangeTableConfiguration(
@@ -379,8 +379,8 @@ export class TyrTable<
           // }
 
           if (orig) {
-            for (const column of this.props.fields) {
-              const pathName = getFieldName(column.field);
+            for (const column of this.props.paths) {
+              const pathName = getPathName(column.path);
               const field = pathName && collection.paths[pathName];
 
               if (field) {
@@ -497,7 +497,7 @@ export class TyrTable<
     } = this.props;
 
     const { sortDirections, editingDocument, newDocument, isLocal } = this;
-    const columns = this.activeFields;
+    const columns = this.activePaths;
 
     const fieldCount = columns.length;
     const isEditingAnything = !!newDocumentTable || !!editingDocument;
@@ -509,33 +509,34 @@ export class TyrTable<
     let curGroupName: string | undefined;
 
     columns.forEach((column, columnIdx) => {
-      let field: Tyr.FieldInstance | undefined;
+      let path: Tyr.NamePathInstance | undefined;
       let pathName: string | undefined;
-      let searchField: Tyr.FieldInstance | undefined;
+      let searchPath: Tyr.NamePathInstance | undefined;
       let searchPathName: string | undefined;
 
-      if ((column.field as Tyr.FieldInstance)?.collection) {
-        field = column.field as Tyr.FieldInstance;
-        pathName = field.path;
+      if (column.path?.detail.collection) {
+        path = column.path;
+        pathName = path.name;
       } else {
-        pathName = getFieldName(column.field);
+        pathName = getPathName(column.path);
         if (pathName) {
-          field =
-            collection.paths[pathName] || collection.parsePath(pathName).detail;
+          path =
+            collection.paths[pathName]?.namePath ||
+            collection.parsePath(pathName);
         }
       }
 
-      if ((column.searchField as Tyr.FieldInstance)?.collection) {
-        searchField = column.searchField as Tyr.FieldInstance;
-        searchPathName = searchField.path;
+      if (column.searchPath?.detail.collection) {
+        searchPath = column.searchPath;
+        searchPathName = searchPath.name;
       } else {
-        searchPathName = getFieldName(column.searchField);
-        searchField = searchPathName
-          ? collection.paths[searchPathName]
+        searchPathName = getPathName(column.searchPath);
+        searchPath = searchPathName
+          ? collection.paths[searchPathName]?.namePath
           : undefined;
       }
 
-      if (field) (field as any).column = column;
+      if (path) (path as any).column = column;
 
       const sortDirection = pathName ? sortDirections[pathName] : undefined;
 
@@ -548,20 +549,18 @@ export class TyrTable<
         ? column.width
         : undefined;
 
-      const np = field ? field.namePath : undefined;
-      const searchNp = searchField?.namePath;
-
       let sorter;
 
       if (!newDocumentTable) {
         if (column.sortComparator) {
           sorter = column.sortComparator;
-        } else if (field) {
+        } else if (path) {
+          const pathField = path.detail;
           // TODO:  can remove this restriction if a denormalized value is available or if
           //        we convert findAll() to be an aggregation that links to the foreign keys
-          if (np && (isLocal || (!field.link && !field.of?.link)))
+          if (isLocal || (!pathField.link && !pathField.of?.link))
             sorter = (a: Tyr.Document, b: Tyr.Document) =>
-              field!.type.compare(field!, np.get(a), np.get(b));
+              pathField.type.compare(pathField, path!.get(a), path!.get(b));
         }
       }
 
@@ -575,7 +574,7 @@ export class TyrTable<
       const filter =
         (filteringEnabled &&
           !column.noFilter &&
-          np &&
+          path &&
           this.getFilter(column as any)) ||
         {};
 
@@ -635,8 +634,8 @@ export class TyrTable<
 
                   return (
                     <TyrFieldBase
-                      path={np!}
-                      searchPath={searchNp}
+                      path={path!}
+                      searchPath={searchPath}
                       form={form}
                       document={document}
                       {...fieldProps}
@@ -653,13 +652,13 @@ export class TyrTable<
             <div className="tyr-table-cell">
               {render
                 ? render(document)
-                : getCellValue(np!, document, column as TyrTypeProps)}
+                : getCellValue(path!, document, column as TyrTypeProps)}
             </div>
           );
         },
         sorter: sortingEnabled ? sorter : undefined,
         sortOrder: sortingEnabled ? sortDirection : undefined,
-        title: column.label || field?.label,
+        title: column.label || path?.detail.label,
         width: colWidth,
         className: netClassName,
         ellipsis: column.ellipsis,
@@ -671,7 +670,7 @@ export class TyrTable<
           ? { fixed: column.pinned }
           : {}),
         ...(column.align ? { align: column.align } : {}),
-        field
+        path
       };
 
       const { group } = column;
@@ -949,7 +948,7 @@ export class TyrTable<
       documents,
       editingDocument,
       newDocument,
-      activeFields: fields,
+      activePaths: fields,
       showConfig,
       showExport,
       selectedRowKeys,
@@ -1178,7 +1177,7 @@ export class TyrTable<
               {showConfig && tableConfig && (
                 <TyrTableConfigComponent
                   table={this}
-                  columns={this.fields}
+                  columns={this.paths}
                   config={tableConfig}
                   tableConfig={this.tableConfig}
                   onCancel={() => (this.showConfig = false)}
@@ -1189,7 +1188,7 @@ export class TyrTable<
               {showExport && this.mounted && (
                 <TyrTableConfigComponent
                   table={this}
-                  columns={this.fields}
+                  columns={this.paths}
                   config={tableConfig || true}
                   export={true}
                   tableConfig={this.tableConfig}
@@ -1214,7 +1213,7 @@ export class TyrTable<
       let defaultWidth;
 
       // TODO:  move this type of functionality to the type class
-      switch ((column as OurColumnProps<D>).field?.type.name) {
+      switch ((column as OurColumnProps<D>).path?.detail.type.name) {
         case 'boolean':
         case 'double':
         case 'integer':

@@ -14,7 +14,7 @@ import {
   onTypeChange
 } from './type';
 import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
-import { TyrFieldProps, decorateField } from '../core';
+import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrBooleanBase = ((props: TyrTypeProps) => {
@@ -41,9 +41,9 @@ export const TyrBoolean = withTypeContext('boolean', TyrBooleanBase);
 
 export const booleanFilter: Filter = (
   filterable: Filterable,
-  props: TyrFieldProps
+  props: TyrPathProps
 ) => {
-  const { namePath: path } = props.field!;
+  const path = props.path!;
   const pathName = path.name;
 
   return {
@@ -52,7 +52,7 @@ export const booleanFilter: Filter = (
         typeName="boolean"
         filterable={filterable}
         filterDdProps={filterDdProps}
-        fieldProps={props}
+        pathProps={props}
       >
         {(searchValue, setSearchValue, search) => {
           const valueLabels = props.filterValues;

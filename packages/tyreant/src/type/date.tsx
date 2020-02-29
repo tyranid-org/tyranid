@@ -12,7 +12,7 @@ const { RangePicker } = DatePicker;
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
 import { withTypeContext } from './type';
-import { TyrFieldProps, decorateField } from '../core';
+import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 const DATE_FORMAT = 'MM/DD/YYYY';
@@ -50,9 +50,9 @@ function parseSearchValue(value: any) {
 
 export const dateFilter: Filter = (
   filterable: Filterable,
-  props: TyrFieldProps
+  props: TyrPathProps
 ) => {
-  const { namePath: path } = props.field!;
+  const path = props.path!;
 
   return {
     filterDropdown: filterDdProps => (
@@ -60,7 +60,7 @@ export const dateFilter: Filter = (
         typeName="date"
         filterable={filterable}
         filterDdProps={filterDdProps}
-        fieldProps={props}
+        pathProps={props}
       >
         {(searchValue, setSearchValue, search) => (
           <RangePicker

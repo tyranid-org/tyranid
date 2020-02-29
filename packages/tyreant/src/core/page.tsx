@@ -11,7 +11,7 @@ import { TyrTable } from './table';
 import { TyrForm } from './form';
 import { registerComponent, componentsByName } from '../common';
 import { TyrModal } from './modal';
-import { TyrField } from './field';
+import { TyrField } from './path';
 
 const { TyrPage: TyrPageCol, TyrMarkupType } = Tyr.collections;
 
@@ -186,7 +186,7 @@ export const TyrPageAdmin = () => (
     collection={TyrPageCol}
     config={true}
     export={true}
-    fields={[{ field: 'path' }]}
+    paths={[{ path: 'path' }]}
     actions={[
       {
         name: 'preview',

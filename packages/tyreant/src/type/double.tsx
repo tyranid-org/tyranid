@@ -9,7 +9,7 @@ import { Tyr } from 'tyranid/client';
 import { mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
 import { byName, TyrTypeProps, withTypeContext } from './type';
-import { TyrFieldProps, decorateField } from '../core';
+import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrDoubleBase = ((props: TyrTypeProps) => {
@@ -42,9 +42,9 @@ export const TyrDouble = withTypeContext('double', TyrDoubleBase);
 
 export const doubleFilter: Filter = (
   filterable: Filterable,
-  props: TyrFieldProps
+  props: TyrPathProps
 ) => {
-  const { namePath: path } = props.field!;
+  const path = props.path!;
   const pathName = path.name;
 
   const sliderProps = {
@@ -69,7 +69,7 @@ export const doubleFilter: Filter = (
         typeName="double"
         filterable={filterable}
         filterDdProps={filterDdProps}
-        fieldProps={props}
+        pathProps={props}
       >
         {(searchValue, setSearchValue, search) => (
           <Slider

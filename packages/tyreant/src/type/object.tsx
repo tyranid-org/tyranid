@@ -9,22 +9,19 @@ import {
   TypeContext,
   mapFormValueToDocument
 } from './type';
-import { TyrFieldBase, TyrFieldExistsProps } from '../core';
+import { TyrFieldBase, TyrPathExistsProps } from '../core';
 import { Row, Col } from 'antd';
 import { registerComponent } from '../common';
 
 interface TyrObjectExtraProps {
-  fields?: TyrFieldExistsProps[];
+  fields?: TyrPathExistsProps[];
 }
 
 type TyrObjectProps = TyrTypeProps & TyrObjectExtraProps;
 
-const renderField = (
-  props: TyrObjectProps,
-  fieldProps: TyrFieldExistsProps
-) => {
+const renderField = (props: TyrObjectProps, fieldProps: TyrPathExistsProps) => {
   const { form, document } = props;
-  const { field } = fieldProps;
+  const { path: field } = fieldProps;
 
   return (
     <TyrFieldBase
@@ -43,7 +40,7 @@ export const TyrObjectBase = (props: TyrObjectProps) => {
     <TypeContext.Provider value={props}>
       {fields &&
         fields.map(fieldProps => (
-          <Row key={fieldProps.field.name} gutter={10}>
+          <Row key={fieldProps.path.name} gutter={10}>
             <Col span={24}>{renderField(props, fieldProps)} </Col>
           </Row>
         ))}

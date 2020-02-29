@@ -8,8 +8,8 @@ import {
   Filter,
   Finder,
   Filterable,
-  TyrFieldLaxProps,
-  TyrFieldProps,
+  TyrPathLaxProps,
+  TyrPathProps,
   TyrComponent
 } from '../core';
 
@@ -50,26 +50,20 @@ export type TyrTypeLaxProps = {
   form?: WrappedFormUtils;
   document?: Tyr.Document;
   value?: { value?: any };
-
-  /**
-   * if path does not exist, we will use field.path
-   */
-  path?: string | Tyr.NamePathInstance;
   aux?: string;
 
   children?: React.ReactNode;
-} & TyrFieldLaxProps;
+} & TyrPathLaxProps;
 
 export type TyrTypeProps = {
   form: WrappedFormUtils;
   document?: Tyr.Document;
   component?: TyrComponent;
   value?: { value?: any };
-  path?: Tyr.NamePathInstance;
   searchPath?: Tyr.NamePathInstance;
   aux?: string;
   children?: React.ReactNode;
-} & Omit<TyrFieldProps, 'field'>;
+} & TyrPathProps;
 
 export interface TypeUi {
   // standard form control
@@ -278,8 +272,8 @@ export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
   }
 };
 
-export const getFilter = (filterable: Filterable, props: TyrFieldProps) => {
-  const { namePath: path } = props.field!;
+export const getFilter = (filterable: Filterable, props: TyrPathProps) => {
+  const path = props.path!;
   const { filter } = assertTypeUi(props.typeUi || path.tail.type.name);
 
   return filter ? filter(filterable, props) : undefined;
@@ -340,24 +334,40 @@ export const withTypeContext = <T extends {} = {}>(
 
       let path = Tyr.NamePath.resolve(
         collection,
-        parentProps && parentProps.path,
+        parentProps?.path,
         aux || props.path
       );
       if (!path) {
-        let { field } = props;
-        if (typeof field === 'string') field = document.$model.paths[field];
-        if (field) {
-          path = (field as Tyr.FieldInstance).namePath;
-        } else {
+        const p = props.path;
+        if (typeof p === 'string') path = document.$model.paths[p]?.namePath;
+        else if (p) path = p;
+        if (!path) {
           return <div className="no-path" />;
         }
       }
 
+      let { searchPath } = props;
+      if (typeof searchPath === 'string')
+        searchPath = Tyr.NamePath.resolve(
+          collection,
+          parentProps?.searchPath,
+          searchPath
+        );
+
+      if (!path) {
+        const p = props.path;
+        if (typeof p === 'string') path = document.$model.paths[p]?.namePath;
+        else if (p) path = p;
+        if (!path) {
+          return <div className="no-path" />;
+        }
+      }
       return React.createElement(TypeControl, {
         ...props,
         form,
         document,
         path,
+        searchPath,
         component: parentProps && parentProps.component
       });
     }}

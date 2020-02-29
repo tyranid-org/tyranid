@@ -3,18 +3,13 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { autorun, observable } from 'mobx';
 
-import {
-  Tyr,
-  TyrSortDirection,
-  getFinder,
-  Filter,
-} from '../tyreant';
+import { Tyr, TyrSortDirection, getFinder, Filter } from '../tyreant';
 import {
   TyrComponentProps,
   TyrComponentState,
   TyrComponent
 } from './component';
-import { TyrFieldProps } from './field';
+import { TyrPathProps } from './path';
 import { message } from 'antd';
 import { getFilter } from '../type';
 import { tyreant } from '../tyreant';
@@ -123,20 +118,19 @@ export class TyrManyComponent<
       opts.limit = limit;
     }
 
-    for (const fieldProps of this.fields) {
-      const { field } = fieldProps;
+    for (const pathProps of this.paths) {
+      const { path } = pathProps;
 
-      if (!field) continue;
+      if (!path) continue;
 
-      const { namePath } = field;
-      const finder = namePath && getFinder(namePath),
-        pathName = namePath.name,
+      const finder = path && getFinder(path),
+        pathName = path.name,
         searchValue = searchValues[pathName],
         sortDirection = sortDirections[pathName];
 
-      if (finder) finder(namePath!, opts, searchValue);
+      if (finder) finder(path, opts, searchValue);
 
-      if (sortDirection) sort[pathName!] = sortDirection === 'ascend' ? 1 : -1;
+      if (sortDirection) sort[pathName] = sortDirection === 'ascend' ? 1 : -1;
     }
 
     this.findOpts = opts;
@@ -197,7 +191,7 @@ export class TyrManyComponent<
   } = {};
 
   filters: { [path: string]: ReturnType<Filter> | undefined } = {};
-  getFilter(props: TyrFieldProps) {
+  getFilter(props: TyrPathProps) {
     const filterable = {
       searchValues: this.searchValues,
       onSearch: () => {
@@ -208,7 +202,7 @@ export class TyrManyComponent<
       localDocuments: this.documents
     };
 
-    const { namePath: path } = props.field!;
+    const path = props.path!;
     const pathName = path.name;
     const existingFilter = this.filters[pathName];
     if (existingFilter) return existingFilter;
@@ -236,14 +230,14 @@ export class TyrManyComponent<
     notifyFilterExists && notifyFilterExists(false);
 
     if (notifySortSet) {
-      const sortColumn = this.fields.find(column => !!column.defaultSort);
-      notifySortSet(sortColumn?.field?.name, sortColumn?.defaultSort);
+      const sortColumn = this.paths.find(column => !!column.defaultSort);
+      notifySortSet(sortColumn?.path?.name, sortColumn?.defaultSort);
     }
   };
 
   setDefaultSort() {
-    const sortColumn = this.fields.find(column => !!column.defaultSort);
-    const sortName = sortColumn?.field?.name;
+    const sortColumn = this.paths.find(column => !!column.defaultSort);
+    const sortName = sortColumn?.path?.name;
 
     if (sortName) this.sortDirections[sortName] = sortColumn!.defaultSort!;
   }
@@ -255,7 +249,7 @@ export class TyrManyComponent<
   // not any different than what the sort currently is.
   setSortedDocuments = (docs: D[]) => {
     let documents = docs;
-    let sortColumn: TyrFieldProps | undefined;
+    let sortColumn: TyrPathProps | undefined;
 
     let sortColumnName: string | null = null;
 
@@ -268,31 +262,19 @@ export class TyrManyComponent<
 
     // Find column
     if (sortColumnName) {
-      sortColumn = this.fields.find(f => f.field?.name === sortColumnName);
+      sortColumn = this.paths.find(f => f.path?.name === sortColumnName);
     }
 
     if (sortColumn) {
-      let field: Tyr.FieldInstance | undefined;
-      let pathName: string | undefined;
-
-      if (
-        sortColumn.field &&
-        (sortColumn.field as Tyr.FieldInstance).collection
-      ) {
-        field = sortColumn.field as Tyr.FieldInstance;
-        pathName = field.path;
-      } else {
-        pathName = sortColumn.field?.name;
-        field = pathName ? this.collection.paths[pathName] : undefined;
-      }
-
-      const np = field ? field.namePath : undefined;
+      const path = sortColumn.path!;
+      const pathName = path?.name;
+      const field = path?.detail;
 
       docs.sort(
         sortColumn.sortComparator
           ? sortColumn.sortComparator
           : (a: Tyr.Document, b: Tyr.Document) =>
-              np ? field!.type.compare(field!, np.get(a), np.get(b)) : 0
+              path ? field.type.compare(field, path.get(a), path.get(b)) : 0
       );
 
       if (pathName && this.sortDirections[pathName] === 'descend')
@@ -398,11 +380,11 @@ export class TyrManyComponent<
 
     // apply any default sort if no sort was supplied
     if (!sortFound) {
-      const defaultSortColumn = this.activeFields.find(
+      const defaultSortColumn = this.activePaths.find(
         column => !!column.defaultSort
       );
       if (defaultSortColumn) {
-        const fieldName = defaultSortColumn.field?.name;
+        const fieldName = defaultSortColumn.path?.name;
 
         if (fieldName)
           this.sortDirections[fieldName] = defaultSortColumn.defaultSort!;

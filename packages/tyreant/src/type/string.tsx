@@ -19,7 +19,7 @@ import {
   FilterDdProps,
   Finder
 } from '../core/filter';
-import { TyrFieldProps, decorateField } from '../core';
+import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrStringBase = ((props: TyrTypeProps) => {
@@ -42,9 +42,9 @@ export const TyrString = withTypeContext('string', TyrStringBase);
 
 export const stringFilter: Filter = (
   filterable: Filterable,
-  props: TyrFieldProps
+  props: TyrPathProps
 ) => {
-  const { field } = props;
+  const { path } = props;
   let searchInputRef: Input | null = null;
 
   return {
@@ -53,14 +53,14 @@ export const stringFilter: Filter = (
         typeName="string"
         filterable={filterable}
         filterDdProps={filterDdProps}
-        fieldProps={props}
+        pathProps={props}
       >
         {(searchValue, setSearchValue, search) => (
           <Input
             ref={node => {
               searchInputRef = node;
             }}
-            placeholder={`Search ${props.label || field!.label}`}
+            placeholder={`Search ${props.label || path!.pathLabel}`}
             value={searchValue}
             onChange={e => {
               setSearchValue(e.target.value);
@@ -76,7 +76,7 @@ export const stringFilter: Filter = (
     onFilter: (value: string, doc: Tyr.Document) => {
       return value !== undefined
         ? props
-            .field!.namePath.get(doc)
+            .path!.get(doc)
             ?.toString()
             .toLowerCase()
             .includes(value.toLowerCase()) ?? false

@@ -95,7 +95,7 @@ byName.array = {
     }
   },
   filter(filterable, props) {
-    const { namePath: path } = props.field!;
+    const path = props.path!;
     const { tail } = path;
 
     if (tail.of!.link) {
