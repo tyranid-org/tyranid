@@ -1,13 +1,14 @@
 import * as React from 'react';
 
+import { observable, computed } from 'mobx';
+import { observer } from 'mobx-react';
+
 import { Tyr } from 'tyranid/client';
 
 import { Filter } from './filter';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
-import { observable } from 'mobx';
-import { observer } from 'mobx-react';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -39,13 +40,14 @@ export class TyrComponent<
   State extends TyrComponentState<D> = TyrComponentState<D>
 > extends React.Component<Props, State> {
   collection!: Tyr.CollectionInstance<D>;
-  paths: TyrPathProps[] = [];
+  paths!: TyrPathProps[];
 
   /**
    * "paths" contains all of the paths available to the component,
    * "activePaths" contains paths that are currently active on the screen
    *   (e.g. what paths are enabled in table configuration)
    */
+  @computed
   get activePaths(): TyrPathProps[] {
     return this.paths;
   }
@@ -100,7 +102,7 @@ export class TyrComponent<
     const collection = (this.collection = this.props.collection!);
 
     const paths = this.props.paths;
-    if (paths)
+    if (paths && collection)
       this.paths = paths.map(laxFieldProps =>
         this.resolveFieldLaxProps(laxFieldProps)
       );
@@ -259,15 +261,11 @@ export class TyrComponent<
     throw new Error('submit() not defined');
   }
 
-  resolveFieldLaxProps(laxFieldProps: TyrPathLaxProps) {
-    const fieldProps = Object.assign({}, laxFieldProps);
-    const f = fieldProps.path;
-    if (typeof f === 'string') {
-      const { collection } = this;
-      fieldProps.path =
-        collection.paths[f]?.namePath || collection.parsePath(f);
-    }
-    return fieldProps as TyrPathProps;
+  resolveFieldLaxProps(laxPathProps: TyrPathLaxProps) {
+    const pathProps = Object.assign({}, laxPathProps);
+    const p = pathProps.path;
+    if (typeof p === 'string') pathProps.path = this.collection.parsePath(p);
+    return pathProps as TyrPathProps;
   }
 
   // TODO:  if we switch to creating a HOC for class TyrComponents in order to pick up TyrThemes, also
@@ -288,12 +286,12 @@ export class TyrComponent<
           D
         >;
 
-      let fields: TyrPathProps[] | undefined = this.paths;
-      if (!fields && collection === parentCollection) {
-        fields = parent.props.paths;
+      let paths: TyrPathProps[] | undefined = this.paths;
+      if (!paths && collection === parentCollection) {
+        paths = parent.props.paths;
 
-        if (fields)
-          this.paths = fields.map(laxFieldProps =>
+        if (paths)
+          this.paths = paths.map(laxFieldProps =>
             this.resolveFieldLaxProps(laxFieldProps)
           );
       }

@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { observer } from 'mobx-react';
+
 import { Tyr } from 'tyranid/client';
 
 import { Row, Col, Form, message } from 'antd';
@@ -45,16 +47,8 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
 
   private renderField(pathProps: TyrPathExistsProps) {
     const { form, document } = this.props;
-    const { path } = pathProps;
 
-    return (
-      <TyrFieldBase
-        {...pathProps}
-        path={path}
-        form={form!}
-        document={document!}
-      />
-    );
+    return <TyrFieldBase {...pathProps} form={form!} document={document!} />;
   }
 
   render() {
@@ -115,6 +109,7 @@ export interface TyrFormProps<D extends Tyr.Document>
   render?: (props: FormRenderComponentProps<D>) => JSX.Element;
 }
 
+@observer
 export class TyrForm<
   D extends Tyr.Document<Tyr.AnyIdType>
 > extends TyrOneComponent<D, TyrFormProps<D>> {
@@ -134,7 +129,7 @@ export class TyrForm<
         <TyrWrappedForm
           className={className}
           ref={this.getFormRef as any}
-          paths={this.paths}
+          paths={this.activePaths}
           document={this.document!}
           component={this as any}
           render={render as any}

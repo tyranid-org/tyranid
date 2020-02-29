@@ -67,7 +67,7 @@ const ObsTable = observer(Table);
 
 let dndBackend: __ReactDnd.Backend;
 
-interface TableColumnFieldProps {
+interface TableColumnPathProps {
   pinned?: 'left' | 'right';
   align?: 'left' | 'right' | 'center';
   ellipsis?: boolean;
@@ -79,9 +79,8 @@ interface TableColumnFieldProps {
   group?: string;
 }
 
-export type TyrTableColumnPathLaxProps = TableColumnFieldProps &
-  TyrPathLaxProps;
-export type TyrTableColumnPathProps = TableColumnFieldProps & TyrPathProps;
+export type TyrTableColumnPathLaxProps = TableColumnPathProps & TyrPathLaxProps;
+export type TyrTableColumnPathProps = TableColumnPathProps & TyrPathProps;
 
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
@@ -209,24 +208,20 @@ export class TyrTable<
       }
     }
 
-    // ensure any fields in nextProps.fields are in this.otherFields (add to end it not there)
-    // remove any fields from this.otherFields not in nextProps.fields
+    // ensure any paths in nextProps.paths are in this.otherPaths (add to end it not there)
+    // remove any paths from this.otherPaths not in nextProps.paths
 
     const nextOtherPaths = nextProps.paths;
     // Replace all existing fields, and remove any not in new fields
-    const newOtherFields = compact(
+    const newOtherPaths = compact(
       this.otherPaths.map(otherPath => {
-        const otherFieldName = getPathName(otherPath.path);
+        const otherPathName = getPathName(otherPath.path);
 
-        return nextOtherPaths.find(column => {
-          const colFieldName = getPathName(column.path);
+        const p = nextOtherPaths.find(
+          column => otherPathName === getPathName(column.path)
+        );
 
-          if (otherFieldName === colFieldName) {
-            return column;
-          }
-
-          return null;
-        });
+        return p ? this.resolveFieldLaxProps(p) : undefined;
       })
     ) as TyrTableColumnPathProps[];
 
@@ -234,15 +229,9 @@ export class TyrTable<
     for (const nextOtherField of nextOtherPaths) {
       const nextOtherFieldName = getPathName(nextOtherField.path);
 
-      const existingCol = newOtherFields.find(column => {
-        const colFieldName = getPathName(column.path);
-
-        if (nextOtherFieldName === colFieldName) {
-          return column;
-        }
-
-        return null;
-      });
+      const existingCol = newOtherPaths.find(
+        column => nextOtherFieldName === getPathName(column.path)
+      );
 
       if (!existingCol) {
         const fld = this.tableConfig?.fields.find(
@@ -251,12 +240,12 @@ export class TyrTable<
 
         // If it is hidden, then don't add it to my fields
         if (!fld?.hidden && !nextOtherField.defaultHidden) {
-          newOtherFields.push(this.resolveFieldLaxProps(nextOtherField));
+          newOtherPaths.push(this.resolveFieldLaxProps(nextOtherField));
         }
       }
     }
 
-    this.otherPaths = newOtherFields;
+    this.otherPaths = newOtherPaths;
   }
 
   setFieldValue = (fieldName: string, value: any) => {
@@ -514,16 +503,12 @@ export class TyrTable<
       let searchPath: Tyr.NamePathInstance | undefined;
       let searchPathName: string | undefined;
 
-      if (column.path?.detail.collection) {
+      if (typeof column.path === 'string') {
+        pathName = column.path;
+        path = collection.parsePath(pathName);
+      } else if (column.path) {
         path = column.path;
         pathName = path.name;
-      } else {
-        pathName = getPathName(column.path);
-        if (pathName) {
-          path =
-            collection.paths[pathName]?.namePath ||
-            collection.parsePath(pathName);
-        }
       }
 
       if (column.searchPath?.detail.collection) {
@@ -536,6 +521,7 @@ export class TyrTable<
           : undefined;
       }
 
+      // TODO:  find another way to do this, paths are shared objects so should be immutable
       if (path) (path as any).column = column;
 
       const sortDirection = pathName ? sortDirections[pathName] : undefined;
@@ -948,7 +934,7 @@ export class TyrTable<
       documents,
       editingDocument,
       newDocument,
-      activePaths: fields,
+      activePaths: paths,
       showConfig,
       showExport,
       selectedRowKeys,
@@ -975,7 +961,7 @@ export class TyrTable<
       emptyTablePlaceholder
     } = this.props;
 
-    const fieldCount = fields.length;
+    const fieldCount = paths.length;
     const isEditingRow = !!editingDocument;
     const netClassName = `tyr-table${className ? ' ' + className : ''}${
       isEditingRow ? ' tyr-table-editing-row' : ''
@@ -1020,7 +1006,7 @@ export class TyrTable<
           ? emptyTablePlaceholder(this)
           : emptyTablePlaceholder;
 
-      const mainTable = fields ? (
+      const mainTable = paths ? (
         <ObsTable
           locale={{ emptyText }}
           bordered={bordered}
@@ -1142,7 +1128,7 @@ export class TyrTable<
           )}
           <Row>
             <Col span={24}>
-              {fields && newDocument && (
+              {paths && newDocument && (
                 <ObsTable
                   bordered={bordered}
                   className="tyr-table-new-document"
@@ -1158,7 +1144,7 @@ export class TyrTable<
                   scroll={fieldCount > 1 ? scroll : undefined}
                 />
               )}
-              {fields && (
+              {paths && (
                 <div
                   style={{
                     position: 'relative',
