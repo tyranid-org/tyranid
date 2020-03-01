@@ -28,6 +28,7 @@ export interface TyrFormFields {
   [pathName: string]: any;
 }
 
+@observer
 class TyrFormBase extends React.Component<TyrFormBaseProps> {
   /*
   // this is very useful to track down when there is an infinite re-render cycle

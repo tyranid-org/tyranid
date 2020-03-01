@@ -151,7 +151,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
               if (filterDropdown) {
                 return (
                   <div className="tyr-filter-container" key={path.name}>
-                    <h1>{path.detail.label}</h1>
+                    <h1>{path.pathLabel}</h1>
                     {typeof filterDropdown === 'function'
                       ? filterDropdown({
                           //prefixCls?: string;
