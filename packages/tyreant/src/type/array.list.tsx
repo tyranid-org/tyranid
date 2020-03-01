@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Tyr } from 'tyranid/client';
 
 import { TyrTypeProps, getTypeValue, className, onTypeChange } from './type';
-import { TyrFieldBase } from '../core';
+import { TyrFieldBase, decorateField } from '../core';
 import { Button } from 'antd';
 
 /**
@@ -34,10 +34,8 @@ export const TyrArrayList = (props: TyrTypeProps) => {
     onTypeChange(props, array, array);
   };
 
-  return (
+  return decorateField('string', props, () => (
     <div className={className('tyr-array-list', props)}>
-      <label>{field.label}:</label>
-      <br />
       {!array.length && (
         <div>
           <i>None</i>
@@ -60,5 +58,5 @@ export const TyrArrayList = (props: TyrTypeProps) => {
         {'Add ' + Tyr.singularize(field.label as string)}
       </Button>
     </div>
-  );
+  ));
 };

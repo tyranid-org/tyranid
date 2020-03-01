@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Button, Input } from 'antd';
+import { Input } from 'antd';
 
 import {
   byName,

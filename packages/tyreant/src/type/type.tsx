@@ -41,7 +41,7 @@ export function generateRules(props: TyrTypeProps): ValidationRule[] {
     if (field.def.validate) {
       const rule: ValidationRule = {
         validator: (rule, value, callback, source, options) =>
-          field.validate(props.document!);
+          field.validate(props.document!)
       };
 
       rules.push(rule);
