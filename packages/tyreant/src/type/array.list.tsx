@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useState } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
@@ -14,10 +15,10 @@ export const TyrArrayList = (props: TyrTypeProps) => {
 
   const { tail: field, detail: elField } = path;
 
-  const [array, setArray] = React.useState(getTypeValue(props, []) as any[]);
+  const [array, setArray] = useState(getTypeValue(props, []) as any[]);
 
   // using a counter here because we want to keep using the same array
-  const [counter, setCounter] = React.useState(0);
+  const [counter, setCounter] = useState(0);
 
   const addElement = () => {
     array.push(elField.type.create(elField));

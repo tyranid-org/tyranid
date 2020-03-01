@@ -11,7 +11,6 @@ import { Tyr } from 'tyranid/client';
 import {
   assertTypeUi,
   TyrTypeProps,
-  TyrTypeLaxProps,
   withTypeContext,
   FieldState,
   generateRules,

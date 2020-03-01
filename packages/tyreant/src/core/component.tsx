@@ -289,18 +289,13 @@ export class TyrComponent<
       let paths: TyrPathProps[] | undefined = this.paths;
       if (!paths && collection) {
         paths = this.props.paths;
-        if (paths)
-          this.paths = paths.map(laxFieldProps =>
-            this.resolveFieldLaxProps(laxFieldProps)
-          );
-        else if (collection === parentCollection) {
+        if (!paths && collection === parentCollection)
           paths = parent.props.paths;
 
-          if (paths)
-            this.paths = paths.map(laxFieldProps =>
-              this.resolveFieldLaxProps(laxFieldProps)
-            );
-        }
+        if (paths)
+          this.paths = paths.map(laxPathProps =>
+            this.resolveFieldLaxProps(laxPathProps)
+          );
       }
 
       if (parentCollection !== collection && collection) {

@@ -779,10 +779,6 @@ export function generateClientLibrary() {
         method: 'put',
         data: JSON.stringify(doc),
         contentType: 'application/json'
-      }).then(function(result) {
-        if (result) {
-          throw new UserError({ field: this, message: result });
-        }
       });
     }
   }

@@ -540,8 +540,10 @@ export namespace Tyr {
   /**
    *  Hash of strings -> fields
    */
-  export interface FieldsObject {
-    [fieldName: string]: FieldDefinition;
+  export interface FieldsObject<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
+    [fieldName: string]: FieldDefinition<D>;
   }
 
   /**
@@ -552,19 +554,21 @@ export namespace Tyr {
     defaultMatchIdOnInsert?: boolean;
   }
 
-  export interface ParameterDefinition {
+  export interface ParameterDefinition<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
     is?: string;
     label?: string;
     help?: string;
     deprecated?: string | boolean;
     note?: string;
     required?: boolean;
-    of?: string | ServiceParameterDefinition;
+    of?: string | ServiceParameterDefinition<D>;
 
     cardinality?: string;
 
-    fields?: FieldsObject;
-    keys?: string | ServiceParameterDefinition;
+    fields?: FieldsObject<D>;
+    keys?: string | ServiceParameterDefinition<D>;
 
     link?: string;
     where?: any;
@@ -581,17 +585,21 @@ export namespace Tyr {
     granularity?: string;
   }
 
-  export interface BaseMethodDefinition {
+  export interface BaseMethodDefinition<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
     help?: string;
     note?: string;
     deprecated?: string | boolean;
     params?: {
-      [parameterName: string]: FieldDefinition | FieldInstance;
+      [parameterName: string]: FieldDefinition<D> | FieldInstance<D>;
     };
-    return?: FieldDefinition | FieldInstance;
+    return?: FieldDefinition<D> | FieldInstance<D>;
   }
 
-  export interface ServiceParameterDefinition extends ParameterDefinition {}
+  export interface ServiceParameterDefinition<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > extends ParameterDefinition<D> {}
 
   export interface ServiceMethodDefinition extends BaseMethodDefinition {
     /**
@@ -602,8 +610,10 @@ export namespace Tyr {
     route?: string;
   }
 
-  export interface ServiceDefinition {
-    [methodName: string]: ServiceMethodDefinition;
+  export interface ServiceDefinition<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
+    [methodName: string]: ServiceMethodDefinition<D>;
   }
 
   export interface MethodDefinition extends BaseMethodDefinition {
@@ -612,19 +622,23 @@ export namespace Tyr {
     fnServer?: Function;
   }
 
-  export interface MethodsDefinition {
-    [methodName: string]: MethodDefinition;
+  export interface MethodsDefinition<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
+    [methodName: string]: MethodDefinition<D>;
   }
 
   /**
    * collection.def
    */
-  export interface CollectionDefinitionHydrated {
+  export interface CollectionDefinitionHydrated<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
     // always available on collection
     primaryKey: PrimaryKeyField;
     id: string;
     name: string;
-    fields: { [key: string]: FieldInstance };
+    fields: { [key: string]: FieldInstance<D> };
     dbName?: string;
     aux?: boolean;
     singleton?: boolean;
@@ -640,14 +654,16 @@ export namespace Tyr {
     values?: any[][];
     db?: mongodb.Db;
     internal?: boolean;
-    methods?: MethodsDefinition;
-    service?: ServiceDefinition;
+    methods?: MethodsDefinition<D>;
+    service?: ServiceDefinition<D>;
   }
 
   /**
    *  TyranidCollectionDefinition options for tyranid collection
    */
-  export interface CollectionDefinition {
+  export interface CollectionDefinition<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > {
     [key: string]: any;
     id: string;
     name: string;
@@ -669,13 +685,13 @@ export namespace Tyr {
       fields?: boolean;
       labels?: boolean;
     };
-    fields?: FieldsObject;
-    methods?: MethodsDefinition;
+    fields?: FieldsObject<D>;
+    methods?: MethodsDefinition<D>;
     values?: any[][];
     fromClient?: (opts: Options_FromClient) => void;
     toClient?: (opts: Options_ToClient) => void;
     routes?: (app: Express.Application, auth: Express.RequestHandler) => void;
-    service?: ServiceDefinition;
+    service?: ServiceDefinition<D>;
   }
 
   export type CollectionCurriedMethodReturn =
@@ -820,7 +836,7 @@ export namespace Tyr {
   export interface CollectionStatic {
     // Collection instance constructor
     new <D extends Document<AnyIdType> = Document<AnyIdType>>(
-      def: CollectionDefinition
+      def: CollectionDefinition<D>
     ): CollectionInstance<D>;
   }
 
@@ -845,19 +861,19 @@ export namespace Tyr {
     count(opts: Options_Count): Promise<number>;
 
     db: mongodb.Collection;
-    def: CollectionDefinitionHydrated;
+    def: CollectionDefinitionHydrated<D>;
     denormal?: MongoDocument;
 
     exists(opts: Options_Exists): Promise<boolean>;
 
-    fields: { [key: string]: FieldInstance };
-    fieldsBy(filter: (field: FieldInstance) => boolean): FieldInstance[];
+    fields: { [key: string]: FieldInstance<D> };
+    fieldsBy(filter: (field: FieldInstance<D>) => boolean): FieldInstance<D>[];
     fieldsFor(opts: {
       match?: MongoObject;
       query?: MongoQuery;
       custom?: boolean;
       static?: boolean;
-    }): Promise<{ [key: string]: FieldInstance }>;
+    }): Promise<{ [key: string]: FieldInstance<D> }>;
 
     fake(options: { n?: number; schemaOpts?: any; seed?: number }): Promise<D>;
 
@@ -901,23 +917,23 @@ export namespace Tyr {
 
     isUid(str: string): boolean;
 
-    links(opts?: any): FieldInstance[];
+    links(opts?: any): FieldInstance<D>[];
 
     label: string;
-    labelField: FieldInstance;
+    labelField: FieldInstance<D>;
     labelFor(doc: MaybeRawDocument): string;
     labels(text: string): Promise<D[]>;
     labels(ids: string[]): Promise<D[]>;
     labels(_: any): Promise<D[]>;
 
     migratePatchToDocument(progress?: (count: number) => void): Promise<void>;
-    mixin(def: FieldDefinition): void;
+    mixin(def: FieldDefinition<D>): void;
 
     on(opts: EventOnOptions<D>): () => void;
 
     parsePath(text: string): NamePathInstance;
 
-    paths: { [key: string]: FieldInstance };
+    paths: { [key: string]: FieldInstance<D> };
 
     populate<R>(
       fields: string | string[] | { [key: string]: any }
@@ -972,31 +988,35 @@ export namespace Tyr {
 
     values: D[];
 
-    valuesFor(fields: FieldInstance[]): Promise<any[]>;
+    valuesFor(fields: FieldInstance<D>[]): Promise<any[]>;
   }
 
-  export interface FieldDefinitionRaw extends Isomorphic.FieldDefinitionRaw {}
+  export interface FieldDefinitionRaw<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > extends Isomorphic.FieldDefinitionRaw<D> {}
 
-  export interface FieldDefinition
-    extends FieldDefinitionRaw,
-      Isomorphic.FieldDefinition {}
+  export interface FieldDefinition<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > extends FieldDefinitionRaw<D>, Isomorphic.FieldDefinition<D> {}
 
   export interface FieldStatic extends Isomorphic.FieldStatic {
     new (def: FieldDefinition, opts?: { [optionName]: any }): FieldInstance;
   }
 
-  export interface FieldInstance extends Isomorphic.FieldInstance {
+  export interface FieldInstance<
+    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+  > extends Isomorphic.FieldInstance<D> {
     $metaType: 'field';
-    collection: CollectionInstance;
+    collection: CollectionInstance<D>;
     def: FieldDefinition;
-    fields?: { [key: string]: FieldInstance };
+    fields?: { [key: string]: FieldInstance<D> };
     keys?: FieldInstance;
     label: string | (() => string);
-    link?: CollectionInstance;
+    link?: CollectionInstance<D>;
     name: string;
     namePath: NamePathInstance;
-    of?: FieldInstance;
-    parent?: FieldInstance;
+    of?: FieldInstance<D>;
+    parent?: FieldInstance<D>;
     path: string;
     pathLabel: string;
     readonly: boolean;

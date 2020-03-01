@@ -6,11 +6,11 @@ export class UserError extends Error {
     if (typeof value === 'string') {
       super(value);
     } else if (value && typeof value === 'object') {
-      const { suffix, field } = value;
+      let { message, suffix /*, field */ } = value;
 
-      let message = suffix
-        ? `The value at ${field.path} ${value.suffix}`
-        : value.message;
+      if (!message && suffix) message = suffix;
+      //? `The value at ${field.path} ${value.suffix}`
+      //: value.message;
       super(message);
 
       for (const propName in value) {

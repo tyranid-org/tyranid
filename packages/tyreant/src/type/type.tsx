@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { Tyr } from 'tyranid/client';
+import { WrappedFormUtils, ValidationRule } from 'antd/lib/form/Form';
 
-import { WrappedFormUtils } from 'antd/lib/form/Form';
+import { Tyr } from 'tyranid/client';
 
 import {
   Filter,
@@ -17,8 +17,8 @@ export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
 };
 
-export function generateRules(props: TyrTypeProps) {
-  const rules = [];
+export function generateRules(props: TyrTypeProps): ValidationRule[] {
+  const rules: ValidationRule[] = [];
   const { path } = props;
   if (path) {
     const { tail: field } = path;
@@ -27,7 +27,7 @@ export function generateRules(props: TyrTypeProps) {
         max: props.max,
         message: `The ${props.label || field.label} must be ${
           props.max
-        } characters or less!`
+        } characters or less.`
       });
     }
 
@@ -36,6 +36,15 @@ export function generateRules(props: TyrTypeProps) {
         required: true,
         message: `${props.label || field.label} is required.`
       });
+    }
+
+    if (field.def.validate) {
+      const rule: ValidationRule = {
+        validator: (rule, value, callback, source, options) =>
+          field.validate(props.document!);
+      };
+
+      rules.push(rule);
     }
   }
 

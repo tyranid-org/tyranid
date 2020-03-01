@@ -113,7 +113,9 @@ export namespace Tyr {
     format(field: FieldInstance, value: any): string;
   }
 
-  export interface FieldDefinitionRaw {
+  export interface FieldDefinitionRaw<
+    D extends Document<AnyIdType> = Document<AnyIdType>
+  > {
     [key: string]: any;
     is?: string;
     client?: boolean | (() => boolean);
@@ -133,13 +135,16 @@ export namespace Tyr {
     note?: string;
 
     required?: boolean;
-    validate?: (field: FieldInstance) => Promise<string | undefined>;
+    validate?: (
+      this: D,
+      field: FieldInstance<D>
+    ) => Promise<string | false | undefined> | string | false | undefined;
 
-    of?: string | FieldDefinition;
+    of?: string | FieldDefinition<D>;
     cardinality?: string;
 
-    fields?: FieldsObject;
-    keys?: string | FieldDefinition;
+    fields?: FieldsObject<D>;
+    keys?: string | FieldDefinition<D>;
 
     denormal?: MongoDocument;
     link?: string;
@@ -167,8 +172,10 @@ export namespace Tyr {
     setServer?: Function;
   }
 
-  export interface FieldDefinition extends FieldDefinitionRaw {
-    def?: FieldDefinitionRaw;
+  export interface FieldDefinition<
+    D extends Document<AnyIdType> = Document<AnyIdType>
+  > extends FieldDefinitionRaw<D> {
+    def?: FieldDefinitionRaw<D>;
     pathLabel?: string;
   }
 
@@ -176,24 +183,26 @@ export namespace Tyr {
     new (...args: any[]): FieldInstance;
   }
 
-  export interface FieldInstance {
+  export interface FieldInstance<
+    D extends Document<AnyIdType> = Document<AnyIdType>
+  > {
     $metaType: 'field';
 
     collection: CollectionInstance;
     computed: boolean;
     db: boolean;
-    def: FieldDefinition;
+    def: FieldDefinition<D>;
     dynamicSchema?: any;
     name: string;
     namePath: NamePathInstance;
-    of?: FieldInstance;
-    parent?: FieldInstance;
+    of?: FieldInstance<D>;
+    parent?: FieldInstance<D>;
     pathLabel: string;
     readonly: boolean;
     path: string;
     spath: string;
     in: any;
-    keys?: FieldInstance;
+    keys?: FieldInstance<D>;
     label: string | (() => string);
     link?: CollectionInstance;
     relate?: 'owns' | 'ownedBy' | 'associate';
@@ -210,7 +219,11 @@ export namespace Tyr {
     ): Promise<Tyr.Document[]>;
     isAux(): boolean;
     isDb(): boolean;
-    validate(obj: {}): Promise<string | undefined>;
+    validate(obj: {}):
+      | Promise<string | false | undefined>
+      | string
+      | false
+      | undefined;
   }
 
   export interface NamePathStatic {
