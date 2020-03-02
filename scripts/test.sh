@@ -9,6 +9,6 @@ run_tests_for() {
 run_tests_for tyranid
 run_tests_for tyranid-tdgen
 run_tests_for tyranid-graphql
-run_tests_for tyranid-gracl
+#run_tests_for tyranid-gracl
 run_tests_for tyranid-openapi
 run_tests_for tyranid-sanitize

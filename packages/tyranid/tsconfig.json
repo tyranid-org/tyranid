@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "lib": ["es2017"]
   },
-  "include": ["tyranid.d.ts", "isomorphic.d.ts", "src", "test/models"]
+  "include": ["isomorphic.d.ts", "tyranid.d.ts", "src", "test/models"]
 }

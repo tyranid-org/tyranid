@@ -148,35 +148,33 @@ declare module 'tyranid/client' {
       format(field: FieldInstance, value: any): string;
     }
 
-    export interface FieldDefinitionRaw extends Isomorphic.FieldDefinitionRaw {}
-
-    export interface FieldDefinition extends Isomorphic.FieldDefinition {}
+    export interface FieldDefinition<
+      D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+    > extends Isomorphic.FieldDefinition<D> {}
 
     export interface FieldStatic extends Isomorphic.FieldStatic {
       new (...args: any[]): FieldInstance;
     }
 
-    export interface FieldInstance extends Isomorphic.FieldInstance {
-      collection: CollectionInstance;
-      def: FieldDefinition;
-      fields?: { [key: string]: FieldInstance };
-      keys?: FieldInstance;
+    export interface FieldInstance<
+      D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+    > extends Isomorphic.FieldInstance<D> {
+      collection: CollectionInstance<D>;
+      def: FieldDefinition<D>;
+      fields?: { [key: string]: FieldInstance<D> };
+      keys?: FieldInstance<D>;
       label: string | (() => string);
       link?: CollectionInstance;
       name: string;
       namePath: NamePathInstance;
-      of?: FieldInstance;
-      parent?: FieldInstance;
+      of?: FieldInstance<D>;
+      parent?: FieldInstance<D>;
       path: string;
       pathLabel: string;
       readonly: boolean;
       type: TypeInstance;
 
-      labels(
-        doc: Tyr.Document,
-        text?: string,
-        opts?: any
-      ): Promise<Tyr.Document[]>;
+      labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
     }
 
     export interface CollectionStatic extends Isomorphic.CollectionStatic {}
@@ -198,13 +196,13 @@ declare module 'tyranid/client' {
       count(opts: any): Promise<number>;
       def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
-      fields: { [fieldName: string]: Tyr.FieldInstance };
+      fields: { [fieldName: string]: FieldInstance<D> };
       fieldsFor(opts: {
         match?: MongoObject;
         query?: MongoQuery;
         custom?: boolean;
         static?: boolean;
-      }): Promise<{ [key: string]: FieldInstance }>;
+      }): Promise<{ [key: string]: FieldInstance<D> }>;
       findAll(args: any): Promise<D[] & { count?: number }>;
       findOne(args: any): Promise<D | null>;
       id: string;
@@ -227,7 +225,7 @@ declare module 'tyranid/client' {
       labels(_: any): Promise<D[]>;
       on(opts: any): () => void;
       parsePath(text: string): Tyr.NamePathInstance;
-      paths: { [fieldPathName: string]: Tyr.FieldInstance };
+      paths: { [fieldPathName: string]: Tyr.FieldInstance<D> };
       push(id: IdType<D>, path: string, value: any, opts: any): Promise<void>;
       remove(id: IdType<D>, justOne: boolean): Promise<void>;
       remove(

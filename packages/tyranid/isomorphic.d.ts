@@ -113,7 +113,7 @@ export namespace Tyr {
     format(field: FieldInstance, value: any): string;
   }
 
-  export interface FieldDefinitionRaw<
+  export interface FieldDefinition<
     D extends Document<AnyIdType> = Document<AnyIdType>
   > {
     [key: string]: any;
@@ -135,10 +135,11 @@ export namespace Tyr {
     note?: string;
 
     required?: boolean;
-    validate?: (
+    // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
+    validate?(
       this: D,
       field: FieldInstance<D>
-    ) => Promise<string | false | undefined> | string | false | undefined;
+    ): Promise<string | false | undefined> | string | false | undefined;
 
     of?: string | FieldDefinition<D>;
     cardinality?: string;
@@ -150,6 +151,8 @@ export namespace Tyr {
     link?: string;
     relate?: 'owns' | 'ownedBy' | 'associate';
     where?: any;
+
+    pathLabel?: string;
 
     in?: string;
     min?: number;
@@ -172,13 +175,6 @@ export namespace Tyr {
     setServer?: Function;
   }
 
-  export interface FieldDefinition<
-    D extends Document<AnyIdType> = Document<AnyIdType>
-  > extends FieldDefinitionRaw<D> {
-    def?: FieldDefinitionRaw<D>;
-    pathLabel?: string;
-  }
-
   export interface FieldStatic {
     new (...args: any[]): FieldInstance;
   }
@@ -188,7 +184,7 @@ export namespace Tyr {
   > {
     $metaType: 'field';
 
-    collection: CollectionInstance;
+    collection: CollectionInstance<D>;
     computed: boolean;
     db: boolean;
     def: FieldDefinition<D>;
@@ -207,16 +203,12 @@ export namespace Tyr {
     link?: CollectionInstance;
     relate?: 'owns' | 'ownedBy' | 'associate';
     type: TypeInstance;
-    fields?: { [key: string]: FieldInstance };
+    fields?: { [key: string]: FieldInstance<D> };
     method: string;
 
     format(value: any): string;
     labelify(value: any): Promise<any>;
-    labels(
-      doc: Tyr.Document,
-      text?: string,
-      opts?: any
-    ): Promise<Tyr.Document[]>;
+    labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
     isAux(): boolean;
     isDb(): boolean;
     validate(obj: {}):
@@ -255,7 +247,7 @@ export namespace Tyr {
     pathName(idx: number): string;
     uniq(obj: any): any[];
     get(obj: any): any;
-    set<D extends Tyr.Document<AnyIdType>>(
+    set<D extends Document<AnyIdType>>(
       obj: D,
       value: any,
       opts?: { create?: boolean; ignore?: boolean }
@@ -263,7 +255,11 @@ export namespace Tyr {
     walk(path: string | number): NamePathInstance;
   }
 
-  export type IdType<D extends Document> = D extends Document<infer ID>
+  export type IdType<D extends Document<AnyIdType>> = D extends Document<
+    infer ID
+  >
+    ? ID
+    : D extends Inserted<infer ID>
     ? ID
     : never;
 
@@ -280,7 +276,7 @@ export namespace Tyr {
     count(opts: any): Promise<number>;
     def: any /* collection def */;
     exists(opts: any): Promise<boolean>;
-    fields: { [fieldName: string]: FieldInstance };
+    fields: { [fieldName: string]: FieldInstance<D> };
     findAll(args: any): Promise<D[] & { count?: number }>;
     findOne(args: any): Promise<D | null>;
     id: string;
@@ -336,7 +332,7 @@ export namespace Tyr {
     $update(opts: any): Promise<this>;
   }
 
-  export interface Inserted<ID> extends Document<ID> {
+  export interface Inserted<ID extends AnyIdType> extends Document<ID> {
     _id: ID;
   }
 }

@@ -45,7 +45,7 @@ export interface DebugResult {
  */
 export async function query(
   plugin: GraclPlugin,
-  queriedCollection: Tyr.CollectionInstance,
+  queriedCollection: Tyr.CollectionInstance<any>,
   permissionType: string,
   subjectDocument: Tyr.Document,
   debug: true
@@ -53,14 +53,14 @@ export async function query(
 
 export async function query(
   plugin: GraclPlugin,
-  queriedCollection: Tyr.CollectionInstance,
+  queriedCollection: Tyr.CollectionInstance<any>,
   permissionType: string,
   subjectDocument?: Tyr.Document
 ): Promise<boolean | {}>;
 
 export async function query(
   plugin: GraclPlugin,
-  queriedCollection: Tyr.CollectionInstance,
+  queriedCollection: Tyr.CollectionInstance<any>,
   permissionType: string,
   subjectDocument = Tyr.local.user,
   debug?: boolean
@@ -196,7 +196,7 @@ export async function query(
     collection: Tyr.CollectionInstance;
   }
 
-  const resourceMap = (permissions as Permission[]).reduce(
+  const resourceMap = ((permissions as unknown) as Permission[]).reduce(
     (map: Map<string, ResourceMapEntries>, perm: Permission) => {
       const resourceCollectionName = perm.resourceType as string;
       const resourceId = perm.resourceId as string;

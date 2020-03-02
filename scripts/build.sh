@@ -13,8 +13,8 @@ run_tsc tyranid-openapi
 run_tsc tyranid-sanitize
 run_tsc tyreant
 
-echo "building tyranid-gracl..."
-(cd ./packages/tyranid-gracl && npm run build --silent)
+#echo "building tyranid-gracl..."
+#(cd ./packages/tyranid-gracl && npm run build --silent)
 
 (cd ./packages/tyranid && npm run generate-builtin-typings)
 

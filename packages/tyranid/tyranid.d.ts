@@ -209,10 +209,11 @@ export namespace Tyr {
   /**
    *  Generic tyranid document object.
    */
-  export interface Document<ID extends AnyIdType = AnyIdType> {
+  export interface Document<ID extends AnyIdType = AnyIdType>
+    extends Isomorphic.Document<ID> {
     $access?: AccessResult;
     $asOf(time: Date, fields?: any): void;
-    $checkAccess(opts: { perm?: string; auth?: Tyr.Document }): this;
+    $checkAccess(opts: { perm?: string; auth?: Document }): this;
     $clone(): this;
     $cloneDeep(): this;
     $copy(replacements: any, props?: Array<keyof this> | '$all'): this;
@@ -226,7 +227,7 @@ export namespace Tyr {
     $options: Options_AllFind;
     $populate(fields: any, denormal?: boolean): Promise<this>;
     $redact(): void;
-    $remove(opts?: { auth?: Tyr.Document }): Promise<void>;
+    $remove(opts?: { auth?: Document }): Promise<void>;
     $replace(replacements: any): Promise<this>;
     $save(opts?: { timestamps?: boolean }): Promise<this>;
     $slice(prop: string, opts?: Options_Slice): Promise<void>;
@@ -541,7 +542,7 @@ export namespace Tyr {
    *  Hash of strings -> fields
    */
   export interface FieldsObject<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+    D extends Document<AnyIdType> = Document<AnyIdType>
   > {
     [fieldName: string]: FieldDefinition<D>;
   }
@@ -554,9 +555,7 @@ export namespace Tyr {
     defaultMatchIdOnInsert?: boolean;
   }
 
-  export interface ParameterDefinition<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > {
+  export interface ParameterDefinition<D extends Document<AnyIdType>> {
     is?: string;
     label?: string;
     help?: string;
@@ -585,9 +584,7 @@ export namespace Tyr {
     granularity?: string;
   }
 
-  export interface BaseMethodDefinition<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > {
+  export interface BaseMethodDefinition<D extends Document<AnyIdType>> {
     help?: string;
     note?: string;
     deprecated?: string | boolean;
@@ -597,11 +594,11 @@ export namespace Tyr {
     return?: FieldDefinition<D> | FieldInstance<D>;
   }
 
-  export interface ServiceParameterDefinition<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > extends ParameterDefinition<D> {}
+  export interface ServiceParameterDefinition<D extends Document<AnyIdType>>
+    extends ParameterDefinition<D> {}
 
-  export interface ServiceMethodDefinition extends BaseMethodDefinition {
+  export interface ServiceMethodDefinition<D extends Document<AnyIdType>>
+    extends BaseMethodDefinition<D> {
     /**
      * This is the full URL path for this service.  This will be automatically generated
      * if you do not specify one.  Recommended to leave this blank and go with auto-generated
@@ -610,21 +607,18 @@ export namespace Tyr {
     route?: string;
   }
 
-  export interface ServiceDefinition<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > {
+  export interface ServiceDefinition<D extends Document<AnyIdType>> {
     [methodName: string]: ServiceMethodDefinition<D>;
   }
 
-  export interface MethodDefinition extends BaseMethodDefinition {
+  export interface MethodDefinition<D extends Document<AnyIdType>>
+    extends BaseMethodDefinition<D> {
     fn: Function;
     fnClient?: Function;
     fnServer?: Function;
   }
 
-  export interface MethodsDefinition<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > {
+  export interface MethodsDefinition<D extends Document<AnyIdType>> {
     [methodName: string]: MethodDefinition<D>;
   }
 
@@ -632,7 +626,7 @@ export namespace Tyr {
    * collection.def
    */
   export interface CollectionDefinitionHydrated<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
+    D extends Document<AnyIdType> = Document<AnyIdType>
   > {
     // always available on collection
     primaryKey: PrimaryKeyField;
@@ -661,9 +655,7 @@ export namespace Tyr {
   /**
    *  TyranidCollectionDefinition options for tyranid collection
    */
-  export interface CollectionDefinition<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > {
+  export interface CollectionDefinition<D extends Document<AnyIdType>> {
     [key: string]: any;
     id: string;
     name: string;
@@ -829,7 +821,17 @@ export namespace Tyr {
     compileField(compiler: any, field: FieldInstance): void;
   }
 
+  /*
+  Not sure why this simpler version doesn't work for inferring ID in Inserted<ID>
   export type IdType<D extends Document> = D extends Document<infer ID>
+    ? ID
+    : never;
+   */
+  export type IdType<D extends Document<AnyIdType>> = D extends Document<
+    infer ID
+  >
+    ? ID
+    : D extends Inserted<infer ID>
     ? ID
     : never;
 
@@ -845,7 +847,7 @@ export namespace Tyr {
    */
   export interface CollectionInstance<
     D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > extends Component, Class<D> {
+  > extends Component, Class<D>, Isomorphic.CollectionInstance<D> {
     // Collection instance constructor
     new (doc?: RawMongoDocument): D;
 
@@ -991,13 +993,9 @@ export namespace Tyr {
     valuesFor(fields: FieldInstance<D>[]): Promise<any[]>;
   }
 
-  export interface FieldDefinitionRaw<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > extends Isomorphic.FieldDefinitionRaw<D> {}
-
   export interface FieldDefinition<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > extends FieldDefinitionRaw<D>, Isomorphic.FieldDefinition<D> {}
+    D extends Document<AnyIdType> = Document<AnyIdType>
+  > extends Isomorphic.FieldDefinition<D> {}
 
   export interface FieldStatic extends Isomorphic.FieldStatic {
     new (def: FieldDefinition, opts?: { [optionName]: any }): FieldInstance;
@@ -1008,11 +1006,11 @@ export namespace Tyr {
   > extends Isomorphic.FieldInstance<D> {
     $metaType: 'field';
     collection: CollectionInstance<D>;
-    def: FieldDefinition;
+    def: FieldDefinition<D>;
     fields?: { [key: string]: FieldInstance<D> };
-    keys?: FieldInstance;
+    keys?: FieldInstance<D>;
     label: string | (() => string);
-    link?: CollectionInstance<D>;
+    link?: CollectionInstance;
     name: string;
     namePath: NamePathInstance;
     of?: FieldInstance<D>;

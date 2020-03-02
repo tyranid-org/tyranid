@@ -1,5 +1,5 @@
 {
   "extends": "../tsconfig",
-  "include": [".", "./typings/*.ts"],
+  "include": [".", "./typings/isomorphic.d.ts", "./typings/server.d.ts"],
   "exclude": ["models"]
 }

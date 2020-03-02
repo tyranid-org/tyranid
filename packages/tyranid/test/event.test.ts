@@ -5,6 +5,8 @@ import { Tyr } from 'tyranid';
 
 const { expect } = chai;
 
+export type FOO = Tyr.IdType<Tyr.User>;
+
 export function add() {
   describe('event.js', () => {
     let User: Tyr.UserCollection, Book: Tyr.BookCollection;
