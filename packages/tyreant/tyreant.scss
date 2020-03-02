@@ -314,6 +314,17 @@ $primary-background-color: #6a8fbe;
   }
 }
 
+.ant-checkbox-wrapper {
+  .ant-checkbox {
+    position: relative;
+    top: 2px;
+  }
+
+  span {
+    font-weight: normal;
+  }
+}
+
 .tyr-menu-item {
   padding: 0;
 

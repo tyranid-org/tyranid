@@ -644,7 +644,7 @@ export class TyrTable<
         },
         sorter: sortingEnabled ? sorter : undefined,
         sortOrder: sortingEnabled ? sortDirection : undefined,
-        title: column.label || path?.detail.label,
+        title: column.label || path?.pathLabel,
         width: colWidth,
         className: netClassName,
         ellipsis: column.ellipsis,

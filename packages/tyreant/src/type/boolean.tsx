@@ -17,7 +17,7 @@ import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
 import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
-export const TyrBooleanBase = ((props: TyrTypeProps) => {
+export const TyrBooleanBase: React.FunctionComponent<TyrTypeProps> = props => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('boolean', props, () => {
@@ -35,7 +35,7 @@ export const TyrBooleanBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrBoolean = withTypeContext('boolean', TyrBooleanBase);
 
