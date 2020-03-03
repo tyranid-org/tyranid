@@ -22,7 +22,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   paths?: TyrPathLaxProps[];
   decorator?: React.ReactElement;
   actions?: (TyrAction<D> | TyrActionOpts<D>)[];
-  aux?: { [key: string]: Tyr.FieldDefinition };
+  aux?: { [key: string]: Tyr.FieldDefinition<D> };
 }
 
 export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {
