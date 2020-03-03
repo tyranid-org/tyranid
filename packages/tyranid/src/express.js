@@ -1692,7 +1692,7 @@ export default function connect(app, auth, opts) {
       // we don't send insecure information in /api/tyranid, it is just source code
       //.all(auth)
       .get(async (req, res) => {
-        res.type('javascript');
+        res.type('text/javascript');
         res.send(file);
       });
   }
