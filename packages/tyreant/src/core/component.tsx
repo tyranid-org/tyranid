@@ -286,7 +286,7 @@ export class TyrComponent<
           D
         >;
 
-      let paths: TyrPathProps[] | undefined = this.paths;
+      let paths: TyrPathLaxProps[] | undefined = this.paths;
       if (!paths && collection) {
         paths = this.props.paths;
         if (!paths && collection === parentCollection)

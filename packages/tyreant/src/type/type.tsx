@@ -60,7 +60,6 @@ export type TyrTypeLaxProps = {
   document?: Tyr.Document;
   value?: { value?: any };
   aux?: string;
-
   children?: React.ReactNode;
 } & TyrPathLaxProps;
 
@@ -69,7 +68,6 @@ export type TyrTypeProps = {
   document?: Tyr.Document;
   component?: TyrComponent;
   value?: { value?: any };
-  searchPath?: Tyr.NamePathInstance;
   aux?: string;
   children?: React.ReactNode;
 } & TyrPathProps;
@@ -320,7 +318,7 @@ export const TypeContext = React.createContext<TyrTypeProps | undefined>(
 export const withTypeContext = <T extends {} = {}>(
   type: string | undefined,
   TypeControl: React.ComponentType<T & TyrTypeProps>
-) => (props: TyrTypeLaxProps & T) => (
+) => (props: T & TyrTypeLaxProps) => (
   <TypeContext.Consumer>
     {parentProps => {
       const form = props.form || (parentProps && parentProps.form);
