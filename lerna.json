@@ -1,7 +1,13 @@
 {
   "lerna": "2.9.1",
   "packages": [
-    "packages/*"
+    "packages/tyranid",
+    "packages/tyranid-cli",
+    "packages/tyranid-graphql",
+    "packages/tyranid-openapi",
+    "packages/tyranid-sanitize",
+    "packages/tyranid-tdgen",
+    "packages/tyreant"
   ],
   "version": "independent",
   "npmClient": "yarn",
