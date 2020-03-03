@@ -97,6 +97,7 @@ declare module 'tyranid/client' {
       a: AnyIdType | null | undefined,
       b: AnyIdType | null | undefined
     ): boolean;
+    export function capitalize(name: string): string;
     export function labelize(name: string): string;
     export function parseUid(
       uid: string

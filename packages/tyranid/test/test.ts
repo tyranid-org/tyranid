@@ -956,6 +956,15 @@ describe('tyranid', () => {
     });
 
     describe('strings', () => {
+      it('should support support capitalize', async () => {
+        for (const test of [
+          ['cat', 'Cat'],
+          ['latestProjection', 'LatestProjection']
+        ]) {
+          expect(Tyr.capitalize(test[0])).to.eql(test[1]);
+        }
+      });
+
       it('should support support labelize', async () => {
         for (const test of [
           ['cat', 'Cat'],

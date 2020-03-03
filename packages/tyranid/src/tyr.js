@@ -167,6 +167,12 @@ const Tyr = {
   // string methods
   //
 
+  capitalize(name) {
+    return name.length
+      ? name.substring(0, 1).toUpperCase() + name.substring(1)
+      : name;
+  },
+
   labelize(name) {
     // TODO:  more cases to be added here later on
     if (name.endsWith('Id')) {

@@ -440,6 +440,7 @@ export function generateClientLibrary() {
   Tyr.compactMap = ${es5Fn(Tyr.compactMap)};
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
+  Tyr.capitalize = ${es5Fn(Tyr.capitalize)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
   Tyr.mapAwait = ${es5Fn(Tyr.mapAwait)};
   Tyr.ordinalize = ${es5Fn(Tyr.ordinalize)};
@@ -913,7 +914,7 @@ export function generateClientLibrary() {
   function Collection(def) {
     var CollectionInstance;
 
-    const capitalizedName = _.capitalize(def.name);
+    const capitalizedName = Tyr.capitalize(def.name);
 
     eval(\`CollectionInstance = function \${capitalizedName}(data) {
       if (data) {

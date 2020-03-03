@@ -98,6 +98,7 @@ export namespace Tyr {
   export function parseUid(
     uid: string
   ): { collection: CollectionInstance; id: AnyIdType };
+  export function capitalize(name: string): string;
   export function labelize(name: string): string;
   export function pluralize(str: string): string;
   export function projectify(obj: object): { [key: string]: number };
