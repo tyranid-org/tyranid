@@ -408,7 +408,7 @@ byName.link = {
    * Note that this filter handles both the "link" and the "array of link" cases
    */
   filter(filterable, props) {
-    const path = props.path!;
+    const path = props.searchPath || props.path!;
 
     return {
       filterDropdown: filterDdProps => (
@@ -511,7 +511,7 @@ const LinkFilterDropdown = ({
   filterDdProps,
   filterable
 }: LinkFilterProps) => {
-  const path = pathProps.path!;
+  const path = pathProps.searchPath || pathProps.path!;
   const pathName = path.name;
   const linkField = linkFieldFor(path)!;
   const link = linkField.link!;

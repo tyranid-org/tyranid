@@ -511,14 +511,18 @@ export class TyrTable<
         pathName = path.name;
       }
 
-      if (column.searchPath?.detail.collection) {
-        searchPath = column.searchPath;
-        searchPathName = searchPath.name;
-      } else {
-        searchPathName = getPathName(column.searchPath);
-        searchPath = searchPathName
-          ? collection.paths[searchPathName]?.namePath
-          : undefined;
+      switch (typeof column.searchPath) {
+        case 'string':
+          searchPath = collection.parsePath(column.searchPath);
+          searchPathName = searchPath.name;
+          break;
+        case 'object':
+          searchPath = column.searchPath;
+          searchPathName = searchPath.name;
+          break;
+        default:
+          searchPath = undefined;
+          searchPathName = undefined;
       }
 
       // TODO:  find another way to do this, paths are shared objects so should be immutable
