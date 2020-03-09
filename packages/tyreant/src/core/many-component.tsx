@@ -185,13 +185,17 @@ export class TyrManyComponent<
    * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
    * search value while it is being edited in the search control, it needs to keep that copy locally.
    */
-  @observable
   searchValues: {
     [pathName: string]: any;
   } = {};
 
   filters: { [path: string]: ReturnType<Filter> | undefined } = {};
   getFilter(props: TyrPathProps) {
+    const path = props.path!;
+    const pathName = path.name;
+    const existingFilter = this.filters[pathName];
+    if (existingFilter) return existingFilter;
+
     const filterable = {
       searchValues: this.searchValues,
       onSearch: () => {
@@ -201,11 +205,6 @@ export class TyrManyComponent<
       localSearch: this.isLocal,
       localDocuments: this.documents
     };
-
-    const path = props.path!;
-    const pathName = path.name;
-    const existingFilter = this.filters[pathName];
-    if (existingFilter) return existingFilter;
 
     const filter = (path && getFilter(filterable, props)) || {};
     this.filters[pathName] = filter;

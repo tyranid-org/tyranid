@@ -142,7 +142,10 @@ export class TyrComponent<
             if (opts.document) await this.find(opts.document);
 
             if (this.canEdit && !this.document) {
-              const collection = Tyr.aux({ fields: this.props.aux }, this);
+              const collection = Tyr.aux(
+                { fields: this.props.aux },
+                this
+              ) as Tyr.CollectionInstance<D>;
               this.document = new collection({});
             }
           } else {

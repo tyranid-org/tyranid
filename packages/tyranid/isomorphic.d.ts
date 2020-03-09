@@ -16,6 +16,8 @@ export namespace Tyr {
    */
   export type anny = any;
 
+  export type AnyIdType = string | number;
+
   export interface MongoDocument {
     [key: string]: any;
   }
@@ -144,7 +146,8 @@ export namespace Tyr {
     of?: string | FieldDefinition<D>;
     cardinality?: string;
 
-    fields?: FieldsObject<D>;
+    fields?: { [key: string]: FieldDefinition<D> };
+
     keys?: string | FieldDefinition<D>;
 
     denormal?: MongoDocument;
@@ -223,7 +226,7 @@ export namespace Tyr {
 
     decode(path: string): string;
     encode(path: string): string;
-    populateNameFor(name: string, denormal: boolean = false): string;
+    populateNameFor(name: string, denormal?: boolean): string;
     resolve(
       collection: CollectionInstance,
       parentPath?: NamePathInstance,

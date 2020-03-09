@@ -996,36 +996,108 @@ export namespace Tyr {
 
   export interface FieldDefinition<
     D extends Document<AnyIdType> = Document<AnyIdType>
-  > extends Isomorphic.FieldDefinition<D> {}
+  > {
+    [key: string]: any;
+    is?: string;
+    client?: boolean | (() => boolean);
+    custom?: boolean;
+    db?: boolean;
+    aux?: boolean;
+    historical?: boolean;
+    defaultValue?: any;
 
-  export interface FieldStatic extends Isomorphic.FieldStatic {
+    //inverse?: boolean;
+
+    label?: string | (() => string);
+    help?: string;
+    placeholder?: string;
+
+    deprecated?: string | boolean;
+    note?: string;
+
+    required?: boolean;
+    // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
+    validate?(
+      this: D,
+      field: FieldInstance<D>
+    ): Promise<string | false | undefined> | string | false | undefined;
+
+    of?: string | FieldDefinition<D>;
+    cardinality?: string;
+
+    fields?: { [key: string]: string | FieldDefinition<D> };
+
+    keys?: string | FieldDefinition<D>;
+
+    denormal?: MongoDocument;
+    link?: string;
+    relate?: 'owns' | 'ownedBy' | 'associate';
+    where?: any;
+
+    pathLabel?: string;
+
+    in?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+
+    labelField?: boolean | { uses: string[] };
+    pattern?: RegExp;
+    minlength?: number;
+    maxlength?: number;
+
+    granularity?: string;
+
+    computed?: boolean;
+    get?: Function;
+    getClient?: Function;
+    getServer?: Function;
+    set?: Function;
+    setClient?: Function;
+    setServer?: Function;
+  }
+
+  export interface FieldStatic {
     new (def: FieldDefinition, opts?: { [optionName]: any }): FieldInstance;
   }
 
   export interface FieldInstance<
-    D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-  > extends Isomorphic.FieldInstance<D> {
+    D extends Document<AnyIdType> = Document<AnyIdType>
+  > {
     $metaType: 'field';
+
     collection: CollectionInstance<D>;
+    computed: boolean;
+    db: boolean;
     def: FieldDefinition<D>;
-    fields?: { [key: string]: FieldInstance<D> };
-    keys?: FieldInstance<D>;
-    label: string | (() => string);
-    link?: CollectionInstance;
+    dynamicSchema?: any;
     name: string;
     namePath: NamePathInstance;
     of?: FieldInstance<D>;
     parent?: FieldInstance<D>;
-    path: string;
     pathLabel: string;
     readonly: boolean;
+    path: string;
+    spath: string;
+    in: any;
+    keys?: FieldInstance<D>;
+    label: string | (() => string);
+    link?: CollectionInstance;
+    relate?: 'owns' | 'ownedBy' | 'associate';
     type: TypeInstance;
+    fields?: { [key: string]: FieldInstance<D> };
+    method: string;
 
-    labels(
-      doc: Tyr.Document,
-      text?: string,
-      opts?: any
-    ): Promise<Tyr.Document[]>;
+    format(value: any): string;
+    labelify(value: any): Promise<any>;
+    labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
+    isAux(): boolean;
+    isDb(): boolean;
+    validate(obj: {}):
+      | Promise<string | false | undefined>
+      | string
+      | false
+      | undefined;
   }
 
   export interface NamePathStatic {

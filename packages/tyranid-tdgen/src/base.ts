@@ -1,7 +1,6 @@
 import { Tyr } from 'tyranid';
 import * as names from './names';
 import { pad, wordWrap } from './util';
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 /**
  * generate base interface for tyranid document type
@@ -260,11 +259,11 @@ export function addField({
       let obj = '{';
 
       for (const sub of subFieldKeys) {
-        const subField = subFields[sub];
+        const subField = subFields[sub] as Tyr.FieldInstance;
         const subDef = subField.def;
         const required =
           sub === '_id' ||
-          subFields[sub].required ||
+          (subField as Tyr.FieldDefinition).required ||
           (subDef && subDef.required);
         obj += '\n';
         const subName = sub + (required ? '' : '?');

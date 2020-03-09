@@ -501,7 +501,6 @@ export class TyrTable<
       let path: Tyr.NamePathInstance | undefined;
       let pathName: string | undefined;
       let searchPath: Tyr.NamePathInstance | undefined;
-      let searchPathName: string | undefined;
 
       if (typeof column.path === 'string') {
         pathName = column.path;
@@ -514,15 +513,12 @@ export class TyrTable<
       switch (typeof column.searchPath) {
         case 'string':
           searchPath = collection.parsePath(column.searchPath);
-          searchPathName = searchPath.name;
           break;
         case 'object':
           searchPath = column.searchPath;
-          searchPathName = searchPath.name;
           break;
         default:
           searchPath = undefined;
-          searchPathName = undefined;
       }
 
       // TODO:  find another way to do this, paths are shared objects so should be immutable

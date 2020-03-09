@@ -9,7 +9,47 @@ declare module 'tyranid/client' {
     export const NamePath: NamePathStatic;
     export const Type: TypeStatic;
 
-    export { AppError, SecureError, UserError } from Isomorphic;
+    export interface AppErrorStatic {
+      new (opts?: string | ErrorOptions): UserError;
+    }
+    export const AppError: AppErrorStatic;
+    export interface AppError {
+      message: string;
+      field?: FieldInstance;
+      technical?: string;
+      rowNumber?: number;
+      lineNumber?: number;
+      columnNumber?: number;
+      toString(): string;
+    }
+
+    export interface SecureErrorStatic {
+      new (opts?: string | ErrorOptions): SecureError;
+    }
+    export const SecureError: SecureErrorStatic;
+    export interface SecureError {
+      message: string;
+      field?: FieldInstance;
+      technical?: string;
+      rowNumber?: number;
+      lineNumber?: number;
+      columnNumber?: number;
+      toString(): string;
+    }
+
+    export interface UserErrorStatic {
+      new (opts: string | ErrorOptions): UserError;
+    }
+    export const UserError: UserErrorStatic;
+    export interface UserError {
+      message: string;
+      field?: FieldInstance;
+      technical?: string;
+      rowNumber?: number;
+      lineNumber?: number;
+      columnNumber?: number;
+      toString(): string;
+    }
 
     export type anny = any;
 
@@ -66,10 +106,10 @@ declare module 'tyranid/client' {
     }
 
     export const ajax: (url: string, opts: any) => Promise<any>;
-    export const aux = (
+    export function aux(
       collectionDefinition: CollectionDefinition,
       component?: React.Component
-    ) => CollectionStatic;
+    ): CollectionInstance;
     export const byId: CollectionsById;
     export const byName: CollectionsByName;
     export function clear(obj: object): void;
@@ -89,7 +129,7 @@ declare module 'tyranid/client' {
 
     export const options: {
       whiteLabel?: (metadata: Metadata) => string | undefined;
-    } = {};
+    };
 
     export const init: () => void;
     export function isCompliant(spec: any, value: any): boolean;
@@ -112,23 +152,34 @@ declare module 'tyranid/client' {
     export type AnyIdType = string | number;
     export type ObjIdType = string;
 
-    export interface NamePathStatic extends Isomorphic.NamePathStatic {
+    export interface NamePathStatic
+      extends Omit<Isomorphic.NamePathStatic, 'resolve'> {
       new (...args: any[]): NamePathInstance;
 
       resolve(
         collection: CollectionInstance,
-        parentPath?: Isomorphic.NamePathInstance,
-        path?: Isomorphic.NamePathInstance | string
+        parentPath?: NamePathInstance,
+        path?: NamePathInstance | string
       ): NamePathInstance;
     }
 
-    export interface NamePathInstance extends Isomorphic.NamePathInstance {
+    export interface NamePathInstance /*extends Isomorphic.NamePathInstance*/ {
+      $metaType: 'path';
+
       detail: FieldInstance;
+      name: string;
+      identifier: string;
+      path: string[];
+      spath: string;
       fields: FieldInstance[];
+      pathLabel: string;
       tail: FieldInstance;
 
       parsePath(path: string): NamePathInstance;
-      set<D extends Isomorphic.Document<any>>(
+      pathName(idx: number): string;
+      uniq(obj: any): any[];
+      get(obj: any): any;
+      set<D extends Document<AnyIdType>>(
         obj: D,
         value: any,
         opts?: { create?: boolean; ignore?: boolean }
@@ -150,45 +201,128 @@ declare module 'tyranid/client' {
     }
 
     export interface FieldDefinition<
-      D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-    > extends Isomorphic.FieldDefinition<D> {}
+      D extends Document<AnyIdType> = Document<AnyIdType>
+    > {
+      [key: string]: any;
+      is?: string;
+      client?: boolean | (() => boolean);
+      custom?: boolean;
+      db?: boolean;
+      aux?: boolean;
+      historical?: boolean;
+      defaultValue?: any;
 
-    export interface FieldStatic extends Isomorphic.FieldStatic {
+      //inverse?: boolean;
+
+      label?: string | (() => string);
+      help?: string;
+      placeholder?: string;
+
+      deprecated?: string | boolean;
+      note?: string;
+
+      required?: boolean;
+      // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
+      validate?(
+        this: D,
+        field: FieldInstance<D>
+      ): Promise<string | false | undefined> | string | false | undefined;
+
+      of?: string | FieldDefinition<D>;
+      cardinality?: string;
+
+      fields?: { [key: string]: FieldDefinition<D> };
+      keys?: string | FieldDefinition<D>;
+
+      denormal?: MongoDocument;
+      link?: string;
+      relate?: 'owns' | 'ownedBy' | 'associate';
+      where?: any;
+
+      pathLabel?: string;
+
+      in?: string;
+      min?: number;
+      max?: number;
+      step?: number;
+
+      labelField?: boolean | { uses: string[] };
+      pattern?: RegExp;
+      minlength?: number;
+      maxlength?: number;
+
+      granularity?: string;
+
+      computed?: boolean;
+      get?: Function;
+      getClient?: Function;
+      getServer?: Function;
+      set?: Function;
+      setClient?: Function;
+      setServer?: Function;
+    }
+
+    export interface FieldStatic {
       new (...args: any[]): FieldInstance;
     }
 
     export interface FieldInstance<
-      D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
-    > extends Isomorphic.FieldInstance<D> {
+      D extends Document<AnyIdType> = Document<AnyIdType>
+    > {
+      $metaType: 'field';
+
       collection: CollectionInstance<D>;
+      computed: boolean;
+      db: boolean;
       def: FieldDefinition<D>;
-      fields?: { [key: string]: FieldInstance<D> };
-      keys?: FieldInstance<D>;
-      label: string | (() => string);
-      link?: CollectionInstance;
+      dynamicSchema?: any;
       name: string;
       namePath: NamePathInstance;
       of?: FieldInstance<D>;
       parent?: FieldInstance<D>;
-      path: string;
       pathLabel: string;
       readonly: boolean;
+      path: string;
+      spath: string;
+      in: any;
+      label: string | (() => string);
+      link?: CollectionInstance;
+      relate?: 'owns' | 'ownedBy' | 'associate';
       type: TypeInstance;
+      keys?: FieldInstance<D>;
+      fields?: { [key: string]: FieldInstance<D> };
+      method: string;
 
+      format(value: any): string;
+      labelify(value: any): Promise<any>;
       labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
+      isAux(): boolean;
+      isDb(): boolean;
+      validate(obj: {}):
+        | Promise<string | false | undefined>
+        | string
+        | false
+        | undefined;
     }
-
-    export interface CollectionStatic extends Isomorphic.CollectionStatic {}
 
     export type IdType<D extends Document> = D extends Document<infer ID>
       ? ID
       : never;
 
+    export interface CollectionStatic extends Isomorphic.CollectionStatic {
+      // Collection instance constructor
+      new <D extends Document<AnyIdType> = Document<AnyIdType>>(
+        def: any /* CollectionDefinition<D> */
+      ): CollectionInstance<D>;
+    }
+
     export interface CollectionInstance<
       D extends Document<AnyIdType> = Document<AnyIdType>
     > extends Class<D> {
+      new (doc?: RawMongoDocument): D;
+
       $metaType: 'collection';
-      aux(fields: { [key: string]: FieldDefinition });
+      aux(fields: { [key: string]: FieldDefinition<D> }): void;
       byId(id: IdType<D>, opts?: any): Promise<D | null>;
       byIds(ids: IdType<D>[], opts?: any): Promise<D[]>;
       byIdIndex: { [id: string]: D };
@@ -199,7 +333,7 @@ declare module 'tyranid/client' {
       exists(opts: any): Promise<boolean>;
       fields: { [fieldName: string]: FieldInstance<D> };
       fieldsFor(opts: {
-        match?: MongoObject;
+        match?: MongoDocument;
         query?: MongoQuery;
         custom?: boolean;
         static?: boolean;
@@ -241,14 +375,15 @@ declare module 'tyranid/client' {
       values: D[];
     }
 
-    export interface Document<ID extends AnyIdType = AnyIdType>
-      extends Isomorphic.Document<ID> {
+    export interface Document<ID extends AnyIdType = AnyIdType> {
       $access?: AccessResult;
       $cache(): this;
       $clone(): this;
       $cloneDeep(): this;
-      $id: IdType<this>; // using "ID" wasn't working as well for some weird reason
+      $id: IdType<this>; //ID; // using "ID" wasn't working as well for some weird reason
+      $isNew: boolean;
       $label: string;
+      $metaType: 'document';
       $model: CollectionInstance<this>;
       $orig?: this;
       $remove(opts?: any): Promise<void>;
