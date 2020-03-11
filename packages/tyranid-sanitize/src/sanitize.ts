@@ -163,7 +163,7 @@ function createDocumentSanitizer(
 
         const out: Tyr.RawMongoDocument = {};
         for (const field in fields) {
-          const innerFieldDef = fields[field].def;
+          const innerFieldDef = (fields[field] as any).def;
           if (!innerFieldDef) {
             out[field] = value[field];
           } else {

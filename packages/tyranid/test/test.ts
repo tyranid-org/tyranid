@@ -1042,10 +1042,16 @@ describe('tyranid', () => {
 
       it('model fields should have name and path fields', () => {
         expect(Job.def.fields.manager.name).to.be.eql('manager');
-        expect(User.def.fields!.name.def.fields!.first.name).to.be.eql('first');
-        expect(User.def.fields!.name.def.fields!.first.path).to.be.eql(
-          'name.first'
-        );
+        expect(
+          (User.def.fields!.name.def.fields!.first as Tyr.FieldDefinition<
+            Tyr.User
+          >).name
+        ).to.be.eql('first');
+        expect(
+          (User.def.fields!.name.def.fields!.first as Tyr.FieldDefinition<
+            Tyr.User
+          >).path
+        ).to.be.eql('name.first');
       });
     });
 
