@@ -114,11 +114,42 @@ export class TyrComponent<
         this.resolveFieldLaxProps(laxFieldProps)
       );
     else if (collection) this.paths = defaultPathsProp(collection);
+
+    if (parent) {
+      this.parent = parent;
+      parent.children.push(this as any);
+
+      const parentCollection = parent.collection;
+
+      let paths: TyrPathLaxProps[] | undefined = this.paths;
+      if (!paths && collection) {
+        paths = this.props.paths;
+        if (!paths && collection === parentCollection)
+          paths = parent.props.paths;
+
+        if (paths)
+          this.paths = paths.map(laxPathProps =>
+            this.resolveFieldLaxProps(laxPathProps)
+          );
+      }
+
+      if (parentCollection !== collection && collection) {
+        // find connecting link
+
+        const { paths } = collection;
+        for (const pathName in paths) {
+          const field = paths[pathName];
+
+          if (field.link === parentCollection) {
+            this._linkToParent = field;
+            break;
+          }
+        }
+      }
+    }
   }
 
   componentDidMount() {
-    this.connect(this.props.parent);
-
     this.mounted = true;
 
     this.setState({ visible: true });
@@ -283,55 +314,6 @@ export class TyrComponent<
       pathProps.searchPath = this.collection.parsePath(p);
 
     return pathProps as TyrPathProps;
-  }
-
-  // TODO:  if we switch to creating a HOC for class TyrComponents in order to pick up TyrThemes, also
-  //        pick up the parent component and then move this connect() functionality to ComponentDidMount
-  //        (or the constructor?) and get rid of the connect concept (and the wrap() as well?)
-  //        though also need to account for connecting to the Decorator
-  connect(parent?: TyrComponent): boolean | undefined | void {
-    let collection: Tyr.CollectionInstance | undefined = this.props.collection;
-    let result: boolean | undefined;
-
-    if (parent && !this.parent) {
-      this.parent = parent;
-      parent.children.push(this as any);
-
-      const parentCollection = parent.collection;
-      if (!collection)
-        collection = this.collection = parentCollection as Tyr.CollectionInstance<
-          D
-        >;
-
-      let paths: TyrPathLaxProps[] | undefined = this.paths;
-      if (!paths && collection) {
-        paths = this.props.paths;
-        if (!paths && collection === parentCollection)
-          paths = parent.props.paths;
-
-        if (paths)
-          this.paths = paths.map(laxPathProps =>
-            this.resolveFieldLaxProps(laxPathProps)
-          );
-      }
-
-      if (parentCollection !== collection && collection) {
-        // find connecting link
-
-        const { paths } = collection;
-        for (const pathName in paths) {
-          const field = paths[pathName];
-
-          if (field.link === parentCollection) {
-            this._linkToParent = field;
-          }
-        }
-      }
-
-      result = true;
-    }
-
-    return result;
   }
 
   /**
