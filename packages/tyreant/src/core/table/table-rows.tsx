@@ -2,7 +2,9 @@ import * as React from 'react';
 
 import { DragSource, DropTarget, DropTargetMonitor } from 'react-dnd';
 
-import Form, { WrappedFormUtils } from 'antd/lib/form/Form';
+import { WrappedFormUtils } from '@ant-design/compatible/lib/form/Form';
+
+import Form from 'antd/lib/form/Form';
 
 // EditableRow, DraggableRow, EditableDraggableRow
 

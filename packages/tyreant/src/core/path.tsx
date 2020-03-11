@@ -2,7 +2,9 @@ import * as React from 'react';
 
 import { Moment } from 'moment';
 
-import { Tooltip, Icon } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+
+import { Tooltip } from 'antd';
 import { SelectValue } from 'antd/lib/select';
 import FormItem from 'antd/lib/form/FormItem';
 
@@ -195,7 +197,7 @@ export const decorateField = (
         {help && (
           <Tooltip title={help}>
             &nbsp;
-            <Icon type="exclamation-circle" />
+            <ExclamationCircleOutlined />
           </Tooltip>
         )}
       </>

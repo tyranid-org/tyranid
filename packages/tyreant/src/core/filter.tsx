@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { useState } from 'react';
 
-import { Button, Icon, Popover } from 'antd';
+import { FilterTwoTone, SearchOutlined } from '@ant-design/icons';
+
+import { Button, Popover } from 'antd';
 import { ColumnFilterItem, FilterDropdownProps } from 'antd/lib/table';
 
 import { Tyr } from '../tyreant';
@@ -93,7 +95,7 @@ export function TyrFilter<SearchValueType>({
             <Button
               type="primary"
               onClick={() => search()}
-              icon="search"
+              icon={<SearchOutlined />}
               size="small"
               style={{ width: 90 }}
             >
@@ -200,7 +202,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
                   for (const name in connections) connections[name]?.search();
                   setVisible(false);
                 }}
-                icon="search"
+                icon={<SearchOutlined />}
                 size="small"
                 style={{ width: 90 }}
               >
@@ -212,7 +214,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
       }
     >
       <Button>
-        <Icon type="filter" theme="twoTone" twoToneColor="#386695" />
+        <FilterTwoTone twoToneColor="#386695" />
       </Button>
     </Popover>
   );

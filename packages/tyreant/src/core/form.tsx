@@ -4,8 +4,11 @@ import { observer } from 'mobx-react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Row, Col, Form, message } from 'antd';
-import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
+import { Form } from '@ant-design/compatible';
+import '@ant-design/compatible/assets/index.css';
+
+import { Row, Col, message } from 'antd';
+import { FormComponentProps, WrappedFormUtils } from '@ant-design/compatible/lib/form/Form';
 
 import { TyrTypeProps } from '../type/type';
 import { TypeContext, useThemeProps } from '../core/theme';
