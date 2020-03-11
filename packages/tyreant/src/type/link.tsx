@@ -10,14 +10,8 @@ import Checkbox from 'antd/es/checkbox';
 
 import { Tyr } from 'tyranid/client';
 
-import {
-  mapPropsToForm,
-  onTypeChange,
-  byName,
-  TyrTypeProps,
-  withTypeContext
-} from './type';
-
+import { mapPropsToForm, onTypeChange, byName, TyrTypeProps } from './type';
+import { withThemedTypeContext } from '../core/theme';
 import { TyrPathProps, decorateField } from '../core';
 import { TyrFilter, FilterDdProps, Filterable } from '../core/filter';
 import { registerComponent } from '../common';
@@ -359,7 +353,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }
 }
 
-export const TyrLink = withTypeContext<{}>('link', TyrLinkBase);
+export const TyrLink = withThemedTypeContext<{}>('link', TyrLinkBase);
 
 byName.link = {
   component: TyrLinkBase,

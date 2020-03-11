@@ -8,9 +8,10 @@ import { Tyr } from 'tyranid/client';
 
 import { mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
-import { byName, TyrTypeProps, withTypeContext } from './type';
+import { byName, TyrTypeProps } from './type';
 import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 export const TyrDoubleBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -38,7 +39,7 @@ export const TyrDoubleBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrDouble = withTypeContext('double', TyrDoubleBase);
+export const TyrDouble = withThemedTypeContext('double', TyrDoubleBase);
 
 export const doubleFilter: Filter = (
   filterable: Filterable,

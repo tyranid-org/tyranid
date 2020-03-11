@@ -1,7 +1,8 @@
 import * as React from 'react';
 
-import { TyrTypeProps, getTypeValue, TypeContext } from './type';
-import { TyrFieldBase } from '../core';
+import { TyrTypeProps, getTypeValue } from './type';
+import { TyrThemedFieldBase } from '../core';
+import { TypeContext } from '../core/theme';
 
 /**
  * This control renders an array as a fixed list indexed by a predefined list.
@@ -52,7 +53,7 @@ export const TyrArrayFixed = (props: TyrTypeProps) => {
             {children}
           </TypeContext.Provider>
         ) : (
-          <TyrFieldBase key={idx} {...props} path={childPath} />
+          <TyrThemedFieldBase key={idx} {...props} path={childPath} />
         );
       })}
     </>

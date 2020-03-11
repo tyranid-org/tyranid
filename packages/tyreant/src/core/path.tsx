@@ -11,11 +11,11 @@ import { Tyr } from 'tyranid/client';
 import {
   assertTypeUi,
   TyrTypeProps,
-  withTypeContext,
   FieldState,
   generateRules,
   className
 } from '../type/type';
+import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
 
 /**
@@ -228,6 +228,17 @@ export const TyrFieldBase = (props: TyrTypeProps) => {
   return React.createElement(typeUi.component, props);
 };
 
-export const TyrField = withTypeContext(undefined, TyrFieldBase);
+export const TyrThemedFieldBase = (props: TyrTypeProps) => {
+  const { path } = props;
+  const { tail: field } = path!;
+  const { type } = field;
+  const typeUi = assertTypeUi(props.typeUi || type.name);
+  return React.createElement(
+    typeUi.component,
+    useThemeProps(type.name as keyof TyrThemeProps, props)
+  );
+};
+
+export const TyrField = withThemedTypeContext(undefined, TyrFieldBase);
 
 registerComponent('TyrField', TyrField);

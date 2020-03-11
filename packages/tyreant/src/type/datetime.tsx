@@ -9,9 +9,9 @@ import { RangePickerValue } from 'antd/lib/date-picker/interface';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
-import { withTypeContext } from './type';
 import { decorateField, TyrPathProps } from '../core';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 const { RangePicker } = DatePicker;
 
@@ -38,7 +38,7 @@ export const TyrDateTimeBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrDateTime = withTypeContext('datetime', TyrDateTimeBase);
+export const TyrDateTime = withThemedTypeContext('datetime', TyrDateTimeBase);
 
 function parseSearchValue(value: any) {
   if (typeof value === 'string') value = value.split(',');

@@ -9,6 +9,7 @@ import { Filter } from './filter';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
+import { TyrThemeProps, useThemeProps } from './theme';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -23,6 +24,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   decorator?: React.ReactElement;
   actions?: (TyrAction<D> | TyrActionOpts<D>)[];
   aux?: { [key: string]: Tyr.FieldDefinition<D> };
+  parent?: TyrComponent;
 }
 
 export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {
@@ -99,9 +101,14 @@ export class TyrComponent<
   constructor(props: Props, state: State) {
     super(props, state);
 
-    const collection = (this.collection = this.props.collection!);
+    const { parent, paths } = props;
+    let { collection } = props;
 
-    const paths = this.props.paths;
+    if (parent && !collection)
+      collection = parent.collection as Tyr.CollectionInstance<D>;
+
+    this.collection = collection!;
+
     if (paths && collection)
       this.paths = paths.map(laxFieldProps =>
         this.resolveFieldLaxProps(laxFieldProps)
@@ -110,6 +117,8 @@ export class TyrComponent<
   }
 
   componentDidMount() {
+    this.connect(this.props.parent);
+
     this.mounted = true;
 
     this.setState({ visible: true });
@@ -409,11 +418,8 @@ export class TyrComponent<
     //return undefined;
   }
 
-  getDecoratorRef = (decorator: TyrDecorator<D> | null) => {
-    if (decorator) {
-      this.decorator = decorator;
-      decorator.connect(this);
-    }
+  setDecoratorRef = (decorator: TyrDecorator<D>) => {
+    this.decorator = decorator;
   };
 
   getFilter(props: TyrPathProps): ReturnType<Filter> {
@@ -424,22 +430,11 @@ export class TyrComponent<
     const { decorator } = this.props;
 
     return (
-      <ComponentContext.Consumer>
-        {parent => {
-          this.connect(parent);
-          return (
-            <ComponentContext.Provider value={this as any}>
-              {decorator
-                ? React.cloneElement(
-                    decorator!,
-                    { ref: this.getDecoratorRef },
-                    children()
-                  )
-                : children()}
-            </ComponentContext.Provider>
-          );
-        }}
-      </ComponentContext.Consumer>
+      <ComponentContext.Provider value={this as any}>
+        {decorator
+          ? React.cloneElement(decorator!, { parent: this }, children())
+          : children()}
+      </ComponentContext.Provider>
     );
   }
 }

@@ -2,8 +2,9 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 
 import { TyrLink } from './link';
-import { TyrTypeProps, getTypeValue, TypeContext } from './type';
+import { TyrTypeProps, getTypeValue } from './type';
 import { SelectValue, LabeledValue } from 'antd/lib/select';
+import { TypeContext } from '../core/theme';
 
 /**
  * This control renders an array as a key - value editor

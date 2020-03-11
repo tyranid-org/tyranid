@@ -6,16 +6,11 @@ import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 import { Tyr } from 'tyranid/client';
 
-import {
-  byName,
-  mapPropsToForm,
-  TyrTypeProps,
-  withTypeContext,
-  onTypeChange
-} from './type';
+import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
 import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
 import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 export const TyrBooleanBase: React.FunctionComponent<TyrTypeProps> = props => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -37,7 +32,7 @@ export const TyrBooleanBase: React.FunctionComponent<TyrTypeProps> = props => {
   });
 };
 
-export const TyrBoolean = withTypeContext('boolean', TyrBooleanBase);
+export const TyrBoolean = withThemedTypeContext('boolean', TyrBooleanBase);
 
 export const booleanFilter: Filter = (
   filterable: Filterable,

@@ -2,15 +2,19 @@ import * as React from 'react';
 
 import { Drawer, Button, Spin, Icon } from 'antd';
 
+import { Tyr } from 'tyranid/client';
+
 import { TyrAction } from './action';
 import {
   TyrDecorator,
   TyrDecoratorProps,
   TyrDecoratorState
 } from './decorator';
-import { Tyr } from 'tyranid/client';
+import { withTheme } from './theme';
+import { Tyreant } from '../tyreant';
 
-export interface TyrDrawerProps extends TyrDecoratorProps {
+export interface TyrDrawerProps<D extends Tyr.Document>
+  extends TyrDecoratorProps<D> {
   placement?: 'top' | 'right' | 'bottom' | 'left';
 }
 
@@ -18,9 +22,9 @@ export interface TyrDrawerState extends TyrDecoratorState {
   loading: boolean;
 }
 
-export class TyrDrawer<D extends Tyr.Document> extends TyrDecorator<
+class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
   D,
-  TyrDrawerProps,
+  TyrDrawerProps<D>,
   TyrDrawerState
 > {
   state: TyrDrawerState = {
@@ -150,3 +154,5 @@ export class TyrDrawer<D extends Tyr.Document> extends TyrDecorator<
     );
   }
 }
+
+export const TyrDrawer = withTheme('drawer', TyrDrawerBase);

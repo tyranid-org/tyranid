@@ -5,13 +5,8 @@ import { Tyr } from 'tyranid/client';
 
 import { Input } from 'antd';
 
-import {
-  byName,
-  mapPropsToForm,
-  TyrTypeProps,
-  withTypeContext,
-  onTypeChange
-} from './type';
+import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
+import { withThemedTypeContext } from '../core/theme';
 import {
   TyrFilter,
   Filter,
@@ -38,14 +33,14 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
   ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrString = withTypeContext('string', TyrStringBase);
+export const TyrString = withThemedTypeContext('string', TyrStringBase);
 
 export const stringFilter: Filter = (
   filterable: Filterable,
   props: TyrPathProps
 ) => {
   const { path } = props;
-  let searchInputRef: Input | null = null;
+  //let searchInputRef: Input | null = null;
 
   return {
     filterDropdown: (filterDdProps: FilterDdProps) => (
@@ -57,9 +52,9 @@ export const stringFilter: Filter = (
       >
         {(searchValue, setSearchValue, search) => (
           <Input
-            ref={node => {
-              searchInputRef = node;
-            }}
+            //ref={node => {
+            //searchInputRef = node;
+            //}}
             placeholder={`Search ${props.label || path!.pathLabel}`}
             value={searchValue}
             onChange={e => {
@@ -83,7 +78,7 @@ export const stringFilter: Filter = (
         : true;
     },
     onFilterDropdownVisibleChange: (visible: boolean) => {
-      if (visible) setTimeout(() => searchInputRef!.focus());
+      //if (visible) setTimeout(() => searchInputRef!.focus());
     }
   };
 };

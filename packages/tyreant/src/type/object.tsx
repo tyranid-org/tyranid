@@ -5,15 +5,10 @@ import { Row, Col, Checkbox } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
-import {
-  byName,
-  TyrTypeProps,
-  withTypeContext,
-  TypeContext,
-  mapFormValueToDocument
-} from './type';
+import { byName, TyrTypeProps, mapFormValueToDocument } from './type';
+import { withThemedTypeContext, TypeContext } from '../core/theme';
 import { decorateField } from '../core/path';
-import { TyrFieldBase, TyrPathExistsProps } from '../core';
+import { TyrThemedFieldBase, TyrPathExistsProps } from '../core';
 import { registerComponent } from '../common';
 
 interface TyrObjectExtraProps {
@@ -27,7 +22,7 @@ const renderField = (props: TyrObjectProps, pathProps: TyrPathExistsProps) => {
   const { path: field } = pathProps;
 
   return (
-    <TyrFieldBase
+    <TyrThemedFieldBase
       {...pathProps}
       path={props.path!.walk(field.name)}
       form={form!}
@@ -110,7 +105,7 @@ export const TyrObjectBase = (props: TyrObjectProps) => {
                 return (
                   <Row key={cpath.name} gutter={10}>
                     <Col span={24}>
-                      <TyrFieldBase
+                      <TyrThemedFieldBase
                         label={value.$label}
                         path={cpath}
                         form={form}
@@ -152,7 +147,7 @@ export const TyrObjectBase = (props: TyrObjectProps) => {
   return className ? <div className={className}>{contents}</div> : contents;
 };
 
-export const TyrObject = withTypeContext<TyrObjectExtraProps>(
+export const TyrObject = withThemedTypeContext<TyrObjectExtraProps>(
   'object',
   TyrObjectBase
 );

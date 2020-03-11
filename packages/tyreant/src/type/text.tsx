@@ -5,7 +5,7 @@ import { Input } from 'antd';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
-import { withTypeContext } from './type';
+import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
@@ -25,7 +25,7 @@ export const TyrTextBase = ((props: TyrTypeProps) => {
   ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrText = withTypeContext('text', TyrTextBase);
+export const TyrText = withThemedTypeContext('text', TyrTextBase);
 
 byName.text = {
   component: TyrTextBase,

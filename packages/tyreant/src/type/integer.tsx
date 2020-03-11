@@ -8,9 +8,10 @@ import { Tyr } from 'tyranid/client';
 
 import { mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
-import { byName, TyrTypeProps, withTypeContext } from './type';
+import { byName, TyrTypeProps } from './type';
 import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 export const TyrIntegerBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -34,7 +35,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrInteger = withTypeContext('integer', TyrIntegerBase);
+export const TyrInteger = withThemedTypeContext('integer', TyrIntegerBase);
 
 export const integerFilter: Filter = (
   filterable: Filterable,

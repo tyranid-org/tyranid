@@ -5,9 +5,9 @@ import { Input } from 'antd';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
-import { withTypeContext } from './type';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 export const TyrEmailBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
@@ -31,7 +31,7 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrEmail = withTypeContext('email', TyrEmailBase);
+export const TyrEmail = withThemedTypeContext('email', TyrEmailBase);
 
 byName.email = {
   component: TyrEmailBase,

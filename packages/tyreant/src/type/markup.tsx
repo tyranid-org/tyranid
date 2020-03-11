@@ -5,13 +5,8 @@ import { Input } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
-import {
-  byName,
-  mapPropsToForm,
-  TyrTypeProps,
-  withTypeContext,
-  onTypeChange
-} from './type';
+import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
+import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
@@ -43,7 +38,7 @@ export const TyrMarkupBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrMarkup = withTypeContext('markup', TyrMarkupBase);
+export const TyrMarkup = withThemedTypeContext('markup', TyrMarkupBase);
 
 byName.markup = {
   component: TyrMarkupBase,

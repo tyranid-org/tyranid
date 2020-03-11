@@ -1,13 +1,10 @@
 import * as React from 'react';
 
-import { Tyr } from 'tyranid/client';
-
 import { TyrLink } from './link';
 import {
   byName,
   TyrTypeProps,
   mapDocumentValueToFormValue,
-  withTypeContext,
   mapFormValueToDocument,
   mapFormValueToDocumentValue,
   getCellValue,
@@ -17,6 +14,7 @@ import { TyrArrayKeyValue } from './array.key-value';
 import { TyrArrayList } from './array.list';
 import { TyrArrayFixed } from './array.fixed';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 export const TyrArrayBase = (props: TyrTypeProps) => {
   const path = props.path!;
@@ -41,7 +39,7 @@ export const TyrArrayBase = (props: TyrTypeProps) => {
   }
 };
 
-export const TyrArray = withTypeContext('array', TyrArrayBase);
+export const TyrArray = withThemedTypeContext('array', TyrArrayBase);
 
 byName.array = {
   component: TyrArray,

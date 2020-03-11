@@ -3,7 +3,8 @@ import { useCallback, useState } from 'react';
 
 import { useDropzone } from 'react-dropzone';
 
-import { byName, TyrTypeProps, withTypeContext, onTypeChange } from './type';
+import { byName, TyrTypeProps, onTypeChange } from './type';
+import { withThemedTypeContext } from '../core/theme';
 import { registerComponent } from '../common';
 import { decorateField } from '../core';
 import { Spin } from 'antd';
@@ -84,8 +85,8 @@ export const TyrS3Base = (props: TyrTypeProps) => {
           </div>
         )}
         <Spin spinning={uploading}>
-          <div {...getRootProps({ className: 'tyr-dropzone' })}>
-            <input {...getInputProps()} />
+          <div {...(getRootProps({ className: 'tyr-dropzone' }) as any)}>
+            <input {...(getInputProps() as any)} />
             {isDragActive ? (
               <p>Drop a file here...</p>
             ) : (
@@ -98,7 +99,7 @@ export const TyrS3Base = (props: TyrTypeProps) => {
   });
 };
 
-export const TyrS3 = withTypeContext('s3', TyrS3Base);
+export const TyrS3 = withThemedTypeContext('s3', TyrS3Base);
 
 byName.s3 = {
   component: TyrS3Base

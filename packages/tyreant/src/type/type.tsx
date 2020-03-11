@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useContext } from 'react';
 
 import { WrappedFormUtils, ValidationRule } from 'antd/lib/form/Form';
 
@@ -12,6 +13,7 @@ import {
   TyrPathProps,
   TyrComponent
 } from '../core';
+import { useThemeProps, TyrThemeProps } from '../core/theme';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
@@ -310,73 +312,3 @@ export const getCellValue = (
     ? cellValue(path, document, props)
     : field.type.format(field, field.namePath.get(document));
 };
-
-export const TypeContext = React.createContext<TyrTypeProps | undefined>(
-  undefined
-);
-
-export const withTypeContext = <T extends {} = {}>(
-  type: string | undefined,
-  TypeControl: React.ComponentType<T & TyrTypeProps>
-) => (props: T & TyrTypeLaxProps) => (
-  <TypeContext.Consumer>
-    {parentProps => {
-      const form = props.form || (parentProps && parentProps.form);
-      if (!form) return <div className="no-form" />;
-
-      const document = props.document || (parentProps && parentProps.document);
-      if (!document) return <div className="no-document" />;
-
-      const collection = document.$model;
-
-      const { aux } = props;
-      if (aux) {
-        if (props.path) return <div className="both-aux-and-path-specified" />;
-        if (!type) return <div className="aux-not-valid-on-TyrField" />;
-
-        document.$model.aux({
-          [aux]: { is: type }
-        });
-      }
-
-      let path = Tyr.NamePath.resolve(
-        collection,
-        parentProps?.path,
-        aux || props.path
-      );
-      if (!path) {
-        const p = props.path;
-        if (typeof p === 'string') path = document.$model.paths[p]?.namePath;
-        else if (p) path = p;
-        if (!path) {
-          return <div className="no-path" />;
-        }
-      }
-
-      let { searchPath } = props;
-      if (typeof searchPath === 'string')
-        searchPath = Tyr.NamePath.resolve(
-          collection,
-          parentProps?.searchPath,
-          searchPath
-        );
-
-      if (!path) {
-        const p = props.path;
-        if (typeof p === 'string') path = document.$model.paths[p]?.namePath;
-        else if (p) path = p;
-        if (!path) {
-          return <div className="no-path" />;
-        }
-      }
-      return React.createElement(TypeControl, {
-        ...props,
-        form,
-        document,
-        path,
-        searchPath,
-        component: parentProps && parentProps.component
-      });
-    }}
-  </TypeContext.Consumer>
-);

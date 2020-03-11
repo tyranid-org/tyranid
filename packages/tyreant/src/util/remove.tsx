@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { TyrForm, TyrModal } from '../core';
+import { TyrForm, TyrModal, createForm } from '../core';
 
-export const TyrRemove = TyrForm.create(
+export const TyrRemove = createForm(
   {
     decorator: <TyrModal />,
     actions: [

@@ -5,7 +5,8 @@ import { Tyr } from 'tyranid/client';
 import { TyrAction } from './action';
 import { TyrComponent } from './component';
 
-export interface TyrDecoratorProps {
+export interface TyrDecoratorProps<D extends Tyr.Document> {
+  parent?: TyrComponent<D>;
   className?: string;
 }
 export interface TyrDecoratorState {
@@ -24,10 +25,20 @@ export interface TyrDecorator<D extends Tyr.Document> {
  */
 export abstract class TyrDecorator<
   D extends Tyr.Document,
-  Props extends TyrDecoratorProps = TyrDecoratorProps,
+  Props extends TyrDecoratorProps<D> = TyrDecoratorProps<D>,
   State extends TyrDecoratorState = TyrDecoratorState
 > extends React.Component<Props, State> {
   decorating!: TyrComponent<D>;
+
+  constructor(props: Props, state: State) {
+    super(props, state);
+
+    const { parent } = props;
+    if (parent) {
+      this.decorating = parent;
+      parent.setDecoratorRef(this);
+    }
+  }
 
   get visible() {
     return this.state && this.state.visible;
@@ -38,12 +49,5 @@ export abstract class TyrDecorator<
     if (this.decorating) {
       this.decorating.setState({ visible });
     }
-  }
-
-  connect(component: TyrComponent<D>) {
-    if (this.decorating)
-      throw new Tyr.AppError('decorator was already connected');
-
-    this.decorating = component;
   }
 }

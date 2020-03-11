@@ -8,17 +8,19 @@ import {
   TyrDecoratorProps,
   TyrDecoratorState
 } from './decorator';
+import { withTheme } from './theme';
 import { Tyr } from 'tyranid/client';
 
-export interface TyrModalProps extends TyrDecoratorProps {}
+export interface TyrModalProps<D extends Tyr.Document>
+  extends TyrDecoratorProps<D> {}
 
 export interface TyrModalState extends TyrDecoratorState {
   loading: boolean;
 }
 
-export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
+class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
   D,
-  TyrModalProps,
+  TyrModalProps<D>,
   TyrModalState
 > {
   state: TyrModalState = {
@@ -148,3 +150,5 @@ export class TyrModal<D extends Tyr.Document> extends TyrDecorator<
     );
   }
 }
+
+export const TyrModal = withTheme('modal', TyrModalBase);

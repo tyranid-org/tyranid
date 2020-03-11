@@ -29,23 +29,24 @@ import {
   Table,
   Tooltip
 } from 'antd';
-
 import { PaginationProps } from 'antd/es/pagination';
 import { WrappedFormUtils } from 'antd/lib/form/Form';
 import { ColumnProps } from 'antd/es/table';
+
 import { Tyr } from 'tyranid/client';
 
 // TODO:  is it possible to import this via tsconfig ?
 import 'tyranid/builtin/isomorphic';
 import 'tyranid/builtin/client';
 
+import { useThemeProps } from '../theme';
 import { getCellValue, TyrTypeProps } from '../../type';
-import { TyrComponentState } from '../component';
+import { TyrComponentState, useComponent } from '../component';
 import {
   TyrSortDirection,
   TyrPathLaxProps,
   getPathName,
-  TyrFieldBase
+  TyrThemedFieldBase
 } from '../path';
 import { TyrFormFields } from '../form';
 import { TyrTableConfig } from './typedef';
@@ -57,7 +58,7 @@ import {
 } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
-import { TyrPathProps } from '../../core';
+import { TyrPathProps } from '../path';
 
 export interface OurColumnProps<T> extends ColumnProps<T> {
   path: Tyr.NamePathInstance;
@@ -97,7 +98,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   rowEdit?: boolean;
   emptyTablePlaceholder?:
     | React.ReactNode
-    | ((tableControl: TyrTable<Tyr.anny>) => React.ReactNode);
+    | ((tableControl: TyrTableBase<any>) => React.ReactNode);
   canEditDocument?: (document: D) => boolean;
   size?: 'default' | 'middle' | 'small';
   saveDocument?: (document: D) => Promise<D>;
@@ -118,7 +119,7 @@ export interface TyrTableProps<D extends Tyr.Document>
    * If true is specified, a key of 'default' will be used.
    */
   config?: TyrTableConfig | string | boolean;
-  onLoad?: (table: TyrTable<Tyr.anny>) => void;
+  onLoad?: (table: TyrTableBase<any>) => void;
   rowSelection?: boolean;
   loading?: boolean;
   setEditing?: (editing: boolean) => void;
@@ -126,12 +127,14 @@ export interface TyrTableProps<D extends Tyr.Document>
   orderable?: boolean;
   dndBackend?: __ReactDnd.Backend;
   moveRow?: (dragIndex: number, hoverIndex: number) => void;
+
+  children?: React.ReactNode;
 }
 
 // TODO:  if they specify a sort function for a column and we're not local report an error
 
 @observer
-export class TyrTable<
+export class TyrTableBase<
   D extends Tyr.Document = Tyr.Document
 > extends TyrManyComponent<D, TyrTableProps<D>> {
   // TODO:  is this redundant with super().fields ?
@@ -619,7 +622,7 @@ export class TyrTable<
                   if (!form || !pathName) return <span />;
 
                   return (
-                    <TyrFieldBase
+                    <TyrThemedFieldBase
                       path={path!}
                       searchPath={searchPath}
                       form={form}
@@ -1191,7 +1194,7 @@ export class TyrTable<
   }
 
   /*
-   * Currently in ant tables, if you have a fixed height (scroll: { y: something } }, it messes up the column headers, and you need to make sure
+   * Currently in ant tables, if you have a fixed height (scroll: { y: something } ), it messes up the column headers, and you need to make sure
    * that every column header/cell has a width and a min-width ... search for "width not working?" on ant table webpage for more information
    */
   applyFixedWidthHack(columns: ColumnProps<D>[]) {
@@ -1252,5 +1255,12 @@ export class TyrTable<
     }
   }
 }
+
+export const TyrTable = <D extends Tyr.Document>(props: TyrTableProps<D>) => (
+  <TyrTableBase
+    {...useThemeProps('table', props as TyrTableProps<D>)}
+    parent={useComponent()}
+  />
+);
 
 registerComponent('TyrTable', TyrTable);

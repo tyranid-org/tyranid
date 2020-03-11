@@ -7,19 +7,21 @@ import { Tyr } from 'tyranid/client';
 import { Row, Col, Form, message } from 'antd';
 import { FormComponentProps, WrappedFormUtils } from 'antd/lib/form/Form';
 
-import { TypeContext, TyrTypeProps } from '../type/type';
-import { TyrFieldBase, TyrPathProps, TyrPathExistsProps } from './path';
+import { TyrTypeProps } from '../type/type';
+import { TypeContext, useThemeProps } from '../core/theme';
+import { TyrThemedFieldBase, TyrPathProps, TyrPathExistsProps } from './path';
 import { registerComponent } from '../common';
 import { TyrOneComponent, TyrOneComponentProps } from './one-component';
+import { useComponent } from './component';
 
 type TyrFormBaseProps = {
   // form is the rc-form, component is the TyrForm
   className?: string;
-  component: TyrForm<Tyr.Document>;
+  component: TyrFormOuter<Tyr.Document>;
   document: Tyr.Document;
   paths: TyrPathProps[];
   render?: (props: {
-    form: TyrForm<Tyr.Document>;
+    form: TyrFormOuter<Tyr.Document>;
     document: Tyr.Document;
   }) => JSX.Element;
 } & FormComponentProps;
@@ -49,7 +51,9 @@ class TyrFormBase extends React.Component<TyrFormBaseProps> {
   private renderField(pathProps: TyrPathExistsProps) {
     const { form, document } = this.props;
 
-    return <TyrFieldBase {...pathProps} form={form!} document={document!} />;
+    return (
+      <TyrThemedFieldBase {...pathProps} form={form!} document={document!} />
+    );
   }
 
   render() {
@@ -88,7 +92,7 @@ const TyrWrappedForm = Form.create<TyrFormBaseProps>(/*{ name: 'todo' }*/)(
 );
 
 export interface FormRenderComponentProps<D extends Tyr.Document> {
-  form: TyrForm<D>;
+  form: TyrFormOuter<D>;
   document: D;
 }
 
@@ -111,14 +115,14 @@ export interface TyrFormProps<D extends Tyr.Document>
 }
 
 @observer
-export class TyrForm<
+export class TyrFormOuter<
   D extends Tyr.Document<Tyr.AnyIdType>
 > extends TyrOneComponent<D, TyrFormProps<D>> {
   canEdit = true;
 
   form?: WrappedFormUtils;
 
-  getFormRef = (ref: WrappedFormUtils | null) => {
+  setFormRef = (ref: WrappedFormUtils | null) => {
     if (ref) this.form = ref;
   };
 
@@ -129,7 +133,7 @@ export class TyrForm<
       return (
         <TyrWrappedForm
           className={className}
-          ref={this.getFormRef as any}
+          ref={this.setFormRef as any}
           paths={this.activePaths}
           document={this.document!}
           component={this as any}
@@ -145,17 +149,24 @@ export class TyrForm<
     await submitForm(this, this.document!);
     this.parent?.requery();
   }
+}
 
-  static create<D extends Tyr.Document>(
-    formProps: TyrFormProps<D>,
-    WrappedComponent: React.ComponentType<FormRenderComponentProps<D>>
-  ) {
-    return () => (
-      <TyrForm {...formProps}>
-        {props => <WrappedComponent {...props} />}
-      </TyrForm>
-    );
-  }
+export const TyrForm = <D extends Tyr.Document>(props: TyrFormProps<D>) => (
+  <TyrFormOuter
+    {...useThemeProps('form', props as TyrFormProps<D>)}
+    parent={useComponent()}
+  />
+);
+
+export function createForm<D extends Tyr.Document>(
+  formProps: TyrFormProps<D>,
+  WrappedComponent: React.ComponentType<FormRenderComponentProps<D>>
+) {
+  return () => (
+    <TyrForm {...(formProps as any)}>
+      {props => <WrappedComponent {...(props as any)} />}
+    </TyrForm>
+  );
 }
 
 registerComponent('TyrForm', TyrForm);
@@ -164,7 +175,7 @@ registerComponent('TyrForm', TyrForm);
  * returns Promise<true> if the save was successful, Promise<false> if there were validation errors.
  */
 export function submitForm<D extends Tyr.Document>(
-  tyrForm: TyrForm<D>,
+  tyrForm: TyrFormOuter<D>,
   document: D
 ): Promise<boolean> {
   const { form } = tyrForm;

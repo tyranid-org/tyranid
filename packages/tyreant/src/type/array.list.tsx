@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Tyr } from 'tyranid/client';
 
 import { TyrTypeProps, getTypeValue, className, onTypeChange } from './type';
-import { TyrFieldBase, decorateField } from '../core';
+import { TyrThemedFieldBase, decorateField } from '../core';
 import { Button } from 'antd';
 
 /**
@@ -50,7 +50,7 @@ export const TyrArrayList = (props: TyrTypeProps) => {
               size="small"
               onClick={ev => removeElement(idx)}
             />
-            <TyrFieldBase noLabel {...props} path={childPath} />
+            <TyrThemedFieldBase noLabel {...props} path={childPath} />
           </div>
         );
       })}

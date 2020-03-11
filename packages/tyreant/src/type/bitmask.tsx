@@ -4,9 +4,9 @@ import { useEffect } from 'react';
 import Checkbox from 'antd/es/checkbox';
 
 import { byName, TyrTypeProps, onTypeChange, mapPropsToForm } from './type';
-import { withTypeContext } from './type';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 export const TyrBitmaskBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
@@ -22,7 +22,7 @@ export const TyrBitmaskBase = ((props: TyrTypeProps) => {
   ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrBitmask = withTypeContext('bitmask', TyrBitmaskBase);
+export const TyrBitmask = withThemedTypeContext('bitmask', TyrBitmaskBase);
 
 const invert = (v: number) => ~v >>> 0;
 

@@ -11,9 +11,9 @@ const { RangePicker } = DatePicker;
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
-import { withTypeContext } from './type';
 import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
+import { withThemedTypeContext } from '../core/theme';
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -39,7 +39,7 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrDate = withTypeContext('date', TyrDateBase);
+export const TyrDate = withThemedTypeContext('date', TyrDateBase);
 
 function parseSearchValue(value: any) {
   if (typeof value === 'string') value = value.split(',');

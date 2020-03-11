@@ -24,10 +24,10 @@ import {
 } from 'react-beautiful-dnd';
 
 import TyrTableColumnConfigItem from './table-config-item';
-import { TyrTable, TyrTableColumnPathProps } from './table';
+import { TyrTableBase, TyrTableColumnPathProps } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
-  table: TyrTable<D>;
+  table: TyrTableBase<D>;
   config:
     | TyrTableConfig
     | string /* the key */
@@ -319,7 +319,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 };
 
 export const ensureTableConfig = async <D extends Tyr.Document>(
-  table: TyrTable<D>,
+  table: TyrTableBase<D>,
   columns: TyrTableColumnPathProps[],
   config: TyrTableConfig | string | boolean,
   existingTableConfig?: any

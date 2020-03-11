@@ -5,13 +5,8 @@ import * as moment from 'moment-timezone';
 
 import { Select } from 'antd';
 
-import {
-  byName,
-  mapPropsToForm,
-  TyrTypeProps,
-  withTypeContext,
-  onTypeChange
-} from './type';
+import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
+import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
@@ -57,7 +52,7 @@ export const TyrTimeZoneBase = ((props: TyrTypeProps) => {
   ));
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrTimeZone = withTypeContext('timezone', TyrTimeZoneBase);
+export const TyrTimeZone = withThemedTypeContext('timezone', TyrTimeZoneBase);
 
 byName.timezone = {
   component: TyrTimeZoneBase

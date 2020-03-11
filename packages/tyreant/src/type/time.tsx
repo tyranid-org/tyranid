@@ -7,7 +7,7 @@ import { Tyr } from 'tyranid/client';
 import { TimePicker } from 'antd';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
-import { withTypeContext } from './type';
+import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
@@ -30,7 +30,7 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
   });
 }) as React.ComponentType<TyrTypeProps>;
 
-export const TyrTime = withTypeContext('time', TyrTimeBase);
+export const TyrTime = withThemedTypeContext('time', TyrTimeBase);
 
 byName.time = {
   component: TyrTimeBase,

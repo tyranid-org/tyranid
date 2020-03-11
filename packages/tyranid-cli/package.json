@@ -27,7 +27,7 @@
     "tyranid": "^0.6.0"
   },
   "devDependencies": {
-    "typescript": "3.7.2"
+    "typescript": "3.8.3"
   },
   "repository": {
     "type": "git",

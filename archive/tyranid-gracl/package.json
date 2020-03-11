@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "ava": "0.16.0",
-    "typescript": "3.7.2"
+    "typescript": "3.8.3"
   },
   "ava": {
     "files": [

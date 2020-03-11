@@ -14,8 +14,9 @@ import {
 import { Tyr } from '../tyreant';
 
 import { TyrFilters } from './filter';
-import { TyrComponentState } from './component';
+import { useComponent, TyrComponentState } from './component';
 import { TyrManyComponentProps, TyrManyComponent } from './many-component';
+import { useThemeProps } from './theme';
 
 interface ColumnData<D extends Tyr.Document> {
   id: string;
@@ -42,13 +43,13 @@ export interface TyrKanbanProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
   //across?: string;
   collection: Tyr.CollectionInstance<D>;
-  columns: TyrKanbanColumnDef[];
+  columns: Tyr.CollectionInstance | TyrKanbanColumnDef[];
   ordering: string;
   cardRenderer?: (document: D) => JSX.Element;
 }
 
 @observer
-export class TyrKanban<
+export class TyrKanbanBase<
   D extends Tyr.Document = Tyr.Document
 > extends TyrManyComponent<D, TyrKanbanProps<D>> {
   hasPaging = false;
@@ -71,7 +72,36 @@ export class TyrKanban<
 
   async postFind() {
     let { documents } = this;
-    const { ordering, columns } = this.props;
+    const { ordering } = this.props;
+    let { columns } = this.props;
+
+    if (columns instanceof Tyr.Collection) {
+      const { fields } = this.collection;
+      let path: Tyr.NamePathInstance | undefined;
+
+      for (const fieldName in fields) {
+        const field = fields[fieldName];
+
+        if (field.link === columns) {
+          path = field.namePath;
+          break;
+        }
+      }
+
+      if (!path)
+        throw new Tyr.AppError(
+          `Could not find path from ${this.collection.label} to ${columns.label}`
+        );
+
+      const { name } = path;
+      columns = columns.values.map((v, idx) => ({
+        label: v.$label,
+        match: {
+          [name]: v.$id
+        },
+        default: idx === 0
+      }));
+    }
 
     if (ordering) {
       const orderingPath = this.collection.parsePath(ordering);
@@ -199,6 +229,13 @@ export class TyrKanban<
     ));
   }
 }
+
+export const TyrKanban = <D extends Tyr.Document>(props: TyrKanbanProps<D>) => (
+  <TyrKanbanBase
+    {...useThemeProps('kanban', props as TyrKanbanProps<D>)}
+    parent={useComponent()}
+  />
+);
 
 export interface TyrKanbanColumnProps<D extends Tyr.Document> {
   column: ColumnData<D>;
