@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Drawer, Button, Spin, Icon } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+
+import { Drawer, Button, Spin } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -75,11 +77,9 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
     return (
       <div className="tyr-header">
         {!loading && cancel && (
-          <Icon
-            type="close"
+          <CloseOutlined
             className="tyr-drawer-close-icon"
-            onClick={() => cancel.act({ caller: this.decorating })}
-          />
+            onClick={() => cancel.act({ caller: this.decorating })} />
         )}
         <h4>{create ? create.label : edit ? edit!.label : 'unknown'}</h4>
       </div>

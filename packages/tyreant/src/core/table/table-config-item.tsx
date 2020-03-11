@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Icon, Switch } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
+import { Switch } from 'antd';
 
 import { DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd';
 
@@ -59,7 +60,7 @@ const TyrTableColumnConfigItem = ({
         }`}
         {...(provided ? provided.dragHandleProps : {})}
       >
-        {!locked && <Icon type="menu" />}
+        {!locked && <MenuOutlined />}
       </div>
       <div className="tyr-column-config-item-inner" style={fieldStyle}>
         <span>

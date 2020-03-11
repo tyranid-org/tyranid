@@ -5,6 +5,7 @@ import { Tyr } from 'tyranid/client';
 
 import { TyrTypeProps, getTypeValue, className, onTypeChange } from './type';
 import { TyrThemedFieldBase, decorateField } from '../core';
+import { CloseOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 
 /**
@@ -46,7 +47,7 @@ export const TyrArrayList = (props: TyrTypeProps) => {
         return (
           <div className="tyr-array-list-element" key={idx}>
             <Button
-              icon="close"
+              icon={<CloseOutlined />}
               size="small"
               onClick={ev => removeElement(idx)}
             />

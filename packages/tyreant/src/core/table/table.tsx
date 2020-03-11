@@ -17,20 +17,12 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
-import {
-  message,
-  Button,
-  Col,
-  Dropdown,
-  Icon,
-  Menu,
-  Row,
-  Spin,
-  Table,
-  Tooltip
-} from 'antd';
+import { MenuOutlined, UploadOutlined } from '@ant-design/icons';
+import { Icon as LegacyIcon } from '@ant-design/compatible';
+
+import { message, Button, Col, Dropdown, Menu, Row, Spin, Table, Tooltip } from 'antd';
 import { PaginationProps } from 'antd/es/pagination';
-import { WrappedFormUtils } from 'antd/lib/form/Form';
+import { WrappedFormUtils } from '@ant-design/compatible/lib/form/Form';
 import { ColumnProps } from 'antd/es/table';
 
 import { Tyr } from 'tyranid/client';
@@ -709,7 +701,7 @@ export class TyrTableBase<
         title: !newDocumentTable
           ? actionHeaderLabel || (
               <Tooltip title="Edit Columns">
-                <Icon type="menu" />
+                <MenuOutlined />
               </Tooltip>
             )
           : '',
@@ -823,7 +815,7 @@ export class TyrTableBase<
           return (
             <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
               <span className="tyr-menu-link">
-                <Icon type={actionIconType || 'ellipsis'} />
+                <LegacyIcon type={actionIconType || 'ellipsis'} />
               </span>
             </Dropdown>
           );
@@ -998,7 +990,7 @@ export class TyrTableBase<
         netFooter = (docs: D[]) => (
           <>
             <Button onClick={() => (this.showExport = true)}>
-              <Icon type="upload" /> Export
+              <UploadOutlined /> Export
             </Button>
             {footer?.(docs)}
           </>

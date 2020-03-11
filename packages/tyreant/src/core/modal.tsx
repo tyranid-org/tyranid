@@ -1,6 +1,8 @@
 import * as React from 'react';
 
-import { Modal, Button, Spin, Icon } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
+
+import { Modal, Button, Spin } from 'antd';
 
 import { TyrAction, TyrActionFnOpts } from './action';
 import {
@@ -83,11 +85,9 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
       <div className="tyr-modal-header">
         <h4>{title}</h4>
         {!loading && cancel && (
-          <Icon
-            type="close"
+          <CloseOutlined
             className="tyr-modal-close-icon"
-            onClick={() => cancel.act({ caller: this.decorating })}
-          />
+            onClick={() => cancel.act({ caller: this.decorating })} />
         )}
       </div>
     );

@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { useContext } from 'react';
 
-import { WrappedFormUtils, ValidationRule } from 'antd/lib/form/Form';
+import { WrappedFormUtils } from '@ant-design/compatible/lib/form/Form';
+
+import { ValidationRule } from 'antd/lib/form/Form';
 
 import { Tyr } from 'tyranid/client';
 
