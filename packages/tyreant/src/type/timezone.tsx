@@ -31,7 +31,7 @@ const createOption = (tzName: string) => {
     .format('hh:mm A');
 
   return (
-    <Select.Option key={tzName}>
+    <Select.Option value={tzName}>
       {tzName + ' - (GMT ' + sign + offset + ') - (' + zoneTime + ')'}
     </Select.Option>
   );

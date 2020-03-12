@@ -92,12 +92,13 @@ export interface TyrPathProps {
   defaultSort?: TyrSortDirection;
   dropdownClassName?: string;
   width?: number | string;
+
   onChange?: (value: any, event: any, props: TyrTypeProps) => void;
-
-  onSelect?: (value: SelectValue, option: SelectOptionsType) => any;
-
-  onDeselect?: (value: SelectValue) => any;
   onStateChange?: (value: FieldState) => void;
+
+  onSelect?: (value: SelectValue, option: any) => any;
+  onDeselect?: (value: SelectValue) => any;
+
   autoFocus?: boolean;
   required?: boolean;
   max?: number;

@@ -4,9 +4,8 @@ import { observer } from 'mobx-react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Form } from 'antd';
-
-import { Row, Col } from 'antd';
+import { Form, Row, Col, message } from 'antd';
+import { FormInstance } from 'antd/lib/form';
 
 import { TyrTypeProps } from '../type/type';
 import { TypeContext, useThemeProps } from '../core/theme';
@@ -14,7 +13,6 @@ import { TyrThemedFieldBase, TyrPathExistsProps } from './path';
 import { registerComponent } from '../common';
 import { TyrOneComponent, TyrOneComponentProps } from './one-component';
 import { useComponent } from './component';
-import { FormInstance } from 'antd/lib/form';
 
 export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;
@@ -139,32 +137,23 @@ export async function submitForm<D extends Tyr.Document>(
 ): Promise<boolean> {
   const { form } = tyrForm;
 
-  const store = await form.validateFields(
-    tyrForm.activePaths.map(path => path.path?.name).filter(s => s) as string[]
-  );
+  try {
+    /*const store = */ await form.validateFields(
+      tyrForm.activePaths
+        .map(path => path.path?.name)
+        .filter(s => s) as string[]
+    );
 
-  /*
-      try {
-        if (err) {
-          resolve(false);
-          return;
-        }
+    await document.$save();
+    document.$cache();
 
-        // we don't need to map form values here, we map them via onTypeChange on the components themselves
+    const { parent } = tyrForm;
+    parent && parent.refresh();
 
-        await document.$save();
-        document.$cache();
-
-        const { parent } = tyrForm;
-        parent && parent.refresh();
-
-        resolve(true);
-      } catch (saveError) {
-        if (saveError.message) message.error(saveError.message);
-        console.error(saveError);
-        reject(false);
-      }
-    });
-  });
-    */
+    return true;
+  } catch (err) {
+    console.log(err);
+    if (err.message) message.error(err.message);
+    return false;
+  }
 }

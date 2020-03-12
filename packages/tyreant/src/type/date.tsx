@@ -5,7 +5,6 @@ import * as moment from 'moment';
 import { Tyr } from 'tyranid/client';
 
 import { DatePicker } from 'antd';
-import { RangePickerValue } from 'antd/lib/date-picker/interface';
 
 const { RangePicker } = DatePicker;
 
@@ -14,6 +13,8 @@ import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
 import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
+
+type RangePickerValue = [moment.Moment, moment.Moment];
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
@@ -67,7 +68,7 @@ export const dateFilter: Filter = (
             value={searchValue}
             format={props.dateFormat || DATE_FORMAT}
             onChange={v => {
-              setSearchValue(v);
+              setSearchValue(v as RangePickerValue);
               if (props.liveSearch) search(true);
             }}
             //style={{ width: 188, marginBottom: 8, display: 'block' }}
