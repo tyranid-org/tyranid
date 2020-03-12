@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { FilterTwoTone, SearchOutlined } from '@ant-design/icons';
 
 import { Button, Popover } from 'antd';
-import { ColumnFilterItem, FilterDropdownProps } from 'antd/lib/table';
+import {
+  ColumnFilterItem,
+  FilterDropdownProps
+} from 'antd/lib/table/interface';
 
 import { Tyr } from '../tyreant';
 import { TyrPathProps } from './path';
@@ -69,7 +72,7 @@ export function TyrFilter<SearchValueType>({
   const clear = () => {
     delete filterable.searchValues[pathName];
     setSearchValue(undefined);
-    filterDdProps.clearFilters?.([]);
+    filterDdProps.clearFilters?.();
     filterable.onSearch();
   };
 
@@ -156,20 +159,21 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
                     <h1>{path.pathLabel}</h1>
                     {typeof filterDropdown === 'function'
                       ? filterDropdown({
-                          //prefixCls?: string;
+                          prefixCls: '',
                           setSelectedKeys: (selectedKeys: string[]) => {
                             c.refresh();
                           },
-                          //selectedKeys: string[],
+                          selectedKeys: [],
                           confirm: () => {
                             c.requery();
                           },
-                          clearFilters: (selectedKeys: string[]) => {},
+                          clearFilters: () => {},
                           //filters?: ColumnFilterItem[];
                           //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
                           connect: connection => {
                             connections[path.name] = connection;
-                          }
+                          },
+                          visible: true
                         })
                       : filterDropdown}
                   </div>

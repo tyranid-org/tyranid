@@ -1,9 +1,6 @@
 import * as React from 'react';
-import { useContext } from 'react';
 
-import { WrappedFormUtils } from '@ant-design/compatible/lib/form/Form';
-
-import { ValidationRule } from 'antd/lib/form/Form';
+import { Rule, FormInstance } from 'antd/lib/form';
 
 import { Tyr } from 'tyranid/client';
 
@@ -15,14 +12,13 @@ import {
   TyrPathProps,
   TyrComponent
 } from '../core';
-import { useThemeProps, TyrThemeProps } from '../core/theme';
 
 export const className = (className: string, props: TyrTypeProps) => {
   return className + (props.className ? ' ' + props.className : '');
 };
 
-export function generateRules(props: TyrTypeProps): ValidationRule[] {
-  const rules: ValidationRule[] = [];
+export function generateRules(props: TyrTypeProps): Rule[] {
+  const rules: Rule[] = [];
   const { path } = props;
   if (path) {
     const { tail: field } = path;
@@ -43,9 +39,11 @@ export function generateRules(props: TyrTypeProps): ValidationRule[] {
     }
 
     if (field.def.validate) {
-      const rule: ValidationRule = {
-        validator: (rule, value, callback, source, options) =>
-          field.validate(props.document!)
+      const rule: Rule = {
+        validator: (rule, value, callback) => {
+          const msg = field.validate(props.document!);
+          if (typeof msg === 'string') callback(msg);
+        }
       };
 
       rules.push(rule);
@@ -60,7 +58,7 @@ export interface FieldState {
 }
 
 export type TyrTypeLaxProps = {
-  form?: WrappedFormUtils;
+  form?: FormInstance;
   document?: Tyr.Document;
   value?: { value?: any };
   aux?: string;
@@ -68,7 +66,7 @@ export type TyrTypeLaxProps = {
 } & TyrPathLaxProps;
 
 export type TyrTypeProps = {
-  form: WrappedFormUtils;
+  form: FormInstance;
   document?: Tyr.Document;
   component?: TyrComponent;
   value?: { value?: any };
@@ -198,7 +196,7 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
 export const mapDocumentToForm = (
   path: Tyr.NamePathInstance,
   document: Tyr.Document,
-  form: WrappedFormUtils,
+  form: FormInstance,
   props?: TyrTypeProps
 ) => {
   const pathid = path.identifier;

@@ -20,9 +20,19 @@ import { observer } from 'mobx-react';
 import { MenuOutlined, UploadOutlined } from '@ant-design/icons';
 import { Icon as LegacyIcon } from '@ant-design/compatible';
 
-import { message, Button, Col, Dropdown, Menu, Row, Spin, Table, Tooltip } from 'antd';
+import { FormInstance } from 'antd/lib/form';
+import {
+  message,
+  Button,
+  Col,
+  Dropdown,
+  Menu,
+  Row,
+  Spin,
+  Table,
+  Tooltip
+} from 'antd';
 import { PaginationProps } from 'antd/es/pagination';
-import { WrappedFormUtils } from '@ant-design/compatible/lib/form/Form';
 import { ColumnProps } from 'antd/es/table';
 
 import { Tyr } from 'tyranid/client';
@@ -155,7 +165,7 @@ export class TyrTableBase<
   @observable
   tableConfig?: Tyr.TyrTableConfig;
 
-  currentRowForm?: WrappedFormUtils;
+  currentRowForm?: FormInstance;
 
   constructor(props: TyrTableProps<D>, state: TyrComponentState<D>) {
     super(props, state);
@@ -319,7 +329,7 @@ export class TyrTableBase<
     );
   };
 
-  private saveDocument = async (form: WrappedFormUtils) => {
+  private saveDocument = async (form: FormInstance) => {
     const {
       saveDocument,
       onAfterSaveDocument,

@@ -16,8 +16,7 @@ import { TyrPathProps, decorateField } from '../core';
 import { TyrFilter, FilterDdProps, Filterable } from '../core/filter';
 import { registerComponent } from '../common';
 
-// TODO:  replace with antd's ModeOption when we upgrade ant
-type ModeOption = 'default' | 'multiple' | 'tags';
+type ModeOption = SelectProps<any>['mode'];
 
 export interface TyrLinkState {
   documents: Tyr.Document[];
@@ -105,7 +104,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     const { $label, $id } = val;
 
     return (
-      <Option key={this.mode === 'tags' ? $label : $id}>
+      <Option value={this.mode === 'tags' ? $label : $id}>
         {this.props.searchOptionRenderer
           ? this.props.searchOptionRenderer(val)
           : $label}
@@ -116,7 +115,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   link?: Tyr.CollectionInstance;
   linkField?: Tyr.FieldInstance;
   mounted = false;
-  mode: ModeOption = 'default';
+  mode: ModeOption | undefined = undefined;
 
   async componentDidMount() {
     const props = this.props;
@@ -260,7 +259,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
   render(): React.ReactNode {
     const { props } = this;
-    const { mode: controlMode, path, onSelect, onDeselect } = props;
+    const { mode: controlMode, onSelect, onDeselect } = props;
     const { documents, loading, initialLoading, viewLabel } = this.state;
 
     if (controlMode === 'view') {
@@ -269,7 +268,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       ));
     }
 
-    const selectProps: SelectProps = {
+    const selectProps: SelectProps<Tyr.AnyIdType> = {
       mode: this.mode,
       labelInValue: !!props.labelInValue,
       notFoundContent: loading ? (
