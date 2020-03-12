@@ -11,16 +11,17 @@ import { compact, findIndex, isEqual } from 'lodash';
 
 import * as React from 'react';
 import { createRef } from 'react';
-import { DragDropContextProvider } from 'react-dnd';
+//import { DragDropContextProvider } from 'react-dnd';
+
 import HTML5Backend from 'react-dnd-html5-backend';
 
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
 import { MenuOutlined, UploadOutlined } from '@ant-design/icons';
-import { Icon as LegacyIcon } from '@ant-design/compatible';
+import Icon from '@ant-design/icons';
 
-import { FormInstance } from 'antd/lib/form';
+import Form, { FormInstance } from 'antd/lib/form';
 import {
   message,
   Button,
@@ -56,19 +57,20 @@ import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
 import {
   EditableFormRow,
   EditableDraggableBodyRow,
-  EditableContext
+  EditableContext,
+  BodyRowProps
 } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { TyrPathProps } from '../path';
+import { SizeType } from 'antd/lib/config-provider/SizeContext';
+import { DndProvider } from 'react-dnd';
 
 export interface OurColumnProps<T> extends ColumnProps<T> {
   path: Tyr.NamePathInstance;
 }
 
 const ObsTable = observer(Table);
-
-let dndBackend: __ReactDnd.Backend;
 
 interface TableColumnPathProps {
   pinned?: 'left' | 'right';
@@ -79,7 +81,7 @@ interface TableColumnPathProps {
   /**
    * What table column grouping should this be grouped under.
    */
-  group?: string;
+  children?: TableColumnPathProps[];
 }
 
 export type TyrTableColumnPathLaxProps = TableColumnPathProps & TyrPathLaxProps;
@@ -102,17 +104,14 @@ export interface TyrTableProps<D extends Tyr.Document>
     | React.ReactNode
     | ((tableControl: TyrTableBase<any>) => React.ReactNode);
   canEditDocument?: (document: D) => boolean;
-  size?: 'default' | 'middle' | 'small';
+  size?: SizeType;
   saveDocument?: (document: D) => Promise<D>;
   onAfterSaveDocument?: (document: D, changedFields?: string[]) => void;
   onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
   onChangeTableConfiguration?: (fields: Tyr.TyrTableConfig['fields']) => void;
-  scroll?: {
-    x?: boolean | number | string;
-    y?: boolean | number | string;
-  };
+  scroll?: object;
   footer?: (currentPageData: D[]) => React.ReactNode;
   title?: (currentPageData: D[]) => React.ReactNode;
   showHeader?: boolean;
@@ -127,7 +126,6 @@ export interface TyrTableProps<D extends Tyr.Document>
   setEditing?: (editing: boolean) => void;
   onSelectRows?: (selectedRowIds: string[]) => void;
   orderable?: boolean;
-  dndBackend?: __ReactDnd.Backend;
   moveRow?: (dragIndex: number, hoverIndex: number) => void;
 
   children?: React.ReactNode;
@@ -176,8 +174,8 @@ export class TyrTableBase<
 
     const { orderable } = this.props;
 
-    if (orderable && !dndBackend)
-      dndBackend = this.props.dndBackend || HTML5Backend;
+    //if (orderable && !dndBackend)
+    //  dndBackend = this.props.dndBackend || HTML5Backend;
 
     const { config, onLoad } = this.props;
 
@@ -354,89 +352,88 @@ export class TyrTableBase<
     const orig = document.$orig;
     const changedFields: string[] = [];
 
-    return new Promise((resolve, reject) => {
-      form.validateFields(async (err: Error, values: TyrFormFields) => {
-        try {
-          if (err || !document) {
-            this.isSavingDocument = false;
-            return resolve();
-          }
+    return new Promise(async (resolve, reject) => {
+      try {
+        /*const values: TyrFormFields = */ await form.validateFields(
+          this.activePaths
+            .map(path => path.path?.name)
+            .filter(s => s) as string[]
+        );
 
-          // Don't think this is needed anymore
-          // Plus, for some reason, field leafs are called, xxx_yyy in values,
-          // not xxx.yyy - this causes field not to be found below
+        // Don't think this is needed anymore
+        // Plus, for some reason, field leafs are called, xxx_yyy in values,
+        // not xxx.yyy - this causes field not to be found below
 
-          // for (const pathName in values) {
-          //   const value = values[pathName];
-          //   const field = collection.paths[pathName];
-          //   type.mapFormValueToDocument(field.namePath, value, document);
-          // }
+        // for (const pathName in values) {
+        //   const value = values[pathName];
+        //   const field = collection.paths[pathName];
+        //   type.mapFormValueToDocument(field.namePath, value, document);
+        // }
 
-          if (orig) {
-            for (const column of this.props.paths) {
-              const pathName = getPathName(column.path);
-              const field = pathName && collection.paths[pathName];
+        if (orig) {
+          for (const column of this.props.paths) {
+            const pathName = getPathName(column.path);
+            const field = pathName && collection.paths[pathName];
 
-              if (field) {
-                const oldValue = field.namePath.get(orig);
-                const newValue = field.namePath.get(document);
+            if (field) {
+              const oldValue = field.namePath.get(orig);
+              const newValue = field.namePath.get(document);
 
-                if (!isEqual(oldValue, newValue)) {
-                  if (typeof column.label === 'string') {
-                    changedFields.push(column.label as string);
-                  } else if (typeof field.label === 'string') {
-                    changedFields.push(field.label);
-                  }
+              if (!isEqual(oldValue, newValue)) {
+                if (typeof column.label === 'string') {
+                  changedFields.push(column.label as string);
+                } else if (typeof field.label === 'string') {
+                  changedFields.push(field.label);
                 }
               }
             }
           }
-
-          const canSave =
-            !onBeforeSaveDocument || onBeforeSaveDocument(document);
-
-          if (!canSave) {
-            this.isSavingDocument = false;
-            // No error to show, hopefully validation error is shown
-            // or merror message by onBeforeSaveDocument
-            return resolve();
-          }
-
-          if (saveDocument) {
-            document = await saveDocument(document);
-          } else {
-            document = await document.$save();
-          }
-
-          if (document) {
-            document.$cache();
-
-            if (docIdx > -1) {
-              this.documents = [
-                ...documents.slice(0, docIdx),
-                document,
-                ...documents.slice(docIdx + 1)
-              ];
-            }
-
-            if (!documents) {
-              this.findAll();
-            }
-          }
-
-          onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
-          this.isSavingDocument = false;
-          setEditing && setEditing(false);
-          delete this.editingDocument;
-          delete this.newDocument;
-          resolve();
-        } catch (saveError) {
-          if (saveError.message) message.error(saveError.message);
-          message.error(saveError);
-          this.isSavingDocument = false;
-          reject(saveError);
         }
-      });
+
+        const canSave =
+          !onBeforeSaveDocument || onBeforeSaveDocument(document!);
+
+        if (!canSave) {
+          this.isSavingDocument = false;
+          // No error to show, hopefully validation error is shown
+          // or merror message by onBeforeSaveDocument
+          return resolve();
+        }
+
+        if (saveDocument) {
+          document = await saveDocument(document!);
+        } else {
+          document = await document!.$save();
+        }
+
+        if (document) {
+          document.$cache();
+
+          if (docIdx > -1) {
+            this.documents = [
+              ...documents.slice(0, docIdx),
+              document,
+              ...documents.slice(docIdx + 1)
+            ];
+          }
+
+          if (!documents) {
+            this.findAll();
+          }
+        }
+
+        onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
+        this.isSavingDocument = false;
+        setEditing && setEditing(false);
+        delete this.editingDocument;
+        delete this.newDocument;
+        resolve();
+      } catch (saveError) {
+        if (saveError.message) message.error(saveError.message);
+        message.error(saveError);
+        this.isSavingDocument = false;
+        reject(saveError);
+      }
     });
   };
 
@@ -499,7 +496,6 @@ export class TyrTableBase<
     let hasAnyFilter = false;
 
     const antColumns: ColumnProps<D>[] = [];
-    let curGroupColumn: ColumnProps<D>;
     let curGroupName: string | undefined;
 
     columns.forEach((column, columnIdx) => {
@@ -640,7 +636,7 @@ export class TyrTableBase<
           const render = column.renderDisplay;
 
           return (
-            <div className="tyr-table-cell">
+            <div className='tyr-table-cell'>
               {render
                 ? render(document)
                 : getCellValue(path!, document, column as TyrTypeProps)}
@@ -664,7 +660,7 @@ export class TyrTableBase<
         path
       };
 
-      const { group } = column;
+      /*const { group } = column;
 
       if (group) {
         if (curGroupName === group) {
@@ -679,9 +675,10 @@ export class TyrTableBase<
           antColumns.push(curGroupColumn);
         }
       } else {
-        antColumns.push(tableColumn);
-        curGroupName = undefined;
-      }
+      */
+      antColumns.push(tableColumn);
+      curGroupName = undefined;
+      //}
     });
 
     if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
@@ -692,7 +689,7 @@ export class TyrTableBase<
         key: '$actions',
         dataIndex: '$actions',
         align: 'center',
-        onHeaderCell: (props: ColumnProps<D>) => {
+        onHeaderCell: props => {
           if (props.key === '$actions' && !!config) {
             return {
               onClick: () => {
@@ -710,7 +707,7 @@ export class TyrTableBase<
         }`,
         title: !newDocumentTable
           ? actionHeaderLabel || (
-              <Tooltip title="Edit Columns">
+              <Tooltip title='Edit Columns'>
                 <MenuOutlined />
               </Tooltip>
             )
@@ -724,15 +721,15 @@ export class TyrTableBase<
 
           if (editable) {
             if (this.isSavingDocument) {
-              return <Spin tip="Saving..." />;
+              return <Spin tip='Saving...' />;
             }
 
             return (
               <div style={{ display: 'flex' }}>
                 <Button
                   style={{ width: '60px', marginRight: 8, zIndex: 1 }}
-                  size="small"
-                  type="default"
+                  size='small'
+                  type='default'
                   onClick={() => this.cancelEdit()}
                 >
                   Cancel
@@ -748,9 +745,9 @@ export class TyrTableBase<
 
                     return (
                       <Button
-                        size="small"
+                        size='small'
                         style={{ width: '60px', zIndex: 1 }}
-                        type="primary"
+                        type='primary'
                         onClick={() => this.saveDocument(form)}
                       >
                         Save
@@ -782,7 +779,7 @@ export class TyrTableBase<
             if (typeof label === 'string') {
               return (
                 <a
-                  className="action-item"
+                  className='action-item'
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -796,7 +793,7 @@ export class TyrTableBase<
 
             return (
               <span
-                className="action-item"
+                className='action-item'
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -809,9 +806,9 @@ export class TyrTableBase<
           }
 
           const menu = (
-            <Menu className="tyr-menu">
+            <Menu className='tyr-menu'>
               {thisActions.map(action => (
-                <Menu.Item className="tyr-menu-item" key={action.name}>
+                <Menu.Item className='tyr-menu-item' key={action.name}>
                   <button
                     onClick={() => action.act({ caller: this, document })}
                   >
@@ -824,8 +821,8 @@ export class TyrTableBase<
 
           return (
             <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
-              <span className="tyr-menu-link">
-                <LegacyIcon type={actionIconType || 'ellipsis'} />
+              <span className='tyr-menu-link'>
+                <Icon type={actionIconType || 'ellipsis'} />
               </span>
             </Dropdown>
           );
@@ -906,7 +903,7 @@ export class TyrTableBase<
     onSelectRows && onSelectRows(selectedRowKeys);
   };
 
-  onSelectedRowKeysChange = (selectedRowKeys: string[] | number[]) => {
+  onSelectedRowKeysChange = (selectedRowKeys: Tyr.AnyIdType[]) => {
     const { onSelectRows } = this.props;
     this.selectedRowKeys = selectedRowKeys as string[];
     onSelectRows?.(selectedRowKeys as string[]);
@@ -987,10 +984,9 @@ export class TyrTableBase<
 
       const components = {
         body: {
-          row:
-            dndEnabled && dndBackend
-              ? EditableDraggableBodyRow
-              : EditableFormRow
+          row: (dndEnabled // && dndBackend
+            ? EditableDraggableBodyRow
+            : EditableFormRow) as any
         }
       };
 
@@ -1058,7 +1054,8 @@ export class TyrTableBase<
                 if (
                   rowEdit &&
                   record.$id &&
-                  (!canEditDocument || canEditDocument(record as any))
+                  (!canEditDocument || canEditDocument(record as any)) &&
+                  rowIndex !== undefined
                 ) {
                   if ((editingDocument || newDocument) && this.currentRowForm) {
                     if (
@@ -1102,7 +1099,7 @@ export class TyrTableBase<
         >
           {(children || multiActions.length > 0 || voidActions.length > 0) && (
             <Row>
-              <Col span={24} className="tyr-table-header">
+              <Col span={24} className='tyr-table-header'>
                 {children}
                 {multiActions.map(a => (
                   <Button
@@ -1136,7 +1133,7 @@ export class TyrTableBase<
               {paths && newDocument && (
                 <ObsTable
                   bordered={bordered}
-                  className="tyr-table-new-document"
+                  className='tyr-table-new-document'
                   loading={loading}
                   components={components}
                   rowKey={() => 'new'}
@@ -1157,12 +1154,12 @@ export class TyrTableBase<
                   }}
                   ref={this.tableWrapper}
                 >
-                  {dndBackend && (
-                    <DragDropContextProvider backend={dndBackend}>
+                  {dndEnabled && ( //{dndBackend && (
+                    <DndProvider backend={HTML5Backend}>
                       {mainTable}
-                    </DragDropContextProvider>
+                    </DndProvider>
                   )}
-                  {!dndBackend && mainTable}
+                  {!dndEnabled && mainTable /* {!dndBackend && mainTable } */}
                 </div>
               )}
               {showConfig && tableConfig && (
@@ -1244,16 +1241,16 @@ export class TyrTableBase<
     }
 
     for (const column of columns) {
-      const { children } = column;
+      // const { children } = column;
 
-      if (children) {
-        let sum = 0;
-        for (const child of children) sum += classify(child);
-        column.width = sum;
-        classify(column);
-      } else {
-        classify(column);
-      }
+      // if (children) {
+      //   let sum = 0;
+      //   for (const child of children) sum += classify(child);
+      //   column.width = sum;
+      //   classify(column);
+      // } else {
+      classify(column);
+      // }
     }
   }
 }
