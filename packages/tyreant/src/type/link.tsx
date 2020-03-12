@@ -268,7 +268,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       ));
     }
 
-    const selectProps: SelectProps<Tyr.AnyIdType> = {
+    const selectProps: SelectProps<Tyr.AnyIdType | Tyr.AnyIdType[]> = {
       mode: this.mode,
       labelInValue: !!props.labelInValue,
       notFoundContent: loading ? (
@@ -326,15 +326,12 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     }
 
     if (onSelect) {
-      selectProps.onSelect = (
-        value: SelectValue,
-        option: React.ReactElement<any>
-      ) => {
+      selectProps.onSelect = (value: SelectValue, option: any) => {
         const v = findByLabel(props, this.link!, value as string);
 
         onSelect(
           v
-            ? ({ key: v.$id, label: v.$label, document: v } as SelectValue)
+            ? ({ value: v.$id, label: v.$label, document: v } as SelectValue)
             : value,
           option
         );
