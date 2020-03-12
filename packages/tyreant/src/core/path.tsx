@@ -6,7 +6,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 import { Tooltip } from 'antd';
 import { SelectValue } from 'antd/lib/select';
-import FormItem from 'antd/lib/form/FormItem';
+import { Form } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -19,6 +19,8 @@ import {
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
+
+const FormItem = Form.Item;
 
 /**
  * This determines a list of default fields to show for a collection if no fields have been specified.
@@ -91,7 +93,9 @@ export interface TyrPathProps {
   dropdownClassName?: string;
   width?: number | string;
   onChange?: (value: any, event: any, props: TyrTypeProps) => void;
-  onSelect?: (value: SelectValue, option: React.ReactElement<any>) => any;
+
+  onSelect?: (value: SelectValue, option: SelectOptionsType) => any;
+
   onDeselect?: (value: SelectValue) => any;
   onStateChange?: (value: FieldState) => void;
   autoFocus?: boolean;
@@ -209,15 +213,12 @@ export const decorateField = (
       key={field!.path}
       className={className('tyr-' + name, props)}
       label={label}
+      rules={generateRules(props)}
+      //preserve={true}
     >
-      {form.getFieldDecorator(identifier, {
-        rules: generateRules(props),
-        preserve: true
-      })(
-        props.renderField && props.document
-          ? props.renderField(props.document)
-          : component()
-      )}
+      {props.renderField && props.document
+        ? props.renderField(props.document)
+        : component()}
     </FormItem>
   );
 };

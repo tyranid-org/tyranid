@@ -2,14 +2,14 @@ import * as React from 'react';
 
 import { DragSource, DropTarget, DropTargetMonitor } from 'react-dnd';
 
-import { WrappedFormUtils } from '@ant-design/compatible/lib/form/Form';
+import { FormInstance } from 'antd/lib/form';
 
 import Form from 'antd/lib/form/Form';
 
 // EditableRow, DraggableRow, EditableDraggableRow
 
 export interface EditableContextProps {
-  form?: WrappedFormUtils;
+  form?: FormInstance;
 }
 
 export const EditableContext = React.createContext<EditableContextProps>({});
@@ -24,7 +24,7 @@ interface BodyRowProps {
   style: any;
   index: number;
   dndEnabled: boolean;
-  form: WrappedFormUtils;
+  form: FormInstance;
 }
 
 let draggingIndex = -1;
