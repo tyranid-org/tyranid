@@ -37,7 +37,7 @@ const MediaType = new Tyr.Collection({
     ['application/rtf', ['rtf'], 'Rich Text Format (RTF)'],
     ['application/vnd.amazon.ebook', ['azw'], 'Amazon Kindle eBook format'],
     ['application/vnd.apple.installer+xml', ['mpkg'], 'Apple Installer Package'],
-    ['application/vnd.mozilla.xul+xml', ['xul'], 'XUL'], ['application/vnd.ms-excel', ['xls'], 'Microsoft Excel'],
+    ['application/vnd.mozilla.xul+xml', ['xul'], 'XUL'],
     ['application/vnd.ms-access', ['mdb'], 'Microsoft Access' ],
     ['application/vnd.ms-excel', ['xlt', 'xla', 'xls'], 'Microsoft Excel' ],
     ['application/vnd.ms-excel.addin.macroEnabled.12', ['xlam'], 'Microsoft Excel Addin (Macro Enabled)' ],

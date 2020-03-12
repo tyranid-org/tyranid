@@ -16,8 +16,6 @@ export namespace Tyr {
    */
   export type anny = any;
 
-  export type AnyIdType = string | number;
-
   export interface MongoDocument {
     [key: string]: any;
   }
