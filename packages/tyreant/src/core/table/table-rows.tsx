@@ -1,12 +1,16 @@
 import * as React from 'react';
 
-import { DragSource, DropTarget, DropTargetMonitor } from 'react-dnd';
+import {
+  DragSource,
+  DropTarget,
+  DropTargetMonitor,
+  useDrag,
+  useDrop
+} from 'react-dnd';
 
 import { FormInstance } from 'antd/lib/form';
 
-import Form from 'antd/lib/form/Form';
-
-// EditableRow, DraggableRow, EditableDraggableRow
+import Form, { useForm } from 'antd/lib/form/Form';
 
 export interface EditableContextProps {
   form?: FormInstance;
@@ -14,7 +18,7 @@ export interface EditableContextProps {
 
 export const EditableContext = React.createContext<EditableContextProps>({});
 
-interface BodyRowProps {
+export interface BodyRowProps {
   connectDragSource: (component: React.ReactNode) => React.ReactElement<any>;
   connectDropTarget: (component: React.ReactNode) => React.ReactElement<any>;
   moveRow: (dragIndex: number, hoverIndex: number) => void;
@@ -24,74 +28,74 @@ interface BodyRowProps {
   style: any;
   index: number;
   dndEnabled: boolean;
-  form: FormInstance;
 }
 
 let draggingIndex = -1;
 
-class BodyRow extends React.Component<BodyRowProps> {
-  render() {
-    const {
-      isOver,
-      connectDragSource,
-      connectDropTarget,
-      moveRow,
-      form,
-      dndEnabled,
-      isDragging,
-      ...restProps
-    } = this.props;
+export const EditableFormRow = (props: BodyRowProps) => {
+  const [form] = useForm();
 
-    const style = {
-      ...restProps.style,
-      cursor:
-        dndEnabled && connectDragSource ? 'move' : form ? 'pointer' : 'default'
-    };
+  const {
+    isOver,
+    connectDragSource,
+    connectDropTarget,
+    moveRow,
+    dndEnabled,
+    isDragging,
+    ...restProps
+  } = props;
 
-    let { className } = restProps;
-    if (isOver) {
-      if (restProps.index > draggingIndex) {
-        className += ' drop-over-downward';
-      }
-      if (restProps.index < draggingIndex) {
-        className += ' drop-over-upward';
-      }
+  const style = {
+    ...restProps.style,
+    cursor:
+      dndEnabled && connectDragSource ? 'move' : form ? 'pointer' : 'default'
+  };
+
+  let { className } = restProps;
+  if (isOver) {
+    if (restProps.index > draggingIndex) {
+      className += ' drop-over-downward';
     }
-
-    if (isDragging) {
-      className += ' tyr-is-dragging';
+    if (restProps.index < draggingIndex) {
+      className += ' drop-over-upward';
     }
+  }
 
-    // Just the edit row
-    if (form && !connectDragSource) {
-      return (
-        <EditableContext.Provider value={{ form }}>
-          <tr
-            key={`form-${restProps.index}`}
-            {...restProps}
-            className={className}
-            style={style}
-          />
-        </EditableContext.Provider>
-      );
-    }
+  if (isDragging) {
+    className += ' tyr-is-dragging';
+  }
 
-    // Just the draggableRow
-    if (connectDragSource && !form) {
-      return connectDragSource(
-        connectDropTarget(
-          <tr
-            key={`form-${restProps.index}`}
-            {...restProps}
-            className={className}
-            style={style}
-          />
-        )
-      );
-    }
-
-    // Both editable and draggable
+  // Just the edit row
+  if (form && !connectDragSource) {
     return (
+      <EditableContext.Provider value={{ form }}>
+        <tr
+          key={`form-${restProps.index}`}
+          {...restProps}
+          className={className}
+          style={style}
+        />
+      </EditableContext.Provider>
+    );
+  }
+
+  // Just the draggableRow
+  if (connectDragSource && !form) {
+    return connectDragSource(
+      connectDropTarget(
+        <tr
+          key={`form-${restProps.index}`}
+          {...restProps}
+          className={className}
+          style={style}
+        />
+      )
+    );
+  }
+
+  // Both editable and draggable
+  return (
+    <Form form={form}>
       <EditableContext.Provider value={{ form }}>
         {connectDragSource(
           connectDropTarget(
@@ -104,11 +108,57 @@ class BodyRow extends React.Component<BodyRowProps> {
           )
         )}
       </EditableContext.Provider>
-    );
-  }
-}
+    </Form>
+  );
+};
 
-const DraggableBodyRow = DropTarget(
+const acceptType = 'DraggableBodyRow';
+
+export const EditableDraggableBodyRow = ({
+  index,
+  moveRow,
+  className,
+  style,
+  ...restProps
+}: BodyRowProps) => {
+  const ref = React.useRef<HTMLTableRowElement>(null);
+
+  const [{ isOver, dropClassName }, drop] = useDrop({
+    accept: acceptType,
+    collect: monitor => {
+      const { index: dragIndex } = monitor.getItem() || {};
+      if (dragIndex === index) {
+        return {};
+      }
+      return {
+        isOver: monitor.isOver(),
+        dropClassName:
+          dragIndex < index ? ' drop-over-downward' : ' drop-over-upward'
+      };
+    },
+    drop: item => {
+      moveRow(((item as unknown) as { index: number }).index, index);
+    }
+  });
+  const [, drag] = useDrag({
+    item: { type: acceptType, index },
+    collect: monitor => ({
+      isDragging: monitor.isDragging()
+    })
+  });
+  drop(drag(ref));
+  return (
+    <tr
+      ref={ref}
+      className={`${className}${isOver ? dropClassName : ''}`}
+      style={{ cursor: 'move', ...style }}
+      {...restProps}
+    />
+  );
+};
+
+/*
+const DraggableBodyRowOld = DropTarget(
   'row',
   {
     drop(props: BodyRowProps, monitor: DropTargetMonitor) {
@@ -153,8 +203,8 @@ const DraggableBodyRow = DropTarget(
       connectDragSource: connect.dragSource(),
       isDragging: monitor.isDragging()
     })
-  )(BodyRow)
+  )(EditableBodyRow)
 );
+*/
 
-export const EditableFormRow = Form.create()(BodyRow);
-export const EditableDraggableBodyRow = Form.create()(DraggableBodyRow);
+//export const EditableDraggableBodyRow = Form.create()(DraggableBodyRow);
