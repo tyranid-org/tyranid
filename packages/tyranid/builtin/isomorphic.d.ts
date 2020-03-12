@@ -493,152 +493,152 @@ declare module 'tyranid/isomorphic' {
    */
   export interface MediaTypeCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
     
-      "3_GPP_AUDIO_VIDEO_CONTAINER_IF_IT_DOES_NOT_CONTAIN_VIDEO": {
+      AUDIO_3_GPP: {
         _id: 'audio/3gpp';
         extensions: any;
         name: '3GPP audio/video container; if it does not contain video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      "3_GPP_2_AUDIO_VIDEO_CONTAINER_IF_IT_CONTAINS_VIDEO": {
+      VIDEO_3_GPP_2: {
         _id: 'video/3gpp2';
         extensions: any;
         name: '3GPP2 audio/video container; if it contains video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      "3_GPP_2_AUDIO_VIDEO_CONTAINER_IF_IT_DOES_NOT_CONTAIN_VIDEO": {
+      AUDIO_3_GPP_2: {
         _id: 'audio/3gpp2';
         extensions: any;
         name: '3GPP2 audio/video container; if it does not contain video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      "3_GPP_IF_IT_CONTAINS_VIDEO": {
+      VIDEO_3_GPP: {
         _id: 'video/3gpp';
         extensions: any;
         name: '3GPP; if it contains video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      "7_ZIP_ARCHIVE": {
+      APPLICATION_X_7_Z_COMPRESSED: {
         _id: 'application/x-7z-compressed';
         extensions: any;
         name: '7-zip archive';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      AAC_AUDIO: {
+      AUDIO_AAC: {
         _id: 'audio/aac';
         extensions: any;
         name: 'AAC audio';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      AVI_AUDIO_VIDEO_INTERLEAVE: {
+      VIDEO_AVI: {
         _id: 'video/avi';
         extensions: any;
         name: 'AVI: Audio Video Interleave';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      AVI_AUDIO_VIDEO_INTERLEAVE: {
+      VIDEO_MSVIDEO: {
         _id: 'video/msvideo';
         extensions: any;
         name: 'AVI: Audio Video Interleave';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      AVI_AUDIO_VIDEO_INTERLEAVE: {
+      VIDEO_X_MSVIDEO: {
         _id: 'video/x-msvideo';
         extensions: any;
         name: 'AVI: Audio Video Interleave';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ABI_WORD_DOCUMENT: {
+      APPLICATION_X_ABIWORD: {
         _id: 'application/x-abiword';
         extensions: any;
         name: 'AbiWord document';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ADOBE_PORTABLE_DOCUMENT_FORMAT_PDF: {
+      APPLICATION_PDF: {
         _id: 'application/pdf';
         extensions: any;
         name: 'Adobe Portable Document Format (PDF)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      AMAZON_KINDLE_E_BOOK_FORMAT: {
+      APPLICATION_VND_AMAZON_EBOOK: {
         _id: 'application/vnd.amazon.ebook';
         extensions: any;
         name: 'Amazon Kindle eBook format';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      APPLE_INSTALLER_PACKAGE: {
+      APPLICATION_VND_APPLE_INSTALLER_XML: {
         _id: 'application/vnd.apple.installer+xml';
         extensions: any;
         name: 'Apple Installer Package';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      APPLE_QUICK_TIME: {
+      VIDEO_QUICKTIME: {
         _id: 'video/quicktime';
         extensions: any;
         name: 'Apple QuickTime';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      APPLE_I_WORK_KEYNOTE: {
+      APPLICATION_X_IWORK_KEYNOTE_SFFKEY: {
         _id: 'application/x-iwork-keynote-sffkey';
         extensions: any;
         name: 'Apple iWork Keynote';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      APPLE_I_WORK_NUMBERS: {
+      APPLICATION_X_IWORK_NUMBERS_SFFNUMBERS: {
         _id: 'application/x-iwork-numbers-sffnumbers';
         extensions: any;
         name: 'Apple iWork Numbers';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      APPLE_I_WORK_PAGES: {
+      APPLICATION_X_IWORK_PAGES_SFFPAGES: {
         _id: 'application/x-iwork-pages-sffpages';
         extensions: any;
         name: 'Apple iWork Pages';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ARCHIVE_DOCUMENT_MULTIPLE_FILES_EMBEDDED: {
+      APPLICATION_X_FREEARC: {
         _id: 'application/x-freearc';
         extensions: any;
         name: 'Archive document (multiple files embedded)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      B_ZIP_ARCHIVE: {
+      APPLICATION_X_BZIP: {
         _id: 'application/x-bzip';
         extensions: any;
         name: 'BZip archive';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      B_ZIP_2_ARCHIVE: {
+      APPLICATION_X_BZIP_2: {
         _id: 'application/x-bzip2';
         extensions: any;
         name: 'BZip2 archive';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      BOURNE_SHELL_SCRIPT: {
+      APPLICATION_X_SH: {
         _id: 'application/x-sh';
         extensions: any;
         name: 'Bourne shell script';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      C_SHELL_SCRIPT: {
+      APPLICATION_X_CSH: {
         _id: 'application/x-csh';
         extensions: any;
         name: 'C-Shell script';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      CASCADING_STYLE_SHEETS_CSS: {
+      TEXT_CSS: {
         _id: 'text/css';
         extensions: any;
         name: 'Cascading Style Sheets (CSS)';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      COMMA_SEPARATED_VALUES_CSV: {
+      TEXT_CSV: {
         _id: 'text/csv';
         extensions: any;
         name: 'Comma-separated values (CSV)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ECMA_SCRIPT: {
+      TEXT_ECMASCRIPT: {
         _id: 'text/ecmascript';
         extensions: any;
         name: 'EcmaScript';
@@ -646,63 +646,63 @@ declare module 'tyranid/isomorphic' {
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ECMA_SCRIPT_MODULE: {
+      APPLICATION_ECMASCRIPT: {
         _id: 'application/ecmascript';
         extensions: any;
         name: 'EcmaScript module';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ELECTRONIC_PUBLICATION_EPUB: {
+      APPLICATION_EPUB_ZIP: {
         _id: 'application/epub+zip';
         extensions: any;
         name: 'Electronic publication (EPUB)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      GRAPHICS_INTERCHANGE_FORMAT_GIF: {
+      IMAGE_GIF: {
         _id: 'image/gif';
         extensions: any;
         name: 'Graphics Interchange Format (GIF)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      HYPER_TEXT_MARKUP_LANGUAGE_HTML: {
+      TEXT_HTML: {
         _id: 'text/html';
         extensions: any;
         name: 'HyperText Markup Language (HTML)';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ICON_FORMAT: {
+      IMAGE_VND_MICROSOFT_ICON: {
         _id: 'image/vnd.microsoft.icon';
         extensions: any;
         name: 'Icon format';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ICON_FORMAT: {
+      IMAGE_X_ICON: {
         _id: 'image/x-icon';
         extensions: any;
         name: 'Icon format';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      JPEG_IMAGES: {
+      IMAGE_JPEG: {
         _id: 'image/jpeg';
         extensions: any;
         name: 'JPEG images';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      JSON_FORMAT: {
+      APPLICATION_JSON: {
         _id: 'application/json';
         extensions: any;
         name: 'JSON format';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      JAVA_ARCHIVE_JAR: {
+      APPLICATION_JAVA_ARCHIVE: {
         _id: 'application/java-archive';
         extensions: any;
         name: 'Java Archive (JAR)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      JAVA_SCRIPT: {
+      APPLICATION_X_JAVASCRIPT: {
         _id: 'application/x-javascript';
         extensions: any;
         name: 'JavaScript';
@@ -710,7 +710,7 @@ declare module 'tyranid/isomorphic' {
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      JAVA_SCRIPT: {
+      TEXT_JAVASCRIPT: {
         _id: 'text/javascript';
         extensions: any;
         name: 'JavaScript';
@@ -718,476 +718,470 @@ declare module 'tyranid/isomorphic' {
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      JAVA_SCRIPT_JAVA_SCRIPT_MODULE: {
+      APPLICATION_JAVASCRIPT: {
         _id: 'application/javascript';
         extensions: any;
         name: 'JavaScript, JavaScript module';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MP_3_AUDIO: {
+      AUDIO_MPEG: {
         _id: 'audio/mpeg';
         extensions: any;
         name: 'MP3 audio';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MP_3_AUDIO: {
+      AUDIO_MPEG_3: {
         _id: 'audio/mpeg3';
         extensions: any;
         name: 'MP3 audio';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MP_3_AUDIO: {
+      AUDIO_X_MPEG_3: {
         _id: 'audio/x-mpeg-3';
         extensions: any;
         name: 'MP3 audio';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MP_4_VIDEO: {
+      VIDEO_MP_4: {
         _id: 'video/mp4';
         extensions: any;
         name: 'MP4 Video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MPEG_4: {
+      APPLICATION_MP_4: {
         _id: 'application/mp4';
         extensions: any;
         name: 'MPEG 4';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MPEG_VIDEO: {
+      VIDEO_MPEG: {
         _id: 'video/mpeg';
         extensions: any;
         name: 'MPEG Video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MPEG_VIDEO: {
+      VIDEO_X_MPEG: {
         _id: 'video/x-mpeg';
         extensions: any;
         name: 'MPEG Video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MS_EMBEDDED_OPEN_TYPE_FONTS: {
+      APPLICATION_VND_MS_FONTOBJECT: {
         _id: 'application/vnd.ms-fontobject';
         extensions: any;
         name: 'MS Embedded OpenType fonts';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_ACCESS: {
+      APPLICATION_VND_MS_ACCESS: {
         _id: 'application/vnd.ms-access';
         extensions: any;
         name: 'Microsoft Access';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL: {
+      APPLICATION_EXCEL: {
         _id: 'application/excel';
         extensions: any;
         name: 'Microsoft Excel';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL: {
+      APPLICATION_VND_MS_EXCEL: {
         _id: 'application/vnd.ms-excel';
         extensions: any;
         name: 'Microsoft Excel';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL: {
-        _id: 'application/vnd.ms-excel';
-        extensions: any;
-        name: 'Microsoft Excel';
-      } & MediaType<ObjIdType, ObjContainer, NumContainer>;
-
-      MICROSOFT_EXCEL: {
+      APPLICATION_X_EXCEL: {
         _id: 'application/x-excel';
         extensions: any;
         name: 'Microsoft Excel';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL: {
+      APPLICATION_X_MSEXCEL: {
         _id: 'application/x-msexcel';
         extensions: any;
         name: 'Microsoft Excel';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL_MACRO_ENABLED: {
+      APPLICATION_VND_MS_EXCEL_SHEET_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-excel.sheet.macroEnabled.12';
         extensions: any;
         name: 'Microsoft Excel (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL_OPEN_XML: {
+      APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_SPREADSHEETML_SHEET: {
         _id: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         extensions: any;
         name: 'Microsoft Excel (OpenXML)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL_ADDIN_MACRO_ENABLED: {
+      APPLICATION_VND_MS_EXCEL_ADDIN_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-excel.addin.macroEnabled.12';
         extensions: any;
         name: 'Microsoft Excel Addin (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL_BINARY_MACRO_ENABLED: {
+      APPLICATION_VND_MS_EXCEL_SHEET_BINARY_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-excel.sheet.binary.macroEnabled.12';
         extensions: any;
         name: 'Microsoft Excel Binary (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL_TEMPLATE_MACRO_ENABLED: {
+      APPLICATION_VND_MS_EXCEL_TEMPLATE_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-excel.template.macroEnabled.12';
         extensions: any;
         name: 'Microsoft Excel Template (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_EXCEL_TEMPLATE_OPEN_XML: {
+      APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_SPREADSHEETML_TEMPLATE: {
         _id: 'application/vnd.openxmlformats-officedocument.spreadsheetml.template';
         extensions: any;
         name: 'Microsoft Excel Template (OpenXML)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT: {
+      APPLICATION_VND_MS_POWERPOINT: {
         _id: 'application/vnd.ms-powerpoint';
         extensions: any;
         name: 'Microsoft PowerPoint';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT_OPEN_XML: {
+      APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_PRESENTATIONML_PRESENTATION: {
         _id: 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
         extensions: any;
         name: 'Microsoft PowerPoint (OpenXML)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT_ADDIN_MACRO_ENABLED: {
+      APPLICATION_VND_MS_WORD_POWERPOINT_ADDIN_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-word.powerpoint.addin.macroEnabled.12';
         extensions: any;
         name: 'Microsoft PowerPoint Addin (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT_PRESENTATION_MACRO_ENABLED: {
+      APPLICATION_VND_MS_WORD_POWERPOINT_PRESENTATION_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-word.powerpoint.presentation.macroEnabled.12';
         extensions: any;
         name: 'Microsoft PowerPoint Presentation (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT_SLIDESHOW_MACRO_ENABLED: {
+      APPLICATION_VND_MS_WORD_POWERPOINT_SLIDESHOW_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-word.powerpoint.slideshow.macroEnabled.12';
         extensions: any;
         name: 'Microsoft PowerPoint Slideshow (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT_SLIDESHOW_OPEN_XML: {
+      APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_PRESENTATIONML_SLIDESHOW: {
         _id: 'application/vnd.openxmlformats-officedocument.presentationml.slideshow';
         extensions: any;
         name: 'Microsoft PowerPoint Slideshow (OpenXML)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT_TEMPLATE_MACRO_ENABLED: {
+      APPLICATION_VND_MS_WORD_POWERPOINT_TEMPLATE_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-word.powerpoint.template.macroEnabled.12';
         extensions: any;
         name: 'Microsoft PowerPoint Template (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_POWER_POINT_TEMPLATE_OPEN_XML: {
+      APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_PRESENTATIONML_TEMPLATE: {
         _id: 'application/vnd.openxmlformats-officedocument.presentationml.template';
         extensions: any;
         name: 'Microsoft PowerPoint Template (OpenXML)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_VISIO: {
+      APPLICATION_VND_VISIO: {
         _id: 'application/vnd.visio';
         extensions: any;
         name: 'Microsoft Visio';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_WORD: {
+      APPLICATION_MSWORD: {
         _id: 'application/msword';
         extensions: any;
         name: 'Microsoft Word';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_WORD_MACRO_ENABLED: {
+      APPLICATION_VND_MS_WORD_DOCUMENT_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-word.document.macroEnabled.12';
         extensions: any;
         name: 'Microsoft Word (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_WORD_OPEN_XML: {
+      APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_WORDPROCESSINGML_DOCUMENT: {
         _id: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
         extensions: any;
         name: 'Microsoft Word (OpenXML)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_WORD_TEMPLATE_MACRO_ENABLED: {
+      APPLICATION_VND_MS_WORD_TEMPLATE_MACRO_ENABLED_12: {
         _id: 'application/vnd.ms-word.template.macroEnabled.12';
         extensions: any;
         name: 'Microsoft Word Template (Macro Enabled)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MICROSOFT_WORD_TEMPLATE_OPEN_XML: {
+      APPLICATION_VND_OPENXMLFORMATS_OFFICEDOCUMENT_WORDPROCESSINGML_TEMPLATE: {
         _id: 'application/vnd.openxmlformats-officedocument.wordprocessingml.template';
         extensions: any;
         name: 'Microsoft Word Template (OpenXML)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MUSICAL_INSTRUMENT_DIGITAL_INTERFACE_MIDI: {
+      AUDIO_MIDI: {
         _id: 'audio/midi';
         extensions: any;
         name: 'Musical Instrument Digital Interface (MIDI)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      MUSICAL_INSTRUMENT_DIGITAL_INTERFACE_MIDI: {
+      AUDIO_X_MIDI: {
         _id: 'audio/x-midi';
         extensions: any;
         name: 'Musical Instrument Digital Interface (MIDI)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      OGG: {
+      APPLICATION_OGG: {
         _id: 'application/ogg';
         extensions: any;
         name: 'OGG';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      OGG_AUDIO: {
+      AUDIO_OGG: {
         _id: 'audio/ogg';
         extensions: any;
         name: 'OGG audio';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      OGG_VIDEO: {
+      VIDEO_OGG: {
         _id: 'video/ogg';
         extensions: any;
         name: 'OGG video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      OPEN_DOCUMENT_PRESENTATION_DOCUMENT: {
+      APPLICATION_VND_OASIS_OPENDOCUMENT_PRESENTATION: {
         _id: 'application/vnd.oasis.opendocument.presentation';
         extensions: any;
         name: 'OpenDocument presentation document';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      OPEN_DOCUMENT_SPREADSHEET_DOCUMENT: {
+      APPLICATION_VND_OASIS_OPENDOCUMENT_SPREADSHEET: {
         _id: 'application/vnd.oasis.opendocument.spreadsheet';
         extensions: any;
         name: 'OpenDocument spreadsheet document';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      OPEN_DOCUMENT_TEXT_DOCUMENT: {
+      APPLICATION_VND_OASIS_OPENDOCUMENT_TEXT: {
         _id: 'application/vnd.oasis.opendocument.text';
         extensions: any;
         name: 'OpenDocument text document';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      OPEN_TYPE_FONT: {
+      FONT_OTF: {
         _id: 'font/otf';
         extensions: any;
         name: 'OpenType font';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      PORTABLE_NETWORK_GRAPHICS: {
+      IMAGE_PNG: {
         _id: 'image/png';
         extensions: any;
         name: 'Portable Network Graphics';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      RAR_ARCHIVE: {
+      APPLICATION_X_RAR_COMPRESSED: {
         _id: 'application/x-rar-compressed';
         extensions: any;
         name: 'RAR archive';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      RICH_TEXT_FORMAT: {
+      TEXT_RICHTEXT: {
         _id: 'text/richtext';
         extensions: any;
         name: 'Rich Text Format';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      RICH_TEXT_FORMAT_RTF: {
+      APPLICATION_RTF: {
         _id: 'application/rtf';
         extensions: any;
         name: 'Rich Text Format (RTF)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      RICH_TEXT_FORMAT_RTF: {
+      APPLICATION_X_RTF: {
         _id: 'application/x-rtf';
         extensions: any;
         name: 'Rich Text Format (RTF)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      SCALABLE_VECTOR_GRAPHICS_SVG: {
+      IMAGE_SVG_XML: {
         _id: 'image/svg+xml';
         extensions: any;
         name: 'Scalable Vector Graphics (SVG)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      SMALL_WEB_FORMAT_SWF_OR_ADOBE_FLASH_DOCUMENT: {
+      APPLICATION_X_SHOCKWAVE_FLASH: {
         _id: 'application/x-shockwave-flash';
         extensions: any;
         name: 'Small web format (SWF) or Adobe Flash document';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      TAGGED_IMAGE_FILE_FORMAT_TIFF: {
+      IMAGE_TIFF: {
         _id: 'image/tiff';
         extensions: any;
         name: 'Tagged Image File Format (TIFF)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      TAPE_ARCHIVE_TAR: {
+      APPLICATION_X_TAR: {
         _id: 'application/x-tar';
         extensions: any;
         name: 'Tape Archive (TAR)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      TEXT_GENERALLY_ASCII_OR_ISO_8859_N: {
+      TEXT_PLAIN: {
         _id: 'text/plain';
         extensions: any;
         name: 'Text, (generally ASCII or ISO 8859-n)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      TRUE_TYPE_FONT: {
+      FONT_TTF: {
         _id: 'font/ttf';
         extensions: any;
         name: 'TrueType Font';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WEBM_AUDIO: {
+      AUDIO_WEBM: {
         _id: 'audio/webm';
         extensions: any;
         name: 'WEBM audio';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WEBM_VIDEO: {
+      VIDEO_WEBM: {
         _id: 'video/webm';
         extensions: any;
         name: 'WEBM video';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WEBP_IMAGE: {
+      IMAGE_WEBP: {
         _id: 'image/webp';
         extensions: any;
         name: 'WEBP image';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WAVEFORM_AUDIO_FORMAT: {
+      AUDIO_WAV: {
         _id: 'audio/wav';
         extensions: any;
         name: 'Waveform Audio Format';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WAVEFORM_AUDIO_FORMAT: {
+      AUDIO_X_WAV: {
         _id: 'audio/x-wav';
         extensions: any;
         name: 'Waveform Audio Format';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WEB_OPEN_FONT_FORMAT_WOFF: {
+      FONT_WOFF: {
         _id: 'font/woff';
         extensions: any;
         name: 'Web Open Font Format (WOFF)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WEB_OPEN_FONT_FORMAT_WOFF: {
+      FONT_WOFF_2: {
         _id: 'font/woff2';
         extensions: any;
         name: 'Web Open Font Format (WOFF)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WINDOWS_ENHANCED_METAFILE: {
+      APPLICATION_EMF: {
         _id: 'application/emf';
         extensions: any;
         name: 'Windows Enhanced Metafile';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WINDOWS_ENHANCED_METAFILE: {
+      APPLICATION_X_EMF: {
         _id: 'application/x-emf';
         extensions: any;
         name: 'Windows Enhanced Metafile';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WINDOWS_ENHANCED_METAFILE: {
+      IMAGE_X_EMF: {
         _id: 'image/x-emf';
         extensions: any;
         name: 'Windows Enhanced Metafile';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WINDOWS_ENHANCED_METAFILE: {
+      IMAGE_X_MGX_EMF: {
         _id: 'image/x-mgx-emf';
         extensions: any;
         name: 'Windows Enhanced Metafile';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WINDOWS_ENHANCED_METAFILE: {
+      IMAGE_X_XBITMAP: {
         _id: 'image/x-xbitmap';
         extensions: any;
         name: 'Windows Enhanced Metafile';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      WINDOWS_OS_2_BITMAP_GRAPHICS: {
+      IMAGE_BMP: {
         _id: 'image/bmp';
         extensions: any;
         name: 'Windows OS/2 Bitmap Graphics';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      XHTML: {
+      APPLICATION_XHTML_XML: {
         _id: 'application/xhtml+xml';
         extensions: any;
         name: 'XHTML';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      XML_IF_READABLE_FROM_CASUAL_USERS_RFC_3023_SECTION_3: {
+      TEXT_XML: {
         _id: 'text/xml';
         extensions: any;
         name: 'XML; if readable from casual users (RFC 3023, section 3)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      XML_NOT_READABLE_FROM_CASUAL_USERS_RFC_3023_SECTION_3: {
+      APPLICATION_XML: {
         _id: 'application/xml';
         extensions: any;
         name: 'XML; not readable from casual users (RFC 3023, section 3)';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      XUL: {
+      APPLICATION_VND_MOZILLA_XUL_XML: {
         _id: 'application/vnd.mozilla.xul+xml';
         extensions: any;
         name: 'XUL';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ZIP_ARCHIVE: {
+      APPLICATION_X_COMPRESSED: {
         _id: 'application/x-compressed';
         extensions: any;
         name: 'ZIP Archive';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ZIP_ARCHIVE: {
+      MULTIPART_X_ZIP: {
         _id: 'multipart/x-zip';
         extensions: any;
         name: 'ZIP Archive';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ZIP_ARCHIVE: {
+      APPLICATION_X_ZIP_COMPRESSED: {
         _id: 'application/x-zip-compressed';
         extensions: any;
         name: 'ZIP archive';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      ZIP_ARCHIVE: {
+      APPLICATION_ZIP: {
         _id: 'application/zip';
         extensions: any;
         name: 'ZIP archive';
         unsafe: any;
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      BINARY_DATA: {
+      APPLICATION_OCTET_STREAM: {
         _id: 'application/octet-stream';
         extensions: any;
         name: 'binary data';
         notes: 'Any kind of binary data';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
-      I_CALENDAR_FORMAT: {
+      TEXT_CALENDAR: {
         _id: 'text/calendar';
         extensions: any;
         name: 'iCalendar format';
@@ -1198,7 +1192,33 @@ declare module 'tyranid/isomorphic' {
   /**
    * Static properties for enum collection "TyrLogEventCollection"
    */
-  export interface TyrLogEventCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {}
+  export interface TyrLogEventCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+    
+      HTTP: {
+        _id: 'http';
+        label: 'HTTP';
+        notes: 'HTTP Requests';
+      } & TyrLogEvent<ObjIdType, ObjContainer, NumContainer>;
+
+      DATABASE: {
+        _id: 'db';
+        label: 'Database';
+        notes: 'Database Requests';
+      } & TyrLogEvent<ObjIdType, ObjContainer, NumContainer>;
+
+      HISTORICAL: {
+        _id: 'historical';
+        label: 'Historical';
+        notes: 'Historical diagnostics';
+      } & TyrLogEvent<ObjIdType, ObjContainer, NumContainer>;
+
+      SUBSCRIPTIONS: {
+        _id: 'subscription';
+        label: 'Subscriptions';
+        notes: 'Subscription diagnostics';
+      } & TyrLogEvent<ObjIdType, ObjContainer, NumContainer>;
+
+  }
   
   /**
    * Static properties for enum collection "TyrLogLevelCollection"
@@ -2597,7 +2617,212 @@ declare module 'tyranid/isomorphic' {
   /**
    * Static properties for enum collection "UnitFactorCollection"
    */
-  export interface UnitFactorCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {}
+  export interface UnitFactorCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+    
+      YOTTA: {
+        _id: 1;
+        symbol: 'Y';
+        prefix: 'yotta';
+        factor: 1e+24;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      ZETTA: {
+        _id: 1;
+        symbol: 'Z';
+        prefix: 'zetta';
+        factor: 1e+21;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      EXA: {
+        _id: 1;
+        symbol: 'E';
+        prefix: 'exa';
+        factor: 1000000000000000000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      PETA: {
+        _id: 1;
+        symbol: 'P';
+        prefix: 'peta';
+        factor: 1000000000000000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      TERA: {
+        _id: 1;
+        symbol: 'T';
+        prefix: 'tera';
+        factor: 1000000000000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      GIGA: {
+        _id: 1;
+        symbol: 'G';
+        prefix: 'giga';
+        factor: 1000000000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      MEGA: {
+        _id: 1;
+        symbol: 'M';
+        prefix: 'mega';
+        factor: 1000000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      MYRIA: {
+        _id: 1;
+        symbol: 'my';
+        prefix: 'myria';
+        factor: 10000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      KILO: {
+        _id: 1;
+        symbol: 'k';
+        prefix: 'kilo';
+        factor: 1000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      HECTO: {
+        _id: 1;
+        symbol: 'h';
+        prefix: 'hecto';
+        factor: 100;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      DECA: {
+        _id: 1;
+        symbol: 'da';
+        prefix: 'deca';
+        factor: 10;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      DECI: {
+        _id: 1;
+        symbol: 'd';
+        prefix: 'deci';
+        factor: 0.1;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      CENTI: {
+        _id: 1;
+        symbol: 'c';
+        prefix: 'centi';
+        factor: 0.01;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      MILLI: {
+        _id: 1;
+        symbol: 'm';
+        prefix: 'milli';
+        factor: 0.001;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      MICRO: {
+        _id: 1;
+        symbol: 'u';
+        prefix: 'micro';
+        factor: 0.000001;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      NANO: {
+        _id: 1;
+        symbol: 'n';
+        prefix: 'nano';
+        factor: 1e-9;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      PICO: {
+        _id: 1;
+        symbol: 'p';
+        prefix: 'pico';
+        factor: 1e-12;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      FEMTO: {
+        _id: 1;
+        symbol: 'f';
+        prefix: 'femto';
+        factor: 1e-15;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      ATTO: {
+        _id: 1;
+        symbol: 'a';
+        prefix: 'atto';
+        factor: 1e-18;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      ZEPTO: {
+        _id: 1;
+        symbol: 'z';
+        prefix: 'zepto';
+        factor: 1e-21;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      YOCTO: {
+        _id: 1;
+        symbol: 'y';
+        prefix: 'yocto';
+        factor: 1e-24;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      KIBI: {
+        _id: 1;
+        symbol: 'Ki';
+        prefix: 'kibi';
+        factor: 1024;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      MEBI: {
+        _id: 1;
+        symbol: 'Mi';
+        prefix: 'mebi';
+        factor: 1048576;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      GIBI: {
+        _id: 1;
+        symbol: 'Gi';
+        prefix: 'gibi';
+        factor: 1073741824;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      TEBI: {
+        _id: 1;
+        symbol: 'Ti';
+        prefix: 'tebi';
+        factor: 1099511627776;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      PEBI: {
+        _id: 1;
+        symbol: 'Pi';
+        prefix: 'pebi';
+        factor: 1125899906842624;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      EXBI: {
+        _id: 1;
+        symbol: 'Ei';
+        prefix: 'exbi';
+        factor: 1152921504606847000;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      ZEBI: {
+        _id: 1;
+        symbol: 'Zi';
+        prefix: 'zebi';
+        factor: 1.1805916207174113e+21;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+      YOBI: {
+        _id: 1;
+        symbol: 'Yi';
+        prefix: 'yobi';
+        factor: 1.2089258196146292e+24;
+      } & UnitFactor<ObjIdType, ObjContainer, NumContainer>;
+
+  }
   
   /**
    * Static properties for enum collection "UnitSystemCollection"
@@ -3219,7 +3444,6 @@ declare module 'tyranid/isomorphic' {
      |'application/vnd.apple.installer+xml'
      |'application/vnd.mozilla.xul+xml'
      |'application/vnd.ms-access'
-     |'application/vnd.ms-excel'
      |'application/vnd.ms-excel'
      |'application/vnd.ms-excel.addin.macroEnabled.12'
      |'application/vnd.ms-excel.sheet.binary.macroEnabled.12'

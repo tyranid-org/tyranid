@@ -62,9 +62,12 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
 
   if (!fields) throw new Error(`Collection "${name}" has no fields!`);
 
+  // TODO:  change tghis to use col.values, would be simpler
   const rows = _.sortBy(col.def.values || [], 'name');
 
-  if (rows.length && 'name' in fields) {
+  const labelField = col.labelField;
+
+  if (rows.length && labelField) {
     for (const row of rows) {
       let obj = '{';
       for (const key of Object.keys(row) as Array<keyof typeof row>) {
@@ -88,7 +91,9 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
       obj += '\n';
       obj += `      } & ${docName}<ObjIdType, ObjContainer, NumContainer>`;
 
-      let enumPropName = _.snakeCase((row as any)['name']).toUpperCase();
+      let enumPropName = _.snakeCase(
+        (row as any)[labelField.namePath.name]
+      ).toUpperCase();
 
       // need to wrap in quotes if starting with digit
       if (/[0-9]/.test(enumPropName[0])) {
