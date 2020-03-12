@@ -1,5 +1,12 @@
 import { TypeReference } from 'typescript';
 
+/**
+ * ISO-VARIANCE:
+ * 
+ * Some functions defined in isomorphic code are reported as being invalid when called from
+ * client/server code due to them being interpreted contravariantly instead of bivariantly.
+ * Typescript does not yet support variance casting so we resort to any.
+ */
 export namespace Tyr {
   /**
    * This is meant as a trigger to indicate that you are typing something
@@ -137,8 +144,8 @@ export namespace Tyr {
     required?: boolean;
     // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
     validate?(
-      this: D,
-      field: FieldInstance<D>
+      this: any, // D -- ISO-VARIANCE
+      field: any // FieldInstance<any> // D -- ISO-VARIANCE
     ): Promise<string | false | undefined> | string | false | undefined;
 
     of?: string | FieldDefinition<D>;
@@ -168,12 +175,12 @@ export namespace Tyr {
     granularity?: string;
 
     computed?: boolean;
-    get?(this: D): any;
-    getClient?(this: D): any;
-    getServer?(this: D): any;
-    set?(this: D, val: any): void;
-    setClient?(this: D, val: any): void;
-    setServer?(this: D, val: any): void;
+    get?: Function;
+    getClient?: Function;
+    getServer?: Function;
+    set?: Function;
+    setClient?: Function;
+    setServer?: Function;
   }
 
   export interface FieldStatic {
@@ -185,7 +192,7 @@ export namespace Tyr {
   > {
     $metaType: 'field';
 
-    collection: CollectionInstance<D>;
+    collection: CollectionInstance<any>; // ISO-VARIANCE
     computed: boolean;
     db: boolean;
     def: FieldDefinition<D>;
@@ -248,8 +255,8 @@ export namespace Tyr {
     pathName(idx: number): string;
     uniq(obj: any): any[];
     get(obj: any): any;
-    set<D extends Document<AnyIdType>>(
-      obj: D,
+    set(
+      obj: Document,
       value: any,
       opts?: { create?: boolean; ignore?: boolean }
     ): void;
@@ -323,7 +330,7 @@ export namespace Tyr {
     $isNew: boolean;
     $label: string;
     $metaType: 'document';
-    $model: CollectionInstance<this>;
+    $model: CollectionInstance<any>; // this -- ISO-VARIANCE
     $remove(opts: any): Promise<void>;
     $save(opts: any): Promise<this>;
     $slice(path: string, opts: any): Promise<void>;
