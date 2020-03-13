@@ -9,7 +9,6 @@ import { Filter } from './filter';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
-import { TyrThemeProps, useThemeProps } from './theme';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined

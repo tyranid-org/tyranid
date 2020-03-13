@@ -21,7 +21,7 @@ import { observer } from 'mobx-react';
 import { MenuOutlined, UploadOutlined } from '@ant-design/icons';
 import Icon from '@ant-design/icons';
 
-import Form, { FormInstance } from 'antd/lib/form';
+import { FormInstance } from 'antd/lib/form';
 import {
   message,
   Button,
@@ -34,7 +34,7 @@ import {
   Tooltip
 } from 'antd';
 import { PaginationProps } from 'antd/es/pagination';
-import { ColumnProps } from 'antd/es/table';
+import { ColumnProps } from 'antd/lib/table';
 
 import { Tyr } from 'tyranid/client';
 
@@ -51,23 +51,24 @@ import {
   getPathName,
   TyrThemedFieldBase
 } from '../path';
-import { TyrFormFields } from '../form';
 import { TyrTableConfig } from './typedef';
 import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
 import {
   EditableFormRow,
   EditableDraggableBodyRow,
-  EditableContext,
-  BodyRowProps
+  EditableContext
 } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { TyrPathProps } from '../path';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { DndProvider } from 'react-dnd';
+import { ColumnType } from 'antd/lib/table';
 
-export interface OurColumnProps<T> extends ColumnProps<T> {
-  path: Tyr.NamePathInstance;
+// ant's ColumnGroupType has children has required which seems incorrect
+export interface OurColumnProps<T> extends ColumnType<T> {
+  path?: Tyr.NamePathInstance;
+  children?: OurColumnProps<T>[];
 }
 
 const ObsTable = observer(Table);
@@ -77,6 +78,7 @@ interface TableColumnPathProps {
   align?: 'left' | 'right' | 'center';
   ellipsis?: boolean;
   editClassName?: string;
+  group?: string;
 
   /**
    * What table column grouping should this be grouped under.
@@ -495,8 +497,9 @@ export class TyrTableBase<
     const allWidthsDefined = columns.some(c => c.width);
     let hasAnyFilter = false;
 
-    const antColumns: ColumnProps<D>[] = [];
+    const antColumns: OurColumnProps<D>[] = [];
     let curGroupName: string | undefined;
+    let curGroupColumn: OurColumnProps<D>;
 
     columns.forEach((column, columnIdx) => {
       let path: Tyr.NamePathInstance | undefined;
@@ -636,7 +639,7 @@ export class TyrTableBase<
           const render = column.renderDisplay;
 
           return (
-            <div className='tyr-table-cell'>
+            <div className="tyr-table-cell">
               {render
                 ? render(document)
                 : getCellValue(path!, document, column as TyrTypeProps)}
@@ -660,7 +663,7 @@ export class TyrTableBase<
         path
       };
 
-      /*const { group } = column;
+      const { group } = column;
 
       if (group) {
         if (curGroupName === group) {
@@ -675,10 +678,9 @@ export class TyrTableBase<
           antColumns.push(curGroupColumn);
         }
       } else {
-      */
-      antColumns.push(tableColumn);
-      curGroupName = undefined;
-      //}
+        antColumns.push((tableColumn as unknown) as OurColumnProps<D>);
+        curGroupName = undefined;
+      }
     });
 
     if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
@@ -707,7 +709,7 @@ export class TyrTableBase<
         }`,
         title: !newDocumentTable
           ? actionHeaderLabel || (
-              <Tooltip title='Edit Columns'>
+              <Tooltip title="Edit Columns">
                 <MenuOutlined />
               </Tooltip>
             )
@@ -721,15 +723,15 @@ export class TyrTableBase<
 
           if (editable) {
             if (this.isSavingDocument) {
-              return <Spin tip='Saving...' />;
+              return <Spin tip="Saving..." />;
             }
 
             return (
               <div style={{ display: 'flex' }}>
                 <Button
                   style={{ width: '60px', marginRight: 8, zIndex: 1 }}
-                  size='small'
-                  type='default'
+                  size="small"
+                  type="default"
                   onClick={() => this.cancelEdit()}
                 >
                   Cancel
@@ -745,9 +747,9 @@ export class TyrTableBase<
 
                     return (
                       <Button
-                        size='small'
+                        size="small"
                         style={{ width: '60px', zIndex: 1 }}
-                        type='primary'
+                        type="primary"
                         onClick={() => this.saveDocument(form)}
                       >
                         Save
@@ -779,7 +781,7 @@ export class TyrTableBase<
             if (typeof label === 'string') {
               return (
                 <a
-                  className='action-item'
+                  className="action-item"
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -793,7 +795,7 @@ export class TyrTableBase<
 
             return (
               <span
-                className='action-item'
+                className="action-item"
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -806,9 +808,9 @@ export class TyrTableBase<
           }
 
           const menu = (
-            <Menu className='tyr-menu'>
+            <Menu className="tyr-menu">
               {thisActions.map(action => (
-                <Menu.Item className='tyr-menu-item' key={action.name}>
+                <Menu.Item className="tyr-menu-item" key={action.name}>
                   <button
                     onClick={() => action.act({ caller: this, document })}
                   >
@@ -821,7 +823,7 @@ export class TyrTableBase<
 
           return (
             <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
-              <span className='tyr-menu-link'>
+              <span className="tyr-menu-link">
                 <Icon type={actionIconType || 'ellipsis'} />
               </span>
             </Dropdown>
@@ -838,7 +840,7 @@ export class TyrTableBase<
       setTimeout(() => notifyFilterExists(hasAnyFilter));
     }
 
-    return antColumns;
+    return antColumns as ColumnType<D>[];
   }
 
   private handleTableChange = (
@@ -1099,7 +1101,7 @@ export class TyrTableBase<
         >
           {(children || multiActions.length > 0 || voidActions.length > 0) && (
             <Row>
-              <Col span={24} className='tyr-table-header'>
+              <Col span={24} className="tyr-table-header">
                 {children}
                 {multiActions.map(a => (
                   <Button
@@ -1133,7 +1135,7 @@ export class TyrTableBase<
               {paths && newDocument && (
                 <ObsTable
                   bordered={bordered}
-                  className='tyr-table-new-document'
+                  className="tyr-table-new-document"
                   loading={loading}
                   components={components}
                   rowKey={() => 'new'}
@@ -1196,8 +1198,8 @@ export class TyrTableBase<
    * Currently in ant tables, if you have a fixed height (scroll: { y: something } ), it messes up the column headers, and you need to make sure
    * that every column header/cell has a width and a min-width ... search for "width not working?" on ant table webpage for more information
    */
-  applyFixedWidthHack(columns: ColumnProps<D>[]) {
-    function classify(column: ColumnProps<D>) {
+  applyFixedWidthHack(columns: OurColumnProps<D>[]) {
+    function classify(column: OurColumnProps<D>) {
       let defaultWidth;
 
       // TODO:  move this type of functionality to the type class

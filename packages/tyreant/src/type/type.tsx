@@ -60,6 +60,7 @@ export interface FieldState {
 export type TyrTypeLaxProps = {
   form?: FormInstance;
   document?: Tyr.Document;
+  component?: TyrComponent;
   value?: { value?: any };
   aux?: string;
   children?: React.ReactNode;
