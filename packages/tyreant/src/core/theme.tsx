@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useContext } from 'react';
 
+import { useForm } from 'antd/lib/form/util';
+
 import { Tyr } from 'tyranid/client';
 
 import type { TyrTypeProps, TyrTypeLaxProps } from '../type/type';
@@ -58,11 +60,17 @@ export const withThemedTypeContext = <T extends {} = {}>(
   TypeControl: React.ComponentType<T & TyrTypeProps>
 ) => (props: T & TyrTypeLaxProps) => {
   const parentProps = useContext(TypeContext);
-  const form = props.form || (parentProps && parentProps.form);
+  const [form] = useForm();//props.form || (parentProps && parentProps.form);
   if (!form) return <div className="no-form" />;
 
-  const document = props.document || (parentProps && parentProps.document);
-  if (!document) return <div className="no-document" />;
+  let document = props.document || (parentProps?.document);
+  if (!document) {
+    const { component } = props;
+    if (component) document = component.document;
+
+    if (!document)
+      return <div className="no-document" />;
+  }
 
   const collection = document.$model;
 

@@ -191,7 +191,7 @@ $primary-background-color: #6a8fbe;
   }
 
   thead > tr > th {
-    background-color: inherit !important;
+    //background-color: inherit !important;
     border-bottom-color: $border-color !important;
     font-size: 14px;
     font-weight: bolder;
@@ -743,4 +743,11 @@ form textarea.tyr-markup-editor {
       }
     }
   }
+}
+
+.ant-table-filter-trigger .anticon {
+  top: auto;
+  left: auto;
+  bottom: 16px;
+  right: 2px;
 }

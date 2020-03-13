@@ -5,6 +5,10 @@ usage() {
   exit -1
 }
 
+if [ ! -e "./packages/tyranid" ]; then
+  cd ~/dev/tyranid
+fi
+
 for i in "$@"; do
   case $i in
     tdgen )
@@ -27,12 +31,19 @@ for i in "$@"; do
 
     * )
       if [[ -n $TARGET ]]; then
+        echo "Target specified twice."
         usage
       fi
 
       TARGET=$i
 
       if [ ! -e $1 ]; then
+        echo "Path '$1' does not exist."
+        usage
+      fi
+
+      if [ ! -e $1/node_modules ]; then
+        echo "There is no node_modules in '$1'."
         usage
       fi
   esac
@@ -44,16 +55,24 @@ if [[ -n $TYRANID ]]; then
   npm run build-tyranid &&
     rm -rf $TARGET/node_modules/tyranid/* &&
     cp -r ./packages/tyranid/* $TARGET/node_modules/tyranid/
+  SOMETHING=1
 fi
 
 if [[ -n $TDGEN ]]; then
   npm run build-tdgen &&
     rm -rf $TARGET/node_modules/tyranid-tdgen/* &&
     cp -r ./packages/tyranid-tdgen/* $TARGET/node_modules/tyranid-tdgen/
+  SOMETHING=1
 fi
 
 if [[ -n $TYREANT ]]; then
   npm run build-tyreant &&
     rm -rf $TARGET/node_modules/tyreant/* &&
     cp -r ./packages/tyreant/* $TARGET/node_modules/tyreant/
+  SOMETHING=1
 fi
+
+if [[ -z $SOMETHING ]]; then
+  usage
+fi
+
