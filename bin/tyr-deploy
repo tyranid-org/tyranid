@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+usage() {
+  echo "tyr-deploy tdgen|tyranid|tyreant <directory>"
+  exit -1
+}
+
+for i in "$@"; do
+  case $i in
+    tdgen )
+      TDGEN=1
+      ;;
+
+    tyranid )
+      TYRANID=1
+      ;;
+
+    tyreant )
+      TYREANT=1
+      ;;
+
+    * )
+      if [[ -n $TARGET ]]; then
+        usage
+      fi
+
+      TARGET=$i
+
+      if [ ! -e $1 ]; then
+        usage
+      fi
+  esac
+
+  shift
+done
+
+if [[ -n $TYRANID ]]; then
+  npm run build-tyranid &&
+    rm -rf $TARGET/node_modules/tyranid/* &&
+    cp -r ./packages/tyranid/* $TARGET/node_modules/tyranid/
+fi
+
+if [[ -n $TDGEN ]]; then
+  npm run build-tdgen &&
+    rm -rf $TARGET/node_modules/tyranid-tdgen/* &&
+    cp -r ./packages/tyranid-tdgen/* $TARGET/node_modules/tyranid-tdgen/
+fi
+
+if [[ -n $TYREANT ]]; then
+  npm run build-tyreant &&
+    rm -rf $TARGET/node_modules/tyreant/* &&
+    cp -r ./packages/tyreant/* $TARGET/node_modules/tyreant/
+fi
