@@ -18,8 +18,11 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
-import { MenuOutlined, UploadOutlined } from '@ant-design/icons';
-import Icon from '@ant-design/icons';
+import {
+  MenuOutlined,
+  UploadOutlined,
+  EllipsisOutlined
+} from '@ant-design/icons';
 
 import { FormInstance } from 'antd/lib/form';
 import {
@@ -97,7 +100,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   export?: boolean;
   paths: TyrTableColumnPathLaxProps[];
   actionHeaderLabel?: string | React.ReactNode;
-  actionIconType?: string;
+  actionIcon?: Tyr.anny;
   actionTrigger?: 'hover' | 'click';
   actionColumnClassName?: string;
   pinActionsRight?: boolean;
@@ -479,7 +482,7 @@ export class TyrTableBase<
   private getColumns(newDocumentTable?: boolean): ColumnProps<D>[] {
     const {
       collection,
-      actionIconType,
+      actionIcon,
       pinActionsRight,
       actionHeaderLabel,
       actionTrigger,
@@ -824,7 +827,7 @@ export class TyrTableBase<
           return (
             <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
               <span className="tyr-menu-link">
-                <Icon type={actionIconType || 'ellipsis'} />
+                {actionIcon || <EllipsisOutlined />}
               </span>
             </Dropdown>
           );
