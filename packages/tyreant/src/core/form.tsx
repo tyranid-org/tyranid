@@ -6,13 +6,14 @@ import { Tyr } from 'tyranid/client';
 
 import { Form, Row, Col, message } from 'antd';
 import { FormInstance } from 'antd/lib/form';
+import { FormLayout } from 'antd/lib/form/Form';
 
 import { TyrTypeProps } from '../type/type';
 import { TypeContext, useThemeProps } from '../core/theme';
 import { TyrThemedFieldBase, TyrPathExistsProps } from './path';
 import { registerComponent } from '../common';
 import { TyrOneComponent, TyrOneComponentProps } from './one-component';
-import { useComponent } from './component';
+import { TyrComponent, useComponent } from './component';
 
 export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;
@@ -26,6 +27,7 @@ export interface TyrFormFields {
 export interface TyrFormProps<D extends Tyr.Document>
   extends TyrOneComponentProps<D> {
   className?: string;
+  layout?: FormLayout;
   children?:
     | React.ReactNode
     | ((props: FormRenderComponentProps<D>) => JSX.Element);
@@ -50,7 +52,7 @@ export class TyrFormBase<
     return (
       <TyrThemedFieldBase
         {...pathProps}
-        form={this.form}
+        form={this.form!}
         document={document!}
       />
     );
@@ -76,30 +78,38 @@ export class TyrFormBase<
     const { document } = this;
     const { className, children, paths, render } = this.props;
 
-    return this.wrap(() => (
-      <Form
-        ref={this.formRef}
-        className={'tyr-form' + (className ? ' ' + className : '')}
-      >
-        <TypeContext.Provider value={(this.props as unknown) as TyrTypeProps}>
-          {render && document && render({ form: this, document })}
-          {paths &&
-            !children &&
-            !render &&
-            (paths as TyrPathExistsProps[]).map(pathProps => (
-              <Row key={pathProps.path.name} gutter={10}>
-                <Col span={24}>{this.renderField(pathProps)} </Col>
-              </Row>
-            ))}
-          {typeof children === 'function'
-            ? document &&
-              (children as (
-                props: FormRenderComponentProps<D>
-              ) => JSX.Element)({ form: this, document })
-            : children}
-        </TypeContext.Provider>
-      </Form>
-    ));
+    return this.wrap(() => {
+      const props: TyrTypeProps = {
+        component: (this as unknown) as TyrComponent,
+        form: this.form,
+        document
+      };
+
+      return (
+        <Form
+          ref={this.formRef}
+          layout={this.props.layout || 'vertical'}
+          className={'tyr-form' + (className ? ' ' + className : '')}
+        >
+          <TypeContext.Provider value={props}>
+            {render && document && render({ form: this, document })}
+            {paths &&
+              !children &&
+              !render &&
+              (paths as TyrPathExistsProps[]).map(pathProps => (
+                <Row key={pathProps.path.name} gutter={10}>
+                  <Col span={24}>{this.renderField(pathProps)} </Col>
+                </Row>
+              ))}
+            {typeof children === 'function' && document
+              ? (children as (
+                  props: FormRenderComponentProps<D>
+                ) => JSX.Element)({ form: this, document })
+              : children}
+          </TypeContext.Provider>
+        </Form>
+      );
+    });
   }
 
   async submit() {
