@@ -1243,16 +1243,16 @@ export class TyrTableBase<
     }
 
     for (const column of columns) {
-      // const { children } = column;
+      const { children } = column;
 
-      // if (children) {
-      //   let sum = 0;
-      //   for (const child of children) sum += classify(child);
-      //   column.width = sum;
-      //   classify(column);
-      // } else {
-      classify(column);
-      // }
+      if (children) {
+        let sum = 0;
+        for (const child of children) sum += classify(child);
+        column.width = sum;
+        classify(column);
+      } else {
+        classify(column);
+      }
     }
   }
 }
