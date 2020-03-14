@@ -657,7 +657,7 @@ export class TyrTableBase<
         ellipsis: column.ellipsis,
         ...(filteringEnabled && filteredValue
           ? { filteredValue: [filteredValue] }
-          : { filteredValue: [] }),
+          : { filteredValue: undefined }),
         ...filter,
         ...(!isEditingAnything && column.pinned && fieldCount > 1
           ? { fixed: column.pinned }
