@@ -23,6 +23,12 @@ for i in "$@"; do
       TYREANT=1
       ;;
 
+    all )
+      TYREANT=1
+      TDGEN=1
+      TYRANID=1
+      ;;
+
     * )
       if [[ -n $TARGET ]]; then
         echo "Target specified twice."

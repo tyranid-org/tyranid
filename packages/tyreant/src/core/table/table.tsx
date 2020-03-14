@@ -642,7 +642,7 @@ export class TyrTableBase<
           const render = column.renderDisplay;
 
           return (
-            <div className="tyr-table-cell">
+            <div className='tyr-table-cell'>
               {render
                 ? render(document)
                 : getCellValue(path!, document, column as TyrTypeProps)}
@@ -712,7 +712,7 @@ export class TyrTableBase<
         }`,
         title: !newDocumentTable
           ? actionHeaderLabel || (
-              <Tooltip title="Edit Columns">
+              <Tooltip title='Edit Columns'>
                 <MenuOutlined />
               </Tooltip>
             )
@@ -726,15 +726,15 @@ export class TyrTableBase<
 
           if (editable) {
             if (this.isSavingDocument) {
-              return <Spin tip="Saving..." />;
+              return <Spin tip='Saving...' />;
             }
 
             return (
               <div style={{ display: 'flex' }}>
                 <Button
                   style={{ width: '60px', marginRight: 8, zIndex: 1 }}
-                  size="small"
-                  type="default"
+                  size='small'
+                  type='default'
                   onClick={() => this.cancelEdit()}
                 >
                   Cancel
@@ -750,9 +750,9 @@ export class TyrTableBase<
 
                     return (
                       <Button
-                        size="small"
+                        size='small'
                         style={{ width: '60px', zIndex: 1 }}
-                        type="primary"
+                        type='primary'
                         onClick={() => this.saveDocument(form)}
                       >
                         Save
@@ -784,7 +784,7 @@ export class TyrTableBase<
             if (typeof label === 'string') {
               return (
                 <a
-                  className="action-item"
+                  className='action-item'
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -798,7 +798,7 @@ export class TyrTableBase<
 
             return (
               <span
-                className="action-item"
+                className='action-item'
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -811,9 +811,9 @@ export class TyrTableBase<
           }
 
           const menu = (
-            <Menu className="tyr-menu">
+            <Menu className='tyr-menu'>
               {thisActions.map(action => (
-                <Menu.Item className="tyr-menu-item" key={action.name}>
+                <Menu.Item className='tyr-menu-item' key={action.name}>
                   <button
                     onClick={() => action.act({ caller: this, document })}
                   >
@@ -826,7 +826,7 @@ export class TyrTableBase<
 
           return (
             <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
-              <span className="tyr-menu-link">
+              <span className='tyr-menu-link'>
                 {actionIcon || <EllipsisOutlined />}
               </span>
             </Dropdown>
@@ -834,7 +834,7 @@ export class TyrTableBase<
         },
         sorter: undefined,
         sortOrder: undefined,
-        width: 40,
+        width: isEditingAnything ? 150 : 40,
         ...(pinActionsRight !== false ? { fixed: 'right' } : {})
       });
     }
@@ -1104,7 +1104,7 @@ export class TyrTableBase<
         >
           {(children || multiActions.length > 0 || voidActions.length > 0) && (
             <Row>
-              <Col span={24} className="tyr-table-header">
+              <Col span={24} className='tyr-table-header'>
                 {children}
                 {multiActions.map(a => (
                   <Button
@@ -1138,7 +1138,7 @@ export class TyrTableBase<
               {paths && newDocument && (
                 <ObsTable
                   bordered={bordered}
-                  className="tyr-table-new-document"
+                  className='tyr-table-new-document'
                   loading={loading}
                   components={components}
                   rowKey={() => 'new'}
