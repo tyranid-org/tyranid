@@ -70,25 +70,13 @@ const sortLabels = (labels: any[], props: TyrPathProps) => {
   const sortedLabels = labels.slice();
 
   sortedLabels.sort((a, b) => {
-    if (searchSortById) {
-      return a.$id - b.$id;
-    }
-
-    if (a.$label === b.$label) {
-      return 0;
-    }
-
-    if (a.$label === undefined && b.$label !== undefined) {
-      return -1;
-    }
-
-    if (b.$label === undefined && a.$label !== undefined) {
-      return 1;
-    }
+    if (searchSortById) return a.$id - b.$id;
+    if (a.$label === b.$label) return 0;
+    if (a.$label === undefined && b.$label !== undefined) return -1;
+    if (b.$label === undefined && a.$label !== undefined) return 1;
 
     const aLabel = a.$label.toLowerCase?.() ?? '';
     const bLabel = b.$label.toLowerCase?.() ?? '';
-
     return aLabel.localeCompare(bLabel);
   });
 
@@ -105,6 +93,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     const key = this.mode === 'tags' ? $label : $id;
 
+    console.log('option key=', key);
     return (
       <Option key={key} value={key}>
         {this.props.searchOptionRenderer
@@ -168,7 +157,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     const { tail: field } = path!;
 
-    let mode: any;
+    let mode: ModeOption;
     // TODO:  'tags', 'combobox'
     if (field.type.name === 'array') {
       mode =
@@ -180,10 +169,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
       // if mode is search, but you do not want multiple selection, then override
       if (this.props.multiple === false && this.props.mode === 'search') {
-        mode = 'default';
+        mode = undefined;
       }
     } else {
-      mode = 'default';
+      mode = undefined;
     }
 
     this.mode = mode;
@@ -385,15 +374,16 @@ byName.link = {
       }
     }
 
+    console.log('mapDocumentValueToFormValue', value);
     // if collection has label renderer, then return value with labelProjection
-    return value && value.label ? value.label : value;
+    return value?.label || value;
   },
 
   // Given labels, return the ids
   mapFormValueToDocumentValue(path, value, props) {
     const nv = findByLabel(props!, linkFor(path)!, value);
     if (nv) value = nv.$id;
-    return value && value.key ? value.key : value;
+    return value?.key || value;
   },
 
   /**
