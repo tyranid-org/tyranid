@@ -103,8 +103,10 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   private createOption = (val: Tyr.Document) => {
     const { $label, $id } = val;
 
+    const key = this.mode === 'tags' ? $label : $id;
+
     return (
-      <Option value={this.mode === 'tags' ? $label : $id}>
+      <Option key={key} value={key}>
         {this.props.searchOptionRenderer
           ? this.props.searchOptionRenderer(val)
           : $label}

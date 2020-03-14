@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { useContext } from 'react';
 
-import { useForm } from 'antd/lib/form/util';
-
 import { Tyr } from 'tyranid/client';
 
 import type { TyrTypeProps, TyrTypeLaxProps } from '../type/type';
@@ -58,9 +56,11 @@ export const TypeContext = React.createContext<TyrTypeProps | undefined>(
 export const withThemedTypeContext = <T extends {} = {}>(
   type: string | undefined,
   TypeControl: React.ComponentType<T & TyrTypeProps>
-) => (props: T & TyrTypeLaxProps) => {
+) => (rawProps: T & TyrTypeLaxProps) => {
   const parentProps = useContext(TypeContext);
-  const [form] = useForm();//props.form || (parentProps && parentProps.form);
+  const props = useThemeProps(type as keyof TyrThemeProps, rawProps);
+
+  const form = props.form || (parentProps && parentProps.form);
   if (!form) return <div className="no-form" />;
 
   let document = props.document || (parentProps?.document);
@@ -115,7 +115,7 @@ export const withThemedTypeContext = <T extends {} = {}>(
     }
   }
   return React.createElement(TypeControl, {
-    ...useThemeProps(type as keyof TyrThemeProps, props),
+    ...props,
     form,
     document,
     path,
