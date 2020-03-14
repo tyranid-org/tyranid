@@ -222,7 +222,7 @@ $primary-background-color: #6a8fbe;
       vertical-align: bottom;
       border-top: 1px solid #ccc;
       border-right: 1px solid #ccc;
-      border-bottom: 2px solid #888;
+      border-bottom-width: 0px;
 
       &.tyr-action-column {
         border-right: none;
@@ -255,8 +255,6 @@ $primary-background-color: #6a8fbe;
       }
 
       .ant-table-column-sorter span {
-        height: 6px;
-
         i {
           color: $text-color;
         }
@@ -296,7 +294,7 @@ $primary-background-color: #6a8fbe;
 
     .ant-table-bordered {
       td {
-        border-width: 1px 1px !important;
+        border-width: 0px 1px 1px 1px !important;
       }
       td:first-child {
         border-left-width: 0 !important;
