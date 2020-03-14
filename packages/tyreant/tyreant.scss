@@ -9,8 +9,8 @@ $text-highlight-color: #7f3f00;
 $primary-background-color: #6a8fbe;
 
 .tyr-table {
-  width: calc(100% - 32px);
-  margin: 0 16px;
+  width: 100%;
+  padding: 0 16px;
 
   .tyr-table-header {
     display: flex;

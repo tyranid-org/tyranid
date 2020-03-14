@@ -169,28 +169,12 @@ export const decorateField = (
   props: TyrTypeProps,
   component: () => React.ReactElement
 ) => {
-  const { path, form } = props;
+  const { path } = props;
   const field = path?.tail;
-
-  const identifier = path!.identifier;
 
   if (props.hideOnCreate && props.document?.$isNew) {
     return <div className="hide-on-create" />;
   }
-
-  /*
-     WARNING!
-
-     There seems to be a hard dependency inside ant's form handling where the following need to be immediately
-     descended from each other:
-
-       FormItem
-         getFieldDecorator()
-           input control
-
-     If you inject other components/dom objects (like a div) in between any of those three ant's form handling
-     breaks down.
-   */
 
   let label;
   if (!props.noLabel) {
@@ -212,10 +196,10 @@ export const decorateField = (
   return (
     <FormItem
       key={field!.path}
+      name={field!.path}
       className={className('tyr-' + name, props)}
       label={label}
       rules={generateRules(props)}
-      //preserve={true}
     >
       {props.renderField && props.document
         ? props.renderField(props.document)
