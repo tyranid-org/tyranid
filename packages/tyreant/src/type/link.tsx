@@ -93,7 +93,6 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     const key = this.mode === 'tags' ? $label : $id;
 
-    console.log('option key=', key);
     return (
       <Option key={key} value={key}>
         {this.props.searchOptionRenderer
@@ -374,7 +373,6 @@ byName.link = {
       }
     }
 
-    console.log('mapDocumentValueToFormValue', value);
     // if collection has label renderer, then return value with labelProjection
     return value?.label || value;
   },
