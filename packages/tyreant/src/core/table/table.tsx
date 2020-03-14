@@ -732,7 +732,7 @@ export class TyrTableBase<
             return (
               <div style={{ display: 'flex' }}>
                 <Button
-                  style={{ width: '60px', marginRight: 8, zIndex: 1 }}
+                  style={{ marginRight: 8, zIndex: 1 }}
                   size='small'
                   type='default'
                   onClick={() => this.cancelEdit()}
@@ -751,7 +751,7 @@ export class TyrTableBase<
                     return (
                       <Button
                         size='small'
-                        style={{ width: '60px', zIndex: 1 }}
+                        style={{ zIndex: 1 }}
                         type='primary'
                         onClick={() => this.saveDocument(form)}
                       >
@@ -834,7 +834,7 @@ export class TyrTableBase<
         },
         sorter: undefined,
         sortOrder: undefined,
-        width: isEditingAnything ? 150 : 40,
+        width: isEditingAnything ? 160 : 40,
         ...(pinActionsRight !== false ? { fixed: 'right' } : {})
       });
     }
