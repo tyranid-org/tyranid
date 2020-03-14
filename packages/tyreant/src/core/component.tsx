@@ -48,7 +48,7 @@ export class TyrComponent<
    * "activePaths" contains paths that are currently active on the screen
    *   (e.g. what paths are enabled in table configuration)
    */
-  @computed
+  //@computed
   get activePaths(): TyrPathProps[] {
     return this.paths;
   }
