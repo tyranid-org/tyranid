@@ -181,8 +181,8 @@ $primary-background-color: #6a8fbe;
         display: none;
       }
 
-      .ant-table-column-has-filters .ant-dropdown-trigger,
-      .ant-table-column-sorter {
+      //.ant-table-column-sorter
+      .ant-table-column-has-filters .ant-dropdown-trigger {
         visibility: hidden;
       }
     }
@@ -254,6 +254,7 @@ $primary-background-color: #6a8fbe;
         white-space: nowrap;
       }
 
+      /*
       .ant-table-column-sorter span {
         height: 6px;
 
@@ -271,6 +272,7 @@ $primary-background-color: #6a8fbe;
           color: $text-highlight-color;
         }
       }
+      */
     }
 
     .ant-table-tbody > tr > td.ant-table-selection-column {

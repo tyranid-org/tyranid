@@ -851,7 +851,7 @@ export class TyrTableBase<
     filters: { [pathName: string]: string[] },
     sorter: {
       order?: TyrSortDirection;
-      columnKey: string;
+      field: string;
     },
     extra: { currentDataSource: any[] }
   ) => {
@@ -865,9 +865,9 @@ export class TyrTableBase<
     const { pageSize } = pagination;
     if (pageSize !== this.limit) this.limit = pageSize || this.defaultPageSize;
 
-    const sortFieldName = sorter.columnKey;
+    const sortFieldName = sorter.field;
 
-    // table doesn't appear to support multiple sort columns currently, so unselect any existing sort
+    // unselect any existing sort until we add support for multiple column sorting
     for (const pathName in sortDirections) {
       if (pathName !== sortFieldName) {
         delete sortDirections[pathName];
