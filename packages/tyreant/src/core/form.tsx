@@ -96,11 +96,14 @@ export class TyrFormBase<
             {paths &&
               !children &&
               !render &&
-              (paths as TyrPathExistsProps[]).map(pathProps => (
-                <Row key={pathProps.path.name} gutter={10}>
-                  <Col span={24}>{this.renderField(pathProps)} </Col>
-                </Row>
-              ))}
+              (paths as TyrPathExistsProps[]).map(pathProps => {
+                const { path } = pathProps; // path might be a string
+                return (
+                  <Row key={path.name || ((path as any) as string)} gutter={10}>
+                    <Col span={24}>{this.renderField(pathProps)} </Col>
+                  </Row>
+                );
+              })}
             {typeof children === 'function' && document
               ? (children as (
                   props: FormRenderComponentProps<D>
