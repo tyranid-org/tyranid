@@ -68,14 +68,16 @@ export const EditableFormRow = (props: BodyRowProps) => {
   // Just the edit row
   if (form && !connectDragSource) {
     return (
-      <EditableContext.Provider value={{ form }}>
-        <tr
-          key={`form-${restProps.index}`}
-          {...restProps}
-          className={className}
-          style={style}
-        />
-      </EditableContext.Provider>
+      <Form form={form} component={false}>
+        <EditableContext.Provider value={{ form }}>
+          <tr
+            key={`form-${restProps.index}`}
+            {...restProps}
+            className={className}
+            style={style}
+          />
+        </EditableContext.Provider>
+      </Form>
     );
   }
 
