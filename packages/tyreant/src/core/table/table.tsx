@@ -56,11 +56,7 @@ import {
 } from '../path';
 import { TyrTableConfig } from './typedef';
 import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
-import {
-  EditableFormRow,
-  EditableDraggableBodyRow,
-  EditableContext
-} from './table-rows';
+import { EditableFormRow, EditableContext } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { TyrPathProps } from '../path';
@@ -989,9 +985,7 @@ export class TyrTableBase<
 
       const components = {
         body: {
-          row: (dndEnabled // && dndBackend
-            ? EditableDraggableBodyRow
-            : EditableFormRow) as any
+          row: EditableFormRow as any
         }
       };
 
@@ -1037,7 +1031,6 @@ export class TyrTableBase<
               : (title as (rows: Object[]) => React.ReactNode)
           }
           showHeader={newDocument ? false : showHeader}
-          // TODO: get rid of slice() once we go to Mobx 5 */ documents.slice()
           dataSource={documents.slice()}
           columns={this.getColumns()}
           scroll={fieldCount > 1 ? scroll : undefined}
