@@ -173,7 +173,7 @@ export const decorateField = (
   const field = path?.tail;
 
   if (props.hideOnCreate && props.document?.$isNew) {
-    return <div className="hide-on-create" />;
+    return <div className='hide-on-create' />;
   }
 
   let label;
@@ -196,7 +196,7 @@ export const decorateField = (
   return (
     <FormItem
       key={field!.path}
-      name={field!.path}
+      name={field!.namePath.identifier}
       className={className('tyr-' + name, props)}
       label={label}
       rules={generateRules(props)}
