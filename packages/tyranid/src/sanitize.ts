@@ -3,33 +3,6 @@ import { Tyr } from 'tyranid';
 
 export type SanitizeConfig = boolean | 'name' | 'email' | 'lorem';
 
-export interface SanitizeOptions {
-  /**
-   * desired name of the output database
-   */
-  outDbName?: string;
-  /**
-   * number of documents to batch insert at a time
-   */
-  batchSize?: number;
-  /**
-   * verbose progress logging
-   */
-  verbose?: boolean;
-  /**
-   * sanitize each collection serially (defaults to concurrently)
-   */
-  serial?: boolean;
-  /**
-   * faker.js seed
-   */
-  seed?: number;
-  /**
-   * sanitize every string field automatically
-   */
-  autoSanitize?: boolean;
-}
-
 export interface WalkState {
   path: string;
   $id: string;
@@ -41,7 +14,9 @@ export interface WalkState {
  * @param tyr
  * @param opts
  */
-export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
+export async function sanitize(tyr: typeof Tyr, iOpts?: Tyr.SanitizeOptions) {
+  const opts = iOpts || Tyr.options.sanitize || {};
+
   const {
     outDbName = Tyr.db.databaseName + '____sanitized',
     batchSize = 200,
@@ -116,7 +91,7 @@ export async function sanitize(tyr: typeof Tyr, opts: SanitizeOptions = {}) {
  */
 function createDocumentSanitizer(
   def: Tyr.CollectionDefinitionHydrated,
-  opts: SanitizeOptions
+  opts: Tyr.SanitizeOptions
 ) {
   const { autoSanitize } = opts;
   const { warn } = createLogger(opts);
@@ -227,7 +202,7 @@ function getSanitizedValue<D>(
   }
 }
 
-function createLogger(opts: SanitizeOptions) {
+function createLogger(opts: Tyr.SanitizeOptions) {
   const { verbose } = opts;
   const format = (str: string) => `tyranid-sanitize: ${str}`;
   const log = (str: string) => verbose && console.log(format(str));

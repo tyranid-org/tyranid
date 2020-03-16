@@ -2278,6 +2278,10 @@ describe('tyranid', () => {
       it('should log queries with regular expressions, #1', async () => {
         await Book.findAll({ query: { title: /foo/i } });
 
+        // SLEEP-RETRY:  findAll doesn't await internal log calls so this can be a timing issue
+        //               write something that will retry a test for up to 1s every 50ms before failing
+        await Tyr.sleep(100);
+
         const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);
         expect((logs[0] as any).e).to.be.eql('db');
@@ -2301,6 +2305,8 @@ describe('tyranid', () => {
             $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }]
           }
         });
+
+        await Tyr.sleep(100); // SLEEP-RETRY
 
         const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
         expect(logs.length).to.be.eql(1);

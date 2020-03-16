@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
-
 function equalCustomizer(a, b) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
   if (

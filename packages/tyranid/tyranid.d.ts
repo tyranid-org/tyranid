@@ -751,6 +751,33 @@ export namespace Tyr {
     httpCode: number;
   }
 
+  export interface SanitizeOptions {
+    /**
+     * desired name of the output database
+     */
+    outDbName?: string;
+    /**
+     * number of documents to batch insert at a time
+     */
+    batchSize?: number;
+    /**
+     * verbose progress logging
+     */
+    verbose?: boolean;
+    /**
+     * sanitize each collection serially (defaults to concurrently)
+     */
+    serial?: boolean;
+    /**
+     * faker.js seed
+     */
+    seed?: number;
+    /**
+     * sanitize every string field automatically
+     */
+    autoSanitize?: boolean;
+  }
+
   export interface ConfigOptions {
     aws?: {
       bucket?: string;
@@ -801,6 +828,7 @@ export namespace Tyr {
       remove: string;
     };
     pregenerateClient?: boolean;
+    sanitize?: SanitizeOptions;
     secure?: Secure;
     validate?: ValidationPattern[];
     whiteLabel?: (metadata: Metadata) => string;

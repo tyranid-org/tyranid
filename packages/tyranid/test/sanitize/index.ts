@@ -1,7 +1,7 @@
 import test from 'ava';
 import * as mongodb from 'mongodb';
 import { Tyr } from 'tyranid';
-import { sanitize } from '../src';
+import { sanitize } from '../../src/sanitize';
 import { createTestData } from './data';
 import { User } from './models';
 
