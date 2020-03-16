@@ -1,7 +1,6 @@
 import test from 'ava';
 import * as mongodb from 'mongodb';
 import { Tyr } from 'tyranid';
-import { sanitize } from '../../src/sanitize';
 import { createTestData } from './data';
 import { User } from './models';
 
@@ -34,12 +33,12 @@ test.after(async () => {
 });
 
 test.serial('should successfully sanitize', () =>
-  sanitize(Tyr, { outDbName: sanitizedDB })
+  Tyr.sanitize({ outDbName: sanitizedDB })
 );
 
 test.serial('should error if sanitizing into same db', async t => {
   try {
-    await sanitize(Tyr, { outDbName: sanitizedDB });
+    await Tyr.sanitize({ outDbName: sanitizedDB });
   } catch (err) {
     return t.pass();
   }

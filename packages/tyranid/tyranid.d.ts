@@ -102,6 +102,7 @@ export namespace Tyr {
   export function labelize(name: string): string;
   export function pluralize(str: string): string;
   export function projectify(obj: object): { [key: string]: number };
+  export function sanitize(opts?: SanitizeOptions): Promise<void>;
   export function singularize(str: string): string;
   export function unitize(count: number, unit: string): string;
   export function config(opts: ConfigOptions): Promise<void>;

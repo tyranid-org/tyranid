@@ -71,8 +71,6 @@ import './unit/unitType';
 import './unit/unit';
 import './unit/units';
 
-import './sanitize';
-
 import { generateClientLibrary } from './express';
 
 import /*Schema from */ './schema';

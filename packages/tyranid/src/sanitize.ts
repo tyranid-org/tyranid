@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+
 import { Tyr } from 'tyranid';
 
 export type SanitizeConfig = boolean | 'name' | 'email' | 'lorem';
@@ -9,12 +10,12 @@ export interface WalkState {
 }
 
 /**
- * sanatize a database based on tyranid schema
+ * sanitize a database based on tyranid schema
  *
  * @param tyr
  * @param opts
  */
-export async function sanitize(tyr: typeof Tyr, iOpts?: Tyr.SanitizeOptions) {
+export async function sanitize(iOpts?: Tyr.SanitizeOptions) {
   const opts = iOpts || Tyr.options.sanitize || {};
 
   const {
@@ -35,7 +36,7 @@ export async function sanitize(tyr: typeof Tyr, iOpts?: Tyr.SanitizeOptions) {
   if (seed) faker.seed(seed);
 
   log(
-    `Creating santized version of ${Tyr.db.databaseName} in new database: ${outDbName}`
+    `Creating sanitized version of ${Tyr.db.databaseName} in new database: ${outDbName}`
   );
 
   const outDb = Tyr.mongoClient.db(outDbName);
@@ -82,6 +83,8 @@ export async function sanitize(tyr: typeof Tyr, iOpts?: Tyr.SanitizeOptions) {
     await Promise.all(collections.map(sanitizeCollection));
   }
 }
+
+Tyr.sanitize = sanitize;
 
 /**
  * sanitize a single document given its schema
