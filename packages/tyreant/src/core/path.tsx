@@ -4,9 +4,8 @@ import { Moment } from 'moment';
 
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-import { Tooltip } from 'antd';
+import { Form, Tooltip } from 'antd';
 import { SelectValue } from 'antd/lib/select';
-import { Form } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -173,7 +172,7 @@ export const decorateField = (
   const field = path?.tail;
 
   if (props.hideOnCreate && props.document?.$isNew) {
-    return <div className='hide-on-create' />;
+    return <div className="hide-on-create" />;
   }
 
   let label;
