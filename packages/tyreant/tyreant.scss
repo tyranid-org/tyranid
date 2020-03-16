@@ -260,6 +260,10 @@ $primary-background-color: #6a8fbe;
       width: 42px;
     }
 
+    .ant-table-tbody .ant-table-cell-ellipsis.ant-table-cell-fix-left-last {
+      display: table-cell;
+    }
+
     td {
       background-color: white;
       border-width: 0 0 1px 0 !important;
