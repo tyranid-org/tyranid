@@ -59,7 +59,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       ? ({
           key: rawConfig
         } as TyrTableConfig)
-      : rawConfig;
+      : (rawConfig as TyrTableConfig);
 
   const lockedLeft = config.lockedLeft || 0;
 
@@ -177,7 +177,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
         {exportProp ? 'Include data from ...' : config.header}
 
         {incomingTableConfig && (
-          <div className="tyr-config-columns-list tyr-config-columns-list-locked">
+          <div className='tyr-config-columns-list tyr-config-columns-list-locked'>
             {lockedFields.map(f => (
               <TyrTableColumnConfigItem
                 key={f.name}
@@ -190,7 +190,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
         {incomingTableConfig && (
           <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="droppable">
+            <Droppable droppableId='droppable'>
               {(provided, snapshot) => (
                 <div
                   {...provided.droppableProps}
@@ -235,24 +235,24 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   const actionLabel = exportProp ? 'Export' : 'Save';
   const actionButton = exportProp ? (
     <a
-      className="ant-btn ant-btn-primary tyr-link-btn"
+      className='ant-btn ant-btn-primary tyr-link-btn'
       href={`/api/${collection.def.name}/export?opts=${encodeURIComponent(
         JSON.stringify({
           query: table.findOpts?.query,
           fields: columnFields.filter(f => !f.hidden).map(f => f.name)
         })
       )}`}
-      role="button"
+      role='button'
       onClick={onCancel}
-      target="_blank"
+      target='_blank'
       download={Tyr.pluralize(collection.label.toLowerCase()) + '.csv'}
     >
       {actionLabel}
     </a>
   ) : (
     <Button
-      key="submit"
-      type="primary"
+      key='submit'
+      type='primary'
       onClick={onSave}
       style={{ marginLeft: '10px' }}
     >
@@ -262,8 +262,8 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   const renderDrawerFooter = () => {
     return (
-      <div className="tyr-footer" style={{ textAlign: 'center' }}>
-        <Button key="back" onClick={onCancel}>
+      <div className='tyr-footer' style={{ textAlign: 'center' }}>
+        <Button key='back' onClick={onCancel}>
           Close
         </Button>
         {actionButton}
@@ -282,14 +282,14 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
         visible={true}
         closable={false}
         getContainer={tableBody!}
-        placement="right"
+        placement='right'
         style={{ position: 'absolute', right: '1px' }}
         maskClosable={false}
-        className="tyr-config-columns"
+        className='tyr-config-columns'
         destroyOnClose={false}
       >
-        <div className="tyr-drawer-container">
-          <div className="tyr-drawer">
+        <div className='tyr-drawer-container'>
+          <div className='tyr-drawer'>
             {renderBody()}
             {renderDrawerFooter()}
           </div>
@@ -300,13 +300,13 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   return (
     <Modal
-      className="tyr-modal tyr-config-columns"
+      className='tyr-modal tyr-config-columns'
       visible={true}
       title={title}
       onCancel={onCancel}
       footer={
         <>
-          <Button key="back" onClick={onCancel}>
+          <Button key='back' onClick={onCancel}>
             Cancel
           </Button>
           {actionButton}
