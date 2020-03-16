@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react';
 
-import { Tyr } from '../tyreant';
+import { Tyr } from 'tyranid/client';
+
 import {
   TyrComponentProps,
   TyrComponentState,
