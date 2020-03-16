@@ -2,11 +2,10 @@ import { compact, debounce, uniq } from 'lodash';
 import * as React from 'react';
 import { useState } from 'react';
 
-import { Select, Spin, Menu, Input } from 'antd';
+import { Select, Spin, Menu, Input, Checkbox } from 'antd';
 import { SelectProps, SelectValue } from 'antd/lib/select';
 const { Option } = Select;
 const { Search } = Input;
-import Checkbox from 'antd/es/checkbox';
 
 import { Tyr } from 'tyranid/client';
 
@@ -254,7 +253,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     if (controlMode === 'view') {
       return decorateField('link', props, () => (
-        <span className="tyr-value">{viewLabel}</span>
+        <span className='tyr-value'>{viewLabel}</span>
       ));
     }
 
@@ -262,7 +261,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       mode: this.mode,
       labelInValue: !!props.labelInValue,
       notFoundContent: loading ? (
-        <Spin size="small" style={{ position: 'static' }} />
+        <Spin size='small' style={{ position: 'static' }} />
       ) : null,
       showSearch: true,
       onSearch: this.search,
@@ -508,7 +507,7 @@ const LinkFilterDropdown = ({
 
   return (
     <TyrFilter<string[]>
-      typeName="link"
+      typeName='link'
       filterable={filterable}
       filterDdProps={filterDdProps}
       pathProps={pathProps}
@@ -560,9 +559,9 @@ const LinkFilterDropdown = ({
           <>
             {!pathProps.liveSearch && !link.isStatic() && (
               <Search
-                placeholder="search for..."
-                size="small"
-                className="tyr-filter-search-input"
+                placeholder='search for...'
+                size='small'
+                className='tyr-filter-search-input'
                 onChange={e => setFilterSearchValue(e.currentTarget.value)}
                 onSearch={async value => {
                   const results = await linkField.labels(
@@ -584,9 +583,9 @@ const LinkFilterDropdown = ({
             )}
 
             <Menu
-              className="ant-table-filter-dropdown ant-dropdown-menu"
+              className='ant-table-filter-dropdown ant-dropdown-menu'
               selectedKeys={initialValues}
-              mode="vertical"
+              mode='vertical'
               multiple={true}
               onClick={
                 // this debounce is here because if you clicked on the Menu (and not the contained Checkbox) it would fire this event twice
@@ -612,6 +611,12 @@ const LinkFilterDropdown = ({
                 })
               }
             >
+              {/*
+              <Menu.ItemGroup key="x" label="xx">
+                <Menu.Item key="y">Item</Menu.Item>
+              </Menu.ItemGroup>
+              */}
+
               {sortLabels(labels || link.values, pathProps).map(v => {
                 const isChecked =
                   searchValue && searchValue.indexOf(v.$id) > -1;
@@ -619,7 +624,7 @@ const LinkFilterDropdown = ({
                 return (
                   <Menu.Item
                     key={v.$id}
-                    className="ant-dropdown-menu-item"
+                    className='ant-dropdown-menu-item'
                     style={{
                       marginBottom: 0,
                       marginTop: 0,

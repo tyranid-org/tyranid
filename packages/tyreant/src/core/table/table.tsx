@@ -11,8 +11,6 @@ import { compact, findIndex, isEqual } from 'lodash';
 
 import * as React from 'react';
 import { createRef } from 'react';
-//import { DragDropContextProvider } from 'react-dnd';
-
 import HTML5Backend from 'react-dnd-html5-backend';
 
 import { observable } from 'mobx';
@@ -172,11 +170,6 @@ export class TyrTableBase<
 
   async componentDidMount() {
     super.componentDidMount();
-
-    const { orderable } = this.props;
-
-    //if (orderable && !dndBackend)
-    //  dndBackend = this.props.dndBackend || HTML5Backend;
 
     const { config, onLoad } = this.props;
 
@@ -1152,12 +1145,12 @@ export class TyrTableBase<
                   }}
                   ref={this.tableWrapper}
                 >
-                  {dndEnabled && ( //{dndBackend && (
+                  {dndEnabled && (
                     <DndProvider backend={HTML5Backend}>
                       {mainTable}
                     </DndProvider>
                   )}
-                  {!dndEnabled && mainTable /* {!dndBackend && mainTable } */}
+                  {!dndEnabled && mainTable}
                 </div>
               )}
               {showConfig && tableConfig && (
