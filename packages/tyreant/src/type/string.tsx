@@ -59,8 +59,6 @@ export const stringFilter: Filter = (
             value={searchValue}
             onChange={e => {
               setSearchValue(e.target.value);
-              if (props.liveSearch) search(true);
-              else filterDdProps.setSelectedKeys?.([searchValue!]);
             }}
             onPressEnter={() => search()}
             style={{ width: 188, marginBottom: 8, display: 'block' }}

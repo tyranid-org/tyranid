@@ -69,7 +69,6 @@ export const dateFilter: Filter = (
             format={props.dateFormat || DATE_FORMAT}
             onChange={v => {
               setSearchValue(v as RangePickerValue);
-              if (props.liveSearch) search(true);
             }}
             //style={{ width: 188, marginBottom: 8, display: 'block' }}
           />

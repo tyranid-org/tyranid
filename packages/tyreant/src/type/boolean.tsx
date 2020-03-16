@@ -64,8 +64,6 @@ export const booleanFilter: Filter = (
                 onChange={(e: CheckboxChangeEvent) => {
                   if (!searchValue) setSearchValue({});
                   searchValue['no'] = !searchValue.no;
-
-                  if (props.liveSearch) search(true);
                 }}
               >
                 {valueLabels ? valueLabels[0].$label : 'No'}
@@ -79,7 +77,6 @@ export const booleanFilter: Filter = (
                 onChange={(e: CheckboxChangeEvent) => {
                   if (!searchValue) setSearchValue({});
                   searchValue['yes'] = !searchValue.yes;
-                  if (props.liveSearch) search(true);
                 }}
               >
                 {valueLabels ? valueLabels[1].$label : 'Yes'}

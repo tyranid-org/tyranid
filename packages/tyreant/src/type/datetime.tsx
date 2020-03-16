@@ -77,7 +77,6 @@ export const dateTimeFilter: Filter = (
             }}
             onChange={v => {
               setSearchValue(v as RangePickerValue);
-              if (props.liveSearch) search(true);
             }}
             //style={{ width: 188, marginBottom: 8, display: 'block' }}
           />

@@ -443,11 +443,12 @@ byName.link = {
 
     if (searchValue) {
       if (!opts.query) opts.query = {};
-      opts.query[path.spath] = Array.isArray(searchValue)
-        ? {
-            $in: searchValue
-          }
-        : searchValue;
+      opts.query[path.spath] =
+        Array.isArray(searchValue) && (searchValue as any[]).length
+          ? {
+              $in: searchValue
+            }
+          : searchValue;
     }
 
     if (link.labelField && !link.isStatic()) {
@@ -505,6 +506,12 @@ const LinkFilterDropdown = ({
   // we clone the searchValues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
   initialValues = Tyr.cloneDeep(initialValues);
 
+  const delaySetLabels = (
+    value: React.SetStateAction<LabelDocument[] | undefined>
+  ) => {
+    setTimeout(() => setLabels(value));
+  };
+
   return (
     <TyrFilter<string[]>
       typeName="link"
@@ -529,13 +536,13 @@ const LinkFilterDropdown = ({
               }
             }
 
-            setLabels(uniq(compact(allLabels), '$id'));
+            delaySetLabels(uniq(compact(allLabels), '$id'));
           } else {
             if (!link.isStatic()) {
               linkField
                 .labels(new path.tail.collection({}), filterSearchValue)
                 .then(results => {
-                  setLabels(
+                  delaySetLabels(
                     results.map(d => ({
                       ...d,
                       $id: String(d.$id),
@@ -544,7 +551,7 @@ const LinkFilterDropdown = ({
                   );
                 });
             } else {
-              setLabels(
+              delaySetLabels(
                 linkFor(path)!.values.map(d => ({
                   ...d,
                   $id: String(d.$id),

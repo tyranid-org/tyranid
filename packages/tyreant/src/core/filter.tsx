@@ -75,9 +75,8 @@ export function TyrFilter<SearchValueType>({
     if (pathProps.liveSearch) {
       filterable.searchValues[pathName] = value;
       filterable.onSearch();
-      filterDdProps.confirm?.();  
     }
-  }
+  };
 
   const clear = () => {
     delete filterable.searchValues[pathName];
