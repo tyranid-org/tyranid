@@ -228,6 +228,15 @@ $primary-background-color: #6a8fbe;
         width: 42px;
       }
 
+      .ant-table-column-sorter {
+        position: relative;
+
+        .ant-table-column-sorter-inner {
+          position: absolute;
+          bottom: 2px;
+        }
+      }
+
       .ant-table-filter-selected {
         background: $popup-background-color;
       }
@@ -391,6 +400,12 @@ $primary-background-color: #6a8fbe;
 
   .ant-modal-header {
     padding: 16px;
+  }
+
+  .ant-modal-footer {
+    .ant-btn {
+      margin-left: 8px;
+    }
   }
 }
 
@@ -693,7 +708,7 @@ $primary-background-color: #6a8fbe;
     padding: 12px;
     text-align: right;
 
-    button {
+    .ant-btn {
       margin-left: 8px;
     }
   }
