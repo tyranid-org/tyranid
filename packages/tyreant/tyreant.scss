@@ -133,6 +133,14 @@ $primary-background-color: #6a8fbe;
       background: #fff;
     }
 
+    thead th {
+      border-bottom-width: 2px !important;
+    }
+
+    &.ant-table-fixed-column thead th {
+      border-bottom-width: 1px !important;
+    }
+
     .ant-col .ant-calendar-picker-icon {
       z-index: 0;
     }
@@ -209,19 +217,8 @@ $primary-background-color: #6a8fbe;
     }
 
     thead > tr > th {
-      vertical-align: bottom;
-
       font-size: 14px;
       font-weight: bolder;
-
-      .anticon.anticon-filter {
-        top: unset;
-        height: auto;
-        top: auto;
-        left: auto;
-        bottom: 16px;
-        right: 2px;
-      }
 
       &.ant-table-selection-column {
         min-width: 42px;

@@ -23,6 +23,11 @@ for i in "$@"; do
       TYREANT=1
       ;;
 
+    CSS )
+      CSS=1
+      ;;
+
+
     all )
       TYREANT=1
       TDGEN=1
@@ -69,6 +74,13 @@ if [[ -n $TYREANT ]]; then
   npm run build-tyreant &&
     rm -rf $TARGET/node_modules/tyreant/* &&
     cp -r ./packages/tyreant/* $TARGET/node_modules/tyreant/
+  SOMETHING=1
+fi
+
+if [[ -n $CSS ]]; then
+  npm run build-tyreant &&
+    rm -rf $TARGET/node_modules/tyreant/tyreant.css &&
+    cp -r ./packages/tyreant/tyreant.css $TARGET/node_modules/tyreant/tyreant.css
   SOMETHING=1
 fi
 

@@ -69,6 +69,16 @@ export function TyrFilter<SearchValueType>({
     filterable.searchValues[pathName]
   );
 
+  const setLiveSetSearchValue = (value: SearchValueType | undefined) => {
+    setSearchValue(value);
+
+    if (pathProps.liveSearch) {
+      filterable.searchValues[pathName] = value;
+      filterable.onSearch();
+      filterDdProps.confirm?.();  
+    }
+  }
+
   const clear = () => {
     delete filterable.searchValues[pathName];
     setSearchValue(undefined);
@@ -87,7 +97,7 @@ export function TyrFilter<SearchValueType>({
 
   return (
     <div className={`tyr-filter tyr-${typeName}-filter`}>
-      {children(searchValue, setSearchValue, search)}
+      {children(searchValue, setLiveSetSearchValue, search)}
       {!filterDdProps.connect && (
         <div className="tyr-filter-footer">
           <Button onClick={() => clear()} size="small" style={{ width: 90 }}>
