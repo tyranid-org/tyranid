@@ -173,7 +173,7 @@ export const decorateField = (
   const field = path?.tail;
 
   if (props.hideOnCreate && props.document?.$isNew) {
-    return <div className='hide-on-create' />;
+    return <div className="hide-on-create" />;
   }
 
   let label;
