@@ -102,10 +102,6 @@ $primary-background-color: #6a8fbe;
     }
   }
 
-  .ant-table-header {
-    border-left: 1px solid #ccc;
-  }
-
   .tyr-action-column {
     .ant-table-column-title {
       .anticon {
@@ -140,12 +136,6 @@ $primary-background-color: #6a8fbe;
     .ant-col .ant-calendar-picker-icon {
       z-index: 0;
     }
-
-    //.ant-table-title {
-    //padding-right: 0;
-    //padding-left: 0;
-    //background-color: $background-color;
-    //}
 
     .ant-table-body > table {
       padding: 0;
@@ -188,8 +178,8 @@ $primary-background-color: #6a8fbe;
     }
 
     .ant-table-tbody > tr.tyr-editable-row > td {
-      padding-top: 4px !important;
-      padding-bottom: 4px !important;
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
     }
 
     .tyr-table-new-document table td {
@@ -220,15 +210,7 @@ $primary-background-color: #6a8fbe;
 
     thead > tr > th {
       vertical-align: bottom;
-      border-top: 1px solid #ccc;
-      border-right: 1px solid #ccc;
-      border-bottom: 0px solid #888;
 
-      &.tyr-action-column {
-        border-right: none;
-      }
-
-      //border-bottom-color: $border-color !important;
       font-size: 14px;
       font-weight: bolder;
 

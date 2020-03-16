@@ -2,11 +2,10 @@ import { compact, debounce, uniq } from 'lodash';
 import * as React from 'react';
 import { useState } from 'react';
 
-import { Select, Spin, Menu, Input } from 'antd';
+import { Select, Spin, Menu, Input, Checkbox } from 'antd';
 import { SelectProps, SelectValue } from 'antd/lib/select';
 const { Option } = Select;
 const { Search } = Input;
-import Checkbox from 'antd/es/checkbox';
 
 import { Tyr } from 'tyranid/client';
 
