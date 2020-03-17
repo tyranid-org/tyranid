@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { observable, computed } from 'mobx';
+import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
 import { Tyr } from 'tyranid/client';

@@ -5,7 +5,7 @@ import { Tyr } from 'tyranid/client';
 
 import type { TyrTypeProps, TyrTypeLaxProps } from '../type/type';
 import type { TyrDrawerProps } from './drawer';
-import type { TyrFormProps } from './form';
+import type { TyrFormBase, TyrFormProps } from './form';
 import type { TyrKanbanProps } from './kanban';
 import type { TyrModalProps } from './modal';
 import type { TyrTableProps } from './table';
@@ -60,7 +60,7 @@ export const withThemedTypeContext = <T extends {} = {}>(
   const parentProps = useContext(TypeContext);
   const props = useThemeProps(type as keyof TyrThemeProps, rawProps);
 
-  const form = props.form || (parentProps && parentProps.form);
+  const form = props.form || parentProps?.form;
   if (!form) return <div className="no-form" />;
 
   let document = props.document || (parentProps?.document);
