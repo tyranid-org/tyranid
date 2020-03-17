@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { observable, computed } from 'mobx';
+import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 
 import { Tyr } from 'tyranid/client';
@@ -47,7 +47,6 @@ export class TyrComponent<
    * "activePaths" contains paths that are currently active on the screen
    *   (e.g. what paths are enabled in table configuration)
    */
-  @computed
   get activePaths(): TyrPathProps[] {
     return this.paths;
   }

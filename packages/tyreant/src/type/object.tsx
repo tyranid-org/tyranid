@@ -127,7 +127,17 @@ export const TyrObjectBase = (props: TyrObjectProps) => {
         return <div>TODO: map</div>;
       }
     } else {
-      return <div>TODO: map</div>;
+      contents = (
+        <>
+          {paths &&
+            paths.map(fieldProps => (
+              <Row key={fieldProps.path.name} gutter={10}>
+                <Col span={24}>{renderField(props, fieldProps)} </Col>
+              </Row>
+            ))}
+          {children}
+        </>
+      );
     }
   } else {
     contents = (

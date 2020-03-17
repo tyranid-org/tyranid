@@ -381,7 +381,7 @@ export function generateClientLibrary() {
 
   file += `
 
-  var byName = {};
+  var byName = Tyr.byName = {};
 
   function cookie(key) {
     let result;
@@ -858,6 +858,8 @@ export function generateClientLibrary() {
     if (dynamicMatch) field.dynamicMatch = dynamicMatch;
 
     if (def.label === undefined && field.name) def.label = Tyr.labelize(field.name);
+
+    if (def.link) field.link = Tyr.byName[def.link];
   }
 
   function compileFields(path, parent, fieldDefs, dynamic, aux, method) {
@@ -1599,7 +1601,6 @@ export function generateClientLibrary() {
   });
 
   file += `
-  Tyr.byName = byName;
   Tyr.collections.forEach(function(c) { c.compile(); });`;
 
   Tyr.components.forEach(comp => {
