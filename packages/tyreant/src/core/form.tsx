@@ -74,7 +74,8 @@ export class TyrFormBase<
 
   render() {
     const { document } = this;
-    const { className, children, paths, render } = this.props;
+    const { className, children, render } = this.props;
+    const paths = this.activePaths;
 
     return this.wrap(() => (
       <Form
