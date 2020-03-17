@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+shopt -s nocasematch
+
 usage() {
   echo "tyr-deploy tdgen|tyranid|tyreant <directory>"
   exit -1

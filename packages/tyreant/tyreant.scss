@@ -1,7 +1,11 @@
 $background-color: #fff;
+
+$lighter-border-color: #eee;
+$light-border-color: #e4e4e4;
 $border-color: #888;
+
 $popup-background-color: #ddd;
-$light-border-color: #eee;
+
 $text-color: #000;
 $header-text-color: #222;
 $text-label-color: #444;
@@ -98,7 +102,7 @@ $primary-background-color: #6a8fbe;
       bottom: 0;
       margin-bottom: 20px;
       padding-top: 20px;
-      border-top: 1px solid $light-border-color;
+      border-top: 1px solid $lighter-border-color;
     }
   }
 
@@ -246,7 +250,7 @@ $primary-background-color: #6a8fbe;
     td {
       background-color: white;
       border-width: 0 0 1px 0 !important;
-      border-color: $light-border-color;
+      border-color: $lighter-border-color;
       //border-bottom-color: $border-color !important;
       background-color: white;
 
@@ -259,7 +263,22 @@ $primary-background-color: #6a8fbe;
       }
     }
 
-    .ant-table-bordered {
+    &.ant-table-bordered {
+      table thead tr th {
+        border-color: $light-border-color;
+        border-bottom-color: $light-border-color;
+      }
+
+      thead tr th.tyr-action-column {
+        // remove the border before the scrollbar TH cell ...
+        border-right-width: 0px;
+      }
+
+      thead tr th.last-child {
+        // ... but add it back in if there is no scrollbar TH cell
+        border-right-width: 1px;
+      }
+
       td {
         border-width: 0px 1px 1px 1px !important;
       }
@@ -602,9 +621,12 @@ $primary-background-color: #6a8fbe;
 }
 
 .tyr-filter {
-  background: $background-color;
-  border: 1px solid $border-color;
-  border-radius: 5px;
+  background: #f6f6f6;
+  border: 1px solid $light-border-color;
+  border-radius: 4px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-top: -3px;
   padding: 8px;
 
   .tyr-filter-footer {
@@ -613,7 +635,7 @@ $primary-background-color: #6a8fbe;
   }
 
   button:not(last-child) {
-    margin-left: 5px;
+    margin-left: 8px;
   }
 
   .tyr-filter-search-input {
@@ -624,6 +646,13 @@ $primary-background-color: #6a8fbe;
   }
 
   &.tyr-link-filter {
+    ul {
+      margin: -1px 0 0 3px;
+      border-left: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      border-top-left-radius: 0;
+    }
+
     .ant-menu {
       max-height: 360px;
       overflow-x: hidden;
