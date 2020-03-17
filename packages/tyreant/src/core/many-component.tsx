@@ -11,7 +11,7 @@ import {
 } from './component';
 import { TyrPathProps } from './path';
 import { message } from 'antd';
-import { getFilter } from '../type';
+import { getFilter, assertTypeUi } from '../type';
 import { tyreant } from '../tyreant';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -169,6 +169,7 @@ export class TyrManyComponent<
       if (this.mounted) {
         if (this.isLocal) {
           this.setSortedDocuments(this.documents.slice());
+          this.updateCount();
           this.refresh();
         } else {
           this.findAll();
@@ -297,6 +298,38 @@ export class TyrManyComponent<
   limit: number = this.defaultPageSize;
 
   count = this.props.documents?.length || 0;
+
+  updateCount() {
+    if (!this.isLocal) return;
+
+    const { searchValues } = this;
+
+    const checks: ((doc: Tyr.Document) => boolean)[] = [];
+
+    for (const pathProps of this.paths) {
+      const { path } = pathProps;
+
+      if (!path) continue;
+
+      const filter = this.getFilter(pathProps);
+
+      const pathName = path.name,
+        searchValue = searchValues[pathName];
+
+      const onFilter = filter?.onFilter;
+      if (onFilter) checks.push(document => onFilter(searchValue, document));
+    }
+
+    let count = 0;
+
+    OUTER: for (const doc of this.documents) {
+      for (const check of checks) if (!check(doc)) continue OUTER;
+
+      count++;
+    }
+
+    this.count = count;
+  }
 
   private paginationItemRenderer = (
     page: number,
