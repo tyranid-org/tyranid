@@ -168,7 +168,6 @@ export class TyrTable<
 
   async componentDidMount() {
     super.componentDidMount();
-    (window as any).table = this;
 
     const { orderable } = this.props;
 
