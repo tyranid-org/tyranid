@@ -169,6 +169,7 @@ export class TyrTableBase<
 
   async componentDidMount() {
     super.componentDidMount();
+    (window as any).table = this;
 
     const { config, onLoad } = this.props;
 
@@ -197,10 +198,14 @@ export class TyrTableBase<
 
     if (documents && newDocuments) {
       if (this.props.orderable) {
-        this.documents = newDocuments;
+        this.documents = newDocuments.slice();
         this.count = newDocuments.length;
       } else {
-        this.setSortedDocuments(newDocuments);
+        if (!this.documents) {
+          this.setSortedDocuments(newDocuments.slice());
+        } else if (!this.editingDocument) {
+          this.setStableDocuments(newDocuments.slice());
+        }
       }
     }
 
@@ -861,6 +866,7 @@ export class TyrTableBase<
         delete sortDirections[pathName];
       }
     }
+
     sortDirections[sortFieldName] = sorter.order!;
 
     this.execute();
