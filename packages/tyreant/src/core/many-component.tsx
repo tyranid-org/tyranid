@@ -58,7 +58,11 @@ export class TyrManyComponent<
     super(props, state);
 
     const { documents } = this.props;
-    if (documents) this.documents = documents!;
+    this.setDefaultSort();
+
+    if (documents) {
+      this.setSortedDocuments(documents.slice());
+    }
   }
 
   componentDidMount() {
@@ -70,8 +74,6 @@ export class TyrManyComponent<
       // we need to know the query even for in-memory tables because when we run an csv export we need to query the same rows
       this.findOpts = { query };
     }
-
-    this.setDefaultSort();
   }
 
   componentWillUnmount() {

@@ -169,7 +169,6 @@ export class TyrTableBase<
 
   async componentDidMount() {
     super.componentDidMount();
-    (window as any).table = this;
 
     const { config, onLoad } = this.props;
 
