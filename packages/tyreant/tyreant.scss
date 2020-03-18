@@ -124,7 +124,7 @@
 }
 
 //
-// Form Fields
+// Form Fields -- Types
 //
 
 .ant-checkbox-wrapper {
@@ -227,7 +227,7 @@ form textarea.tyr-markup-editor {
 
   &.tyr-link-filter {
     ul {
-      margin: -1px 0 0 3px;
+      margin: 0 0 0 3px;
       border-left: 1px solid #ddd;
       border-bottom: 1px solid #ddd;
       border-top-left-radius: 0;
@@ -574,7 +574,8 @@ form textarea.tyr-markup-editor {
       width: 42px;
     }
 
-    .ant-table-tbody .ant-table-cell-ellipsis.ant-table-cell-fix-left-last {
+    //.ant-table-tbody .ant-table-cell-ellipsis.ant-table-cell-fix-left-last {
+    .ant-table-cell-ellipsis.ant-table-cell-fix-left-last {
       display: table-cell;
     }
 
@@ -672,6 +673,11 @@ form textarea.tyr-markup-editor {
       }
     }
   }
+}
+
+.ant-table-filter-dropdown {
+  position: relative;
+  top: -2px;
 }
 
 .tyr-menu-item {
