@@ -40,7 +40,7 @@ const findByLabel = (
   collection: Tyr.CollectionInstance,
   label: string
 ) => {
-  label = label.toLowerCase();
+  label = typeof label === 'string' ? label.toLowerCase() : label;
   const values =
     props && props.linkLabels ? props.linkLabels : collection.values;
 
