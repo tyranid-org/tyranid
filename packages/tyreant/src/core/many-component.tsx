@@ -270,12 +270,25 @@ export class TyrManyComponent<
       const pathName = path?.name;
       const field = path?.detail;
 
-      docs.sort(
-        sortColumn.sortComparator
-          ? sortColumn.sortComparator
-          : (a: Tyr.Document, b: Tyr.Document) =>
-              path ? field.type.compare(field, path.get(a), path.get(b)) : 0
-      );
+      const sortComparator = sortColumn.sortComparator;
+
+      docs.sort((a: Tyr.Document, b: Tyr.Document) => {
+        let result = sortComparator
+          ? sortComparator(a, b)
+          : path
+          ? Math.sign(field.type.compare(field, path.get(a), path.get(b)))
+          : 0;
+
+        if (result === 0) {
+          result = a.$label.localeCompare(b.$label);
+
+          if (result === 0) {
+            result = String(a.$id).localeCompare(String(b.$id));
+          }
+        }
+
+        return result;
+      });
 
       if (pathName && this.sortDirections[pathName] === 'descend')
         docs.reverse();
@@ -285,6 +298,39 @@ export class TyrManyComponent<
 
     this.documents = documents;
     this.count = documents.length;
+  };
+
+  setStableDocuments = (docs: D[]) => {
+    const cDocs = this.documents;
+
+    if (!cDocs) {
+      this.documents = docs;
+      this.count = docs.length;
+      return;
+    }
+
+    for (const d of docs) {
+      const idx = this.documents.findIndex(cd => cd.$id === d.$id);
+
+      if (idx > -1) {
+        cDocs[idx] = d;
+      } else {
+        cDocs.push(d);
+      }
+    }
+
+    for (let i = 0; i < cDocs.length; ) {
+      const cDocId = cDocs[i].$id;
+      const idx = docs.findIndex(doc => doc.$id === cDocId);
+
+      if (idx === -1) {
+        cDocs.splice(i, 1);
+      } else {
+        i++;
+      }
+    }
+
+    this.count = cDocs.length;
   };
 
   /*
