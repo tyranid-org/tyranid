@@ -63,7 +63,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         )}
         <TyrField path="file" />
 
-        <h1>Default Values</h1>
+        {defaultableFields.length && <h1>Default Values</h1>}
 
         {defaultableFields.map(field => (
           <TyrField key={field.name} path={field.name} document={defaults} />

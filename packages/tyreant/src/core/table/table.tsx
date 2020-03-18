@@ -87,7 +87,7 @@ export type TyrTableColumnPathProps = TableColumnPathProps & TyrPathProps;
 
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
-  fixedWidthHack?: boolean;
+  //fixedWidthHack?: boolean;
   bordered?: boolean;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean;
@@ -674,7 +674,7 @@ export class TyrTableBase<
       }
     });
 
-    if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
+    //if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
 
     const singularActions = this.actions.filter(a => a.input === 1);
     if (singularActions.length) {
@@ -1186,6 +1186,7 @@ export class TyrTableBase<
    * Currently in ant tables, if you have a fixed height (scroll: { y: something } ), it messes up the column headers, and you need to make sure
    * that every column header/cell has a width and a min-width ... search for "width not working?" on ant table webpage for more information
    */
+  /*
   applyFixedWidthHack(columns: OurColumnProps<D>[]) {
     function classify(column: OurColumnProps<D>) {
       let defaultWidth;
@@ -1243,6 +1244,7 @@ export class TyrTableBase<
       }
     }
   }
+  */
 }
 
 export const TyrTable = <D extends Tyr.Document>(props: TyrTableProps<D>) => (

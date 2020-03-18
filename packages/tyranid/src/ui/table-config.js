@@ -1,5 +1,9 @@
 import Collection from '../core/collection';
 
+// TODO:  rename to componentConfig
+
+// TODO:  some way for components to indicate what features they support
+
 const tableConfigField = {
   is: 'object',
   fields: {
@@ -24,6 +28,9 @@ const TableConfig = new Collection({
       required: true,
       defaultValue: []
     },
+
+    // TODO: what type of component
+
     key: { is: 'string' },
     documentUid: { is: 'string', requried: true },
     userId: { link: 'user?' },
