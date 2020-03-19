@@ -73,10 +73,35 @@ LinkType.applyWhere = async function(field, doc, query, opts) {
       const rslt = await where.call(doc, opts);
 
       if (_.isObject(rslt)) {
-        _.assign(query, rslt);
+        Object.assign(query, rslt);
       }
     } else {
-      _.assign(query, where);
+      Object.assign(query, where);
+    }
+  }
+
+  // If this is a dynamic schema field and it is linking to a collection, check to see
+  // if that collection has a link to TyrSchema, and if so use the schema._id we have as
+  // a foreign key into it.  This allows different custom fields to share the same lookup
+  // tables.
+  const { schema } = field;
+  if (schema) {
+    const { link } = field;
+    const { fields: linkFields } = link;
+
+    const { TyrSchema } = Tyr.collections;
+
+    for (const fieldName in linkFields) {
+      const lf = linkFields[fieldName];
+
+      if (lf.link === TyrSchema) {
+        query[lf.spath] = schema._id;
+      } else if (lf.def.dynamicFieldName) {
+        // determine the field name for this field, skip past arrays
+        let f = field;
+        while (f && f.name === '_') f = f.parent;
+        query[lf.spath] = f.name;
+      }
     }
   }
 };

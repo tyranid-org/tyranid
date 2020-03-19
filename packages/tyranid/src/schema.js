@@ -172,6 +172,7 @@ Collection.prototype.findField = async function(pathName) {
         const field = fields[name];
         if (pathName === field.path) return field;
 
+        // TODO: rewrite this to use recursion
         if (pathName.startsWith(name)) {
           const nestedFields = field.def.fields;
           for (const nestedName in nestedFields) {

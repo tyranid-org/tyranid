@@ -743,10 +743,10 @@ export function generateClientLibrary() {
       return values.map(doc => new to(doc));
     }
 
-    const data = { doc, opts };
+    const data = { path: this.path, doc, opts };
 
     return ajax({
-      url: '/api/' + this.collection.def.name + '/' + this.path + '/label/' + (search || '')
+      url: '/api/' + this.collection.def.name + '/label/' + (search || '')
       method: 'put',
       data: JSON.stringify(data),
       contentType: 'application/json'
@@ -2217,60 +2217,62 @@ Collection.prototype.connect = function({ app, auth, http }) {
        *     /api/NAME/label/:search
        */
 
+      r = app.route('/api/' + name + '/label/:search?');
+      r.all(auth);
+
       if (col.labelField && (express.rest || express.get || express.labels)) {
-        app
-          .route('/api/' + name + '/label/:search')
-          .all(auth)
-          .get(async (req, res) => {
-            try {
-              const results = await col.labels(req.params.search, {
-                auth: req.user,
-                user: req.user,
-                req
-              });
-              res.json(results.map(r => r.$toClient()));
-            } catch (err) {
-              handleException(res, err);
-            }
-          });
+        r.get(async (req, res) => {
+          try {
+            const results = await col.labels(req.params.search || '', {
+              auth: req.user,
+              user: req.user,
+              req
+            });
+            res.json(results.map(r => r.$toClient()));
+          } catch (err) {
+            handleException(res, err);
+          }
+        });
+      }
+
+      if (express.rest || express.put || express.labels) {
+        r.put(async (req, res) => {
+          try {
+            const data = req.body;
+            let { doc, opts, path: pathName } = data;
+
+            doc = await col.fromClient(doc, undefined, { req });
+
+            const path = await doc.$parsePath(pathName);
+            const field = path.detail;
+            const to = field.link;
+            if (!to?.labelField && field.type.name !== 'uid')
+              throw new AppError('labels not applicable to ' + pathName);
+
+            let limit = 30;
+            if (opts && opts.limit !== undefined) limit = opts.limit;
+
+            const results = await field.labels(doc, req.params.search || '', {
+              auth: req.user,
+              user: req.user,
+              req,
+              limit,
+              sort: { [field.spath]: 1 }
+            });
+
+            res.json(results.map(r => r.$toClient()));
+          } catch (err) {
+            handleException(res, err);
+          }
+        });
       }
 
       /*
-       *     /api/NAME/FIELD_PATH/label/:search
        *     /api/NAME/FIELD_PATH/validate
        */
 
       if (express.rest || express.put) {
         _.each(col.paths, field => {
-          const to = field.link;
-          if ((to && to.labelField) || field.type.name === 'uid') {
-            app
-              .route('/api/' + name + '/' + field.path + '/label/:search?')
-              .all(auth)
-              .put(async (req, res) => {
-                try {
-                  const data = req.body;
-                  let { doc, opts } = data;
-                  doc = await col.fromClient(doc, undefined, { req });
-
-                  let limit = 30;
-                  if (opts && opts.limit !== undefined) limit = opts.limit;
-
-                  const results = await field.labels(doc, req.params.search, {
-                    auth: req.user,
-                    user: req.user,
-                    req,
-                    limit,
-                    sort: { [field.spath]: 1 }
-                  });
-
-                  res.json(results.map(r => r.$toClient()));
-                } catch (err) {
-                  handleException(res, err);
-                }
-              });
-          }
-
           const validateFn = field.def.validate;
           if (validateFn) {
             app
