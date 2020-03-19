@@ -3,7 +3,6 @@
      TYRanid +
        REAct +
          ANT 
-
 */
 
 import * as React from 'react';
