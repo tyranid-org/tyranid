@@ -13,6 +13,7 @@ import { TyrPathProps } from './path';
 import { message } from 'antd';
 import { getFilter, assertTypeUi } from '../type';
 import { tyreant } from '../tyreant';
+import Pagination from 'antd/es/pagination';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -282,7 +283,7 @@ export class TyrManyComponent<
           : 0;
 
         if (result === 0) {
-          result = a.$label.localeCompare(b.$label);
+          result = (a.$label || '').localeCompare(b.$label);
 
           if (result === 0) {
             result = String(a.$id).localeCompare(String(b.$id));
@@ -389,7 +390,7 @@ export class TyrManyComponent<
     return originalElement;
   };
 
-  pagination = () => {
+  paginationProps = () => {
     if (!this.limit) return false;
 
     const { showSizeChanger, pageSizeOptions, showTotal } = this.props;
@@ -399,7 +400,7 @@ export class TyrManyComponent<
 
     //const morePages = totalCount > limit;
 
-    return {
+    const a = {
       current: Math.floor(skip / limit) + 1,
       //defaultCurrent: Math.floor(skip / limit) + 1,
       total: totalCount,
@@ -412,7 +413,39 @@ export class TyrManyComponent<
       hideOnSinglePage: true,
       showTotal
     };
+
+    return a;
   };
+
+  handlePaginationChange = (page: number, pageSize?: number) => {
+    const { limit } = this;
+
+    this.skip = (page - 1) * limit;
+
+    if (pageSize !== undefined && pageSize !== limit)
+      this.limit = pageSize || this.defaultPageSize;
+
+    this.execute();
+  };
+
+  currentPageDocuments() {
+    if (this.isLocal) {
+      const { skip = 0, limit } = this;
+      return this.documents.slice(skip, skip + limit);
+    } else {
+      return this.documents.slice();
+    }
+  }
+
+  paginationComponent() {
+    return (
+      <Pagination
+        {...this.paginationProps()}
+        onChange={this.handlePaginationChange}
+        onShowSizeChange={this.handlePaginationChange}
+      />
+    );
+  }
 
   /*
    * * * URL ROUTING

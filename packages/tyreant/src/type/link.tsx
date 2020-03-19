@@ -411,6 +411,8 @@ byName.link = {
         />
       ),
       onFilter: (value, doc) => {
+        if (value === undefined) return true;
+
         if (props.onFilter) return props.onFilter(value, doc);
 
         const rawVal = path.get(doc);

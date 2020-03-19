@@ -77,7 +77,8 @@ export const integerFilter: Filter = (
         )}
       </TyrFilter>
     ),
-    onFilter: (value: number[], doc: Tyr.Document) => {
+    onFilter: (value: number[] | undefined, doc: Tyr.Document) => {
+      if (value === undefined) return true;
       const intVal = (path.get(doc) as number) || 0;
       return intVal >= value[0] && intVal <= value[1];
     }

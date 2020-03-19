@@ -84,6 +84,7 @@ export const dateTimeFilter: Filter = (
       </TyrFilter>
     ),
     onFilter: (value: any, doc: Tyr.Document) => {
+      if (value === undefined) return true;
       value = parseSearchValue(value);
 
       if (props.onFilter) {

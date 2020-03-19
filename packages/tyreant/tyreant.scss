@@ -487,23 +487,6 @@ form textarea.tyr-markup-editor {
       }
     }
 
-    &.tyr-table-editing-row {
-      .ant-table-wrapper .ant-pagination {
-        display: none;
-      }
-
-      //.ant-table-column-sorter
-      .ant-table-column-has-filters .ant-dropdown-trigger {
-        visibility: hidden;
-      }
-    }
-
-    .ant-table-wrapper.tyr-table-new-document + div .ant-table-wrapper {
-      .ant-table-pagination.ant-pagination {
-        display: none;
-      }
-    }
-
     .ant-table-tbody > tr.tyr-editable-row > td {
       padding-top: 8px !important;
       padding-bottom: 8px !important;
@@ -530,13 +513,6 @@ form textarea.tyr-markup-editor {
 
       .ant-table-body + .ant-table-placeholder {
         display: none;
-      }
-
-      .ant-table-pagination.ant-pagination {
-        text-align: center;
-        margin: 0;
-        margin-top: 10px;
-        float: none;
       }
     }
 
@@ -579,7 +555,6 @@ form textarea.tyr-markup-editor {
       width: 42px;
     }
 
-    //.ant-table-tbody .ant-table-cell-ellipsis.ant-table-cell-fix-left-last {
     .ant-table-cell-ellipsis.ant-table-cell-fix-left-last {
       display: table-cell;
     }
@@ -668,14 +643,42 @@ form textarea.tyr-markup-editor {
     .ant-table-footer {
       padding: 8px 0;
       background-color: transparent;
+      display: flex;
+      justify-content: space-between;
 
-      .ant-btn,
-      a,
-      button,
-      div {
-        float: right;
-        margin-left: 8px;
+      .ant-pagination {
+        align-self: center;
       }
+
+      .tyr-footer-btns {
+        align-self: flex-end;
+        display: flex;
+        justify-content: flex-end;
+
+        .ant-btn,
+        a,
+        button,
+        div {
+          height: 30px;
+          margin: 0 0 0 4px;
+
+          &:first-child {
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+
+  &.tyr-table-editing-row,
+  &.tyr-table-adding-row {
+    .ant-pagination {
+      display: none;
+    }
+
+    //.ant-table-column-sorter
+    .ant-table-column-has-filters .ant-dropdown-trigger {
+      visibility: hidden;
     }
   }
 }

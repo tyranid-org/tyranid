@@ -86,7 +86,11 @@ export const booleanFilter: Filter = (
         }}
       </TyrFilter>
     ),
-    onFilter: (value: { no: boolean; yes: boolean }, doc: Tyr.Document) => {
+    onFilter: (
+      value: { no: boolean; yes: boolean } | undefined,
+      doc: Tyr.Document
+    ) => {
+      if (value === undefined) return true;
       if (props.onFilter) {
         return props.onFilter(value, doc);
       }

@@ -109,7 +109,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
   onChangeTableConfiguration?: (fields: Tyr.TyrTableConfig['fields']) => void;
-  scroll?: object;
+  scroll?: { x?: number | true | string; y?: number };
   footer?: (currentPageData: D[]) => React.ReactNode;
   title?: (currentPageData: D[]) => React.ReactNode;
   showHeader?: boolean;
@@ -202,7 +202,8 @@ export class TyrTableBase<
       } else {
         if (!this.documents) {
           this.setSortedDocuments(newDocuments.slice());
-        } else if (!this.editingDocument) {
+        } else {
+          //if (!this.editingDocument) {
           this.setStableDocuments(newDocuments.slice());
         }
       }
@@ -471,6 +472,8 @@ export class TyrTableBase<
     this.setState({});
   };
 
+  tableWidth: number = 0;
+
   private getColumns(newDocumentTable?: boolean): ColumnProps<D>[] {
     const {
       collection,
@@ -496,6 +499,7 @@ export class TyrTableBase<
     let curGroupName: string | undefined;
     let curGroupColumn: OurColumnProps<D>;
 
+    this.tableWidth = 0;
     columns.forEach((column, columnIdx) => {
       let path: Tyr.NamePathInstance | undefined;
       let pathName: string | undefined;
@@ -508,6 +512,11 @@ export class TyrTableBase<
         path = column.path;
         pathName = path.name;
       }
+
+      this.tableWidth += column.width
+        ? Number.parseInt(column.width as string)
+        : 275;
+      // TODO: check if the type has a width on it
 
       switch (typeof column.searchPath) {
         case 'string':
@@ -839,7 +848,7 @@ export class TyrTableBase<
   }
 
   private handleTableChange = (
-    pagination: PaginationProps,
+    paginationNotUsed: PaginationProps,
     filters: { [pathName: string]: string[] },
     sorter: {
       order?: TyrSortDirection;
@@ -851,11 +860,6 @@ export class TyrTableBase<
 
     delete this.editingDocument;
     delete this.newDocument;
-
-    if (pagination.current) this.skip = (pagination.current! - 1) * this.limit;
-
-    const { pageSize } = pagination;
-    if (pageSize !== this.limit) this.limit = pageSize || this.defaultPageSize;
 
     const sortFieldName = sorter.field;
 
@@ -931,7 +935,6 @@ export class TyrTableBase<
 
   render() {
     const {
-      documents,
       editingDocument,
       newDocument,
       activePaths: paths,
@@ -965,7 +968,7 @@ export class TyrTableBase<
     const isEditingRow = !!editingDocument;
     const netClassName = `tyr-table${className ? ' ' + className : ''}${
       isEditingRow ? ' tyr-table-editing-row' : ''
-    }`;
+    }${newDocument ? ' tyr-table-adding-row' : ''}`;
 
     const multiActions = this.actions.filter(a => a.input === '*');
     const voidActions = this.actions.filter(a => a.input === 0);
@@ -986,18 +989,20 @@ export class TyrTableBase<
         }
       };
 
-      let netFooter = footer;
-
-      if (exportProp) {
-        netFooter = (docs: D[]) => (
-          <>
-            <Button onClick={() => (this.showExport = true)}>
-              <UploadOutlined /> Export
-            </Button>
+      const netFooter = (docs: D[]) => (
+        <>
+          {this.paginationComponent()}
+          <div className="tyr-footer-btns">
+            {exportProp && (
+              <Button onClick={() => (this.showExport = true)}>
+                <UploadOutlined /> Export
+              </Button>
+            )}
             {footer?.(docs)}
-          </>
-        );
-      }
+          </div>
+        </>
+      );
+
       const emptyText =
         typeof emptyTablePlaceholder === 'function'
           ? emptyTablePlaceholder(this)
@@ -1019,7 +1024,7 @@ export class TyrTableBase<
           components={components}
           rowKey={(doc: any) => doc.$id || doc.$id}
           size={size || 'small'}
-          pagination={this.pagination()}
+          pagination={false}
           onChange={this.handleTableChange as any}
           footer={netFooter as (rows: Object[]) => React.ReactNode}
           title={
@@ -1028,9 +1033,9 @@ export class TyrTableBase<
               : (title as (rows: Object[]) => React.ReactNode)
           }
           showHeader={newDocument ? false : showHeader}
-          dataSource={documents.slice()}
+          dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
-          scroll={fieldCount > 1 ? scroll : undefined}
+          scroll={fieldCount > 1 ? scroll || { x: this.tableWidth } : undefined}
           onRow={(record, rowIndex) => {
             return {
               onClick: () => {
