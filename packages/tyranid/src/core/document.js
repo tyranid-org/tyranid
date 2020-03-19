@@ -4,6 +4,8 @@ import Tyr from '../tyr';
 import ObjectType from '../type/object';
 import * as historical from '../historical/historical';
 import SecureError from '../secure/secureError';
+import { AppError } from './appError';
+import { responsePathAsArray } from 'graphql';
 
 const { NamePath } = Tyr;
 
@@ -103,6 +105,44 @@ export const documentPrototype = (Tyr.documentPrototype = {
           }
         }
       }
+    }
+  },
+
+  async $parsePath(path) {
+    const col = this.$model;
+
+    try {
+      return col.parsePath(path);
+    } catch {
+      const find = field => {
+        if (!field) return undefined;
+
+        let fpath = field.path;
+
+        if (path.startsWith(fpath)) {
+          if (path === fpath) return field.namePath;
+          return findInFields(field.fields) || find(field.of);
+        }
+
+        //return undefined;
+      };
+
+      const findInFields = fields => {
+        if (fields) {
+          for (const fieldName in fields) {
+            const p = find(fields[fieldName]);
+            if (p) return p;
+          }
+        }
+
+        //return undefined;
+      };
+
+      const p = findInFields(await col.fieldsFor({ match: this }));
+
+      if (!p) throw new AppError(`path "${path}" not found`);
+
+      return p;
     }
   },
 

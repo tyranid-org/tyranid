@@ -695,7 +695,19 @@ export default class Collection {
         };
 
     const fields = this.labelProjection();
-    const labels = await this.findAll({ query, projection: fields, ...opts });
+    let sort;
+    if (this.fields.order) {
+      sort = { order: 1 };
+    } else if (!getFn || lf.isDb()) {
+      sort = { [lf.spath]: 1 };
+    }
+
+    const labels = await this.findAll({
+      query,
+      projection: fields,
+      sort,
+      ...opts
+    });
 
     return labels.filter(l => !!l.$label);
   }
@@ -1971,7 +1983,10 @@ export default class Collection {
           }
         }
 
-        if (dynamicSchema) field.dynamicMatch = dynamicSchema.match;
+        if (dynamicSchema) {
+          field.dynamicMatch = dynamicSchema.match;
+          field.schema = dynamicSchema;
+        }
       },
 
       fields(path, parent, defFields) {
