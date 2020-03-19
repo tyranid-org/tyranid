@@ -426,9 +426,14 @@ form textarea.tyr-markup-editor {
     color: var(--text-color);
   }
 
-  .ant-table {
+  .ant-row .ant-table {
     border: none;
     background: transparent;
+
+    .ant-table-measure-row td {
+      height: 1px !important;
+      color: var(--major-border-color);
+    }
 
     .ant-table-title,
     .ant-table-footer {
@@ -583,8 +588,8 @@ form textarea.tyr-markup-editor {
       border-style: solid !important;
       background-color: white;
       border-width: 0 0 1px 0 !important;
-      border-color: var(--border-color);
-      //border-bottom-color: var(--border-color) !important;
+      border-color: var(--light-border-color);
+      //border-bottom-color: var(--light-color) !important;
       background-color: white;
 
       .ant-radio {
@@ -613,7 +618,7 @@ form textarea.tyr-markup-editor {
       }
 
       td {
-        border-width: 0px 1px 1px 1px !important;
+        border-width: 0px 1px 1px 0 !important;
       }
       td:first-child {
         border-left-width: 0 !important;

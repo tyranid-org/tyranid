@@ -108,6 +108,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
   async componentDidMount() {
     const props = this.props;
+    let searched = false;
 
     this.mounted = true;
     const { path, searchPath, mode: controlMode } = props;
@@ -129,7 +130,6 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     if (!this.link) {
       if (props.linkLabels) {
         this.setState({
-          initialLoading: false,
           documents: sortLabels(props.linkLabels, props)
         });
       } else {
@@ -144,11 +144,11 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       } else {
         if (this.link.isStatic()) {
           this.setState({
-            initialLoading: false,
             documents: sortLabels(this.link.values, props)
           });
         } else {
           await this.search();
+          searched = true;
         }
       }
     }
@@ -175,7 +175,15 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
     this.mode = mode;
 
-    mapPropsToForm(props);
+    if (searched)
+      setTimeout(() => {
+        mapPropsToForm(props);
+        this.setState({ initialLoading: false });
+      }, 0);
+    else {
+      mapPropsToForm(props);
+      this.setState({ initialLoading: false });
+    }
   }
 
   getValue() {
@@ -241,13 +249,12 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       if (this.mounted) {
         this.setState({
           documents: sortLabels(documents, this.props),
-          loading: false,
-          initialLoading: false
+          loading: false
         });
       }
     },
     200,
-    { leading: true }
+    { leading: true } // debounce'd async functions need leading: true
   );
 
   render(): React.ReactNode {
@@ -260,6 +267,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         <span className="tyr-value">{viewLabel}</span>
       ));
     }
+
+    if (initialLoading) return <></>;
 
     const selectProps: SelectProps<Tyr.AnyIdType | Tyr.AnyIdType[]> = {
       mode: this.mode,
