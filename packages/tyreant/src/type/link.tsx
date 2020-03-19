@@ -192,59 +192,63 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     this.mounted = false;
   }
 
-  search = debounce(async (text?: string) => {
-    const { document, getSearchIds } = this.props;
-    const link = this.link!;
+  search = debounce(
+    async (text?: string) => {
+      const { document, getSearchIds } = this.props;
+      const link = this.link!;
 
-    if (this.mounted) {
-      this.setState({ loading: true });
-    }
+      if (this.mounted) {
+        this.setState({ loading: true });
+      }
 
-    const fetchId = ++this.lastFetchId;
+      const fetchId = ++this.lastFetchId;
 
-    const promises: Promise<Tyr.Document[]>[] = [
-      this.linkField!.labels(document!, text)
-    ];
+      const promises: Promise<Tyr.Document[]>[] = [
+        this.linkField!.labels(document!, text)
+      ];
 
-    // include the current value
-    const val = this.getValue();
+      // include the current value
+      const val = this.getValue();
 
-    if (val) {
-      const fields = link.labelProjection();
+      if (val) {
+        const fields = link.labelProjection();
 
-      // switch to simple Array.isArray() once we move to mobx 5
-      const ids =
-        typeof val === 'string'
-          ? [val]
-          : getSearchIds
-          ? getSearchIds(val)
-          : val;
+        // switch to simple Array.isArray() once we move to mobx 5
+        const ids =
+          typeof val === 'string'
+            ? [val]
+            : getSearchIds
+            ? getSearchIds(val)
+            : val;
 
-      promises.push(link.byIds(ids, { fields }));
-    }
+        promises.push(link.byIds(ids, { fields }));
+      }
 
-    const [documents, addDocuments] = await Promise.all(promises);
-    if (fetchId !== this.lastFetchId) {
-      return;
-    }
+      const [documents, addDocuments] = await Promise.all(promises);
+      if (fetchId !== this.lastFetchId) {
+        return;
+      }
 
-    if (addDocuments) {
-      for (const addDocument of addDocuments) {
-        const existing = documents.find(doc => addDocument.$id === doc.$id);
-        if (!existing) {
-          documents.push(addDocument);
+      if (addDocuments) {
+        for (const addDocument of addDocuments) {
+          const existing = documents.find(doc => addDocument.$id === doc.$id);
+          if (!existing) {
+            documents.push(addDocument);
+          }
         }
       }
-    }
 
-    if (this.mounted) {
-      this.setState({
-        documents: sortLabels(documents, this.props),
-        loading: false,
-        initialLoading: false
-      });
-    }
-  }, 200);
+      if (this.mounted) {
+        this.setState({
+          documents: sortLabels(documents, this.props),
+          loading: false,
+          initialLoading: false
+        });
+      }
+    },
+    200,
+    { leading: true }
+  );
 
   render(): React.ReactNode {
     const { props } = this;
