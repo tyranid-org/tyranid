@@ -1151,7 +1151,7 @@ describe('tyranid', () => {
 
         expect(labels.length).to.eql(4);
         expect(labels.map(l => l.$label).join()).to.eql(
-          'John Doe,Jane Doe,Jill Doe,Engineering'
+          'Jane Doe,Jill Doe,John Doe,Engineering'
         );
       });
     });

@@ -698,7 +698,7 @@ export default class Collection {
     let sort;
     if (this.fields.order) {
       sort = { order: 1 };
-    } else if (!getFn || lf.isDb()) {
+    } else if (!lf.def.get || lf.isDb()) {
       sort = { [lf.spath]: 1 };
     }
 

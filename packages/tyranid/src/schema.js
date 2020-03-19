@@ -77,6 +77,7 @@ function schemaCloneCustomizer(obj) {
           case 'collection':
           case 'parent':
           case 'type':
+          case 'schema':
             cfield[name] = v;
             break;
           case '_np':
