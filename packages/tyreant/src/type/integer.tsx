@@ -70,8 +70,7 @@ export const integerFilter: Filter = (
             value={searchValue || (defaultValue.slice() as [number, number])}
             onChange={(e: SliderValue) => {
               setSearchValue(e);
-              if (props.liveSearch) search(true);
-              else filterable.onSearch();
+              if (!props.liveSearch) filterable.onSearch();
             }}
           />
         )}

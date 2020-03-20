@@ -78,7 +78,6 @@ export const doubleFilter: Filter = (
             value={(searchValue || defaultValue) as SliderValue}
             onChange={(e: SliderValue) => {
               setSearchValue(e);
-              if (props.liveSearch) search(true);
             }}
             style={{ width: 188 }}
           />

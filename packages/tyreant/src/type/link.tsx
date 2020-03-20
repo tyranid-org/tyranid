@@ -632,7 +632,7 @@ const LinkFilterDropdown = ({
 
                   setSearchValue(searchValue);
                   filterDdProps.setSelectedKeys?.(searchValue || []);
-                  if (pathProps.liveSearch) search(true);
+                  setSearchValue(searchValue);
                 })
               }
             >

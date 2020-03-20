@@ -76,7 +76,6 @@ export const dateTimeFilter: Filter = (
             }}
             onChange={v => {
               setSearchValue(v);
-              if (props.liveSearch) search(true);
             }}
             //style={{ width: 188, marginBottom: 8, display: 'block' }}
           />
