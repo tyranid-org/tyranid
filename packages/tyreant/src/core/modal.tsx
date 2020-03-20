@@ -8,9 +8,9 @@ import { TyrAction, TyrActionFnOpts } from './action';
 import {
   TyrDecorator,
   TyrDecoratorProps,
-  TyrDecoratorState
+  TyrDecoratorState,
+  withThemeAndParent
 } from './decorator';
-import { withTheme } from './theme';
 import { Tyr } from 'tyranid/client';
 
 export interface TyrModalProps<D extends Tyr.Document>
@@ -87,7 +87,8 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
         {!loading && cancel && (
           <CloseOutlined
             className="tyr-modal-close-icon"
-            onClick={() => cancel.act({ caller: this.decorating })} />
+            onClick={() => cancel.act({ caller: this.decorating })}
+          />
         )}
       </div>
     );
@@ -151,4 +152,4 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
   }
 }
 
-export const TyrModal = withTheme('modal', TyrModalBase);
+export const TyrModal = withThemeAndParent('modal', TyrModalBase);

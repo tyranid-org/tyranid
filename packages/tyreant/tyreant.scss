@@ -320,7 +320,7 @@ form textarea.tyr-markup-editor {
 
   .tyr-table-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     margin-bottom: 10px;
 
     .ant-checkbox-wrapper {
@@ -804,6 +804,10 @@ form textarea.tyr-markup-editor {
       margin-left: 8px;
     }
   }
+}
+
+.tyr-wide-modal {
+  width: 1080px !important;
 }
 
 //

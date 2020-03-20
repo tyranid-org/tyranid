@@ -105,9 +105,9 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
     Object.assign(newOpts, opts);
 
-    if (opts.action && this.action) {
+    if (opts.action) {
       newOpts.action = (fnOpts: TyrActionFnOpts<D>) => {
-        const result = this.action && this.action(fnOpts);
+        const result = this.action?.(fnOpts);
 
         switch (typeof result) {
           case 'undefined':

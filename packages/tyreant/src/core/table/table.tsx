@@ -109,7 +109,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
   onChangeTableConfiguration?: (fields: Tyr.TyrTableConfig['fields']) => void;
-  scroll?: { x?: number | true | string; y?: number };
+  scroll?: { x?: number | true | string; y?: number | string };
   footer?: (currentPageData: D[]) => React.ReactNode;
   title?: (currentPageData: D[]) => React.ReactNode;
   showHeader?: boolean;

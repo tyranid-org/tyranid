@@ -56,22 +56,6 @@ export class TyrFormBase<
     );
   }
 
-  /*
-  // this is very useful to track down when there is an infinite re-render cycle
-  componentDidUpdate(prevProps: any, prevState: any) {
-    Object.entries(this.props).forEach(
-      ([key, val]) =>
-        prevProps[key] !== val && console.log(`Prop '${key}' changed from`, prevProps[key], ' to ', val)
-    );
-    if (this.state && prevState) {
-      Object.entries(this.state).forEach(
-        ([key, val]) =>
-          prevState[key] !== val && console.log(`State '${key}' changed`)
-      );
-    }
-  }
-  */
-
   render() {
     const { document } = this;
     const { className, children, render } = this.props;

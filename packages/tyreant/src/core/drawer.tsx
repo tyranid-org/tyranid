@@ -10,10 +10,9 @@ import { TyrAction } from './action';
 import {
   TyrDecorator,
   TyrDecoratorProps,
-  TyrDecoratorState
+  TyrDecoratorState,
+  withThemeAndParent
 } from './decorator';
-import { withTheme } from './theme';
-import { Tyreant } from '../tyreant';
 
 export interface TyrDrawerProps<D extends Tyr.Document>
   extends TyrDecoratorProps<D> {
@@ -79,7 +78,8 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
         {!loading && cancel && (
           <CloseOutlined
             className="tyr-drawer-close-icon"
-            onClick={() => cancel.act({ caller: this.decorating })} />
+            onClick={() => cancel.act({ caller: this.decorating })}
+          />
         )}
         <h4>{create ? create.label : edit ? edit!.label : 'unknown'}</h4>
       </div>
@@ -155,4 +155,4 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
   }
 }
 
-export const TyrDrawer = withTheme('drawer', TyrDrawerBase);
+export const TyrDrawer = withThemeAndParent('drawer', TyrDrawerBase);

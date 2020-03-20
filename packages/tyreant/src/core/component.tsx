@@ -9,6 +9,7 @@ import { Filter } from './filter';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
+import { TyrModal } from './modal';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -147,6 +148,22 @@ export class TyrComponent<
     }
   }
 
+  /*
+  // this is very useful to track down when there is an infinite re-render cycle
+  componentDidUpdate(prevProps: any, prevState: any) {
+    Object.entries(this.props).forEach(
+      ([key, val]) =>
+        prevProps[key] !== val && console.log(`Prop '${key}' changed from`, prevProps[key], ' to ', val)
+    );
+    if (this.state && prevState) {
+      Object.entries(this.state).forEach(
+        ([key, val]) =>
+          prevState[key] !== val && console.log(`State '${key}' changed`)
+      );
+    }
+  }
+  */
+
   componentDidMount() {
     this.mounted = true;
 
@@ -239,20 +256,35 @@ export class TyrComponent<
       });
     }
 
-    if (!this.canMultiple || linkToParent) {
-      const name = linkToParent ? this.collection!.label : 'edit';
-      const title = 'Edit ' + this.collection!.label;
+    if (linkToParent) {
+      if (!this.canMultiple) {
+        const name = linkToParent ? this.collection!.label : 'edit';
+        const title = 'Edit ' + this.collection!.label;
 
-      enactUp({
-        traits: ['edit'],
-        name,
-        title,
-        action: async opts => {
-          await this.find(opts.document!);
+        enactUp({
+          traits: ['edit'],
+          name,
+          title,
+          action: async opts => {
+            await this.find(opts.document!);
 
-          if (!this.document) this.document = this.createDocument(opts);
-        }
-      });
+            if (!this.document) this.document = this.createDocument(opts);
+          }
+        });
+      } else {
+        const name = linkToParent ? this.collection!.label : 'edit';
+
+        enactUp({
+          traits: ['edit'],
+          input: 1,
+          name,
+          label: Tyr.pluralize(this.collection!.label),
+          action: opts => {
+            // TODO: restrict the component to opts.document
+            opts.self.requery();
+          }
+        });
+      }
     }
 
     if (this.canEdit) {
@@ -316,18 +348,18 @@ export class TyrComponent<
 
   /**
    * This creates a new document for this control that is related to the parent documents
-   * according to how the component hierarchy.
+   * according to how the component hierarchy is laid out.
    */
   createDocument(actionOpts: TyrActionFnOpts<D>) {
     const { linkToParent } = this;
 
-    const obj = {};
+    const doc = new this.collection!({});
 
     if (linkToParent) {
-      linkToParent.namePath.set(obj, actionOpts.document!.$id);
+      linkToParent.namePath.set(doc, actionOpts.document!.$id);
     }
 
-    return new this.collection!(obj);
+    return doc;
   }
 
   async refresh() {
@@ -344,7 +376,7 @@ export class TyrComponent<
    *
    * For example, the query is "table.findOpts.query".
    */
-  findOpts?: any;
+  findOpts?: any; // Tyr.FindAllOptions
 
   async find(document: D) {
     const { collection, linkToParent } = this;
@@ -380,7 +412,7 @@ export class TyrComponent<
    *
    * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "Order::lineItems"
    */
-  get linkToParent(): Tyr.anny /* Field */ | undefined {
+  get linkToParent(): Tyr.FieldInstance<any> | undefined {
     return this._linkToParent;
   }
 
@@ -407,13 +439,19 @@ export class TyrComponent<
   }
 
   wrap(children: () => React.ReactNode) {
-    const { decorator } = this.props;
+    const { parent, decorator } = this.props;
+
+    const Modal = TyrModal as any;
 
     return (
       <ComponentContext.Provider value={this as any}>
-        {decorator
-          ? React.cloneElement(decorator!, { parent: this }, children())
-          : children()}
+        {decorator ? (
+          React.cloneElement(decorator!, {}, children())
+        ) : parent ? (
+          <Modal className="tyr-wide-modal">{children()}</Modal>
+        ) : (
+          children()
+        )}
       </ComponentContext.Provider>
     );
   }

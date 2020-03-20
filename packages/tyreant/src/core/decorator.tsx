@@ -3,7 +3,8 @@ import * as React from 'react';
 import { Tyr } from 'tyranid/client';
 
 import { TyrAction } from './action';
-import { TyrComponent } from './component';
+import { TyrComponent, useComponent } from './component';
+import { TyrThemeProps, useThemeProps } from './theme';
 
 export interface TyrDecoratorProps<D extends Tyr.Document> {
   parent?: TyrComponent<D>;
@@ -51,3 +52,16 @@ export abstract class TyrDecorator<
     }
   }
 }
+
+export const withThemeAndParent = <
+  K extends keyof TyrThemeProps,
+  P extends TyrThemeProps[K]
+>(
+  type: K,
+  ThemedControl: React.ComponentType<P>
+) => (props: P) => (
+  <ThemedControl
+    parent={useComponent()}
+    {...useThemeProps(type, props as Required<P>)}
+  />
+);

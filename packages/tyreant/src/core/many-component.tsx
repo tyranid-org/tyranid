@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { observer } from 'mobx-react';
-import { autorun, observable } from 'mobx';
+import { autorun } from 'mobx';
 
 import { Tyr, TyrSortDirection, getFinder, Filter } from '../tyreant';
 import {
@@ -11,7 +11,7 @@ import {
 } from './component';
 import { TyrPathProps } from './path';
 import { message } from 'antd';
-import { getFilter, assertTypeUi } from '../type';
+import { getFilter } from '../type';
 import { tyreant } from '../tyreant';
 import Pagination from 'antd/es/pagination';
 
