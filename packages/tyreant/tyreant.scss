@@ -31,7 +31,11 @@
   --card-background-color: #eee;
 
   --popup-border-color: #aaa;
-  --popup-background-color: #ddd;
+  --popup-background-color: #fff;
+
+  --popup-diasbled-background-color: #f1f3f5;
+
+  --link-tag-background-color: #ddd;
 
   --drop-over-color: var(--border-color);
 }
@@ -149,7 +153,7 @@
 
   > span {
     color: var(--text-color);
-    background-color: var(--popup-background-color);
+    background-color: var(--link-tag-background-color);
     margin-right: 5px;
     padding: 0px 5px 2px 5px;
     border-radius: 4px;
@@ -941,7 +945,7 @@ form textarea.tyr-markup-editor {
 
     &.tyr-column-config-item-hidden {
       .tyr-column-config-item-inner {
-        background-color: var(--popup-background-color);
+        background-color: var(--popup-diasbled-background-color);
       }
     }
 

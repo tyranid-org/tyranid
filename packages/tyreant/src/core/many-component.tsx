@@ -438,7 +438,9 @@ export class TyrManyComponent<
   }
 
   paginationComponent() {
-    return (
+    return this.props.pageSize === 0 ? (
+      <span />
+    ) : (
       <Pagination
         {...this.paginationProps()}
         onChange={this.handlePaginationChange}
