@@ -694,14 +694,18 @@ form textarea.tyr-markup-editor {
 
   &.tyr-table-editing-row,
   &.tyr-table-adding-row {
-    .anticon-filter,
-    .ant-pagination {
+    .ant-pagination,
+    .anticon-filter {
       display: none;
     }
 
     //.ant-table-column-sorter
     .ant-table-column-has-filters .ant-dropdown-trigger {
       visibility: hidden;
+    }
+
+    .ant-table-footer {
+      flex-direction: column-reverse;
     }
   }
 
