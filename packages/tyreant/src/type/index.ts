@@ -18,3 +18,4 @@ export * from './string';
 export * from './text';
 export * from './time';
 export * from './timezone';
+export * from './uid';

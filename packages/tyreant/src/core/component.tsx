@@ -44,6 +44,10 @@ export class TyrComponent<
   collection!: Tyr.CollectionInstance<D>;
   paths!: TyrPathProps[];
 
+  get displayName() {
+    return this.constructor.name + ':' + this.collection.name;
+  }
+
   /**
    * "paths" contains all of the paths available to the component,
    * "activePaths" contains paths that are currently active on the screen
@@ -298,6 +302,16 @@ export class TyrComponent<
 
   componentWillUnmount() {
     this.mounted = false;
+    this.descendantWillUnmount(this);
+  }
+
+  descendantWillUnmount(component: TyrComponent<any>) {
+    const { actions } = this;
+    for (let i = 0; i < actions.length; )
+      if (actions[i].self === component) actions.splice(i, 1);
+      else i++;
+
+    this.parent?.descendantWillUnmount(component);
   }
 
   actions: TyrAction<D>[] = [];
@@ -315,6 +329,7 @@ export class TyrComponent<
     }
 
     this.actions.push(_action);
+    this.refresh();
   }
 
   enactUp(action: TyrAction<D> | TyrActionOpts<D>) {

@@ -63,6 +63,11 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
    */
   self?: TyrComponent<D>;
 
+  get displayName() {
+    const { self } = this;
+    return this.name + ':' + (self?.displayName || 'no-self');
+  }
+
   constructor({
     traits,
     name,
