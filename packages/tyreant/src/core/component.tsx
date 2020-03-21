@@ -27,9 +27,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   parent?: TyrComponent;
 }
 
-export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {
-  visible?: boolean;
-}
+export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {}
 
 /**
  * A TyrComponent represents a react component that contains documents.  Examples
@@ -57,13 +55,16 @@ export class TyrComponent<
     return this.paths;
   }
 
-  parent?: TyrComponent;
   children: TyrComponent[] = [];
   decorator?: TyrDecorator<D>;
-  _linkToParent?: any /* Field */;
 
   @observable
   loading = false;
+
+  @observable
+  visible = false;
+
+  mounted = false;
 
   /**
    * Can this component edit documents?
@@ -82,8 +83,6 @@ export class TyrComponent<
    */
   @observable
   document!: D;
-
-  mounted = false;
 
   /*
    * * * TyrManyComponent properties defined here for convenience in callbacks * * *
@@ -170,8 +169,7 @@ export class TyrComponent<
 
   componentDidMount() {
     this.mounted = true;
-
-    this.setState({ visible: true });
+    this.visible = true;
 
     if (!this.collection)
       throw new Tyr.AppError(
@@ -284,7 +282,7 @@ export class TyrComponent<
           name,
           label: Tyr.pluralize(this.collection!.label),
           action: opts => {
-            // TODO: restrict the component to opts.document
+            opts.self._parentDocument = opts.document;
             opts.self.requery();
           }
         });
@@ -422,6 +420,14 @@ export class TyrComponent<
     }
   }
 
+  //
+  // Parent
+  //
+
+  parent?: TyrComponent;
+
+  _linkToParent?: Tyr.FieldInstance<any>;
+
   /**
    * This indicates that this component was created through a link Field on a parent component.
    *
@@ -431,15 +437,22 @@ export class TyrComponent<
     return this._linkToParent;
   }
 
-  get parentDocument(): Tyr.Document | undefined {
-    const { parent } = this;
+  _parentDocument?: Tyr.Document<any>;
 
+  /**
+   * Note that this is *not* usually the same as "this.parent.document".  For example,
+   * if the parent component is a Table, this.parent.document will be undefined,
+   * this.parent.documents will have the list of documents and this.parentDocument
+   * will be the selected parent document.
+   */
+  get parentDocument(): Tyr.Document | undefined {
+    const { _parentDocument } = this;
+    if (_parentDocument) return _parentDocument;
+
+    const { parent } = this;
     if (parent) {
       const { document } = parent;
-
-      if (document) {
-        return document;
-      }
+      if (document) return document;
     }
 
     //return undefined;

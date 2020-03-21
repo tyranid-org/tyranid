@@ -20,7 +20,9 @@ export const DEFAULT_PAGE_SIZE = 20;
 export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   extends TyrComponentProps<D> {
   // QUERYING
-  query?: Tyr.MongoQuery | (() => Promise<Tyr.MongoQuery> | Tyr.MongoQuery);
+  query?:
+    | Tyr.MongoQuery
+    | ((this: TyrManyComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
   documents?: D[] & { count?: number };
 
   // FILTERING
@@ -102,9 +104,21 @@ export class TyrManyComponent<
     const { query: baseQuery } = this.props;
     const { searchValues, sortDirections } = this;
 
-    const query = {
-      ...(typeof baseQuery === 'function' ? await baseQuery() : baseQuery)
-    };
+    const query: Tyr.MongoQuery = {};
+    const { parentDocument } = this;
+
+    if (parentDocument) {
+      query[parentDocument.$model.name] = parentDocument.$id;
+    }
+
+    if (typeof baseQuery === 'function') {
+      await (baseQuery as (
+        this: TyrManyComponent<D>,
+        query: Tyr.MongoQuery
+      ) => Promise<void>).call(this, query);
+    } else {
+      Object.assign(query, baseQuery);
+    }
 
     const sort: { [key: string]: number } = {};
 
@@ -558,7 +572,13 @@ export class TyrManyComponent<
           if (currentUrl === newUrl) return;
           this.findAll();
         } else if (!this.isLocal) {
-          this.findAll();
+          // TODO: this.mounted is not what we need ... we need to know if the component is mounted and visible or something
+          const { decorator } = this;
+          if (
+            (!decorator || decorator.visible) &&
+            (!this.parent || this.mounted)
+          )
+            this.findAll();
         }
       });
     }
