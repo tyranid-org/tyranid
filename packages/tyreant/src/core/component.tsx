@@ -364,12 +364,19 @@ export class TyrComponent<
    * according to how the component hierarchy is laid out.
    */
   createDocument(actionOpts: TyrActionFnOpts<D>) {
-    const { linkToParent } = this;
+    const { linkToParent, parent } = this;
 
     const doc = new this.collection!({});
 
-    if (linkToParent) {
-      linkToParent.namePath.set(doc, actionOpts.document!.$id);
+    if (parent) {
+      if (parent.collection === this.collection && parent.canMultiple) {
+        const { parentDocument, linkToParent } = parent;
+
+        if (parentDocument && linkToParent)
+          linkToParent.namePath.set(doc, parentDocument.$id);
+      } else if (linkToParent) {
+        linkToParent.namePath.set(doc, actionOpts.document!.$id);
+      }
     }
 
     return doc;

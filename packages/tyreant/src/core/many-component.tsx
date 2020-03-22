@@ -105,10 +105,10 @@ export class TyrManyComponent<
     const { searchValues, sortDirections } = this;
 
     const query: Tyr.MongoQuery = {};
-    const { parentDocument } = this;
+    const { linkToParent, parentDocument } = this;
 
-    if (parentDocument) {
-      query[parentDocument.$model.name] = parentDocument.$id;
+    if (linkToParent && parentDocument) {
+      query[linkToParent.name] = parentDocument.$id;
     }
 
     if (typeof baseQuery === 'function') {
@@ -572,7 +572,6 @@ export class TyrManyComponent<
           if (currentUrl === newUrl) return;
           this.findAll();
         } else if (!this.isLocal) {
-          // TODO: this.mounted is not what we need ... we need to know if the component is mounted and visible or something
           const { decorator } = this;
           if (
             (!decorator || decorator.visible) &&
