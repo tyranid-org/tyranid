@@ -1,5 +1,11 @@
 {
   "extends": "../tsconfig",
-  "include": [".", "./typings/isomorphic.d.ts", "./typings/server.d.ts"],
+  "compilerOptions": {},
+  "include": [
+    "../builtin/server.d.ts",
+    ".",
+    "./typings/isomorphic.d.ts",
+    "./typings/server.d.ts"
+  ],
   "exclude": ["models"]
 }

@@ -1,10 +1,11 @@
 import { Tyr } from 'tyranid';
 
-const Country = new Tyr.Collection({
+export const Country = new Tyr.Collection({
   id: '_g1',
   name: 'country',
   dbName: 'countries',
   enum: true,
+  internal: true,
   fields: {
     _id: { is: 'integer' },
     name: { is: 'string', labelField: true },
@@ -370,7 +371,7 @@ const Country = new Tyr.Collection({
 
 // TODO:  these should be an isomorphic service
 Country.service = {
-  async byCode(code) {
+  async byCode(code: string) {
     // TODO:  create a hash for this if this ends up being used a lot ?
     if (code.length === 3) {
       return Country.values.find(country => country.iso3166_1_a3 === code);
@@ -379,10 +380,8 @@ Country.service = {
     return Country.values.find(country => country.code === code)!;
   },
 
-  async byFips(fips) {
+  async byFips(fips: string) {
     // TODO:  create a hash for this if this ends up being used a lot ?
     return Country.values.find(country => country.fips10_4 === fips)!;
   }
 };
-
-export default Country;

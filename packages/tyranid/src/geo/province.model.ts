@@ -4,6 +4,7 @@ const Province = new Tyr.Collection({
   id: '_g2',
   name: 'province',
   dbName: 'provinces',
+  internal: true,
   static: true,
   fields: {
     _id: { is: 'integer' },
