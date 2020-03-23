@@ -194,8 +194,8 @@ export const decorateField = (
 
   return (
     <FormItem
-      key={field!.path}
-      name={field!.namePath.identifier}
+      key={path!.name}
+      name={path!.identifier}
       className={className('tyr-' + name, props)}
       label={label}
       rules={generateRules(props)}
