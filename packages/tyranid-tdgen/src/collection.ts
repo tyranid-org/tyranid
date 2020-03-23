@@ -235,7 +235,7 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
           field: returns as Tyr.FieldInstance,
           indent: 4,
           noPopulatedProperty: true
-        })
+        }) + (returns.def.required ? '' : ' | undefined')
       : 'void';
     s += '>;';
   }
@@ -269,11 +269,17 @@ export function colService(
     }\n`;
 
     case 'client':
+      //   return `
+      // export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
       return `
-    export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
+    export interface ${colName}Service {${colServiceMethods(col)}
+    }\n`;
 
     case 'server':
+      //   return `;
+      // export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
       return `
-    export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
+    export interface ${colName}Service {${colServiceMethods(col)}
+    }\n`;
   }
 }

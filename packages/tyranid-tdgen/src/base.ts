@@ -286,6 +286,7 @@ export function addField({
     }
 
     default:
-      return 'any';
+      const { type } = field;
+      return type instanceof Tyr.Collection ? names.format(type.name) : 'any';
   }
 }

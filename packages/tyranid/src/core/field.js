@@ -126,6 +126,14 @@ export default class Field {
     return this.def.db !== false;
   }
 
+  isMethod() {
+    return !!this.method || this.parent?.isMethod();
+  }
+
+  methodName() {
+    return this.method || this.parent?.methodName();
+  }
+
   /** @private @isopmorphic */
   _calcPathLabel() {
     const p = this.parent,

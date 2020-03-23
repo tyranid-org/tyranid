@@ -17,6 +17,32 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
+     * "continent" <ContinentCollection> are derived
+     */
+    export interface BaseContinent<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      code?: string;
+      name?: string;
+    }
+    
+    /**
+     * Base interface from which documents in collection
+     * "country" <CountryCollection> are derived
+     */
+    export interface BaseCountry<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      aliases?: string;
+      anyCode?: string;
+      code?: string;
+      continent?: number;
+      continent$?: NumContainer & BaseContinent<ObjIdType, ObjContainer, NumContainer>;
+      fips10_4?: string;
+      iso3166_1_a3?: string;
+      iso3166_1_num?: number;
+      name?: string;
+      notes?: string;
+    }
+    
+    /**
+     * Base interface from which documents in collection
      * "mediaType" <MediaTypeCollection> are derived
      */
     export interface BaseMediaType<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -29,6 +55,22 @@ declare module 'tyranid/isomorphic' {
       /**
        * This file is not safe to download as a link       */
       unsafe?: boolean;
+    }
+    
+    /**
+     * Base interface from which documents in collection
+     * "province" <ProvinceCollection> are derived
+     */
+    export interface BaseProvince<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      aliases?: string;
+      anyCode?: string;
+      code?: string;
+      country?: CountryId;
+      country$?: ObjContainer & BaseCountry<ObjIdType, ObjContainer, NumContainer>;
+      fips10_4?: string;
+      name?: string;
+      notes?: string;
+      region?: number;
     }
     
     /**
@@ -250,11 +292,29 @@ declare module 'tyranid/isomorphic' {
     
     
     /**
+     * Document returned by collection "continent" <ContinentCollection>
+     */
+    export interface Continent<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<number>,
+              BaseContinent<ObjIdType, ObjContainer, NumContainer> {}
+    /**
+     * Document returned by collection "country" <CountryCollection>
+     */
+    export interface Country<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<CountryId>,
+              BaseCountry<ObjIdType, ObjContainer, NumContainer> {}
+    /**
      * Document returned by collection "mediaType" <MediaTypeCollection>
      */
     export interface MediaType<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends Inserted<MediaTypeId>,
               BaseMediaType<ObjIdType, ObjContainer, NumContainer> {}
+    /**
+     * Document returned by collection "province" <ProvinceCollection>
+     */
+    export interface Province<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<number>,
+              BaseProvince<ObjIdType, ObjContainer, NumContainer> {}
     /**
      * Document returned by collection "tyrExchangeRate" <TyrExchangeRateCollection>
      */
@@ -365,11 +425,42 @@ declare module 'tyranid/isomorphic' {
               BaseUnitType<ObjIdType, ObjContainer, NumContainer> {}
     
     /**
+     * Type definition for "continent" collection
+     */
+    export interface ContinentCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<Continent<ObjIdType, ObjContainer, NumContainer>> {}
+    
+    /**
+     * Service definition for "country" collection
+     */
+    export interface CountryCollectionService<ObjIdType = 'string'> {
+      byCode(
+        this: any,
+        code: string): Promise<Country | undefined>;
+      byFips(
+        this: any,
+        code: string): Promise<Country | undefined>; 
+    }
+
+    /**
+     * Type definition for "country" collection
+     */
+    export interface CountryCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<Country<ObjIdType, ObjContainer, NumContainer>>,
+              CountryCollectionEnumStatic {}
+    
+    /**
      * Type definition for "mediaType" collection
      */
     export interface MediaTypeCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<MediaType<ObjIdType, ObjContainer, NumContainer>>,
               MediaTypeCollectionEnumStatic {}
+    
+    /**
+     * Type definition for "province" collection
+     */
+    export interface ProvinceCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<Province<ObjIdType, ObjContainer, NumContainer>> {}
     
     /**
      * Type definition for "tyrExchangeRate" collection
@@ -488,6 +579,2263 @@ declare module 'tyranid/isomorphic' {
               UnitTypeCollectionEnumStatic {}
     
     
+  /**
+   * Static properties for enum collection "CountryCollection"
+   */
+  export interface CountryCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+    
+      AFGHANISTAN: {
+        _id: 4079;
+        name: 'Afghanistan';
+        code: 'AF';
+        iso3166_1_a3: 'AFG';
+        fips10_4: 'AF';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ALAND_ISLANDS: {
+        _id: 4093;
+        name: 'Aland Islands';
+        code: 'AX';
+        iso3166_1_a3: 'ALA';
+        fips10_4: 'null';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ALBANIA: {
+        _id: 4082;
+        name: 'Albania';
+        code: 'AL';
+        iso3166_1_a3: 'ALB';
+        fips10_4: 'AL';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ALGERIA: {
+        _id: 4137;
+        name: 'Algeria';
+        code: 'DZ';
+        iso3166_1_a3: 'DZA';
+        fips10_4: 'AG';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      AMERICAN_SAMOA: {
+        _id: 4089;
+        name: 'American Samoa';
+        code: 'AS';
+        iso3166_1_a3: 'ASM';
+        fips10_4: 'AQ';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ANDORRA: {
+        _id: 4077;
+        name: 'Andorra';
+        code: 'AD';
+        iso3166_1_a3: 'AND';
+        fips10_4: 'AN';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ANGOLA: {
+        _id: 4085;
+        name: 'Angola';
+        code: 'AO';
+        iso3166_1_a3: 'AGO';
+        fips10_4: 'AO';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ANGUILLA: {
+        _id: 4081;
+        name: 'Anguilla';
+        code: 'AI';
+        iso3166_1_a3: 'AIA';
+        fips10_4: 'AV';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ANONYMOUS_PROXY: {
+        _id: 4075;
+        name: 'Anonymous Proxy';
+        code: 'A1';
+        iso3166_1_a3: '';
+        fips10_4: 'null';
+        continent: 0;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ANTIGUA_AND_BARBUDA: {
+        _id: 4080;
+        name: 'Antigua and Barbuda';
+        code: 'AG';
+        iso3166_1_a3: 'ATG';
+        fips10_4: 'AC';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ARGENTINA: {
+        _id: 4088;
+        name: 'Argentina';
+        code: 'AR';
+        iso3166_1_a3: 'ARG';
+        fips10_4: 'AR';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ARMENIA: {
+        _id: 4083;
+        name: 'Armenia';
+        code: 'AM';
+        iso3166_1_a3: 'ARM';
+        fips10_4: 'AM';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ARUBA: {
+        _id: 4092;
+        name: 'Aruba';
+        code: 'AW';
+        iso3166_1_a3: 'ABW';
+        fips10_4: 'AA';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      AUSTRALIA: {
+        _id: 4091;
+        name: 'Australia';
+        code: 'AU';
+        iso3166_1_a3: 'AUS';
+        fips10_4: 'AS';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      AUSTRIA: {
+        _id: 4090;
+        name: 'Austria';
+        code: 'AT';
+        iso3166_1_a3: 'AUT';
+        fips10_4: 'AU';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      AZERBAIJAN: {
+        _id: 4094;
+        name: 'Azerbaijan';
+        code: 'AZ';
+        iso3166_1_a3: 'AZE';
+        fips10_4: 'AJ';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BAHAMAS: {
+        _id: 4108;
+        name: 'Bahamas';
+        code: 'BS';
+        iso3166_1_a3: 'BHS';
+        fips10_4: 'BF';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BAHRAIN: {
+        _id: 4101;
+        name: 'Bahrain';
+        code: 'BH';
+        iso3166_1_a3: 'BHR';
+        fips10_4: 'BA';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BANGLADESH: {
+        _id: 4097;
+        name: 'Bangladesh';
+        code: 'BD';
+        iso3166_1_a3: 'BGD';
+        fips10_4: 'BG';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BARBADOS: {
+        _id: 4096;
+        name: 'Barbados';
+        code: 'BB';
+        iso3166_1_a3: 'BRB';
+        fips10_4: 'BB';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BELARUS: {
+        _id: 4112;
+        name: 'Belarus';
+        code: 'BY';
+        iso3166_1_a3: 'BLR';
+        fips10_4: 'BO';
+        continent: 4331;
+        aliases: 'Byelarus';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BELGIUM: {
+        _id: 4098;
+        name: 'Belgium';
+        code: 'BE';
+        iso3166_1_a3: 'BEL';
+        fips10_4: 'BE';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BELIZE: {
+        _id: 4113;
+        name: 'Belize';
+        code: 'BZ';
+        iso3166_1_a3: 'BLZ';
+        fips10_4: 'BH';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BENIN: {
+        _id: 4103;
+        name: 'Benin';
+        code: 'BJ';
+        iso3166_1_a3: 'BEN';
+        fips10_4: 'BN';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BERMUDA: {
+        _id: 4104;
+        name: 'Bermuda';
+        code: 'BM';
+        iso3166_1_a3: 'BMU';
+        fips10_4: 'BD';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BHUTAN: {
+        _id: 4109;
+        name: 'Bhutan';
+        code: 'BT';
+        iso3166_1_a3: 'BTN';
+        fips10_4: 'BT';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BOLIVIA: {
+        _id: 4106;
+        name: 'Bolivia';
+        code: 'BO';
+        iso3166_1_a3: 'BOL';
+        fips10_4: 'BL';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BOSNIA_AND_HERZEGOVINA: {
+        _id: 4095;
+        name: 'Bosnia and Herzegovina';
+        code: 'BA';
+        iso3166_1_a3: 'BIH';
+        fips10_4: 'BK';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BOTSWANA: {
+        _id: 4111;
+        name: 'Botswana';
+        code: 'BW';
+        iso3166_1_a3: 'BWA';
+        fips10_4: 'BC';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BOUVET_ISLAND: {
+        _id: 4110;
+        name: 'Bouvet Island';
+        code: 'BV';
+        iso3166_1_a3: 'BVT';
+        fips10_4: 'BV';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BRAZIL: {
+        _id: 4107;
+        name: 'Brazil';
+        code: 'BR';
+        iso3166_1_a3: 'BRA';
+        fips10_4: 'BR';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BRITISH_INDIAN_OCEAN_TERRITORY: {
+        _id: 4182;
+        name: 'British Indian Ocean Territory';
+        code: 'IO';
+        iso3166_1_a3: 'IOT';
+        fips10_4: 'IO';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BRUNEI_DARUSSALAM: {
+        _id: 4105;
+        name: 'Brunei Darussalam';
+        code: 'BN';
+        iso3166_1_a3: 'BRN';
+        fips10_4: 'BX';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BULGARIA: {
+        _id: 4100;
+        name: 'Bulgaria';
+        code: 'BG';
+        iso3166_1_a3: 'BGR';
+        fips10_4: 'BU';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BURKINA_FASO: {
+        _id: 4099;
+        name: 'Burkina Faso';
+        code: 'BF';
+        iso3166_1_a3: 'BFA';
+        fips10_4: 'UV';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      BURUNDI: {
+        _id: 4102;
+        name: 'Burundi';
+        code: 'BI';
+        iso3166_1_a3: 'BDI';
+        fips10_4: 'BY';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CAMBODIA: {
+        _id: 4193;
+        name: 'Cambodia';
+        code: 'KH';
+        iso3166_1_a3: 'KHM';
+        fips10_4: 'CB';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CAMEROON: {
+        _id: 4123;
+        name: 'Cameroon';
+        code: 'CM';
+        iso3166_1_a3: 'CMR';
+        fips10_4: 'CM';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CANADA: {
+        _id: 4114;
+        name: 'Canada';
+        code: 'CA';
+        iso3166_1_a3: 'CAN';
+        fips10_4: 'CA';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CAPE_VERDE: {
+        _id: 4128;
+        name: 'Cape Verde';
+        code: 'CV';
+        iso3166_1_a3: 'CPV';
+        fips10_4: 'CV';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CAYMAN_ISLANDS: {
+        _id: 4200;
+        name: 'Cayman Islands';
+        code: 'KY';
+        iso3166_1_a3: 'CYM';
+        fips10_4: 'CJ';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CENTRAL_AFRICAN_REPUBLIC: {
+        _id: 4117;
+        name: 'Central African Republic';
+        code: 'CF';
+        iso3166_1_a3: 'CAF';
+        fips10_4: 'CT';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CHAD: {
+        _id: 4288;
+        name: 'Chad';
+        code: 'TD';
+        iso3166_1_a3: 'TCD';
+        fips10_4: 'CD';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CHILE: {
+        _id: 4122;
+        name: 'Chile';
+        code: 'CL';
+        iso3166_1_a3: 'CHL';
+        fips10_4: 'CI';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CHINA: {
+        _id: 4124;
+        name: 'China';
+        code: 'CN';
+        iso3166_1_a3: 'CHN';
+        fips10_4: 'CH';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CHRISTMAS_ISLAND: {
+        _id: 4129;
+        name: 'Christmas Island';
+        code: 'CX';
+        iso3166_1_a3: 'CXR';
+        fips10_4: 'KT';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      COCOS_KEELING_ISLANDS: {
+        _id: 4115;
+        name: 'Cocos (Keeling) Islands';
+        code: 'CC';
+        iso3166_1_a3: 'CCK';
+        fips10_4: 'CK';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      COLOMBIA: {
+        _id: 4125;
+        name: 'Colombia';
+        code: 'CO';
+        iso3166_1_a3: 'COL';
+        fips10_4: 'CO';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      COMOROS: {
+        _id: 4195;
+        name: 'Comoros';
+        code: 'KM';
+        iso3166_1_a3: 'COM';
+        fips10_4: 'CN';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CONGO: {
+        _id: 4118;
+        name: 'Congo';
+        code: 'CG';
+        iso3166_1_a3: 'COG';
+        fips10_4: 'CF';
+        continent: 4328;
+        aliases: 'Republic of the Congo';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CONGO_ZAIRE: {
+        _id: 4326;
+        name: 'Congo (Zaire)';
+        code: 'ZR';
+        iso3166_1_a3: '';
+        fips10_4: 'CG';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CONGO_DEMOCRATIC_REPUBLIC_OF_THE: {
+        _id: 4116;
+        name: 'Congo, Democratic Republic of the';
+        code: 'CD';
+        iso3166_1_a3: 'COD';
+        fips10_4: 'CG';
+        continent: 4328;
+        aliases: 'Zaire, Democratic Republic of Congo';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      COOK_ISLANDS: {
+        _id: 4121;
+        name: 'Cook Islands';
+        code: 'CK';
+        iso3166_1_a3: 'COK';
+        fips10_4: 'CW';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      COSTA_RICA: {
+        _id: 4126;
+        name: 'Costa Rica';
+        code: 'CR';
+        iso3166_1_a3: 'CRI';
+        fips10_4: 'CS';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      COTE_D_IVOIRE: {
+        _id: 4120;
+        name: 'Cote dIvoire';
+        code: 'CI';
+        iso3166_1_a3: 'CIV';
+        fips10_4: 'IV';
+        continent: 4328;
+        aliases: 'Ivory Coast, Cote dIvoire';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CROATIA: {
+        _id: 4174;
+        name: 'Croatia';
+        code: 'HR';
+        iso3166_1_a3: 'HRV';
+        fips10_4: 'HR';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CUBA: {
+        _id: 4127;
+        name: 'Cuba';
+        code: 'CU';
+        iso3166_1_a3: 'CUB';
+        fips10_4: 'CU';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CYPRUS: {
+        _id: 4130;
+        name: 'Cyprus';
+        code: 'CY';
+        iso3166_1_a3: 'CYP';
+        fips10_4: 'CY';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      CZECH_REPUBLIC: {
+        _id: 4131;
+        name: 'Czech Republic';
+        code: 'CZ';
+        iso3166_1_a3: 'CZE';
+        fips10_4: 'EZ';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      DENMARK: {
+        _id: 4134;
+        name: 'Denmark';
+        code: 'DK';
+        iso3166_1_a3: 'DNK';
+        fips10_4: 'DA';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      DJIBOUTI: {
+        _id: 4133;
+        name: 'Djibouti';
+        code: 'DJ';
+        iso3166_1_a3: 'DJI';
+        fips10_4: 'DJ';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      DOMINICA: {
+        _id: 4135;
+        name: 'Dominica';
+        code: 'DM';
+        iso3166_1_a3: 'DMA';
+        fips10_4: 'DO';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      DOMINICAN_REPUBLIC: {
+        _id: 4136;
+        name: 'Dominican Republic';
+        code: 'DO';
+        iso3166_1_a3: 'DOM';
+        fips10_4: 'DR';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ECUADOR: {
+        _id: 4138;
+        name: 'Ecuador';
+        code: 'EC';
+        iso3166_1_a3: 'ECU';
+        fips10_4: 'EC';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      EGYPT: {
+        _id: 4140;
+        name: 'Egypt';
+        code: 'EG';
+        iso3166_1_a3: 'EGY';
+        fips10_4: 'EG';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      EL_SALVADOR: {
+        _id: 4284;
+        name: 'El Salvador';
+        code: 'SV';
+        iso3166_1_a3: 'SLV';
+        fips10_4: 'ES';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      EQUATORIAL_GUINEA: {
+        _id: 4164;
+        name: 'Equatorial Guinea';
+        code: 'GQ';
+        iso3166_1_a3: 'GNQ';
+        fips10_4: 'EK';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ERITREA: {
+        _id: 4142;
+        name: 'Eritrea';
+        code: 'ER';
+        iso3166_1_a3: 'ERI';
+        fips10_4: 'ER';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ESTONIA: {
+        _id: 4139;
+        name: 'Estonia';
+        code: 'EE';
+        iso3166_1_a3: 'EST';
+        fips10_4: 'EN';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ETHIOPIA: {
+        _id: 4144;
+        name: 'Ethiopia';
+        code: 'ET';
+        iso3166_1_a3: 'ETH';
+        fips10_4: 'ET';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FALKLAND_ISLANDS_MALVINAS: {
+        _id: 4148;
+        name: 'Falkland Islands (Malvinas)';
+        code: 'FK';
+        iso3166_1_a3: 'FLK';
+        fips10_4: 'FK';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FAROE_ISLANDS: {
+        _id: 4150;
+        name: 'Faroe Islands';
+        code: 'FO';
+        iso3166_1_a3: 'FRO';
+        fips10_4: 'FO';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FIJI: {
+        _id: 4147;
+        name: 'Fiji';
+        code: 'FJ';
+        iso3166_1_a3: 'FJI';
+        fips10_4: 'FJ';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FINLAND: {
+        _id: 4146;
+        name: 'Finland';
+        code: 'FI';
+        iso3166_1_a3: 'FIN';
+        fips10_4: 'FI';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FRANCE: {
+        _id: 4151;
+        name: 'France';
+        code: 'FR';
+        iso3166_1_a3: 'FRA';
+        fips10_4: 'FR';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FRENCH_GUIANA: {
+        _id: 4156;
+        name: 'French Guiana';
+        code: 'GF';
+        iso3166_1_a3: 'GUF';
+        fips10_4: 'FG';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FRENCH_POLYNESIA: {
+        _id: 4250;
+        name: 'French Polynesia';
+        code: 'PF';
+        iso3166_1_a3: 'PYF';
+        fips10_4: 'FP';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      FRENCH_SOUTHERN_TERRITORIES: {
+        _id: 4289;
+        name: 'French Southern Territories';
+        code: 'TF';
+        iso3166_1_a3: 'ATF';
+        fips10_4: 'FS';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GABON: {
+        _id: 4152;
+        name: 'Gabon';
+        code: 'GA';
+        iso3166_1_a3: 'GAB';
+        fips10_4: 'GB';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GAMBIA: {
+        _id: 4161;
+        name: 'Gambia';
+        code: 'GM';
+        iso3166_1_a3: 'GMB';
+        fips10_4: 'GA';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GEORGIA: {
+        _id: 4155;
+        name: 'Georgia';
+        code: 'GE';
+        iso3166_1_a3: 'GEO';
+        fips10_4: 'GG';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GERMANY: {
+        _id: 4132;
+        name: 'Germany';
+        code: 'DE';
+        iso3166_1_a3: 'DEU';
+        fips10_4: 'GM';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GHANA: {
+        _id: 4158;
+        name: 'Ghana';
+        code: 'GH';
+        iso3166_1_a3: 'GHA';
+        fips10_4: 'GH';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GIBRALTAR: {
+        _id: 4159;
+        name: 'Gibraltar';
+        code: 'GI';
+        iso3166_1_a3: 'GIB';
+        fips10_4: 'GI';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GREECE: {
+        _id: 4165;
+        name: 'Greece';
+        code: 'GR';
+        iso3166_1_a3: 'GRC';
+        fips10_4: 'GR';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GREENLAND: {
+        _id: 4160;
+        name: 'Greenland';
+        code: 'GL';
+        iso3166_1_a3: 'GRL';
+        fips10_4: 'GL';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GRENADA: {
+        _id: 4154;
+        name: 'Grenada';
+        code: 'GD';
+        iso3166_1_a3: 'GRD';
+        fips10_4: 'GJ';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GUADELOUPE: {
+        _id: 4163;
+        name: 'Guadeloupe';
+        code: 'GP';
+        iso3166_1_a3: 'GLP';
+        fips10_4: 'GP';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GUAM: {
+        _id: 4168;
+        name: 'Guam';
+        code: 'GU';
+        iso3166_1_a3: 'GUM';
+        fips10_4: 'GQ';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GUATEMALA: {
+        _id: 4167;
+        name: 'Guatemala';
+        code: 'GT';
+        iso3166_1_a3: 'GTM';
+        fips10_4: 'GT';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GUERNSEY: {
+        _id: 4157;
+        name: 'Guernsey';
+        code: 'GG';
+        iso3166_1_a3: 'GGY';
+        fips10_4: 'GK';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GUINEA: {
+        _id: 4162;
+        name: 'Guinea';
+        code: 'GN';
+        iso3166_1_a3: 'GIN';
+        fips10_4: 'GV';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GUINEA_BISSAU: {
+        _id: 4169;
+        name: 'Guinea-Bissau';
+        code: 'GW';
+        iso3166_1_a3: 'GNB';
+        fips10_4: 'PU';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      GUYANA: {
+        _id: 4170;
+        name: 'Guyana';
+        code: 'GY';
+        iso3166_1_a3: 'GUY';
+        fips10_4: 'GY';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      HAITI: {
+        _id: 4175;
+        name: 'Haiti';
+        code: 'HT';
+        iso3166_1_a3: 'HTI';
+        fips10_4: 'HA';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      HEARD_ISLAND_AND_MC_DONALD_ISLANDS: {
+        _id: 4172;
+        name: 'Heard Island and McDonald Islands';
+        code: 'HM';
+        iso3166_1_a3: 'HMD';
+        fips10_4: 'HM';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      HOLY_SEE_VATICAN_CITY_STATE: {
+        _id: 4309;
+        name: 'Holy See (Vatican City State)';
+        code: 'VA';
+        iso3166_1_a3: 'VAT';
+        fips10_4: 'VT';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      HONDURAS: {
+        _id: 4173;
+        name: 'Honduras';
+        code: 'HN';
+        iso3166_1_a3: 'HND';
+        fips10_4: 'HO';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      HUNGARY: {
+        _id: 4176;
+        name: 'Hungary';
+        code: 'HU';
+        iso3166_1_a3: 'HUN';
+        fips10_4: 'HU';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ICELAND: {
+        _id: 4185;
+        name: 'Iceland';
+        code: 'IS';
+        iso3166_1_a3: 'ISL';
+        fips10_4: 'IC';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      INDIA: {
+        _id: 4181;
+        name: 'India';
+        code: 'IN';
+        iso3166_1_a3: 'IND';
+        fips10_4: 'IN';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      INDONESIA: {
+        _id: 4177;
+        name: 'Indonesia';
+        code: 'ID';
+        iso3166_1_a3: 'IDN';
+        fips10_4: 'ID';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      IRAN_ISLAMIC_REPUBLIC_OF: {
+        _id: 4184;
+        name: 'Iran, Islamic Republic of';
+        code: 'IR';
+        iso3166_1_a3: 'IRN';
+        fips10_4: 'IR';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      IRAQ: {
+        _id: 4183;
+        name: 'Iraq';
+        code: 'IQ';
+        iso3166_1_a3: 'IRQ';
+        fips10_4: 'IZ';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      IRELAND: {
+        _id: 4178;
+        name: 'Ireland';
+        code: 'IE';
+        iso3166_1_a3: 'IRL';
+        fips10_4: 'EI';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ISLE_OF_MAN: {
+        _id: 4180;
+        name: 'Isle of Man';
+        code: 'IM';
+        iso3166_1_a3: 'IMN';
+        fips10_4: 'IM';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ISRAEL: {
+        _id: 4179;
+        name: 'Israel';
+        code: 'IL';
+        iso3166_1_a3: 'ISR';
+        fips10_4: 'IS';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ITALY: {
+        _id: 4186;
+        name: 'Italy';
+        code: 'IT';
+        iso3166_1_a3: 'ITA';
+        fips10_4: 'IT';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      JAMAICA: {
+        _id: 4188;
+        name: 'Jamaica';
+        code: 'JM';
+        iso3166_1_a3: 'JAM';
+        fips10_4: 'JM';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      JAPAN: {
+        _id: 4190;
+        name: 'Japan';
+        code: 'JP';
+        iso3166_1_a3: 'JPN';
+        fips10_4: 'JA';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      JERSEY: {
+        _id: 4187;
+        name: 'Jersey';
+        code: 'JE';
+        iso3166_1_a3: 'JEY';
+        fips10_4: 'JE';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      JORDAN: {
+        _id: 4189;
+        name: 'Jordan';
+        code: 'JO';
+        iso3166_1_a3: 'JOR';
+        fips10_4: 'JO';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      KAZAKHSTAN: {
+        _id: 4201;
+        name: 'Kazakhstan';
+        code: 'KZ';
+        iso3166_1_a3: 'KAZ';
+        fips10_4: 'KZ';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      KENYA: {
+        _id: 4191;
+        name: 'Kenya';
+        code: 'KE';
+        iso3166_1_a3: 'KEN';
+        fips10_4: 'KE';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      KIRIBATI: {
+        _id: 4194;
+        name: 'Kiribati';
+        code: 'KI';
+        iso3166_1_a3: 'KIR';
+        fips10_4: 'KR';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      KUWAIT: {
+        _id: 4199;
+        name: 'Kuwait';
+        code: 'KW';
+        iso3166_1_a3: 'KWT';
+        fips10_4: 'KU';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      KYRGYZSTAN: {
+        _id: 4192;
+        name: 'Kyrgyzstan';
+        code: 'KG';
+        iso3166_1_a3: 'KGZ';
+        fips10_4: 'KG';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LAO_PEOPLES_DEMOCRATIC_REPUBLIC: {
+        _id: 4202;
+        name: 'Lao Peoples Democratic Republic';
+        code: 'LA';
+        iso3166_1_a3: 'LAO';
+        fips10_4: 'LA';
+        continent: 4330;
+        aliases: 'Laos';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LATVIA: {
+        _id: 4211;
+        name: 'Latvia';
+        code: 'LV';
+        iso3166_1_a3: 'LVA';
+        fips10_4: 'LG';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LEBANON: {
+        _id: 4203;
+        name: 'Lebanon';
+        code: 'LB';
+        iso3166_1_a3: 'LBN';
+        fips10_4: 'LE';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LESOTHO: {
+        _id: 4208;
+        name: 'Lesotho';
+        code: 'LS';
+        iso3166_1_a3: 'LSO';
+        fips10_4: 'LT';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LIBERIA: {
+        _id: 4207;
+        name: 'Liberia';
+        code: 'LR';
+        iso3166_1_a3: 'LBR';
+        fips10_4: 'LI';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LIBYAN_ARAB_JAMAHIRIYA: {
+        _id: 4212;
+        name: 'Libyan Arab Jamahiriya';
+        code: 'LY';
+        iso3166_1_a3: 'LBY';
+        fips10_4: 'null';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LIECHTENSTEIN: {
+        _id: 4205;
+        name: 'Liechtenstein';
+        code: 'LI';
+        iso3166_1_a3: 'LIE';
+        fips10_4: 'LS';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LITHUANIA: {
+        _id: 4209;
+        name: 'Lithuania';
+        code: 'LT';
+        iso3166_1_a3: 'LTU';
+        fips10_4: 'LH';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      LUXEMBOURG: {
+        _id: 4210;
+        name: 'Luxembourg';
+        code: 'LU';
+        iso3166_1_a3: 'LUX';
+        fips10_4: 'LU';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MACAO: {
+        _id: 4223;
+        name: 'Macao';
+        code: 'MO';
+        iso3166_1_a3: 'MAC';
+        fips10_4: 'MC';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MACEDONIA: {
+        _id: 4219;
+        name: 'Macedonia';
+        code: 'MK';
+        iso3166_1_a3: 'MKD';
+        fips10_4: 'MK';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MADAGASCAR: {
+        _id: 4217;
+        name: 'Madagascar';
+        code: 'MG';
+        iso3166_1_a3: 'MDG';
+        fips10_4: 'MA';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MALAWI: {
+        _id: 4231;
+        name: 'Malawi';
+        code: 'MW';
+        iso3166_1_a3: 'MWI';
+        fips10_4: 'MI';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MALAYSIA: {
+        _id: 4233;
+        name: 'Malaysia';
+        code: 'MY';
+        iso3166_1_a3: 'MYS';
+        fips10_4: 'MY';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MALDIVES: {
+        _id: 4230;
+        name: 'Maldives';
+        code: 'MV';
+        iso3166_1_a3: 'MDV';
+        fips10_4: 'MV';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MALI: {
+        _id: 4220;
+        name: 'Mali';
+        code: 'ML';
+        iso3166_1_a3: 'MLI';
+        fips10_4: 'ML';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MALTA: {
+        _id: 4228;
+        name: 'Malta';
+        code: 'MT';
+        iso3166_1_a3: 'MLT';
+        fips10_4: 'MT';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MARSHALL_ISLANDS: {
+        _id: 4218;
+        name: 'Marshall Islands';
+        code: 'MH';
+        iso3166_1_a3: 'MHL';
+        fips10_4: 'RM';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MARTINIQUE: {
+        _id: 4225;
+        name: 'Martinique';
+        code: 'MQ';
+        iso3166_1_a3: 'MTQ';
+        fips10_4: 'MB';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MAURITANIA: {
+        _id: 4226;
+        name: 'Mauritania';
+        code: 'MR';
+        iso3166_1_a3: 'MRT';
+        fips10_4: 'MR';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MAURITIUS: {
+        _id: 4229;
+        name: 'Mauritius';
+        code: 'MU';
+        iso3166_1_a3: 'MUS';
+        fips10_4: 'MP';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MAYOTTE: {
+        _id: 4319;
+        name: 'Mayotte';
+        code: 'YT';
+        iso3166_1_a3: 'MYT';
+        fips10_4: 'MF';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      METROPOLITAN_FRANCE: {
+        _id: 4323;
+        name: 'Metropolitan France';
+        code: 'FX';
+        iso3166_1_a3: '';
+        fips10_4: 'null';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MEXICO: {
+        _id: 4232;
+        name: 'Mexico';
+        code: 'MX';
+        iso3166_1_a3: 'MEX';
+        fips10_4: 'MX';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MICRONESIA_FEDERATED_STATES_OF: {
+        _id: 4149;
+        name: 'Micronesia, Federated States of';
+        code: 'FM';
+        iso3166_1_a3: 'FSM';
+        fips10_4: 'FM';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MOLDOVA_REPUBLIC_OF: {
+        _id: 4215;
+        name: 'Moldova, Republic of';
+        code: 'MD';
+        iso3166_1_a3: 'MDA';
+        fips10_4: 'MD';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MONACO: {
+        _id: 4214;
+        name: 'Monaco';
+        code: 'MC';
+        iso3166_1_a3: 'MCO';
+        fips10_4: 'MN';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MONGOLIA: {
+        _id: 4222;
+        name: 'Mongolia';
+        code: 'MN';
+        iso3166_1_a3: 'MNG';
+        fips10_4: 'MG';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MONTENEGRO: {
+        _id: 4216;
+        name: 'Montenegro';
+        code: 'ME';
+        iso3166_1_a3: 'MNE';
+        fips10_4: 'MW';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MONTSERRAT: {
+        _id: 4227;
+        name: 'Montserrat';
+        code: 'MS';
+        iso3166_1_a3: 'MSR';
+        fips10_4: 'MH';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MOROCCO: {
+        _id: 4213;
+        name: 'Morocco';
+        code: 'MA';
+        iso3166_1_a3: 'MAR';
+        fips10_4: 'MO';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MOZAMBIQUE: {
+        _id: 4234;
+        name: 'Mozambique';
+        code: 'MZ';
+        iso3166_1_a3: 'MOZ';
+        fips10_4: 'MZ';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      MYANMAR: {
+        _id: 4221;
+        name: 'Myanmar';
+        code: 'MM';
+        iso3166_1_a3: 'MMR';
+        fips10_4: 'BM';
+        continent: 4330;
+        aliases: 'Burma';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NAMIBIA: {
+        _id: 4235;
+        name: 'Namibia';
+        code: 'NA';
+        iso3166_1_a3: 'NAM';
+        fips10_4: 'WA';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NAURU: {
+        _id: 4244;
+        name: 'Nauru';
+        code: 'NR';
+        iso3166_1_a3: 'NRU';
+        fips10_4: 'NR';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NEPAL: {
+        _id: 4243;
+        name: 'Nepal';
+        code: 'NP';
+        iso3166_1_a3: 'NPL';
+        fips10_4: 'NP';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NETHERLANDS: {
+        _id: 4241;
+        name: 'Netherlands';
+        code: 'NL';
+        iso3166_1_a3: 'NLD';
+        fips10_4: 'NL';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NETHERLANDS_ANTILLES: {
+        _id: 4084;
+        name: 'Netherlands Antilles';
+        code: 'AN';
+        iso3166_1_a3: '';
+        fips10_4: 'NT';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NEW_CALEDONIA: {
+        _id: 4236;
+        name: 'New Caledonia';
+        code: 'NC';
+        iso3166_1_a3: 'NCL';
+        fips10_4: 'NC';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NEW_ZEALAND: {
+        _id: 4246;
+        name: 'New Zealand';
+        code: 'NZ';
+        iso3166_1_a3: 'NZL';
+        fips10_4: 'NZ';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NICARAGUA: {
+        _id: 4240;
+        name: 'Nicaragua';
+        code: 'NI';
+        iso3166_1_a3: 'NIC';
+        fips10_4: 'NU';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NIGER: {
+        _id: 4237;
+        name: 'Niger';
+        code: 'NE';
+        iso3166_1_a3: 'NER';
+        fips10_4: 'NG';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NIGERIA: {
+        _id: 4239;
+        name: 'Nigeria';
+        code: 'NG';
+        iso3166_1_a3: 'NGA';
+        fips10_4: 'NI';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NIUE: {
+        _id: 4245;
+        name: 'Niue';
+        code: 'NU';
+        iso3166_1_a3: 'NIU';
+        fips10_4: 'NE';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NORFOLK_ISLAND: {
+        _id: 4238;
+        name: 'Norfolk Island';
+        code: 'NF';
+        iso3166_1_a3: 'NFK';
+        fips10_4: 'NF';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NORTH_KOREA: {
+        _id: 4197;
+        name: 'North Korea';
+        code: 'KP';
+        iso3166_1_a3: 'PRK';
+        fips10_4: 'KN';
+        continent: 4330;
+        aliases: 'Democratic Peoples Republic of Korea';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NORTHERN_MARIANA_ISLANDS: {
+        _id: 4224;
+        name: 'Northern Mariana Islands';
+        code: 'MP';
+        iso3166_1_a3: 'MNP';
+        fips10_4: 'CQ';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      NORWAY: {
+        _id: 4242;
+        name: 'Norway';
+        code: 'NO';
+        iso3166_1_a3: 'NOR';
+        fips10_4: 'NO';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      OMAN: {
+        _id: 4247;
+        name: 'Oman';
+        code: 'OM';
+        iso3166_1_a3: 'OMN';
+        fips10_4: 'MU';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PAKISTAN: {
+        _id: 4253;
+        name: 'Pakistan';
+        code: 'PK';
+        iso3166_1_a3: 'PAK';
+        fips10_4: 'PK';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PALAU: {
+        _id: 4260;
+        name: 'Palau';
+        code: 'PW';
+        iso3166_1_a3: 'PLW';
+        fips10_4: 'PS';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PALESTINIAN_TERRITORY: {
+        _id: 4258;
+        name: 'Palestinian Territory';
+        code: 'PS';
+        iso3166_1_a3: 'PSE';
+        fips10_4: 'null';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PANAMA: {
+        _id: 4248;
+        name: 'Panama';
+        code: 'PA';
+        iso3166_1_a3: 'PAN';
+        fips10_4: 'PM';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PAPUA_NEW_GUINEA: {
+        _id: 4251;
+        name: 'Papua New Guinea';
+        code: 'PG';
+        iso3166_1_a3: 'PNG';
+        fips10_4: 'PP';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PARAGUAY: {
+        _id: 4261;
+        name: 'Paraguay';
+        code: 'PY';
+        iso3166_1_a3: 'PRY';
+        fips10_4: 'PA';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PERU: {
+        _id: 4249;
+        name: 'Peru';
+        code: 'PE';
+        iso3166_1_a3: 'PER';
+        fips10_4: 'PE';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PHILIPPINES: {
+        _id: 4252;
+        name: 'Philippines';
+        code: 'PH';
+        iso3166_1_a3: 'PHL';
+        fips10_4: 'RP';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PITCAIRN: {
+        _id: 4256;
+        name: 'Pitcairn';
+        code: 'PN';
+        iso3166_1_a3: 'PCN';
+        fips10_4: 'PC';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      POLAND: {
+        _id: 4254;
+        name: 'Poland';
+        code: 'PL';
+        iso3166_1_a3: 'POL';
+        fips10_4: 'PL';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PORTUGAL: {
+        _id: 4259;
+        name: 'Portugal';
+        code: 'PT';
+        iso3166_1_a3: 'PRT';
+        fips10_4: 'PO';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      PUERTO_RICO: {
+        _id: 4257;
+        name: 'Puerto Rico';
+        code: 'PR';
+        iso3166_1_a3: 'PRI';
+        fips10_4: 'RQ';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      QATAR: {
+        _id: 4262;
+        name: 'Qatar';
+        code: 'QA';
+        iso3166_1_a3: 'QAT';
+        fips10_4: 'QA';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      REUNION: {
+        _id: 4263;
+        name: 'Reunion';
+        code: 'RE';
+        iso3166_1_a3: 'REU';
+        fips10_4: 'RE';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ROMANIA: {
+        _id: 4264;
+        name: 'Romania';
+        code: 'RO';
+        iso3166_1_a3: 'ROU';
+        fips10_4: 'RO';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      RUSSIAN_FEDERATION: {
+        _id: 4266;
+        name: 'Russian Federation';
+        code: 'RU';
+        iso3166_1_a3: 'RUS';
+        fips10_4: 'RS';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      RWANDA: {
+        _id: 4267;
+        name: 'Rwanda';
+        code: 'RW';
+        iso3166_1_a3: 'RWA';
+        fips10_4: 'RW';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAINT_HELENA: {
+        _id: 4274;
+        name: 'Saint Helena';
+        code: 'SH';
+        iso3166_1_a3: 'SHN';
+        fips10_4: 'SH';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAINT_KITTS_AND_NEVIS: {
+        _id: 4196;
+        name: 'Saint Kitts and Nevis';
+        code: 'KN';
+        iso3166_1_a3: 'KNA';
+        fips10_4: 'SC';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAINT_LUCIA: {
+        _id: 4204;
+        name: 'Saint Lucia';
+        code: 'LC';
+        iso3166_1_a3: 'LCA';
+        fips10_4: 'ST';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAINT_PIERRE_AND_MIQUELON: {
+        _id: 4255;
+        name: 'Saint Pierre and Miquelon';
+        code: 'PM';
+        iso3166_1_a3: 'SPM';
+        fips10_4: 'SB';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAINT_VINCENT_AND_THE_GRENADINES: {
+        _id: 4310;
+        name: 'Saint Vincent and the Grenadines';
+        code: 'VC';
+        iso3166_1_a3: 'VCT';
+        fips10_4: 'VC';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAMOA: {
+        _id: 4317;
+        name: 'Samoa';
+        code: 'WS';
+        iso3166_1_a3: 'WSM';
+        fips10_4: 'WS';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAN_MARINO: {
+        _id: 4279;
+        name: 'San Marino';
+        code: 'SM';
+        iso3166_1_a3: 'SMR';
+        fips10_4: 'SM';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAO_TOME_AND_PRINCIPE: {
+        _id: 4283;
+        name: 'Sao Tome and Principe';
+        code: 'ST';
+        iso3166_1_a3: 'STP';
+        fips10_4: 'TP';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SATELLITE_PROVIDER: {
+        _id: 4076;
+        name: 'Satellite Provider';
+        code: 'A2';
+        iso3166_1_a3: '';
+        fips10_4: 'null';
+        continent: 0;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SAUDI_ARABIA: {
+        _id: 4268;
+        name: 'Saudi Arabia';
+        code: 'SA';
+        iso3166_1_a3: 'SAU';
+        fips10_4: 'SA';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SENEGAL: {
+        _id: 4280;
+        name: 'Senegal';
+        code: 'SN';
+        iso3166_1_a3: 'SEN';
+        fips10_4: 'SG';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SERBIA: {
+        _id: 4265;
+        name: 'Serbia';
+        code: 'RS';
+        iso3166_1_a3: 'SRB';
+        fips10_4: 'RI';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SEYCHELLES: {
+        _id: 4270;
+        name: 'Seychelles';
+        code: 'SC';
+        iso3166_1_a3: 'SYC';
+        fips10_4: 'SE';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SIERRA_LEONE: {
+        _id: 4278;
+        name: 'Sierra Leone';
+        code: 'SL';
+        iso3166_1_a3: 'SLE';
+        fips10_4: 'SL';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SINGAPORE: {
+        _id: 4273;
+        name: 'Singapore';
+        code: 'SG';
+        iso3166_1_a3: 'SGP';
+        fips10_4: 'SN';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SLOVAKIA: {
+        _id: 4277;
+        name: 'Slovakia';
+        code: 'SK';
+        iso3166_1_a3: 'SVK';
+        fips10_4: 'LO';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SLOVENIA: {
+        _id: 4275;
+        name: 'Slovenia';
+        code: 'SI';
+        iso3166_1_a3: 'SVN';
+        fips10_4: 'SI';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SOLOMON_ISLANDS: {
+        _id: 4269;
+        name: 'Solomon Islands';
+        code: 'SB';
+        iso3166_1_a3: 'SLB';
+        fips10_4: 'BP';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SOMALIA: {
+        _id: 4281;
+        name: 'Somalia';
+        code: 'SO';
+        iso3166_1_a3: 'SOM';
+        fips10_4: 'SO';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SOUTH_AFRICA: {
+        _id: 4320;
+        name: 'South Africa';
+        code: 'ZA';
+        iso3166_1_a3: 'ZAF';
+        fips10_4: 'SF';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SOUTH_GEORGIA_AND_THE_SOUTH_SANDWICH_ISLANDS: {
+        _id: 4166;
+        name: 'South Georgia and the South Sandwich Islands';
+        code: 'GS';
+        iso3166_1_a3: 'SGS';
+        fips10_4: 'SX';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SOUTH_KOREA: {
+        _id: 4198;
+        name: 'South Korea';
+        code: 'KR';
+        iso3166_1_a3: 'KOR';
+        fips10_4: 'KS';
+        continent: 4330;
+        aliases: 'Republic of Korea';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SPAIN: {
+        _id: 4143;
+        name: 'Spain';
+        code: 'ES';
+        iso3166_1_a3: 'ESP';
+        fips10_4: 'SP';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SRI_LANKA: {
+        _id: 4206;
+        name: 'Sri Lanka';
+        code: 'LK';
+        iso3166_1_a3: 'LKA';
+        fips10_4: 'CE';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SUDAN: {
+        _id: 4271;
+        name: 'Sudan';
+        code: 'SD';
+        iso3166_1_a3: 'SDN';
+        fips10_4: 'SU';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SURINAME: {
+        _id: 4282;
+        name: 'Suriname';
+        code: 'SR';
+        iso3166_1_a3: 'SUR';
+        fips10_4: 'NS';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SVALBARD_AND_JAN_MAYEN: {
+        _id: 4276;
+        name: 'Svalbard and Jan Mayen';
+        code: 'SJ';
+        iso3166_1_a3: 'SJM';
+        fips10_4: 'SV';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SWAZILAND: {
+        _id: 4286;
+        name: 'Swaziland';
+        code: 'SZ';
+        iso3166_1_a3: 'SWZ';
+        fips10_4: 'WZ';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SWEDEN: {
+        _id: 4272;
+        name: 'Sweden';
+        code: 'SE';
+        iso3166_1_a3: 'SWE';
+        fips10_4: 'SW';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SWITZERLAND: {
+        _id: 4119;
+        name: 'Switzerland';
+        code: 'CH';
+        iso3166_1_a3: 'CHE';
+        fips10_4: 'SZ';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      SYRIA: {
+        _id: 4285;
+        name: 'Syria';
+        code: 'SY';
+        iso3166_1_a3: 'SYR';
+        fips10_4: 'SY';
+        continent: 4330;
+        aliases: 'Syrian Arab Republic';
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TAIWAN: {
+        _id: 4301;
+        name: 'Taiwan';
+        code: 'TW';
+        iso3166_1_a3: 'TWN';
+        fips10_4: 'TW';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TAJIKISTAN: {
+        _id: 4292;
+        name: 'Tajikistan';
+        code: 'TJ';
+        iso3166_1_a3: 'TJK';
+        fips10_4: 'TI';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TANZANIA_UNITED_REPUBLIC_OF: {
+        _id: 4302;
+        name: 'Tanzania, United Republic of';
+        code: 'TZ';
+        iso3166_1_a3: 'TZA';
+        fips10_4: 'TZ';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      THAILAND: {
+        _id: 4291;
+        name: 'Thailand';
+        code: 'TH';
+        iso3166_1_a3: 'THA';
+        fips10_4: 'TH';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TIMOR_LESTE: {
+        _id: 4294;
+        name: 'Timor-Leste';
+        code: 'TL';
+        iso3166_1_a3: 'TLS';
+        fips10_4: 'TT';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TIMOR_LESTE_EAST_TIMOR: {
+        _id: 4324;
+        name: 'Timor-Leste (East Timor)';
+        code: 'TP';
+        iso3166_1_a3: '';
+        fips10_4: 'TT';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TOGO: {
+        _id: 4290;
+        name: 'Togo';
+        code: 'TG';
+        iso3166_1_a3: 'TGO';
+        fips10_4: 'TO';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TOKELAU: {
+        _id: 4293;
+        name: 'Tokelau';
+        code: 'TK';
+        iso3166_1_a3: 'TKL';
+        fips10_4: 'TL';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TONGA: {
+        _id: 4297;
+        name: 'Tonga';
+        code: 'TO';
+        iso3166_1_a3: 'TON';
+        fips10_4: 'TN';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TRINIDAD_AND_TOBAGO: {
+        _id: 4299;
+        name: 'Trinidad and Tobago';
+        code: 'TT';
+        iso3166_1_a3: 'TTO';
+        fips10_4: 'TD';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TUNISIA: {
+        _id: 4296;
+        name: 'Tunisia';
+        code: 'TN';
+        iso3166_1_a3: 'TUN';
+        fips10_4: 'TS';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TURKEY: {
+        _id: 4298;
+        name: 'Turkey';
+        code: 'TR';
+        iso3166_1_a3: 'TUR';
+        fips10_4: 'TU';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TURKMENISTAN: {
+        _id: 4295;
+        name: 'Turkmenistan';
+        code: 'TM';
+        iso3166_1_a3: 'TKM';
+        fips10_4: 'TX';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TURKS_AND_CAICOS_ISLANDS: {
+        _id: 4287;
+        name: 'Turks and Caicos Islands';
+        code: 'TC';
+        iso3166_1_a3: 'TCA';
+        fips10_4: 'TK';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      TUVALU: {
+        _id: 4300;
+        name: 'Tuvalu';
+        code: 'TV';
+        iso3166_1_a3: 'TUV';
+        fips10_4: 'TV';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UGANDA: {
+        _id: 4304;
+        name: 'Uganda';
+        code: 'UG';
+        iso3166_1_a3: 'UGA';
+        fips10_4: 'UG';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UKRAINE: {
+        _id: 4303;
+        name: 'Ukraine';
+        code: 'UA';
+        iso3166_1_a3: 'UKR';
+        fips10_4: 'UP';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UNITED_ARAB_EMIRATES: {
+        _id: 4078;
+        name: 'United Arab Emirates';
+        code: 'AE';
+        iso3166_1_a3: 'ARE';
+        fips10_4: 'AE';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UNITED_KINGDOM: {
+        _id: 4153;
+        name: 'United Kingdom';
+        code: 'GB';
+        iso3166_1_a3: 'GBR';
+        fips10_4: 'UK';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UNITED_STATES: {
+        _id: 4306;
+        name: 'United States';
+        code: 'US';
+        iso3166_1_a3: 'USA';
+        fips10_4: 'US';
+        continent: 4332;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UNITED_STATES_MINOR_OUTLYING_ISLANDS: {
+        _id: 4305;
+        name: 'United States Minor Outlying Islands';
+        code: 'UM';
+        iso3166_1_a3: 'UMI';
+        fips10_4: 'null';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UNKNOWN: {
+        _id: 4327;
+        name: 'Unknown';
+        code: 'O1';
+        iso3166_1_a3: '';
+        fips10_4: 'null';
+        continent: 0;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      URUGUAY: {
+        _id: 4307;
+        name: 'Uruguay';
+        code: 'UY';
+        iso3166_1_a3: 'URY';
+        fips10_4: 'UY';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      UZBEKISTAN: {
+        _id: 4308;
+        name: 'Uzbekistan';
+        code: 'UZ';
+        iso3166_1_a3: 'UZB';
+        fips10_4: 'UZ';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      VANUATU: {
+        _id: 4315;
+        name: 'Vanuatu';
+        code: 'VU';
+        iso3166_1_a3: 'VUT';
+        fips10_4: 'NH';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      VENEZUELA: {
+        _id: 4311;
+        name: 'Venezuela';
+        code: 'VE';
+        iso3166_1_a3: 'VEN';
+        fips10_4: 'VE';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      VIETNAM: {
+        _id: 4314;
+        name: 'Vietnam';
+        code: 'VN';
+        iso3166_1_a3: 'VNM';
+        fips10_4: 'VM';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      VIRGIN_ISLANDS_BRITISH: {
+        _id: 4312;
+        name: 'Virgin Islands, British';
+        code: 'VG';
+        iso3166_1_a3: 'VGB';
+        fips10_4: 'VI';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      VIRGIN_ISLANDS_U_S: {
+        _id: 4313;
+        name: 'Virgin Islands, U.S.';
+        code: 'VI';
+        iso3166_1_a3: 'VIR';
+        fips10_4: 'VQ';
+        continent: 4334;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      WALLIS_AND_FUTUNA: {
+        _id: 4316;
+        name: 'Wallis and Futuna';
+        code: 'WF';
+        iso3166_1_a3: 'WLF';
+        fips10_4: 'WF';
+        continent: 4333;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      WESTERN_SAHARA: {
+        _id: 4141;
+        name: 'Western Sahara';
+        code: 'EH';
+        iso3166_1_a3: 'ESH';
+        fips10_4: 'WI';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      YEMEN: {
+        _id: 4318;
+        name: 'Yemen';
+        code: 'YE';
+        iso3166_1_a3: 'YEM';
+        fips10_4: 'YM';
+        continent: 4330;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      YUGOSLAVIA: {
+        _id: 4325;
+        name: 'Yugoslavia';
+        code: 'YU';
+        iso3166_1_a3: '';
+        fips10_4: 'YU';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ZAMBIA: {
+        _id: 4321;
+        name: 'Zambia';
+        code: 'ZM';
+        iso3166_1_a3: 'ZMB';
+        fips10_4: 'ZA';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+      ZIMBABWE: {
+        _id: 4322;
+        name: 'Zimbabwe';
+        code: 'ZW';
+        iso3166_1_a3: 'ZWE';
+        fips10_4: 'ZI';
+        continent: 4328;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
+  }
+  
   /**
    * Static properties for enum collection "MediaTypeCollection"
    */
@@ -3424,6 +5772,260 @@ declare module 'tyranid/isomorphic' {
   
     
     /**
+     * Type alias for enum id values in "country" collection
+     */
+    export type CountryId =
+      4075
+     |4076
+     |4077
+     |4078
+     |4079
+     |4080
+     |4081
+     |4082
+     |4083
+     |4084
+     |4085
+     |4088
+     |4089
+     |4090
+     |4091
+     |4092
+     |4093
+     |4094
+     |4095
+     |4096
+     |4097
+     |4098
+     |4099
+     |4100
+     |4101
+     |4102
+     |4103
+     |4104
+     |4105
+     |4106
+     |4107
+     |4108
+     |4109
+     |4110
+     |4111
+     |4112
+     |4113
+     |4114
+     |4115
+     |4116
+     |4117
+     |4118
+     |4119
+     |4120
+     |4121
+     |4122
+     |4123
+     |4124
+     |4125
+     |4126
+     |4127
+     |4128
+     |4129
+     |4130
+     |4131
+     |4132
+     |4133
+     |4134
+     |4135
+     |4136
+     |4137
+     |4138
+     |4139
+     |4140
+     |4141
+     |4142
+     |4143
+     |4144
+     |4146
+     |4147
+     |4148
+     |4149
+     |4150
+     |4151
+     |4152
+     |4153
+     |4154
+     |4155
+     |4156
+     |4157
+     |4158
+     |4159
+     |4160
+     |4161
+     |4162
+     |4163
+     |4164
+     |4165
+     |4166
+     |4167
+     |4168
+     |4169
+     |4170
+     |4172
+     |4173
+     |4174
+     |4175
+     |4176
+     |4177
+     |4178
+     |4179
+     |4180
+     |4181
+     |4182
+     |4183
+     |4184
+     |4185
+     |4186
+     |4187
+     |4188
+     |4189
+     |4190
+     |4191
+     |4192
+     |4193
+     |4194
+     |4195
+     |4196
+     |4197
+     |4198
+     |4199
+     |4200
+     |4201
+     |4202
+     |4203
+     |4204
+     |4205
+     |4206
+     |4207
+     |4208
+     |4209
+     |4210
+     |4211
+     |4212
+     |4213
+     |4214
+     |4215
+     |4216
+     |4217
+     |4218
+     |4219
+     |4220
+     |4221
+     |4222
+     |4223
+     |4224
+     |4225
+     |4226
+     |4227
+     |4228
+     |4229
+     |4230
+     |4231
+     |4232
+     |4233
+     |4234
+     |4235
+     |4236
+     |4237
+     |4238
+     |4239
+     |4240
+     |4241
+     |4242
+     |4243
+     |4244
+     |4245
+     |4246
+     |4247
+     |4248
+     |4249
+     |4250
+     |4251
+     |4252
+     |4253
+     |4254
+     |4255
+     |4256
+     |4257
+     |4258
+     |4259
+     |4260
+     |4261
+     |4262
+     |4263
+     |4264
+     |4265
+     |4266
+     |4267
+     |4268
+     |4269
+     |4270
+     |4271
+     |4272
+     |4273
+     |4274
+     |4275
+     |4276
+     |4277
+     |4278
+     |4279
+     |4280
+     |4281
+     |4282
+     |4283
+     |4284
+     |4285
+     |4286
+     |4287
+     |4288
+     |4289
+     |4290
+     |4291
+     |4292
+     |4293
+     |4294
+     |4295
+     |4296
+     |4297
+     |4298
+     |4299
+     |4300
+     |4301
+     |4302
+     |4303
+     |4304
+     |4305
+     |4306
+     |4307
+     |4308
+     |4309
+     |4310
+     |4311
+     |4312
+     |4313
+     |4314
+     |4315
+     |4316
+     |4317
+     |4318
+     |4319
+     |4320
+     |4321
+     |4322
+     |4323
+     |4324
+     |4325
+     |4326
+     |4327;
+    
+    /**
      * Type alias for enum id values in "mediaType" collection
      */
     export type MediaTypeId =
@@ -3812,7 +6414,10 @@ declare module 'tyranid/isomorphic' {
      * Add lookup properties to Tyr.byName with extended interfaces
      */
     export interface CollectionsByName<IdType = string> {
+      continent: ContinentCollection<IdType>;
+      country: CountryCollection<IdType>;
       mediaType: MediaTypeCollection<IdType>;
+      province: ProvinceCollection<IdType>;
       tyrExchangeRate: TyrExchangeRateCollection<IdType>;
       tyrImport: TyrImportCollection<IdType>;
       tyrInstance: TyrInstanceCollection<IdType>;
@@ -3837,7 +6442,10 @@ declare module 'tyranid/isomorphic' {
      * Add lookup properties to Tyr.collections with extended interfaces
      */
     export interface CollectionsByClassName<IdType = string> {
+      Continent: ContinentCollection<IdType>;
+      Country: CountryCollection<IdType>;
       MediaType: MediaTypeCollection<IdType>;
+      Province: ProvinceCollection<IdType>;
       TyrExchangeRate: TyrExchangeRateCollection<IdType>;
       TyrImport: TyrImportCollection<IdType>;
       TyrInstance: TyrInstanceCollection<IdType>;
@@ -3862,7 +6470,10 @@ declare module 'tyranid/isomorphic' {
      * Add lookup properties to Tyr.byId with extended interfaces
      */
     export interface CollectionsById<IdType = string> {
+      _g0: ContinentCollection<IdType>;
+      _g1: CountryCollection<IdType>;
       _mt: MediaTypeCollection<IdType>;
+      _g2: ProvinceCollection<IdType>;
       _u5: TyrExchangeRateCollection<IdType>;
       _im: TyrImportCollection<IdType>;
       _t2: TyrInstanceCollection<IdType>;
@@ -3888,7 +6499,10 @@ declare module 'tyranid/isomorphic' {
      * Union type of all current collection names
      */
     export type CollectionName =
-      'mediaType'
+      'continent'
+     |'country'
+     |'mediaType'
+     |'province'
      |'tyrExchangeRate'
      |'tyrImport'
      |'tyrInstance'
@@ -3912,7 +6526,10 @@ declare module 'tyranid/isomorphic' {
      * Union type of all current collection ids
      */
     export type CollectionId =
-      '_im'
+      '_g0'
+     |'_g1'
+     |'_g2'
+     |'_im'
      |'_l0'
      |'_l1'
      |'_l2'

@@ -17,6 +17,36 @@ declare module 'tyranid/client' {
     
 
     /**
+     * Client base document definition for ContinentCollection.
+     */
+    export interface BaseContinent
+      extends Isomorphic.BaseContinent<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Client document definition for ContinentCollection,
+     * extends isomorphic base interface BaseContinent.
+     */
+    export interface Continent
+      extends Inserted<number>,
+              BaseContinent {}
+    
+
+    /**
+     * Client base document definition for CountryCollection.
+     */
+    export interface BaseCountry
+      extends Isomorphic.BaseCountry<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Client document definition for CountryCollection,
+     * extends isomorphic base interface BaseCountry.
+     */
+    export interface Country
+      extends Inserted<CountryId>,
+              BaseCountry {}
+    
+
+    /**
      * Client base document definition for MediaTypeCollection.
      */
     export interface BaseMediaType
@@ -29,6 +59,21 @@ declare module 'tyranid/client' {
     export interface MediaType
       extends Inserted<MediaTypeId>,
               BaseMediaType {}
+    
+
+    /**
+     * Client base document definition for ProvinceCollection.
+     */
+    export interface BaseProvince
+      extends Isomorphic.BaseProvince<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Client document definition for ProvinceCollection,
+     * extends isomorphic base interface BaseProvince.
+     */
+    export interface Province
+      extends Inserted<number>,
+              BaseProvince {}
     
 
     /**
@@ -303,9 +348,42 @@ declare module 'tyranid/client' {
     /**
      * Client collection definition.
      */
+    export interface ContinentCollection
+      extends Tyr.CollectionInstance<Continent> {
+    }
+
+    /**
+     * Client collection definition.
+     */
+    export interface CountryCollection
+      extends Tyr.CollectionInstance<Country>,
+                Isomorphic.CountryCollectionEnumStatic<ObjIdType, Inserted<ObjIdType>, Inserted<number>>,
+              CountryCollectionService {
+    }
+
+    export interface CountryCollectionService {
+      byCode(
+        this: any,
+        code: string): Promise<Country | undefined>;
+      byFips(
+        this: any,
+        code: string): Promise<Country | undefined>;
+    }
+
+
+    /**
+     * Client collection definition.
+     */
     export interface MediaTypeCollection
       extends Tyr.CollectionInstance<MediaType>,
                 Isomorphic.MediaTypeCollectionEnumStatic<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {
+    }
+
+    /**
+     * Client collection definition.
+     */
+    export interface ProvinceCollection
+      extends Tyr.CollectionInstance<Province> {
     }
 
     /**
@@ -442,6 +520,7 @@ declare module 'tyranid/client' {
                 Isomorphic.UnitTypeCollectionEnumStatic<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {
     }
 
+    export type CountryId = Isomorphic.CountryId;
     export type MediaTypeId = Isomorphic.MediaTypeId;
     export type TyrLogEventId = Isomorphic.TyrLogEventId;
     export type TyrLogLevelId = Isomorphic.TyrLogLevelId;
@@ -456,7 +535,10 @@ declare module 'tyranid/client' {
      * Add lookup properties to Tyr.byName with extended interfaces
      */
     export interface CollectionsByName {
+      continent: ContinentCollection;
+      country: CountryCollection;
       mediaType: MediaTypeCollection;
+      province: ProvinceCollection;
       tyrExchangeRate: TyrExchangeRateCollection;
       tyrImport: TyrImportCollection;
       tyrInstance: TyrInstanceCollection;
@@ -481,7 +563,10 @@ declare module 'tyranid/client' {
      * Add lookup properties to Tyr.collections with extended interfaces
      */
     export interface CollectionsByClassName {
+      Continent: ContinentCollection;
+      Country: CountryCollection;
       MediaType: MediaTypeCollection;
+      Province: ProvinceCollection;
       TyrExchangeRate: TyrExchangeRateCollection;
       TyrImport: TyrImportCollection;
       TyrInstance: TyrInstanceCollection;
@@ -506,7 +591,10 @@ declare module 'tyranid/client' {
      * Add lookup properties to Tyr.byId with extended interfaces
      */
     export interface CollectionsById {
+      _g0: ContinentCollection;
+      _g1: CountryCollection;
       _mt: MediaTypeCollection;
+      _g2: ProvinceCollection;
       _u5: TyrExchangeRateCollection;
       _im: TyrImportCollection;
       _t2: TyrInstanceCollection;

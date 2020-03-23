@@ -9,6 +9,8 @@ import { tokenToString } from 'typescript';
 
 export { ObjectID };
 
+import 'tyranid/builtin/server';
+
 import { Tyr as Isomorphic } from './isomorphic';
 import { Options } from 'graphql/utilities/buildClientSchema';
 import { stream } from 'exceljs';
@@ -944,6 +946,7 @@ export namespace Tyr {
 
     isAux(): boolean;
     isDb(): boolean;
+    isMethod(): boolean;
     isSingleton(): boolean;
     isStatic(): boolean;
 
@@ -958,6 +961,7 @@ export namespace Tyr {
     labels(ids: string[]): Promise<D[]>;
     labels(_: any): Promise<D[]>;
 
+    methodName?: string;
     migratePatchToDocument(progress?: (count: number) => void): Promise<void>;
     mixin(def: FieldDefinition<D>): void;
 

@@ -1,14 +1,21 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "target": "es2017",
-    "module": "commonjs",
-    "strict": true,
     "allowJs": true,
+    "experimentalDecorators": true,
+    "lib": ["es2017"],
+    "module": "commonjs",
     "outDir": "dist",
-    "sourceMap": true,
     "skipLibCheck": true,
-    "lib": ["es2017"]
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2017"
   },
-  "include": ["isomorphic.d.ts", "tyranid.d.ts", "src", "test/models"]
+  "include": [
+    "isomorphic.d.ts",
+    "tyranid.d.ts",
+    "builtin/isomorphic.d.ts",
+    "builtin/tyranid.d.ts",
+    "src",
+    "test/models"
+  ]
 }

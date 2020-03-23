@@ -1922,7 +1922,7 @@ export default class Collection {
             if (_.isString(type)) {
               type = Type.byName[fieldDef.is];
 
-              if (type instanceof Collection) {
+              if (type instanceof Collection && !field.isMethod()) {
                 throw compiler.err(
                   path,
                   'Trying to "is" a collection -- ' +
@@ -1938,7 +1938,7 @@ export default class Collection {
           }
 
           if (type) {
-            type.compile(compiler, field);
+            if (!(type instanceof Collection)) type.compile(compiler, field);
           } else if (!_.isObject(fieldDef.is) || !fieldDef.is.def) {
             throw compiler.err(
               path,
