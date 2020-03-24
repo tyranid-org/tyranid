@@ -1,7 +1,5 @@
 import * as io from 'socket.io-client';
 
-import 'tyranid/builtin/client';
-
 import { Tyr as Isomorphic } from 'tyranid/isomorphic';
 
 declare module 'tyranid/client' {

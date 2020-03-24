@@ -1,5 +1,3 @@
-import 'tyranid/builtin/isomorphic';
-
 /**
  * ISO-VARIANCE:
  *

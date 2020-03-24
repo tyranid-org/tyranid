@@ -1,5 +1,7 @@
 import { Tyr } from 'tyranid';
 
+import 'tyranid/builtin/server';
+
 export const Country = new Tyr.Collection({
   id: '_g1',
   name: 'country',
