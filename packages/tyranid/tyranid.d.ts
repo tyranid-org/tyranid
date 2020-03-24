@@ -9,8 +9,6 @@ import { tokenToString } from 'typescript';
 
 export { ObjectID };
 
-import 'tyranid/builtin/server';
-
 import { Tyr as Isomorphic } from './isomorphic';
 import { Options } from 'graphql/utilities/buildClientSchema';
 import { stream } from 'exceljs';
