@@ -1143,10 +1143,14 @@ export class TyrTableBase<
                   showHeader={true}
                   dataSource={[newDocument]}
                   columns={this.getColumns(true)}
-                  scroll={fieldCount > 1 ? scroll : undefined}
+                  scroll={
+                    fieldCount > 1
+                      ? scroll || { x: this.tableWidth }
+                      : undefined
+                  }
                 />
               )}
-              {paths && (
+              {paths && !newDocument && (
                 <div
                   style={{
                     position: 'relative',
