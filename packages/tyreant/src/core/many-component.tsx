@@ -3,7 +3,9 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { autorun } from 'mobx';
 
-import { Tyr, TyrSortDirection, getFinder, Filter } from '../tyreant';
+import { Tyr } from 'tyranid/client';
+
+import { TyrSortDirection, getFinder, Filter } from '../tyreant';
 import {
   TyrComponentProps,
   TyrComponentState,

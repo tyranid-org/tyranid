@@ -3,12 +3,15 @@ import { useCallback, useState } from 'react';
 
 import { useDropzone } from 'react-dropzone';
 
+import { Spin } from 'antd';
+
+import { Tyr } from 'tyranid/client';
+
 import { byName, TyrTypeProps, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
 import { registerComponent } from '../common';
 import { decorateField } from '../core';
-import { Spin } from 'antd';
-import { Tyr } from '../tyreant';
+import { toast } from '../tyreant';
 
 interface S3Value {
   key?: string;
@@ -56,7 +59,7 @@ export const TyrS3Base = (props: TyrTypeProps) => {
       };
       if (tmpId) value.tmpId = tmpId;
       setValue(value);
-      Tyr.success('File uploaded.');
+      toast.success('File uploaded.');
     }
   }, []);
 

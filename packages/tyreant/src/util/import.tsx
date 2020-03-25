@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Tyr } from '../tyreant';
+import { Tyr } from 'tyranid/client';
 import { TyrField, createForm } from '../core';
 
 export const TyrImport = createForm<Tyr.TyrImport>(

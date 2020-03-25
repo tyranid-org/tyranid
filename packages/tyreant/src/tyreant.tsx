@@ -7,6 +7,8 @@
 
 import * as React from 'react';
 
+import { notification } from 'antd';
+
 export * from './type';
 export * from './core';
 export * from './layout';
@@ -15,8 +17,6 @@ export * from './admin';
 
 import { registerComponent, componentsByName } from './common';
 import { TyrRouter, generatePageRoutes } from './core';
-import { Tyr } from 'tyranid/client';
-import { notification } from 'antd';
 
 export class Tyreant {
   router!: TyrRouter;
@@ -40,23 +40,9 @@ export class Tyreant {
 
 export const tyreant = new Tyreant();
 
-declare module 'tyranid/client' {
-  export namespace Tyr {
-    export const eant: Tyreant;
-
-    //export function log(message: string): void;
-    export function success(message: string): void;
-    export function info(message: string): void;
-    export function warn(message: string): void;
-    export function error(message: string): void;
-  }
-}
-
-export { Tyr };
-
-// any to override const
-(Tyr as any).eant = tyreant;
-Tyr.success = (message: string) => notification.success({ message });
-Tyr.info = (message: string) => notification.info({ message });
-Tyr.warn = (message: string) => notification.warn({ message });
-Tyr.error = (message: string) => notification.error({ message });
+export const toast = {
+  success: (message: string) => notification.success({ message }),
+  info: (message: string) => notification.info({ message }),
+  warn: (message: string) => notification.warn({ message }),
+  error: (message: string) => notification.error({ message })
+};

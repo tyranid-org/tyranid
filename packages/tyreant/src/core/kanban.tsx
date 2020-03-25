@@ -11,7 +11,7 @@ import {
   Draggable
 } from 'react-beautiful-dnd';
 
-import { Tyr } from '../tyreant';
+import { Tyr } from 'tyranid/client';
 
 import { TyrFilters } from './filter';
 import { useComponent, TyrComponentState } from './component';

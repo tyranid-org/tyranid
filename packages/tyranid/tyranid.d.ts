@@ -1506,4 +1506,13 @@ export namespace Tyr {
      */
     FindOpts: any
   };
+
+  export type LogOption = string | Error | BaseTyrLog<ObjIdType>;
+
+  export function trace(...args: LogOption[]): Promise<void>;
+  export function log(...args: LogOption[]): Promise<void>;
+  export function info(...args: LogOption[]): Promise<void>;
+  export function warn(...args: LogOption[]): Promise<void>;
+  export function error(...args: LogOption[]): Promise<void>;
+  export function fatal(...args: LogOption[]): Promise<void>;
 }

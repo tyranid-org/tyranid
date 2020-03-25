@@ -9,7 +9,8 @@ import {
   FilterDropdownProps
 } from 'antd/lib/table/interface';
 
-import { Tyr } from '../tyreant';
+import { Tyr } from 'tyranid/client';
+
 import { TyrPathProps } from './path';
 import { useComponent, TyrComponent } from './component';
 

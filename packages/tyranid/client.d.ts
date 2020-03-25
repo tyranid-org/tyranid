@@ -11,7 +11,7 @@ declare module 'tyranid/client' {
     export const Type: TypeStatic;
 
     export interface AppErrorStatic {
-      new (opts?: string | ErrorOptions): UserError;
+      new (opts?: string | Isomorphic.ErrorOptions): UserError;
     }
     export const AppError: AppErrorStatic;
     export interface AppError {
@@ -25,7 +25,7 @@ declare module 'tyranid/client' {
     }
 
     export interface SecureErrorStatic {
-      new (opts?: string | ErrorOptions): SecureError;
+      new (opts?: string | Isomorphic.ErrorOptions): SecureError;
     }
     export const SecureError: SecureErrorStatic;
     export interface SecureError {
@@ -39,7 +39,7 @@ declare module 'tyranid/client' {
     }
 
     export interface UserErrorStatic {
-      new (opts: string | ErrorOptions): UserError;
+      new (opts: string | Isomorphic.ErrorOptions): UserError;
     }
     export const UserError: UserErrorStatic;
     export interface UserError {
@@ -65,7 +65,7 @@ declare module 'tyranid/client' {
       /*
        * The currently-logged in user.
        */
-      user: Document;
+      user: User;
     };
 
     export function mapAwait<T, U>(
@@ -149,6 +149,10 @@ declare module 'tyranid/client' {
     export const setSocketLibrary: (library: typeof io) => void;
     export function singularize(str: string): string;
     export function unitize(count: number, unit: string): string;
+
+    export interface RawMongoDocument {
+      [key: string]: any;
+    }
 
     export type AnyIdType = string | number;
     export type ObjIdType = string;
@@ -381,7 +385,7 @@ declare module 'tyranid/client' {
       $cache(): this;
       $clone(): this;
       $cloneDeep(): this;
-      $id: IdType<this>; //ID; // using "ID" wasn't working as well for some weird reason
+      $id: IdType<this>;
       $isNew: boolean;
       $label: string;
       $metaType: 'document';
@@ -402,5 +406,14 @@ declare module 'tyranid/client' {
       extends Document<ID> {
       _id: ID;
     }
+
+    export type LogOption = string | Error | Isomorphic.BaseTyrLog<ObjIdType>;
+
+    export function trace(...args: LogOption[]): Promise<void>;
+    export function log(...args: LogOption[]): Promise<void>;
+    export function info(...args: LogOption[]): Promise<void>;
+    export function warn(...args: LogOption[]): Promise<void>;
+    export function error(...args: LogOption[]): Promise<void>;
+    export function fatal(...args: LogOption[]): Promise<void>;
   }
 }

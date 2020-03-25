@@ -51,7 +51,7 @@ export namespace Tyr {
     | NamePathInstance
     | Document;
 
-  interface ErrorOptions {
+  export interface ErrorOptions {
     message?: string;
     suffix?: string;
     technical?: string;
@@ -344,4 +344,13 @@ export namespace Tyr {
   export interface Inserted<ID extends AnyIdType> extends Document<ID> {
     _id: ID;
   }
+
+  export type LogOption = string | Error | BaseTyrLog<ObjIdType>;
+
+  export function trace(...args: LogOption[]): Promise<void>;
+  export function log(...args: LogOption[]): Promise<void>;
+  export function info(...args: LogOption[]): Promise<void>;
+  export function warn(...args: LogOption[]): Promise<void>;
+  export function error(...args: LogOption[]): Promise<void>;
+  export function fatal(...args: LogOption[]): Promise<void>;
 }
