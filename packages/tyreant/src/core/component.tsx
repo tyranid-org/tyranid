@@ -182,7 +182,7 @@ export class TyrComponent<
       );
 
     const props = this.props as Props;
-    const actions = (props.actions || []).map(TyrAction.get) as TyrAction<D>[];
+    const actions = (props.actions || []).map(TyrAction.get);
     const { linkToParent } = this;
 
     //
@@ -274,7 +274,6 @@ export class TyrComponent<
           title,
           action: async opts => {
             await this.find(opts.document!);
-
             if (!this.document) this.document = this.createDocument(opts);
           }
         });

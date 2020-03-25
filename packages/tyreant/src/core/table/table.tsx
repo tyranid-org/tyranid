@@ -772,7 +772,7 @@ export class TyrTableBase<
           }
 
           const thisActions = singularActions.filter(
-            action => !action.hide || !action.hide(document)
+            action => !action.hide || !action.isHidden(document)
           );
 
           if (!thisActions.length) {
@@ -971,8 +971,12 @@ export class TyrTableBase<
       isEditingRow ? ' tyr-table-editing-row' : ''
     }${newDocument ? ' tyr-table-adding-row' : ''}`;
 
-    const multiActions = this.actions.filter(a => a.input === '*');
-    const voidActions = this.actions.filter(a => a.input === 0);
+    const multiActions = this.actions.filter(
+      a => a.input === '*' && a.hide !== true
+    );
+    const voidActions = this.actions.filter(
+      a => a.input === 0 && a.hide !== true
+    );
     const rowsSelectable =
       (!newDocument && onSelectRows) || multiActions.length;
 

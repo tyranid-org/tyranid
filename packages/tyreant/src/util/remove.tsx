@@ -7,8 +7,7 @@ export const TyrRemove = createForm(
     actions: [
       {
         traits: ['edit'],
-        name: 'remove',
-        action: () => {}
+        name: 'remove'
       },
       {
         traits: ['save'],

@@ -115,9 +115,7 @@ export function createForm<D extends Tyr.Document>(
   WrappedComponent: React.ComponentType<FormRenderComponentProps<D>>
 ) {
   return () => (
-    <TyrForm {...(formProps as any)}>
-      {props => <WrappedComponent {...(props as any)} />}
-    </TyrForm>
+    <TyrForm {...formProps}>{props => <WrappedComponent {...props} />}</TyrForm>
   );
 }
 

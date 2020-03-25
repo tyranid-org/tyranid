@@ -1,13 +1,10 @@
 import * as React from 'react';
 
 import { Tyr } from '../tyreant';
-import { TyrField, TyrForm, TyrModal, createForm } from '../core';
-
-//const { TyrImport: TyrImportCol } = Tyr.collections;
+import { TyrField, createForm } from '../core';
 
 export const TyrImport = createForm<Tyr.TyrImport>(
   {
-    decorator: <TyrModal />,
     actions: [
       {
         traits: ['edit'],

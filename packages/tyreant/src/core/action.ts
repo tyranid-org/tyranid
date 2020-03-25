@@ -36,7 +36,7 @@ export interface TyrActionOpts<D extends Tyr.Document> {
   action?: (
     opts: TyrActionFnOpts<D>
   ) => void | boolean | Promise<void | boolean>;
-  hide?: (doc: D) => boolean;
+  hide?: boolean | ((doc: D) => boolean);
 }
 
 export class TyrAction<D extends Tyr.Document = Tyr.Document> {
@@ -56,7 +56,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   action?: (
     opts: TyrActionFnOpts<D>
   ) => void | boolean | Promise<void | boolean>;
-  hide?: (doc: D) => boolean;
+  hide?: boolean | ((doc: D) => boolean);
 
   /**
    * This is the component the action was defined on.
@@ -90,6 +90,16 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
   is(trait: TyrActionTrait) {
     return this.traits.indexOf(trait) >= 0;
+  }
+
+  isHidden(document?: D) {
+    const { hide } = this;
+
+    if (typeof hide === 'function') {
+      return hide(document!);
+    } else {
+      return !!hide;
+    }
   }
 
   act(opts: Omit<TyrActionFnOpts<D>, 'self'>) {
