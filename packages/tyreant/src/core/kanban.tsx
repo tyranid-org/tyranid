@@ -17,6 +17,7 @@ import { TyrFilters } from './filter';
 import { useComponent, TyrComponentState } from './component';
 import { TyrManyComponentProps, TyrManyComponent } from './many-component';
 import { useThemeProps } from './theme';
+import { TyrIntersectionObserver, useIsVisible } from '../util';
 
 interface ColumnData<D extends Tyr.Document> {
   id: string;
@@ -45,7 +46,7 @@ export interface TyrKanbanProps<D extends Tyr.Document>
   collection: Tyr.CollectionInstance<D>;
   columns: Tyr.CollectionInstance | TyrKanbanColumnDef[];
   ordering: string;
-  cardRenderer?: (document: D) => JSX.Element;
+  cardRenderer?: (document: D, visible: boolean) => JSX.Element;
 }
 
 @observer
@@ -210,7 +211,7 @@ export class TyrKanbanBase<
     const { cardRenderer } = this.props;
 
     return this.wrap(() => (
-      <>
+      <div className="tyr-kanban-container">
         <TyrFilters />
         <DragDropContext onDragEnd={this.onDragEnd}>
           <div className="tyr-kanban">
@@ -225,7 +226,7 @@ export class TyrKanbanBase<
             ))}
           </div>
         </DragDropContext>
-      </>
+      </div>
     ));
   }
 }
@@ -241,7 +242,7 @@ export interface TyrKanbanColumnProps<D extends Tyr.Document> {
   column: ColumnData<D>;
   cards: D[];
   index: number;
-  cardRenderer?: (document: D) => JSX.Element;
+  cardRenderer?: (document: D, visible: boolean) => JSX.Element;
 }
 
 export const TyrKanbanColumn = observer(
@@ -249,55 +250,73 @@ export const TyrKanbanColumn = observer(
     column,
     cards,
     cardRenderer
-  }: TyrKanbanColumnProps<D>) => (
-    <div className="tyr-kanban-column">
-      <div className="tyr-kanban-column-title">{column.def.label}</div>
-      <Droppable droppableId={column.id}>
-        {(provided, snapshot) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            className={`tyr-kanban-column-body${
-              snapshot.isDraggingOver ? ' is-dragging-over' : ''
-            }`}
-          >
-            {cards.map((card, index) => (
-              <TyrCard
-                key={card.$id}
-                document={card}
-                index={index}
-                cardRenderer={cardRenderer}
-              />
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </div>
-  )
+  }: TyrKanbanColumnProps<D>) => {
+    const [ref, setRef] = React.useState<HTMLElement | null>(null);
+
+    return (
+      <div className="tyr-kanban-column">
+        <div className="tyr-kanban-column-title">{column.def.label}</div>
+        <Droppable droppableId={column.id}>
+          {(provided, snapshot) => (
+            <TyrIntersectionObserver scrollArea={ref}>
+              <div
+                {...provided.droppableProps}
+                ref={(element: HTMLElement | null) => {
+                  provided.innerRef(element);
+                  setRef(element);
+                }}
+                className={`tyr-kanban-column-body${
+                  snapshot.isDraggingOver ? ' is-dragging-over' : ''
+                }`}
+              >
+                {cards.map((card, index) => (
+                  <TyrCard
+                    key={card.$id}
+                    document={card}
+                    index={index}
+                    cardRenderer={cardRenderer}
+                  />
+                ))}
+                {provided.placeholder}
+              </div>
+            </TyrIntersectionObserver>
+          )}
+        </Droppable>
+      </div>
+    );
+  }
 );
 
 export interface TyrCardProps<D extends Tyr.Document> {
   document: D;
   index: number;
-  cardRenderer?: (document: D) => JSX.Element;
+  cardRenderer?: (document: D, visible: boolean) => JSX.Element;
 }
 
 export const TyrCard = <D extends Tyr.Document>({
   document,
   index,
   cardRenderer
-}: TyrCardProps<D>) => (
-  <Draggable draggableId={String(document.$id)} index={index}>
-    {(provided, snapshot) => (
-      <div
-        className="tyr-card"
-        ref={provided.innerRef}
-        {...provided.draggableProps}
-        {...provided.dragHandleProps}
-      >
-        {cardRenderer ? cardRenderer(document) : document.$label}
-      </div>
-    )}
-  </Draggable>
-);
+}: TyrCardProps<D>) => {
+  const [ref, setRef] = React.useState<HTMLElement | null>(null);
+
+  const visible = useIsVisible(ref);
+
+  return (
+    <Draggable draggableId={String(document.$id)} index={index}>
+      {(provided, snapshot) => (
+        <div
+          className="tyr-card"
+          ref={(el: HTMLDivElement) => {
+            provided.innerRef(el);
+            setRef(el);
+          }}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+        >
+          {cardRenderer ? cardRenderer(document, visible) : document.$label}
+        </div>
+      )}
+    </Draggable>
+  );
+};

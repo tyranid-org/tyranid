@@ -4,6 +4,9 @@
  * Some functions defined in isomorphic code are reported as being invalid when called from
  * client/server code due to them being interpreted contravariantly instead of bivariantly.
  * Typescript does not yet support variance casting so we resort to any.
+ *
+ * Example bivariant hack seen in react code:
+ *   type RefCallback<T> = { bivarianceHack(instance: T | null): void }["bivarianceHack"];
  */
 export namespace Tyr {
   /**
