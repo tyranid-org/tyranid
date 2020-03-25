@@ -311,5 +311,5 @@ export const getCellValue = (
   const { cellValue } = assertTypeUi(field.type.name);
   return cellValue
     ? cellValue(path, document, props)
-    : field.type.format(field, field.namePath.get(document));
+    : field.type.format(field, path.get(document));
 };
