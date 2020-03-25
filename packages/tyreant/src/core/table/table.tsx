@@ -247,6 +247,7 @@ export class TyrTableBase<
     }
 
     this.otherPaths = newOtherPaths;
+    this.refreshPaths();
   }
 
   setFieldValue = (fieldName: string, value: any) => {

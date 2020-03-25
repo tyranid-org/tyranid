@@ -92,6 +92,14 @@ export class TyrComponent<
     return false;
   }
 
+  refreshPaths() {
+    if (this.props.paths) {
+      this.paths = this.props.paths.map(laxFieldProps =>
+        this.resolveFieldLaxProps(laxFieldProps)
+      );
+    }
+  }
+
   /**
    * if isLocal then this has *all* the data, otherwise it just has the current page
    */
@@ -111,10 +119,7 @@ export class TyrComponent<
 
     this.collection = collection!;
 
-    if (paths && collection)
-      this.paths = paths.map(laxFieldProps =>
-        this.resolveFieldLaxProps(laxFieldProps)
-      );
+    if (paths && collection) this.refreshPaths();
     else if (collection) this.paths = defaultPathsProp(collection);
 
     if (parent) {
