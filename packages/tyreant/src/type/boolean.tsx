@@ -26,7 +26,7 @@ export const TyrBooleanBase: React.FunctionComponent<TyrTypeProps> = props => {
         // autoComplete="off"
         autoFocus={props.autoFocus}
         onChange={onTypeChangeFunc}
-        // tabIndex={props.tabIndex}
+        tabIndex={props.tabIndex}
       />
     );
   });
@@ -57,26 +57,26 @@ export const booleanFilter: Filter = (
             <>
               <Checkbox
                 style={{ display: 'block', marginLeft: '8px' }}
-                checked={
-                  filterable.searchValues[pathName] &&
-                  !!filterable.searchValues[pathName]['no']
-                }
+                checked={searchValue && !!searchValue.no}
                 onChange={(e: CheckboxChangeEvent) => {
-                  if (!searchValue) setSearchValue({});
-                  searchValue['no'] = !searchValue.no;
+                  setSearchValue(
+                    searchValue
+                      ? { ...searchValue, no: !searchValue.no }
+                      : { no: true }
+                  );
                 }}
               >
                 {valueLabels ? valueLabels[0].$label : 'No'}
               </Checkbox>
               <Checkbox
                 style={{ display: 'block' }}
-                checked={
-                  filterable.searchValues[pathName] &&
-                  !!filterable.searchValues[pathName]['yes']
-                }
+                checked={searchValue && !!searchValue.yes}
                 onChange={(e: CheckboxChangeEvent) => {
-                  if (!searchValue) setSearchValue({});
-                  searchValue['yes'] = !searchValue.yes;
+                  setSearchValue(
+                    searchValue
+                      ? { ...searchValue, yes: !searchValue.yes }
+                      : { yes: true }
+                  );
                 }}
               >
                 {valueLabels ? valueLabels[1].$label : 'Yes'}
