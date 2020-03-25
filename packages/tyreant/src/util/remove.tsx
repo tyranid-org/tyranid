@@ -1,14 +1,14 @@
 import * as React from 'react';
 
-import { TyrForm, TyrModal, createForm } from '../core';
+import { createForm } from '../core';
 
 export const TyrRemove = createForm(
   {
-    decorator: <TyrModal />,
     actions: [
       {
         traits: ['edit'],
-        name: 'remove'
+        name: 'remove',
+        action: () => {}
       },
       {
         traits: ['save'],
@@ -20,13 +20,9 @@ export const TyrRemove = createForm(
       }
     ]
   },
-  ({ document }) => {
-    return (
-      <>
-        <div className="tyr-import-help">
-          Are you sure you want to remove this item?
-        </div>
-      </>
-    );
-  }
+  ({}) => (
+    <div className="tyr-import-help">
+      Are you sure you want to remove this item?
+    </div>
+  )
 );
