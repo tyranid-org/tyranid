@@ -38,6 +38,8 @@
   --link-tag-background-color: #ddd;
 
   --drop-over-color: var(--border-color);
+
+  --table-padding: 0;
 }
 
 //
@@ -320,7 +322,7 @@ form textarea.tyr-markup-editor {
 
 .tyr-table {
   width: 100%;
-  padding: 0;
+  padding: var(--table-padding);
 
   .tyr-table-header {
     display: flex;
