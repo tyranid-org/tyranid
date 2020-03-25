@@ -1150,7 +1150,7 @@ export class TyrTableBase<
                   }
                 />
               )}
-              {paths && !newDocument && (
+              {paths && (!newDocument || !!this.documents.length) && (
                 <div
                   style={{
                     position: 'relative',
