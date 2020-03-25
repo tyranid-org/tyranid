@@ -263,34 +263,32 @@ export class TyrComponent<
       });
     }
 
-    if (linkToParent) {
-      if (!this.canMultiple) {
-        const name = linkToParent ? this.collection!.label : 'edit';
-        const title = 'Edit ' + this.collection!.label;
+    if (!this.canMultiple) {
+      const name = linkToParent ? this.collection!.label : 'edit';
+      const title = 'Edit ' + this.collection!.label;
 
-        enactUp({
-          traits: ['edit'],
-          name,
-          title,
-          action: async opts => {
-            await this.find(opts.document!);
-            if (!this.document) this.document = this.createDocument(opts);
-          }
-        });
-      } else {
-        const name = linkToParent ? this.collection!.label : 'edit';
+      enactUp({
+        traits: ['edit'],
+        name,
+        title,
+        action: async opts => {
+          await this.find(opts.document!);
+          if (!this.document) this.document = this.createDocument(opts);
+        }
+      });
+    } else if (linkToParent) {
+      const name = linkToParent ? this.collection!.label : 'edit';
 
-        enactUp({
-          traits: ['edit'],
-          input: 1,
-          name,
-          label: Tyr.pluralize(this.collection!.label),
-          action: opts => {
-            opts.self._parentDocument = opts.document;
-            opts.self.requery();
-          }
-        });
-      }
+      enactUp({
+        traits: ['edit'],
+        input: 1,
+        name,
+        label: Tyr.pluralize(this.collection!.label),
+        action: opts => {
+          opts.self._parentDocument = opts.document;
+          opts.self.requery();
+        }
+      });
     }
 
     if (this.canEdit) {
