@@ -127,6 +127,7 @@ export interface TyrPathProps {
   typeUi?:
     | 'link'
     | 'string'
+    | 'password'
     | 'integer'
     | 'double'
     | 'boolean'

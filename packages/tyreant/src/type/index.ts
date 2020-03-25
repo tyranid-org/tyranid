@@ -13,6 +13,7 @@ export * from './double';
 export * from './link';
 export * from './markup';
 export * from './object';
+export * from './password';
 export * from './s3';
 export * from './string';
 export * from './text';
