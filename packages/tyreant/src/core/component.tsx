@@ -204,6 +204,8 @@ export class TyrComponent<
     // Manually Added Actions
     //
 
+    let manuallyDefinedSaveAction = false;
+
     const manuallyAddedActions = actions.length > 0;
     for (const action of actions) {
       // TODO:  clone action if component is already defined?  (note: check if TyrAction.get() above created it)
@@ -228,6 +230,7 @@ export class TyrComponent<
           }
         };
       } else if (actFn && action.is('save')) {
+        manuallyDefinedSaveAction = true;
         action.action = opts => {
           actFn({ ...opts, document: this.document });
         };
@@ -245,6 +248,8 @@ export class TyrComponent<
     // Automatically-Added Actions
     //
 
+    const addingSave = this.canEdit && !manuallyAddedActions;
+
     const enactUp = (action: TyrActionOpts<D>) => {
       const { traits } = action;
       action.self = this;
@@ -259,7 +264,7 @@ export class TyrComponent<
 
     enactUp({
       traits: ['cancel'],
-      name: this.canEdit ? 'cancel' : 'done',
+      name: manuallyDefinedSaveAction || addingSave ? 'cancel' : 'done',
       action: opts => {}
     });
 
@@ -302,7 +307,7 @@ export class TyrComponent<
       });
     }
 
-    if (this.canEdit) {
+    if (addingSave) {
       enactUp({
         traits: ['save'],
         name: 'save',
