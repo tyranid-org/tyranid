@@ -109,7 +109,9 @@ export class TyrFormBase<
   }
 }
 
-export const TyrForm = <D extends Tyr.Document>(props: TyrFormProps<D>) => (
+export const TyrForm = <D extends Tyr.Document, ExtraFormProps = {}>(
+  props: TyrFormProps<D> & ExtraFormProps
+) => (
   <TyrFormBase
     {...useThemeProps('form', props as TyrFormProps<D>)}
     form={useForm()[0]}
@@ -117,8 +119,8 @@ export const TyrForm = <D extends Tyr.Document>(props: TyrFormProps<D>) => (
   />
 );
 
-export function createForm<D extends Tyr.Document>(
-  formProps: TyrFormProps<D>,
+export function createForm<D extends Tyr.Document, ExtraFormProps = {}>(
+  formProps: TyrFormProps<D> & ExtraFormProps,
   WrappedComponent: React.ComponentType<FormRenderComponentProps<D>>
 ) {
   return () => (
