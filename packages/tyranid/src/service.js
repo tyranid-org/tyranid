@@ -65,6 +65,8 @@ export function instrumentExpressServices(col, app, auth) {
 
           if (returns) {
             res.json(returns.toClient(result));
+          } else {
+            res.sendStatus(200);
           }
         } catch (err) {
           handleException(res, err);

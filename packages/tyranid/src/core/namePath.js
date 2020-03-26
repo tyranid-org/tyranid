@@ -371,17 +371,22 @@ NamePath.prototype.get = function(obj) {
               fields[pi].type.name === 'array' &&
               fields[pi + 1].link))
         ) {
-          // if they are dereferencing a link, look for a populated or denormalized value
-          let popName = NamePath.populateNameFor(name, false);
-          v = obj[popName];
-          if (v === undefined) {
-            popName = NamePath.populateNameFor(name, true);
+          // if they are dereferencing a link, first check to see if an object exists by the current name
+          // (the current name could be a denormalized or populated reference already)
+          v = obj[name];
+          if (!_.isObject(v) || Array.isArray(v)) {
+            // ... look for a populated or denormalized value
+            let popName = NamePath.populateNameFor(name, false);
             v = obj[popName];
-
             if (v === undefined) {
-              // they are dereferencing a link but there is no populated or denormalized value, return undefined
-              // rather than throw an error
-              return undefined; //v = obj[name];
+              popName = NamePath.populateNameFor(name, true);
+              v = obj[popName];
+
+              if (v === undefined) {
+                // they are dereferencing a link but there is no populated or denormalized value, return undefined
+                // rather than throw an error
+                return undefined;
+              }
             }
           }
         } else {
