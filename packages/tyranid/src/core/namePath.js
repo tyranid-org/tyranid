@@ -379,7 +379,9 @@ NamePath.prototype.get = function(obj) {
             v = obj[popName];
 
             if (v === undefined) {
-              v = obj[name];
+              // they are dereferencing a link but there is no populated or denormalized value, return undefined
+              // rather than throw an error
+              return undefined; //v = obj[name];
             }
           }
         } else {

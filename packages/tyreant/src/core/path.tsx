@@ -200,6 +200,8 @@ export const decorateField = (
       className={className('tyr-' + name, props)}
       label={label}
       rules={generateRules(props)}
+      // see https://github.com/ant-design/ant-design/issues/20803
+      {...(name === 'boolean' && { valuePropName: 'checked' })}
     >
       {props.renderField && props.document
         ? props.renderField(props.document)

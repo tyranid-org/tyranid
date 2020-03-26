@@ -39,7 +39,6 @@ export const booleanFilter: Filter = (
   props: TyrPathProps
 ) => {
   const path = props.path!;
-  const pathName = path.name;
 
   return {
     filterDropdown: filterDdProps => (
