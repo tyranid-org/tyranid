@@ -26,6 +26,10 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
     | Tyr.MongoQuery
     | ((this: TyrManyComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
   documents?: D[] & { count?: number };
+  postFind?: (
+    this: TyrManyComponent<D>,
+    documents: D[]
+  ) => Promise<void> | void;
 
   // FILTERING
   notifyFilterExists?: (exists: boolean) => void;
@@ -169,6 +173,8 @@ export class TyrManyComponent<
       this.documents = docs;
 
       await this.postFind();
+
+      await this.props.postFind?.call(this, this.documents);
 
       this.loading = false;
     } catch (err) {
