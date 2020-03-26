@@ -176,12 +176,27 @@ export class TyrComponent<
     this.mounted = true;
     this.visible = true;
 
-    if (!this.collection)
+    const props = this.props as Props;
+    const { aux } = props;
+
+    let collection = this.collection;
+
+    if (aux) {
+      if (!collection) {
+        this.collection = collection = Tyr.aux(
+          { fields: aux },
+          this
+        ) as Tyr.CollectionInstance<D>;
+      } else {
+        collection.aux(aux);
+      }
+    }
+
+    if (!collection)
       throw new Tyr.AppError(
         'could not determine collection for Tyr.Component'
       );
 
-    const props = this.props as Props;
     const actions = (props.actions || []).map(TyrAction.get);
     const { linkToParent } = this;
 
@@ -204,10 +219,6 @@ export class TyrComponent<
             if (opts.document) await this.find(opts.document);
 
             if (this.canEdit && !this.document) {
-              const collection = Tyr.aux(
-                { fields: this.props.aux },
-                this
-              ) as Tyr.CollectionInstance<D>;
               this.document = new collection({});
             }
           } else {
@@ -256,7 +267,7 @@ export class TyrComponent<
       enactUp({
         traits: ['create'],
         name: 'create',
-        label: 'Create ' + this.collection.label,
+        label: 'Create ' + collection.label,
         action: opts => {
           this.document = this.createDocument(opts);
         }
@@ -264,8 +275,8 @@ export class TyrComponent<
     }
 
     if (!this.canMultiple) {
-      const name = linkToParent ? this.collection!.label : 'edit';
-      const title = 'Edit ' + this.collection!.label;
+      const name = linkToParent ? collection.label : 'edit';
+      const title = 'Edit ' + collection.label;
 
       enactUp({
         traits: ['edit'],
@@ -277,13 +288,13 @@ export class TyrComponent<
         }
       });
     } else if (linkToParent) {
-      const name = linkToParent ? this.collection!.label : 'edit';
+      const name = linkToParent ? collection.label : 'edit';
 
       enactUp({
         traits: ['edit'],
         input: 1,
         name,
-        label: Tyr.pluralize(this.collection!.label),
+        label: Tyr.pluralize(collection.label),
         action: opts => {
           opts.self._parentDocument = opts.document;
           opts.self.requery();
