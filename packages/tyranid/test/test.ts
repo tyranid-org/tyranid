@@ -974,6 +974,15 @@ describe('tyranid', () => {
         }
       });
 
+      it('should support support singularize', async () => {
+        for (const test of [
+          ['cats', 'cat'],
+          ['quizzes', 'quiz'],
+          ['industries', 'industry']
+        ]) {
+          expect(Tyr.singularize(test[0])).to.eql(test[1]);
+        }
+      });
       it('should support support pluralize', async () => {
         for (const test of [
           ['cat', 'cats'],

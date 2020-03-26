@@ -209,7 +209,11 @@ const Tyr = {
   },
 
   singularize(name) {
-    if (name.match(/es$/)) {
+    if (name.match(/zes$/)) {
+      return name.substring(0, name.length - 3);
+    } else if (name.match(/ies$/)) {
+      return name.substring(0, name.length - 3) + 'y';
+    } else if (name.match(/es$/)) {
       return name.substring(0, name.length - 2);
     } else if (name.match(/s$/)) {
       return name.substring(0, name.length - 1);
