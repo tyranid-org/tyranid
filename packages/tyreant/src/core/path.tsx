@@ -14,7 +14,8 @@ import {
   TyrTypeProps,
   FieldState,
   generateRules,
-  className
+  className,
+  getCellValue
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
@@ -169,10 +170,10 @@ export const decorateField = (
   props: TyrTypeProps,
   component: () => React.ReactElement
 ) => {
-  const { path } = props;
+  const { path, document } = props;
   const field = path?.tail;
 
-  if (props.hideOnCreate && props.document?.$isNew) {
+  if (props.hideOnCreate && document?.$isNew) {
     return <div className="hide-on-create" />;
   }
 
@@ -193,6 +194,8 @@ export const decorateField = (
     );
   }
 
+  const readonly = props.readonly;
+
   return (
     <FormItem
       key={path!.name}
@@ -203,9 +206,13 @@ export const decorateField = (
       // see https://github.com/ant-design/ant-design/issues/20803
       {...(name === 'boolean' && { valuePropName: 'checked' })}
     >
-      {props.renderField && props.document
-        ? props.renderField(props.document)
-        : component()}
+      {props.renderField && document ? (
+        props.renderField(document)
+      ) : readonly ? (
+        <span>{getCellValue(path!, document!, props)}</span>
+      ) : (
+        component()
+      )}
     </FormItem>
   );
 };

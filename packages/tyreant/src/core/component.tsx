@@ -205,6 +205,7 @@ export class TyrComponent<
     //
 
     let manuallyDefinedSaveAction = false;
+    let manuallyDefinedCancelAction = false;
 
     const manuallyAddedActions = actions.length > 0;
     for (const action of actions) {
@@ -234,6 +235,8 @@ export class TyrComponent<
         action.action = opts => {
           actFn({ ...opts, document: this.document });
         };
+      } else if (actFn && action.is('cancel')) {
+        manuallyDefinedCancelAction = true;
       }
 
       // TODO:  how do we know whether to enact locally or up ?  this check surely isn't right
@@ -262,11 +265,13 @@ export class TyrComponent<
       }
     };
 
-    enactUp({
-      traits: ['cancel'],
-      name: manuallyDefinedSaveAction || addingSave ? 'cancel' : 'done',
-      action: opts => {}
-    });
+    if (!manuallyDefinedCancelAction) {
+      enactUp({
+        traits: ['cancel'],
+        name: manuallyDefinedSaveAction || addingSave ? 'cancel' : 'close',
+        action: opts => {}
+      });
+    }
 
     if (this.canEdit && !linkToParent && !manuallyAddedActions) {
       enactUp({
