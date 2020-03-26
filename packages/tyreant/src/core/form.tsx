@@ -17,6 +17,7 @@ import { TyrComponent, useComponent } from './component';
 export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;
   document: D;
+  documents: D[];
 }
 
 export interface TyrFormFields {
@@ -74,7 +75,9 @@ export class TyrFormBase<
             document
           }}
         >
-          {render && document && render({ form: this, document })}
+          {render &&
+            document &&
+            render({ form: this, document, documents: this.documents })}
           {paths &&
             !children &&
             !render &&
@@ -87,9 +90,13 @@ export class TyrFormBase<
               );
             })}
           {typeof children === 'function' && document
-            ? (children as (
-                props: FormRenderComponentProps<D>
-              ) => JSX.Element)({ form: this, document })
+            ? (children as (props: FormRenderComponentProps<D>) => JSX.Element)(
+                {
+                  form: this,
+                  document,
+                  documents: this.documents
+                }
+              )
             : children}
         </TypeContext.Provider>
       </Form>
