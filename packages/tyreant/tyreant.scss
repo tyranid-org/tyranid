@@ -107,7 +107,10 @@
   }
 
   .anticon {
-    color: var(--primary-background-color);
+    &.anticon-search,
+    &.anticon-down {
+      color: var(--primary-background-color);
+    }
   }
 }
 
