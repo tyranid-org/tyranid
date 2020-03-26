@@ -81,6 +81,10 @@ declare module 'tyranid/client' {
       [key: string]: any;
     }
 
+    export interface MongoProjection {
+      [key: string]: number;
+    }
+
     export interface Class<T> {
       new (...args: any[]): T;
     }
@@ -143,8 +147,12 @@ declare module 'tyranid/client' {
     export function parseUid(
       uid: string
     ): { collection: CollectionInstance; id: AnyIdType };
+    export function byUid(
+      uid: string,
+      options?: any // Options_FindById
+    ): Promise<Document | null>;
     export function pluralize(str: string): string;
-    export function projectify(obj: object): { [key: string]: number };
+    export function projectify(obj: object | NamePath[]): MongoProjection;
     export const reconnectSocket: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
     export function singularize(str: string): string;

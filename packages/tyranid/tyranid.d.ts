@@ -56,6 +56,10 @@ export namespace Tyr {
   export import MongoQuery = Isomorphic.MongoQuery;
   export import MongoUpdate = Isomorphic.MongoUpdate;
 
+  export interface MongoProjection {
+    [key: string]: number;
+  }
+
   export type Metadata =
     | CollectionInstance
     | FieldInstance
@@ -101,7 +105,7 @@ export namespace Tyr {
   export function capitalize(name: string): string;
   export function labelize(name: string): string;
   export function pluralize(str: string): string;
-  export function projectify(obj: object): { [key: string]: number };
+  export function projectify(obj: object | NamePath[]): MongoProjection;
   export function sanitize(opts?: SanitizeOptions): Promise<void>;
   export function singularize(str: string): string;
   export function unitize(count: number, unit: string): string;

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-//import Tyr      from '../tyr';
+import Tyr from '../tyr';
 
 export function extractProjection(opts) {
   return opts.projection || opts.fields || opts.project;
@@ -54,3 +54,18 @@ export function resolveProjection(projections, projection) {
     return rslt;
   }
 }
+
+/** @isomorphic */
+Tyr.projectify = function(value) {
+  const projection = {};
+
+  if (Array.isArray(value)) {
+    for (const path of value) {
+      projection[path.spath] = 1;
+    }
+  } else {
+    for (const name in value) projection[name] = 1;
+  }
+
+  return projection;
+};

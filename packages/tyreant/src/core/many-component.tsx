@@ -25,7 +25,12 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   query?:
     | Tyr.MongoQuery
     | ((this: TyrManyComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
+  projection?: 'auto' | 'all' | string[];
   documents?: D[] & { count?: number };
+  preFind?: (
+    this: TyrManyComponent<D>,
+    findOpts: any // Tyr.FindAllOptions
+  ) => Promise<void> | void;
   postFind?: (
     this: TyrManyComponent<D>,
     documents: D[]
@@ -134,6 +139,19 @@ export class TyrManyComponent<
       sort
     };
 
+    const { projection } = this.props;
+    if (projection !== 'all') {
+      const fields = Tyr.projectify(this.activePaths.map(p => p.path));
+
+      if (Array.isArray(projection)) {
+        for (const name in projection) {
+          fields[name] = 1;
+        }
+      }
+
+      opts.fields = fields;
+    }
+
     if (this.hasPaging) {
       const { skip, limit } = this;
 
@@ -157,6 +175,8 @@ export class TyrManyComponent<
     }
 
     this.findOpts = opts;
+
+    await this.props.preFind?.call(this, opts);
   }
 
   async findAll() {
@@ -583,7 +603,8 @@ export class TyrManyComponent<
           const { decorator } = this;
           if (
             (!decorator || decorator.visible) &&
-            (!this.parent || this.mounted)
+            (!this.parent || this.mounted) &&
+            this.activePaths.length
           )
             this.findAll();
         }
