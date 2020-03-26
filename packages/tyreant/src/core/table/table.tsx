@@ -1013,6 +1013,13 @@ export class TyrTableBase<
           ? emptyTablePlaceholder(this)
           : emptyTablePlaceholder;
 
+      const tableScroll =
+        fieldCount > 1
+          ? scroll
+            ? { ...scroll, x: this.tableWidth }
+            : { x: this.tableWidth }
+          : undefined;
+
       const mainTable = paths ? (
         <ObsTable
           locale={{ emptyText }}
@@ -1040,7 +1047,7 @@ export class TyrTableBase<
           showHeader={newDocument ? false : showHeader}
           dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
-          scroll={fieldCount > 1 ? scroll || { x: this.tableWidth } : undefined}
+          scroll={tableScroll}
           onRow={(record, rowIndex) => {
             return {
               onClick: () => {
@@ -1148,11 +1155,7 @@ export class TyrTableBase<
                   showHeader={true}
                   dataSource={[newDocument]}
                   columns={this.getColumns(true)}
-                  scroll={
-                    fieldCount > 1
-                      ? scroll || { x: this.tableWidth }
-                      : undefined
-                  }
+                  scroll={tableScroll}
                 />
               )}
               {paths && (!newDocument || !!this.documents.length) && (
