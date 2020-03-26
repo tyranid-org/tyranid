@@ -92,7 +92,7 @@ for (const col of Tyr.collections) {
           contentType: 'application/json'
         }).then(result => {
           // res.json('string') seems to return a {'message':'string'} ???
-          if (method.return.type.name === 'string' && result.message) {
+          if (method.return?.type.name === 'string' && result.message) {
             return result.message;
           }
           // TODO:  iterate through data and wrap results ?
