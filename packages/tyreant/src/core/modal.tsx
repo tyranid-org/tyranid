@@ -132,7 +132,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
       <>
         {create && (
           <Button onClick={() => create.act({ caller: this.decorating })}>
-            {create.label}
+            {create.label(this.decorating as any)}
           </Button>
         )}
 

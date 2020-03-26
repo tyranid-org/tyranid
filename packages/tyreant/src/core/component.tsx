@@ -172,6 +172,10 @@ export class TyrComponent<
   }
   */
 
+  actionFnOpts(): TyrActionFnOpts<D> {
+    return { caller: this } as any;
+  }
+
   componentDidMount() {
     this.mounted = true;
     this.visible = true;
@@ -215,7 +219,7 @@ export class TyrComponent<
 
       if (!actFn && action.is('edit')) {
         action.action = async opts => {
-          if (action.input === '*') {
+          if (action.input === '*' || action.input === '0..*') {
             const { documents } = opts;
             if (documents) this.documents = documents;
 

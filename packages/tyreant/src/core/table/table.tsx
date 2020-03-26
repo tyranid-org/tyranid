@@ -60,6 +60,7 @@ import { TyrPathProps } from '../path';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { DndProvider } from 'react-dnd';
 import { ColumnType } from 'antd/lib/table';
+import { TyrActionFnOpts } from '../action';
 
 // ant's ColumnGroupType has children has required which seems incorrect
 export interface OurColumnProps<T> extends ColumnType<T> {
@@ -781,7 +782,7 @@ export class TyrTableBase<
 
           if (this.actions.length === 1) {
             const action = this.actions[0];
-            const label = action.label;
+            const label = action.label(this as any);
 
             if (typeof label === 'string') {
               return (
@@ -807,7 +808,7 @@ export class TyrTableBase<
                   action.act({ caller: this, document });
                 }}
               >
-                {action.label as React.ReactNode}
+                {label as React.ReactNode}
               </span>
             );
           }
@@ -819,7 +820,7 @@ export class TyrTableBase<
                   <button
                     onClick={() => action.act({ caller: this, document })}
                   >
-                    {action.label}
+                    {action.label(this as any)}
                   </button>
                 </Menu.Item>
               ))}
@@ -934,6 +935,16 @@ export class TyrTableBase<
     moveRow && moveRow(dragIndex, hoverIndex);
   };
 
+  // TODO: move to many-component once selection is moved to there
+  actionFnOpts(): TyrActionFnOpts<D> {
+    return {
+      caller: this,
+      documents: this.selectedRowKeys.map(
+        id => this.collection!.byIdIndex[id]
+      ) as D[]
+    } as any;
+  }
+
   render() {
     const {
       editingDocument,
@@ -975,7 +986,7 @@ export class TyrTableBase<
       a => a.input === '*' && a.hide !== true
     );
     const voidActions = this.actions.filter(
-      a => a.input === 0 && a.hide !== true
+      a => (a.input === 0 || a.input === '0..*') && a.hide !== true
     );
     const rowsSelectable =
       (!newDocument && onSelectRows) || multiActions.length;
@@ -1117,24 +1128,17 @@ export class TyrTableBase<
                   <Button
                     disabled={!this.selectedRowKeys?.length}
                     key={`a_${a.name}`}
-                    onClick={() =>
-                      a.act({
-                        caller: this,
-                        documents: this.selectedRowKeys.map(
-                          id => this.collection!.byIdIndex[id]
-                        ) as D[]
-                      })
-                    }
+                    onClick={() => a.act(this.actionFnOpts())}
                   >
-                    {a.label}
+                    {a.label(this as any)}
                   </Button>
                 ))}
                 {voidActions.map(a => (
                   <Button
                     key={`a_${a.name}`}
-                    onClick={() => a.act({ caller: this })}
+                    onClick={() => a.act(this.actionFnOpts())}
                   >
-                    {a.label}
+                    {a.label(this as any)}
                   </Button>
                 ))}
               </Col>

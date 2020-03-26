@@ -20,13 +20,18 @@ export interface TyrActionFnOpts<D extends Tyr.Document> {
 
 export type TyrActionTrait = 'create' | 'edit' | 'save' | 'cancel';
 
+export type Cardinality = 0 | 1 | '0..*' | '*';
+
 export interface TyrActionOpts<D extends Tyr.Document> {
   traits?: TyrActionTrait[];
   name: string;
   self?: TyrComponent<D>;
-  label?: string | React.ReactNode;
+  label?:
+    | string
+    | React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   title?: string | React.ReactNode;
-  input?: 0 | 1 | '*';
+  input?: Cardinality;
 
   /**
    * If an action returns false or Promise<false> then the decorator action will not
@@ -50,9 +55,12 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
   traits: TyrActionTrait[];
   name: string;
-  label: string | React.ReactNode;
+  labelValue:
+    | string
+    | React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   title: string | React.ReactNode;
-  input: 0 | 1 | '*';
+  input: Cardinality;
   action?: (
     opts: TyrActionFnOpts<D>
   ) => void | boolean | Promise<void | boolean>;
@@ -68,6 +76,14 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return this.name + ':' + (self?.displayName || 'no-self');
   }
 
+  label(component: TyrComponent): string | React.ReactNode {
+    const { labelValue } = this;
+
+    return typeof labelValue === 'function'
+      ? labelValue(component.actionFnOpts() as any)
+      : labelValue;
+  }
+
   constructor({
     traits,
     name,
@@ -81,8 +97,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.traits = traits || [];
     this.name = name;
     this.self = self;
-    this.label = label || Tyr.labelize(name);
-    this.title = title || this.label;
+    this.labelValue = label || Tyr.labelize(name);
+    this.title = title || this.labelValue;
     this.action = action;
     this.input = input ?? 1;
     this.hide = hide;
@@ -110,7 +126,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     const newOpts: TyrActionOpts<D> = {
       traits: this.traits,
       name: this.name,
-      label: this.label,
+      label: this.labelValue,
       title: this.title,
       self: this.self,
       action: this.action,
