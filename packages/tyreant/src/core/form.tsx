@@ -18,6 +18,27 @@ export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;
   document: D;
   documents: D[];
+  id: Tyr.IdType<D>;
+  ids: Tyr.IdType<D>[];
+}
+export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
+  form!: TyrFormBase<D>;
+  document!: D;
+  documents!: D[];
+
+  constructor(form: TyrFormBase<D>, document: D, documents: D[]) {
+    this.form = form;
+    this.document = document;
+    this.documents = documents;
+  }
+
+  get id() {
+    return this.document?.$id;
+  }
+
+  get ids() {
+    return this.documents?.map(d => d.$id);
+  }
 }
 
 export interface TyrFormFields {
@@ -77,7 +98,13 @@ export class TyrFormBase<
         >
           {render &&
             document &&
-            render({ form: this, document, documents: this.documents })}
+            render(
+              new FormRenderComponentPropsWrapper(
+                this,
+                document,
+                this.documents
+              ) as any
+            )}
           {paths &&
             !children &&
             !render &&
@@ -91,11 +118,11 @@ export class TyrFormBase<
             })}
           {typeof children === 'function' && document
             ? (children as (props: FormRenderComponentProps<D>) => JSX.Element)(
-                {
-                  form: this,
+                new FormRenderComponentPropsWrapper(
+                  this,
                   document,
-                  documents: this.documents
-                }
+                  this.documents
+                ) as any
               )
             : children}
         </TypeContext.Provider>

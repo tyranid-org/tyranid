@@ -16,12 +16,37 @@ export interface TyrActionFnOpts<D extends Tyr.Document> {
   /**
    * if action.input === 1
    */
-  document?: D;
+  document: D;
+
+  /**
+   * Equivalent to documents?.$id
+   */
+  id: Tyr.IdType<D>;
 
   /**
    * if action.input === '*'
    */
-  documents?: D[];
+  documents: D[];
+
+  /**
+   * Equivalent to documents?.map(d => d.$id)
+   */
+  ids: Tyr.IdType<D>[];
+}
+
+export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
+  self!: TyrComponent<D>;
+  caller!: TyrComponent<D>;
+  document!: D;
+  documents!: D[];
+
+  get id() {
+    return this.document?.$id;
+  }
+
+  get ids() {
+    return this.documents?.map(d => d.$id);
+  }
 }
 
 export type TyrActionTrait = 'create' | 'edit' | 'save' | 'cancel';
@@ -147,9 +172,16 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     }
   }
 
-  act(opts: Omit<TyrActionFnOpts<D>, 'self'>) {
+  act(opts: Partial<TyrActionFnOpts<D>>) {
     try {
-      this.action?.({ self: this.self as TyrComponent<D>, ...opts });
+      const { action } = this;
+
+      if (action) {
+        const wrapper = new TyrActionFnOptsWrapper<D>();
+        Object.assign(wrapper, opts);
+        wrapper.self = this.self as TyrComponent<D>;
+        action(wrapper as any);
+      }
     } catch (err) {
       console.log(err);
       notification.error(err.message || 'Unknown error');
