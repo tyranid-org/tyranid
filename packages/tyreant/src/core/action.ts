@@ -65,7 +65,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     } else if (Array.isArray(obj)) {
       return obj.map(TyrAction.get);
     } else {
-      const actions = new Array<TyrAction<D>>(5);
+      const actions: TyrAction<D>[] = [];
 
       for (const name in obj) {
         actions.push(
