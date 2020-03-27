@@ -1,3 +1,5 @@
+import { notification } from 'antd';
+
 import { Tyr } from 'tyranid/client';
 
 import { TyrComponent } from './component';
@@ -146,7 +148,12 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   act(opts: Omit<TyrActionFnOpts<D>, 'self'>) {
-    this.action?.({ self: this.self as TyrComponent<D>, ...opts });
+    try {
+      this.action?.({ self: this.self as TyrComponent<D>, ...opts });
+    } catch (err) {
+      console.log(err);
+      notification.error(err.message || 'Unknown error');
+    }
   }
 
   decorate(opts: Partial<TyrActionOpts<D>>) {

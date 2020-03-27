@@ -1,20 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-
 import * as ReactDOM from 'react-dom';
-
-import { Modal, Button, Drawer } from 'antd';
-import { Tyr } from 'tyranid/client';
-import { compact, findIndex } from 'lodash';
-
-import { getPathName } from '../path';
-
-// TODO:  is it possible to import this via tsconfig ?
-import 'tyranid/builtin/isomorphic';
-import 'tyranid/builtin/client';
-
-import { TyrTableConfig, ColumnConfigField } from './typedef';
-
 import {
   DragDropContext,
   Draggable,
@@ -23,6 +9,14 @@ import {
   ResponderProvided
 } from 'react-beautiful-dnd';
 
+import { compact, findIndex } from 'lodash';
+
+import { Modal, Button, Drawer } from 'antd';
+
+import { Tyr } from 'tyranid/client';
+
+import { getPathName } from '../path';
+import { TyrTableConfig, ColumnConfigField } from './typedef';
 import TyrTableColumnConfigItem from './table-config-item';
 import { TyrTableBase, TyrTableColumnPathProps } from './table';
 

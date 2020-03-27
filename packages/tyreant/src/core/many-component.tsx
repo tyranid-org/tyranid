@@ -1,11 +1,16 @@
 import * as React from 'react';
 
 import { observer } from 'mobx-react';
-import { autorun } from 'mobx';
+import { autorun, observable } from 'mobx';
 
 import { Tyr } from 'tyranid/client';
 
-import { TyrSortDirection, getFinder, Filter } from '../tyreant';
+import {
+  TyrSortDirection,
+  getFinder,
+  Filter,
+  TyrActionFnOpts
+} from '../tyreant';
 import {
   TyrComponentProps,
   TyrComponentState,
@@ -615,6 +620,18 @@ export class TyrManyComponent<
   /*
    * * * SELECTION
    */
+
+  @observable
+  selectedIds: string[] = [];
+
+  actionFnOpts(): TyrActionFnOpts<D> {
+    return {
+      caller: this,
+      documents: this.selectedIds.map(
+        id => this.collection!.byIdIndex[id]
+      ) as D[]
+    } as any;
+  }
 
   // TODO
 

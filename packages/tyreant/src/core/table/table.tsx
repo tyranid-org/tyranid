@@ -11,6 +11,7 @@ import { compact, findIndex, isEqual } from 'lodash';
 import * as React from 'react';
 import { createRef } from 'react';
 import HTML5Backend from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
 
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
@@ -22,6 +23,7 @@ import {
 } from '@ant-design/icons';
 
 import { FormInstance } from 'antd/lib/form';
+import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import {
   message,
   Button,
@@ -33,14 +35,11 @@ import {
   Table,
   Tooltip
 } from 'antd';
+import { ColumnType } from 'antd/lib/table';
 import { PaginationProps } from 'antd/es/pagination';
 import { ColumnProps } from 'antd/lib/table';
 
 import { Tyr } from 'tyranid/client';
-
-// TODO:  is it possible to import this via tsconfig ?
-import 'tyranid/builtin/isomorphic';
-import 'tyranid/builtin/client';
 
 import { useThemeProps } from '../theme';
 import { getCellValue, TyrTypeProps } from '../../type';
@@ -57,10 +56,6 @@ import { EditableFormRow, EditableContext } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { TyrPathProps } from '../path';
-import { SizeType } from 'antd/lib/config-provider/SizeContext';
-import { DndProvider } from 'react-dnd';
-import { ColumnType } from 'antd/lib/table';
-import { TyrActionFnOpts } from '../action';
 
 // ant's ColumnGroupType has children has required which seems incorrect
 export interface OurColumnProps<T> extends ColumnType<T> {
@@ -145,12 +140,7 @@ export class TyrTableBase<
   }
 
   newDocument?: D;
-
-  @observable
-  selectedRowKeys: string[] = [];
-
   editingDocument?: D;
-
   isSavingDocument = false;
 
   @observable
@@ -894,7 +884,7 @@ export class TyrTableBase<
 
   selectRow = (doc: D) => {
     const { onSelectRows } = this.props;
-    const selectedRowKeys = [...this.selectedRowKeys];
+    const selectedRowKeys = [...this.selectedIds];
     const key = doc.$id as string;
 
     if (selectedRowKeys.indexOf(key) >= 0) {
@@ -903,13 +893,13 @@ export class TyrTableBase<
       selectedRowKeys.push(key);
     }
 
-    this.selectedRowKeys = selectedRowKeys;
+    this.selectedIds = selectedRowKeys;
     onSelectRows && onSelectRows(selectedRowKeys);
   };
 
   onSelectedRowKeysChange = (selectedRowKeys: Tyr.AnyIdType[]) => {
     const { onSelectRows } = this.props;
-    this.selectedRowKeys = selectedRowKeys as string[];
+    this.selectedIds = selectedRowKeys as string[];
     onSelectRows?.(selectedRowKeys as string[]);
   };
 
@@ -918,7 +908,7 @@ export class TyrTableBase<
   };
 
   setSelectedRows = (ids: string[]) => {
-    this.selectedRowKeys = ids;
+    this.selectedIds = ids;
   };
 
   moveRow = (dragIndex: number, hoverIndex: number) => {
@@ -935,16 +925,6 @@ export class TyrTableBase<
     moveRow && moveRow(dragIndex, hoverIndex);
   };
 
-  // TODO: move to many-component once selection is moved to there
-  actionFnOpts(): TyrActionFnOpts<D> {
-    return {
-      caller: this,
-      documents: this.selectedRowKeys.map(
-        id => this.collection!.byIdIndex[id]
-      ) as D[]
-    } as any;
-  }
-
   render() {
     const {
       editingDocument,
@@ -952,7 +932,7 @@ export class TyrTableBase<
       activePaths: paths,
       showConfig,
       showExport,
-      selectedRowKeys,
+      selectedIds: selectedRowKeys,
       loading
     } = this;
     const {
@@ -1126,7 +1106,7 @@ export class TyrTableBase<
                 {children}
                 {multiActions.map(a => (
                   <Button
-                    disabled={!this.selectedRowKeys?.length}
+                    disabled={!this.selectedIds?.length}
                     key={`a_${a.name}`}
                     onClick={() => a.act(this.actionFnOpts())}
                   >
