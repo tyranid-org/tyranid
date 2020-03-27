@@ -106,7 +106,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
             onClick={() => cancel.act({ caller: this.decorating })}
             loading={loading}
           >
-            {cancel.label}
+            {cancel.label(this.decorating as any)}
           </Button>
         )}
         {save && (
@@ -116,7 +116,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
             onClick={() => save.act({ caller: this.decorating })}
             loading={loading}
           >
-            {save.label}
+            {save.label(this.decorating as any)}
           </Button>
         )}
       </div>

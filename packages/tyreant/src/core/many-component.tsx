@@ -121,10 +121,16 @@ export class TyrManyComponent<
     const { searchValues, sortDirections } = this;
 
     const query: Tyr.MongoQuery = {};
-    const { linkToParent, parentDocument } = this;
+    const { linkToParent, linkFromParent, parentDocument } = this;
 
-    if (linkToParent && parentDocument) {
-      query[linkToParent.name] = parentDocument.$id;
+    if (parentDocument) {
+      if (linkToParent) {
+        query[linkToParent.name] = parentDocument.$id;
+      } else if (linkFromParent) {
+        const ids = linkFromParent.namePath.get(parentDocument);
+
+        query._id = Array.isArray(ids) ? { $in: ids } : ids;
+      }
     }
 
     if (typeof baseQuery === 'function') {
@@ -151,6 +157,18 @@ export class TyrManyComponent<
       if (Array.isArray(projection)) {
         for (const name in projection) {
           fields[name] = 1;
+        }
+      }
+
+      // now we mix in all links so that when we link to child components we have the links available
+      // TODO:  it would be ideal if we could analyze the child components and only mix in links that our child components
+      //        actually need
+      const { paths } = this.collection;
+      for (const pathName in paths) {
+        const field = paths[pathName];
+
+        if (field.link) {
+          fields[field.namePath.spath] = 1;
         }
       }
 

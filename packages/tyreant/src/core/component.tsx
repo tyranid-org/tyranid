@@ -25,6 +25,8 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   actions?: ActionSet<D>;
   aux?: { [key: string]: Tyr.FieldDefinition<D> };
   parent?: TyrComponent;
+  linkFromParent?: string;
+  linkToParent?: string;
 }
 
 export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {}
@@ -140,19 +142,7 @@ export class TyrComponent<
           );
       }
 
-      if (parentCollection !== collection && collection) {
-        // find connecting link
-
-        const { paths } = collection;
-        for (const pathName in paths) {
-          const field = paths[pathName];
-
-          if (field.link === parentCollection) {
-            this._linkToParent = field;
-            break;
-          }
-        }
-      }
+      this.setupLink();
     }
   }
 
@@ -203,7 +193,8 @@ export class TyrComponent<
 
     const actions = TyrAction.parse(props.actions as ActionSet<D>);
 
-    const { linkToParent } = this;
+    const { linkToParent, linkFromParent } = this;
+    const parentLink = linkToParent || linkFromParent;
 
     //
     // Manually Added Actions
@@ -278,7 +269,7 @@ export class TyrComponent<
       });
     }
 
-    if (this.canEdit && !linkToParent && !manuallyAddedActions) {
+    if (this.canEdit && !parentLink && !manuallyAddedActions) {
       enactUp({
         traits: ['create'],
         name: 'create',
@@ -290,7 +281,7 @@ export class TyrComponent<
     }
 
     if (!this.canMultiple) {
-      const name = linkToParent ? collection.label : 'edit';
+      const name = parentLink ? collection.label : 'edit';
       const title = 'Edit ' + collection.label;
 
       enactUp({
@@ -302,8 +293,8 @@ export class TyrComponent<
           if (!this.document) this.document = this.createDocument(opts);
         }
       });
-    } else if (linkToParent) {
-      const name = linkToParent ? collection.label : 'edit';
+    } else if (parentLink) {
+      const name = collection.label;
 
       enactUp({
         traits: ['edit'],
@@ -427,7 +418,7 @@ export class TyrComponent<
   findOpts?: any; // Tyr.FindAllOptions
 
   async find(document: D) {
-    const { collection, linkToParent } = this;
+    const { collection, linkToParent, linkFromParent } = this;
     let updatedDocument: D | null | undefined;
 
     if (!collection) throw new Error('no collection');
@@ -437,6 +428,12 @@ export class TyrComponent<
         query: {
           [linkToParent.namePath.spath]: document.$id
         }
+      })) as D;
+    } else if (linkFromParent) {
+      const id = linkFromParent.namePath.get(document);
+
+      updatedDocument = (await collection.findOne({
+        _id: id
       })) as D;
     } else {
       if (collection.id !== document.$model.id) {
@@ -456,26 +453,99 @@ export class TyrComponent<
   }
 
   //
-  // Parent
+  // Parent Linking
   //
 
   parent?: TyrComponent;
 
-  _linkToParent?: Tyr.FieldInstance<any>;
+  /**
+   * This indicates that this component was created through a link Field on a child component.
+   *
+   * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "OrderLineItem::orderId"
+   */
+  linkToParent?: Tyr.FieldInstance<any>;
 
   /**
    * This indicates that this component was created through a link Field on a parent component.
    *
    * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "Order::lineItems"
+   *
+   * Only one of linkToParent or linkFromParent can be set at one time -- they are mutually exclusive.
    */
-  get linkToParent(): Tyr.FieldInstance<any> | undefined {
-    return this._linkToParent;
+  linkFromParent?: Tyr.FieldInstance<any>;
+
+  setupLink() {
+    const { collection, parent, props } = this;
+    if (!parent) return;
+
+    const parentCollection = parent.collection;
+
+    const {
+      linkToParent: propsLinkToParent,
+      linkFromParent: propsLinkFromParent
+    } = props;
+
+    if (propsLinkToParent) {
+      this.linkToParent = collection.paths[propsLinkToParent as string];
+
+      if (!this.linkToParent)
+        throw new Tyr.AppError(
+          `linkToParent "${propsLinkToParent}" not found on ${collection.name}`
+        );
+
+      return;
+    }
+
+    if (propsLinkFromParent) {
+      this.linkFromParent =
+        parentCollection.paths[propsLinkFromParent as string];
+
+      if (!this.linkFromParent)
+        throw new Tyr.AppError(
+          `linkFromParent "${propsLinkFromParent}" not found on ${parentCollection.name}`
+        );
+
+      return;
+    }
+
+    /*
+     * Tyranid cannot currently automatically determine a recursive link between two collections
+     * because usually when parentCollection === collection it means that the parent and child
+     * are working with the SAME document.  So you currently need to use the linkToParent/linkFromParent
+     * properties on the component in this case.
+     */
+    if (parentCollection === collection) return;
+
+    // first try to find a link from the child to the parent
+
+    let paths: { [pathName: string]: Tyr.FieldInstance<any> } =
+      collection.paths;
+    for (const pathName in paths) {
+      const field = paths[pathName];
+
+      if (field.link === parentCollection) {
+        this.linkToParent = field;
+        return;
+      }
+    }
+
+    // next try to find a link from the parent to the child
+
+    paths = parentCollection.paths;
+    for (const pathName in paths) {
+      const field = paths[pathName];
+
+      if (field.link === collection) {
+        this.linkFromParent = field;
+        return;
+      }
+    }
   }
 
   _parentDocument?: Tyr.Document<any>;
 
   /**
-   * Note that this is *not* usually the same as "this.parent.document".  For example,
+   * Note that this is NOT usually the same as "this.parent.document".  For example,
    * if the parent component is a Table, this.parent.document will be undefined,
    * this.parent.documents will have the list of documents and this.parentDocument
    * will be the selected parent document.
