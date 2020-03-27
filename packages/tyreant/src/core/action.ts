@@ -11,6 +11,10 @@ export type ActionSet<D extends Tyr.Document> =
 export interface TyrActionFnOpts<D extends Tyr.Document> {
   self: TyrComponent<D>;
 
+  /**
+   * For example, for an edit action defined on a form which is invoked by a table,
+   * the "self" will be the form while the "caller" will be the table.
+   */
   caller: TyrComponent<D>;
 
   /**
