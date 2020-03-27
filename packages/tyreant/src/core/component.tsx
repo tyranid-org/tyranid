@@ -6,7 +6,7 @@ import { observer } from 'mobx-react';
 import { Tyr } from 'tyranid/client';
 
 import { Filter } from './filter';
-import { TyrAction, TyrActionFnOpts, TyrActionOpts } from './action';
+import { TyrAction, TyrActionFnOpts, TyrActionOpts, ActionSet } from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
 import { TyrModal } from './modal';
@@ -22,7 +22,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   collection?: Tyr.CollectionInstance<D>;
   paths?: TyrPathLaxProps[];
   decorator?: React.ReactElement;
-  actions?: (TyrAction<D> | TyrActionOpts<D>)[];
+  actions?: ActionSet<D>;
   aux?: { [key: string]: Tyr.FieldDefinition<D> };
   parent?: TyrComponent;
 }
@@ -201,7 +201,8 @@ export class TyrComponent<
         'could not determine collection for Tyr.Component'
       );
 
-    const actions = (props.actions || []).map(TyrAction.get);
+    const actions = TyrAction.parse(props.actions as ActionSet<D>);
+
     const { linkToParent } = this;
 
     //

@@ -2,6 +2,10 @@ import { Tyr } from 'tyranid/client';
 
 import { TyrComponent } from './component';
 
+export type ActionSet<D extends Tyr.Document> =
+  | { [actionName: string]: TyrAction<D> | Omit<TyrActionOpts<D>, 'name'> }
+  | (TyrAction<D> | TyrActionOpts<D>)[];
+
 export interface TyrActionFnOpts<D extends Tyr.Document> {
   self: TyrComponent<D>;
 
@@ -51,6 +55,29 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return action instanceof TyrAction
       ? action
       : new TyrAction<D>(action as any);
+  }
+
+  static parse<D extends Tyr.Document = Tyr.Document>(
+    obj: ActionSet<D>
+  ): TyrAction<D>[] {
+    if (!obj) {
+      return [];
+    } else if (Array.isArray(obj)) {
+      return obj.map(TyrAction.get);
+    } else {
+      const actions = new Array<TyrAction<D>>(5);
+
+      for (const name in obj) {
+        actions.push(
+          new TyrAction<D>({
+            ...obj[name],
+            name
+          })
+        );
+      }
+
+      return actions;
+    }
   }
 
   traits: TyrActionTrait[];
