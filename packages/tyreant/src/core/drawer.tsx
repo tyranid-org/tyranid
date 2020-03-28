@@ -45,7 +45,7 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
       this.create = action.decorate({
         action: () => this.openDrawer()
       });
-    } else if (action.is('edit')) {
+    } else if (action.is('edit', 'view')) {
       const edit = action.decorate({
         action: () => this.openDrawer()
       });

@@ -7,7 +7,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
   {
     actions: [
       {
-        traits: ['edit'],
+        traits: ['view'],
         input: 0,
         name: 'import',
         action: ({ caller, self }) => {

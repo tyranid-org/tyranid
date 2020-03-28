@@ -44,7 +44,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
         action: opts => this.openModal(opts)
       });
       this.setState({});
-    } else if (action.is('edit')) {
+    } else if (action.is('edit', 'view')) {
       const edit = action.decorate({
         action: opts => this.openModal(opts)
       });

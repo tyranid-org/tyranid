@@ -6,7 +6,13 @@ import { observer } from 'mobx-react';
 import { Tyr } from 'tyranid/client';
 
 import { Filter } from './filter';
-import { TyrAction, TyrActionFnOpts, TyrActionOpts, ActionSet } from './action';
+import {
+  TyrAction,
+  TyrActionFnOpts,
+  TyrActionOpts,
+  ActionSet,
+  TyrActionTrait
+} from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
 import { TyrModal } from './modal';
@@ -197,122 +203,104 @@ export class TyrComponent<
     const parentLink = linkToParent || linkFromParent;
 
     //
-    // Manually Added Actions
+    // Set up Actions
     //
 
-    let manuallyDefinedSaveAction = false;
-    let manuallyDefinedCancelAction = false;
+    const enacted = (trait: TyrActionTrait) => actions.some(a => a.is(trait));
 
-    const manuallyAddedActions = actions.length > 0;
-    for (const action of actions) {
-      // TODO:  clone action if component is already defined?  (note: check if TyrAction.get() above created it)
+    const enactUp = (_action: TyrActionOpts<D>) => {
+      // TODO:  clone action if self is already defined?
+      const action = TyrAction.get(_action) as TyrAction<D>;
       action.self = this;
-      const actFn = action.action;
 
-      if (!actFn && action.is('edit')) {
-        action.action = async opts => {
-          if (action.input === '*' || action.input === '0..*') {
-            const { documents } = opts;
-            if (documents) this.documents = documents;
+      let actFn = action.action;
 
-            if (opts.document) await this.find(opts.document);
+      if (!actFn) {
+        if (action.is('edit', 'view')) {
+          if (this.canMultiple && parentLink) {
+            actFn = opts => {
+              opts.self._parentDocument = opts.document;
+              opts.self.requery();
+            };
+          } else if (action.input === '*' || action.input === '0..*') {
+            actFn = async opts => {
+              const { documents } = opts;
+              if (documents) this.documents = documents;
 
-            if (this.canEdit && !this.document) {
-              this.document = new collection({});
-            }
+              if (opts.document) await this.find(opts.document);
+
+              if (this.canEdit && !this.document) {
+                this.document = new collection({});
+              }
+            };
           } else {
-            await this.find(opts.document!);
-
-            if (!this.document) this.document = this.createDocument(opts);
+            actFn = async opts => {
+              await this.find(opts.document!);
+              if (!this.document) this.document = this.createDocument(opts);
+            };
           }
-        };
-      } else if (actFn && action.is('save')) {
-        manuallyDefinedSaveAction = true;
+        } else if (action.is('create')) {
+          actFn = opts => {
+            this.document = this.createDocument(opts);
+          };
+        } else if (action.is('cancel')) {
+          actFn = () => {};
+        } else if (action.is('save')) {
+          actFn = () => this.submit();
+        }
+
+        action.action = actFn;
+      }
+
+      if (action.is('save')) {
+        // is this needed?
         action.action = opts => {
-          actFn({ ...opts, document: this.document });
+          actFn!({ ...opts, document: this.document });
         };
-      } else if (actFn && action.is('cancel')) {
-        manuallyDefinedCancelAction = true;
       }
 
-      // TODO:  how do we know whether to enact locally or up ?  this check surely isn't right
-      if (action.traits?.length) {
-        this.enactUp(action);
-      } else {
-        this.enact(action);
-      }
-    }
-
-    //
-    // Automatically-Added Actions
-    //
-
-    const addingSave = this.canEdit && !manuallyAddedActions;
-
-    const enactUp = (action: TyrActionOpts<D>) => {
-      const { traits } = action;
-      action.self = this;
-
-      const trait = traits?.[0];
-      if (!trait || !actions.find(action => action.is(trait))) {
-        action = TyrAction.get(action) as TyrAction<D>;
-        actions.push(action as TyrAction<D>);
-        this.enactUp(action);
-      }
+      // TODO:  do we ever want to enact() locally on this component or always up?
+      //        (save/cancel need to be enacted up so that the decorator sees it)
+      this.enactUp(action);
     };
 
-    if (!manuallyDefinedCancelAction) {
-      enactUp({
-        traits: ['cancel'],
-        name: manuallyDefinedSaveAction || addingSave ? 'cancel' : 'close',
-        action: opts => {}
-      });
-    }
+    // Manual Actions
 
-    if (this.canEdit && !parentLink && !manuallyAddedActions) {
+    for (const action of actions) enactUp(action);
+
+    // Automatic Actions
+
+    if (this.canEdit && !parentLink && !enacted('create') && !enacted('view')) {
       enactUp({
         traits: ['create'],
         name: 'create',
-        label: 'Create ' + collection.label,
-        action: opts => {
-          this.document = this.createDocument(opts);
-        }
+        label: 'Create ' + collection.label
       });
     }
 
-    if (!this.canMultiple) {
-      const name = parentLink ? collection.label : 'edit';
-      const title = 'Edit ' + collection.label;
-
+    if (!enacted('view') && !enacted('edit')) {
       enactUp({
+        name: parentLink ? collection.label : 'edit',
         traits: ['edit'],
-        name,
-        title,
-        action: async opts => {
-          await this.find(opts.document!);
-          if (!this.document) this.document = this.createDocument(opts);
-        }
+        title: !this.canMultiple
+          ? 'Edit ' + collection.label
+          : Tyr.pluralize(collection.label)
       });
-    } else if (parentLink) {
-      const name = collection.label;
+    }
 
+    const addingSave = this.canEdit && !enacted('view');
+
+    if (!enacted('cancel')) {
       enactUp({
-        traits: ['edit'],
-        input: 1,
-        name,
-        label: Tyr.pluralize(collection.label),
-        action: opts => {
-          opts.self._parentDocument = opts.document;
-          opts.self.requery();
-        }
+        traits: ['cancel'],
+        name: enacted('save') || addingSave ? 'cancel' : 'close'
       });
     }
 
     if (addingSave) {
       enactUp({
         traits: ['save'],
-        name: 'save',
-        action: () => this.submit()
+        name: 'save'
       });
     }
   }

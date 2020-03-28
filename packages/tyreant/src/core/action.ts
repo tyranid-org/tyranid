@@ -53,7 +53,7 @@ export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
   }
 }
 
-export type TyrActionTrait = 'create' | 'edit' | 'save' | 'cancel';
+export type TyrActionTrait = 'create' | 'edit' | 'view' | 'save' | 'cancel';
 
 export type Cardinality = 0 | 1 | '0..*' | '*';
 
@@ -162,8 +162,11 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.hide = hide;
   }
 
-  is(trait: TyrActionTrait) {
-    return this.traits.indexOf(trait) >= 0;
+  is(...traits: TyrActionTrait[]) {
+    for (const trait of traits) {
+      if (this.traits.indexOf(trait) >= 0) return true;
+    }
+    return false;
   }
 
   isHidden(document?: D) {
