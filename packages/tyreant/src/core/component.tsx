@@ -199,7 +199,7 @@ export class TyrComponent<
 
     const actions = TyrAction.parse(props.actions as ActionSet<D>);
 
-    const { linkToParent, linkFromParent } = this;
+    const { parent, linkToParent, linkFromParent } = this;
     const parentLink = linkToParent || linkFromParent;
 
     //
