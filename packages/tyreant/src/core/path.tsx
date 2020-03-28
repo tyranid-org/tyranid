@@ -19,6 +19,7 @@ import {
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
+import { ColProps } from 'antd/lib/col';
 
 const FormItem = Form.Item;
 
@@ -141,6 +142,8 @@ export interface TyrPathProps {
   labelInValue?: boolean;
   linkLabels?: { $id: any; $label: string }[];
   manuallySortedLabels?: boolean;
+  labelCol?: ColProps;
+  wrapperCol?: ColProps;
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
@@ -170,7 +173,7 @@ export const decorateField = (
   props: TyrTypeProps,
   component: () => React.ReactElement
 ) => {
-  const { path, document } = props;
+  const { path, document, labelCol, wrapperCol } = props;
   const field = path?.tail;
 
   if (props.hideOnCreate && document?.$isNew) {
@@ -199,6 +202,8 @@ export const decorateField = (
   return (
     <FormItem
       key={path!.name}
+      {...(labelCol && { labelCol })}
+      {...(wrapperCol && { wrapperCol })}
       name={path!.identifier}
       className={className('tyr-' + name, props)}
       label={label}
