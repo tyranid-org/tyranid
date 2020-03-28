@@ -572,7 +572,7 @@ Object.defineProperty(NamePath.prototype, 'identifier', {
 NamePath.prototype.projectify = function(projection) {
   const { detail, spath } = this;
 
-  if (this.db) projection[spath] = 1;
+  if (detail.db) projection[spath] = 1;
 
   // note:  we query a computed values dependents even if the computation is stored in the database
   //        in case we might want to dynamically recalculate the value.  there might be some cases
