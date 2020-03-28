@@ -261,7 +261,8 @@ export class TyrComponent<
 
       // TODO:  do we ever want to enact() locally on this component or always up?
       //        (save/cancel need to be enacted up so that the decorator sees it)
-      this.enactUp(action);
+      if (action.traits?.length) this.enactUp(action);
+      else this.enact(action); // i.e. traitless table actions
     };
 
     // Manual Actions
