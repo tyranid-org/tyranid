@@ -208,32 +208,34 @@ export function addField({
 
           const { link } = field;
 
-          if (proj === 1) {
-            out += pad(
-              `${names.identifier(pathName)}${field.def.required ? '' : '?'}: ${
-                link ? names.idType(link) : field.type.def.typescript || 'any'
-              };\n`,
-              indent - 1
-            );
-          } else if (typeof proj !== 'object' || Array.isArray(proj)) {
+          if (proj !== 1 && (typeof proj !== 'object' || Array.isArray(proj))) {
             throw new Error(
               `Path "${pathName} has an invalid denormal projection: ${JSON.stringify(
                 proj
               )}`
             );
           } else {
-            if (!link)
-              throw new Error(
-                `Path "${pathName}" in a denormal is not a link but contains a nested projection.`
-              );
             out += pad(
-              `${names.identifier(pathName)}${
-                field.def.required ? '' : '?'
-              }: {\n`,
+              `${names.identifier(pathName)}${field.def.required ? '' : '?'}: ${
+                link ? names.idType(link) : field.type.def.typescript || 'any'
+              };\n`,
               indent - 1
             );
-            addDenoCollection(link, proj, indent + 1);
-            out += pad('}\n', indent - 1);
+
+            if (proj !== 1) {
+              if (!link)
+                throw new Error(
+                  `Path "${pathName}" in a denormal is not a link but contains a nested projection.`
+                );
+              out += pad(
+                `${names.identifier(
+                  Tyr.NamePath.populateNameFor(pathName, true)
+                )}${field.def.required ? '' : '?'}: {\n`,
+                indent - 1
+              );
+              addDenoCollection(link, proj, indent + 1);
+              out += pad('}\n', indent - 1);
+            }
           }
         }
       };
