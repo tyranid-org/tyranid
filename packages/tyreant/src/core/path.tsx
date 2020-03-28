@@ -20,6 +20,7 @@ import {
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
 import { ColProps } from 'antd/lib/col';
+import { FormItemProps } from 'antd/lib/form';
 
 const FormItem = Form.Item;
 
@@ -48,7 +49,19 @@ export function defaultPathsProp(collection: Tyr.CollectionInstance) {
 
 export type TyrSortDirection = 'ascend' | 'descend';
 
-export interface TyrPathProps {
+export interface TyrPathProps
+  extends Pick<
+    FormItemProps,
+    | 'labelCol'
+    | 'wrapperCol'
+    | 'labelAlign'
+    | 'colon'
+    | 'help'
+    | 'hasFeedback'
+    | 'htmlFor'
+    | 'noStyle'
+    | 'dependencies'
+  > {
   path?: Tyr.NamePathInstance;
   searchPath?: Tyr.NamePathInstance;
   getSearchIds?: (val: any) => any[];
@@ -142,8 +155,6 @@ export interface TyrPathProps {
   labelInValue?: boolean;
   linkLabels?: { $id: any; $label: string }[];
   manuallySortedLabels?: boolean;
-  labelCol?: ColProps;
-  wrapperCol?: ColProps;
   minimum?: number;
   maximum?: number;
   validator?: (
@@ -151,6 +162,7 @@ export interface TyrPathProps {
     value: any,
     callback: (error?: string) => void
   ) => Promise<void> | void;
+  asSwitch?: boolean;
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
@@ -180,7 +192,19 @@ export const decorateField = (
   props: TyrTypeProps,
   component: () => React.ReactElement
 ) => {
-  const { path, document, labelCol, wrapperCol } = props;
+  const {
+    path,
+    document,
+    labelCol,
+    wrapperCol,
+    labelAlign,
+    help,
+    htmlFor,
+    hasFeedback,
+    colon,
+    noStyle,
+    dependencies
+  } = props;
   const field = path?.tail;
 
   if (props.hideOnCreate && document?.$isNew) {
@@ -211,6 +235,13 @@ export const decorateField = (
       key={path!.name}
       {...(labelCol && { labelCol })}
       {...(wrapperCol && { wrapperCol })}
+      {...(labelAlign && { labelAlign })}
+      {...(help && { help })}
+      {...(htmlFor && { htmlFor })}
+      {...(colon !== undefined && { colon })}
+      {...(hasFeedback !== undefined && { hasFeedback })}
+      {...(noStyle && { noStyle })}
+      {...(dependencies && { dependencies })}
       name={path!.identifier}
       className={className('tyr-' + name, props)}
       label={label}

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
-import { Checkbox } from 'antd';
+import { Checkbox, Switch } from 'antd';
 import { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 import { Tyr } from 'tyranid/client';
@@ -17,11 +17,18 @@ export const TyrBooleanBase: React.FunctionComponent<TyrTypeProps> = props => {
 
   return decorateField('boolean', props, () => {
     const onTypeChangeFunc = (ev: any) => {
-      onTypeChange(props, ev.target.value, ev);
-      props.onChange && props.onChange(ev.target.value, ev, props);
+      const value = typeof ev !== 'boolean' ? ev.target.value : ev;
+      onTypeChange(props, value, ev);
+      props.onChange && props.onChange(value, ev, props);
     };
 
-    return (
+    return props.asSwitch ? (
+      <Switch
+        // autoComplete="off"
+        autoFocus={props.autoFocus}
+        onChange={onTypeChangeFunc}
+      />
+    ) : (
       <Checkbox
         // autoComplete="off"
         autoFocus={props.autoFocus}

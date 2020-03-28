@@ -6,7 +6,7 @@ import { Tyr } from 'tyranid/client';
 
 import { Form, Row, Col, message } from 'antd';
 import { FormInstance } from 'antd/lib/form';
-import { FormLayout, useForm } from 'antd/lib/form/Form';
+import { FormLayout, useForm, FormProps } from 'antd/lib/form/Form';
 
 import { TypeContext, useThemeProps } from '../core/theme';
 import { TyrThemedFieldBase, TyrPathExistsProps } from './path';
@@ -46,7 +46,8 @@ export interface TyrFormFields {
 }
 
 export interface TyrFormProps<D extends Tyr.Document>
-  extends TyrOneComponentProps<D> {
+  extends TyrOneComponentProps<D>,
+    Pick<FormProps, 'labelAlign' | 'labelCol' | 'wrapperCol'> {
   form?: FormInstance;
   className?: string;
   layout?: FormLayout;
@@ -80,7 +81,14 @@ export class TyrFormBase<
 
   render() {
     const { document } = this;
-    const { className, children, render } = this.props;
+    const {
+      className,
+      children,
+      render,
+      labelCol,
+      wrapperCol,
+      labelAlign
+    } = this.props;
     const paths = this.activePaths;
 
     return this.wrap(() => (
@@ -88,6 +96,9 @@ export class TyrFormBase<
         form={this.form}
         layout={this.props.layout || 'vertical'}
         className={'tyr-form' + (className ? ' ' + className : '')}
+        {...(labelCol && { labelCol })}
+        {...(wrapperCol && { wrapperCol })}
+        {...(labelAlign && { labelAlign })}
       >
         <TypeContext.Provider
           value={{
