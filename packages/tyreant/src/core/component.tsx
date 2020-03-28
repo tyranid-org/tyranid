@@ -253,9 +253,11 @@ export class TyrComponent<
       }
 
       if (action.is('save')) {
-        // is this needed?
         action.action = opts => {
-          actFn!({ ...opts, document: this.document });
+          // we assign to the existing opts here rather than create a new opts because
+          // we are given a TyrActionFnOptsWrapper
+          opts.document = this.document;
+          return actFn!(opts);
         };
       }
 
@@ -351,7 +353,7 @@ export class TyrComponent<
     }
   }
 
-  submit() {
+  async submit(): Promise<boolean> {
     throw new Error('submit() not defined');
   }
 

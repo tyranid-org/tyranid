@@ -141,9 +141,10 @@ export class TyrFormBase<
     ));
   }
 
-  async submit() {
-    await submitForm(this, this.document!);
-    this.parent?.requery();
+  async submit(): Promise<boolean> {
+    const result = await submitForm(this, this.document!);
+    if (result) this.parent?.requery();
+    return result;
   }
 }
 

@@ -54,9 +54,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
       if (parent) parent.enact(edit as any);
     } else if (action.is('save')) {
       this.save = action.decorate({
-        action: () => {
-          this.closeModal();
-        }
+        action: () => this.closeModal()
       });
     } else if (action.is('cancel')) {
       this.cancel = action.decorate({
