@@ -348,5 +348,15 @@ export function add() {
 
       expect(np.get(user)).to.eql(3);
     });
+
+    it('should support projectify', () => {
+      const projection = {};
+      User.fields.fullName.namePath.projectify(projection);
+      expect(projection).to.eql({
+        name: 1,
+        'name.first': 1,
+        'name.last': 1
+      });
+    });
   });
 }

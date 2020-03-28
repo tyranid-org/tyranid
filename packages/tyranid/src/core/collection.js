@@ -698,7 +698,7 @@ export default class Collection {
     let sort;
     if (this.fields.order) {
       sort = { order: 1 };
-    } else if (!lf.def.get || lf.isDb()) {
+    } else if (!lf.def.get || lf.db) {
       sort = { [lf.spath]: 1 };
     }
 
@@ -1827,15 +1827,15 @@ export default class Collection {
         let { db, aux } = fieldDef;
         if (db !== undefined) {
           if (aux !== undefined) {
-            if (aux === db)
+            if (aux && db)
               throw compiler.err(
                 path,
-                `Invalid field definition, db and aux are mutually exclusived`
+                `Invalid field definition, db and aux cannot both be set`
               );
           }
-
-          if (!db) fieldDef.aux = aux = true;
+          // db false does not imply aux true (i.e. computed values)
         } else if (aux) {
+          // aux true implies db false
           fieldDef.db = db = false;
         }
 

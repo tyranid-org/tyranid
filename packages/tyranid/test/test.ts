@@ -1042,6 +1042,15 @@ describe('tyranid', () => {
           expect(doc!.value.isbn).to.be.eql(BookIsbn);
         });
       });
+
+      it('should support label projections', async () => {
+        expect(User.labelProjection()).to.eql({
+          fullName: 1,
+          name: 1,
+          'name.first': 1,
+          'name.last': 1
+        });
+      });
     });
 
     describe('fields', () => {
