@@ -144,6 +144,13 @@ export interface TyrPathProps {
   manuallySortedLabels?: boolean;
   labelCol?: ColProps;
   wrapperCol?: ColProps;
+  minimum?: number;
+  maximum?: number;
+  validator?: (
+    rule: any,
+    value: any,
+    callback: (error?: string) => void
+  ) => Promise<void> | void;
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {

@@ -38,6 +38,14 @@ export function generateRules(props: TyrTypeProps): Rule[] {
       });
     }
 
+    if (props.validator) {
+      const rule: Rule = {
+        validator: props.validator
+      };
+
+      rules.push(rule);
+    }
+
     if (field.def.validate) {
       const rule: Rule = {
         validator: (rule, value, callback) => {
