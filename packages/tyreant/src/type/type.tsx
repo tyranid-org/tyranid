@@ -20,27 +20,37 @@ export const className = (className: string, props: TyrTypeProps) => {
 export function generateRules(props: TyrTypeProps): Rule[] {
   const rules: Rule[] = [];
   const { path } = props;
+
   if (path) {
+    const {
+      label,
+      required,
+      requiredMessage,
+      max,
+      maxMessage,
+      validator
+    } = props;
+
     const { tail: field } = path;
-    if (props.max !== undefined) {
+    if (max !== undefined) {
       rules.push({
-        max: props.max,
-        message: `The ${props.label || field.label} must be ${
-          props.max
-        } characters or less.`
+        max,
+        message:
+          maxMessage ||
+          `The ${label || field.label} must be ${max} characters or less.`
       });
     }
 
-    if (props.required || field.def.required) {
+    if (required || field.def.required) {
       rules.push({
         required: true,
-        message: `${props.label || field.label} is required.`
+        message: requiredMessage || `${label || field.label} is required.`
       });
     }
 
-    if (props.validator) {
+    if (validator) {
       const rule: Rule = {
-        validator: props.validator
+        validator
       };
 
       rules.push(rule);

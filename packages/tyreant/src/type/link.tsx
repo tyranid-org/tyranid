@@ -286,7 +286,8 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       className: this.props.className,
       dropdownClassName: this.props.dropdownClassName,
       filterOption: false,
-      loading: !!initialLoading
+      loading: !!initialLoading,
+      allowClear: this.props.allowClear
     };
 
     const onTypeChangeFunc = (ev: any) => {

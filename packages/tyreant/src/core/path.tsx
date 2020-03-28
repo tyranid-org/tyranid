@@ -163,6 +163,9 @@ export interface TyrPathProps
     callback: (error?: string) => void
   ) => Promise<void> | void;
   asSwitch?: boolean;
+  allowClear?: boolean;
+  maxMessage?: string;
+  requiredMessage?: string;
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
