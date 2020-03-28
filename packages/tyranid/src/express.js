@@ -85,11 +85,13 @@ class Serializer {
     }
 
     for (const fieldName of [
+      'aux',
       'cardinality',
-      'computed',
       'custom',
+      'db',
       'defaultValue',
       'denormal',
+      'generated',
       'granularity',
       'group',
       'help',
@@ -140,11 +142,6 @@ class Serializer {
     if (get) {
       this.newline();
       this.file += this.k('get') + ': ' + es5Fn(get) + ',';
-    }
-
-    if (def.db) {
-      this.newline();
-      this.file += this.k('db') + ': ' + def.db + ',';
     }
 
     var set = def.setClient || def.set;
@@ -671,19 +668,33 @@ export function generateClientLibrary() {
   Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
 
   Field.prototype.format = ${es5Fn(Field.prototype.format)};
-  Field.prototype.isAux = ${es5Fn(Field.prototype.isAux)};
-  Field.prototype.isDb = ${es5Fn(Field.prototype.isDb)};
 
   Object.defineProperties(Field.prototype, {
+    aux: {
+      get() {
+        return this.def.aux === true;
+      }
+    },
+
     computed: {
       get() {
-        const def = this.def;
-        return this.name === '_id' || def.computed || (!!def.get && !def.set);
+        const { def } = this;
+        return !!def.get && !def.set;
+      },
+    },
+
+    generated: {
+      get() {
+        const { def } = this;
+        return this.name === '_id' || def.generated || (!!def.get && !def.set);
       },
     },
 
     db: {
-      get() { return this.def.db !== false; }
+      get() { 
+        const { def } = this;
+        return this.computed ? def.db === true : def.db !== false;
+      }
     },
 
     label: {
@@ -706,7 +717,7 @@ export function generateClientLibrary() {
 
     readonly: {
       get() {
-        return this.def.readonly || this.computed;
+        return this.def.readonly || this.generated;
       },
     }
 
@@ -1453,9 +1464,8 @@ export function generateClientLibrary() {
         if (fields.hasOwnProperty(fName)) {
           const f = fields[fName];
           const fd = f.def;
-          // skip past read-only/computed properties
 
-          if (!fd.get || fd.set) {
+          if (!f.readonly && !f.computed) {
             const n = f.name,
                   v = doc[n];
             if (v !== undefined) {

@@ -38,7 +38,7 @@ const LinkType = new Type({
       const fn = linkField.type.def.fromClient;
       return fn ? fn(linkField, value) : value;
     } catch (err) {
-      if (_.isString(value) && !link.isDb() && link.labelField) {
+      if (_.isString(value) && !link.db && link.labelField) {
         // integer and ObjectId parse errors
         if (err.toString().match(/Invalid integer|24 hex/)) {
           const v = link.byLabel(value);

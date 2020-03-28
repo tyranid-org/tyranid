@@ -266,7 +266,7 @@ declare module 'tyranid/client' {
 
       granularity?: string;
 
-      computed?: boolean;
+      generated?: boolean;
       get?(this: D): any;
       getClient?(this: D): any;
       getServer?(this: D): any;
@@ -285,7 +285,9 @@ declare module 'tyranid/client' {
       $metaType: 'field';
 
       collection: CollectionInstance<D>;
+      aux: boolean;
       computed: boolean;
+      generated: boolean;
       db: boolean;
       def: FieldDefinition<D>;
       dynamicSchema?: any;
@@ -309,8 +311,6 @@ declare module 'tyranid/client' {
       format(value: any): string;
       labelify(value: any): Promise<any>;
       labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
-      isAux(): boolean;
-      isDb(): boolean;
       validate(obj: {}):
         | Promise<string | false | undefined>
         | string

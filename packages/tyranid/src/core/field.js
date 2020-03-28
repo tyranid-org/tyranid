@@ -18,17 +18,30 @@ export default class Field {
 
   $metaType = 'field';
 
+  get aux() {
+    return this.def.aux === true;
+  }
+
   get computed() {
+    const def = this.def;
+    return !!(def.get || def.getServer) && !(def.set || def.setServer);
+  }
+
+  get db() {
+    return this.computed ? this.def.db === true : this.def.db !== false;
+  }
+
+  get generated() {
     const def = this.def;
     return (
       this.name === '_id' /* this is only usually true ... */ ||
-      def.computed ||
+      def.generated ||
       (!!(def.get || def.getServer) && !(def.set || def.setServer))
     );
   }
 
   get readonly() {
-    return this.def.readonly || this.computed;
+    return this.def.readonly || this.generated;
   }
 
   fromClient(value) {
@@ -110,20 +123,6 @@ export default class Field {
 
   get spath() {
     return this.namePath.spath;
-  }
-
-  get db() {
-    return this.def.db !== false;
-  }
-
-  /** @isopmorphic */
-  isAux() {
-    return !this.isDb();
-  }
-
-  /** @isopmorphic */
-  isDb() {
-    return this.def.db !== false;
   }
 
   isMethod() {

@@ -32,6 +32,10 @@ export namespace Tyr {
     [key: string]: any;
   }
 
+  export interface MongoProjection {
+    [key: string]: number;
+  }
+
   export interface Class<T> {
     new (...args: any[]): T;
   }
@@ -254,6 +258,7 @@ export namespace Tyr {
 
     parsePath(path: string): NamePathInstance;
     pathName(idx: number): string;
+    projectify(projection: MongoProjection): void;
     uniq(obj: any): any[];
     get(obj: any): any;
     set(

@@ -61,7 +61,7 @@ Tyr.projectify = function(value) {
 
   if (Array.isArray(value)) {
     for (const path of value) {
-      projection[path.spath] = 1;
+      path.projectify(projection);
     }
   } else {
     for (const name in value) projection[name] = 1;

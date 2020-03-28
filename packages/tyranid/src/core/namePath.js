@@ -569,6 +569,32 @@ Object.defineProperty(NamePath.prototype, 'identifier', {
   }
 });
 
+NamePath.prototype.projectify = function(projection) {
+  const { detail, spath } = this;
+
+  if (this.db) projection[spath] = 1;
+
+  // note:  we query a computed values dependents even if the computation is stored in the database
+  //        in case we might want to dynamically recalculate the value.  there might be some cases
+  //        where we don't want to do this
+  //if (!this.db) {
+  const getFn = detail.def.get;
+  if (getFn) {
+    let proj = detail._projection;
+    if (!proj) {
+      proj = detail._projection = {};
+
+      const paths = Tyr.functions.paths(getFn);
+      for (const path of paths) {
+        proj[path] = 1;
+      }
+    }
+
+    Object.assign(projection, proj);
+  }
+  //}
+};
+
 NamePath.taggedTemplateLiteral = function(strings, ...keys) {
   if (keys.length) {
     let s = '',

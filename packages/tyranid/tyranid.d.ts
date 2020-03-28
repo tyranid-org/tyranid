@@ -22,11 +22,11 @@ import { stream } from 'exceljs';
  */
 
 /**
- * Minor shorthand for declaring a computed property in a field definition.
+ * Minor shorthand for declaring a generated property in a field definition.
  *
- * i.e. "..., computed, ..." instead of "..., computed: true, ..."
+ * i.e. "..., generated, ..." instead of "..., generated: true, ..."
  */
-export const computed = true;
+export const generated = true;
 
 /**
  * Minor shorthand for declaring a readonly property in a field definition.
@@ -1083,7 +1083,7 @@ export namespace Tyr {
 
     granularity?: string;
 
-    computed?: boolean;
+    generated?: boolean;
     get?(this: D): any;
     getClient?(this: D): any;
     getServer?(this: D): any;
@@ -1101,11 +1101,13 @@ export namespace Tyr {
   > {
     $metaType: 'field';
 
+    aux: boolean;
     collection: CollectionInstance<D>;
     computed: boolean;
     db: boolean;
     def: FieldDefinition<D>;
     dynamicSchema?: any;
+    generated: boolean;
     name: string;
     namePath: NamePathInstance;
     of?: FieldInstance<D>;
@@ -1126,8 +1128,6 @@ export namespace Tyr {
     format(value: any): string;
     labelify(value: any): Promise<any>;
     labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
-    isAux(): boolean;
-    isDb(): boolean;
     validate(obj: {}):
       | Promise<string | false | undefined>
       | string
