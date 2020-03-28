@@ -30,6 +30,8 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
         tabIndex={props.tabIndex}
         precision={0}
         step="1"
+        {...(props.minimum !== undefined && { min: props.minimum })}
+        {...(props.maximum !== undefined && { max: props.maximum })}
       />
     );
   });

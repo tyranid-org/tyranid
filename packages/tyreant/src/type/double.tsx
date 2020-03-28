@@ -34,6 +34,8 @@ export const TyrDoubleBase = ((props: TyrTypeProps) => {
         placeholder={props.placeholder}
         tabIndex={props.tabIndex}
         step={0.1}
+        {...(props.minimum !== undefined && { min: props.minimum })}
+        {...(props.maximum !== undefined && { max: props.maximum })}
       />
     );
   });
