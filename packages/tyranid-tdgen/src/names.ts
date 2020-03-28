@@ -16,3 +16,4 @@ export const idType = (col: Tyr.CollectionInstance) => {
   if (idType.name === 'mongoid') return 'ObjIdType';
   return idType.def.typescript!;
 };
+export const identifier = (s: string) => (s.indexOf('.') >= 0 ? `'${s}'` : s);

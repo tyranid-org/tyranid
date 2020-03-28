@@ -172,6 +172,77 @@ export function addField({
     const linkIdType = names.idType(link);
 
     let out = isArray ? `${linkIdType}[]` : linkIdType;
+
+    // denormalized props
+    const { denormal } = def;
+    if (denormal) {
+      out += ';\n';
+
+      const denName = Tyr.NamePath.populateNameFor(name, true);
+
+      const addDenoCollection = (
+        dCol: Tyr.CollectionInstance,
+        denormal: any,
+        indent: number
+      ) => {
+        for (const pathName in denormal) {
+          const proj = denormal[pathName];
+          const { paths } = dCol;
+          let field = paths[pathName];
+
+          if (!field) {
+            for (const pn in paths) {
+              const f = paths[pn];
+
+              if (f.spath === pathName) {
+                field = f;
+                break;
+              }
+            }
+
+            if (!field)
+              throw new Error(
+                `Path "${pathName}" in a denormal does not exist on ${dCol.name}`
+              );
+          }
+
+          const { link } = field;
+
+          if (proj === 1) {
+            out += pad(
+              `${names.identifier(pathName)}${field.def.required ? '' : '?'}: ${
+                link ? names.idType(link) : field.type.def.typescript || 'any'
+              };\n`,
+              indent - 1
+            );
+          } else if (typeof proj !== 'object' || Array.isArray(proj)) {
+            throw new Error(
+              `Path "${pathName} has an invalid denormal projection: ${JSON.stringify(
+                proj
+              )}`
+            );
+          } else {
+            if (!link)
+              throw new Error(
+                `Path "${pathName}" in a denormal is not a link but contains a nested projection.`
+              );
+            out += pad(
+              `${names.identifier(pathName)}${
+                field.def.required ? '' : '?'
+              }: {\n`,
+              indent - 1
+            );
+            addDenoCollection(link, proj, indent + 1);
+            out += pad('}\n', indent - 1);
+          }
+        }
+      };
+
+      out += pad(`${denName}?: {\n`, indent - 1);
+      addDenoCollection(link, denormal, indent + 1);
+      out += pad('}', indent - 1);
+    }
+
     if (parent === 'array' || noPopulatedProperty) return out;
 
     // add populated prop too
