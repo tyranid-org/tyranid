@@ -166,6 +166,7 @@ export interface TyrPathProps
   allowClear?: boolean;
   maxMessage?: string;
   requiredMessage?: string;
+  validateTrigger?: string | string[] | false;
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
@@ -206,7 +207,8 @@ export const decorateField = (
     hasFeedback,
     colon,
     noStyle,
-    dependencies
+    dependencies,
+    validateTrigger
   } = props;
   const field = path?.tail;
 
@@ -245,6 +247,7 @@ export const decorateField = (
       {...(hasFeedback !== undefined && { hasFeedback })}
       {...(noStyle && { noStyle })}
       {...(dependencies && { dependencies })}
+      {...(validateTrigger !== undefined && { validateTrigger })}
       name={path!.identifier}
       className={className('tyr-' + name, props)}
       label={label}

@@ -610,6 +610,7 @@ export class TyrTableBase<
               dateFormat: column.dateFormat,
               linkLabels: column.linkLabels,
               max: column.max,
+              //ellipsis: true,
               label: column.label
             };
 
