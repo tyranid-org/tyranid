@@ -81,8 +81,72 @@ interface TableColumnPathProps {
 export type TyrTableColumnPathLaxProps = TableColumnPathProps & TyrPathLaxProps;
 export type TyrTableColumnPathProps = TableColumnPathProps & TyrPathProps;
 
+// TODO:  move to tyranid client-side api
+export function wrappedStringWidth(s: string) {
+  const { length } = s;
+
+  let longest = 0,
+    current = 0;
+
+  for (let i = 0; i < length; i++) {
+    const ch = s.charCodeAt(i);
+
+    if (ch < 33) {
+      if (current > longest) longest = current;
+      current = 0;
+    } else {
+      // this assumes average character width is 10 and a variable width font
+      switch (ch) {
+        // TODO:  improve this ... also note this won't work for i18n
+        //        probably need to use a browser render width thing but will need to cache it in that case
+        case 33: // !
+        case 39: // '
+        case 105: // i
+          current += 7;
+          break;
+        default:
+          current += 11;
+      }
+    }
+  }
+
+  return current > longest ? current : longest;
+}
+
+// TODO: move this to utils
+export function pathTitle(pathProps: TyrTableColumnPathProps) {
+  let l: any = pathProps.label;
+  if (!l) {
+    const { path } = pathProps;
+    if (!path) return '';
+
+    if (pathProps.group) {
+      l = path.tail.label;
+      if (l === 'Name') {
+        const { fields } = path;
+        const { length } = fields;
+        if (length > 1) l = fields[length - 2].label;
+      }
+    } else {
+      l = path.pathLabel;
+      if (l.endsWith(' Name')) l = l.substring(0, l.length - 5);
+    }
+  }
+
+  return l;
+}
+
 export function pathWidth(path: TyrPathProps) {
-  return path.width || path.path?.detail.width;
+  const width = path.width || path.path?.detail.width || 0;
+
+  const pt = pathTitle(path);
+  if (typeof pt === 'string') {
+    const titleWidth =
+        wrappedStringWidth(pt) + 40 /* padding + sort/filter icon */;
+    return titleWidth > width ? titleWidth : width;
+  } else {
+    return width;
+  }
 }
 
 export interface TyrTableProps<D extends Tyr.Document>
@@ -648,7 +712,7 @@ export class TyrTableBase<
         },
         sorter: sortingEnabled ? sorter : undefined,
         sortOrder: sortingEnabled ? sortDirection : undefined,
-        title: column.label || path?.pathLabel,
+        title: pathTitle(column),
         width: colWidth,
         className: netClassName,
         ellipsis: column.ellipsis,
