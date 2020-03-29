@@ -73,7 +73,7 @@ export class TyrFormBase<
     return (
       <TyrThemedFieldBase
         {...pathProps}
-        form={this.form}
+        form={this.props.form!}
         document={document!}
       />
     );
@@ -91,54 +91,58 @@ export class TyrFormBase<
     } = this.props;
     const paths = this.activePaths;
 
-    return this.wrap(() => (
-      <Form
-        form={this.form}
-        layout={this.props.layout || 'vertical'}
-        className={'tyr-form' + (className ? ' ' + className : '')}
-        {...(labelCol && { labelCol })}
-        {...(wrapperCol && { wrapperCol })}
-        {...(labelAlign && { labelAlign })}
-      >
-        <TypeContext.Provider
-          value={{
-            component: (this as unknown) as TyrComponent,
-            form: this.form,
-            document
-          }}
+    return this.wrap(() => {
+      return (
+        <Form
+          form={this.props.form!}
+          layout={this.props.layout || 'vertical'}
+          className={'tyr-form' + (className ? ' ' + className : '')}
+          {...(labelCol && { labelCol })}
+          {...(wrapperCol && { wrapperCol })}
+          {...(labelAlign && { labelAlign })}
         >
-          {render &&
-            document &&
-            render(
-              new FormRenderComponentPropsWrapper(
-                this,
-                document,
-                this.documents
-              ) as any
-            )}
-          {paths &&
-            !children &&
-            !render &&
-            (paths as TyrPathExistsProps[]).map(pathProps => {
-              const { path } = pathProps; // path might be a string
-              return (
-                <Row key={path.name || ((path as any) as string)} gutter={10}>
-                  <Col span={24}>{this.renderField(pathProps)} </Col>
-                </Row>
-              );
-            })}
-          {typeof children === 'function' && document
-            ? (children as (props: FormRenderComponentProps<D>) => JSX.Element)(
+          <TypeContext.Provider
+            value={{
+              component: (this as unknown) as TyrComponent,
+              form: this.props.form!,
+              document
+            }}
+          >
+            {render &&
+              document &&
+              render(
                 new FormRenderComponentPropsWrapper(
                   this,
                   document,
                   this.documents
                 ) as any
-              )
-            : children}
-        </TypeContext.Provider>
-      </Form>
-    ));
+              )}
+            {paths &&
+              !children &&
+              !render &&
+              (paths as TyrPathExistsProps[]).map(pathProps => {
+                const { path } = pathProps; // path might be a string
+                return (
+                  <Row key={path.name || ((path as any) as string)} gutter={10}>
+                    <Col span={24}>{this.renderField(pathProps)} </Col>
+                  </Row>
+                );
+              })}
+            {typeof children === 'function' && document
+              ? (children as (
+                  props: FormRenderComponentProps<D>
+                ) => JSX.Element)(
+                  new FormRenderComponentPropsWrapper(
+                    this,
+                    document,
+                    this.documents
+                  ) as any
+                )
+              : children}
+          </TypeContext.Provider>
+        </Form>
+      );
+    });
   }
 
   async submit(): Promise<boolean> {
@@ -179,7 +183,7 @@ export async function submitForm<D extends Tyr.Document>(
   const { form } = tyrForm;
 
   try {
-    /*const store = */ await form.validateFields(
+    /*const store = */ await form!.validateFields(
       tyrForm.activePaths
         .map(path => path.path?.name)
         .filter(s => s) as string[]

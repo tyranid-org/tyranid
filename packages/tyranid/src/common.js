@@ -289,17 +289,11 @@ export function evaluateClient(client, key, doc, value, opts, proj) {
 }
 
 export function toClient(col, doc, opts) {
-  if (!doc) {
-    return doc;
-  }
+  if (!doc) return doc;
 
-  if (Array.isArray(doc)) {
-    return doc.map(doc2 => toClient(col, doc2, opts));
-  }
+  if (Array.isArray(doc)) return doc.map(doc2 => toClient(col, doc2, opts));
 
-  if (doc.$access) {
-    doc.$redact();
-  }
+  if (doc.$access) doc.$redact();
 
   opts = processOptions(col, opts);
   const proj = extractProjection(opts);
@@ -310,9 +304,7 @@ export function toClient(col, doc, opts) {
   const obj = {};
 
   function projected(key) {
-    if (!proj) {
-      return key !== '_history' && key !== '$options';
-    }
+    if (!proj) return key !== '_history' && key !== '$options';
 
     const v = proj[key];
     return v === undefined ? key === '_id' : v;
@@ -322,9 +314,7 @@ export function toClient(col, doc, opts) {
   _.each(doc, (v, k) => {
     let field;
 
-    if (!projected(k)) {
-      return;
-    }
+    if (!projected(k)) return;
 
     if (fields && (field = fields[k])) {
       v = field.type.toClient(field, v, doc, opts, proj);

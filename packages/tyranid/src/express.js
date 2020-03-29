@@ -1893,7 +1893,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             if (rOpts.sort) opts.sort = rOpts.sort;
 
             const docs = await col.findAll(opts),
-              cDocs = col.toClient(docs);
+              cDocs = col.toClient(docs, opts);
 
             if (opts.count) {
               res.json({
@@ -2044,14 +2044,16 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   async id => await idField.type.fromClient(idField, id)
                 )
               ),
-              results = await col.findAll({
+              opts = {
                 query: { _id: { $in: ids } },
                 fields: { [col.labelField.path]: 1 },
                 auth: req.user,
                 user: req.user,
                 req
-              });
-            res.json(results.map(r => r.$toClient()));
+              },
+              results = await col.findAll(opts);
+
+            res.json(results.map(r => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
           }
@@ -2151,12 +2153,13 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (express.rest || express.get) {
         r.get(async (req, res) => {
           try {
-            const doc = await col.byId(req.params.id, {
+            const opts = {
               auth: req.user,
               user: req.user,
               req
-            });
-            if (doc) res.json(doc.$toClient());
+            };
+            const doc = await col.byId(req.params.id, opts);
+            if (doc) res.json(doc.$toClient(opts));
             else res.sendStatus(404);
           } catch (err) {
             handleException(res, err);
@@ -2202,19 +2205,20 @@ Collection.prototype.connect = function({ app, auth, http }) {
               .all(auth)
               .get(async (req, res) => {
                 try {
-                  const doc = await col.byId(req.params.id, {
+                  const opts = {
                     auth: req.user,
                     fields: {
                       [field.spath]: 1
                     },
                     user: req.user,
                     req
-                  });
+                  };
+                  const doc = await col.byId(req.params.id, opts);
                   if (!doc) return res.sendStatus(404);
 
                   doc.$slice(field.path, req.body);
 
-                  res.json(field.get(doc.$toClient()));
+                  res.json(field.get(doc.$toClient(opts)));
                 } catch (err) {
                   handleException(res, err);
                 }
@@ -2233,12 +2237,13 @@ Collection.prototype.connect = function({ app, auth, http }) {
       if (col.labelField && (express.rest || express.get || express.labels)) {
         r.get(async (req, res) => {
           try {
-            const results = await col.labels(req.params.search || '', {
+            const opts = {
               auth: req.user,
               user: req.user,
               req
-            });
-            res.json(results.map(r => r.$toClient()));
+            };
+            const results = await col.labels(req.params.search || '', opts);
+            res.json(results.map(r => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
           }
@@ -2262,15 +2267,20 @@ Collection.prototype.connect = function({ app, auth, http }) {
             let limit = 30;
             if (opts && opts.limit !== undefined) limit = opts.limit;
 
-            const results = await field.labels(doc, req.params.search || '', {
+            const opts = {
               auth: req.user,
               user: req.user,
               req,
               limit,
               sort: { [field.spath]: 1 }
-            });
+            };
+            const results = await field.labels(
+              doc,
+              req.params.search || '',
+              opts
+            );
 
-            res.json(results.map(r => r.$toClient()));
+            res.json(results.map(r => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
           }
