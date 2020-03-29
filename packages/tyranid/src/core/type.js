@@ -154,6 +154,10 @@ export default class Type {
 
     Type.byName[def.name] = type;
   }
+
+  get width() {
+    return this.def.width;
+  }
 }
 
 Type.byName = {};

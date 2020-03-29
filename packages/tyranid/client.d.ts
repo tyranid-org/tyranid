@@ -152,7 +152,9 @@ declare module 'tyranid/client' {
       options?: any // Options_FindById
     ): Promise<Document | null>;
     export function pluralize(str: string): string;
-    export function projectify(obj: object | NamePath[]): MongoProjection;
+    export function projectify(
+      obj: object | NamePathInstance[]
+    ): MongoProjection;
     export const reconnectSocket: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
     export function singularize(str: string): string;
@@ -273,6 +275,8 @@ declare module 'tyranid/client' {
       set?(this: D, val: any): void;
       setClient?(this: D, val: any): void;
       setServer?(this: D, val: any): void;
+
+      width?: number;
     }
 
     export interface FieldStatic {
@@ -316,6 +320,8 @@ declare module 'tyranid/client' {
         | string
         | false
         | undefined;
+
+      width?: number;
     }
 
     export type IdType<D extends Document> = D extends Document<infer ID>

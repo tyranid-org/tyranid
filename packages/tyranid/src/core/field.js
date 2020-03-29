@@ -161,6 +161,10 @@ export default class Field {
       if (reason) throw new UserError({ field: this, suffix: reason });
     }
   }
+
+  get width() {
+    return this.def.width || this.type.width;
+  }
 }
 
 Tyr.Field = Field;

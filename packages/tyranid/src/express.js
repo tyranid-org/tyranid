@@ -99,6 +99,7 @@ class Serializer {
       'if',
       'inverse',
       'keys',
+      'labelField',
       'min',
       'minlength',
       'max',
@@ -110,7 +111,7 @@ class Serializer {
       'relate',
       'required',
       'step',
-      'labelField'
+      'width'
     ]) {
       const v = def[fieldName];
       if (v !== undefined) {
@@ -619,6 +620,13 @@ export function generateClientLibrary() {
     this.name = name;
     Type.byName[name] = this;
   }
+  Object.defineProperties(Type.prototype, {
+    width: {
+      get() { return this.def.width; },
+      enumerable: false,
+      configurable: false
+    },
+  });
   Type.prototype.compare = ${es5Fn(Type.prototype.compare)};
   Type.prototype.format = ${es5Fn(Type.prototype.format)};
   Type.prototype.fromString = ${es5Fn(Type.prototype.fromString)};
@@ -650,6 +658,10 @@ export function generateClientLibrary() {
       if (def.format)
         file += `
         format: ${es5Fn(def.format)},`;
+
+      if (def.width)
+        file += `
+        width: ${def.width},`;
 
       file += `});\n`;
     }
@@ -714,17 +726,23 @@ export function generateClientLibrary() {
 
     pathLabel: {
       get: function() { return this._calcPathLabel(); },
-    }
+    },
 
     readonly: {
       get() {
         return this.def.readonly || this.generated;
       },
-    }
+    },
 
     relate: {
       get() {
         return this.def.relate;
+      },
+    },
+
+    width: {
+      get() {
+        return this.def.width || this.type.width;
       },
     }
   });

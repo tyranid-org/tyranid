@@ -115,6 +115,7 @@ export namespace Tyr {
   export interface TypeDefinition {
     name: string;
     typescript?: string;
+    width?: number;
   }
 
   export interface TypeInstance {
@@ -123,6 +124,7 @@ export namespace Tyr {
     create(field: FieldInstance): any;
     compare(field: FieldInstance, a: any, b: any): number;
     format(field: FieldInstance, value: any): string;
+    width?: number;
   }
 
   export interface FieldDefinition<
@@ -186,6 +188,8 @@ export namespace Tyr {
     set?: Function;
     setClient?: Function;
     setServer?: Function;
+
+    width?: number;
   }
 
   export interface FieldStatic {
@@ -218,6 +222,7 @@ export namespace Tyr {
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance<D> };
     method: string;
+    width?: number;
 
     format(value: any): string;
     labelify(value: any): Promise<any>;

@@ -10,7 +10,7 @@ export const Country = new Tyr.Collection({
   internal: true,
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string', labelField: true },
+    name: { is: 'string', labelField: true, width: 100 },
 
     code: {
       is: 'string',

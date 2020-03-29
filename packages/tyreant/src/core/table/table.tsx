@@ -81,6 +81,10 @@ interface TableColumnPathProps {
 export type TyrTableColumnPathLaxProps = TableColumnPathProps & TyrPathLaxProps;
 export type TyrTableColumnPathProps = TableColumnPathProps & TyrPathProps;
 
+export function pathWidth(path: TyrPathProps) {
+  return path.width || path.path?.detail.width;
+}
+
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
   //fixedWidthHack?: boolean;
@@ -484,7 +488,7 @@ export class TyrTableBase<
 
     const fieldCount = columns.length;
     const isEditingAnything = !!newDocumentTable || !!editingDocument;
-    const allWidthsDefined = columns.some(c => c.width);
+    const allWidthsDefined = columns.every(c => pathWidth(c));
     let hasAnyFilter = false;
 
     const antColumns: OurColumnProps<D>[] = [];
@@ -505,9 +509,8 @@ export class TyrTableBase<
         pathName = path.name;
       }
 
-      this.tableWidth += column.width
-        ? Number.parseInt(column.width as string)
-        : 275;
+      const pWidth = pathWidth(column);
+      this.tableWidth += pWidth ? Number.parseInt(pWidth as string) : 275;
       // TODO: check if the type has a width on it
 
       switch (typeof column.searchPath) {
@@ -530,9 +533,9 @@ export class TyrTableBase<
       const colWidth = isLast
         ? allWidthsDefined
           ? undefined
-          : column.width
+          : pWidth
         : fieldCount > 1
-        ? column.width
+        ? pWidth
         : undefined;
 
       let sorter;

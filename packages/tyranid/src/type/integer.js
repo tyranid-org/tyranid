@@ -73,7 +73,9 @@ const IntegerType = new Type({
     if (value !== undefined && (typeof value !== 'number' || value % 1 !== 0)) {
       return new UserError({ field, suffix: 'is not an integer' });
     }
-  }
+  },
+
+  width: 80
 });
 
 export default IntegerType;

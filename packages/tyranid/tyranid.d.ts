@@ -1090,6 +1090,8 @@ export namespace Tyr {
     set?(this: D, val: any): void;
     setClient?(this: D, val: any): void;
     setServer?(this: D, val: any): void;
+
+    width?: number;
   }
 
   export interface FieldStatic {
@@ -1133,6 +1135,8 @@ export namespace Tyr {
       | string
       | false
       | undefined;
+
+    width?: number;
   }
 
   export interface NamePathStatic {
@@ -1172,12 +1176,30 @@ export namespace Tyr {
     byName: { [key: string]: TypeInstance };
     new (...args: any[]): TypeInstance;
   }
+
   export interface TypeDefinition extends Isomorphic.TypeDefinition {}
   export interface TypeInstance extends Isomorphic.TypeInstance {
     def: TypeDefinition;
     create(field: FieldInstance): any;
     compare(field: FieldInstance, a: any, b: any): number;
+    compile(compiler: any, path: string, field: FieldInstance): void;
+    fromString(str: string): any;
+    fromClient(field: FieldInstance, value: any): any;
     format(field: FieldInstance, value: any): string;
+    matches(
+      namePath: NamePathInstance,
+      where: any,
+      doc: MaybeRawDocument
+    ): boolean;
+    query(
+      namePath: NamePathInstance,
+      where: any,
+      query: MongoQuery
+    ): Promise<void>;
+    sortValue(namePath: NamePathInstance, value: any): any;
+    toClient(field: FieldInstance, value: any): any;
+    validate(field: FieldInstance, value: any): UserError;
+    width?: number;
   }
 
   export interface UnitsStatic {
@@ -1240,40 +1262,6 @@ export namespace Tyr {
     when: 'pre' | 'post';
 
     preventDefault(): void;
-  }
-
-  export interface TypeStatic {
-    byName: { [key: string]: TypeInstance };
-
-    new (...args: any[]): TypeInstance;
-  }
-
-  export interface TypeDefinition {
-    name: string;
-  }
-
-  export interface TypeInstance {
-    name: string;
-    def: TypeDefinition;
-    create(field: FieldInstance): any;
-    compare(field: FieldInstance, a: any, b: any): number;
-    compile(compiler: any, path: string, field: FieldInstance): void;
-    fromString(str: string): any;
-    fromClient(field: FieldInstance, value: any): any;
-    format(field: FieldInstance, value: any): string;
-    matches(
-      namePath: NamePathInstance,
-      where: any,
-      doc: MaybeRawDocument
-    ): boolean;
-    query(
-      namePath: NamePathInstance,
-      where: any,
-      query: MongoQuery
-    ): Promise<void>;
-    sortValue(namePath: NamePathInstance, value: any): any;
-    toClient(field: FieldInstance, value: any): any;
-    validate(field: FieldInstance, value: any): UserError;
   }
 
   export interface DiffStatic {

@@ -74,7 +74,9 @@ const DoubleType = new Type({
     if (where) {
       query[namePath.name] = where;
     }
-  }
+  },
+
+  width: 80
 });
 
 export default DoubleType;

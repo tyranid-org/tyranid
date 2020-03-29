@@ -95,7 +95,9 @@ const BooleanType = new Type({
 
   format(field, value) {
     return value ? 'Yes' : 'No';
-  }
+  },
+
+  width: 80
 });
 
 export default BooleanType;
