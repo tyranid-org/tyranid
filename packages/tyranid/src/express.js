@@ -2254,7 +2254,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
         r.put(async (req, res) => {
           try {
             const data = req.body;
-            let { doc, opts, path: pathName } = data;
+            let { doc, rawOpts, path: pathName } = data;
 
             doc = await col.fromClient(doc, undefined, { req });
 
@@ -2265,7 +2265,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               throw new AppError('labels not applicable to ' + pathName);
 
             let limit = 30;
-            if (opts && opts.limit !== undefined) limit = opts.limit;
+            if (rawOpts && rawOpts.limit !== undefined) limit = rawOpts.limit;
 
             const opts = {
               auth: req.user,
