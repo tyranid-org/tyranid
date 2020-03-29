@@ -537,11 +537,13 @@ Object.defineProperty(NamePath.prototype, 'spath', {
         let { name } = field;
 
         if (name === '_') {
-          name = path[fi];
+          continue;
+          //name = path[fi];
 
-          if (name === '_') continue;
+          //if (name === '_') continue;
 
-          // otherwise name is a specific array index like 0,1,2,3,4 which we want to output
+          // otherwise name is a specific array index like 0,1,2,3,4 which we want to output ...
+          // ... wait, do we?  mongo projections do not support .<number>. ...
         }
 
         if (fi) {

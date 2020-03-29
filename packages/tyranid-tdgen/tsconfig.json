@@ -10,7 +10,7 @@
     "outDir": "./dist/",
     "inlineSourceMap": true,
     "skipLibCheck": true,
-    "lib": ["es2017"],
+    "lib": ["es2019"],
     "types": ["mongodb", "lodash", "tyranid", "commander"]
   },
   "include": ["src", "test", "example/models"],

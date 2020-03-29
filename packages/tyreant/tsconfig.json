@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "outDir": "dist",
-    "lib": ["es2017", "dom"],
+    "lib": ["es2019", "dom"],
     "jsx": "react",
     "types": ["moment", "react", "react-dom", "antd"]
   },
