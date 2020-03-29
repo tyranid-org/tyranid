@@ -314,6 +314,7 @@ export function toClient(col, doc, opts) {
   _.each(doc, (v, k) => {
     let field;
 
+    // note we are only looking at the top-level properties so call flattenProjection() before calling toClient()
     if (!projected(k)) return;
 
     if (fields && (field = fields[k])) {

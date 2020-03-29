@@ -55,6 +55,38 @@ export function resolveProjection(projections, projection) {
   }
 }
 
+/**
+ * Mongo projections can take paths like 'foo.bar'.  This returns projections that have
+ * been flattened to the top-level, for example:
+ *
+ * flattenProjection({
+ *   'name.first': 1,
+ *   'name.last': 1,
+ *   'email': 1
+ * })
+ *
+ * returns
+ *
+ * {
+ *   name: 1,
+ *   email: 1
+ * }
+ */
+export function flattenProjection(opts) {
+  const proj = extractProjection(opts);
+
+  const newProj = {};
+
+  for (const pathName in proj) {
+    const idx = pathName.indexOf('.');
+    newProj[idx >= 0 ? pathName.substring(0, idx) : pathName] = 1;
+  }
+
+  delete opts.fields;
+  delete opts.project;
+  opts.projection = newProj;
+}
+
 /** @isomorphic */
 Tyr.projectify = function(value) {
   const projection = {};

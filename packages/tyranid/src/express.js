@@ -17,6 +17,7 @@ import Type from './core/type';
 import local from './local/local';
 import SecureError from './secure/secureError';
 import BooleanType from './type/boolean';
+import { flattenProjection } from './core/projection';
 import { instrumentExpressServices, serviceClientCode } from './service';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
@@ -1892,8 +1893,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
 
             if (rOpts.sort) opts.sort = rOpts.sort;
 
-            const docs = await col.findAll(opts),
-              cDocs = col.toClient(docs, opts);
+            const docs = await col.findAll(opts);
+            flattenProjection(opts);
+            const cDocs = col.toClient(docs, opts);
 
             if (opts.count) {
               res.json({
@@ -2053,6 +2055,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               },
               results = await col.findAll(opts);
 
+            flattenProjection(opts);
             res.json(results.map(r => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
@@ -2159,6 +2162,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               req
             };
             const doc = await col.byId(req.params.id, opts);
+            flattenProjection(opts);
             if (doc) res.json(doc.$toClient(opts));
             else res.sendStatus(404);
           } catch (err) {
@@ -2217,7 +2221,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   if (!doc) return res.sendStatus(404);
 
                   doc.$slice(field.path, req.body);
-
+                  flattenProjection(opts);
                   res.json(field.get(doc.$toClient(opts)));
                 } catch (err) {
                   handleException(res, err);
@@ -2243,6 +2247,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               req
             };
             const results = await col.labels(req.params.search || '', opts);
+            flattenProjection(opts);
             res.json(results.map(r => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
@@ -2280,6 +2285,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               opts
             );
 
+            flattenProjection(opts);
             res.json(results.map(r => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
