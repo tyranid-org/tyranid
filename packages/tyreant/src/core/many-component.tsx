@@ -53,6 +53,8 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   showSizeChanger?: boolean;
   showTotal?: (total: number, range: [number, number]) => React.ReactNode;
 
+  showQuickTotal?: boolean;
+
   // URL ROUTING
   route?: string;
 }
@@ -511,6 +513,17 @@ export class TyrManyComponent<
         onChange={this.handlePaginationChange}
         onShowSizeChange={this.handlePaginationChange}
       />
+    );
+  }
+
+  quickTotalComponent() {
+    return !this.props.showQuickTotal ? (
+      <span />
+    ) : (
+      <span className="tyr-quick-total">
+        <span className="quick-total-label">Total:</span>{' '}
+        <span className="quick-total-value">{this.count}</span>
+      </span>
     );
   }
 

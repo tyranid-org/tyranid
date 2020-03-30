@@ -2,6 +2,8 @@
   --background-color: #fff;
   --primary-background-color: #6a8fbe;
 
+  --highlight-color: #1890ff;
+
   --border-color: #888;
   --major-border-color: #888;
   --light-border-color: #e4e4e4;
@@ -343,6 +345,24 @@ form textarea.tyr-markup-editor {
     button {
       margin-right: 8px;
       height: 39px;
+    }
+  }
+
+  .tyr-table-config-icon {
+    cursor: pointer;
+  }
+
+  .tyr-quick-total {
+    align-self: center;
+
+    .quick-total-label {
+      font-weight: bolder;
+    }
+
+    .quick-total-value {
+      font-weight: bolder;
+      font-size: 16px;
+      color: var(--highlight-color);
     }
   }
 

@@ -754,7 +754,7 @@ export class TyrTableBase<
         title: !newDocumentTable
           ? actionHeaderLabel || (
               <Tooltip title="Edit Columns">
-                <MenuOutlined />
+                <MenuOutlined className="tyr-table-config-icon" />
               </Tooltip>
             )
           : '',
@@ -1035,6 +1035,7 @@ export class TyrTableBase<
 
       const netFooter = (docs: D[]) => (
         <>
+          {this.quickTotalComponent()}
           {this.paginationComponent()}
           <div className="tyr-footer-btns">
             {exportProp && (
