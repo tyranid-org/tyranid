@@ -46,7 +46,7 @@ export interface TyrManyComponentState<D extends Tyr.Document = Tyr.Document>
 
 /**
  * A TyrComponent represents a react component that contains documents.  Examples
- * are TyrTable and TyrForm.
+ * are TyrTable and TyrForm .
  */
 @observer
 export class TyrManyComponent<
