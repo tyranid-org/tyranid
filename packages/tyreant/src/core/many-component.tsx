@@ -354,8 +354,9 @@ export class TyrManyComponent<
    * * * PAGINATION
    */
 
-  defaultPageSize: number = (this.props.pageSize ||
-    DEFAULT_PAGE_SIZE) as number;
+  defaultPageSize: number = (this.props.pageSize !== undefined
+    ? this.props.pageSize
+    : DEFAULT_PAGE_SIZE) as number;
 
   skip?: number;
   limit: number = this.defaultPageSize;
@@ -443,7 +444,7 @@ export class TyrManyComponent<
   };
 
   currentPageDocuments() {
-    if (this.isLocal) {
+    if (this.isLocal && this.limit) {
       const { skip = 0, limit } = this;
       return this.documents.slice(skip, skip + limit);
     } else {
