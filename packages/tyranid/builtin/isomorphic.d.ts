@@ -222,8 +222,12 @@ declare module 'tyranid/isomorphic' {
       collectionId?: string;
       documentUid?: string;
       fields: {
+        filterValue?: any;
         hidden?: boolean;
         name: string;
+        
+        /**
+         * ascend, descend, or null         */sortDirection?: string;
         width?: number;
       }[];
       key?: string;

@@ -74,6 +74,7 @@ export function resolveProjection(projections, projection) {
  */
 export function flattenProjection(opts) {
   const proj = extractProjection(opts);
+  if (!proj) return proj;
 
   const newProj = {};
 
