@@ -508,7 +508,7 @@ NamePath.prototype._pathLabel = function(startIdx, endIdx) {
     len--;
   }
 
-  let suffix = '';
+  let idxLabel = '';
 
   for (; i < endIdx - 1; i++) {
     const f = pf[i];
@@ -522,10 +522,10 @@ NamePath.prototype._pathLabel = function(startIdx, endIdx) {
       if (path && path.match(NamePath._numberRegex)) {
         // TODO:  add a property on Field which lets people specify ordering (i.e. roman numerals, integers from 1, integers from 0, letters, etc.)
         const code = String.fromCharCode(65 + Number.parseInt(path, 10));
-
         // TODO:  this logic needs to be more sophisticated
-        if (len > 1) suffix = ' ' + code;
-        else l = code;
+
+        if (label) l = code;
+        else idxLabel = code;
       } else {
         // handle the case where we have a map and the keys are strings, not numbers
         l = path === f.name ? f.pathLabel ?? f.label : path;
@@ -538,11 +538,17 @@ NamePath.prototype._pathLabel = function(startIdx, endIdx) {
       if (label) label += ' ';
       label += l;
     }
+
+    if (idxLabel && label) {
+      label += ' ' + idxLabel;
+      idxLabel = '';
+    }
   }
 
   if (label) label += ' ';
   label += pf[i].label;
-  return label + suffix;
+  if (idxLabel) label += ' ' + idxLabel;
+  return label;
 };
 
 Object.defineProperties(NamePath.prototype, {

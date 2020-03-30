@@ -214,12 +214,18 @@ export class TyrComponent<
 
       switch (trait) {
         case 'create':
+          break;
         case 'edit':
+          if (enacted('view')) return false;
+          break;
         case 'view':
-          return !traits || traits.includes(trait);
+          if (enacted('edit')) return false;
+          break;
         default:
           return true;
       }
+
+      return !traits || traits.includes(trait);
     };
 
     const enactUp = (_action: TyrActionOpts<D>) => {
@@ -298,9 +304,9 @@ export class TyrComponent<
     if (auto('view') || auto('edit')) {
       enactUp({
         name: parentLink ? collection.label : 'edit',
-        traits: ['edit'],
+        traits: [auto('edit') ? 'edit' : 'view'],
         title: !this.canMultiple
-          ? 'Edit ' + collection.label
+          ? (auto('edit') ? 'Edit ' : 'View ') + collection.label
           : Tyr.pluralize(collection.label)
       });
     }
@@ -431,6 +437,7 @@ export class TyrComponent<
   findOpts?: any; // Tyr.FindAllOptions
 
   async find(document: D) {
+    // TODO:  move this logic to OneComponent?
     const { collection, linkToParent, linkFromParent } = this;
     let updatedDocument: D | null | undefined;
 

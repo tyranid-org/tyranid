@@ -554,7 +554,7 @@ export class TyrTableBase<
       }
 
       const pWidth = pathWidth(column);
-      this.tableWidth += pWidth ? Number.parseInt(pWidth as string) : 275;
+      this.tableWidth += pWidth ? Number.parseInt(pWidth as string) + 8 : 275;
       // TODO: check if the type has a width on it
 
       switch (typeof column.searchPath) {

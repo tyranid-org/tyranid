@@ -190,7 +190,7 @@ export type TyrPathLaxProps = Omit<TyrPathProps, 'path' | 'searchPath'> & {
 
 export const labelForProps = (props: TyrTypeProps) => {
   const label = props.label;
-  return label || props.path!.tail.label;
+  return label || props.path!.pathLabel;
 };
 
 export const decorateField = (
