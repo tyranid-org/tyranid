@@ -9,9 +9,9 @@ const tableConfigField = {
   fields: {
     name: { is: 'string', required: true },
     hidden: { is: 'boolean' },
-    width: { is: 'integer' }
-    //filterValue: { is: 'object' },
-    //sort: { is: 'string', note: 'ascend, descend, or null' },
+    width: { is: 'integer' },
+    filterValue: { is: 'object' },
+    sortDirection: { is: 'string', note: 'ascend, descend, or null' }
   }
 };
 

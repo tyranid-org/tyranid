@@ -20,7 +20,7 @@ export const TyrTextBase = ((props: TyrTypeProps) => {
       autoFocus={props.autoFocus}
       onChange={ev => onTypeChange(props, ev.target.value, ev)}
       tabIndex={props.tabIndex}
-      rows={6}
+      rows={props.textAreaRows || 6}
     />
   ));
 }) as React.ComponentType<TyrTypeProps>;

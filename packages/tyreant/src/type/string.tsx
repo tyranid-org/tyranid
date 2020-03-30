@@ -21,17 +21,7 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('string', props, () => {
-    return props.textAreaRows ? (
-      <Input.TextArea
-        autoComplete="off"
-        autoFocus={props.autoFocus}
-        placeholder={props.placeholder}
-        onChange={ev => onTypeChange(props, ev.target.value, ev)}
-        tabIndex={props.tabIndex}
-        className={props.className}
-        rows={props.textAreaRows}
-      ></Input.TextArea>
-    ) : (
+    return (
       <Input
         autoComplete="off"
         type="text"
