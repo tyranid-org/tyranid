@@ -407,8 +407,9 @@ export class TyrManyComponent<
    * * * PAGINATION
    */
 
-  defaultPageSize: number = (this.props.pageSize !== undefined ||
-    DEFAULT_PAGE_SIZE) as number;
+  defaultPageSize: number = (this.props.pageSize !== undefined
+    ? this.props.pageSize
+    : DEFAULT_PAGE_SIZE) as number;
 
   skip?: number;
   limit: number = this.defaultPageSize;
