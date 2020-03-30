@@ -70,7 +70,6 @@ interface TableColumnPathProps {
   align?: 'left' | 'right' | 'center';
   ellipsis?: boolean;
   editClassName?: string;
-  group?: string;
 
   /**
    * What table column grouping should this be grouped under.
@@ -113,27 +112,8 @@ export function wrappedStringWidth(s: string) {
   return current > longest ? current : longest;
 }
 
-// TODO: move this to utils
 export function pathTitle(pathProps: TyrTableColumnPathProps) {
-  let l: any = pathProps.label;
-  if (!l) {
-    const { path } = pathProps;
-    if (!path) return '';
-
-    if (pathProps.group) {
-      l = path.tail.label;
-      if (l === 'Name') {
-        const { fields } = path;
-        const { length } = fields;
-        if (length > 1) l = fields[length - 2].label;
-      }
-    } else {
-      l = path.pathLabel;
-      if (l.endsWith(' Name')) l = l.substring(0, l.length - 5);
-    }
-  }
-
-  return l;
+  return pathProps.label || pathProps.path?.pathLabel || '';
 }
 
 export function pathWidth(path: TyrPathProps) {

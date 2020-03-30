@@ -73,6 +73,7 @@ export interface TyrPathProps
   default?: any;
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
+  group?: string;
 
   /**
    * This indicates that the following render function should be used to render values.  If render is specified

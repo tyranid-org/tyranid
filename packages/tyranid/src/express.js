@@ -66,11 +66,6 @@ class Serializer {
     this.file += field.type.name;
     this.file += '",';
 
-    this.newline();
-    this.file += this.k('label') + ': "';
-    this.file += field.label;
-    this.file += '",';
-
     if (field.link) {
       this.newline();
       this.file += this.k('link') + ': "';
@@ -99,12 +94,14 @@ class Serializer {
       'if',
       'inverse',
       'keys',
+      'label',
       'labelField',
       'min',
       'minlength',
       'max',
       'maxlength',
       'order',
+      'pathLabel',
       'pattern',
       'placeholder',
       'readonly',

@@ -43,6 +43,11 @@ function NamePath(base, pathName, opts) {
         starti = si + 1;
         break;
 
+      case '|':
+        if (!this._groups) this._groups = [];
+        this._groups.push(path.length + 1);
+      // fall through
+
       case '.':
         path.push(pathName.substring(starti, si));
         starti = si + 1;
@@ -285,18 +290,6 @@ NamePath.prototype.toString = function() {
   );
 };
 
-Object.defineProperty(NamePath.prototype, 'tail', {
-  get: function() {
-    return this.fields[this.fields.length - 1];
-  }
-});
-
-Object.defineProperty(NamePath.prototype, 'detail', {
-  get: function() {
-    return NamePath._skipArray(this.fields[this.fields.length - 1]);
-  }
-});
-
 NamePath.prototype.isHistorical = function() {
   const fields = this.fields;
 
@@ -490,84 +483,148 @@ NamePath.prototype.uniq = function(obj) {
   return _.isArray(val) ? _.uniq(val) : [val];
 };
 
-Object.defineProperty(NamePath.prototype, 'pathLabel', {
-  get: function() {
-    const pf = this.fields;
-    if (!pf.length) return this.base.label;
-    let i = 0,
-      label = '';
-    const wlFn = Tyr.options.whiteLabel;
-    if (wlFn) {
-      const l = wlFn(this);
-      if (l) return l;
-    }
+NamePath.prototype.groupRange = function(groupNum) {
+  const { _groups } = this;
 
-    while (i < pf.length - 1) {
-      const f = pf[i++];
+  return groupNum
+    ? [_groups[groupNum - 1], _groups[groupNum]]
+    : [0, _groups[0]];
+};
 
-      const l = f.pathLabel || f.label;
-      if (l) {
-        if (label) {
-          label += ' ';
-        }
+NamePath.prototype.groupLabel = function(groupNum) {
+  return this._pathLabel(...this.groupRange(groupNum));
+};
 
-        label += l;
-      }
-    }
+NamePath.prototype._pathLabel = function(startIdx, endIdx) {
+  const pf = this.fields;
+  let i = startIdx,
+    label = '';
 
-    if (label) {
-      label += ' ';
-    }
-    label += this.fields[i].label;
-    return label;
+  let len = endIdx - startIdx;
+  // change "Organization Name" to just "Organization"
+  // TODO:  might not want to always do this ... i.e. maybe only if it is a labelField?
+  if (len > 1 && pf[endIdx - 1].label === 'Name') {
+    endIdx--;
+    len--;
   }
-});
 
-Object.defineProperty(NamePath.prototype, 'spath', {
-  get: function() {
-    let sp = this._spath;
-    if (!sp) {
-      sp = '';
+  let suffix = '';
 
-      const { fields, path } = this;
-      let parentField;
+  for (; i < endIdx - 1; i++) {
+    const f = pf[i];
 
-      for (let fi = 0, flen = fields.length; fi < flen; fi++) {
-        const field = fields[fi];
-        let { name } = field;
+    let l = '';
 
-        if (name === '_') {
-          continue;
-          //name = path[fi];
+    const typeName = f.type.name;
+    if (typeName === 'object' || typeName === 'array') {
+      const path = this.path[i];
 
-          //if (name === '_') continue;
+      if (path && path.match(NamePath._numberRegex)) {
+        // TODO:  add a property on Field which lets people specify ordering (i.e. roman numerals, integers from 1, integers from 0, letters, etc.)
+        const code = String.fromCharCode(65 + Number.parseInt(path, 10));
 
-          // otherwise name is a specific array index like 0,1,2,3,4 which we want to output ...
-          // ... wait, do we?  mongo projections do not support .<number>. ...
-        }
+        // TODO:  this logic needs to be more sophisticated
+        if (len > 1) suffix = ' ' + code;
+        else l = code;
+      } else {
+        // handle the case where we have a map and the keys are strings, not numbers
+        l = path === f.name ? f.pathLabel ?? f.label : path;
+      }
+    } else {
+      l = f.pathLabel ?? f.label;
+    }
 
-        if (fi) {
-          // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
-          if (parentField.link) sp += '_';
-          sp += '.';
-        }
-        sp += name;
-        parentField = field;
+    if (l) {
+      if (label) label += ' ';
+      label += l;
+    }
+  }
+
+  if (label) label += ' ';
+  label += pf[i].label;
+  return label + suffix;
+};
+
+Object.defineProperties(NamePath.prototype, {
+  tail: {
+    get() {
+      return this.fields[this.fields.length - 1];
+    }
+  },
+
+  detail: {
+    get() {
+      return NamePath._skipArray(this.fields[this.fields.length - 1]);
+    }
+  },
+
+  groupCount: {
+    get() {
+      return this._groups?.length || 0;
+    }
+  },
+
+  pathLabel: {
+    get() {
+      const flen = this.fields.length;
+      if (!flen) return this.base.label;
+      const wlFn = Tyr.options.whiteLabel;
+      if (wlFn) {
+        const l = wlFn(this);
+        if (l) return l;
       }
 
-      //sp = this._spath = this.name.replace(/\._/g, '');
+      const { _groups } = this;
+      return this._pathLabel(_groups?.[_groups.length - 1] ?? 0, flen);
     }
-    return sp;
-  }
-});
+  },
 
-Object.defineProperty(NamePath.prototype, 'identifier', {
-  get: function() {
-    let id = this._identifier;
-    if (!id) {
-      id = this._identifier = this.name.replace(/\./g, '_');
+  spath: {
+    get() {
+      let sp = this._spath;
+      if (!sp) {
+        sp = '';
+
+        const { fields, path } = this;
+        let parentField;
+
+        for (let fi = 0, flen = fields.length; fi < flen; fi++) {
+          const field = fields[fi];
+          let { name } = field;
+
+          if (name === '_') {
+            continue;
+            //name = path[fi];
+
+            //if (name === '_') continue;
+
+            // otherwise name is a specific array index like 0,1,2,3,4 which we want to output ...
+            // ... wait, do we?  mongo projections do not support .<number>. ...
+          }
+
+          if (fi) {
+            // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
+            if (parentField.link) sp += '_';
+            sp += '.';
+          }
+          sp += name;
+          parentField = field;
+        }
+
+        //sp = this._spath = this.name.replace(/\._/g, '');
+      }
+      return sp;
     }
-    return id;
+  },
+
+  identifier: {
+    get() {
+      let id = this._identifier;
+      if (!id) {
+        id = this._identifier = this.name.replace(/\./g, '_');
+      }
+      return id;
+    }
   }
 });
 

@@ -190,6 +190,10 @@ declare module 'tyranid/client' {
       pathLabel: string;
       tail: FieldInstance;
 
+      groupCount: number;
+      groupRange(groupNumber: number): [number, number];
+      groupLabel(groupNumber: number): string;
+
       parsePath(path: string): NamePathInstance;
       pathName(idx: number): string;
       uniq(obj: any): any[];

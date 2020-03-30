@@ -360,7 +360,15 @@ export class TyrComponent<
   resolveFieldLaxProps(laxPathProps: TyrPathLaxProps) {
     const pathProps = Object.assign({}, laxPathProps);
     let p = pathProps.path;
-    if (typeof p === 'string') pathProps.path = this.collection.parsePath(p);
+    if (typeof p === 'string')
+      p = pathProps.path = this.collection.parsePath(p);
+
+    if (p) {
+      // TODO:  handle multiple groups
+      if (p.groupCount && !pathProps.group) {
+        pathProps.group = p.groupLabel(0);
+      }
+    }
 
     p = pathProps.searchPath;
     if (typeof p === 'string')

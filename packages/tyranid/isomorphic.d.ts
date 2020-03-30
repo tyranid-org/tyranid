@@ -261,6 +261,10 @@ export namespace Tyr {
     pathLabel: string;
     tail: FieldInstance;
 
+    groupCount: number;
+    groupRange(groupNumber: number): [number, number];
+    groupLabel(groupNumber: number): string;
+
     parsePath(path: string): NamePathInstance;
     pathName(idx: number): string;
     projectify(projection: MongoProjection): void;

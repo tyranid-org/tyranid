@@ -136,13 +136,13 @@ export default class Field {
   /** @private @isopmorphic */
   _calcPathLabel() {
     const p = this.parent,
-      l = this.def.pathLabel || this.label;
+      l = this.def.pathLabel ?? this.label;
 
     if (p) {
       const pl = p.pathLabel;
 
       if (pl) {
-        return pl + ' ' + l;
+        return pl + (l ? ' ' + l : '');
       }
     }
 
