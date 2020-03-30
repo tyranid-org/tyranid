@@ -20,17 +20,29 @@ import { registerComponent } from '../common';
 export const TyrStringBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
-  return decorateField('string', props, () => (
-    <Input
-      autoComplete="off"
-      type="text"
-      autoFocus={props.autoFocus}
-      placeholder={props.placeholder}
-      onChange={ev => onTypeChange(props, ev.target.value, ev)}
-      tabIndex={props.tabIndex}
-      className={props.className}
-    />
-  ));
+  return decorateField('string', props, () => {
+    return props.textAreaRows ? (
+      <Input.TextArea
+        autoComplete="off"
+        autoFocus={props.autoFocus}
+        placeholder={props.placeholder}
+        onChange={ev => onTypeChange(props, ev.target.value, ev)}
+        tabIndex={props.tabIndex}
+        className={props.className}
+        rows={props.textAreaRows}
+      ></Input.TextArea>
+    ) : (
+      <Input
+        autoComplete="off"
+        type="text"
+        autoFocus={props.autoFocus}
+        placeholder={props.placeholder}
+        onChange={ev => onTypeChange(props, ev.target.value, ev)}
+        tabIndex={props.tabIndex}
+        className={props.className}
+      />
+    );
+  });
 }) as React.ComponentType<TyrTypeProps>;
 
 export const TyrString = withThemedTypeContext('string', TyrStringBase);
