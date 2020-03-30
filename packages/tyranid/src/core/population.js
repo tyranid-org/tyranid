@@ -62,7 +62,8 @@ export default class Population {
       const parseProjection = function(base, fields) {
         const projection = [];
 
-        _.each(fields, function(value, key) {
+        for (const key in fields) {
+          let value = fields[key];
           if (key === $all) {
             projection.push($all);
           } else {
@@ -109,7 +110,7 @@ export default class Population {
               }
             }
           }
-        });
+        }
 
         if (base instanceof Tyr.Collection) {
           populator.cacheFor(base.id).project(projection);
@@ -146,11 +147,11 @@ export default class Population {
   async populate(populator, documents) {
     const population = this;
 
-    population.projection.forEach(population => {
-      if (population instanceof Population && !population.isSimple()) {
-        populator.addIds(population, documents);
+    for (const p of population.projection) {
+      if (p instanceof Population && !p.isSimple()) {
+        populator.addIds(p, documents);
       }
-    });
+    }
 
     // wait for population of missing ids
     await populator.queryMissingIds();
@@ -167,7 +168,7 @@ export default class Population {
       }
 
       const namePath = population.namePath;
-      documents.forEach(function(obj) {
+      for (const obj of documents) {
         const cache = populator.cacheFor(namePath.detail.link.id),
           path = namePath.path,
           plen = path.length;
@@ -219,7 +220,7 @@ export default class Population {
         }
 
         walkToEndOfPath(0, obj);
-      });
+      }
 
       if (nestedDocs) {
         return population.populate(populator, nestedDocs);

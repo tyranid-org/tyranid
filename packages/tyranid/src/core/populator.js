@@ -73,16 +73,16 @@ export default class Populator {
     const linkId = link.id,
       cache = this.cacheFor(linkId);
 
-    documents.forEach(function(doc) {
-      _.each(namePath.uniq(doc), function(id) {
+    for (const doc of documents) {
+      for (const id of namePath.uniq(doc)) {
         if (id) {
           const v = cache.values[id];
           if (v === undefined) {
             cache.values[id] = null;
           }
         }
-      });
-    });
+      }
+    }
   }
 
   async queryMissingIds() {
@@ -95,14 +95,15 @@ export default class Populator {
           idType = collection.fields[primaryKeyField].type;
 
         const ids = [];
-        _.each(cache.values, (v, k) => {
-          if (v === null) {
+        const { values } = cache;
+        for (const k in values) {
+          if (values[k] === null) {
             // TODO:  once we can use ES6 Maps we can get rid of
             // this string conversion -- due to keys having to be
             // strings on regular objects
             ids.push(idType.fromString(k));
           }
-        });
+        }
 
         if (!ids.length) return;
 

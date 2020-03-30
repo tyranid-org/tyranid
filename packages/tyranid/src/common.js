@@ -295,11 +295,11 @@ export function toClient(col, doc, opts) {
 
   if (doc.$access) doc.$redact();
 
-  opts = processOptions(col, opts);
+  if (col) opts = processOptions(col, opts);
   const proj = extractProjection(opts);
 
   // fields is only for top-level objects, we do not want to recursively pass it down into embedded documents
-  const dOpts = proj ? _.omit(opts, 'fields') : opts;
+  const dOpts = proj ? _.omit(opts, 'fields', 'projection', 'project') : opts;
 
   const obj = {};
 
@@ -310,12 +310,19 @@ export function toClient(col, doc, opts) {
     return v === undefined ? key === '_id' : v;
   }
 
-  const fields = col ? col.fields : null;
-  _.each(doc, (v, k) => {
+  const fields = col?.fields;
+  for (const k in doc) {
+    if (!doc.hasOwnProperty(k)) continue;
+
+    let v = doc[k];
     let field;
 
     // note we are only looking at the top-level properties so call flattenProjection() before calling toClient()
-    if (!projected(k)) return;
+    if (k.endsWith('$')) {
+      if (!opts.populate?.[k.substring(0, k.length - 1)]) continue;
+    } else {
+      if (!projected(k)) continue;
+    }
 
     if (fields && (field = fields[k])) {
       v = field.type.toClient(field, v, doc, opts, proj);
@@ -323,13 +330,15 @@ export function toClient(col, doc, opts) {
       if (v !== undefined) {
         obj[k] = v;
       }
-    } else if (v && v.$toClient) {
+    } else if (!v) {
+      obj[k] = v;
+    } else if (v.$toClient) {
       obj[k] = v.$toClient(dOpts);
     } else if (Array.isArray(v)) {
       // TODO:  we can figure out the type of k using metadata to make this work for the case when
       //        we have an array of pojos instead of instances
       obj[k] = toClient(null, v, dOpts);
-    } else if (v && ObjectId.isValid(v.toString())) {
+    } else if (ObjectId.isValid(v.toString())) {
       obj[k] = v.toString();
     } else {
       // TODO:  right now we're sending down everything we don't have metadata for ...
@@ -337,17 +346,18 @@ export function toClient(col, doc, opts) {
       //        what it would be yet
       obj[k] = v;
     }
-  });
+  }
 
   if (doc.$access) obj.$access = doc.$access;
 
   // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
-  _.each(fields, function(field, name) {
+  for (const name in fields) {
+    if (!fields.hasOwnProperty(name)) continue;
+
+    const field = fields[name];
     const fieldDef = field.def,
       getFn = fieldDef.getServer || fieldDef.get;
-    if (!getFn) {
-      return;
-    }
+    if (!getFn) continue;
 
     if (
       !evaluateClient(
@@ -361,7 +371,7 @@ export function toClient(col, doc, opts) {
       ) ||
       !projected(name)
     ) {
-      return;
+      continue;
     }
 
     let value;
@@ -376,7 +386,7 @@ export function toClient(col, doc, opts) {
     }
 
     obj[name] = value;
-  });
+  }
 
   const toClientFn = col && col.def && col.def.toClient;
   if (toClientFn) {
