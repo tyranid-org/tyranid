@@ -28,6 +28,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   collection?: Tyr.CollectionInstance<D>;
   paths?: TyrPathLaxProps[];
   decorator?: React.ReactElement;
+  traits?: TyrActionTrait[];
   actions?: ActionSet<D>;
   aux?: { [key: string]: Tyr.FieldDefinition<D> };
   parent?: TyrComponent;
@@ -206,7 +207,20 @@ export class TyrComponent<
     // Set up Actions
     //
 
+    const { traits } = this.props;
     const enacted = (trait: TyrActionTrait) => actions.some(a => a.is(trait));
+    const auto = (trait: TyrActionTrait) => {
+      if (enacted(trait)) return false;
+
+      switch (trait) {
+        case 'create':
+        case 'edit':
+        case 'view':
+          return !traits || traits.includes(trait);
+        default:
+          return true;
+      }
+    };
 
     const enactUp = (_action: TyrActionOpts<D>) => {
       // TODO:  clone action if self is already defined?
@@ -273,7 +287,7 @@ export class TyrComponent<
 
     // Automatic Actions
 
-    if (this.canEdit && !parentLink && !enacted('create') && !enacted('view')) {
+    if (this.canEdit && !parentLink && auto('create') && !enacted('view')) {
       enactUp({
         traits: ['create'],
         name: 'create',
@@ -281,7 +295,7 @@ export class TyrComponent<
       });
     }
 
-    if (!enacted('view') && !enacted('edit')) {
+    if (auto('view') || auto('edit')) {
       enactUp({
         name: parentLink ? collection.label : 'edit',
         traits: ['edit'],
@@ -291,9 +305,9 @@ export class TyrComponent<
       });
     }
 
-    const addingSave = this.canEdit && !enacted('view');
+    const addingSave = this.canEdit && auto('view');
 
-    if (!enacted('cancel')) {
+    if (auto('cancel')) {
       enactUp({
         traits: ['cancel'],
         name: enacted('save') || addingSave ? 'cancel' : 'close'
