@@ -319,8 +319,8 @@ declare module 'tyranid/client' {
       of?: FieldInstance<D>;
       parent?: FieldInstance<D>;
       pathLabel: string;
+      pathName: string;
       readonly: boolean;
-      path: string;
       spath: string;
       in: any;
       label: string | (() => string);

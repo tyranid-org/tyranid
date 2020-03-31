@@ -167,7 +167,7 @@ export function addField({
   if (field.link || (isArray && field.of!.link)) {
     const link = field.link! || field.of!.link!;
     if (!link)
-      throw new Error(`No collection for link: ${colName}.${field.path}`);
+      throw new Error(`No collection for link: ${colName}.${field.pathName}`);
 
     const linkIdType = names.idType(link);
 

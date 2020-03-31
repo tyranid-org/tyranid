@@ -221,8 +221,8 @@ export namespace Tyr {
     of?: FieldInstance<D>;
     parent?: FieldInstance<D>;
     pathLabel: string;
+    pathName: string;
     readonly: boolean;
-    path: string;
     spath: string;
     in: any;
     keys?: FieldInstance<D>;

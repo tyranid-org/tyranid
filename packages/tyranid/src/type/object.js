@@ -10,17 +10,17 @@ const ObjectType = new Type({
     const def = field.def;
 
     if (def.fields) {
-      compiler.fields(field.path, field, def.fields);
+      compiler.fields(field.pathName, field, def.fields);
     }
 
     if (def.keys && !def.of) {
       throw compiler.err(
-        field.path,
+        field.pathName,
         '"of" must be specified if "keys" is present'
       );
     } else if (!def.keys && def.of) {
       throw compiler.err(
-        field.path,
+        field.pathName,
         '"keys" must be specified if "of" is present'
       );
     }

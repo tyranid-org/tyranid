@@ -171,14 +171,14 @@ Collection.prototype.findField = async function(pathName) {
       const { fields } = schema.def;
       for (const name in fields) {
         const field = fields[name];
-        if (pathName === field.path) return field;
+        if (pathName === field.pathName) return field;
 
         // TODO: rewrite this to use recursion
         if (pathName.startsWith(name)) {
           const nestedFields = field.def.fields;
           for (const nestedName in nestedFields) {
             const nestedField = nestedFields[nestedName];
-            if (pathName === nestedField.path) return nestedField;
+            if (pathName === nestedField.pathName) return nestedField;
           }
         }
       }

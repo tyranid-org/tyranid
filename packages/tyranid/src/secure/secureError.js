@@ -30,7 +30,7 @@ export default class SecureError extends Error {
     const { field, technical } = this;
 
     const o = { message: this.message };
-    if (field) o.field = field.path.name;
+    if (field) o.field = field.pathName;
     if (technical !== undefined) o.technical = technical;
     return o;
   }

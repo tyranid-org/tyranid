@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import Tyr from '../tyr';
-import NamePath from './namePath';
+import NamePath from './path';
 import { ObjectId } from 'mongodb';
 import { resolveProjection } from './projection';
 

@@ -74,7 +74,7 @@ function keyForTmp(field, tmpId, filename) {
       for (const mediaType of of) {
         if (!MediaType.isValid(mediaType)) {
           throw compiler.err(
-            field.path,
+            field.pathName,
             `"${mediaType}" is not a valid media type`
           );
         }

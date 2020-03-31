@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import Tyr from '../tyr';
-import NamePath from './namePath';
+import NamePath from './path';
 import { UserError } from './userError';
 import LinkType from '../type/link';
 
@@ -73,7 +73,7 @@ export default class Field {
 
     if (to) {
       if (text) {
-        query[to.labelField.path] = new RegExp(text, 'i');
+        query[to.labelField.pathName] = new RegExp(text, 'i');
       }
 
       await LinkType.applyWhere(field, doc, query, opts);
@@ -113,9 +113,9 @@ export default class Field {
           root = root.parent
         );
 
-        np = this._np = new NamePath(root, this.path);
+        np = this._np = new NamePath(root, this.pathName);
       } else {
-        np = this._np = new NamePath(this.collection, this.path);
+        np = this._np = new NamePath(this.collection, this.pathName);
       }
     }
     return np;

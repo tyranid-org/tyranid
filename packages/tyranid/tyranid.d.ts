@@ -1131,7 +1131,7 @@ export namespace Tyr {
     parent?: FieldInstance<D>;
     pathLabel: string;
     readonly: boolean;
-    path: string;
+    pathName: string;
     spath: string;
     in: any;
     keys?: FieldInstance<D>;

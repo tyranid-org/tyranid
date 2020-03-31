@@ -6,7 +6,7 @@ import Component from './component';
 import Type from './type';
 import Population from './population';
 import Populator from './populator';
-import NamePath from './namePath';
+import NamePath from './path';
 import Field from './field';
 import SecureError from '../secure/secureError';
 
@@ -619,7 +619,7 @@ export default class Collection {
 
   byLabel(n, forcePromise) {
     const collection = this,
-      findName = collection.labelField.path,
+      findName = collection.labelField.pathName,
       matchLower = n.toLowerCase();
 
     if (!collection.isDb()) {
@@ -649,7 +649,7 @@ export default class Collection {
 
     // TODO:  have this use parsePath() to walk the object in case the label is stored in an embedded object
     // TODO:  support computed properties
-    return doc[labelField.path];
+    return doc[labelField.pathName];
   }
 
   /**  @isomorphic */
@@ -657,7 +657,7 @@ export default class Collection {
     const lf = this.labelField;
 
     const fields = {
-      [lf.path]: 1
+      [lf.pathName]: 1
     };
 
     const getFn = lf.def.get;
@@ -691,7 +691,7 @@ export default class Collection {
     const query = _.isObject(text)
       ? text
       : {
-          [lf.path]: new RegExp(text, 'i')
+          [lf.pathName]: new RegExp(text, 'i')
         };
 
     const fields = this.labelProjection();
@@ -1787,7 +1787,7 @@ export default class Collection {
 
           if (!type) {
             if (required)
-              throw this.err(field.path, 'Missing "${name}" property');
+              throw this.err(field.pathName, 'Missing "${name}" property');
 
             return;
           }
@@ -1799,19 +1799,19 @@ export default class Collection {
             type = Type.byName[type];
             if (!type) {
               if (this.stage === 'link') {
-                throw this.err(field.path, `Unknown type for "${name}".`);
+                throw this.err(field.pathName, `Unknown type for "${name}".`);
               }
             } else {
               type = field[name] = new Field({ is: type.def.name });
             }
           } else {
-            throw this.err(field.path, `Invalid "${name}":  ${type}`);
+            throw this.err(field.pathName, `Invalid "${name}":  ${type}`);
           }
         }
 
         if (type instanceof Field) {
           type.parent = field;
-          this.field(field.path + '._', type);
+          this.field(field.pathName + '._', type);
         }
       },
 
@@ -1845,7 +1845,7 @@ export default class Collection {
 
         // Store the field path and name on the field itself to support methods on Field
         field.collection = collection;
-        field.path = path;
+        field.pathName = path;
         if (fieldDef.group) {
           field.group = fieldDef.group;
         }
@@ -2351,7 +2351,7 @@ export default class Collection {
 
         v = new collection(nrow);
         if (collection.def.enum || collection.def.static) {
-          name = v[collection.labelField.path];
+          name = v[collection.labelField.pathName];
 
           if (!name) {
             throw new Error(

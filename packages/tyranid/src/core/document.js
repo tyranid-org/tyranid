@@ -117,7 +117,7 @@ export const documentPrototype = (Tyr.documentPrototype = {
       const find = field => {
         if (!field) return undefined;
 
-        let fpath = field.path;
+        let fpath = field.pathName;
 
         if (path.startsWith(fpath)) {
           if (path === fpath) return field.namePath;

@@ -313,7 +313,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
                   onStateChange && onStateChange({ ready: false });
 
                   label = await link.save({
-                    [link.labelField.path]: value
+                    [link.labelField.pathName]: value
                   });
 
                   label.$cache();

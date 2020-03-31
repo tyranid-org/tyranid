@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import Tyr from '../tyr';
 import * as historical from '../historical/historical';
 
-const $all = Tyr.$all;
+const { $all } = Tyr;
 
 class Cache {
   constructor(colId) {

@@ -17,7 +17,7 @@ export const compileRelate = (compiler, field) => {
       break;
     default:
       throw compiler.err(
-        field.path,
+        field.pathName,
         '"relate" must be one of "associate", "owns", or "ownedBy" if present'
       );
   }
@@ -243,7 +243,7 @@ Collection.prototype.removeReferences = async function(opts) {
     const removals = [];
 
     _.each(col.paths, field => {
-      if (!field.parent) console.log('field has no parent', field.path);
+      if (!field.parent) console.log('field has no parent', field.pathName);
       if (field.type.name === 'array' && field.of.link === this) {
         const { spath, path } = field;
         const arrayPath = path.replace(/_/g, '$');

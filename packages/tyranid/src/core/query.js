@@ -687,7 +687,7 @@ new Type({
 
         if (!collection)
           throw compiler.err(
-            field.path,
+            field.pathName,
             `No collection named "${collectionName}" found`
           );
 

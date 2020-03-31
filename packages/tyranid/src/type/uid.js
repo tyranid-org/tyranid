@@ -44,7 +44,7 @@ const UidType = new Type({
     }
 
     field.of = of.map(cid => {
-      validateUidCollection(compiler, field.path, cid);
+      validateUidCollection(compiler, field.pathName, cid);
       return cid instanceof Tyr.Collection
         ? cid
         : Tyr.byId[cid] || Tyr.byName[cid];

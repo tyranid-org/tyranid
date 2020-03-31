@@ -729,7 +729,7 @@ export function generateClientLibrary() {
       get() {
         var np = this._np;
         if (!np) {
-          np = this._np = new NamePath(this.collection, this.path);
+          np = this._np = new NamePath(this.collection, this.pathName);
         }
         return np;
       }
@@ -793,7 +793,7 @@ export function generateClientLibrary() {
       return values.map(doc => new to(doc));
     }
 
-    const data = { path: this.path, doc, opts };
+    const data = { path: this.pathName, doc, opts };
 
     return ajax({
       url: '/api/' + this.collection.def.name + '/label/' + (search || '')
@@ -826,7 +826,7 @@ export function generateClientLibrary() {
   Field.prototype.validate = function(doc) {
     if (this.def.validate) {
       return ajax({
-        url: '/api/' + this.collection.def.name + '/' + this.path + '/validate/'
+        url: '/api/' + this.collection.def.name + '/' + this.pathName + '/validate/'
         method: 'put',
         data: JSON.stringify(doc),
         contentType: 'application/json'
@@ -876,7 +876,7 @@ export function generateClientLibrary() {
 
   function compileField(path, parent, field, dynamic, aux, method) {
     const collection = parent.collection;
-    field.path = path;
+    field.pathName = path;
     field.parent = parent;
     if (!method) collection.paths[path] = field;
     field.collection = collection;
@@ -1606,7 +1606,7 @@ export function generateClientLibrary() {
 
       if (col.labelField)
         file += `
-    labelField: ${JSON.stringify(col.labelField.path)},`;
+    labelField: ${JSON.stringify(col.labelField.pathName)},`;
 
       for (const key of [
         'enum',
@@ -2087,7 +2087,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               ),
               opts = {
                 query: { _id: { $in: ids } },
-                fields: { [col.labelField.path]: 1 },
+                fields: { [col.labelField.pathName]: 1 },
                 auth: req.user,
                 user: req.user,
                 req
@@ -2244,7 +2244,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
         _.each(col.paths, field => {
           if (field.type.name === 'array') {
             app
-              .route('/api/' + name + '/:id/' + field.path + '/slice')
+              .route('/api/' + name + '/:id/' + field.pathName + '/slice')
               .all(auth)
               .get(async (req, res) => {
                 try {
@@ -2259,7 +2259,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   const doc = await col.byId(req.params.id, opts);
                   if (!doc) return res.sendStatus(404);
 
-                  doc.$slice(field.path, req.body);
+                  doc.$slice(field.pathName, req.body);
                   flattenProjection(opts);
                   res.json(field.get(doc.$toClient(opts)));
                 } catch (err) {

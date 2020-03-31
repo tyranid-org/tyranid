@@ -9,7 +9,7 @@ export class AppError extends Error {
       const { suffix, field } = value;
 
       let message = suffix
-        ? `The value at ${field.path} ${value.suffix}`
+        ? `The value at ${field.pathName} ${value.suffix}`
         : value.message;
       super(message);
 
@@ -32,7 +32,7 @@ export class AppError extends Error {
     const { field, lineNumber, rowNumber, columnNumber, technical } = this;
 
     const o = { message: this.message };
-    if (field) o.field = field.path.name;
+    if (field) o.field = field.pathName;
     if (lineNumber !== undefined) o.lineNumber = lineNumber;
     if (columnNumber !== undefined) o.columnNumber = columnNumber;
     if (rowNumber !== undefined) o.rowNumber = rowNumber;
