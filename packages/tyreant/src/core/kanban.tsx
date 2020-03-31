@@ -78,13 +78,13 @@ export class TyrKanbanBase<
 
     if (columns instanceof Tyr.Collection) {
       const { fields } = this.collection;
-      let path: Tyr.NamePathInstance | undefined;
+      let path: Tyr.PathInstance | undefined;
 
       for (const fieldName in fields) {
         const field = fields[fieldName];
 
         if (field.link === columns) {
-          path = field.namePath;
+          path = field.path;
           break;
         }
       }

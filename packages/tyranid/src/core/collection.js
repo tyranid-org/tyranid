@@ -6,7 +6,7 @@ import Component from './component';
 import Type from './type';
 import Population from './population';
 import Populator from './populator';
-import NamePath from './path';
+import Path from './path';
 import Field from './field';
 import SecureError from '../secure/secureError';
 
@@ -1698,11 +1698,11 @@ export default class Collection {
   /**
    * This creates a new record instance out of a POJO.  Values are copied by reference (not deep-cloned!).
    */
-  async fromClient(pojo, path, opts) {
+  async fromClient(pojo, inPath, opts) {
     let collection = this,
       fields = collection.fields;
 
-    const namePath = path ? this.parsePath(path) : null;
+    const path = inPath ? this.parsePath(inPath) : null;
 
     if (Array.isArray(pojo)) {
       return await Promise.all(
@@ -1710,8 +1710,8 @@ export default class Collection {
       );
     }
 
-    if (namePath) {
-      const detail = namePath.detail;
+    if (path) {
+      const detail = path.detail;
       collection = detail.def.id ? Tyr.byId[detail.def.id] : null;
       fields = detail.fields;
     }
@@ -1760,7 +1760,7 @@ export default class Collection {
 
   parsePath(path) {
     // TODO NAMEPATH-1 ... return immutable shared value here
-    return new NamePath(this, path);
+    return new Path(this, path);
   }
 
   createCompiler(def, stage, dynamicSchema) {

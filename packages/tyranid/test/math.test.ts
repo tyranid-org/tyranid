@@ -12,15 +12,15 @@ export function add() {
     describe('roman numerals', () => {
       it('should generate roman numerals', () => {
         const tests: [number, string][] = [
-          [0, ''],
-          [2, 'II'],
-          [4, 'IV'],
-          [5, 'V'],
-          [10, 'X'],
-          [21, 'XXI'],
-          [94, 'XCIV'],
-          [884, 'DCCCLXXXIV'],
-          [9884, 'MↂDCCCLXXXIV']
+          [0, 'I'],
+          [2, 'III'],
+          [3, 'IV'],
+          [4, 'V'],
+          [9, 'X'],
+          [20, 'XXI'],
+          [93, 'XCIV'],
+          [883, 'DCCCLXXXIV'],
+          [9883, 'MↂDCCCLXXXIV']
         ];
 
         for (const test of tests) {

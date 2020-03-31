@@ -146,7 +146,7 @@ function schemaType(
     !methods.has('put') && !methods.has('post') && !methods.has('delete');
 
   const out: ExtendedSchema = {
-    ['x-tyranid-openapi-name-path']: field.namePath.name,
+    ['x-tyranid-openapi-name-path']: field.path.name,
     ['x-tyranid-openapi-name']: field.name
   };
 

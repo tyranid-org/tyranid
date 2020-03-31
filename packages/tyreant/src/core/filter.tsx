@@ -39,7 +39,7 @@ export type Filter = (
   | undefined;
 
 export type Finder = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   opts: any /* TODO: add Tyr.Options_Find to client */,
   searchValue: any
 ) => void;

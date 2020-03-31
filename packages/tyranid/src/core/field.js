@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import Tyr from '../tyr';
-import NamePath from './path';
+import Path from './path';
 import { UserError } from './userError';
 import LinkType from '../type/link';
 
@@ -102,7 +102,7 @@ export default class Field {
     //return undefined;
   }
 
-  get namePath() {
+  get path() {
     let np = this._np;
     if (!np) {
       if (this.dynamicMatch) {
@@ -113,9 +113,9 @@ export default class Field {
           root = root.parent
         );
 
-        np = this._np = new NamePath(root, this.pathName);
+        np = this._np = new Path(root, this.pathName);
       } else {
-        np = this._np = new NamePath(this.collection, this.pathName);
+        np = this._np = new Path(this.collection, this.pathName);
       }
     }
     return np;
@@ -129,7 +129,7 @@ export default class Field {
   }
 
   get spath() {
-    return this.namePath.spath;
+    return this.path.spath;
   }
 
   isMethod() {

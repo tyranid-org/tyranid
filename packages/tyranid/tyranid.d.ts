@@ -63,7 +63,7 @@ export namespace Tyr {
   export type Metadata =
     | CollectionInstance
     | FieldInstance
-    | NamePathInstance
+    | PathInstance
     | Document;
 
   export const mapAwait = Isomorphic.mapAwait;
@@ -74,7 +74,7 @@ export namespace Tyr {
   export const Event: EventStatic;
   export const Field: FieldStatic;
   export const Log: CollectionInstance;
-  export const NamePath: NamePathStatic;
+  export const Path: PathStatic;
   export const Type: TypeStatic;
 
   export { AppError, SecureError, UserError } from Isomorphic;
@@ -119,7 +119,7 @@ export namespace Tyr {
   export function singularize(str: string): string;
   export function unitize(count: number, unit: string): string;
 
-  export function projectify(obj: object | NamePath[]): MongoProjection;
+  export function projectify(obj: object | Path[]): MongoProjection;
   export function sanitize(opts?: SanitizeOptions): Promise<void>;
   export function config(opts: ConfigOptions): Promise<void>;
   export function connect(opts: ConnectOptions): void;
@@ -981,7 +981,7 @@ export namespace Tyr {
 
     on(opts: EventOnOptions<D>): () => void;
 
-    parsePath(text: string): NamePathInstance;
+    parsePath(text: string): PathInstance;
 
     paths: { [key: string]: FieldInstance<D> };
 
@@ -1125,7 +1125,7 @@ export namespace Tyr {
     dynamicSchema?: any;
     generated: boolean;
     name: string;
-    namePath: NamePathInstance;
+    path: PathInstance;
     numbering?: Numbering;
     of?: FieldInstance<D>;
     parent?: FieldInstance<D>;
@@ -1154,7 +1154,7 @@ export namespace Tyr {
     width?: number;
   }
 
-  export interface NamePathStatic {
+  export interface PathStatic {
     new (
       base: CollectionInstance | FieldInstance,
       pathName: string,
@@ -1162,29 +1162,29 @@ export namespace Tyr {
         skipArray?: boolean;
         method?: string;
       }
-    ): NamePathInstance;
+    ): PathInstance;
 
     resolve(
       collection: CollectionInstance,
-      parentPath: NamePathInstance,
-      path?: Tyr.NamePathInstance | string
-    ): NamePathInstance;
+      parentPath: PathInstance,
+      path?: Tyr.PathInstance | string
+    ): PathInstance;
     populateNameFor(name: string, denormal?: boolean): string;
   }
 
-  export interface NamePathInstance extends Isomorphic.NamePathInstance {
+  export interface PathInstance extends Isomorphic.PathInstance {
     $metaType: 'path';
     detail: FieldInstance;
     fields: FieldInstance[];
     tail: FieldInstance;
 
-    parsePath(path: string): NamePathInstance;
+    parsePath(path: string): PathInstance;
     set<D extends Tyr.Document>(
       obj: D,
       value: any,
       opts?: { create?: boolean; ignore?: boolean }
     ): void;
-    walk(path: string | number): NamePathInstance;
+    walk(path: string | number): PathInstance;
   }
 
   export interface TypeStatic extends Isomorphic.TypeStatic {
@@ -1200,18 +1200,10 @@ export namespace Tyr {
     compile(compiler: any, path: string, field: FieldInstance): void;
     fromString(str: string): any;
     fromClient(field: FieldInstance, value: any): any;
+    fromClientQuery(path: PathInstance, value: any): any;
     format(field: FieldInstance, value: any): string;
-    matches(
-      namePath: NamePathInstance,
-      where: any,
-      doc: MaybeRawDocument
-    ): boolean;
-    query(
-      namePath: NamePathInstance,
-      where: any,
-      query: MongoQuery
-    ): Promise<void>;
-    sortValue(namePath: NamePathInstance, value: any): any;
+    matches(path: PathInstance, where: any, doc: MaybeRawDocument): boolean;
+    query(path: PathInstance, where: any, query: MongoQuery): Promise<void>;
     toClient(field: FieldInstance, value: any): any;
     validate(field: FieldInstance, value: any): UserError;
     width?: number;

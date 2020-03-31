@@ -126,7 +126,7 @@ export const booleanFilter: Filter = (
 };
 
 export const booleanFinder: Finder = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {

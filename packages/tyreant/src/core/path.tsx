@@ -41,7 +41,7 @@ export function defaultPathsProp(collection: Tyr.CollectionInstance) {
     if (field.type.name === 'mongoid') continue;
 
     // TODO:  check other metadata like default fields, etc.
-    pathsArr.push({ path: field.namePath });
+    pathsArr.push({ path: field.path });
   }
 
   return pathsArr;
@@ -62,8 +62,8 @@ export interface TyrPathProps
     | 'noStyle'
     | 'dependencies'
   > {
-  path?: Tyr.NamePathInstance;
-  searchPath?: Tyr.NamePathInstance;
+  path?: Tyr.PathInstance;
+  searchPath?: Tyr.PathInstance;
   getSearchIds?: (val: any) => any[];
 
   label?: string | React.ReactNode;
@@ -172,20 +172,18 @@ export interface TyrPathProps
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
-  path: Tyr.NamePathInstance;
+  path: Tyr.PathInstance;
 };
 
-export const getPathName = (
-  path: string | Tyr.NamePathInstance | undefined
-) => {
+export const getPathName = (path: string | Tyr.PathInstance | undefined) => {
   if (typeof path === 'string') return path;
   if (path) return path.name;
   //return undefined;
 };
 
 export type TyrPathLaxProps = Omit<TyrPathProps, 'path' | 'searchPath'> & {
-  path?: Tyr.NamePathInstance | string;
-  searchPath?: Tyr.NamePathInstance | string;
+  path?: Tyr.PathInstance | string;
+  searchPath?: Tyr.PathInstance | string;
 };
 
 export const labelForProps = (props: TyrTypeProps) => {

@@ -58,9 +58,9 @@ export function createSchemaNode(
     async getParents(this: Node): Promise<Node[]> {
       if (node) {
         const ParentClass = this.getParentClass();
-        const parentNamePath = node.collection.parsePath(node.path);
+        const parentPathode.collection.parsePath(node.path);
 
-        let ids = parentNamePath.get(this.doc);
+        let ids = parentPath.get(this.doc);
 
         if (ids && !(ids instanceof Array)) {
           ids = [ids];
@@ -104,7 +104,7 @@ export function createSchemaNode(
                 nextCollection
               );
 
-              const idProp = linkField.namePath.get(doc) || [];
+              const idProp = linkField.path.get(doc) || [];
 
               let linkIds: ObjectID[] = !idProp
                 ? []
@@ -132,7 +132,7 @@ export function createSchemaNode(
                 );
                 const nextDocuments = await currentCollection.byIds(linkIds);
                 linkIds = _.chain(nextDocuments)
-                  .map((d: Tyr.Document) => linkField.namePath.get(d))
+                  .map((d: Tyr.Document) => linkField.path.get(d))
                   .flatten()
                   .compact()
                   .value() as ObjectID[];

@@ -103,7 +103,7 @@ export const dateFilter: Filter = (
 };
 
 export const dateFinder: Finder = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {
@@ -119,13 +119,13 @@ export const dateFinder: Finder = (
 
 byName.date = {
   component: TyrDateBase,
-  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: Tyr.anny) {
+  mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return value ? moment(value) : null;
   },
   filter: dateFilter,
   finder: dateFinder,
   cellValue: (
-    path: Tyr.NamePathInstance,
+    path: Tyr.PathInstance,
     document: Tyr.Document,
     props: TyrTypeProps
   ) => {

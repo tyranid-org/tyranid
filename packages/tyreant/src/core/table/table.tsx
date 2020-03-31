@@ -59,7 +59,7 @@ import { TyrPathProps } from '../path';
 
 // ant's ColumnGroupType has children has required which seems incorrect
 export interface OurColumnProps<T> extends ColumnType<T> {
-  path?: Tyr.NamePathInstance;
+  path?: Tyr.PathInstance;
   children?: OurColumnProps<T>[];
 }
 
@@ -314,7 +314,7 @@ export class TyrTableBase<
       return;
     }
 
-    field.namePath.set(document, value);
+    field.path.set(document, value);
   };
 
   addNewDocument = (doc: D) => {
@@ -405,7 +405,7 @@ export class TyrTableBase<
         // for (const pathName in values) {
         //   const value = values[pathName];
         //   const field = collection.paths[pathName];
-        //   type.mapFormValueToDocument(field.namePath, value, document);
+        //   type.mapFormValueToDocument(field.path, value, document);
         // }
 
         if (orig) {
@@ -414,8 +414,9 @@ export class TyrTableBase<
             const field = pathName && collection.paths[pathName];
 
             if (field) {
-              const oldValue = field.namePath.get(orig);
-              const newValue = field.namePath.get(document);
+              const { path } = field;
+              const oldValue = path.get(orig);
+              const newValue = path.get(document);
 
               if (!isEqual(oldValue, newValue)) {
                 if (typeof column.label === 'string') {
@@ -541,9 +542,9 @@ export class TyrTableBase<
 
     this.tableWidth = 0;
     columns.forEach((column, columnIdx) => {
-      let path: Tyr.NamePathInstance | undefined;
+      let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
-      let searchPath: Tyr.NamePathInstance | undefined;
+      let searchPath: Tyr.PathInstance | undefined;
 
       if (typeof column.path === 'string') {
         pathName = column.path;

@@ -38,7 +38,7 @@ const LinkType = new Type({
       const fn = linkField.type.def.fromClient;
       return fn ? fn(linkField, value) : value;
     } catch (err) {
-      if (_.isString(value) && !link.db && link.labelField) {
+      if (_.isString(value) && link.isStatic() && link.labelField) {
         // integer and ObjectId parse errors
         if (err.toString().match(/Invalid integer|24 hex/)) {
           const v = link.byLabel(value);
@@ -245,8 +245,8 @@ Collection.prototype.removeReferences = async function(opts) {
     _.each(col.paths, field => {
       if (!field.parent) console.log('field has no parent', field.pathName);
       if (field.type.name === 'array' && field.of.link === this) {
-        const { spath, path } = field;
-        const arrayPath = path.replace(/_/g, '$');
+        const { spath, pathName } = field;
+        const arrayPath = pathName.replace(/_/g, '$');
         removals.push(
           col.db.updateMany(
             { [spath]: idMatch },
@@ -273,8 +273,8 @@ Collection.prototype.removeReferences = async function(opts) {
         }
 
         if (field.type.name === 'array') {
-          const { spath, path } = field;
-          const arrayPath = path.replace(/_/g, '$');
+          const { spath, pathName } = field;
+          const arrayPath = pathName.replace(/_/g, '$');
           removals.push(
             col.db.updateMany(
               { [spath]: uidMatch },

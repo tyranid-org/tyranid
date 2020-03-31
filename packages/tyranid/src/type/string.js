@@ -10,15 +10,15 @@ const StringType = new Type({
     return a.localeCompare(b, undefined, { sensitivity: 'base' });
   },
 
-  query(namePath, where, query) {
+  query(path, where, query) {
     if (where) {
-      query[namePath.spath] = _.isArray(where) ? { $in: where } : where;
+      query[path.spath] = _.isArray(where) ? { $in: where } : where;
     }
   },
 
-  matches(namePath, where, doc) {
+  matches(path, where, doc) {
     if (where) {
-      let value = namePath.get(doc);
+      let value = path.get(doc);
       if (value) {
         if (!_.isString(value)) {
           value = '' + value;

@@ -103,7 +103,7 @@ export const doubleFilter: Filter = (
 };
 
 export const doubleFinder: Finder = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {

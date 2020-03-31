@@ -1,32 +1,30 @@
 import * as _ from 'lodash';
 
 import Tyr from '../tyr';
-import NamePath from './path';
+import Path from './path';
 import { ObjectId } from 'mongodb';
 import { resolveProjection } from './projection';
 
 const $all = Tyr.$all;
 
 export default class Population {
-  constructor(namePath, projection) {
-    if (!(namePath instanceof NamePath)) {
-      throw new Error(
-        'parameter namePath is not an instanceof NamePath, got: ' + namePath
-      );
+  constructor(path, projection) {
+    if (!(path instanceof Path)) {
+      throw new Error('parameter path is not an instanceof Path, got: ' + path);
     }
 
-    this.namePath = namePath;
+    this.path = path;
     this.projection = projection;
   }
 
   static parse(populator, base, projection) {
     const rootCollection = base; // TODO:  need to eliminate this
-    let namePath;
+    let path;
 
-    if (base instanceof NamePath) {
-      namePath = base;
+    if (base instanceof Path) {
+      path = base;
     } else {
-      namePath = base.parsePath('');
+      path = base.parsePath('');
     }
 
     // TODO:  deprecate the old string and array population options so we can do:
@@ -42,7 +40,7 @@ export default class Population {
     if (Array.isArray(projection)) {
       // process simplified array of pathnames format
       return new Population(
-        namePath,
+        path,
         projection.map(function(field) {
           if (!_.isString(field)) {
             throw new Error(
@@ -67,27 +65,27 @@ export default class Population {
           if (key === $all) {
             projection.push($all);
           } else {
-            const namePath = base.parsePath(key);
+            const path = base.parsePath(key);
 
             if (value === 0 || value === false) {
-              projection.push(new Population(namePath, false));
+              projection.push(new Population(path, false));
             } else if (value === 1 || value === true) {
-              projection.push(new Population(namePath, true));
+              projection.push(new Population(path, true));
             } else {
-              const link = namePath.detail.link;
+              const link = path.detail.link;
 
               if (!link) {
                 throw new Error(
                   'Cannot populate ' +
                     base.toString() +
                     '.' +
-                    namePath +
+                    path +
                     ' -- it is not a link'
                 );
               }
 
               if (value === $all) {
-                projection.push(new Population(namePath, $all));
+                projection.push(new Population(path, $all));
               } else {
                 const linkCol = Tyr.byId[link.id];
 
@@ -98,14 +96,14 @@ export default class Population {
                     'Invalid populate syntax at ' +
                       base.toString() +
                       '.' +
-                      namePath +
+                      path +
                       ': ' +
                       value
                   );
                 }
 
                 projection.push(
-                  new Population(namePath, parseProjection(linkCol, value))
+                  new Population(path, parseProjection(linkCol, value))
                 );
               }
             }
@@ -167,11 +165,11 @@ export default class Population {
         nestedDocs = [];
       }
 
-      const namePath = population.namePath;
+      const path = population.path;
       for (const obj of documents) {
-        const cache = populator.cacheFor(namePath.detail.link.id),
-          path = namePath.path,
-          plen = path.length;
+        const cache = populator.cacheFor(path.detail.link.id),
+          pathNames = path.path,
+          plen = pathNames.length;
 
         function mapIdsToObjects(obj) {
           if (Array.isArray(obj)) {
@@ -196,7 +194,7 @@ export default class Population {
         }
 
         function walkToEndOfPath(pi, obj) {
-          const name = path[pi];
+          const name = pathNames[pi];
 
           if (Array.isArray(obj)) {
             for (let ai = 0, alen = obj.length; ai < alen; ai++) {
@@ -205,17 +203,17 @@ export default class Population {
           } else if (obj === undefined || obj === null) {
             return;
           } else if (pi === plen - 1) {
-            const pname = NamePath.populateNameFor(name, populator.denormal);
+            const pname = Path.populateNameFor(name, populator.denormal);
             obj[pname] = mapIdsToObjects(obj[name]);
           } else if (!_.isObject(obj)) {
             throw new Error(
               'Expected an object or array at ' +
-                namePath.pathName(pi) +
+                path.pathName(pi) +
                 ', but got ' +
                 obj
             );
           } else {
-            walkToEndOfPath(pi + 1, obj[path[pi]]);
+            walkToEndOfPath(pi + 1, obj[pathNames[pi]]);
           }
         }
 

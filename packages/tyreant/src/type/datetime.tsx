@@ -111,7 +111,7 @@ export const dateTimeFilter: Filter = (
 };
 
 export const dateTimeFinder: Finder = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {
@@ -127,7 +127,7 @@ export const dateTimeFinder: Finder = (
 
 byName.datetime = {
   component: TyrDateTimeBase,
-  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: Tyr.anny) {
+  mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return moment(value);
   },
   filter: dateTimeFilter,

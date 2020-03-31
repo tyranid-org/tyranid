@@ -7,7 +7,7 @@ declare module 'tyranid/client' {
     export const Collection: CollectionStatic;
     export const Field: FieldStatic;
     export const Log: CollectionInstance;
-    export const NamePath: NamePathStatic;
+    export const Path: PathStatic;
     export const Type: TypeStatic;
 
     export interface AppErrorStatic {
@@ -57,7 +57,7 @@ declare module 'tyranid/client' {
     export type Metadata =
       | CollectionInstance
       | FieldInstance
-      | NamePathInstance
+      | PathInstance
       | Document;
 
     export const local: {
@@ -166,9 +166,7 @@ declare module 'tyranid/client' {
       uid: string,
       options?: any // Options_FindById
     ): Promise<Document | null>;
-    export function projectify(
-      obj: object | NamePathInstance[]
-    ): MongoProjection;
+    export function projectify(obj: object | PathInstance[]): MongoProjection;
     export const reconnectSocket: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
 
@@ -179,18 +177,17 @@ declare module 'tyranid/client' {
     export type AnyIdType = string | number;
     export type ObjIdType = string;
 
-    export interface NamePathStatic
-      extends Omit<Isomorphic.NamePathStatic, 'resolve'> {
-      new (...args: any[]): NamePathInstance;
+    export interface Pathic extends Omit<Isomorphic.Pathic, 'resolve'> {
+      new (...args: any[]): PathInstance;
 
       resolve(
         collection: CollectionInstance,
-        parentPath?: NamePathInstance,
-        path?: NamePathInstance | string
-      ): NamePathInstance;
+        parentPath?: PathInstance,
+        path?: PathInstance | string
+      ): PathInstance;
     }
 
-    export interface NamePathInstance /*extends Isomorphic.NamePathInstance*/ {
+    export interface PathInstance /*extends Isomorphic.PathInstance*/ {
       $metaType: 'path';
 
       detail: FieldInstance;
@@ -206,7 +203,7 @@ declare module 'tyranid/client' {
       groupRange(groupNumber: number): [number, number];
       groupLabel(groupNumber: number): string;
 
-      parsePath(path: string): NamePathInstance;
+      parsePath(path: string): PathInstance;
       pathName(idx: number): string;
       uniq(obj: any): any[];
       get(obj: any): any;
@@ -215,7 +212,7 @@ declare module 'tyranid/client' {
         value: any,
         opts?: { create?: boolean; ignore?: boolean }
       ): void;
-      walk(path: string | number): NamePathInstance;
+      walk(path: string | number): PathInstance;
     }
 
     export interface TypeStatic extends Isomorphic.TypeStatic {
@@ -314,7 +311,7 @@ declare module 'tyranid/client' {
       def: FieldDefinition<D>;
       dynamicSchema?: any;
       name: string;
-      namePath: NamePathInstance;
+      path: PathInstance;
       numbering?: Numbering;
       of?: FieldInstance<D>;
       parent?: FieldInstance<D>;
@@ -397,8 +394,8 @@ declare module 'tyranid/client' {
       labels(ids: string[]): Promise<D[]>;
       labels(_: any): Promise<D[]>;
       on(opts: any): () => void;
-      parsePath(text: string): Tyr.NamePathInstance;
-      paths: { [fieldPathName: string]: Tyr.FieldInstance<D> };
+      parsePath(text: string): PathInstance;
+      paths: { [fieldPathName: string]: FieldInstance<D> };
       push(id: IdType<D>, path: string, value: any, opts: any): Promise<void>;
       remove(id: IdType<D>, justOne: boolean): Promise<void>;
       remove(

@@ -73,20 +73,20 @@ const BooleanType = new Type({
     throw new Error(`Invalid boolean on field ${field.name}: ${value}`);
   },
 
-  query(namePath, where, query) {
+  query(path, where, query) {
     switch (where) {
       case true:
-        query[namePath.name] = true;
+        query[path.name] = true;
         break;
       case false:
-        query[namePath.name] = { $ne: true };
+        query[path.name] = { $ne: true };
         break;
     }
   },
 
-  matches(namePath, where, doc) {
+  matches(path, where, doc) {
     if (where !== undefined) {
-      const value = namePath.get(doc);
+      const value = path.get(doc);
       return !where === !value;
     } else {
       return true;

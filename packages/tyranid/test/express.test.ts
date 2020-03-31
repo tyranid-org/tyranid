@@ -4,13 +4,10 @@ import * as connectMongo from 'connect-mongo';
 import * as express from 'express';
 import * as session from 'express-session';
 import * as _ from 'lodash';
-import * as mongodb from 'mongodb';
 import * as fetch from 'node-fetch';
 import * as puppeteer from 'puppeteer';
 
 import { Tyr } from 'tyranid';
-
-const { ObjectID } = mongodb;
 
 const { expect, assert } = chai;
 
@@ -170,7 +167,7 @@ export function add() {
 
         // --no-sandbox needed for travis
         browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-        // .launch({ headless: false, devtools: true });
+        //.launch({ headless: false, devtools: true });
         // .launch({ headless: false, slowMo: 10000 });
         page = await loadTestPage();
       });
@@ -189,7 +186,8 @@ export function add() {
 
       it('should have access to a client Tyr object', async () => {
         expect(
-          await page.evaluate('debugger; Tyr.byName.tyrLogLevel.values[0].name')
+          //await page.evaluate('debugger; Tyr.byName.tyrLogLevel.values[0].name')
+          await page.evaluate('Tyr.byName.tyrLogLevel.values[0].name')
         ).to.eql('trace');
       });
 

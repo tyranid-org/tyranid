@@ -52,8 +52,8 @@ async function toCsv(opts) {
 
           if (!label) label = field.label;
 
-          const { namePath, type } = field;
-          const value = get ? get(document) : namePath.get(document);
+          const { path, type } = field;
+          const value = get ? get(document) : path.get(document);
 
           writeObj[label] = type ? await type.format(field, value) : '' + value;
         }
@@ -101,8 +101,8 @@ async function fromCsv(opts) {
 
             if (!label) label = field.label;
 
-            const { namePath, type } = field;
-            namePath.set(doc, type.fromString(row[label]), {
+            const { path, type } = field;
+            path.set(doc, type.fromString(row[label]), {
               create: true
             });
           }

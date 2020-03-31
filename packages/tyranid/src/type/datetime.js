@@ -35,16 +35,16 @@ const DateTimeType = new Type({
       : '';
   },
 
-  query(namePath, where, query) {
+  query(path, where, query) {
     if (where) {
-      query[namePath.name] = {
+      query[path.name] = {
         $gte: new Date(where.startDate),
         $lte: new Date(where.endDate)
       };
     }
   },
 
-  matches(/*namePath, where, doc*/) {
+  matches(/*path, where, doc*/) {
     // TODO
     return true;
   },

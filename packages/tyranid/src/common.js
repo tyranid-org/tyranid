@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 
 import { extractProjection, resolveProjection } from './core/projection';
 import Tyr from './tyr';
-import NamePath from './core/namePath';
+import Path from './core/path';
 
 export const metaRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
@@ -197,7 +197,7 @@ export async function parseSaveObj(col, obj, opts) {
   _.each(col.denormal, function(field, name) {
     // we only need to copy it if it is a top-level level, nested values will be copied below
     if (name.indexOf('.') < 1) {
-      name = NamePath.populateNameFor(name, true);
+      name = Path.populateNameFor(name, true);
       insertObj[name] = obj[name];
     }
   });

@@ -17,14 +17,14 @@ const UnitsType = new Type({
     return value ? value.toString() : '';
   },
 
-  query(namePath, where, query) {
+  query(path, where, query) {
     if (where) {
       // is this right?
-      query[namePath.name] = value.toString();
+      query[path.name] = value.toString();
     }
   },
 
-  matches(/*namePath, where, doc*/) {
+  matches(/*path, where, doc*/) {
     // TODO
     return true;
   },

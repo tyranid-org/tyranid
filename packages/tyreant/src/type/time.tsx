@@ -34,7 +34,7 @@ export const TyrTime = withThemedTypeContext('time', TyrTimeBase);
 
 byName.time = {
   component: TyrTimeBase,
-  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: Tyr.anny) {
+  mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return moment(value);
   }
 };

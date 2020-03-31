@@ -60,7 +60,7 @@ export namespace Tyr {
   export type Metadata =
     | CollectionInstance
     | FieldInstance
-    | NamePathInstance
+    | PathInstance
     | Document;
 
   export interface ErrorOptions {
@@ -217,7 +217,7 @@ export namespace Tyr {
     def: FieldDefinition<D>;
     dynamicSchema?: any;
     name: string;
-    namePath: NamePathInstance;
+    path: PathInstance;
     of?: FieldInstance<D>;
     parent?: FieldInstance<D>;
     pathLabel: string;
@@ -238,8 +238,6 @@ export namespace Tyr {
     format(value: any): string;
     labelify(value: any): Promise<any>;
     labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
-    isAux(): boolean;
-    isDb(): boolean;
     validate(obj: {}):
       | Promise<string | false | undefined>
       | string
@@ -247,20 +245,20 @@ export namespace Tyr {
       | undefined;
   }
 
-  export interface NamePathStatic {
-    new (...args: any[]): NamePathInstance;
+  export interface PathStatic {
+    new (...args: any[]): PathInstance;
 
     decode(path: string): string;
     encode(path: string): string;
     populateNameFor(name: string, denormal?: boolean): string;
     resolve(
       collection: CollectionInstance,
-      parentPath?: NamePathInstance,
-      path?: NamePathInstance | string
-    ): NamePathInstance;
+      parentPath?: PathInstance,
+      path?: PathInstance | string
+    ): PathInstance;
   }
 
-  export interface NamePathInstance {
+  export interface PathInstance {
     $metaType: 'path';
 
     detail: FieldInstance;
@@ -268,6 +266,7 @@ export namespace Tyr {
     identifier: string;
     path: string[];
     spath: string;
+    spathArr: string;
     fields: FieldInstance[];
     pathLabel: string;
     tail: FieldInstance;
@@ -276,7 +275,7 @@ export namespace Tyr {
     groupRange(groupNumber: number): [number, number];
     groupLabel(groupNumber: number): string;
 
-    parsePath(path: string): NamePathInstance;
+    parsePath(path: string): PathInstance;
     pathName(idx: number): string;
     projectify(projection: MongoProjection): void;
     uniq(obj: any): any[];
@@ -286,7 +285,7 @@ export namespace Tyr {
       value: any,
       opts?: { create?: boolean; ignore?: boolean }
     ): void;
-    walk(path: string | number): NamePathInstance;
+    walk(path: string | number): PathInstance;
   }
 
   export type IdType<D extends Document<AnyIdType>> = D extends Document<
@@ -332,7 +331,7 @@ export namespace Tyr {
     labels(ids: string[]): Promise<D[]>;
     labels(_: any): Promise<D[]>;
     on(opts: any): () => void;
-    parsePath(text: string): NamePathInstance;
+    parsePath(text: string): PathInstance;
     paths: { [fieldPathName: string]: FieldInstance };
     push(id: IdType<D>, path: string, value: any, opts: any): Promise<void>;
     remove(id: IdType<D>, justOne: boolean): Promise<void>;

@@ -99,17 +99,17 @@ export interface TypeUi {
 
   // mapping between Tyr.Document and ant forms
   mapDocumentValueToFormValue?(
-    path: Tyr.NamePathInstance,
+    path: Tyr.PathInstance,
     value: any,
     props?: TyrTypeProps
   ): any;
   mapFormValueToDocumentValue?(
-    path: Tyr.NamePathInstance,
+    path: Tyr.PathInstance,
     value: any,
     props?: TyrTypeProps
   ): any;
   mapFormValueToDocument?(
-    path: Tyr.NamePathInstance,
+    path: Tyr.PathInstance,
     value: any,
     document: Tyr.Document,
     props?: TyrTypeProps
@@ -119,7 +119,7 @@ export interface TypeUi {
   filter?: Filter;
   finder?: Finder;
   cellValue?: (
-    path: Tyr.NamePathInstance,
+    path: Tyr.PathInstance,
     document: Tyr.Document,
     props: TyrTypeProps
   ) => React.ReactNode;
@@ -137,7 +137,7 @@ export const assertTypeUi = (typeName: string) => {
 };
 
 export const mapDocumentValueToFormValue = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   value: any,
   props?: TyrTypeProps
 ) => {
@@ -213,7 +213,7 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
 };
 
 export const mapDocumentToForm = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   document: Tyr.Document,
   form: FormInstance,
   props?: TyrTypeProps
@@ -236,7 +236,7 @@ export const mapDocumentToForm = (
 };
 
 export const mapFormValueToDocumentValue = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   value: any,
   props?: TyrTypeProps
 ) => {
@@ -251,7 +251,7 @@ export const mapFormValueToDocumentValue = (
 };
 
 export const mapFormValueToDocument = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   value: any,
   document: Tyr.Document,
   props?: TyrTypeProps
@@ -307,13 +307,13 @@ export const getFilter = (filterable: Filterable, props: TyrPathProps) => {
   return filter ? filter(filterable, props) : undefined;
 };
 
-export const getFinder = (path: Tyr.NamePathInstance) => {
+export const getFinder = (path: Tyr.PathInstance) => {
   const { finder } = assertTypeUi(path.tail.type.name);
   return finder;
 };
 
 export const getCellValue = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   document: Tyr.Document,
   props: TyrTypeProps
 ) => {

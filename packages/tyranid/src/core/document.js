@@ -7,7 +7,7 @@ import SecureError from '../secure/secureError';
 import { AppError } from './appError';
 import { responsePathAsArray } from 'graphql';
 
-const { NamePath } = Tyr;
+const { Path } = Tyr;
 
 export function toPlain(doc) {
   const plain = {};
@@ -120,7 +120,7 @@ export const documentPrototype = (Tyr.documentPrototype = {
         let fpath = field.pathName;
 
         if (path.startsWith(fpath)) {
-          if (path === fpath) return field.namePath;
+          if (path === fpath) return field.path;
           return findInFields(field.fields) || find(field.of);
         }
 
@@ -289,7 +289,7 @@ export function defineDocumentProperties(dp) {
 
     $: {
       get() {
-        return NamePath.taggedTemplateLiteral.bind(this);
+        return Path.taggedTemplateLiteral.bind(this);
       },
       enumerable: false,
       configurable: false

@@ -84,7 +84,7 @@ export const stringFilter: Filter = (
 };
 
 export const stringFinder: Finder = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {

@@ -10,7 +10,7 @@ import Tyr from './tyr';
 import Collection from './core/collection';
 import Field from './core/field';
 import { Roman } from './math/roman';
-import NamePath from './core/namePath';
+import Path from './core/path';
 import Population from './core/population';
 import { AppError } from './core/appError';
 import { UserError } from './core/userError';
@@ -265,7 +265,7 @@ function es5Fn(fn) {
   //if (s.startsWith('function (')) {
   //s = 'function ' + (name || '_fn' + nextFnName++) + ' (' + s.substring(10);
   /*} else */
-  if (!s.startsWith('function')) {
+  if (!s.startsWith('function') && !s.startsWith('() =>')) {
     s = 'function ' + s;
   }
 
@@ -514,7 +514,7 @@ export function generateClientLibrary() {
       return ajax({
         url: '/api/' + col.def.name + '/' + id + '/' + path + '/slice'
       }).then(function(arr) {
-        var np = col.paths[path].namePath,
+        var np = col.paths[path].path,
             docArr = np.get(doc),
             begin = opts.skip || 0,
             end = opts.limit ? Math.min(begin + opts.limit, arr.length) : arr.length;
@@ -565,7 +565,7 @@ export function generateClientLibrary() {
   Object.defineProperties(documentPrototype, {
     $: {
       get() {
-        return NamePath.taggedTemplateLiteral.bind(this);
+        return Path.taggedTemplateLiteral.bind(this);
       },
       enumerable: false,
       configurable: false
@@ -725,11 +725,11 @@ export function generateClientLibrary() {
       get() { return (Tyr.options.whiteLabel && Tyr.options.whiteLabel(this)) || this.def.label; }
     },
 
-    namePath: {
+    path: {
       get() {
         var np = this._np;
         if (!np) {
-          np = this._np = new NamePath(this.collection, this.pathName);
+          np = this._np = new Path(this.collection, this.pathName);
         }
         return np;
       }
@@ -834,7 +834,7 @@ export function generateClientLibrary() {
     }
   }
 
-  ${translateClass(NamePath)}
+  ${translateClass(Path)}
   ${translateClass(Roman)}
 
   Tyr.functions = { 
@@ -850,7 +850,7 @@ export function generateClientLibrary() {
   });
 
   Collection.prototype.parsePath = function(path) {
-    return new NamePath(this, path);
+    return new Path(this, path);
   };
 `;
 
@@ -981,7 +981,7 @@ export function generateClientLibrary() {
             dv = field.def.defaultValue;
 
         if (dv !== undefined) {
-          var np = field.namePath;
+          var np = field.path;
 
           var v = np.get(this);
 
@@ -1094,7 +1094,7 @@ export function generateClientLibrary() {
 
     var def = this.def;
     if (def.labelField) {
-      this.labelField = new NamePath(this, def.labelField).tail;
+      this.labelField = new Path(this, def.labelField).tail;
     }
 
     this.values = def.values || [];
@@ -1693,7 +1693,7 @@ function compile(code) {
   const result = ts.transpileModule(code, {
     compilerOptions: {
       module: ts.ModuleKind.None,
-      target: ts.ScriptTarget.ES2016
+      target: ts.ScriptTarget.ES2017
     }
   });
 

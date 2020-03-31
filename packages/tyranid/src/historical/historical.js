@@ -252,7 +252,7 @@ export function snapshot(
 export function snapshotPush(path, patchProps) {
   const snapshot = {
     o: new Date().getTime(),
-    p: { [Tyr.NamePath.encode(path)]: 1 }
+    p: { [Tyr.Path.encode(path)]: 1 }
   };
 
   if (patchProps) {

@@ -3,14 +3,12 @@ import * as chai from 'chai';
 
 import { Tyr } from 'tyranid';
 
-const { $all } = Tyr;
+const { $all, Path } = Tyr;
 
 const { expect } = chai;
 
-const { NamePath } = Tyr;
-
 export function add() {
-  describe('namePath.js (NamePath)', () => {
+  describe('path.js', () => {
     let User: Tyr.UserCollection,
       Department: Tyr.DepartmentCollection,
       Task: Tyr.TaskCollection,
@@ -24,31 +22,31 @@ export function add() {
     });
 
     it('should parse arrays', () => {
-      let np = new NamePath(User, 'roles._');
+      let np = new Path(User, 'roles._');
       expect(np.fields.length).to.eql(2);
       expect(np.fields[0].type.def.name).to.eql('array');
       expect(np.fields[1].type.def.name).to.eql('object');
 
-      np = new NamePath(User, 'roles', { skipArray: true });
+      np = new Path(User, 'roles', { skipArray: true });
       expect(np.fields.length).to.eql(1);
       expect(np.fields[0].type.def.name).to.eql('object');
 
-      np = new NamePath(User, 'roles');
+      np = new Path(User, 'roles');
       expect(np.fields.length).to.eql(1);
       expect(np.fields[0].type.def.name).to.eql('array');
 
-      np = new NamePath(User, 'roles._.role');
+      np = new Path(User, 'roles._.role');
       expect(np.fields.length).to.eql(3);
       expect(np.fields[0].type.def.name).to.eql('array');
       expect(np.fields[1].type.def.name).to.eql('object');
       expect(np.fields[2].type.def.name).to.eql('link');
 
-      np = new NamePath(User, 'roles.role');
+      np = new Path(User, 'roles.role');
       expect(np.fields.length).to.eql(2);
       expect(np.fields[0].type.def.name).to.eql('array');
       expect(np.fields[1].type.def.name).to.eql('link');
 
-      np = User.paths['roles._.role'].namePath;
+      np = User.paths['roles._.role'].path;
       expect(np.fields.length).to.eql(3);
       expect(np.fields[0].type.def.name).to.eql('array');
       expect(np.fields[1].type.def.name).to.eql('object');
@@ -56,7 +54,7 @@ export function add() {
 
       const obj = new Department({ tags: ['red', 'tiny'] });
 
-      np = Department.paths.tags.namePath;
+      np = Department.paths.tags.path;
       expect(np.get(obj)).to.eql(['red', 'tiny']);
 
       np = Department.parsePath('tags.1');
@@ -64,7 +62,7 @@ export function add() {
     });
 
     it('should parse maps', () => {
-      let np = Department.paths['checkouts._'].namePath;
+      let np = Department.paths['checkouts._'].path;
       expect(np.fields.length).to.eql(2);
       expect(np.fields[0].type.def.name).to.eql('object');
       expect(np.fields[1].type.def.name).to.eql('double');
@@ -83,7 +81,7 @@ export function add() {
 
       expect(np.get(obj)).to.eql([1.0, 2.0]);
 
-      np = Department.paths['cubicles._.size'].namePath;
+      np = Department.paths['cubicles._.size'].path;
       expect(np.get(obj)).to.eql([100, 200, 170]);
 
       np = Department.parsePath('cubicles.3.size');
@@ -95,7 +93,7 @@ export function add() {
 
     it('should support set', async () => {
       const u = await User.byId(3),
-        np = u!.$model.paths['name.first'].namePath;
+        np = u!.$model.paths['name.first'].path;
 
       np.set(u!, 'Molly');
 
@@ -115,15 +113,15 @@ export function add() {
         ]
       });
 
-      let np = u.$model.paths['name.suffices._'].namePath;
+      let np = u.$model.paths['name.suffices._'].path;
       np.set(u, 'Super');
       expect(u.name!.suffices).to.eql(['Super', 'Super', 'Super']);
 
-      np = u.$model.paths['name.suffices'].namePath;
+      np = u.$model.paths['name.suffices'].path;
       np.set(u, 'Super');
       expect(u.name!.suffices).to.eql('Super');
 
-      np = u.$model.paths['siblings._.name'].namePath;
+      np = u.$model.paths['siblings._.name'].path;
       np.set(u, 'Thor');
       expect(u.siblings).to.eql([
         { name: 'Thor' },
@@ -150,10 +148,10 @@ export function add() {
       expect(u.name!.suffices).to.eql(['Super', 'Mr.', 'Crazy']);
     });
 
-    it('should support relative NamePaths', async () => {
+    it('should support relative Paths', async () => {
       const u = await User.byId(3);
 
-      const nameNp = User.paths.name.namePath,
+      const nameNp = User.paths.name.path,
         firstNp = nameNp.parsePath('first');
       expect(firstNp.toString()).to.eql('user:name/first');
 
@@ -168,14 +166,14 @@ export function add() {
     });
 
     it('should support simple population pathing', () => {
-      const np = new NamePath(User, 'organization$.name'),
+      const np = new Path(User, 'organization$.name'),
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.organization);
       expect(field.name).to.be.eql('name');
     });
 
     it('should support complex population pathing', () => {
-      const np = new NamePath(User, 'organization$.owner$.name.first'),
+      const np = new Path(User, 'organization$.owner$.name.first'),
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.user);
       expect(field.name).to.be.eql('first');
@@ -183,24 +181,29 @@ export function add() {
     });
 
     it('should support simple denormalize pathing', () => {
-      const np = new NamePath(User, 'organization_.name'),
+      const np = new Path(User, 'organization_.name'),
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.organization);
       expect(field.name).to.be.eql('name');
     });
 
     it('should support arrays in spath', () => {
-      const np = new NamePath(User, 'roles._');
+      const np = new Path(User, 'roles._');
       expect(np.spath).to.eql('roles');
     });
 
-    it('should support array positions in spath', () => {
-      const np = new NamePath(User, 'roles.1');
-      expect(np.spath).to.eql('roles.1');
+    it('should not include array positions in spath', () => {
+      const np = new Path(User, 'roles.1');
+      expect(np.spath).to.eql('roles');
+    });
+
+    it('should include array positions in spathArr', () => {
+      const np = new Path(User, 'roles.1');
+      expect(np.spathArr).to.eql('roles.1');
     });
 
     it('should support spath resolving a denormalized path', () => {
-      const np = new NamePath(User, 'organization.name'),
+      const np = new Path(User, 'organization.name'),
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.organization);
       expect(field.name).to.be.eql('name');
@@ -218,7 +221,7 @@ export function add() {
 
     it('should support resolve', () => {
       const np = User.parsePath('name');
-      const np2 = NamePath.resolve(User, np, 'first');
+      const np2 = Path.resolve(User, np, 'first');
 
       const user = new User({});
       np2.set(user, 'Jane', { create: true });
@@ -226,13 +229,13 @@ export function add() {
     });
 
     it('should support complex denormalize pathing', () => {
-      let np = new NamePath(User, 'organization_.owner_.name.first'),
+      let np = new Path(User, 'organization_.owner_.name.first'),
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.user);
       expect(field.name).to.be.eql('first');
       expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
 
-      np = new NamePath(
+      np = new Path(
         Task,
         'departments.1.department_.permissions.members.0.name.first'
       );
@@ -246,7 +249,7 @@ export function add() {
         'organization_.owner$.name.first',
         'organization$.owner_.name.first'
       ]) {
-        const np = new NamePath(User, path),
+        const np = new Path(User, path),
           field = np.detail;
         expect(field.collection).to.be.eql(Tyr.byName.user);
         expect(field.name).to.be.eql('first');
@@ -273,7 +276,7 @@ export function add() {
     });
 
     it('should used populated or denormalized values when dereferencing a link', async () => {
-      const np = new NamePath(User, 'organization.owner.name.first'),
+      const np = new Path(User, 'organization.owner.name.first'),
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.user);
       expect(field.name).to.be.eql('first');
@@ -351,8 +354,9 @@ export function add() {
 
     it('should support projectify', () => {
       const projection = {};
-      User.fields.fullName.namePath.projectify(projection);
+      User.fields.fullName.path.projectify(projection);
       expect(projection).to.eql({
+        fullName: 1,
         name: 1,
         'name.first': 1,
         'name.last': 1

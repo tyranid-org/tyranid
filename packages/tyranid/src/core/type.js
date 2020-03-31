@@ -102,16 +102,16 @@ export default class Type {
     return f ? f.call(this, field, value) : value;
   }
 
-  async query(namePath, where, query) {
+  async query(path, where, query) {
     const f = this.def.query;
     if (f) {
-      await f(namePath, where, query);
+      await f(path, where, query);
     }
   }
 
-  matches(namePath, where, doc) {
+  matches(path, where, doc) {
     const f = this.def.matches;
-    return f ? f(namePath, where, doc) : namePath.get(doc) === where;
+    return f ? f(path, where, doc) : path.get(doc) === where;
   }
 
   sortValue(field, value) {

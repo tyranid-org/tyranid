@@ -50,9 +50,9 @@ const DoubleType = new Type({
     return value;
   },
 
-  matches(namePath, where, doc) {
+  matches(path, where, doc) {
     if (where !== undefined) {
-      const value = namePath.get(doc);
+      const value = path.get(doc);
 
       for (const op in where) {
         const v = where[op];
@@ -70,9 +70,9 @@ const DoubleType = new Type({
     }
   },
 
-  query(namePath, where, query) {
+  query(path, where, query) {
     if (where) {
-      query[namePath.name] = where;
+      query[path.name] = where;
     }
   },
 

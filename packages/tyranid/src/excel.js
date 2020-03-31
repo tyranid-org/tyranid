@@ -167,11 +167,11 @@ async function toExcel(opts) {
   const extraRows = (header && header.extraRows) || [];
 
   sheet.columns = columns.map(column => {
-    const path = column.field;
-    const namePath = collection.parsePath(path);
+    const pathName = column.field;
+    const path = collection.parsePath(pathName);
 
     return {
-      key: path,
+      key: pathName,
       width: column.width || 10
     };
   });
@@ -209,11 +209,11 @@ async function toExcel(opts) {
   if (header && header.height) headerRow.height = header.height;
   for (let ci = 1; ci <= columns.length; ci++) {
     const column = columns[ci - 1];
-    const namePath = collection.parsePath(column.field);
+    const path = collection.parsePath(column.field);
 
     const cell = headerRow.getCell(ci);
 
-    cell.value = column.label || namePath.pathLabel;
+    cell.value = column.label || path.pathLabel;
 
     const cellStyle = column.header;
     if (cellStyle) assignCellStyle(cell, cellStyle);
@@ -225,7 +225,7 @@ async function toExcel(opts) {
 
     let ci = 1;
     for (const column of columns) {
-      const namePath = collection.parsePath(column.field);
+      const path = collection.parsePath(column.field);
 
       const cell = row.getCell(ci);
       const get = column.get;
@@ -233,9 +233,9 @@ async function toExcel(opts) {
       if (get) {
         cell.value = get.call(column, document);
       } else {
-        cell.value = await namePath.detail.type.format(
-          namePath.detail,
-          namePath.get(document)
+        cell.value = await path.detail.type.format(
+          path.detail,
+          path.get(document)
         );
       }
 
@@ -291,13 +291,13 @@ async function fromExcel(opts) {
   const extraRows = (header && header.extraRows) || [];
 
   const columns = opts.columns.map(column => {
-    const path = column.field;
-    const namePath = collection.parsePath(path);
+    const pathName = column.field;
+    const path = collection.parsePath(pathName);
 
     return {
       def: column,
-      namePath,
-      label: column.label || namePath.pathLabel
+      path,
+      label: column.label || path.pathLabel
     };
   });
 
@@ -340,7 +340,7 @@ async function fromExcel(opts) {
         v = v.text;
       }
 
-      const np = column.namePath;
+      const np = column.path;
       const field = np.tail;
 
       if (typeof v === 'string') v = field.fromClient(v);

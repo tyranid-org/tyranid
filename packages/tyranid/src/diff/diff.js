@@ -116,7 +116,7 @@ function patchObj(a, patch, props) {
       let arr;
 
       if (prop.indexOf('|')) {
-        prop = Tyr.NamePath.decode(prop);
+        prop = Tyr.Path.decode(prop);
       }
 
       if (prop.indexOf('.') < 0) {

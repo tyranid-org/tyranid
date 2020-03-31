@@ -92,7 +92,7 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
       obj += `      } & ${docName}<ObjIdType, ObjContainer, NumContainer>`;
 
       let enumPropName = _.snakeCase(
-        (row as any)[labelField.namePath.name]
+        (row as any)[labelField.path.name]
       ).toUpperCase();
 
       // need to wrap in quotes if starting with digit

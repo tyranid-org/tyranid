@@ -95,7 +95,7 @@ export const integerFilter: Filter = (
 };
 
 export const integerFinder: Finder = (
-  path: Tyr.NamePathInstance,
+  path: Tyr.PathInstance,
   opts: Tyr.anny /* Tyr.Options_Find */,
   searchValue: Tyr.anny
 ) => {

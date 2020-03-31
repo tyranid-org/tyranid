@@ -178,7 +178,7 @@ export function addField({
     if (denormal) {
       out += ';\n';
 
-      const denName = Tyr.NamePath.populateNameFor(name, true);
+      const denName = Tyr.Path.populateNameFor(name, true);
 
       const addDenoCollection = (
         dCol: Tyr.CollectionInstance,
@@ -228,9 +228,9 @@ export function addField({
                   `Path "${pathName}" in a denormal is not a link but contains a nested projection.`
                 );
               out += pad(
-                `${names.identifier(
-                  Tyr.NamePath.populateNameFor(pathName, true)
-                )}${field.def.required ? '' : '?'}: {\n`,
+                `${names.identifier(Tyr.Path.populateNameFor(pathName, true))}${
+                  field.def.required ? '' : '?'
+                }: {\n`,
                 indent - 1
               );
               addDenoCollection(link, proj, indent + 1);
@@ -250,7 +250,7 @@ export function addField({
     // add populated prop too
     out += ';\n';
 
-    const popName = Tyr.NamePath.populateNameFor(name);
+    const popName = Tyr.Path.populateNameFor(name);
 
     let popTypeName = `${
       names.idType(link) === 'number' ? 'Num' : 'Obj'

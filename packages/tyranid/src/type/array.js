@@ -47,7 +47,7 @@ const ArrayType = new Type({
     }
   },
 
-  async query(namePath, where, query) {
+  async query(path, where, query) {
     if (!where.length) {
       // TODO:  need to figure out a cleaner way to handle this case?
       query.__foo__ = true;
@@ -59,12 +59,12 @@ const ArrayType = new Type({
 
     if (values.length !== where.length) {
       or = query.$or = query.$or || [];
-      or.push({ [namePath.name]: { $size: 0 } });
-      or.push({ [namePath.name]: { $exists: false } });
+      or.push({ [path.name]: { $size: 0 } });
+      or.push({ [path.name]: { $exists: false } });
     }
 
     if (values.length) {
-      const of = namePath.tail.of;
+      const of = path.tail.of;
 
       const link = of.link;
       if (link) {
@@ -74,9 +74,9 @@ const ArrayType = new Type({
       }
 
       if (or) {
-        or.push({ [namePath.name]: { $in: values } });
+        or.push({ [path.name]: { $in: values } });
       } else {
-        query[namePath.name] = { $in: values };
+        query[path.name] = { $in: values };
       }
     }
   },
@@ -222,7 +222,7 @@ Tyr.arraySort = function(array, sortObj) {
 
   for (const key in sortObj) {
     if (sortObj.hasOwnProperty(key)) {
-      // TODO:  use NamePath here to deal with compound property names?
+      // TODO:  use Pathe to deal with compound property names?
       const v = sortObj[key];
 
       if (v > 0) {
@@ -252,7 +252,7 @@ Tyr.arraySort = function(array, sortObj) {
 Tyr._slice = async function(doc, path, opts) {
   const col = doc.$model,
     field = col.paths[path],
-    np = field.namePath;
+    np = field.path;
 
   const { skip, limit, sort, where, populate } = opts || {};
 

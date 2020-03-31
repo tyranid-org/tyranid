@@ -129,7 +129,7 @@ export class TyrManyComponent<
       if (linkToParent) {
         query[linkToParent.name] = parentDocument.$id;
       } else if (linkFromParent) {
-        const ids = linkFromParent.namePath.get(parentDocument);
+        const ids = linkFromParent.path.get(parentDocument);
 
         query._id = Array.isArray(ids) ? { $in: ids } : ids;
       }
@@ -170,7 +170,7 @@ export class TyrManyComponent<
         const field = paths[pathName];
 
         if (field.link) {
-          fields[field.namePath.spath] = 1;
+          fields[field.path.spath] = 1;
         }
       }
 

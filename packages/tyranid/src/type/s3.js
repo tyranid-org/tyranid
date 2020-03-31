@@ -34,19 +34,19 @@ function keyPathFor(collection, docId) {
 }
 
 function keyFor(field, docId, filename) {
-  const { collection, namePath } = field;
+  const { collection, path } = field;
 
   const safeFileName = filename.replace(/\+/g, '%2B');
 
   // TODO:  what about arrays?
-  return `${keyPathFor(collection, docId)}/${namePath.spath}-${safeFileName}`;
+  return `${keyPathFor(collection, docId)}/${path.spath}-${safeFileName}`;
 }
 
 function keyForTmp(field, tmpId, filename) {
-  const { collection, namePath } = field;
+  const { collection, path } = field;
 
   // TODO:  what about arrays?
-  return `${collection.def.name}/tmp/${tmpId}/${namePath.spath}-${filename}`;
+  return `${collection.def.name}/tmp/${tmpId}/${path.spath}-${filename}`;
 }
 
 /**
@@ -203,7 +203,7 @@ function keyForTmp(field, tmpId, filename) {
 
       if (type.name !== 's3') continue;
 
-      const val = field.namePath.get(doc);
+      const val = field.path.get(doc);
 
       if (val) {
         if (val.tmpId) {
@@ -227,7 +227,7 @@ function keyForTmp(field, tmpId, filename) {
           // update the field directly so that we do not recursively call this handler
           await col.db.updateOne(
             { _id: doc._id },
-            { $set: { [Tyr.NamePath.encode(pathName)]: val } }
+            { $set: { [Tyr.Pathode(pathName)]: val } }
           );
 
           try {
@@ -297,7 +297,7 @@ function keyForTmp(field, tmpId, filename) {
     const bucket = aws && aws.bucket;
     if (!bucket) return;
 
-    const value = field.namePath.get(doc);
+    const value = field.path.get(doc);
     const keyPath = value.key;
     console.info(`S3 [${bucket}] GET [${keyPath}]`);
     await s3.saveObjectToFile(bucket, keyPath, path);

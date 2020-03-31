@@ -84,14 +84,14 @@ export const withThemedTypeContext = <T extends {} = {}>(
     });
   }
 
-  let path = Tyr.NamePath.resolve(
+  let path = Tyr.Path.resolve(
     collection,
     parentProps?.path,
     aux || props.path
   );
   if (!path) {
     const p = props.path;
-    if (typeof p === 'string') path = document.$model.paths[p]?.namePath;
+    if (typeof p === 'string') path = document.$model.paths[p]?.path;
     else if (p) path = p;
     if (!path) {
       return <div className="no-path" />;
@@ -100,7 +100,7 @@ export const withThemedTypeContext = <T extends {} = {}>(
 
   let { searchPath } = props;
   if (typeof searchPath === 'string')
-    searchPath = Tyr.NamePath.resolve(
+    searchPath = Tyr.Path.resolve(
       collection,
       parentProps?.searchPath,
       searchPath
@@ -108,7 +108,7 @@ export const withThemedTypeContext = <T extends {} = {}>(
 
   if (!path) {
     const p = props.path;
-    if (typeof p === 'string') path = document.$model.paths[p]?.namePath;
+    if (typeof p === 'string') path = document.$model.paths[p]?.path;
     else if (p) path = p;
     if (!path) {
       return <div className="no-path" />;

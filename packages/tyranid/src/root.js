@@ -36,7 +36,7 @@ import './core/field';
 import './core/function';
 import './core/index';
 import './core/instance';
-import './core/namePath';
+import './core/path';
 import './core/subscription';
 import './core/userError';
 import './core/query';

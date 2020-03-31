@@ -42,7 +42,7 @@ export const TyrMarkup = withThemedTypeContext('markup', TyrMarkupBase);
 
 byName.markup = {
   component: TyrMarkupBase,
-  mapDocumentValueToFormValue(path: Tyr.NamePathInstance, value: Tyr.anny) {
+  mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return value?.content || '';
   },
   mapFormValueToDocumentValue(path, value, props) {

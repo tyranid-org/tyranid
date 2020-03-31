@@ -24,7 +24,7 @@ export interface TyrLinkState {
   viewLabel?: string;
 }
 
-const linkFieldFor = (path: Tyr.NamePathInstance) => {
+const linkFieldFor = (path: Tyr.PathInstance) => {
   const field = path.detail;
 
   return field.type.name === 'array' && field.of!.type.name === 'link'
@@ -32,7 +32,7 @@ const linkFieldFor = (path: Tyr.NamePathInstance) => {
     : field;
 };
 
-const linkFor = (path: Tyr.NamePathInstance) => linkFieldFor(path)?.link;
+const linkFor = (path: Tyr.PathInstance) => linkFieldFor(path)?.link;
 
 // TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search....
 const findByLabel = (

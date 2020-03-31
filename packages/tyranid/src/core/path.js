@@ -10,13 +10,13 @@ const Tyr = require('../tyr').default;
  *
  * @isomorphic
  */
-function NamePath(base, pathName, opts) {
+function Path(base, pathName, opts) {
   this.base = base;
   this.name = pathName;
 
   const skipArray = opts && opts.skipArray;
 
-  if (base instanceof NamePath) base = base.tail;
+  if (base instanceof Path) base = base.tail;
 
   const path = (this.path = []);
 
@@ -104,7 +104,7 @@ function NamePath(base, pathName, opts) {
     }
 
     if (
-      name.match(NamePath._numberRegex) &&
+      name.match(Path._numberRegex) &&
       pi &&
       pathFields[pi - 1].type.name === 'array'
     ) {
@@ -114,7 +114,7 @@ function NamePath(base, pathName, opts) {
     }
 
     if (!at.fields) {
-      const aAt = NamePath._skipArray(at);
+      const aAt = Path._skipArray(at);
 
       if (aAt && aAt.fields && aAt.fields[name]) {
         at = aAt;
@@ -180,7 +180,7 @@ function NamePath(base, pathName, opts) {
     }
 
     if (skipArray && (pi + 1 >= plen || path[pi + 1] !== '_')) {
-      at = NamePath._skipArray(at);
+      at = Path._skipArray(at);
     }
 
     if (!at) {
@@ -195,9 +195,9 @@ function NamePath(base, pathName, opts) {
   }
 }
 
-NamePath._numberRegex = /^[0-9]+$/;
+Path._numberRegex = /^[0-9]+$/;
 
-NamePath._skipArray = function(field) {
+Path._skipArray = function(field) {
   if (field && !field.type) {
     throw new Error('field missing type');
   }
@@ -209,17 +209,17 @@ NamePath._skipArray = function(field) {
   return field;
 };
 
-NamePath.prototype.metaType = 'path';
+Path.prototype.metaType = 'path';
 
-NamePath.prototype.parsePath = function(path, skipArray) {
-  return new NamePath(this, path, { skipArray });
+Path.prototype.parsePath = function(path, skipArray) {
+  return new Path(this, path, { skipArray });
 };
 
-NamePath.decode = function(path) {
+Path.decode = function(path) {
   return path.replace(/\|/g, '.');
 };
 
-NamePath.encode = function(path) {
+Path.encode = function(path) {
   return path.replace(/\./g, '|');
 };
 
@@ -231,7 +231,7 @@ NamePath.encode = function(path) {
  *    3. organization   -> organization
  *
  */
-NamePath.populateNameFor = function(name, denormal) {
+Path.populateNameFor = function(name, denormal) {
   const l = name.length;
 
   if (name.substring(l - 2) === 'Id') {
@@ -242,22 +242,22 @@ NamePath.populateNameFor = function(name, denormal) {
   return denormal ? name + '_' : name + '$';
 };
 
-NamePath.prototype.walk = function(path /*: string | number*/) {
+Path.prototype.walk = function(path /*: string | number*/) {
   /*
       TODO NAMEPATH-1:
 
-        change NamePath to be immutable (it already is for the most part) and to
-        support a parent NamePath then avoid having to pse the entire path here and
-        just use the existing NamePath object embedded in a new NamePath object that
+        change Path to be immutable (it already is for the most part) and to
+        support a parent Path then avoid having to pse the entire path here and
+        just use the existing Path object embedded in a new Path object that
         just processes the child path
    */
   return this.base.parsePath(this.name + '.' + path);
 };
 
-NamePath.resolve = function(
+Path.resolve = function(
   collection, // Tyr.CollectionInstance,
-  parentPath, //?: Tyr.NamePathInstance,
-  path //?: Tyr.NamePathInstance | string
+  parentPath, //?: Tyr.PathInstance,
+  path //?: Tyr.PathInstance | string
 ) {
   if (parentPath) {
     if (typeof path === 'string') {
@@ -276,13 +276,13 @@ NamePath.resolve = function(
   return path;
 };
 
-NamePath.prototype.pathName = function(pi) {
+Path.prototype.pathName = function(pi) {
   return pi <= 1
     ? this.name
     : this.path.slice(0, pi + 1).join('.') + ' in ' + this.name;
 };
 
-NamePath.prototype.toString = function() {
+Path.prototype.toString = function() {
   return (
     (this.base instanceof Tyr.Collection
       ? this.base.def.name + ':'
@@ -290,14 +290,14 @@ NamePath.prototype.toString = function() {
   );
 };
 
-NamePath.prototype.isHistorical = function() {
+Path.prototype.isHistorical = function() {
   const fields = this.fields;
 
   // only the top-most field can be marked "historical"
   return fields.length && fields[0].def.historical;
 };
 
-NamePath.prototype.resolveObj = function(obj) {
+Path.prototype.resolveObj = function(obj) {
   if (this.collectionSpecified) {
     // singleton behavior
     let values = this.base.values;
@@ -309,7 +309,7 @@ NamePath.prototype.resolveObj = function(obj) {
   return obj;
 };
 
-NamePath.prototype.get = function(obj) {
+Path.prototype.get = function(obj) {
   obj = this.resolveObj(obj);
 
   const np = this,
@@ -325,7 +325,7 @@ NamePath.prototype.get = function(obj) {
       const name = path[pi];
       if (name === '_') {
         pi++;
-      } else if (name && name.match(NamePath._numberRegex)) {
+      } else if (name && name.match(Path._numberRegex)) {
         getInner(pi + 1, obj[name]);
         return;
       }
@@ -369,10 +369,10 @@ NamePath.prototype.get = function(obj) {
           v = obj[name];
           if (!_.isObject(v) || Array.isArray(v)) {
             // ... look for a populated or denormalized value
-            let popName = NamePath.populateNameFor(name, false);
+            let popName = Path.populateNameFor(name, false);
             v = obj[popName];
             if (v === undefined) {
-              popName = NamePath.populateNameFor(name, true);
+              popName = Path.populateNameFor(name, true);
               v = obj[popName];
 
               if (v === undefined) {
@@ -406,7 +406,7 @@ NamePath.prototype.get = function(obj) {
   return values;
 };
 
-NamePath.prototype.set = function(obj, value, opts) {
+Path.prototype.set = function(obj, value, opts) {
   obj = this.resolveObj(obj);
 
   const np = this,
@@ -422,7 +422,7 @@ NamePath.prototype.set = function(obj, value, opts) {
     if (Array.isArray(obj)) {
       const name = path[pi];
       if (leaf) {
-        if (name && name.match(NamePath._numberRegex)) {
+        if (name && name.match(Path._numberRegex)) {
           obj[name] = value;
         } else {
           for (let i = 0; i < obj.length; i++) {
@@ -432,7 +432,7 @@ NamePath.prototype.set = function(obj, value, opts) {
       } else {
         if (name === '_') {
           pi++;
-        } else if (name && name.match(NamePath._numberRegex)) {
+        } else if (name && name.match(Path._numberRegex)) {
           let v = obj[name];
           if (!v && opts && opts.create) {
             obj[name] = fields[pi].type.name === 'array' ? [] : {};
@@ -478,12 +478,12 @@ NamePath.prototype.set = function(obj, value, opts) {
   walk(0, obj);
 };
 
-NamePath.prototype.uniq = function(obj) {
+Path.prototype.uniq = function(obj) {
   const val = this.get(obj);
   return _.isArray(val) ? _.uniq(val) : [val];
 };
 
-NamePath.prototype.groupRange = function(groupNum) {
+Path.prototype.groupRange = function(groupNum) {
   const { _groups } = this;
 
   return groupNum
@@ -491,11 +491,11 @@ NamePath.prototype.groupRange = function(groupNum) {
     : [0, _groups[0]];
 };
 
-NamePath.prototype.groupLabel = function(groupNum) {
+Path.prototype.groupLabel = function(groupNum) {
   return this._pathLabel(...this.groupRange(groupNum));
 };
 
-NamePath.prototype._pathLabel = function(startIdx, endIdx) {
+Path.prototype._pathLabel = function(startIdx, endIdx) {
   const { fields } = this;
   let i = startIdx,
     label = '';
@@ -521,7 +521,7 @@ NamePath.prototype._pathLabel = function(startIdx, endIdx) {
     if ((typeName === 'object' && pf.keys) || typeName === 'array') {
       const path = this.path[i];
 
-      if (path?.match(NamePath._numberRegex)) {
+      if (path?.match(Path._numberRegex)) {
         const code = Tyr.numberize(
           pf.keys?.numbering || pf.numbering,
           Number.parseInt(path, 10)
@@ -554,7 +554,7 @@ NamePath.prototype._pathLabel = function(startIdx, endIdx) {
   return label;
 };
 
-Object.defineProperties(NamePath.prototype, {
+Object.defineProperties(Path.prototype, {
   tail: {
     get() {
       return this.fields[this.fields.length - 1];
@@ -563,7 +563,7 @@ Object.defineProperties(NamePath.prototype, {
 
   detail: {
     get() {
-      return NamePath._skipArray(this.fields[this.fields.length - 1]);
+      return Path._skipArray(this.fields[this.fields.length - 1]);
     }
   },
 
@@ -594,6 +594,36 @@ Object.defineProperties(NamePath.prototype, {
       if (!sp) {
         sp = '';
 
+        const { fields } = this;
+        let parentField;
+
+        for (let fi = 0, flen = fields.length; fi < flen; fi++) {
+          const field = fields[fi];
+          let { name } = field;
+
+          if (name === '_') continue;
+
+          if (fi) {
+            // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
+            if (parentField.link) sp += '_';
+            sp += '.';
+          }
+          sp += name;
+          parentField = field;
+        }
+
+        this._spath = sp;
+      }
+      return sp;
+    }
+  },
+
+  spathArr: {
+    get() {
+      let sp = this._spathArr;
+      if (!sp) {
+        sp = '';
+
         const { fields, path } = this;
         let parentField;
 
@@ -602,13 +632,11 @@ Object.defineProperties(NamePath.prototype, {
           let { name } = field;
 
           if (name === '_') {
-            continue;
-            //name = path[fi];
+            name = path[fi];
 
-            //if (name === '_') continue;
+            if (name === '_') continue;
 
             // otherwise name is a specific array index like 0,1,2,3,4 which we want to output ...
-            // ... wait, do we?  mongo projections do not support .<number>. ...
           }
 
           if (fi) {
@@ -620,7 +648,7 @@ Object.defineProperties(NamePath.prototype, {
           parentField = field;
         }
 
-        //sp = this._spath = this.name.replace(/\._/g, '');
+        this._spathArr = sp;
       }
       return sp;
     }
@@ -637,7 +665,7 @@ Object.defineProperties(NamePath.prototype, {
   }
 });
 
-NamePath.prototype.projectify = function(projection) {
+Path.prototype.projectify = function(projection) {
   const { detail, spath } = this;
 
   if (detail.db) projection[spath] = 1;
@@ -663,7 +691,7 @@ NamePath.prototype.projectify = function(projection) {
   //}
 };
 
-NamePath.taggedTemplateLiteral = function(strings, ...keys) {
+Path.taggedTemplateLiteral = function(strings, ...keys) {
   if (keys.length) {
     let s = '',
       i = 0;
@@ -683,5 +711,5 @@ NamePath.taggedTemplateLiteral = function(strings, ...keys) {
   }
 };
 
-Tyr.NamePath = NamePath;
-export default NamePath;
+Tyr.Path = Path;
+export default Path;

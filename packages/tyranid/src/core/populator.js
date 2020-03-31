@@ -29,7 +29,7 @@ class Cache {
       if (p === $all) {
         fields.$all = 1;
       } else {
-        const pathName = p.namePath.spath,
+        const pathName = p.path.spath,
           existing = fields[pathName],
           target = (p.projection && 1) || 0;
 
@@ -63,18 +63,18 @@ export default class Populator {
   }
 
   addIds(population, documents) {
-    const namePath = population.namePath;
-    const link = namePath.detail.link;
+    const path = population.path;
+    const link = path.detail.link;
 
     if (!link) {
-      throw new Error('Cannot populate ' + namePath + ' -- it is not a link');
+      throw new Error('Cannot populate ' + path + ' -- it is not a link');
     }
 
     const linkId = link.id,
       cache = this.cacheFor(linkId);
 
     for (const doc of documents) {
-      for (const id of namePath.uniq(doc)) {
+      for (const id of path.uniq(doc)) {
         if (id) {
           const v = cache.values[id];
           if (v === undefined) {

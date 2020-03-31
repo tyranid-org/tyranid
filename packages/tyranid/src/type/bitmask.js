@@ -17,17 +17,17 @@ const BitmaskType = new Type({
 
     const { link, inverse } = field;
     if (!link)
-      throw compiler.err(field.namePath, `bitmask value missing link field`);
+      throw compiler.err(field.path, `bitmask value missing link field`);
 
     if (link.fields._id.type.name !== 'integer')
       throw compiler.err(
-        field.namePath,
+        field.path,
         `bitmask fields must link to collections that have an integer key type field`
       );
 
     if (!link.isStatic())
       throw compiler.err(
-        field.namePath,
+        field.path,
         `bitmask fields must link to static collections`
       );
 
@@ -35,7 +35,7 @@ const BitmaskType = new Type({
     if (values) {
       if (values.length > MAX_BITS)
         throw compiler.err(
-          field.namePath,
+          field.path,
           `bitmask fields must link to static collections with ${MAX_BITS} or less entries`
         );
 
@@ -44,7 +44,7 @@ const BitmaskType = new Type({
 
         if (id < 1 || id > MAX_BITS)
           throw compiler.err(
-            field.namePath,
+            field.path,
             `bitmask fields must link to static collections with IDs that are between 1 and ${MAX_BITS}`
           );
       }
@@ -54,7 +54,7 @@ const BitmaskType = new Type({
 
         if (id !== i + 1)
           throw compiler.err(
-            field.namePath,
+            field.path,
             `bitmask fields must link to static collections with IDs that are increasing from 1 up to a maximum of ${MAX_BITS};\n` +
               `the ${Tyr.ordinalize(i + 1)} value did not equal ${i + 1}.`
           );
@@ -63,7 +63,7 @@ const BitmaskType = new Type({
 
     if (inverse !== undefined && inverse !== true && inverse !== false) {
       throw compiler.err(
-        field.namePath,
+        field.path,
         `bitmask inverse value must be undefined, true, or false -- found: ${inverse}`
       );
     }

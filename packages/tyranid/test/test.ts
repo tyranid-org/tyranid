@@ -23,7 +23,7 @@ import * as testFake from './fake.test';
 import * as testFunction from './function.test';
 import * as testHistorical from './historical.test';
 import * as testMath from './math.test';
-import * as testNamePath from './namePath.test';
+import * as testPath from './path.test';
 import * as testPopulation from './population.test';
 import * as testQuery from './query.test';
 import * as testUnit from './unit.test';
@@ -1069,7 +1069,7 @@ describe('tyranid', () => {
         expect(
           (User.def.fields!.name.def.fields!.first as Tyr.FieldDefinition<
             Tyr.User
-          >).path
+          >).pathName
         ).to.be.eql('name.first');
       });
     });
@@ -2676,6 +2676,8 @@ describe('tyranid', () => {
       it('Should include all collections', async () => {
         const code = generateClientLibrary();
 
+        require('fs').writeFileSync('foo_client.js', code);
+
         await new Promise((res, rej) => {
           jsdom.env({
             html: '<div></div>',
@@ -2723,7 +2725,7 @@ describe('tyranid', () => {
       });
     });
 
-    testNamePath.add();
+    testPath.add();
     testCsv.add();
     testExcel.add();
     testExpress.add();

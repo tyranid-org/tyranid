@@ -165,7 +165,7 @@ export const TyrObject = withThemedTypeContext<TyrObjectExtraProps>(
 byName.object = {
   component: TyrObject,
   mapDocumentValueToFormValue(
-    path: Tyr.NamePathInstance,
+    path: Tyr.PathInstance,
     value: any,
     props: TyrTypeProps
   ) {
@@ -182,7 +182,7 @@ byName.object = {
     return value;
   },
   mapFormValueToDocument(
-    path: Tyr.NamePathInstance,
+    path: Tyr.PathInstance,
     values: any,
     document: Tyr.Document,
     props: TyrTypeProps

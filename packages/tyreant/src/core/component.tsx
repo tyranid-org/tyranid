@@ -416,9 +416,9 @@ export class TyrComponent<
         const { parentDocument, linkToParent } = parent;
 
         if (parentDocument && linkToParent)
-          linkToParent.namePath.set(doc, parentDocument.$id);
+          linkToParent.path.set(doc, parentDocument.$id);
       } else if (linkToParent) {
-        linkToParent.namePath.set(doc, actionOpts.document!.$id);
+        linkToParent.path.set(doc, actionOpts.document!.$id);
       }
     }
 
@@ -451,11 +451,11 @@ export class TyrComponent<
     if (linkToParent) {
       updatedDocument = (await collection.findOne({
         query: {
-          [linkToParent.namePath.spath]: document.$id
+          [linkToParent.path.spath]: document.$id
         }
       })) as D;
     } else if (linkFromParent) {
-      const id = linkFromParent.namePath.get(document);
+      const id = linkFromParent.path.get(document);
 
       updatedDocument = (await collection.findOne({
         _id: id
