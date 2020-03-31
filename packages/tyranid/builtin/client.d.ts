@@ -77,6 +77,21 @@ declare module 'tyranid/client' {
     
 
     /**
+     * Client base document definition for TyrComponentConfigCollection.
+     */
+    export interface BaseTyrComponentConfig
+      extends Isomorphic.BaseTyrComponentConfig<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Client document definition for TyrComponentConfigCollection,
+     * extends isomorphic base interface BaseTyrComponentConfig.
+     */
+    export interface TyrComponentConfig
+      extends Inserted<ObjIdType>,
+              BaseTyrComponentConfig {}
+    
+
+    /**
      * Client base document definition for TyrExchangeRateCollection.
      */
     export interface BaseTyrExchangeRate
@@ -257,21 +272,6 @@ declare module 'tyranid/client' {
     
 
     /**
-     * Client base document definition for TyrTableConfigCollection.
-     */
-    export interface BaseTyrTableConfig
-      extends Isomorphic.BaseTyrTableConfig<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
-
-    /**
-     * Client document definition for TyrTableConfigCollection,
-     * extends isomorphic base interface BaseTyrTableConfig.
-     */
-    export interface TyrTableConfig
-      extends Inserted<ObjIdType>,
-              BaseTyrTableConfig {}
-    
-
-    /**
      * Client base document definition for TyrUserAgentCollection.
      */
     export interface BaseTyrUserAgent
@@ -389,6 +389,13 @@ declare module 'tyranid/client' {
     /**
      * Client collection definition.
      */
+    export interface TyrComponentConfigCollection
+      extends Tyr.CollectionInstance<TyrComponentConfig> {
+    }
+
+    /**
+     * Client collection definition.
+     */
     export interface TyrExchangeRateCollection
       extends Tyr.CollectionInstance<TyrExchangeRate> {
     }
@@ -477,13 +484,6 @@ declare module 'tyranid/client' {
     /**
      * Client collection definition.
      */
-    export interface TyrTableConfigCollection
-      extends Tyr.CollectionInstance<TyrTableConfig> {
-    }
-
-    /**
-     * Client collection definition.
-     */
     export interface TyrUserAgentCollection
       extends Tyr.CollectionInstance<TyrUserAgent> {
     }
@@ -539,6 +539,7 @@ declare module 'tyranid/client' {
       country: CountryCollection;
       mediaType: MediaTypeCollection;
       province: ProvinceCollection;
+      tyrComponentConfig: TyrComponentConfigCollection;
       tyrExchangeRate: TyrExchangeRateCollection;
       tyrImport: TyrImportCollection;
       tyrInstance: TyrInstanceCollection;
@@ -551,7 +552,6 @@ declare module 'tyranid/client' {
       tyrSchema: TyrSchemaCollection;
       tyrSchemaType: TyrSchemaTypeCollection;
       tyrSubscription: TyrSubscriptionCollection;
-      tyrTableConfig: TyrTableConfigCollection;
       tyrUserAgent: TyrUserAgentCollection;
       unit: UnitCollection;
       unitFactor: UnitFactorCollection;
@@ -567,6 +567,7 @@ declare module 'tyranid/client' {
       Country: CountryCollection;
       MediaType: MediaTypeCollection;
       Province: ProvinceCollection;
+      TyrComponentConfig: TyrComponentConfigCollection;
       TyrExchangeRate: TyrExchangeRateCollection;
       TyrImport: TyrImportCollection;
       TyrInstance: TyrInstanceCollection;
@@ -579,7 +580,6 @@ declare module 'tyranid/client' {
       TyrSchema: TyrSchemaCollection;
       TyrSchemaType: TyrSchemaTypeCollection;
       TyrSubscription: TyrSubscriptionCollection;
-      TyrTableConfig: TyrTableConfigCollection;
       TyrUserAgent: TyrUserAgentCollection;
       Unit: UnitCollection;
       UnitFactor: UnitFactorCollection;
@@ -595,6 +595,7 @@ declare module 'tyranid/client' {
       _g1: CountryCollection;
       _mt: MediaTypeCollection;
       _g2: ProvinceCollection;
+      _tc: TyrComponentConfigCollection;
       _u5: TyrExchangeRateCollection;
       _im: TyrImportCollection;
       _t2: TyrInstanceCollection;
@@ -607,7 +608,6 @@ declare module 'tyranid/client' {
       _t1: TyrSchemaCollection;
       _t0: TyrSchemaTypeCollection;
       _t3: TyrSubscriptionCollection;
-      _tc: TyrTableConfigCollection;
       _u4: TyrUserAgentCollection;
       _u2: UnitCollection;
       _u3: UnitFactorCollection;
