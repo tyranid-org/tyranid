@@ -14,7 +14,12 @@ import {
   TyrActionTrait
 } from './action';
 import { TyrDecorator } from './decorator';
-import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
+import {
+  defaultPathsProp,
+  TyrPathProps,
+  TyrPathLaxProps,
+  TyrSortDirection
+} from './path';
 import { TyrModal } from './modal';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
@@ -91,6 +96,9 @@ export class TyrComponent<
   hasFilters = false;
 
   componentName = '';
+
+  @observable
+  componentConfig?: Tyr.TyrComponentConfig;
 
   /*
    * * * TyrOneComponent properties defined here for convenience in callbacks * * *
@@ -593,4 +601,51 @@ export class TyrComponent<
       </ComponentContext.Provider>
     );
   }
+
+  updateConfigSort = async (
+    columnName?: string,
+    sortDirection?: TyrSortDirection
+  ) => {
+    if (this.componentConfig) {
+      const fields = this.componentConfig.fields.forEach(f => {
+        if (!columnName) {
+          delete f.sortDirection;
+        } else if (f.name === columnName) {
+          f.sortDirection = sortDirection;
+        } else {
+          delete f.sortDirection;
+        }
+      });
+
+      await this.componentConfig.$update({
+        query: { _id: this.componentConfig._id },
+        update: {
+          $set: {
+            columns: fields
+          }
+        }
+      });
+    }
+  };
+
+  updateConfigFilter = async (columnName?: string, filter?: Object) => {
+    if (this.componentConfig) {
+      const fields = this.componentConfig.fields.forEach(f => {
+        if (!columnName) {
+          delete f.filter;
+        } else if (f.name === columnName) {
+          f.filter = filter;
+        }
+      });
+
+      await this.componentConfig.$update({
+        query: { _id: this.componentConfig._id },
+        update: {
+          $set: {
+            columns: fields
+          }
+        }
+      });
+    }
+  };
 }

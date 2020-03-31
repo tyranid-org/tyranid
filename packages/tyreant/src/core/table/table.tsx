@@ -199,9 +199,6 @@ export class TyrTableBase<
   @observable
   showExport = false;
 
-  @observable
-  tableConfig?: Tyr.TyrComponentConfig;
-
   currentRowForm?: FormInstance;
 
   componentName = 'table';
@@ -213,23 +210,19 @@ export class TyrTableBase<
   }
 
   async componentDidMount() {
-    super.componentDidMount();
-
     const { config, onLoad } = this.props;
 
     if (config) {
       this.loading = true;
-      const existingConfig = await ensureTableConfig(this, this.paths, config);
+      const tableConfig = await ensureTableConfig(this, this.paths, config);
 
-      if (existingConfig) {
-        this.otherPaths = existingConfig.newColumns;
-        this.tableConfig = existingConfig.tableConfig;
-      } else {
-        this.otherPaths = this.paths;
-      }
+      this.componentConfig = tableConfig.tableConfig;
+      this.otherPaths = tableConfig.newColumns;
 
+      super.componentDidMount();
       this.loading = false;
     } else {
+      super.componentDidMount();
       this.otherPaths = this.paths;
     }
 
@@ -280,7 +273,7 @@ export class TyrTableBase<
       );
 
       if (!existingCol) {
-        const fld = this.tableConfig?.fields.find(
+        const fld = this.componentConfig?.fields.find(
           f => f.name === nextOtherFieldName
         );
 
@@ -345,7 +338,7 @@ export class TyrTableBase<
       );
 
       if (tableConfig) {
-        this.tableConfig = tableConfig.tableConfig;
+        this.componentConfig = tableConfig.tableConfig;
         this.otherPaths = tableConfig.newColumns;
 
         onChangeTableConfiguration &&
@@ -918,6 +911,8 @@ export class TyrTableBase<
 
     sortDirections[sortFieldName] = sorter.order!;
 
+    this.updateConfigSort(sortFieldName, sorter.order);
+
     this.execute();
 
     this.props.notifySortSet?.(sortFieldName, sorter.order);
@@ -1218,7 +1213,7 @@ export class TyrTableBase<
                   table={this}
                   columns={this.paths}
                   config={tableConfig}
-                  tableConfig={this.tableConfig}
+                  tableConfig={this.componentConfig}
                   onCancel={() => (this.showConfig = false)}
                   onUpdate={this.onUpdateTableConfig}
                   containerEl={this.tableWrapper!}
@@ -1230,7 +1225,7 @@ export class TyrTableBase<
                   columns={this.paths}
                   config={tableConfig || true}
                   export={true}
-                  tableConfig={this.tableConfig}
+                  tableConfig={this.componentConfig}
                   onCancel={() => (this.showExport = false)}
                   onUpdate={this.onUpdateTableConfig}
                   containerEl={this.tableWrapper!}

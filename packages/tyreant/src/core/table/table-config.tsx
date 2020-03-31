@@ -71,7 +71,9 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       const columnFields = compact(
         columns.map(c => getPathName(c.path))
       ) as string[];
-      tableConfig = new Tyr.byName.tyrTableConfig({
+
+      const { TyrComponentConfig } = Tyr.collections;
+      tableConfig = new TyrComponentConfig({
         documentUid,
         collection: collection.id,
         userId,
@@ -122,7 +124,8 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   }, [columns]);
 
   const onSave = async () => {
-    const newTableConfig = new Tyr.byName.tyrTableConfig({
+    const { TyrComponentConfig } = Tyr.collections;
+    const newTableConfig = new TyrComponentConfig({
       ...incomingTableConfig,
       fields: columnFields
     });
@@ -316,12 +319,18 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
   table: TyrTableBase<D>,
   columns: TyrTableColumnPathProps[],
   config: TyrTableConfig | string | boolean,
-  existingTableConfig?: any
+  existingTableConfig?: Tyr.TyrComponentConfig
 ) => {
   let tableConfig: Tyr.TyrComponentConfig;
+  const { TyrComponentConfig } = Tyr.collections;
 
-  if (typeof config === 'boolean') config = 'default';
-  if (typeof config === 'string') config = { key: config };
+  if (typeof config === 'boolean') {
+    config = 'default';
+  }
+
+  if (typeof config === 'string') {
+    config = { key: config };
+  }
 
   if (existingTableConfig) {
     tableConfig = existingTableConfig;
@@ -329,7 +338,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
     const { documentUid, key } = config;
     const userId = Tyr.local.user.$id;
 
-    tableConfig = (await Tyr.byName.tyrComponentConfig.findOne({
+    tableConfig = (await TyrComponentConfig.findOne({
       query: {
         name: 'table',
         userId,
@@ -340,7 +349,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
     }))!;
 
     if (!tableConfig) {
-      tableConfig = new Tyr.byName.tyrComponentConfig({
+      tableConfig = new TyrComponentConfig({
         name: 'table',
         documentUid,
         collectionId: table.collection.id,
@@ -348,13 +357,15 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
         key,
         fields: columns.map(c => {
           return {
-            name: c,
+            name: getPathName(c.path),
             hidden: !!c.defaultHidden,
-            defaultSort: c.defaultSort ? c.defaultSort : undefined,
+            sortDirection: c.defaultSort ? c.defaultSort : undefined,
             filter: c.defaultFilter ? c.defaultFilter : undefined
           };
         })
       })!;
+
+      tableConfig = await TyrComponentConfig.save(tableConfig);
     }
   }
 
