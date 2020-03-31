@@ -59,7 +59,7 @@ import './diff/diff';
 import './secure/secure';
 import './secure/secureError';
 
-import './ui/table-config';
+import './ui/component-config';
 
 import './page/markup';
 import './page/markupType';

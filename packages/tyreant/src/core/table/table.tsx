@@ -152,7 +152,9 @@ export interface TyrTableProps<D extends Tyr.Document>
   onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
-  onChangeTableConfiguration?: (fields: Tyr.TyrTableConfig['fields']) => void;
+  onChangeTableConfiguration?: (
+    fields: Tyr.TyrComponentConfig['fields']
+  ) => void;
   scroll?: { x?: number | true | string; y?: number | string };
   footer?: (currentPageData: D[]) => React.ReactNode;
   title?: (currentPageData: D[]) => React.ReactNode;
@@ -197,33 +199,30 @@ export class TyrTableBase<
   @observable
   showExport = false;
 
-  @observable
-  tableConfig?: Tyr.TyrTableConfig;
-
   currentRowForm?: FormInstance;
+
+  componentName = 'table';
+  hasFilters = true;
+  hasSortDirection = true;
 
   constructor(props: TyrTableProps<D>, state: TyrComponentState<D>) {
     super(props, state);
   }
 
   async componentDidMount() {
-    super.componentDidMount();
-
     const { config, onLoad } = this.props;
 
     if (config) {
       this.loading = true;
-      const existingConfig = await ensureTableConfig(this, this.paths, config);
+      const tableConfig = await ensureTableConfig(this, this.paths, config);
 
-      if (existingConfig) {
-        this.otherPaths = existingConfig.newColumns;
-        this.tableConfig = existingConfig.tableConfig;
-      } else {
-        this.otherPaths = this.paths;
-      }
+      this.componentConfig = tableConfig.tableConfig;
+      this.otherPaths = tableConfig.newColumns;
 
+      super.componentDidMount();
       this.loading = false;
     } else {
+      super.componentDidMount();
       this.otherPaths = this.paths;
     }
 
@@ -274,7 +273,7 @@ export class TyrTableBase<
       );
 
       if (!existingCol) {
-        const fld = this.tableConfig?.fields.find(
+        const fld = this.componentConfig?.fields.find(
           f => f.name === nextOtherFieldName
         );
 
@@ -339,13 +338,13 @@ export class TyrTableBase<
       );
 
       if (tableConfig) {
-        this.tableConfig = tableConfig.tableConfig;
+        this.componentConfig = tableConfig.tableConfig;
         this.otherPaths = tableConfig.newColumns;
 
         onChangeTableConfiguration &&
           onChangeTableConfiguration(
             (tableConfig.tableConfig as any).fields.map(
-              (f: Tyr.TyrTableConfig['fields'][0]) => {
+              (f: Tyr.TyrComponentConfig['fields'][0]) => {
                 return {
                   name: f.name,
                   hidden: !!f.hidden
@@ -913,6 +912,8 @@ export class TyrTableBase<
 
     sortDirections[sortFieldName] = sorter.order!;
 
+    this.updateConfigSort(sortFieldName, sorter.order);
+
     this.execute();
 
     this.props.notifySortSet?.(sortFieldName, sorter.order);
@@ -1213,7 +1214,7 @@ export class TyrTableBase<
                   table={this}
                   columns={this.paths}
                   config={tableConfig}
-                  tableConfig={this.tableConfig}
+                  tableConfig={this.componentConfig}
                   onCancel={() => (this.showConfig = false)}
                   onUpdate={this.onUpdateTableConfig}
                   containerEl={this.tableWrapper!}
@@ -1225,7 +1226,7 @@ export class TyrTableBase<
                   columns={this.paths}
                   config={tableConfig || true}
                   export={true}
-                  tableConfig={this.tableConfig}
+                  tableConfig={this.componentConfig}
                   onCancel={() => (this.showExport = false)}
                   onUpdate={this.onUpdateTableConfig}
                   containerEl={this.tableWrapper!}

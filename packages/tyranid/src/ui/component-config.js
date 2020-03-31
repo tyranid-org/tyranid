@@ -4,38 +4,46 @@ import Collection from '../core/collection';
 
 // TODO:  some way for components to indicate what features they support
 
-const tableConfigField = {
+const configField = {
   is: 'object',
   fields: {
     name: { is: 'string', required: true },
     hidden: { is: 'boolean' },
     width: { is: 'integer' },
-    filterValue: { is: 'object' },
+    filter: { is: 'object' },
     sortDirection: { is: 'string', note: 'ascend, descend, or null' }
   }
 };
 
-const TableConfig = new Collection({
+const ComponentConfig = new Collection({
   id: '_tc',
-  name: 'tyrTableConfig',
+  name: 'tyrComponentConfig',
   express: { rest: true },
   internal: true,
   fields: {
     _id: { is: 'mongoid' },
     fields: {
       is: 'array',
-      of: tableConfigField,
+      of: configField,
       required: true,
       defaultValue: []
     },
 
-    // TODO: what type of component
-
-    key: { is: 'string' },
+    name: {
+      is: 'string',
+      help: 'Component Name (table, kanban, etc)',
+      required: true
+    },
+    key: {
+      is: 'string',
+      help:
+        'Idenifier to distinguish between like type components used in different areas',
+      defaultValue: 'default'
+    },
     documentUid: { is: 'string', requried: true },
     userId: { link: 'user?' },
     collectionId: { is: 'string', requried: true },
-    pageSize: { is: 'integer', defaultValue: 10 }
+    pageSize: { is: 'integer', defaultValue: 20 }
   },
   indexes: [
     {
@@ -47,4 +55,4 @@ const TableConfig = new Collection({
   ]
 });
 
-export default TableConfig;
+export default ComponentConfig;

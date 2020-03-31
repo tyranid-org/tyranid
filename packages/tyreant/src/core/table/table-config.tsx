@@ -27,7 +27,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | string /* the key */
     | true /* if true, key is "default" */;
   export?: boolean;
-  tableConfig?: Tyr.TyrTableConfig;
+  tableConfig?: Tyr.TyrComponentConfig;
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
   columns: TyrTableColumnPathProps[];
@@ -61,7 +61,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   // Only runs once
   useEffect(() => {
-    let tableConfig: Tyr.TyrTableConfig;
+    let tableConfig: Tyr.TyrComponentConfig;
     const userId = Tyr.local.user.$id;
 
     if (incomingTableConfig) {
@@ -71,7 +71,9 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       const columnFields = compact(
         columns.map(c => getPathName(c.path))
       ) as string[];
-      tableConfig = new Tyr.byName.tyrTableConfig({
+
+      const { TyrComponentConfig } = Tyr.collections;
+      tableConfig = new TyrComponentConfig({
         documentUid,
         collection: collection.id,
         userId,
@@ -122,7 +124,8 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   }, [columns]);
 
   const onSave = async () => {
-    const newTableConfig = new Tyr.byName.tyrTableConfig({
+    const { TyrComponentConfig } = Tyr.collections;
+    const newTableConfig = new TyrComponentConfig({
       ...incomingTableConfig,
       fields: columnFields
     });
@@ -316,22 +319,28 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
   table: TyrTableBase<D>,
   columns: TyrTableColumnPathProps[],
   config: TyrTableConfig | string | boolean,
-  existingTableConfig?: any
+  existingTableConfig?: Tyr.TyrComponentConfig
 ) => {
-  let tableConfig: Tyr.TyrTableConfig;
+  let tableConfig: Tyr.TyrComponentConfig;
+  const { TyrComponentConfig } = Tyr.collections;
 
-  if (typeof config === 'boolean') config = 'default';
-  if (typeof config === 'string') config = { key: config };
+  if (typeof config === 'boolean') {
+    config = 'default';
+  }
+
+  if (typeof config === 'string') {
+    config = { key: config };
+  }
 
   if (existingTableConfig) {
     tableConfig = existingTableConfig;
   } else {
     const { documentUid, key } = config;
-
     const userId = Tyr.local.user.$id;
 
-    tableConfig = (await Tyr.byName.tyrTableConfig.findOne({
+    tableConfig = (await TyrComponentConfig.findOne({
       query: {
+        name: 'table',
         userId,
         key,
         documentUid: documentUid || { $exists: false },
@@ -340,18 +349,23 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
     }))!;
 
     if (!tableConfig) {
-      tableConfig = new Tyr.byName.tyrTableConfig({
+      tableConfig = new TyrComponentConfig({
+        name: 'table',
         documentUid,
         collectionId: table.collection.id,
         userId,
         key,
         fields: columns.map(c => {
           return {
-            name: c,
-            hidden: !!c.defaultHidden
+            name: getPathName(c.path),
+            hidden: !!c.defaultHidden,
+            sortDirection: c.defaultSort ? c.defaultSort : undefined,
+            filter: c.defaultFilter ? c.defaultFilter : undefined
           };
         })
       })!;
+
+      tableConfig = await TyrComponentConfig.save(tableConfig);
     }
   }
 

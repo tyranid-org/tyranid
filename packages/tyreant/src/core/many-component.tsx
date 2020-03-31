@@ -22,6 +22,8 @@ import { getFilter } from '../type';
 import { tyreant } from '../tyreant';
 import Pagination from 'antd/es/pagination';
 
+import { getPathName } from './path';
+
 export const DEFAULT_PAGE_SIZE = 20;
 
 export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
@@ -77,13 +79,6 @@ export class TyrManyComponent<
 
   constructor(props: Props, state: State) {
     super(props, state);
-
-    const { documents } = this.props;
-    this.setDefaultSort();
-
-    if (documents) {
-      this.setSortedDocuments(documents.slice());
-    }
   }
 
   componentDidMount() {
@@ -91,9 +86,15 @@ export class TyrManyComponent<
 
     const { documents, query } = this.props;
 
-    if (documents && query) {
-      // we need to know the query even for in-memory tables because when we run an csv export we need to query the same rows
-      this.findOpts = { query };
+    this.setDefaultSort();
+
+    if (documents) {
+      this.setSortedDocuments(documents.slice());
+
+      if (query) {
+        // we need to know the query even for in-memory tables because when we run an csv export we need to query the same rows
+        this.findOpts = { query };
+      }
     }
   }
 
@@ -268,10 +269,14 @@ export class TyrManyComponent<
     if (existingFilter) return existingFilter;
 
     const filterable = {
+      component: this,
       searchValues: this.searchValues,
       onSearch: () => {
         this.skip = 0;
         this.execute();
+
+        // Save the filters in filter config
+        this.updateConfigFilter(pathName, this.searchValues[pathName]);
       },
       localSearch: this.isLocal,
       localDocuments: this.documents
@@ -297,19 +302,33 @@ export class TyrManyComponent<
     this.setSortedDocuments(this.documents.slice());
     this.setState({});
 
+    this.updateConfigFilter();
+
+    // Update if on props
     notifyFilterExists && notifyFilterExists(false);
 
+    const sortColumn = this.paths.find(column => !!column.defaultSort);
+    this.updateConfigSort(sortColumn?.path?.name, sortColumn?.defaultSort);
+
     if (notifySortSet) {
-      const sortColumn = this.paths.find(column => !!column.defaultSort);
+      // Update if on props
       notifySortSet(sortColumn?.path?.name, sortColumn?.defaultSort);
     }
   };
 
   setDefaultSort() {
-    const sortColumn = this.paths.find(column => !!column.defaultSort);
-    const sortName = sortColumn?.path?.name;
+    // Sort is only valid if column has a sort direction and is in active paths
+    const sortColumn = this.componentConfig?.fields.find(
+      column =>
+        !!column.sortDirection &&
+        !!this.activePaths.find(ap => getPathName(ap.path) === column.name)
+    );
 
-    if (sortName) this.sortDirections[sortName] = sortColumn!.defaultSort!;
+    const sortName = sortColumn?.name;
+
+    if (sortName)
+      this.sortDirections[sortName] = sortColumn!
+        .sortDirection! as TyrSortDirection;
   }
 
   // Sort the documents according to the current sort
@@ -574,15 +593,7 @@ export class TyrManyComponent<
 
     // apply any default sort if no sort was supplied
     if (!sortFound) {
-      const defaultSortColumn = this.activePaths.find(
-        column => !!column.defaultSort
-      );
-      if (defaultSortColumn) {
-        const fieldName = defaultSortColumn.path?.name;
-
-        if (fieldName)
-          this.sortDirections[fieldName] = defaultSortColumn.defaultSort!;
-      }
+      this.setDefaultSort();
     }
   }
 
@@ -621,6 +632,12 @@ export class TyrManyComponent<
     if (!this.cancelAutorun) {
       this.cancelAutorun = autorun(() => {
         const { route } = this.props;
+
+        this.componentConfig?.fields.forEach(f => {
+          if (f.filter) {
+            this.searchValues[f.name] = f.filter;
+          }
+        });
 
         if (route) {
           const location = tyreant.router.location!;
