@@ -79,6 +79,21 @@ declare module 'tyranid' {
     
 
     /**
+     * Server base document definition for TyrComponentConfigCollection.
+     */
+    interface BaseTyrComponentConfig
+      extends Isomorphic.BaseTyrComponentConfig<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Server document definition for TyrComponentConfigCollection,
+     * extends isomorphic base interface BaseTyrComponentConfig.
+     */
+    interface TyrComponentConfig
+      extends Inserted<ObjIdType>,
+              BaseTyrComponentConfig {}
+    
+
+    /**
      * Server base document definition for TyrExchangeRateCollection.
      */
     interface BaseTyrExchangeRate
@@ -259,21 +274,6 @@ declare module 'tyranid' {
     
 
     /**
-     * Server base document definition for TyrTableConfigCollection.
-     */
-    interface BaseTyrTableConfig
-      extends Isomorphic.BaseTyrTableConfig<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
-
-    /**
-     * Server document definition for TyrTableConfigCollection,
-     * extends isomorphic base interface BaseTyrTableConfig.
-     */
-    interface TyrTableConfig
-      extends Inserted<ObjIdType>,
-              BaseTyrTableConfig {}
-    
-
-    /**
      * Server base document definition for TyrUserAgentCollection.
      */
     interface BaseTyrUserAgent
@@ -392,6 +392,13 @@ declare module 'tyranid' {
     /**
      * Server collection definition.
      */
+    interface TyrComponentConfigCollection
+      extends Tyr.CollectionInstance<TyrComponentConfig> {
+    }
+
+    /**
+     * Server collection definition.
+     */
     interface TyrExchangeRateCollection
       extends Tyr.CollectionInstance<TyrExchangeRate> {
     }
@@ -480,13 +487,6 @@ declare module 'tyranid' {
     /**
      * Server collection definition.
      */
-    interface TyrTableConfigCollection
-      extends Tyr.CollectionInstance<TyrTableConfig> {
-    }
-
-    /**
-     * Server collection definition.
-     */
     interface TyrUserAgentCollection
       extends Tyr.CollectionInstance<TyrUserAgent> {
     }
@@ -542,6 +542,7 @@ declare module 'tyranid' {
       country: CountryCollection;
       mediaType: MediaTypeCollection;
       province: ProvinceCollection;
+      tyrComponentConfig: TyrComponentConfigCollection;
       tyrExchangeRate: TyrExchangeRateCollection;
       tyrImport: TyrImportCollection;
       tyrInstance: TyrInstanceCollection;
@@ -554,7 +555,6 @@ declare module 'tyranid' {
       tyrSchema: TyrSchemaCollection;
       tyrSchemaType: TyrSchemaTypeCollection;
       tyrSubscription: TyrSubscriptionCollection;
-      tyrTableConfig: TyrTableConfigCollection;
       tyrUserAgent: TyrUserAgentCollection;
       unit: UnitCollection;
       unitFactor: UnitFactorCollection;
@@ -570,6 +570,7 @@ declare module 'tyranid' {
       Country: CountryCollection;
       MediaType: MediaTypeCollection;
       Province: ProvinceCollection;
+      TyrComponentConfig: TyrComponentConfigCollection;
       TyrExchangeRate: TyrExchangeRateCollection;
       TyrImport: TyrImportCollection;
       TyrInstance: TyrInstanceCollection;
@@ -582,7 +583,6 @@ declare module 'tyranid' {
       TyrSchema: TyrSchemaCollection;
       TyrSchemaType: TyrSchemaTypeCollection;
       TyrSubscription: TyrSubscriptionCollection;
-      TyrTableConfig: TyrTableConfigCollection;
       TyrUserAgent: TyrUserAgentCollection;
       Unit: UnitCollection;
       UnitFactor: UnitFactorCollection;
@@ -598,6 +598,7 @@ declare module 'tyranid' {
       _g1: CountryCollection;
       _mt: MediaTypeCollection;
       _g2: ProvinceCollection;
+      _tc: TyrComponentConfigCollection;
       _u5: TyrExchangeRateCollection;
       _im: TyrImportCollection;
       _t2: TyrInstanceCollection;
@@ -610,7 +611,6 @@ declare module 'tyranid' {
       _t1: TyrSchemaCollection;
       _t0: TyrSchemaTypeCollection;
       _t3: TyrSubscriptionCollection;
-      _tc: TyrTableConfigCollection;
       _u4: TyrUserAgentCollection;
       _u2: UnitCollection;
       _u3: UnitFactorCollection;

@@ -152,7 +152,9 @@ export interface TyrTableProps<D extends Tyr.Document>
   onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
-  onChangeTableConfiguration?: (fields: Tyr.TyrTableConfig['fields']) => void;
+  onChangeTableConfiguration?: (
+    fields: Tyr.TyrComponentConfig['fields']
+  ) => void;
   scroll?: { x?: number | true | string; y?: number | string };
   footer?: (currentPageData: D[]) => React.ReactNode;
   title?: (currentPageData: D[]) => React.ReactNode;
@@ -198,9 +200,13 @@ export class TyrTableBase<
   showExport = false;
 
   @observable
-  tableConfig?: Tyr.TyrTableConfig;
+  tableConfig?: Tyr.TyrComponentConfig;
 
   currentRowForm?: FormInstance;
+
+  componentName = 'table';
+  hasFilters = true;
+  hasSortDirection = true;
 
   constructor(props: TyrTableProps<D>, state: TyrComponentState<D>) {
     super(props, state);
@@ -345,7 +351,7 @@ export class TyrTableBase<
         onChangeTableConfiguration &&
           onChangeTableConfiguration(
             (tableConfig.tableConfig as any).fields.map(
-              (f: Tyr.TyrTableConfig['fields'][0]) => {
+              (f: Tyr.TyrComponentConfig['fields'][0]) => {
                 return {
                   name: f.name,
                   hidden: !!f.hidden

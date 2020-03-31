@@ -86,6 +86,12 @@ export class TyrComponent<
 
   hasPaging = false;
 
+  hasSortDirection = false;
+
+  hasFilters = false;
+
+  componentName = '';
+
   /*
    * * * TyrOneComponent properties defined here for convenience in callbacks * * *
    */

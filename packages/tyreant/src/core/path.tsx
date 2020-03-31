@@ -105,6 +105,7 @@ export interface TyrPathProps
   valueField?: string;
 
   defaultSort?: TyrSortDirection;
+  defaultFilter?: Object;
   dropdownClassName?: string;
   width?: number | string;
 

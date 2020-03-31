@@ -27,7 +27,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | string /* the key */
     | true /* if true, key is "default" */;
   export?: boolean;
-  tableConfig?: Tyr.TyrTableConfig;
+  tableConfig?: Tyr.TyrComponentConfig;
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
   columns: TyrTableColumnPathProps[];
@@ -61,7 +61,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   // Only runs once
   useEffect(() => {
-    let tableConfig: Tyr.TyrTableConfig;
+    let tableConfig: Tyr.TyrComponentConfig;
     const userId = Tyr.local.user.$id;
 
     if (incomingTableConfig) {
@@ -318,7 +318,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
   config: TyrTableConfig | string | boolean,
   existingTableConfig?: any
 ) => {
-  let tableConfig: Tyr.TyrTableConfig;
+  let tableConfig: Tyr.TyrComponentConfig;
 
   if (typeof config === 'boolean') config = 'default';
   if (typeof config === 'string') config = { key: config };
@@ -327,11 +327,11 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
     tableConfig = existingTableConfig;
   } else {
     const { documentUid, key } = config;
-
     const userId = Tyr.local.user.$id;
 
-    tableConfig = (await Tyr.byName.tyrTableConfig.findOne({
+    tableConfig = (await Tyr.byName.tyrComponentConfig.findOne({
       query: {
+        name: 'table',
         userId,
         key,
         documentUid: documentUid || { $exists: false },
@@ -340,7 +340,8 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
     }))!;
 
     if (!tableConfig) {
-      tableConfig = new Tyr.byName.tyrTableConfig({
+      tableConfig = new Tyr.byName.tyrComponentConfig({
+        name: 'table',
         documentUid,
         collectionId: table.collection.id,
         userId,
@@ -348,7 +349,9 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
         fields: columns.map(c => {
           return {
             name: c,
-            hidden: !!c.defaultHidden
+            hidden: !!c.defaultHidden,
+            defaultSort: c.defaultSort ? c.defaultSort : undefined,
+            filter: c.defaultFilter ? c.defaultFilter : undefined
           };
         })
       })!;

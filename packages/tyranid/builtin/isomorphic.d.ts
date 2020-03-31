@@ -75,6 +75,31 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
+     * "tyrComponentConfig" <TyrComponentConfigCollection> are derived
+     */
+    export interface BaseTyrComponentConfig<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      collectionId?: string;
+      documentUid?: string;
+      fields: {
+        filter?: any;
+        hidden?: boolean;
+        name: string;
+        
+        /**
+         * ascend, descend, or null         */sortDirection?: string;
+        width?: number;
+      }[];
+      /**
+       * Idenifier to distinguish between like type components used in different areas       */
+      key?: string;
+      /**
+       * Component Name (table, kanban, etc)       */
+      name: string;
+      pageSize?: number;
+    }
+    
+    /**
+     * Base interface from which documents in collection
      * "tyrExchangeRate" <TyrExchangeRateCollection> are derived
      */
     export interface BaseTyrExchangeRate<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -216,26 +241,6 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
-     * "tyrTableConfig" <TyrTableConfigCollection> are derived
-     */
-    export interface BaseTyrTableConfig<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
-      collectionId?: string;
-      documentUid?: string;
-      fields: {
-        filterValue?: any;
-        hidden?: boolean;
-        name: string;
-        
-        /**
-         * ascend, descend, or null         */sortDirection?: string;
-        width?: number;
-      }[];
-      key?: string;
-      pageSize?: number;
-    }
-    
-    /**
-     * Base interface from which documents in collection
      * "tyrUserAgent" <TyrUserAgentCollection> are derived
      */
     export interface BaseTyrUserAgent<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -320,6 +325,12 @@ declare module 'tyranid/isomorphic' {
       extends Inserted<number>,
               BaseProvince<ObjIdType, ObjContainer, NumContainer> {}
     /**
+     * Document returned by collection "tyrComponentConfig" <TyrComponentConfigCollection>
+     */
+    export interface TyrComponentConfig<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<ObjIdType>,
+              BaseTyrComponentConfig<ObjIdType, ObjContainer, NumContainer> {}
+    /**
      * Document returned by collection "tyrExchangeRate" <TyrExchangeRateCollection>
      */
     export interface TyrExchangeRate<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
@@ -392,12 +403,6 @@ declare module 'tyranid/isomorphic' {
       extends Inserted<ObjIdType>,
               BaseTyrSubscription<ObjIdType, ObjContainer, NumContainer> {}
     /**
-     * Document returned by collection "tyrTableConfig" <TyrTableConfigCollection>
-     */
-    export interface TyrTableConfig<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
-      extends Inserted<ObjIdType>,
-              BaseTyrTableConfig<ObjIdType, ObjContainer, NumContainer> {}
-    /**
      * Document returned by collection "tyrUserAgent" <TyrUserAgentCollection>
      */
     export interface TyrUserAgent<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
@@ -465,6 +470,12 @@ declare module 'tyranid/isomorphic' {
      */
     export interface ProvinceCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<Province<ObjIdType, ObjContainer, NumContainer>> {}
+    
+    /**
+     * Type definition for "tyrComponentConfig" collection
+     */
+    export interface TyrComponentConfigCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<TyrComponentConfig<ObjIdType, ObjContainer, NumContainer>> {}
     
     /**
      * Type definition for "tyrExchangeRate" collection
@@ -541,12 +552,6 @@ declare module 'tyranid/isomorphic' {
      */
     export interface TyrSubscriptionCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<TyrSubscription<ObjIdType, ObjContainer, NumContainer>> {}
-    
-    /**
-     * Type definition for "tyrTableConfig" collection
-     */
-    export interface TyrTableConfigCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
-      extends CollectionInstance<TyrTableConfig<ObjIdType, ObjContainer, NumContainer>> {}
     
     /**
      * Type definition for "tyrUserAgent" collection
@@ -6422,6 +6427,7 @@ declare module 'tyranid/isomorphic' {
       country: CountryCollection<IdType>;
       mediaType: MediaTypeCollection<IdType>;
       province: ProvinceCollection<IdType>;
+      tyrComponentConfig: TyrComponentConfigCollection<IdType>;
       tyrExchangeRate: TyrExchangeRateCollection<IdType>;
       tyrImport: TyrImportCollection<IdType>;
       tyrInstance: TyrInstanceCollection<IdType>;
@@ -6434,7 +6440,6 @@ declare module 'tyranid/isomorphic' {
       tyrSchema: TyrSchemaCollection<IdType>;
       tyrSchemaType: TyrSchemaTypeCollection<IdType>;
       tyrSubscription: TyrSubscriptionCollection<IdType>;
-      tyrTableConfig: TyrTableConfigCollection<IdType>;
       tyrUserAgent: TyrUserAgentCollection<IdType>;
       unit: UnitCollection<IdType>;
       unitFactor: UnitFactorCollection<IdType>;
@@ -6450,6 +6455,7 @@ declare module 'tyranid/isomorphic' {
       Country: CountryCollection<IdType>;
       MediaType: MediaTypeCollection<IdType>;
       Province: ProvinceCollection<IdType>;
+      TyrComponentConfig: TyrComponentConfigCollection<IdType>;
       TyrExchangeRate: TyrExchangeRateCollection<IdType>;
       TyrImport: TyrImportCollection<IdType>;
       TyrInstance: TyrInstanceCollection<IdType>;
@@ -6462,7 +6468,6 @@ declare module 'tyranid/isomorphic' {
       TyrSchema: TyrSchemaCollection<IdType>;
       TyrSchemaType: TyrSchemaTypeCollection<IdType>;
       TyrSubscription: TyrSubscriptionCollection<IdType>;
-      TyrTableConfig: TyrTableConfigCollection<IdType>;
       TyrUserAgent: TyrUserAgentCollection<IdType>;
       Unit: UnitCollection<IdType>;
       UnitFactor: UnitFactorCollection<IdType>;
@@ -6478,6 +6483,7 @@ declare module 'tyranid/isomorphic' {
       _g1: CountryCollection<IdType>;
       _mt: MediaTypeCollection<IdType>;
       _g2: ProvinceCollection<IdType>;
+      _tc: TyrComponentConfigCollection<IdType>;
       _u5: TyrExchangeRateCollection<IdType>;
       _im: TyrImportCollection<IdType>;
       _t2: TyrInstanceCollection<IdType>;
@@ -6490,7 +6496,6 @@ declare module 'tyranid/isomorphic' {
       _t1: TyrSchemaCollection<IdType>;
       _t0: TyrSchemaTypeCollection<IdType>;
       _t3: TyrSubscriptionCollection<IdType>;
-      _tc: TyrTableConfigCollection<IdType>;
       _u4: TyrUserAgentCollection<IdType>;
       _u2: UnitCollection<IdType>;
       _u3: UnitFactorCollection<IdType>;
@@ -6507,6 +6512,7 @@ declare module 'tyranid/isomorphic' {
      |'country'
      |'mediaType'
      |'province'
+     |'tyrComponentConfig'
      |'tyrExchangeRate'
      |'tyrImport'
      |'tyrInstance'
@@ -6519,7 +6525,6 @@ declare module 'tyranid/isomorphic' {
      |'tyrSchema'
      |'tyrSchemaType'
      |'tyrSubscription'
-     |'tyrTableConfig'
      |'tyrUserAgent'
      |'unit'
      |'unitFactor'
