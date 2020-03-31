@@ -187,32 +187,18 @@ declare module 'tyranid/client' {
       ): PathInstance;
     }
 
-    export interface PathInstance /*extends Isomorphic.PathInstance*/ {
-      $metaType: 'path';
-
+    export interface PathInstance extends Isomorphic.PathInstance {
       detail: FieldInstance;
-      name: string;
-      identifier: string;
-      path: string[];
-      spath: string;
       fields: FieldInstance[];
-      pathLabel: string;
       tail: FieldInstance;
 
-      groupCount: number;
-      groupRange(groupNumber: number): [number, number];
-      groupLabel(groupNumber: number): string;
-
       parsePath(path: string): PathInstance;
-      pathName(idx: number): string;
-      uniq(obj: any): any[];
-      get(obj: any): any;
-      set<D extends Document<AnyIdType>>(
-        obj: D,
-        value: any,
-        opts?: { create?: boolean; ignore?: boolean }
-      ): void;
-      walk(path: string | number): PathInstance;
+      //set<D extends Document<AnyIdType>>(
+      //obj: D,
+      //value: any,
+      //opts?: { create?: boolean; ignore?: boolean }
+      //): void;
+      //walk(path: string | number): PathInstance;
     }
 
     export interface TypeStatic extends Isomorphic.TypeStatic {
@@ -314,7 +300,7 @@ declare module 'tyranid/client' {
       path: PathInstance;
       numbering?: Numbering;
       of?: FieldInstance<D>;
-      parent?: FieldInstance<D>;
+      parent?: this;
       pathLabel: string;
       pathName: string;
       readonly: boolean;
@@ -324,8 +310,8 @@ declare module 'tyranid/client' {
       link?: CollectionInstance;
       relate?: 'owns' | 'ownedBy' | 'associate';
       type: TypeInstance;
-      keys?: FieldInstance<D>;
-      fields?: { [key: string]: FieldInstance<D> };
+      keys?: this;
+      fields?: { [key: string]: this };
       method: string;
 
       format(value: any): string;
@@ -353,10 +339,9 @@ declare module 'tyranid/client' {
 
     export interface CollectionInstance<
       D extends Document<AnyIdType> = Document<AnyIdType>
-    > extends Class<D> {
+    > extends Class<D>, Isomorphic.CollectionInstance<D> {
       new (doc?: RawMongoDocument): D;
 
-      $metaType: 'collection';
       aux(fields: { [key: string]: FieldDefinition<D> }): void;
       byId(id: IdType<D>, opts?: any): Promise<D | null>;
       byIds(ids: IdType<D>[], opts?: any): Promise<D[]>;
@@ -364,15 +349,8 @@ declare module 'tyranid/client' {
       byLabel(label: string): Promise<D | null>;
       cache(document: D): void;
       count(opts: any): Promise<number>;
-      def: any /* collection def */;
       exists(opts: any): Promise<boolean>;
       fields: { [fieldName: string]: FieldInstance<D> };
-      fieldsFor(opts: {
-        match?: MongoDocument;
-        query?: MongoQuery;
-        custom?: boolean;
-        static?: boolean;
-      }): Promise<{ [key: string]: FieldInstance<D> }>;
       findAll(args: any): Promise<D[] & { count?: number }>;
       findOne(args: any): Promise<D | null>;
       id: string;

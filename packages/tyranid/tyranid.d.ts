@@ -1173,18 +1173,12 @@ export namespace Tyr {
   }
 
   export interface PathInstance extends Isomorphic.PathInstance {
-    $metaType: 'path';
-    detail: FieldInstance;
-    fields: FieldInstance[];
-    tail: FieldInstance;
-
-    parsePath(path: string): PathInstance;
-    set<D extends Tyr.Document>(
-      obj: D,
-      value: any,
-      opts?: { create?: boolean; ignore?: boolean }
-    ): void;
-    walk(path: string | number): PathInstance;
+    //set<D extends Tyr.Document>(
+    //obj: D,
+    //value: any,
+    //opts?: { create?: boolean; ignore?: boolean }
+    //): void;
+    //walk(path: string | number): PathInstance;
   }
 
   export interface TypeStatic extends Isomorphic.TypeStatic {

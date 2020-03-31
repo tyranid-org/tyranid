@@ -211,8 +211,10 @@ export namespace Tyr {
   > {
     $metaType: 'field';
 
-    collection: CollectionInstance<any>; // ISO-VARIANCE
+    collection: Tyr.CollectionInstance<any>; // ISO-VARIANCE
+    aux: boolean;
     computed: boolean;
+    generated: boolean;
     db: boolean;
     def: FieldDefinition<D>;
     dynamicSchema?: any;
@@ -269,13 +271,13 @@ export namespace Tyr {
     spathArr: string;
     fields: FieldInstance[];
     pathLabel: string;
-    tail: FieldInstance;
+    tail: Tyr.FieldInstance;
 
     groupCount: number;
     groupRange(groupNumber: number): [number, number];
     groupLabel(groupNumber: number): string;
 
-    parsePath(path: string): PathInstance;
+    parsePath(path: string): this;
     pathName(idx: number): string;
     projectify(projection: MongoProjection): void;
     uniq(obj: any): any[];
@@ -285,7 +287,7 @@ export namespace Tyr {
       value: any,
       opts?: { create?: boolean; ignore?: boolean }
     ): void;
-    walk(path: string | number): PathInstance;
+    walk(path: string | number): this;
   }
 
   export type IdType<D extends Document<AnyIdType>> = D extends Document<
@@ -310,6 +312,12 @@ export namespace Tyr {
     def: any /* collection def */;
     exists(opts: any): Promise<boolean>;
     fields: { [fieldName: string]: FieldInstance<D> };
+    fieldsFor(opts: {
+      match?: MongoDocument;
+      query?: MongoQuery;
+      custom?: boolean;
+      static?: boolean;
+    }): Promise<{ [key: string]: Tyr.FieldInstance<D> }>;
     findAll(args: any): Promise<D[] & { count?: number }>;
     findOne(args: any): Promise<D | null>;
     id: string;
