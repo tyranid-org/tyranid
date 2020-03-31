@@ -152,13 +152,13 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     action,
     hide
   }: TyrActionOpts<D>) {
-    this.traits = traits || [];
+    this.traits = traits = traits || [];
     this.name = name;
     this.self = self;
     this.labelValue = label || Tyr.labelize(name);
     this.title = title || this.labelValue;
     this.action = action;
-    this.input = input ?? 1;
+    this.input = input ?? (traits.includes('create') ? 0 : 1);
     this.hide = hide;
   }
 

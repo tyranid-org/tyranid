@@ -121,6 +121,13 @@ export default class Field {
     return np;
   }
 
+  get numbering() {
+    const { numbering } = this.def;
+    return (
+      numbering || (this.type.name === 'integer' ? 'integer' : 'uppercase')
+    );
+  }
+
   get spath() {
     return this.namePath.spath;
   }

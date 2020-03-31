@@ -94,6 +94,14 @@ export namespace Tyr {
   export const query: QueryStatic;
   export const secure: Secure;
 
+  export type Numbering =
+    | 'lowercase'
+    | 'uppercase'
+    | 'zero-based'
+    | 'one-based'
+    | 'roman'
+    | 'roman-lowercase';
+
   export namespace functions {
     export function paths(fn: Function): String[];
   }
@@ -102,13 +110,17 @@ export namespace Tyr {
   export function parseUid(
     uid: string
   ): { collection: CollectionInstance; id: AnyIdType };
+
   export function capitalize(name: string): string;
   export function labelize(name: string): string;
+  export function numberize(numbering: Numbering, num: number): string;
+  export function ordinalize(num: number): string;
   export function pluralize(str: string): string;
-  export function projectify(obj: object | NamePath[]): MongoProjection;
-  export function sanitize(opts?: SanitizeOptions): Promise<void>;
   export function singularize(str: string): string;
   export function unitize(count: number, unit: string): string;
+
+  export function projectify(obj: object | NamePath[]): MongoProjection;
+  export function sanitize(opts?: SanitizeOptions): Promise<void>;
   export function config(opts: ConfigOptions): Promise<void>;
   export function connect(opts: ConnectOptions): void;
   export function createIndexes(): Promise<void>;
@@ -1047,6 +1059,8 @@ export namespace Tyr {
     help?: string;
     placeholder?: string;
 
+    numbering?: Numbering;
+
     deprecated?: string | boolean;
     note?: string;
 
@@ -1112,6 +1126,7 @@ export namespace Tyr {
     generated: boolean;
     name: string;
     namePath: NamePathInstance;
+    numbering?: Numbering;
     of?: FieldInstance<D>;
     parent?: FieldInstance<D>;
     pathLabel: string;

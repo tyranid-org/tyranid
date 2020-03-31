@@ -293,7 +293,12 @@ export class TyrComponent<
 
     // Automatic Actions
 
-    if (this.canEdit && !parentLink && auto('create') && !enacted('view')) {
+    if (
+      this.canEdit &&
+      !enacted('create') &&
+      ((!parentLink && !enacted('view') && auto('create')) ||
+        traits?.includes('create'))
+    ) {
       enactUp({
         traits: ['create'],
         name: 'create',

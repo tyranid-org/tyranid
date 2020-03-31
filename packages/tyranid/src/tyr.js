@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
+import { Roman } from './math/roman';
 
 function equalCustomizer(a, b) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
@@ -167,12 +168,14 @@ const Tyr = {
   // string methods
   //
 
+  /** @isomorphic */
   capitalize(name) {
     return name.length
       ? name.substring(0, 1).toUpperCase() + name.substring(1)
       : name;
   },
 
+  /** @isomorphic */
   labelize(name) {
     // TODO:  more cases to be added here later on
     if (name.endsWith('Id')) {
@@ -189,6 +192,46 @@ const Tyr = {
     );
   },
 
+  /** @isomorphic */
+  numberize(type, number) {
+    switch (type) {
+      case 'lowercase':
+        return String.fromCharCode(97 + number);
+
+      case 'uppercase':
+        return String.fromCharCode(65 + number);
+
+      case 'integer':
+        return String(number);
+
+      case 'natural':
+        return String(number + 1);
+
+      case 'ordinal':
+        return Tyr.ordinalize(number + 1);
+
+      case 'roman':
+        return Tyr.Roman.toRoman(number + 1);
+
+      case 'roman-lowercase':
+        return Tyr.Roman.toRoman(number + 1).toLowerCase();
+
+      default:
+        throw new Tyr.AppError(`"${type}" is an unknown numbering system`);
+    }
+  },
+
+  /** @isomorphic */
+  ordinalize(number) {
+    const string = String(number);
+
+    if (/1$/.test(string) && !/11$/.test(string)) return number + 'st';
+    if (/2$/.test(string) && !/12$/.test(string)) return number + 'nd';
+    if (/3$/.test(string) && !/13$/.test(string)) return number + 'rd';
+    return number + 'th';
+  },
+
+  /** @isomorphic */
   pluralize(name) {
     // TODO:  use lodash inflection or something similar
     if (name.match(/(ch|s|sh|x)$/)) {
@@ -208,6 +251,7 @@ const Tyr = {
     }
   },
 
+  /** @isomorphic */
   singularize(name) {
     if (name.match(/zes$/)) {
       return name.substring(0, name.length - 3);
@@ -222,17 +266,22 @@ const Tyr = {
     }
   },
 
-  ordinalize(number) {
-    const string = String(number);
-
-    if (/1$/.test(string) && !/11$/.test(string)) return number + 'st';
-    if (/2$/.test(string) && !/12$/.test(string)) return number + 'nd';
-    if (/3$/.test(string) && !/13$/.test(string)) return number + 'rd';
-    return number + 'th';
-  },
-
+  /** @isomorphic */
   unitize(count, unit) {
     return count === 1 ? `1 ${unit}` : `${count} ${Tyr.pluralize(unit)}`;
+  },
+
+  stringify(value, replacer, spacing) {
+    return JSON.stringify(value, (k, v) => {
+      if (replacer) v = replacer(k, v);
+      if (v instanceof RegExp) {
+        // mongo's format
+        return { $regex: v.source, $options: v.flags };
+      }
+      return v && v.constructor && v.constructor.name === 'ObjectId'
+        ? v.toString()
+        : v;
+    });
   },
 
   //
@@ -472,18 +521,7 @@ const Tyr = {
     array.length = tai;
   },
 
-  stringify(value, replacer, spacing) {
-    return JSON.stringify(value, (k, v) => {
-      if (replacer) v = replacer(k, v);
-      if (v instanceof RegExp) {
-        // mongo's format
-        return { $regex: v.source, $options: v.flags };
-      }
-      return v && v.constructor && v.constructor.name === 'ObjectId'
-        ? v.toString()
-        : v;
-    });
-  }
+  Roman
 };
 
 /*

@@ -9,6 +9,7 @@ import * as socketIo from 'socket.io';
 import Tyr from './tyr';
 import Collection from './core/collection';
 import Field from './core/field';
+import { Roman } from './math/roman';
 import NamePath from './core/namePath';
 import Population from './core/population';
 import { AppError } from './core/appError';
@@ -100,6 +101,7 @@ class Serializer {
       'minlength',
       'max',
       'maxlength',
+      'numbering',
       'order',
       'pathLabel',
       'pattern',
@@ -271,20 +273,22 @@ function es5Fn(fn) {
 }
 
 function translateValue(v) {
-  return _.isFunction(v)
-    ? es5Fn(v)
-    : typeof v === 'string'
-    ? JSON.stringify(v)
-    : v.toString();
+  switch (typeof v) {
+    case 'function':
+      return es5Fn(v);
+    case 'object':
+      if (v instanceof RegExp) return v.toString();
+    // fallthrough
+    default:
+      return JSON.stringify(v);
+  }
 }
 
 function translateClass(cls) {
   const cname = cls.name;
   let s = '';
 
-  s += es5Fn(cls) + '\n';
-
-  function translateObj(path, o) {
+  function translateObj(path, o, skipFns) {
     const isfn = _.isFunction(o);
     for (const n of Object.getOwnPropertyNames(o)) {
       if ((isfn ? skipFnProps : skipNonFnProps).indexOf(n) !== -1) {
@@ -295,7 +299,8 @@ function translateClass(cls) {
 
       const value = desc.value;
       if (value) {
-        s += `${cname}${path}.${n} = ${translateValue(value)};\n`;
+        if (!skipFns || typeof value !== 'function')
+          s += `${cname}${path}.${n} = ${translateValue(value)};\n`;
       } else if (desc.get) {
         s += `Object.defineProperty(${cname}${path}, '${n}', {get:${translateValue(
           desc.get
@@ -304,8 +309,16 @@ function translateClass(cls) {
     }
   }
 
-  translateObj('', cls);
-  translateObj('.prototype', cls.prototype);
+  const v = cls.toString();
+  if (v.startsWith('class')) {
+    s += cls + '\n';
+    translateObj('', cls, true);
+  } else {
+    s += es5Fn(cls) + '\n';
+
+    translateObj('', cls);
+    translateObj('.prototype', cls.prototype);
+  }
 
   s += `Tyr.${cname} = ${cname};\n`;
   return s;
@@ -438,6 +451,7 @@ export function generateClientLibrary() {
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
   Tyr.capitalize = ${es5Fn(Tyr.capitalize)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
+  Tyr.numberize = ${es5Fn(Tyr.numberize)};
   Tyr.mapAwait = ${es5Fn(Tyr.mapAwait)};
   Tyr.ordinalize = ${es5Fn(Tyr.ordinalize)};
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
@@ -721,6 +735,15 @@ export function generateClientLibrary() {
       }
     },
 
+    numbering: {
+      get() {
+        const { numbering } = this.def;
+        return (
+          numbering || (this.type.name === 'integer' ? 'integer' : 'uppercase')
+        );
+      }
+    },
+
     pathLabel: {
       get: function() { return this._calcPathLabel(); },
     },
@@ -812,6 +835,7 @@ export function generateClientLibrary() {
   }
 
   ${translateClass(NamePath)}
+  ${translateClass(Roman)}
 
   Tyr.functions = { 
     paths: ${es5Fn(Tyr.functions.paths)}

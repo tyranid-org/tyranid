@@ -496,33 +496,36 @@ NamePath.prototype.groupLabel = function(groupNum) {
 };
 
 NamePath.prototype._pathLabel = function(startIdx, endIdx) {
-  const pf = this.fields;
+  const { fields } = this;
   let i = startIdx,
     label = '';
 
   let len = endIdx - startIdx;
   // change "Organization Name" to just "Organization"
   // TODO:  might not want to always do this ... i.e. maybe only if it is a labelField?
-  if (len > 1 && pf[endIdx - 1].label === 'Name') {
+  if (len > 1 && fields[endIdx - 1].label === 'Name') {
     endIdx--;
     len--;
   }
 
   let idxLabel = '';
 
-  for (; i < endIdx - 1; i++) {
-    const f = pf[i];
+  let pf = i ? fields[i - 1] : undefined,
+    f;
+  for (; i < endIdx - 1; pf = f, i++) {
+    f = fields[i];
 
     let l = '';
 
-    const typeName = f.type.name;
-    if (typeName === 'object' || typeName === 'array') {
+    const typeName = pf?.type.name;
+    if ((typeName === 'object' && pf.keys) || typeName === 'array') {
       const path = this.path[i];
 
-      if (path && path.match(NamePath._numberRegex)) {
-        // TODO:  add a property on Field which lets people specify ordering (i.e. roman numerals, integers from 1, integers from 0, letters, etc.)
-        const code = String.fromCharCode(65 + Number.parseInt(path, 10));
-        // TODO:  this logic needs to be more sophisticated
+      if (path?.match(NamePath._numberRegex)) {
+        const code = Tyr.numberize(
+          pf.keys?.numbering || pf.numbering,
+          Number.parseInt(path, 10)
+        );
 
         if (label) l = code;
         else idxLabel = code;
@@ -546,7 +549,7 @@ NamePath.prototype._pathLabel = function(startIdx, endIdx) {
   }
 
   if (label) label += ' ';
-  label += pf[i].label;
+  label += fields[i].label;
   if (idxLabel) label += ' ' + idxLabel;
   return label;
 };

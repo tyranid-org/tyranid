@@ -40,6 +40,14 @@ export namespace Tyr {
     new (...args: any[]): T;
   }
 
+  export type Numbering =
+    | 'lowercase'
+    | 'uppercase'
+    | 'zero-based'
+    | 'one-based'
+    | 'roman'
+    | 'roman-lowercase';
+
   export interface AccessResult {
     allowed: boolean;
     reason: string;
@@ -162,6 +170,8 @@ export namespace Tyr {
 
     keys?: string | FieldDefinition<D>;
 
+    numbering?: Numbering;
+
     denormal?: MongoDocument;
     link?: string;
     relate?: 'owns' | 'ownedBy' | 'associate';
@@ -218,6 +228,7 @@ export namespace Tyr {
     keys?: FieldInstance<D>;
     label: string | (() => string);
     link?: CollectionInstance;
+    numbering?: Numbering;
     relate?: 'owns' | 'ownedBy' | 'associate';
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance<D> };

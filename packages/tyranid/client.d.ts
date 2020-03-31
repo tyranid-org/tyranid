@@ -68,6 +68,14 @@ declare module 'tyranid/client' {
       user: User;
     };
 
+    export type Numbering =
+      | 'lowercase'
+      | 'uppercase'
+      | 'zero-based'
+      | 'one-based'
+      | 'roman'
+      | 'roman-lowercase';
+
     export function mapAwait<T, U>(
       val: Promise<T> | T,
       map: (val: T) => U
@@ -142,8 +150,15 @@ declare module 'tyranid/client' {
       a: AnyIdType | null | undefined,
       b: AnyIdType | null | undefined
     ): boolean;
+
     export function capitalize(name: string): string;
     export function labelize(name: string): string;
+    export function numberize(numbering: Numbering, num: number): string;
+    export function ordinalize(num: number): string;
+    export function pluralize(str: string): string;
+    export function singularize(str: string): string;
+    export function unitize(count: number, unit: string): string;
+
     export function parseUid(
       uid: string
     ): { collection: CollectionInstance; id: AnyIdType };
@@ -151,14 +166,11 @@ declare module 'tyranid/client' {
       uid: string,
       options?: any // Options_FindById
     ): Promise<Document | null>;
-    export function pluralize(str: string): string;
     export function projectify(
       obj: object | NamePathInstance[]
     ): MongoProjection;
     export const reconnectSocket: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
-    export function singularize(str: string): string;
-    export function unitize(count: number, unit: string): string;
 
     export interface RawMongoDocument {
       [key: string]: any;
@@ -237,6 +249,8 @@ declare module 'tyranid/client' {
       help?: string;
       placeholder?: string;
 
+      numbering?: Numbering;
+
       deprecated?: string | boolean;
       note?: string;
 
@@ -301,6 +315,7 @@ declare module 'tyranid/client' {
       dynamicSchema?: any;
       name: string;
       namePath: NamePathInstance;
+      numbering?: Numbering;
       of?: FieldInstance<D>;
       parent?: FieldInstance<D>;
       pathLabel: string;
