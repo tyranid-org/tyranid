@@ -19,7 +19,7 @@ import {
 import { TyrPathProps } from './path';
 import { message } from 'antd';
 import { getFilter } from '../type';
-import { tyreant } from '../tyreant';
+import { Tyreant } from '../tyreant';
 import Pagination from 'antd/es/pagination';
 
 import { getPathName } from './path';
@@ -232,7 +232,7 @@ export class TyrManyComponent<
 
   async execute() {
     if (this.props.route) {
-      tyreant.router.go({
+      Tyreant.router.go({
         route: this.props.route,
         query: this.getUrlQuery()
       });
@@ -640,7 +640,7 @@ export class TyrManyComponent<
         });
 
         if (route) {
-          const location = tyreant.router.location!;
+          const location = Tyreant.router.location!;
           if (location.route !== route) return;
 
           const currentUrl = this.getUrlQuery();

@@ -19,26 +19,24 @@ import { registerComponent, componentsByName } from './common';
 import { TyrRouter, generatePageRoutes } from './core';
 
 export class Tyreant {
-  router!: TyrRouter;
+  static router: TyrRouter;
 
-  pageRoutes!: any; //JSX.Element;
+  static pageRoutes: any; //JSX.Element;
 
-  componentsByName = componentsByName;
+  static componentsByName = componentsByName;
 
-  async init(router: TyrRouter) {
+  static async init(router: TyrRouter) {
     this.router = router;
     this.pageRoutes = await generatePageRoutes();
   }
 
   // TODO:  need run-time type information to get rid of any
-  register = registerComponent;
+  static register = registerComponent;
 
-  routes() {
+  static routes() {
     return this.pageRoutes;
   }
 }
-
-export const tyreant = new Tyreant();
 
 export const toast = {
   success: (message: string) => notification.success({ message }),

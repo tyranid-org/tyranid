@@ -897,8 +897,6 @@ export namespace Tyr {
     // Collection instance constructor
     new (doc?: RawMongoDocument): D;
 
-    $metaType: 'collection';
-
     byId(id: IdType<D> | string, options?: Options_FindById): Promise<D | null>;
     byIds(
       ids: Array<IdType<D> | string>,
@@ -1173,12 +1171,11 @@ export namespace Tyr {
   }
 
   export interface PathInstance extends Isomorphic.PathInstance {
-    //set<D extends Tyr.Document>(
-    //obj: D,
-    //value: any,
-    //opts?: { create?: boolean; ignore?: boolean }
-    //): void;
-    //walk(path: string | number): PathInstance;
+    set<D extends Tyr.Document>(
+      obj: D,
+      value: any,
+      opts?: { create?: boolean; ignore?: boolean }
+    ): void;
   }
 
   export interface TypeStatic extends Isomorphic.TypeStatic {
