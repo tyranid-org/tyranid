@@ -14,13 +14,9 @@ import {
   TyrActionTrait
 } from './action';
 import { TyrDecorator } from './decorator';
-import {
-  defaultPathsProp,
-  TyrPathProps,
-  TyrPathLaxProps,
-  TyrSortDirection
-} from './path';
+import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
 import { TyrModal } from './modal';
+import { TyrSortDirection } from './typedef';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined

@@ -1,3 +1,5 @@
+import { TyrSortDirection } from '../typedef';
+
 export interface TyrTableConfig {
   key: string;
   documentUid?: string;
@@ -7,6 +9,9 @@ export interface TyrTableConfig {
   header?: string | React.ReactNode;
   asDrawer?: boolean;
   compact?: boolean;
+
+  // This should reset the column order, the sort, and the filters
+  allowReset?: boolean;
 }
 
 export interface ColumnConfigField {
@@ -14,4 +19,6 @@ export interface ColumnConfigField {
   label: string;
   locked: boolean;
   hidden: boolean;
+  sortDirection?: TyrSortDirection;
+  hasFilter?: boolean;
 }

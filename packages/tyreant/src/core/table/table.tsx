@@ -44,18 +44,14 @@ import { Tyr } from 'tyranid/client';
 import { useThemeProps } from '../theme';
 import { getCellValue, TyrTypeProps } from '../../type';
 import { TyrComponentState, useComponent } from '../component';
-import {
-  TyrSortDirection,
-  TyrPathLaxProps,
-  getPathName,
-  TyrThemedFieldBase
-} from '../path';
+import { TyrPathLaxProps, getPathName, TyrThemedFieldBase } from '../path';
 import { TyrTableConfig } from './typedef';
 import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
 import { EditableFormRow, EditableContext } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { TyrPathProps } from '../path';
+import { TyrSortDirection } from '../typedef';
 
 // ant's ColumnGroupType has children has required which seems incorrect
 export interface OurColumnProps<T> extends ColumnType<T> {
@@ -1215,6 +1211,7 @@ export class TyrTableBase<
                   columns={this.paths}
                   config={tableConfig}
                   tableConfig={this.componentConfig}
+                  originalPaths={this.props.paths}
                   onCancel={() => (this.showConfig = false)}
                   onUpdate={this.onUpdateTableConfig}
                   containerEl={this.tableWrapper!}
@@ -1225,6 +1222,7 @@ export class TyrTableBase<
                   table={this}
                   columns={this.paths}
                   config={tableConfig || true}
+                  originalPaths={this.props.paths}
                   export={true}
                   tableConfig={this.componentConfig}
                   onCancel={() => (this.showExport = false)}
