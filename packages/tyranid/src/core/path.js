@@ -573,6 +573,20 @@ Object.defineProperties(Path.prototype, {
     }
   },
 
+  label: {
+    get() {
+      const flen = this.fields.length;
+      if (!flen) return this.base.label;
+      const wlFn = Tyr.options.whiteLabel;
+      if (wlFn) {
+        const l = wlFn(this);
+        if (l) return l;
+      }
+
+      return this._pathLabel(0, flen);
+    }
+  },
+
   pathLabel: {
     get() {
       const flen = this.fields.length;
