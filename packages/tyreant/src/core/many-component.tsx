@@ -289,19 +289,24 @@ export class TyrManyComponent<
 
   sortDirections: { [pathName: string]: TyrSortDirection } = {};
 
-  resetFiltersAndSort = () => {
-    const { notifyFilterExists, notifySortSet } = this.props;
+  resetFilters = () => {
+    const { notifyFilterExists } = this.props;
     const { searchValues } = this;
     for (const key of Object.keys(searchValues)) delete searchValues[key];
 
-    this.setDefaultSort();
-    this.setSortedDocuments(this.documents.slice());
     this.setState({});
-
     this.updateConfigFilter();
 
     // Update if on props
     notifyFilterExists && notifyFilterExists(false);
+  };
+
+  resetSort = () => {
+    const { notifySortSet } = this.props;
+
+    this.setDefaultSort();
+    this.setSortedDocuments(this.documents.slice());
+    this.setState({});
 
     const sortColumn = this.paths.find(column => !!column.defaultSort);
     this.updateConfigSort(sortColumn?.path?.name, sortColumn?.defaultSort);
@@ -312,8 +317,16 @@ export class TyrManyComponent<
     }
   };
 
+  resetFiltersAndSort = () => {
+    this.resetFilters();
+    this.resetSort();
+  };
+
   setDefaultSort() {
     // Sort is only valid if column has a sort direction and is in active paths
+    for (const key of Object.keys(this.sortDirections))
+      delete this.sortDirections[key];
+
     const sortColumn = this.componentConfig?.fields.find(
       column =>
         !!column.sortDirection &&
@@ -365,7 +378,9 @@ export class TyrManyComponent<
           : 0;
 
         if (result === 0) {
-          result = (a.$label || '').localeCompare(b.$label);
+          if (a.$model.labelField) {
+            result = (a.$label || '').localeCompare(b.$label);
+          }
 
           if (result === 0) {
             result = String(a.$id).localeCompare(String(b.$id));

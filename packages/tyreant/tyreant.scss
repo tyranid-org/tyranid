@@ -827,29 +827,6 @@ form textarea.tyr-markup-editor {
     .ant-btn {
       margin-left: 8px;
     }
-
-    .tyr-footer-container {
-      display: flex;
-      justify-content: space-between;
-
-      .left-side {
-        .reset-line {
-          .ant-btn {
-            margin-left: 0;
-            padding-left: 0;
-            padding-right: 0;
-          }
-
-          .reset-label {
-            font-weight: bolder;
-          }
-        }
-      }
-
-      .right-side {
-        text-align: right;
-      }
-    }
   }
 }
 
@@ -928,7 +905,7 @@ form textarea.tyr-markup-editor {
         padding: 24px;
       }
 
-      .tyr-footer {
+      .tyr-footer-container {
         border-top: 1px solid var(--popup-border-color);
         padding: 16px;
         position: absolute;
@@ -936,6 +913,38 @@ form textarea.tyr-markup-editor {
         width: 100%;
       }
     }
+  }
+}
+
+.tyr-footer-container {
+  display: flex;
+  justify-content: space-between;
+
+  .left-side {
+    .reset-line {
+      .reset-label {
+        font-weight: bolder;
+      }
+
+      .ant-breadcrumb {
+        display: inline-block;
+        margin-left: 5px;
+
+        .ant-btn {
+          margin-left: 0;
+          padding-left: 0;
+          padding-right: 0;
+        }
+
+        .ant-breadcrumb-separator {
+          margin: 0 2px;
+        }
+      }
+    }
+  }
+
+  .right-side {
+    text-align: right;
   }
 }
 

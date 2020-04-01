@@ -322,32 +322,46 @@ export class TyrTableBase<
     return true;
   };
 
-  private onUpdateTableConfig = async (savedTableConfig: any) => {
+  private onUpdateTableConfig = async (
+    savedTableConfig: Tyr.TyrComponentConfig,
+    sortHasBeenReset?: boolean,
+    filtersHaveBeenReset?: boolean
+  ) => {
     const { config, onChangeTableConfiguration } = this.props;
 
     if (config) {
-      const tableConfig = await ensureTableConfig(
+      const componentConfig = await ensureTableConfig(
         this,
         this.paths,
         config,
         savedTableConfig
       );
 
-      if (tableConfig) {
-        this.componentConfig = tableConfig.tableConfig;
-        this.otherPaths = tableConfig.newColumns;
+      this.componentConfig = componentConfig.tableConfig;
+      this.otherPaths = componentConfig.newColumns;
 
-        onChangeTableConfiguration &&
-          onChangeTableConfiguration(
-            (tableConfig.tableConfig as any).fields.map(
-              (f: Tyr.TyrComponentConfig['fields'][0]) => {
-                return {
-                  name: f.name,
-                  hidden: !!f.hidden
-                };
-              }
-            )
-          );
+      onChangeTableConfiguration &&
+        onChangeTableConfiguration(
+          componentConfig.tableConfig.fields.map(f => {
+            return {
+              name: f.name,
+              hidden: !!f.hidden,
+              sortDirection: f.sortDirection,
+              filter: f.filter
+            };
+          })
+        );
+
+      if (sortHasBeenReset) {
+        this.resetSort();
+      }
+
+      if (filtersHaveBeenReset) {
+        this.resetFilters();
+      }
+
+      if (sortHasBeenReset || filtersHaveBeenReset) {
+        this.requery();
       }
     }
   };
