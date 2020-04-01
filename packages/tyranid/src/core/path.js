@@ -549,6 +549,43 @@ Path.prototype._pathLabel = function(startIdx, endIdx) {
   return label;
 };
 
+Path.prototype._buildSpath = function(arr) {
+  const key = arr ? '_spathArr' : '_spath';
+
+  let sp = this[key];
+  if (!sp) {
+    sp = '';
+
+    const { fields, path } = this;
+    let parentField;
+
+    for (let fi = 0, flen = fields.length; fi < flen; fi++) {
+      const field = fields[fi];
+      let { name } = field;
+
+      if (name === '_') {
+        name = path[fi];
+
+        if (name === '_') continue;
+
+        // otherwise name is a specific array index like 0,1,2,3,4
+        if (!arr) continue;
+      }
+
+      if (fi) {
+        // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
+        if (parentField.link) sp += '_';
+        sp += '.';
+      }
+      sp += name;
+      parentField = field;
+    }
+
+    this[key] = sp;
+  }
+  return sp;
+};
+
 Object.defineProperties(Path.prototype, {
   tail: {
     get() {
@@ -595,43 +632,6 @@ Object.defineProperties(Path.prototype, {
       const { _groups } = this;
       return this._pathLabel(_groups?.[_groups.length - 1] ?? 0, flen);
     }
-  },
-
-  _buildSpath(arr) {
-    const key = arr ? '_spathArr' : '_spath';
-
-    let sp = this[key];
-    if (!sp) {
-      sp = '';
-
-      const { fields, path } = this;
-      let parentField;
-
-      for (let fi = 0, flen = fields.length; fi < flen; fi++) {
-        const field = fields[fi];
-        let { name } = field;
-
-        if (name === '_') {
-          name = path[fi];
-
-          if (name === '_') continue;
-
-          // otherwise name is a specific array index like 0,1,2,3,4
-          if (!arr) continue;
-        }
-
-        if (fi) {
-          // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
-          if (parentField.link) sp += '_';
-          sp += '.';
-        }
-        sp += name;
-        parentField = field;
-      }
-
-      this[key] = sp;
-    }
-    return sp;
   },
 
   spath: {
