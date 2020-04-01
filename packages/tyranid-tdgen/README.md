@@ -5,7 +5,6 @@
 
 Generate typescript `.d.ts` files from your tyranid schema definitions. The generated type definition files extend tyranids own type definitions through [declaration merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
 
-
 ### Example Usage - Command Line
 
 Pass your model directory to `tyranid-tdgen`
