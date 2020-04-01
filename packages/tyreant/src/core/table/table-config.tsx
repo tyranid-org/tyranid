@@ -11,7 +11,7 @@ import {
 
 import { compact, findIndex } from 'lodash';
 
-import { Modal, Button, Drawer } from 'antd';
+import { Modal, Button, Drawer, Breadcrumb, message } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -34,7 +34,11 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
   tableConfig?: Tyr.TyrComponentConfig;
   originalPaths: TyrTableColumnPathLaxProps[];
   onCancel: () => void;
-  onUpdate: (tableConfig: any) => void;
+  onUpdate: (
+    tableConfig: Tyr.TyrComponentConfig,
+    sortHasBeenReset?: boolean,
+    filtersHaveBeenReset?: boolean
+  ) => void;
   columns: TyrTableColumnPathProps[];
   containerEl: React.RefObject<HTMLDivElement>;
 }
@@ -51,6 +55,9 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   containerEl
 }: TyrTableConfigProps<D>) => {
   const [columnFields, setColumnFields] = useState([] as ColumnConfigField[]);
+  const [doResetSort, setDoResetSort] = useState(false);
+  const [doResetFilters, setDoResetFilters] = useState(false);
+
   let tableBody: HTMLElement | null = null;
 
   if (typeof rawConfig === 'boolean' && rawConfig) {
@@ -86,9 +93,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
           return {
             name: pathName,
-            label: ((column && column.label) ||
-              column.path?.pathLabel ||
-              '') as string,
+            label: column.path?.label || '?',
             locked: index < lockedLeft,
             sortDirection: savedField?.sortDirection,
             hasFilter: !!savedField?.filter,
@@ -146,7 +151,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       fields: columnFields
     });
 
-    onUpdate(await newTableConfig.$save());
+    onUpdate(await newTableConfig.$save(), doResetSort, doResetFilters);
     onCancel();
   };
 
@@ -194,6 +199,9 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
         return c;
       })
     );
+
+    message.success('Sort has been reset.');
+    setDoResetSort(true);
   };
 
   const resetFilters = () => {
@@ -203,16 +211,30 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
         return c;
       })
     );
+
+    message.success('Filters have been reset.');
+    setDoResetFilters(true);
   };
 
   const resetOrder = () => {
     const newColumnFields = originalPaths.map((p, idx) => {
-      const configField = columnFields.find(c => c.name == getPathName(c.name));
+      let path: Tyr.PathInstance | undefined;
+      let pathName: string | undefined;
+
+      if (typeof p.path === 'string') {
+        pathName = p.path;
+        path = collection.parsePath(pathName);
+      } else if (p.path) {
+        path = p.path;
+        pathName = path.name;
+      }
+
+      const configField = columnFields.find(c => c.name == pathName);
 
       return {
         name: p.path,
         hidden: p.defaultHidden,
-        label: p.label || (p.path! as Tyr.PathInstance).pathLabel || '',
+        label: path?.label || '?',
         locked: idx < lockedLeft,
         sortDirection: configField ? configField.sortDirection : undefined,
         hasFilter: configField ? configField.hasFilter : undefined
@@ -220,6 +242,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     });
 
     setColumnFields(newColumnFields as ColumnConfigField[]);
+    message.success('Column order has been reset.');
   };
 
   const renderBody = () => {
@@ -316,13 +339,24 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     </Button>
   );
 
-  const renderDrawerFooter = () => {
+  const renderFooter = () => {
     return (
-      <div className="tyr-footer" style={{ textAlign: 'center' }}>
-        <Button key="back" onClick={onCancel}>
-          Close
-        </Button>
-        {actionButton}
+      <div className="tyr-footer-container">
+        <div className="left-side">
+          {!(rawConfig as TyrTableConfig).hideReset && (
+            <ResetArea
+              resetSort={resetSort}
+              resetFilters={resetFilters}
+              resetOrder={resetOrder}
+            />
+          )}
+        </div>
+        <div className="right-side">
+          <Button key="back" onClick={onCancel}>
+            Cancel
+          </Button>
+          {actionButton}
+        </div>
       </div>
     );
   };
@@ -347,7 +381,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
         <div className="tyr-drawer-container">
           <div className="tyr-drawer">
             {renderBody()}
-            {renderDrawerFooter()}
+            {renderFooter()}
           </div>
         </div>
       </Drawer>
@@ -360,24 +394,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       visible={true}
       title={title}
       onCancel={onCancel}
-      footer={
-        <div className="tyr-footer-container">
-          <div className="left-side">
-            <ResetArea
-              columns={columnFields}
-              resetSort={resetSort}
-              resetFilters={resetFilters}
-              resetOrder={resetOrder}
-            />
-          </div>
-          <div className="right-side">
-            <Button key="back" onClick={onCancel}>
-              Cancel
-            </Button>
-            {actionButton}
-          </div>
-        </div>
-      }
+      footer={renderFooter()}
     >
       {renderBody()}
     </Modal>
@@ -385,64 +402,32 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 };
 
 const ResetArea = (props: {
-  columns: ColumnConfigField[];
   resetSort: () => void;
   resetFilters: () => void;
   resetOrder: () => void;
 }) => {
-  if (1 === 3 - 2) {
-    return <span />;
-  }
-
-  const { columns, resetSort, resetFilters, resetOrder } = props;
-
-  let hasSort = false;
-  let hasFilters = false;
-
-  columns.forEach(c => {
-    hasFilters = hasFilters || !!c.hasFilter;
-    hasSort = hasSort || !!c.sortDirection;
-  });
-
-  let hasPrev = false;
-  const links: JSX.Element[] = [];
-
-  if (hasSort) {
-    hasPrev = true;
-    links.push(
-      <Button key="sort" type="link" onClick={resetSort}>
-        Sort
-      </Button>
-    );
-  }
-
-  if (hasFilters) {
-    if (hasPrev) {
-      links.push(<span key="prev-filter"> | </span>);
-    }
-
-    hasPrev = true;
-
-    links.push(
-      <Button key="link" type="link" onClick={resetFilters}>
-        Filters
-      </Button>
-    );
-  }
-
-  if (hasPrev) {
-    links.push(<span key="prev-order"> | </span>);
-  }
-
-  links.push(
-    <Button key="order" type="link" onClick={resetOrder}>
-      Order
-    </Button>
-  );
+  const { resetSort, resetFilters, resetOrder } = props;
 
   return (
     <span className="reset-line">
-      <span className="reset-label">Reset:</span> {links}
+      <span className="reset-label">Reset:</span>
+      <Breadcrumb separator="|">
+        <Breadcrumb.Item>
+          <Button key="sort" type="link" onClick={resetSort}>
+            Sort
+          </Button>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <Button key="link" type="link" onClick={resetFilters}>
+            Filters
+          </Button>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <Button key="order" type="link" onClick={resetOrder}>
+            Order
+          </Button>
+        </Breadcrumb.Item>
+      </Breadcrumb>
     </span>
   );
 };

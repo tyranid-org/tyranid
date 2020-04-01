@@ -11,7 +11,7 @@ export interface TyrTableConfig {
   compact?: boolean;
 
   // This should reset the column order, the sort, and the filters
-  allowReset?: boolean;
+  hideReset?: boolean;
 }
 
 export interface ColumnConfigField {
