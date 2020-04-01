@@ -103,8 +103,8 @@ export const integerFinder: Finder = (
     if (!opts.query) opts.query = {};
 
     const searchParams = [
-      { [path.name]: { $gte: searchValue[0] } },
-      { [path.name]: { $lte: searchValue[1] } }
+      { [path.spath]: { $gte: searchValue[0] } },
+      { [path.spath]: { $lte: searchValue[1] } }
     ];
 
     if (opts.query.$and) {

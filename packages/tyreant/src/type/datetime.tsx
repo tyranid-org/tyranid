@@ -118,7 +118,7 @@ export const dateTimeFinder: Finder = (
   const sv = parseSearchValue(searchValue);
   if (sv) {
     if (!opts.query) opts.query = {};
-    opts.query[path.name] = {
+    opts.query[path.spath] = {
       $gte: sv[0],
       $lte: sv[1]
     };

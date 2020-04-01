@@ -132,7 +132,7 @@ export const booleanFinder: Finder = (
 ) => {
   if (searchValue) {
     if (!opts.query) opts.query = {};
-    opts.query[path.name] = !!searchValue;
+    opts.query[path.spath] = !!searchValue;
   }
 };
 

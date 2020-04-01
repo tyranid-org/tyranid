@@ -90,7 +90,7 @@ export const stringFinder: Finder = (
 ) => {
   if (searchValue) {
     if (!opts.query) opts.query = {};
-    opts.query[path.name] = {
+    opts.query[path.spath] = {
       $regex: searchValue,
       $options: 'i'
     };

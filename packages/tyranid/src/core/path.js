@@ -597,69 +597,52 @@ Object.defineProperties(Path.prototype, {
     }
   },
 
-  spath: {
-    get() {
-      let sp = this._spath;
-      if (!sp) {
-        sp = '';
+  _buildSpath(arr) {
+    const key = arr ? '_spathArr' : '_spath';
 
-        const { fields } = this;
-        let parentField;
+    let sp = this[key];
+    if (!sp) {
+      sp = '';
 
-        for (let fi = 0, flen = fields.length; fi < flen; fi++) {
-          const field = fields[fi];
-          let { name } = field;
+      const { fields, path } = this;
+      let parentField;
+
+      for (let fi = 0, flen = fields.length; fi < flen; fi++) {
+        const field = fields[fi];
+        let { name } = field;
+
+        if (name === '_') {
+          name = path[fi];
 
           if (name === '_') continue;
 
-          if (fi) {
-            // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
-            if (parentField.link) sp += '_';
-            sp += '.';
-          }
-          sp += name;
-          parentField = field;
+          // otherwise name is a specific array index like 0,1,2,3,4
+          if (!arr) continue;
         }
 
-        this._spath = sp;
+        if (fi) {
+          // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
+          if (parentField.link) sp += '_';
+          sp += '.';
+        }
+        sp += name;
+        parentField = field;
       }
-      return sp;
+
+      this[key] = sp;
+    }
+    return sp;
+  },
+
+  spath: {
+    get() {
+      return this._buildSpath();
     }
   },
 
   spathArr: {
     get() {
-      let sp = this._spathArr;
-      if (!sp) {
-        sp = '';
-
-        const { fields, path } = this;
-        let parentField;
-
-        for (let fi = 0, flen = fields.length; fi < flen; fi++) {
-          const field = fields[fi];
-          let { name } = field;
-
-          if (name === '_') {
-            name = path[fi];
-
-            if (name === '_') continue;
-
-            // otherwise name is a specific array index like 0,1,2,3,4 which we want to output ...
-          }
-
-          if (fi) {
-            // this is a denormalized path (but could be a populated path, so might need to add a '$' instead?)
-            if (parentField.link) sp += '_';
-            sp += '.';
-          }
-          sp += name;
-          parentField = field;
-        }
-
-        this._spathArr = sp;
-      }
-      return sp;
+      return this._buildSpath(true);
     }
   },
 
