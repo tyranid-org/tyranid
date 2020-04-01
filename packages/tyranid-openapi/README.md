@@ -9,13 +9,13 @@ This project provides a way to generate a complete + valid [openAPI spec](https:
 **NOTE**: this library only creates the spec itself, implementation is left to the app code for now (but might be a good feature for this library later on).
 
 ## Contents
+
 - [Schema Options](#schema-options)
 - [Generating the spec](#generating-the-spec)
 - [Exposing a single collection](#exposing-a-single-collection)
 - ["Parent" collections](#parent-collections)
 - [Renaming and Restricting certain properties](#renaming-and-restricting-certain-properties)
 - [Partitioning a collection into multiple "virtual" collections](#partitioning-a-collection-into-multiple-virtual-collections)
-
 
 ## Schema Options
 
@@ -71,7 +71,7 @@ export default new Tyr.Collection({
     // also, since it is marked `required`, api users will recieve
     // an error if they do not POST/PUT data that includes it.
     name: { is: 'string', openAPI: true, required: true }
-  },
+  }
 });
 ```
 
@@ -103,9 +103,10 @@ export default new Tyr.Collection({
     organizationId: { is: 'mongoid' },
     excludeProperty: { is: 'string' },
     type: {
-      link: 'metricTargetType', openAPI: true
+      link: 'metricTargetType',
+      openAPI: true
     }
-  },
+  }
 });
 ```
 
@@ -135,7 +136,7 @@ export default new Tyr.Collection({
         name: 'publicName'
       }
     }
-  },
+  }
 });
 ```
 
