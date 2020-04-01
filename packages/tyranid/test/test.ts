@@ -1955,6 +1955,8 @@ describe('tyranid', () => {
 
         const updatedAt = (dale as any).updatedAt;
 
+        await Tyr.sleep(3);
+
         dale.age = 32;
         await dale.$update();
 
