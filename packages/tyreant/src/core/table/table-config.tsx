@@ -18,7 +18,11 @@ import { Tyr } from 'tyranid/client';
 import { getPathName } from '../path';
 import { TyrTableConfig, ColumnConfigField } from './typedef';
 import TyrTableColumnConfigItem from './table-config-item';
-import { TyrTableBase, TyrTableColumnPathProps } from './table';
+import {
+  TyrTableBase,
+  TyrTableColumnPathProps,
+  TyrTableColumnPathLaxProps
+} from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
   table: TyrTableBase<D>;
@@ -28,6 +32,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | true /* if true, key is "default" */;
   export?: boolean;
   tableConfig?: Tyr.TyrComponentConfig;
+  originalPaths: TyrTableColumnPathLaxProps[];
   onCancel: () => void;
   onUpdate: (tableConfig: any) => void;
   columns: TyrTableColumnPathProps[];
@@ -39,6 +44,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   config: rawConfig,
   export: exportProp,
   tableConfig: incomingTableConfig,
+  originalPaths,
   onCancel,
   onUpdate,
   columns,
@@ -47,7 +53,10 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   const [columnFields, setColumnFields] = useState([] as ColumnConfigField[]);
   let tableBody: HTMLElement | null = null;
 
-  if (typeof rawConfig === 'boolean' && rawConfig) rawConfig = 'default';
+  if (typeof rawConfig === 'boolean' && rawConfig) {
+    rawConfig = 'default';
+  }
+
   const config =
     typeof rawConfig === 'string'
       ? ({
@@ -59,6 +68,38 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   const { collection } = table;
 
+  const getColumnFields = (
+    fields: TyrTableColumnPathProps[],
+    tableConfig: Tyr.TyrComponentConfig
+  ) => {
+    return compact(
+      fields.map((column: TyrTableColumnPathProps, index: number) => {
+        const savedField = tableConfig.fields.find(
+          c => c.name === column.path?.name
+        );
+        const pathName = column.path?.name;
+
+        if (pathName) {
+          const hidden = !!savedField
+            ? !!savedField.hidden
+            : !!column.defaultHidden;
+
+          return {
+            name: pathName,
+            label: ((column && column.label) ||
+              column.path?.pathLabel ||
+              '') as string,
+            locked: index < lockedLeft,
+            sortDirection: savedField?.sortDirection,
+            hasFilter: !!savedField?.filter,
+            hidden
+          };
+        }
+
+        return null;
+      })
+    );
+  };
   // Only runs once
   useEffect(() => {
     let tableConfig: Tyr.TyrComponentConfig;
@@ -82,36 +123,11 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
             name: c
           };
         })
-      }) as any;
+      });
     }
 
     const orderedFields = orderedArray(tableConfig.fields, columns, true);
-
-    const columnFields = compact(
-      orderedFields.map((column: TyrTableColumnPathProps, index: number) => {
-        const savedField = tableConfig.fields.find(
-          c => c.name === column.path?.name
-        );
-        const pathName = column.path?.name;
-
-        if (pathName) {
-          const field = pathName && collection.paths[pathName];
-          const hidden = !!savedField
-            ? !!savedField.hidden
-            : !!column.defaultHidden;
-
-          return {
-            name: pathName,
-            label: ((column && column.label) ||
-              (field && field.label)) as string,
-            locked: index < lockedLeft,
-            hidden
-          };
-        }
-
-        return null;
-      })
-    );
+    const columnFields = getColumnFields(orderedFields, tableConfig);
 
     if (config.asDrawer) {
       const container = ReactDOM.findDOMNode(containerEl!.current);
@@ -121,7 +137,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     }
 
     setColumnFields(columnFields as ColumnConfigField[]);
-  }, [columns]);
+  }, []);
 
   const onSave = async () => {
     const { TyrComponentConfig } = Tyr.collections;
@@ -161,6 +177,49 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       columnField.hidden = !columnField.hidden;
       setColumnFields(columnFields.slice());
     }
+  };
+
+  const resetSort = () => {
+    const defaultSort = originalPaths.find(p => !!p.defaultSort);
+    const defSortPath = defaultSort ? getPathName(defaultSort.path) : undefined;
+
+    setColumnFields(
+      columnFields.map(c => {
+        if (c.name === defSortPath) {
+          c.sortDirection = defaultSort?.defaultSort;
+        } else {
+          delete c.sortDirection;
+        }
+
+        return c;
+      })
+    );
+  };
+
+  const resetFilters = () => {
+    setColumnFields(
+      columnFields.map(c => {
+        delete c.hasFilter;
+        return c;
+      })
+    );
+  };
+
+  const resetOrder = () => {
+    const newColumnFields = originalPaths.map((p, idx) => {
+      const configField = columnFields.find(c => c.name == getPathName(c.name));
+
+      return {
+        name: p.path,
+        hidden: p.defaultHidden,
+        label: p.label || (p.path! as Tyr.PathInstance).pathLabel || '',
+        locked: idx < lockedLeft,
+        sortDirection: configField ? configField.sortDirection : undefined,
+        hasFilter: configField ? configField.hasFilter : undefined
+      };
+    });
+
+    setColumnFields(newColumnFields as ColumnConfigField[]);
   };
 
   const renderBody = () => {
@@ -302,16 +361,89 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       title={title}
       onCancel={onCancel}
       footer={
-        <>
-          <Button key="back" onClick={onCancel}>
-            Cancel
-          </Button>
-          {actionButton}
-        </>
+        <div className="tyr-footer-container">
+          <div className="left-side">
+            <ResetArea
+              columns={columnFields}
+              resetSort={resetSort}
+              resetFilters={resetFilters}
+              resetOrder={resetOrder}
+            />
+          </div>
+          <div className="right-side">
+            <Button key="back" onClick={onCancel}>
+              Cancel
+            </Button>
+            {actionButton}
+          </div>
+        </div>
       }
     >
       {renderBody()}
     </Modal>
+  );
+};
+
+const ResetArea = (props: {
+  columns: ColumnConfigField[];
+  resetSort: () => void;
+  resetFilters: () => void;
+  resetOrder: () => void;
+}) => {
+  if (1 === 3 - 2) {
+    return <span />;
+  }
+
+  const { columns, resetSort, resetFilters, resetOrder } = props;
+
+  let hasSort = false;
+  let hasFilters = false;
+
+  columns.forEach(c => {
+    hasFilters = hasFilters || !!c.hasFilter;
+    hasSort = hasSort || !!c.sortDirection;
+  });
+
+  let hasPrev = false;
+  const links: JSX.Element[] = [];
+
+  if (hasSort) {
+    hasPrev = true;
+    links.push(
+      <Button key="sort" type="link" onClick={resetSort}>
+        Sort
+      </Button>
+    );
+  }
+
+  if (hasFilters) {
+    if (hasPrev) {
+      links.push(<span key="prev-filter"> | </span>);
+    }
+
+    hasPrev = true;
+
+    links.push(
+      <Button key="link" type="link" onClick={resetFilters}>
+        Filters
+      </Button>
+    );
+  }
+
+  if (hasPrev) {
+    links.push(<span key="prev-order"> | </span>);
+  }
+
+  links.push(
+    <Button key="order" type="link" onClick={resetOrder}>
+      Order
+    </Button>
+  );
+
+  return (
+    <span className="reset-line">
+      <span className="reset-label">Reset:</span> {links}
+    </span>
   );
 };
 

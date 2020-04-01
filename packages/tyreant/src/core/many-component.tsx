@@ -5,12 +5,7 @@ import { autorun, observable } from 'mobx';
 
 import { Tyr } from 'tyranid/client';
 
-import {
-  TyrSortDirection,
-  getFinder,
-  Filter,
-  TyrActionFnOpts
-} from '../tyreant';
+import { getFinder, Filter, TyrActionFnOpts } from '../tyreant';
 import {
   TyrComponentProps,
   TyrComponentState,
@@ -23,6 +18,7 @@ import { Tyreant } from '../tyreant';
 import Pagination from 'antd/es/pagination';
 
 import { getPathName } from './path';
+import { TyrSortDirection } from './typedef';
 
 export const DEFAULT_PAGE_SIZE = 20;
 

@@ -1,5 +1,10 @@
 import * as React from 'react';
-import { MenuOutlined } from '@ant-design/icons';
+import {
+  MenuOutlined,
+  CaretUpFilled,
+  CaretDownFilled,
+  FilterFilled
+} from '@ant-design/icons';
 import { Switch } from 'antd';
 
 import { DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd';
@@ -25,6 +30,18 @@ interface TyrTableColumnConfigItemProps {
   onChangeVisibility?: (field: ColumnConfigField) => void;
   compact?: boolean;
 }
+
+const ColumnLabel = (props: { field: ColumnConfigField }) => {
+  const { label, sortDirection, hasFilter } = props.field;
+  return (
+    <span className="tyr-column-config-item-label">
+      {label}
+      {!!hasFilter && <FilterFilled />}
+      {sortDirection === 'ascend' && <CaretUpFilled />}
+      {sortDirection === 'descend' && <CaretDownFilled />}
+    </span>
+  );
+};
 
 const TyrTableColumnConfigItem = ({
   field,
@@ -64,7 +81,8 @@ const TyrTableColumnConfigItem = ({
       </div>
       <div className="tyr-column-config-item-inner" style={fieldStyle}>
         <span>
-          <span className="tyr-column-config-item-label">{label}</span>
+          <ColumnLabel field={field} />
+
           {locked && (
             <span className="tyr-column-config-item-required-label">
               required

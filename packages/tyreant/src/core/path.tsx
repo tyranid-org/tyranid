@@ -19,8 +19,8 @@ import {
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
-import { ColProps } from 'antd/lib/col';
 import { FormItemProps } from 'antd/lib/form';
+import { TyrSortDirection } from './typedef';
 
 const FormItem = Form.Item;
 
@@ -46,8 +46,6 @@ export function defaultPathsProp(collection: Tyr.CollectionInstance) {
 
   return pathsArr;
 }
-
-export type TyrSortDirection = 'ascend' | 'descend';
 
 export interface TyrPathProps
   extends Pick<
