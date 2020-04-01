@@ -498,9 +498,12 @@ Path.prototype.groupLabel = function(groupNum) {
 Path.prototype._pathLabel = function(startIdx, endIdx) {
   const { fields } = this;
   let i = startIdx,
-    label = '';
+    label = '',
+    len = endIdx - startIdx,
+    idxLabel = '',
+    pf = i ? fields[i - 1] : undefined,
+    f;
 
-  let len = endIdx - startIdx;
   // change "Organization Name" to just "Organization"
   // TODO:  might not want to always do this ... i.e. maybe only if it is a labelField?
   if (len > 1 && fields[endIdx - 1].label === 'Name') {
@@ -508,11 +511,8 @@ Path.prototype._pathLabel = function(startIdx, endIdx) {
     len--;
   }
 
-  let idxLabel = '';
-
-  let pf = i ? fields[i - 1] : undefined,
-    f;
-  for (; i < endIdx - 1; pf = f, i++) {
+  for (; i < endIdx; pf = f, i++) {
+    const last = i === endIdx - 1;
     f = fields[i];
 
     let l = '';
@@ -522,19 +522,17 @@ Path.prototype._pathLabel = function(startIdx, endIdx) {
       const path = this.path[i];
 
       if (path?.match(Path._numberRegex)) {
-        const code = Tyr.numberize(
-          pf.keys?.numbering || pf.numbering,
-          Number.parseInt(path, 10)
-        );
+        const numbering = pf.keys?.numbering || pf.numbering;
+        const code = Tyr.numberize(numbering, Number.parseInt(path, 10));
 
-        if (label) l = code;
+        if (label || numbering === 'ordinal') l = code;
         else idxLabel = code;
       } else {
         // handle the case where we have a map and the keys are strings, not numbers
-        l = path === f.name ? f.pathLabel ?? f.label : path;
+        l = last ? f.label : f.pathLabel ?? f.label;
       }
     } else {
-      l = f.pathLabel ?? f.label;
+      l = last ? f.label : f.pathLabel ?? f.label;
     }
 
     if (l) {
@@ -542,15 +540,12 @@ Path.prototype._pathLabel = function(startIdx, endIdx) {
       label += l;
     }
 
-    if (idxLabel && label) {
+    if (idxLabel && (label || last)) {
       label += ' ' + idxLabel;
       idxLabel = '';
     }
   }
 
-  if (label) label += ' ';
-  label += fields[i].label;
-  if (idxLabel) label += ' ' + idxLabel;
   return label;
 };
 

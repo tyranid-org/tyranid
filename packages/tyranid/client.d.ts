@@ -71,8 +71,9 @@ declare module 'tyranid/client' {
     export type Numbering =
       | 'lowercase'
       | 'uppercase'
-      | 'zero-based'
-      | 'one-based'
+      | 'natural'
+      | 'integers'
+      | 'ordinal'
       | 'roman'
       | 'roman-lowercase';
 
@@ -192,12 +193,11 @@ declare module 'tyranid/client' {
       fields: FieldInstance[];
       tail: FieldInstance;
 
-      //set<D extends Document<AnyIdType>>(
-      //obj: D,
-      //value: any,
-      //opts?: { create?: boolean; ignore?: boolean }
-      //): void;
-      //walk(path: string | number): PathInstance;
+      set<D extends Document<AnyIdType>>(
+        obj: D,
+        value: any,
+        opts?: { create?: boolean; ignore?: boolean }
+      ): void;
     }
 
     export interface TypeStatic extends Isomorphic.TypeStatic {

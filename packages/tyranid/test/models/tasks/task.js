@@ -27,7 +27,12 @@ var Task = new tyr.Collection({
       label: 'Assignee UID',
       of: [User, 'department']
     },
-    departments: { is: 'array', of: Department },
+    departments: {
+      is: 'array',
+      of: Department,
+      pathLabel: '',
+      numbering: 'ordinal'
+    },
     manual: { link: 'book' }
   }
 });

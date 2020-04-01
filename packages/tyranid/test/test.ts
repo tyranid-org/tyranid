@@ -522,9 +522,9 @@ describe('tyranid', () => {
       });
 
       it('should support field.pathLabel', () => {
-        expect(User.paths['name.first'].parent!.pathLabel).to.be.eql('Name');
-        expect(User.paths['name.first'].pathLabel).to.be.eql('Name First Name');
-        expect(User.paths['name.last'].pathLabel).to.be.eql('Name Last');
+        expect(User.paths['name.first'].parent!.pathLabel).to.be.eql('');
+        expect(User.paths['name.first'].pathLabel).to.be.eql('First Name');
+        expect(User.paths['name.last'].pathLabel).to.be.eql('Last');
       });
 
       it('should support field groups', () => {

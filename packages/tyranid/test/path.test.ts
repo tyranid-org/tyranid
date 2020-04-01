@@ -177,7 +177,7 @@ export function add() {
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.user);
       expect(field.name).to.be.eql('first');
-      expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
+      expect(np.pathLabel).to.be.eql('Organization Owner First Name');
     });
 
     it('should support simple denormalize pathing', () => {
@@ -233,7 +233,7 @@ export function add() {
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.user);
       expect(field.name).to.be.eql('first');
-      expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
+      expect(np.pathLabel).to.be.eql('Organization Owner First Name');
 
       np = new Path(
         Task,
@@ -253,7 +253,7 @@ export function add() {
           field = np.detail;
         expect(field.collection).to.be.eql(Tyr.byName.user);
         expect(field.name).to.be.eql('first');
-        expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
+        expect(np.pathLabel).to.be.eql('Organization Owner First Name');
       }
     });
 
@@ -280,7 +280,7 @@ export function add() {
         field = np.detail;
       expect(field.collection).to.be.eql(Tyr.byName.user);
       expect(field.name).to.be.eql('first');
-      expect(np.pathLabel).to.be.eql('Organization Owner Name First Name');
+      expect(np.pathLabel).to.be.eql('Organization Owner First Name');
 
       const u = await User.byId(3, {
         populate: {
@@ -361,6 +361,33 @@ export function add() {
         'name.first': 1,
         'name.last': 1
       });
+    });
+
+    it('should support groups', () => {
+      try {
+        let p = Task.parsePath(
+          'departments.1|department_|permissions.members.0.name.first'
+        );
+        expect(p.groupLabel(0)).to.eql('2nd');
+        expect(p.groupLabel(1)).to.eql('Department');
+
+        p = Task.parsePath(
+          'departments.1.department_|permissions.members.0.name.first'
+        );
+
+        expect(p.groupLabel(0)).to.eql('2nd Department');
+        expect(p.pathLabel).to.eql(
+          'Permissions Permissions Members A First Name'
+        );
+        expect(p.label).to.eql(
+          '2nd Department Permissions Permissions Members A First Name'
+        );
+
+        Task.fields.departments.def.numbering = 'roman';
+        expect(p.groupLabel(0)).to.eql('Department II');
+      } finally {
+        Task.fields.departments.def.numbering = 'ordinal';
+      }
     });
   });
 }

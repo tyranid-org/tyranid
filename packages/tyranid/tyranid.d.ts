@@ -97,8 +97,9 @@ export namespace Tyr {
   export type Numbering =
     | 'lowercase'
     | 'uppercase'
-    | 'zero-based'
-    | 'one-based'
+    | 'natural'
+    | 'integers'
+    | 'ordinal'
     | 'roman'
     | 'roman-lowercase';
 
