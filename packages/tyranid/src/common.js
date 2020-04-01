@@ -301,13 +301,21 @@ export function toClient(col, doc, opts) {
   // fields is only for top-level objects, we do not want to recursively pass it down into embedded documents
   const dOpts = proj ? _.omit(opts, 'fields', 'projection', 'project') : opts;
 
-  const obj = {};
+  const obj = {},
+    { populate } = opts;
 
+  // note we are only looking at the top-level properties so call flattenProjection() before calling toClient()
   function projected(key) {
-    if (!proj) return key !== '_history' && key !== '$options';
+    if (key.endsWith('$')) {
+      if (!populate) return false;
+      const baseKey = key.substring(0, key.length - 1);
+      return populate[baseKey] || populate.includes?.(baseKey);
+    } else {
+      if (!proj) return key !== '_history' && key !== '$options';
 
-    const v = proj[key];
-    return v === undefined ? key === '_id' : v;
+      const v = proj[key];
+      return v === undefined ? key === '_id' : v;
+    }
   }
 
   const fields = col?.fields;
@@ -317,12 +325,7 @@ export function toClient(col, doc, opts) {
     let v = doc[k];
     let field;
 
-    // note we are only looking at the top-level properties so call flattenProjection() before calling toClient()
-    if (k.endsWith('$')) {
-      if (!opts.populate?.[k.substring(0, k.length - 1)]) continue;
-    } else {
-      if (!projected(k)) continue;
-    }
+    if (!projected(k)) continue;
 
     if (fields && (field = fields[k])) {
       v = field.type.toClient(field, v, doc, opts, proj);
