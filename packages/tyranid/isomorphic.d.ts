@@ -270,6 +270,7 @@ export namespace Tyr {
     spath: string;
     spathArr: string;
     fields: FieldInstance[];
+    label: string;
     pathLabel: string;
     tail: Tyr.FieldInstance;
 

@@ -192,7 +192,6 @@ declare module 'tyranid/client' {
       fields: FieldInstance[];
       tail: FieldInstance;
 
-      parsePath(path: string): PathInstance;
       //set<D extends Document<AnyIdType>>(
       //obj: D,
       //value: any,
