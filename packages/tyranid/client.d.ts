@@ -68,14 +68,8 @@ declare module 'tyranid/client' {
       user: User;
     };
 
-    export type Numbering =
-      | 'lowercase'
-      | 'uppercase'
-      | 'natural'
-      | 'integers'
-      | 'ordinal'
-      | 'roman'
-      | 'roman-lowercase';
+    export type Numbering = Isomorphic.Numbering;
+    export type ActionTrait = Isomorphic.ActionTrait;
 
     export function mapAwait<T, U>(
       val: Promise<T> | T,
@@ -178,7 +172,7 @@ declare module 'tyranid/client' {
     export type AnyIdType = string | number;
     export type ObjIdType = string;
 
-    export interface Pathic extends Omit<Isomorphic.Pathic, 'resolve'> {
+    export interface PathStatic extends Omit<Isomorphic.PathStatic, 'resolve'> {
       new (...args: any[]): PathInstance;
 
       resolve(
@@ -240,7 +234,7 @@ declare module 'tyranid/client' {
       // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
       validate?(
         this: D,
-        field: FieldInstance<D>
+        opts: { field: FieldInstance<D>; trait?: ActionTrait }
       ): Promise<string | false | undefined> | string | false | undefined;
 
       of?: string | FieldDefinition<D>;
@@ -317,8 +311,8 @@ declare module 'tyranid/client' {
       labelify(value: any): Promise<any>;
       labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
       validate(
-        obj: {},
-        trait?: 'view' | 'create' | 'edit' | 'search'
+        document: D,
+        opts: { trait?: ActionTrait }
       ): Promise<string | false | undefined> | string | false | undefined;
 
       width?: number;

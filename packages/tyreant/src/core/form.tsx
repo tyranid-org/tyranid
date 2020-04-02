@@ -13,7 +13,6 @@ import { TyrThemedFieldBase, TyrPathExistsProps } from './path';
 import { registerComponent } from '../common';
 import { TyrOneComponent, TyrOneComponentProps } from './one-component';
 import { TyrComponent, useComponent } from './component';
-import { TyrActionTrait } from '../core/action';
 
 export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;

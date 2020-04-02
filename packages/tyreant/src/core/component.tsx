@@ -6,13 +6,7 @@ import { observer } from 'mobx-react';
 import { Tyr } from 'tyranid/client';
 
 import { Filter } from './filter';
-import {
-  TyrAction,
-  TyrActionFnOpts,
-  TyrActionOpts,
-  ActionSet,
-  TyrActionTrait
-} from './action';
+import { TyrAction, TyrActionFnOpts, TyrActionOpts, ActionSet } from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
 import { TyrModal } from './modal';
@@ -30,7 +24,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   collection?: Tyr.CollectionInstance<D>;
   paths?: (TyrPathLaxProps | string)[];
   decorator?: React.ReactElement;
-  traits?: TyrActionTrait[];
+  traits?: Tyr.ActionTrait[];
   actions?: ActionSet<D>;
   aux?: { [key: string]: Tyr.FieldDefinition<D> };
   parent?: TyrComponent;
@@ -218,18 +212,20 @@ export class TyrComponent<
     // Set up Actions
     //
 
-    let createAction: TyrAction<D> | undefined = undefined;
-    let searchAction: TyrAction<D> | undefined = undefined;
+    let createAction: TyrAction<D> | undefined;
+    let searchAction: TyrAction<D> | undefined;
 
     const { traits } = this.props;
-    const enacted = (trait: TyrActionTrait) => actions.some(a => a.is(trait));
-    const auto = (trait: TyrActionTrait) => {
+    const enacted = (trait: Tyr.ActionTrait) => actions.some(a => a.is(trait));
+    const auto = (trait: Tyr.ActionTrait) => {
       if (enacted(trait)) return false;
 
       switch (trait) {
         case 'create':
-        case 'search':
+          if (enacted('search')) return false;
           break;
+        case 'search':
+          return !enacted('create') && traits?.includes('search');
         case 'edit':
           if (enacted('view')) return false;
           break;

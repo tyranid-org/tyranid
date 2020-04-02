@@ -823,14 +823,14 @@ export function generateClientLibrary() {
   ${UserError.toString()}
   Tyr.UserError = UserError;
 
-  Field.prototype.validate = function(doc, trait) {
+  Field.prototype.validate = function(doc, opts) {
     if (this.def.validate) {
       return ajax({
         url: '/api/' + this.collection.def.name + '/' + this.pathName + '/validate/'
         method: 'put',
         data: JSON.stringify({
           document: doc,
-          trait
+          opts
         }), 
         contentType: 'application/json'
       });
@@ -2347,11 +2347,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
               .route('/api/' + name + '/' + field.spath + '/validate')
               .all(auth)
               .put(async (req, res) => {
-                const { document, trait } = req.body;
+                const { document, opts } = req.body;
                 try {
                   await field.validate(
                     await col.fromClient(document, undefined, { req }),
-                    { trait }
+                    opts
                   );
                   res.json('');
                 } catch (err) {

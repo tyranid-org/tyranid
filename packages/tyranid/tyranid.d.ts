@@ -94,14 +94,8 @@ export namespace Tyr {
   export const query: QueryStatic;
   export const secure: Secure;
 
-  export type Numbering =
-    | 'lowercase'
-    | 'uppercase'
-    | 'natural'
-    | 'integers'
-    | 'ordinal'
-    | 'roman'
-    | 'roman-lowercase';
+  export type Numbering = Isomorphic.Numbering;
+  export type ActionTrait = Isomorphic.ActionTrait;
 
   export namespace functions {
     export function paths(fn: Function): String[];
@@ -1069,7 +1063,7 @@ export namespace Tyr {
       this: D,
       opts: {
         field: FieldInstance<D>;
-        trait?: 'view' | 'edit' | 'create' | 'search';
+        trait?: ActionTrait;
       }
     ): Promise<string | false | undefined> | string | false | undefined;
 
@@ -1147,11 +1141,10 @@ export namespace Tyr {
     format(value: any): string;
     labelify(value: any): Promise<any>;
     labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
-    validate(obj: {}):
-      | Promise<string | false | undefined>
-      | string
-      | false
-      | undefined;
+    validate(
+      document: D,
+      opts: { trait?: ActionTrait }
+    ): Promise<string | false | undefined> | string | false | undefined;
 
     width?: number;
   }

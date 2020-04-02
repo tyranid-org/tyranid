@@ -322,6 +322,7 @@ export function addField({
         return out;
       }
 
+      // TODO:  should be iterating over the Fields not their defs
       const subFields = def.fields;
 
       if (!subFields || (Array.isArray(subFields) && !subFields.length))
@@ -332,17 +333,15 @@ export function addField({
       let obj = '{';
 
       for (const sub of subFieldKeys) {
-        const subField = subFields[sub] as Tyr.FieldInstance;
+        const subField = subFields[sub] as Tyr.FieldDefinition;
         const subDef = subField.def;
         const required =
-          sub === '_id' ||
-          (subField as Tyr.FieldDefinition).required ||
-          (subDef && subDef.required);
+          sub === '_id' || subField.required || (subDef && subDef.required);
         obj += '\n';
         const subName = sub + (required ? '' : '?');
         const subType = addField({
           name: sub,
-          field: subField,
+          field: (subField as any) as Tyr.FieldInstance,
           indent: indent + 1
         });
         const fieldDef = `${subName}: ${subType};`;

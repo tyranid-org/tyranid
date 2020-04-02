@@ -48,6 +48,14 @@ export namespace Tyr {
     | 'roman'
     | 'roman-lowercase';
 
+  export type ActionTrait =
+    | 'create'
+    | 'edit'
+    | 'view'
+    | 'save'
+    | 'cancel'
+    | 'search';
+
   export interface AccessResult {
     allowed: boolean;
     reason: string;

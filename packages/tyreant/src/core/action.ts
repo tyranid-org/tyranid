@@ -62,18 +62,10 @@ export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
   }
 }
 
-export type TyrActionTrait =
-  | 'create'
-  | 'edit'
-  | 'view'
-  | 'save'
-  | 'cancel'
-  | 'search';
-
 export type Cardinality = 0 | 1 | '0..*' | '*';
 
 export interface TyrActionOpts<D extends Tyr.Document> {
-  traits?: TyrActionTrait[];
+  traits?: Tyr.ActionTrait[];
   name: string;
   self?: TyrComponent<D>;
   label?:
@@ -126,7 +118,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     }
   }
 
-  traits: TyrActionTrait[];
+  traits: Tyr.ActionTrait[];
   name: string;
   labelValue:
     | string
@@ -178,7 +170,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.hide = hide;
   }
 
-  is(...traits: TyrActionTrait[]) {
+  is(...traits: Tyr.ActionTrait[]) {
     for (const trait of traits) {
       if (this.traits.indexOf(trait) >= 0) return true;
     }
