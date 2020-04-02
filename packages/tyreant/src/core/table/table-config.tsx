@@ -93,7 +93,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
           return {
             name: pathName,
-            label: column.path?.label || '?',
+            label: column.label || column.path?.label || '?',
             locked: index < lockedLeft,
             sortDirection: savedField?.sortDirection,
             hasFilter: !!savedField?.filter,
@@ -234,7 +234,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       return {
         name: p.path,
         hidden: p.defaultHidden,
-        label: path?.label || '?',
+        label: p.label || path?.label || '?',
         locked: idx < lockedLeft,
         sortDirection: configField ? configField.sortDirection : undefined,
         hasFilter: configField ? configField.hasFilter : undefined

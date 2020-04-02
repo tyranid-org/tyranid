@@ -924,6 +924,7 @@ form textarea.tyr-markup-editor {
     .reset-line {
       .reset-label {
         font-weight: bolder;
+        font-size: 14px;
       }
 
       .ant-breadcrumb {
@@ -938,6 +939,10 @@ form textarea.tyr-markup-editor {
 
         .ant-breadcrumb-separator {
           margin: 0 2px;
+        }
+
+        > span:last-child .ant-breadcrumb-separator {
+          display: none;
         }
       }
     }
