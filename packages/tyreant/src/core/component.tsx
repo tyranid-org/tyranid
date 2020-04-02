@@ -176,7 +176,10 @@ export class TyrComponent<
   }
 
   parentAction: TyrAction<D> | undefined;
-  isSearching: boolean = this.parentAction?.is('search') ?? false;
+
+  get isSearching() {
+    return this.parentAction?.is('search') ?? false;
+  }
 
   componentDidMount() {
     this.mounted = true;
