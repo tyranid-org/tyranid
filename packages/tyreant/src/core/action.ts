@@ -36,6 +36,11 @@ export interface TyrActionFnOpts<D extends Tyr.Document> {
    * Equivalent to documents?.map(d => d.$id)
    */
   ids: Tyr.IdType<D>[];
+
+  /**
+   * Equivalent to !!document?.$id
+   */
+  isNew: boolean;
 }
 
 export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
@@ -50,6 +55,10 @@ export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
 
   get ids() {
     return this.documents?.map(d => d.$id);
+  }
+
+  get isNew() {
+    return !!this.document?.$id;
   }
 }
 

@@ -21,6 +21,7 @@ export interface FormRenderComponentProps<D extends Tyr.Document> {
   documents: D[];
   id: Tyr.IdType<D>;
   ids: Tyr.IdType<D>[];
+  isNew: boolean;
 }
 export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
   form!: TyrFormBase<D>;
@@ -39,6 +40,10 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
 
   get ids() {
     return this.documents?.map(d => d.$id);
+  }
+
+  get isNew() {
+    return !!this.document?.$id;
   }
 }
 
