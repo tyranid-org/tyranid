@@ -2679,7 +2679,7 @@ describe('tyranid', () => {
       it('Should include all collections', async () => {
         const code = generateClientLibrary();
 
-        require('fs').writeFileSync('foo_client.js', code);
+        //require('fs').writeFileSync('foo_client.js', code);
 
         await new Promise((res, rej) => {
           jsdom.env({
