@@ -166,6 +166,8 @@ export namespace Tyr {
 
     required?: boolean;
     // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
+
+    validateSearch?: boolean;
     validate?(
       this: any, // D -- ISO-VARIANCE
       field: any // FieldInstance<any> // D -- ISO-VARIANCE
@@ -200,14 +202,15 @@ export namespace Tyr {
     granularity?: string;
 
     computed?: boolean;
-    get?: Function;
-    getClient?: Function;
-    getServer?: Function;
-    set?: Function;
-    setClient?: Function;
-    setServer?: Function;
-
+    generated?: boolean;
     width?: number;
+
+    get?(this: D): any;
+    getClient?(this: D): any;
+    getServer?(this: D): any;
+    set?(this: D, val: any): void;
+    setClient?(this: D, val: any): void;
+    setServer?(this: D, val: any): void;
   }
 
   export interface FieldStatic {

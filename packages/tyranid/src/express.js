@@ -110,6 +110,7 @@ class Serializer {
       'relate',
       'required',
       'step',
+      'validateSearch',
       'width'
     ]) {
       const v = def[fieldName];
@@ -824,7 +825,9 @@ export function generateClientLibrary() {
   Tyr.UserError = UserError;
 
   Field.prototype.validate = function(doc, opts) {
-    if (this.def.validate) {
+    const { def } = this;
+
+    if (def.validate && (opts.trait != 'search' || def.validateSearch !== false)) {
       return ajax({
         url: '/api/' + this.collection.def.name + '/' + this.pathName + '/validate/'
         method: 'put',

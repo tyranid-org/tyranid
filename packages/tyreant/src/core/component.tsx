@@ -219,6 +219,7 @@ export class TyrComponent<
     const enacted = (trait: Tyr.ActionTrait) => actions.some(a => a.is(trait));
     const auto = (trait: Tyr.ActionTrait) => {
       if (enacted(trait)) return false;
+      let def = true;
 
       switch (trait) {
         case 'create':
@@ -228,15 +229,17 @@ export class TyrComponent<
           return !enacted('create') && traits?.includes('search');
         case 'edit':
           if (enacted('view')) return false;
+          def = !!this.parent;
           break;
         case 'view':
           if (enacted('edit')) return false;
+          def = !!this.parent;
           break;
         default:
           return true;
       }
 
-      return !traits || traits.includes(trait);
+      return !traits ? def : traits.includes(trait);
     };
 
     const enactUp = (_action: TyrActionOpts<D>) => {

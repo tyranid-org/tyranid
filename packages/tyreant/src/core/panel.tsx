@@ -1,8 +1,6 @@
 import * as React from 'react';
 
-import { CloseOutlined } from '@ant-design/icons';
-
-import { Modal, Button, Spin } from 'antd';
+import { Button } from 'antd';
 
 import { TyrAction, TyrActionFnOpts } from './action';
 import {
@@ -75,7 +73,13 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
       (create && create.title) ||
       (edit && edit.title);
 
-    return <div className="tyr-panel-header">{title && <h4>{title}</h4>}</div>;
+    return (
+      title && (
+        <div className="tyr-panel-header">
+          <h4>{title}</h4>
+        </div>
+      )
+    );
   }
 
   renderFooter() {

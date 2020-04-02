@@ -1036,28 +1036,7 @@ export namespace Tyr {
 
   export interface FieldDefinition<
     D extends Document<AnyIdType> = Document<AnyIdType>
-  > {
-    [key: string]: any;
-    is?: string;
-    client?: boolean | (() => boolean);
-    custom?: boolean;
-    db?: boolean;
-    aux?: boolean;
-    historical?: boolean;
-    defaultValue?: any;
-
-    //inverse?: boolean;
-
-    label?: string | (() => string);
-    help?: string;
-    placeholder?: string;
-
-    numbering?: Numbering;
-
-    deprecated?: string | boolean;
-    note?: string;
-
-    required?: boolean;
+  > extends Isomorphic.FieldDefinition<D> {
     // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
     validate?(
       this: D,
@@ -1068,40 +1047,10 @@ export namespace Tyr {
     ): Promise<string | false | undefined> | string | false | undefined;
 
     of?: string | FieldDefinition<D>;
-    cardinality?: string;
 
     fields?: { [key: string]: string | FieldDefinition<D> };
 
     keys?: string | FieldDefinition<D>;
-
-    denormal?: MongoDocument;
-    link?: string;
-    relate?: 'owns' | 'ownedBy' | 'associate';
-    where?: any;
-
-    pathLabel?: string;
-
-    in?: string;
-    min?: number;
-    max?: number;
-    step?: number;
-
-    labelField?: boolean | { uses: string[] };
-    pattern?: RegExp;
-    minlength?: number;
-    maxlength?: number;
-
-    granularity?: string;
-
-    generated?: boolean;
-    get?(this: D): any;
-    getClient?(this: D): any;
-    getServer?(this: D): any;
-    set?(this: D, val: any): void;
-    setClient?(this: D, val: any): void;
-    setServer?(this: D, val: any): void;
-
-    width?: number;
   }
 
   export interface FieldStatic {
