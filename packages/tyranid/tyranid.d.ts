@@ -1032,7 +1032,7 @@ export namespace Tyr {
         | RawMongoDocument[]
     ): RawMongoDocument;
 
-    update(opts: Options_Update & { query: MongoQuery }): Promise<D[]>;
+    update(opts: Options_Update & { query: MongoQuery }): any; // command result
     updateDoc(doc: MaybeRawDocument, opts?: Options_UpdateDoc): Promise<D>;
 
     values: D[];

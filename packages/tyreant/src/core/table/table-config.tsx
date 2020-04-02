@@ -21,7 +21,8 @@ import TyrTableColumnConfigItem from './table-config-item';
 import {
   TyrTableBase,
   TyrTableColumnPathProps,
-  TyrTableColumnPathLaxProps
+  TyrTableColumnPathLaxProps,
+  tablePathName
 } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
@@ -32,7 +33,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | true /* if true, key is "default" */;
   export?: boolean;
   tableConfig?: Tyr.TyrComponentConfig;
-  originalPaths: TyrTableColumnPathLaxProps[];
+  originalPaths: (TyrTableColumnPathLaxProps | string)[];
   onCancel: () => void;
   onUpdate: (
     tableConfig: Tyr.TyrComponentConfig,
@@ -185,13 +186,15 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   };
 
   const resetSort = () => {
-    const defaultSort = originalPaths.find(p => !!p.defaultSort);
-    const defSortPath = defaultSort ? getPathName(defaultSort.path) : undefined;
+    const defaultSort = originalPaths.find(
+      p => typeof p !== 'string' && !!p.defaultSort
+    );
+    const defSortPath = defaultSort ? tablePathName(defaultSort) : undefined;
 
     setColumnFields(
       columnFields.map(c => {
         if (c.name === defSortPath) {
-          c.sortDirection = defaultSort?.defaultSort;
+          c.sortDirection = (defaultSort as any)?.defaultSort;
         } else {
           delete c.sortDirection;
         }
@@ -220,21 +223,28 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     const newColumnFields = originalPaths.map((p, idx) => {
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
+      let label: string | React.ReactNode = '';
 
-      if (typeof p.path === 'string') {
+      if (typeof p === 'string') {
+        pathName = p;
+        path = collection.parsePath(p);
+        label = p;
+      } else if (typeof p.path === 'string') {
         pathName = p.path;
         path = collection.parsePath(pathName);
+        label = path.label;
       } else if (p.path) {
         path = p.path;
         pathName = path.name;
+        label = p.label as string;
       }
 
       const configField = columnFields.find(c => c.name == pathName);
 
       return {
-        name: p.path,
-        hidden: p.defaultHidden,
-        label: p.label || path?.label || '?',
+        name: pathName,
+        hidden: typeof p !== 'string' && p.defaultHidden,
+        label: label || '?',
         locked: idx < lockedLeft,
         sortDirection: configField ? configField.sortDirection : undefined,
         hasFilter: configField ? configField.hasFilter : undefined

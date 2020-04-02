@@ -1714,10 +1714,11 @@ describe('tyranid', () => {
 
     describe('update', () => {
       it('should update', async () => {
-        await User.update({
+        const rslt = await User.update({
           query: { _id: 4 },
           update: { $set: { title: 'Software Engineer' } }
         });
+        console.log('rslt', rslt);
         const user = await User.byId(4);
         expect(user!.title).to.be.eql('Software Engineer');
       });

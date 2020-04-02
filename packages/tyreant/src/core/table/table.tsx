@@ -52,6 +52,7 @@ import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { TyrPathProps } from '../path';
 import { TyrSortDirection } from '../typedef';
+import { stringWidth, wrappedStringWidth } from '../../util/font';
 
 // ant's ColumnGroupType has children has required which seems incorrect
 export interface OurColumnProps<T> extends ColumnType<T> {
@@ -76,54 +77,26 @@ interface TableColumnPathProps {
 export type TyrTableColumnPathLaxProps = TableColumnPathProps & TyrPathLaxProps;
 export type TyrTableColumnPathProps = TableColumnPathProps & TyrPathProps;
 
-// TODO:  move to tyranid client-side api
-export function wrappedStringWidth(s: string) {
-  const { length } = s;
-
-  let longest = 0,
-    current = 0;
-
-  for (let i = 0; i < length; i++) {
-    const ch = s.charCodeAt(i);
-
-    if (ch < 33) {
-      if (current > longest) longest = current;
-      current = 0;
-    } else {
-      // this assumes average character width is 10 and a variable width font
-      switch (ch) {
-        // TODO:  improve this ... also note this won't work for i18n
-        //        probably need to use a browser render width thing but will need to cache it in that case
-        case 33: // !
-        case 39: // '
-        case 105: // i
-          current += 7;
-          break;
-        default:
-          current += 11;
-      }
-    }
-  }
-
-  return current > longest ? current : longest;
-}
-
 export function pathTitle(pathProps: TyrTableColumnPathProps) {
   return pathProps.label || pathProps.path?.pathLabel || '';
 }
 
-export function pathWidth(path: TyrPathProps) {
+export function pathWidth(path: TyrPathProps, wrapTitle?: boolean) {
   const width = path.width || path.path?.detail.width || 0;
 
   const pt = pathTitle(path);
   if (typeof pt === 'string') {
     const titleWidth =
-        wrappedStringWidth(pt) + 40 /* padding + sort/filter icon */;
+        (wrapTitle ? wrappedStringWidth(pt, 15) : stringWidth(pt, 15)) +
+        64 /* padding + sort/filter icon */;
     return titleWidth > width ? titleWidth : width;
   } else {
     return width;
   }
 }
+
+export const tablePathName = (column: TyrTableColumnPathLaxProps | string) =>
+  typeof column === 'string' ? column : getPathName(column.path);
 
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
@@ -131,7 +104,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   bordered?: boolean;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean;
-  paths: TyrTableColumnPathLaxProps[];
+  paths: (TyrTableColumnPathLaxProps | string)[];
   actionHeaderLabel?: string | React.ReactNode;
   actionIcon?: Tyr.anny;
   actionTrigger?: 'hover' | 'click';
@@ -167,6 +140,8 @@ export interface TyrTableProps<D extends Tyr.Document>
   onSelectRows?: (selectedRowIds: string[]) => void;
   orderable?: boolean;
   moveRow?: (dragIndex: number, hoverIndex: number) => void;
+
+  wrapColumnHeaders?: boolean;
 
   children?: React.ReactNode;
 }
@@ -253,7 +228,7 @@ export class TyrTableBase<
         const otherPathName = getPathName(otherPath.path);
 
         const p = nextOtherPaths.find(
-          column => otherPathName === getPathName(column.path)
+          column => otherPathName === tablePathName(column)
         );
 
         return p ? this.resolveFieldLaxProps(p) : undefined;
@@ -262,7 +237,7 @@ export class TyrTableBase<
 
     // Add any new fields (unless they are hidden)
     for (const nextOtherField of nextOtherPaths) {
-      const nextOtherFieldName = getPathName(nextOtherField.path);
+      const nextOtherFieldName = tablePathName(nextOtherField);
 
       const existingCol = newOtherPaths.find(
         column => nextOtherFieldName === getPathName(column.path)
@@ -274,7 +249,10 @@ export class TyrTableBase<
         );
 
         // If it is hidden, then don't add it to my fields
-        if (!fld?.hidden && !nextOtherField.defaultHidden) {
+        if (
+          !fld?.hidden &&
+          !(typeof nextOtherField !== 'string' && nextOtherField.defaultHidden)
+        ) {
           newOtherPaths.push(this.resolveFieldLaxProps(nextOtherField));
         }
       }
@@ -419,7 +397,7 @@ export class TyrTableBase<
 
         if (orig) {
           for (const column of this.props.paths) {
-            const pathName = getPathName(column.path);
+            const pathName = tablePathName(column);
             const field = pathName && collection.paths[pathName];
 
             if (field) {
@@ -428,7 +406,10 @@ export class TyrTableBase<
               const newValue = path.get(document);
 
               if (!isEqual(oldValue, newValue)) {
-                if (typeof column.label === 'string') {
+                if (
+                  typeof column !== 'string' &&
+                  typeof column.label === 'string'
+                ) {
                   changedFields.push(column.label as string);
                 } else if (typeof field.label === 'string') {
                   changedFields.push(field.label);
@@ -534,7 +515,8 @@ export class TyrTableBase<
       actionColumnClassName,
       notifyFilterExists,
       onActionLabelClick,
-      config
+      config,
+      wrapColumnHeaders
     } = this.props;
 
     const { sortDirections, editingDocument, newDocument, isLocal } = this;
@@ -542,7 +524,9 @@ export class TyrTableBase<
 
     const fieldCount = columns.length;
     const isEditingAnything = !!newDocumentTable || !!editingDocument;
-    const allWidthsDefined = columns.every(c => pathWidth(c));
+    const allWidthsDefined = columns.every(c =>
+      pathWidth(c, wrapColumnHeaders)
+    );
     let hasAnyFilter = false;
 
     const antColumns: OurColumnProps<D>[] = [];
@@ -563,7 +547,7 @@ export class TyrTableBase<
         pathName = path.name;
       }
 
-      const pWidth = pathWidth(column);
+      const pWidth = pathWidth(column, wrapColumnHeaders);
       this.tableWidth += pWidth ? Number.parseInt(pWidth as string) + 8 : 275;
       // TODO: check if the type has a width on it
 
