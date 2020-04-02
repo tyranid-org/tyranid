@@ -94,7 +94,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
           return {
             name: pathName,
-            label: column.path?.label || '?',
+            label: column.label || column.path?.label || '?',
             locked: index < lockedLeft,
             sortDirection: savedField?.sortDirection,
             hasFilter: !!savedField?.filter,
@@ -223,16 +223,20 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     const newColumnFields = originalPaths.map((p, idx) => {
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
+      let label: string | React.ReactNode = '';
 
       if (typeof p === 'string') {
         pathName = p;
         path = collection.parsePath(p);
+        label = p;
       } else if (typeof p.path === 'string') {
         pathName = p.path;
         path = collection.parsePath(pathName);
+        label = path.label;
       } else if (p.path) {
         path = p.path;
         pathName = path.name;
+        label = p.label as string;
       }
 
       const configField = columnFields.find(c => c.name == pathName);
@@ -240,7 +244,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       return {
         name: pathName,
         hidden: typeof p !== 'string' && p.defaultHidden,
-        label: path?.label || '?',
+        label: label || '?',
         locked: idx < lockedLeft,
         sortDirection: configField ? configField.sortDirection : undefined,
         hasFilter: configField ? configField.hasFilter : undefined

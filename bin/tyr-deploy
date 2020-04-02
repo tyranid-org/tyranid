@@ -112,4 +112,3 @@ fi
 if [[ -z $SOMETHING ]]; then
   usage
 fi
-
