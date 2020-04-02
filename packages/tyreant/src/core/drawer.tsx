@@ -41,7 +41,7 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
   enact(action: TyrAction<D>) {
     if (!this.decorating) throw new Error('drawer not connected');
 
-    if (action.is('create')) {
+    if (action.is('create', 'search')) {
       this.create = action.decorate({
         action: () => this.openDrawer()
       });

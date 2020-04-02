@@ -10,6 +10,7 @@ export * from './form';
 export * from './kanban';
 export * from './modal';
 export * from './page';
+export * from './panel';
 export * from './router';
 export * from './table';
 export * from './theme';

@@ -9,6 +9,7 @@ import type { TyrFormBase, TyrFormProps } from './form';
 import type { TyrKanbanProps } from './kanban';
 import type { TyrModalProps } from './modal';
 import type { TyrTableProps } from './table';
+import { TyrPanelProps } from './panel';
 
 export interface TyrThemeProps {
   drawer?: Partial<TyrDrawerProps<any>>;
@@ -16,6 +17,7 @@ export interface TyrThemeProps {
   kanban?: Partial<TyrKanbanProps<any>>;
   modal?: Partial<TyrModalProps<any>>;
   table?: Partial<TyrTableProps<any>>;
+  panel?: Partial<TyrPanelProps<any>>;
 }
 
 export const ThemeContext = React.createContext<TyrThemeProps | undefined>(

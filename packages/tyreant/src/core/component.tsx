@@ -17,6 +17,7 @@ import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
 import { TyrModal } from './modal';
 import { TyrSortDirection } from './typedef';
+import { TyrPanel } from './panel';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -180,6 +181,9 @@ export class TyrComponent<
     return { caller: this } as any;
   }
 
+  parentAction: TyrAction<D> | undefined;
+  isSearching: boolean = this.parentAction?.is('search') ?? false;
+
   componentDidMount() {
     this.mounted = true;
     this.visible = true;
@@ -214,6 +218,9 @@ export class TyrComponent<
     // Set up Actions
     //
 
+    let createAction: TyrAction<D> | undefined = undefined;
+    let searchAction: TyrAction<D> | undefined = undefined;
+
     const { traits } = this.props;
     const enacted = (trait: TyrActionTrait) => actions.some(a => a.is(trait));
     const auto = (trait: TyrActionTrait) => {
@@ -221,6 +228,7 @@ export class TyrComponent<
 
       switch (trait) {
         case 'create':
+        case 'search':
           break;
         case 'edit':
           if (enacted('view')) return false;
@@ -266,7 +274,7 @@ export class TyrComponent<
               if (!this.document) this.document = this.createDocument(opts);
             };
           }
-        } else if (action.is('create')) {
+        } else if (action.is('create', 'search')) {
           actFn = opts => {
             this.document = this.createDocument(opts);
           };
@@ -288,10 +296,25 @@ export class TyrComponent<
         };
       }
 
+      if (action.is('edit', 'view', 'create', 'search')) {
+        const actFn = action.action;
+
+        action.action = opts => {
+          this.parentAction = action;
+          actFn!(opts);
+        };
+      }
+
       // TODO:  do we ever want to enact() locally on this component or always up?
       //        (save/cancel need to be enacted up so that the decorator sees it)
       if (action.traits?.length) this.enactUp(action);
       else this.enact(action); // i.e. traitless table actions
+
+      if (action.is('create')) {
+        createAction = action;
+      } else if (action.is('search')) {
+        searchAction = action;
+      }
     };
 
     // Manual Actions
@@ -310,6 +333,19 @@ export class TyrComponent<
         traits: ['create'],
         name: 'create',
         label: 'Create ' + collection.label
+      });
+    }
+
+    if (
+      this.canEdit &&
+      !enacted('search') &&
+      ((!parentLink && !enacted('view') && auto('search')) ||
+        traits?.includes('search'))
+    ) {
+      enactUp({
+        traits: ['search'],
+        name: 'search',
+        label: 'Search ' + collection.label
       });
     }
 
@@ -332,10 +368,17 @@ export class TyrComponent<
       });
     }
 
-    if (addingSave) {
+    if (addingSave && !enacted('save')) {
       enactUp({
         traits: ['save'],
         name: 'save'
+      });
+    }
+
+    // auto actions
+    if (!parent && (createAction || searchAction)) {
+      setTimeout(() => {
+        (createAction || searchAction)!.act({});
       });
     }
   }
@@ -613,6 +656,7 @@ export class TyrComponent<
     const { parent, decorator } = this.props;
 
     const Modal = TyrModal as any;
+    const Panel = TyrPanel as any;
 
     return (
       <ComponentContext.Provider value={this as any}>
@@ -621,7 +665,7 @@ export class TyrComponent<
         ) : parent ? (
           <Modal className="tyr-wide-modal">{children()}</Modal>
         ) : (
-          children()
+          <Panel>{children()}</Panel>
         )}
       </ComponentContext.Provider>
     );

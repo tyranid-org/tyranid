@@ -823,12 +823,15 @@ export function generateClientLibrary() {
   ${UserError.toString()}
   Tyr.UserError = UserError;
 
-  Field.prototype.validate = function(doc) {
+  Field.prototype.validate = function(doc, trait) {
     if (this.def.validate) {
       return ajax({
         url: '/api/' + this.collection.def.name + '/' + this.pathName + '/validate/'
         method: 'put',
-        data: JSON.stringify(doc),
+        data: JSON.stringify({
+          document: doc,
+          trait
+        }), 
         contentType: 'application/json'
       });
     }
@@ -2344,9 +2347,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
               .route('/api/' + name + '/' + field.spath + '/validate')
               .all(auth)
               .put(async (req, res) => {
+                const { document, trait } = req.body;
                 try {
                   await field.validate(
-                    await col.fromClient(req.body, undefined, { req })
+                    await col.fromClient(document, undefined, { req }),
+                    { trait }
                   );
                   res.json('');
                 } catch (err) {

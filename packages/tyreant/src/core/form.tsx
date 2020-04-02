@@ -13,6 +13,7 @@ import { TyrThemedFieldBase, TyrPathExistsProps } from './path';
 import { registerComponent } from '../common';
 import { TyrOneComponent, TyrOneComponentProps } from './one-component';
 import { TyrComponent, useComponent } from './component';
+import { TyrActionTrait } from '../core/action';
 
 export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;
@@ -183,17 +184,19 @@ export async function submitForm<D extends Tyr.Document>(
   const { form } = tyrForm;
 
   try {
-    /*const store = */ await form!.validateFields(
-      tyrForm.activePaths
-        .map(path => path.path?.name)
-        .filter(s => s) as string[]
-    );
+    const activePaths = tyrForm.activePaths
+      .map(path => path.path?.name)
+      .filter(s => s) as string[];
 
-    await document.$save();
-    document.$cache();
+    /*const store = */ await form!.validateFields(activePaths);
 
-    const { parent } = tyrForm;
-    parent && parent.refresh();
+    if (!tyrForm.isSearching) {
+      await document.$save();
+      document.$cache();
+
+      const { parent } = tyrForm;
+      parent && parent.refresh();
+    }
 
     return true;
   } catch (err) {

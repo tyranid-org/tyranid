@@ -1067,7 +1067,10 @@ export namespace Tyr {
     // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
     validate?(
       this: D,
-      field: FieldInstance<D>
+      opts: {
+        field: FieldInstance<D>;
+        trait?: 'view' | 'edit' | 'create' | 'search';
+      }
     ): Promise<string | false | undefined> | string | false | undefined;
 
     of?: string | FieldDefinition<D>;

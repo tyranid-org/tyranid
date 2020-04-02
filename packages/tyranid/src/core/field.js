@@ -160,11 +160,11 @@ export default class Field {
     return this._calcPathLabel();
   }
 
-  async validate(doc) {
+  async validate(doc, opts) {
     const validateFn = this.def.validate;
 
     if (validateFn) {
-      const reason = await validateFn.apply(doc, this);
+      const reason = await validateFn.call(doc, { field: this, ...opts });
       if (reason) throw new UserError({ field: this, suffix: reason });
     }
   }

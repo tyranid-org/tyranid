@@ -53,7 +53,13 @@ export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
   }
 }
 
-export type TyrActionTrait = 'create' | 'edit' | 'view' | 'save' | 'cancel';
+export type TyrActionTrait =
+  | 'create'
+  | 'edit'
+  | 'view'
+  | 'save'
+  | 'cancel'
+  | 'search';
 
 export type Cardinality = 0 | 1 | '0..*' | '*';
 
@@ -158,7 +164,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.labelValue = label || Tyr.labelize(name);
     this.title = title || this.labelValue;
     this.action = action;
-    this.input = input ?? (traits.includes('create') ? 0 : 1);
+    this.input =
+      input ?? (traits.includes('create') || traits.includes('search') ? 0 : 1);
     this.hide = hide;
   }
 
