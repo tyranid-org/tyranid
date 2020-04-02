@@ -27,7 +27,7 @@ export const useComponent = () => React.useContext(ComponentContext);
 export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   className?: string;
   collection?: Tyr.CollectionInstance<D>;
-  paths?: TyrPathLaxProps[];
+  paths?: (TyrPathLaxProps | string)[];
   decorator?: React.ReactElement;
   traits?: TyrActionTrait[];
   actions?: ActionSet<D>;
@@ -94,9 +94,6 @@ export class TyrComponent<
 
   componentName = '';
 
-  @observable
-  componentConfig?: Tyr.TyrComponentConfig;
-
   /*
    * * * TyrOneComponent properties defined here for convenience in callbacks * * *
    */
@@ -147,7 +144,7 @@ export class TyrComponent<
 
       const parentCollection = parent.collection;
 
-      let paths: TyrPathLaxProps[] | undefined = this.paths;
+      let paths: (TyrPathLaxProps | string)[] | undefined = this.paths;
       if (!paths && collection) {
         paths = this.props.paths;
         if (!paths && collection === parentCollection)
@@ -392,8 +389,14 @@ export class TyrComponent<
     throw new Error('submit() not defined');
   }
 
-  resolveFieldLaxProps(laxPathProps: TyrPathLaxProps) {
-    const pathProps = Object.assign({}, laxPathProps);
+  resolveFieldLaxProps(laxPathProps: TyrPathLaxProps | string) {
+    const pathProps: TyrPathLaxProps = {};
+    if (typeof laxPathProps === 'string') {
+      pathProps.path = laxPathProps;
+    } else {
+      Object.assign({}, laxPathProps);
+    }
+
     let p = pathProps.path;
     if (typeof p === 'string')
       p = pathProps.path = this.collection.parsePath(p);
@@ -623,6 +626,13 @@ export class TyrComponent<
       </ComponentContext.Provider>
     );
   }
+
+  //
+  // Component Config
+  //
+
+  @observable
+  componentConfig?: Tyr.TyrComponentConfig;
 
   updateConfigSort = async (
     columnName?: string,

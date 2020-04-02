@@ -21,7 +21,8 @@ import TyrTableColumnConfigItem from './table-config-item';
 import {
   TyrTableBase,
   TyrTableColumnPathProps,
-  TyrTableColumnPathLaxProps
+  TyrTableColumnPathLaxProps,
+  tablePathName
 } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
@@ -32,7 +33,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | true /* if true, key is "default" */;
   export?: boolean;
   tableConfig?: Tyr.TyrComponentConfig;
-  originalPaths: TyrTableColumnPathLaxProps[];
+  originalPaths: (TyrTableColumnPathLaxProps | string)[];
   onCancel: () => void;
   onUpdate: (
     tableConfig: Tyr.TyrComponentConfig,
@@ -185,13 +186,15 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   };
 
   const resetSort = () => {
-    const defaultSort = originalPaths.find(p => !!p.defaultSort);
-    const defSortPath = defaultSort ? getPathName(defaultSort.path) : undefined;
+    const defaultSort = originalPaths.find(
+      p => typeof p !== 'string' && !!p.defaultSort
+    );
+    const defSortPath = defaultSort ? tablePathName(defaultSort) : undefined;
 
     setColumnFields(
       columnFields.map(c => {
         if (c.name === defSortPath) {
-          c.sortDirection = defaultSort?.defaultSort;
+          c.sortDirection = (defaultSort as any)?.defaultSort;
         } else {
           delete c.sortDirection;
         }
@@ -221,7 +224,10 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
 
-      if (typeof p.path === 'string') {
+      if (typeof p === 'string') {
+        pathName = p;
+        path = collection.parsePath(p);
+      } else if (typeof p.path === 'string') {
         pathName = p.path;
         path = collection.parsePath(pathName);
       } else if (p.path) {
@@ -232,8 +238,8 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       const configField = columnFields.find(c => c.name == pathName);
 
       return {
-        name: p.path,
-        hidden: p.defaultHidden,
+        name: pathName,
+        hidden: typeof p !== 'string' && p.defaultHidden,
         label: path?.label || '?',
         locked: idx < lockedLeft,
         sortDirection: configField ? configField.sortDirection : undefined,
