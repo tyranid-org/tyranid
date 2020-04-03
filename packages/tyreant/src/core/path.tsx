@@ -168,6 +168,7 @@ export interface TyrPathProps
   requiredMessage?: string;
   validateTrigger?: string | string[] | false;
   textAreaRows?: number;
+  onPressEnter?: () => void;
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {

@@ -21,6 +21,7 @@ export const TyrTextBase = ((props: TyrTypeProps) => {
       onChange={ev => onTypeChange(props, ev.target.value, ev)}
       tabIndex={props.tabIndex}
       rows={props.textAreaRows || 6}
+      onPressEnter={props.onPressEnter}
     />
   ));
 }) as React.ComponentType<TyrTypeProps>;

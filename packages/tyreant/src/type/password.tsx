@@ -18,6 +18,7 @@ export const TyrPasswordBase = ((props: TyrTypeProps) => {
       onChange={ev => onTypeChange(props, ev.target.value, ev)}
       tabIndex={props.tabIndex}
       className={props.className}
+      onPressEnter={props.onPressEnter}
     />
   ));
 }) as React.ComponentType<TyrTypeProps>;
