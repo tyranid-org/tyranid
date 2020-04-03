@@ -1,17 +1,10 @@
-/*
- - Add resizeable columns: "re-resizable": "4.4.4",
-   - https://ant.design/components/table/#components-table-demo-resizable-column
-   - store in tableConfig
- - store filters in tableConfig
- - store sort in tableConfig
-*/
-
 import { compact, findIndex, isEqual } from 'lodash';
 
 import * as React from 'react';
 import { createRef } from 'react';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
+import { Resizable, ResizableProps } from 'react-resizable';
 
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
@@ -35,9 +28,8 @@ import {
   Table,
   Tooltip
 } from 'antd';
-import { ColumnType } from 'antd/lib/table';
+import { ColumnType, ColumnProps, TableProps } from 'antd/lib/table';
 import { PaginationProps } from 'antd/es/pagination';
-import { ColumnProps } from 'antd/lib/table';
 
 import { Tyr } from 'tyranid/client';
 
@@ -116,6 +108,7 @@ export interface TyrTableProps<D extends Tyr.Document>
     | ((tableControl: TyrTableBase<any>) => React.ReactNode);
   canEditDocument?: (document: D) => boolean;
   size?: SizeType;
+  resizableColumns?: boolean;
   saveDocument?: (document: D) => Promise<D>;
   onAfterSaveDocument?: (document: D, changedFields?: string[]) => void;
   onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
@@ -516,7 +509,8 @@ export class TyrTableBase<
       notifyFilterExists,
       onActionLabelClick,
       config,
-      wrapColumnHeaders
+      wrapColumnHeaders,
+      resizableColumns
     } = this.props;
 
     const { sortDirections, editingDocument, newDocument, isLocal } = this;
@@ -610,7 +604,7 @@ export class TyrTableBase<
 
       //}
 
-      const tableColumn = {
+      const tableColumn: OurColumnProps<D> = {
         dataIndex: pathName,
         //key: pathName,
         render: (text: string, doc: D) => {
@@ -698,6 +692,17 @@ export class TyrTableBase<
           ? { fixed: column.pinned }
           : {}),
         ...(column.align ? { align: column.align } : {}),
+        ...(resizableColumns
+          ? {
+              onHeaderCell: column =>
+                ({
+                  width: colWidth,
+                  onResize(e: any, opts: any) {
+                    console.log('new size', opts.size);
+                  }
+                } as any)
+            }
+          : {}),
         path
       };
 
@@ -997,7 +1002,8 @@ export class TyrTableBase<
       onSelectRows,
       orderable,
       rowSelection,
-      emptyTablePlaceholder
+      emptyTablePlaceholder,
+      resizableColumns
     } = this.props;
 
     const fieldCount = paths.length;
@@ -1023,11 +1029,17 @@ export class TyrTableBase<
 
       const dndEnabled = !isEditingRow && !newDocument && orderable;
 
-      const components = {
+      const components: TableProps<any>['components'] = {
         body: {
           row: EditableFormRow as any
         }
       };
+
+      if (resizableColumns) {
+        components.header = {
+          cell: ResizableTitle
+        };
+      }
 
       const netFooter = (docs: D[]) => (
         <>
@@ -1306,5 +1318,32 @@ export const TyrTable = <D extends Tyr.Document>(props: TyrTableProps<D>) => (
     parent={useComponent()}
   />
 );
+
+const ResizableTitle = (props: ResizableProps) => {
+  const { onResize, width, ...restProps } = props;
+
+  if (!width) {
+    return <th {...restProps} />;
+  }
+
+  return (
+    <Resizable
+      width={width}
+      height={0}
+      handle={resizeHandle => (
+        <span
+          className={`react-resizable-handle react-resizable-handle-${resizeHandle}`}
+          onClick={e => {
+            e.stopPropagation();
+          }}
+        />
+      )}
+      onResize={onResize}
+      draggableOpts={{ enableUserSelectHack: false }}
+    >
+      <th {...restProps} />
+    </Resizable>
+  );
+};
 
 registerComponent('TyrTable', TyrTable);
