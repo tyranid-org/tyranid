@@ -24,7 +24,7 @@ export const TyrBooleanBase: React.FunctionComponent<TyrTypeProps> = props => {
 
     return props.asSwitch ? (
       <Switch
-        // autoComplete="off"
+        //autoComplete="off"
         autoFocus={props.autoFocus}
         onChange={onTypeChangeFunc}
       />
