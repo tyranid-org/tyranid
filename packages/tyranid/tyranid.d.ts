@@ -507,6 +507,7 @@ export namespace Tyr {
   export interface Options_FromClient
     extends OptionsAuth,
       OptionsCommon,
+      OptionsPopulate,
       OptionsHttpRequest {}
 
   export interface Options_ToClient

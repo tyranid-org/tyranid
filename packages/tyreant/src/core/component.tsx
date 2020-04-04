@@ -47,6 +47,8 @@ export class TyrComponent<
   collection!: Tyr.CollectionInstance<D>;
   paths!: TyrPathProps[];
 
+  //static whyDidYouRender = true;
+
   get displayName() {
     return this.constructor.name + ':' + this.collection.name;
   }
