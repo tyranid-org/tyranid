@@ -228,7 +228,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       if (typeof p === 'string') {
         pathName = p;
         path = collection.parsePath(p);
-        label = p;
+        label = path.label;
       } else if (typeof p.path === 'string') {
         pathName = p.path;
         path = collection.parsePath(pathName);
