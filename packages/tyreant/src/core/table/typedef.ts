@@ -21,4 +21,5 @@ export interface ColumnConfigField {
   hidden: boolean;
   sortDirection?: TyrSortDirection;
   hasFilter?: boolean;
+  width?: number;
 }

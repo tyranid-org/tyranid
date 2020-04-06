@@ -343,16 +343,15 @@ export function generateClientLibrary() {
     module.exports = factory(require('jquery'), require('lodash'), require('moment'));
   } else {
     // Browser globals (root is window)
-    root.Tyr = factory(root.jQuery, root._, root.moment);
+    root.Tyr = factory(root._, root.moment);
   }
-})((typeof window !== 'undefined' ? window : this), function($, _, moment) {
+})((typeof window !== 'undefined' ? window : this), function(_, moment) {
   var Tyr = { init: init };
   Tyr.Tyr = Tyr;
   return Tyr;
 
   function init() { //... begin Tyr.init();
 
-  if (!$) throw new Error("jQuery not available to Tyranid client");
   if (!_) throw new Error("Lodash not available to Tyranid client ");
   if (!moment) throw new Error("moment not available to Tyranid client ");
 
@@ -408,6 +407,7 @@ export function generateClientLibrary() {
   }
 
   Tyr.fetch = async function(url, opts) {
+    opts = opts || {};
     const csrf = Tyr.options.csrf;
     if (csrf) {
       var headers = opts.headers = opts.headers || {};
@@ -416,7 +416,7 @@ export function generateClientLibrary() {
 
     try {
       const response = await fetch(url, opts);
-      const json = opts.method !== 'DELETE' ? await response.json() : undefined;
+      const json = /application\\/json/.test(response.headers.get('Content-Type')) ? await response.json() : undefined;
 
       const { status } = response;
 

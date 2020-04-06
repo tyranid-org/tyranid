@@ -221,30 +221,10 @@ export class TyrTableBase<
     onLoad && onLoad(this);
   }
 
-  componentDidUpdate(
-    prevProps: TyrTableProps<D>,
-    prevState: TyrComponentState<D>
-  ) {
-    const { documents: newDocuments } = this.props;
-    const { documents } = prevProps;
-
-    if (documents && newDocuments) {
-      if (this.props.orderable) {
-        this.documents = newDocuments.slice();
-        this.count = newDocuments.length;
-      } else {
-        if (!this.documents) {
-          this.setSortedDocuments(newDocuments.slice());
-        } else {
-          //if (!this.editingDocument) {
-          this.setStableDocuments(newDocuments.slice());
-        }
-      }
-    }
-
+  UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps<D>) {
     // ensure any paths in nextProps.paths are in this.otherPaths (add to end if not there)
     // remove any paths from this.otherPaths not in nextProps.paths
-    const nextOtherPaths = prevProps.paths;
+    const nextOtherPaths = nextProps.paths;
 
     // Replace all existing fields, and remove any not in new fields
     const newOtherPaths = compact(
@@ -284,6 +264,28 @@ export class TyrTableBase<
 
     this.otherPaths = newOtherPaths;
     this.refreshPaths();
+  }
+
+  componentDidUpdate(
+    prevProps: TyrTableProps<D>,
+    prevState: TyrComponentState<D>
+  ) {
+    const { documents: newDocuments } = this.props;
+    const { documents } = prevProps;
+
+    if (documents && newDocuments) {
+      if (this.props.orderable) {
+        this.documents = newDocuments.slice();
+        this.count = newDocuments.length;
+      } else {
+        if (!this.documents) {
+          this.setSortedDocuments(newDocuments.slice());
+        } else {
+          //if (!this.editingDocument)
+          this.setStableDocuments(newDocuments.slice());
+        }
+      }
+    }
   }
 
   setFieldValue = (fieldName: string, value: any) => {
@@ -327,7 +329,8 @@ export class TyrTableBase<
   private onUpdateTableConfig = async (
     savedTableConfig: Tyr.TyrComponentConfig,
     sortHasBeenReset?: boolean,
-    filtersHaveBeenReset?: boolean
+    filtersHaveBeenReset?: boolean,
+    widthsHaveBeenReset?: boolean
   ) => {
     const { config, onChangeTableConfiguration } = this.props;
 
@@ -364,6 +367,10 @@ export class TyrTableBase<
 
       if (sortHasBeenReset || filtersHaveBeenReset) {
         this.requery();
+      }
+
+      if (widthsHaveBeenReset) {
+        this.resetWidths();
       }
     }
   };
@@ -529,6 +536,10 @@ export class TyrTableBase<
 
   tableWidth: number = 0;
 
+  private getColumnWidth(name: string) {
+    return this.componentConfig?.fields.find((f) => f.name === name)?.width;
+  }
+
   private getColumns(newDocumentTable?: boolean): ColumnProps<D>[] {
     const {
       collection,
@@ -572,7 +583,9 @@ export class TyrTableBase<
         pathName = path.name;
       }
 
-      const pWidth = pathWidth(column, wrapColumnHeaders);
+      const pWidth =
+        (pathName && this.getColumnWidth(pathName)) ||
+        pathWidth(column, wrapColumnHeaders);
       this.tableWidth += pWidth ? Number.parseInt(pWidth as string) + 8 : 275;
       // TODO: check if the type has a width on it
 
@@ -744,6 +757,8 @@ export class TyrTableBase<
                       //rerenderTable.refresh();
                     }*/
                     column.width = width;
+                    this.updateConfigWidths(pathName, width);
+                    // TODO:  save
                     this.refresh();
                   },
                 } as any),

@@ -107,7 +107,7 @@ export class TyrComponent<
 
   refreshPaths() {
     if (this.props.paths) {
-      this.paths = this.props.paths.map(laxFieldProps =>
+      this.paths = this.props.paths.map((laxFieldProps) =>
         this.resolveFieldLaxProps(laxFieldProps)
       );
     }
@@ -148,7 +148,7 @@ export class TyrComponent<
           paths = parent.props.paths;
 
         if (paths)
-          this.paths = paths.map(laxPathProps =>
+          this.paths = paths.map((laxPathProps) =>
             this.resolveFieldLaxProps(laxPathProps)
           );
       }
@@ -221,7 +221,8 @@ export class TyrComponent<
     let searchAction: TyrAction<D> | undefined;
 
     const { traits } = this.props;
-    const enacted = (trait: Tyr.ActionTrait) => actions.some(a => a.is(trait));
+    const enacted = (trait: Tyr.ActionTrait) =>
+      actions.some((a) => a.is(trait));
     const auto = (trait: Tyr.ActionTrait) => {
       if (enacted(trait)) return false;
       let def = true;
@@ -257,12 +258,12 @@ export class TyrComponent<
       if (!actFn) {
         if (action.is('edit', 'view')) {
           if (this.canMultiple && parentLink) {
-            actFn = opts => {
+            actFn = (opts) => {
               opts.self._parentDocument = opts.document;
               opts.self.requery();
             };
           } else if (action.input === '*' || action.input === '0..*') {
-            actFn = async opts => {
+            actFn = async (opts) => {
               const { documents } = opts;
               if (documents) this.documents = documents;
 
@@ -273,13 +274,13 @@ export class TyrComponent<
               }
             };
           } else {
-            actFn = async opts => {
+            actFn = async (opts) => {
               await this.find(opts.document!);
               if (!this.document) this.document = this.createDocument(opts);
             };
           }
         } else if (action.is('create', 'search')) {
-          actFn = opts => {
+          actFn = (opts) => {
             this.document = this.createDocument(opts);
           };
         } else if (action.is('cancel')) {
@@ -292,7 +293,7 @@ export class TyrComponent<
       }
 
       if (action.is('save')) {
-        action.action = opts => {
+        action.action = (opts) => {
           // we assign to the existing opts here rather than create a new opts because
           // we are given a TyrActionFnOptsWrapper
           opts.document = this.document;
@@ -303,7 +304,7 @@ export class TyrComponent<
       if (action.is('edit', 'view', 'create', 'search')) {
         const actFn = action.action;
 
-        action.action = opts => {
+        action.action = (opts) => {
           this.parentAction = action;
           actFn!(opts);
         };
@@ -336,7 +337,7 @@ export class TyrComponent<
       enactUp({
         traits: ['create'],
         name: 'create',
-        label: 'Create ' + collection.label
+        label: 'Create ' + collection.label,
       });
     }
 
@@ -349,7 +350,7 @@ export class TyrComponent<
       enactUp({
         traits: ['search'],
         name: 'search',
-        label: 'Search ' + collection.label
+        label: 'Search ' + collection.label,
       });
     }
 
@@ -359,7 +360,7 @@ export class TyrComponent<
         traits: [auto('edit') ? 'edit' : 'view'],
         title: !this.canMultiple
           ? (auto('edit') ? 'Edit ' : 'View ') + collection.label
-          : Tyr.pluralize(collection.label)
+          : Tyr.pluralize(collection.label),
       });
     }
 
@@ -368,14 +369,14 @@ export class TyrComponent<
     if (auto('cancel')) {
       enactUp({
         traits: ['cancel'],
-        name: enacted('save') || addingSave ? 'cancel' : 'close'
+        name: enacted('save') || addingSave ? 'cancel' : 'close',
       });
     }
 
     if (addingSave && !enacted('save')) {
       enactUp({
         traits: ['save'],
-        name: 'save'
+        name: 'save',
       });
     }
 
@@ -511,14 +512,14 @@ export class TyrComponent<
     if (linkToParent) {
       updatedDocument = (await collection.findOne({
         query: {
-          [linkToParent.path.spath]: document.$id
-        }
+          [linkToParent.path.spath]: document.$id,
+        },
       })) as D;
     } else if (linkFromParent) {
       const id = linkFromParent.path.get(document);
 
       updatedDocument = (await collection.findOne({
-        _id: id
+        _id: id,
       })) as D;
     } else {
       if (collection.id !== document.$model.id) {
@@ -567,7 +568,7 @@ export class TyrComponent<
 
     const {
       linkToParent: propsLinkToParent,
-      linkFromParent: propsLinkFromParent
+      linkFromParent: propsLinkFromParent,
     } = props;
 
     if (propsLinkToParent) {
@@ -687,7 +688,7 @@ export class TyrComponent<
     sortDirection?: TyrSortDirection
   ) => {
     if (this.componentConfig) {
-      const fields = this.componentConfig.fields.forEach(f => {
+      const fields = this.componentConfig.fields.forEach((f) => {
         if (!columnName) {
           delete f.sortDirection;
         } else if (f.name === columnName) {
@@ -701,16 +702,16 @@ export class TyrComponent<
         query: { _id: this.componentConfig._id },
         update: {
           $set: {
-            columns: fields
-          }
-        }
+            columns: fields,
+          },
+        },
       });
     }
   };
 
   updateConfigFilter = async (columnName?: string, filter?: Object) => {
     if (this.componentConfig) {
-      const fields = this.componentConfig.fields.forEach(f => {
+      const fields = this.componentConfig.fields.forEach((f) => {
         if (!columnName) {
           delete f.filter;
         } else if (f.name === columnName) {
@@ -722,9 +723,31 @@ export class TyrComponent<
         query: { _id: this.componentConfig._id },
         update: {
           $set: {
-            columns: fields
-          }
+            columns: fields,
+          },
+        },
+      });
+    }
+  };
+
+  updateConfigWidths = async (columnName?: string, width?: number) => {
+    if (this.componentConfig) {
+      const { fields } = this.componentConfig;
+      for (const f of fields) {
+        if (!columnName) {
+          delete f.width;
+        } else if (f.name === columnName) {
+          f.width = width;
         }
+      }
+
+      await this.componentConfig.$update({
+        query: { _id: this.componentConfig._id },
+        update: {
+          $set: {
+            columns: fields,
+          },
+        },
       });
     }
   };
