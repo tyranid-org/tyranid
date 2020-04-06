@@ -331,7 +331,10 @@ export class TyrComponent<
     if (
       this.canEdit &&
       !enacted('create') &&
-      ((!parentLink && !enacted('view') && auto('create')) ||
+      ((!parentLink &&
+        !enacted('view') &&
+        !enacted('edit') &&
+        auto('create')) ||
         traits?.includes('create'))
     ) {
       enactUp({
