@@ -442,7 +442,7 @@ export class TyrComponent<
     if (typeof laxPathProps === 'string') {
       pathProps.path = laxPathProps;
     } else {
-      Object.assign({}, laxPathProps);
+      Object.assign(pathProps, laxPathProps);
     }
 
     let p = pathProps.path;

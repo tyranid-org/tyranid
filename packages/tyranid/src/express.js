@@ -340,7 +340,7 @@ export function generateClientLibrary() {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
-    module.exports = factory(require('jquery'), require('lodash'), require('moment'));
+    module.exports = factory(require('lodash'), require('moment'));
   } else {
     // Browser globals (root is window)
     root.Tyr = factory(root._, root.moment);
@@ -355,7 +355,7 @@ export function generateClientLibrary() {
   if (!_) throw new Error("Lodash not available to Tyranid client ");
   if (!moment) throw new Error("moment not available to Tyranid client ");
 
-  _.assign(Tyr, {
+  Object.assign(Tyr, {
     $all: '$all',
     collections: [],
     byId: {},
@@ -974,7 +974,7 @@ export function generateClientLibrary() {
 
     eval(\`CollectionInstance = function \${capitalizedName}(data) {
       if (data) {
-        _.assign(this, data);
+        Object.assign(this, data);
       }
 
       var paths = this.$model.paths;
@@ -996,7 +996,7 @@ export function generateClientLibrary() {
     };\`);
     //var CollectionInstance = function(data) {
       //if (data) {
-        //_.assign(this, data);
+        //Object.assign(this, data);
       //}
     //};
 
@@ -1186,7 +1186,7 @@ export function generateClientLibrary() {
       }
 
       return this.findOne(
-        _.assign({}, opts, { query: { _id: id } })
+        Object.assign({}, opts, { query: { _id: id } })
       );
     }
   };
@@ -1203,7 +1203,7 @@ export function generateClientLibrary() {
         if (results.every(v => v)) return results;
       }
 
-      opts = _.assign({}, opts, { query: { _id: { $in: ids } } });
+      opts = Object.assign({}, opts, { query: { _id: { $in: ids } } });
       return this.findAll(opts)
         .then(docs => {
           if (opts.parallel) {
@@ -1235,7 +1235,7 @@ export function generateClientLibrary() {
   Collection.prototype.findOne = function(opts) {
     var col = this;
 
-    opts = _.assign({}, opts);
+    opts = Object.assign({}, opts);
     opts.limit = 1;
 
     return Tyr.fetch('/api/' + col.def.name, {
@@ -1450,7 +1450,6 @@ export function generateClientLibrary() {
         }
       });
 
-      def = JSON.parse(def);
       const fields = def.fields;
 
       compileFields('', this, fields, true);
@@ -1960,7 +1959,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 user: req.user,
                 req,
               });
-              _.assign(existingDoc, doc);
+              Object.assign(existingDoc, doc);
               await existingDoc.$save({ auth: req.user, user: req.user, req });
               doc = existingDoc;
             } else {
@@ -2036,6 +2035,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const fields = await col.fieldsFor(opts);
             const ser = new Serializer('.', 2, true);
             ser.fields(fields);
+            res.type('application/json');
             res.send('{' + ser.file.substring(0, ser.file.length - 1) + '}');
           } catch (err) {
             handleException(res, err);
