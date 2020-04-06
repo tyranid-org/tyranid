@@ -200,8 +200,10 @@ export class TyrTableBase<
     onLoad && onLoad(this);
   }
 
-  /*
-  componentDidUpdate(prevProps: TyrTableProps<D>) {
+  async POTENTIAL_REPLACE_OF_UNSAFE_componentWillReceiveProps_with_componentDidUpdate(
+    prevProps: TyrTableProps<D>,
+    prevState: TyrComponentState<D>
+  ) {
     const { documents: newDocuments } = this.props;
     const { documents } = prevProps;
 
@@ -218,8 +220,50 @@ export class TyrTableBase<
         }
       }
     }
+
+    // ensure any paths in nextProps.paths are in this.otherPaths (add to end if not there)
+    // remove any paths from this.otherPaths not in nextProps.paths
+    const nextOtherPaths = prevProps.paths;
+
+    // Replace all existing fields, and remove any not in new fields
+    const newOtherPaths = compact(
+      this.otherPaths.map(otherPath => {
+        const otherPathName = getPathName(otherPath.path);
+
+        const p = nextOtherPaths.find(
+          column => otherPathName === tablePathName(column)
+        );
+
+        return p ? this.resolveFieldLaxProps(p) : undefined;
+      })
+    ) as TyrTableColumnPathProps[];
+
+    // Add any new fields (unless they are hidden)
+    for (const nextOtherField of nextOtherPaths) {
+      const nextOtherFieldName = tablePathName(nextOtherField);
+
+      const existingCol = newOtherPaths.find(
+        column => nextOtherFieldName === getPathName(column.path)
+      );
+
+      if (!existingCol) {
+        const fld = this.componentConfig?.fields.find(
+          f => f.name === nextOtherFieldName
+        );
+
+        // If it is hidden, then don't add it to my fields
+        if (
+          !fld?.hidden &&
+          !(typeof nextOtherField !== 'string' && nextOtherField.defaultHidden)
+        ) {
+          newOtherPaths.push(this.resolveFieldLaxProps(nextOtherField));
+        }
+      }
+    }
+
+    this.otherPaths = newOtherPaths;
+    this.refreshPaths();
   }
-  */
 
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps<D>) {
     const { documents } = this.props;
@@ -241,7 +285,6 @@ export class TyrTableBase<
 
     // ensure any paths in nextProps.paths are in this.otherPaths (add to end if not there)
     // remove any paths from this.otherPaths not in nextProps.paths
-
     const nextOtherPaths = nextProps.paths;
     // Replace all existing fields, and remove any not in new fields
     const newOtherPaths = compact(
