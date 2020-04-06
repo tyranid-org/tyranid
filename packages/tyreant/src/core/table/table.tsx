@@ -221,30 +221,12 @@ export class TyrTableBase<
     onLoad && onLoad(this);
   }
 
-  /*
-  componentDidUpdate(prevProps: TyrTableProps<D>) {
+  componentDidUpdate(
+    prevProps: TyrTableProps<D>,
+    prevState: TyrComponentState<D>
+  ) {
     const { documents: newDocuments } = this.props;
     const { documents } = prevProps;
-
-    if (documents && newDocuments) {
-      if (this.props.orderable) {
-        this.documents = newDocuments.slice();
-        this.count = newDocuments.length;
-      } else {
-        if (!this.documents) {
-          this.setSortedDocuments(newDocuments.slice());
-        } else {
-          //if (!this.editingDocument) {
-          this.setStableDocuments(newDocuments.slice());
-        }
-      }
-    }
-  }
-  */
-
-  UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps<D>) {
-    const { documents } = this.props;
-    const { documents: newDocuments } = nextProps;
 
     if (documents && newDocuments) {
       if (this.props.orderable) {
@@ -262,8 +244,8 @@ export class TyrTableBase<
 
     // ensure any paths in nextProps.paths are in this.otherPaths (add to end if not there)
     // remove any paths from this.otherPaths not in nextProps.paths
+    const nextOtherPaths = prevProps.paths;
 
-    const nextOtherPaths = nextProps.paths;
     // Replace all existing fields, and remove any not in new fields
     const newOtherPaths = compact(
       this.otherPaths.map((otherPath) => {
