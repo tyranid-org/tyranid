@@ -111,7 +111,7 @@ class Serializer {
       'required',
       'step',
       'validateSearch',
-      'width'
+      'width',
     ]) {
       const v = def[fieldName];
       if (v !== undefined) {
@@ -166,7 +166,7 @@ class Serializer {
 
     this.depth++;
     var first = true;
-    _.each(fields, field => {
+    _.each(fields, (field) => {
       if (field.def.client !== false) {
         if (first) {
           first = false;
@@ -188,7 +188,7 @@ class Serializer {
     this.file += this.k('methods') + ': {';
 
     this.depth++;
-    _.each(methods, method => {
+    _.each(methods, (method) => {
       if (method.fnClient || method.fn) {
         this.newline();
         this.file += method.name + ': {';
@@ -391,6 +391,15 @@ export function generateClientLibrary() {
 
   file += `
 
+  ${AppError.toString()}
+  Tyr.AppError = AppError;
+
+  ${SecureError.toString()}
+  Tyr.SecureError = SecureError;
+
+  ${UserError.toString()}
+  Tyr.UserError = UserError;
+
   var byName = Tyr.byName = {};
 
   function cookie(key) {
@@ -398,40 +407,35 @@ export function generateClientLibrary() {
     return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? (result[1]) : null;
   }
 
-  // TODO:  jQuery 3.0 supports Promises/A+; alternatively eliminate use of jQuery and work with XMLHttpRequest or fetch directly
-  function ajax(opts) {
+  Tyr.fetch = async function(url, opts) {
     const csrf = Tyr.options.csrf;
     if (csrf) {
       var headers = opts.headers = opts.headers || {};
       headers[csrf.header] = cookie(csrf.cookie);
     }
 
-    const deferred = $.ajax(opts);
+    try {
+      const response = await fetch(url, opts);
+      const json = opts.method !== 'DELETE' ? await response.json() : undefined;
 
-    return new Promise(function(resolve, reject) {
-      deferred.then(function(data, textStatus, jqXHR) {
-        resolve(data);
-      }, (jqXHR, textStatus, errorThrown) => {
-        const { responseJSON } = jqXHR;
-        if (responseJSON && responseJSON.message) {
-          // TODO:  need to parse responseJSON.field as a FieldInstance somehow
+      const { status } = response;
 
-          const status = jqXHR.status;
-
-          const authCode = _.ge†(Tyr.options, 'exceptions.secure.httpCode') || 403;
-          if (status === authCode) {
-            reject(new SecureError(responseJSON));
-          } else {
-            reject(status < 500 ? new UserError(responseJSON) : new AppError(responseJSON));
-          }
+      if (status !== 200) {
+        const authCode = _.get(Tyr.options, 'exceptions.secure.httpCode') || 403;
+        if (status === authCode) {
+          throw new SecureError(json);
+        } else if (status < 500) {
+          throw new UserError(json);
         } else {
-          reject(errorThrown);
+          throw new AppError(json);
         }
-      });
-    });
-  }
+      }
 
-  Tyr.ajax = ajax;
+      return json;
+    } catch (err) {
+      throw new AppError(err);
+    }
+  };
 
   function lock(obj) {
     for (var key in obj) {
@@ -512,9 +516,9 @@ export function generateClientLibrary() {
       var doc = this,
           col = doc.$model;
 
-      return ajax({
-        url: '/api/' + col.def.name + '/' + id + '/' + path + '/slice'
-      }).then(function(arr) {
+      return Tyr.fetch(
+        '/api/' + col.def.name + '/' + id + '/' + path + '/slice'
+      ).then(arr => {
         var np = col.paths[path].path,
             docArr = np.get(doc),
             begin = opts.skip || 0,
@@ -647,7 +651,7 @@ export function generateClientLibrary() {
   Tyr.Type = Type;
 `;
 
-  _.each(Type.byName, type => {
+  _.each(Type.byName, (type) => {
     if (type instanceof Tyr.Type) {
       const def = type.def;
 
@@ -796,11 +800,12 @@ export function generateClientLibrary() {
 
     const data = { path: this.pathName, doc, opts };
 
-    return ajax({
-      url: '/api/' + this.collection.def.name + '/label/' + (search || '')
-      method: 'put',
-      data: JSON.stringify(data),
-      contentType: 'application/json'
+    return Tyr.fetch('/api/' + this.collection.def.name + '/label/' + (search || ''), {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }).then(docs => docs.map(doc => {
       if (to ) {
         doc = new to(doc);
@@ -815,27 +820,19 @@ export function generateClientLibrary() {
     }));
   };
 
-  ${AppError.toString()}
-  Tyr.AppError = AppError;
-
-  ${SecureError.toString()}
-  Tyr.SecureError = SecureError;
-
-  ${UserError.toString()}
-  Tyr.UserError = UserError;
-
   Field.prototype.validate = function(doc, opts) {
     const { def } = this;
 
     if (def.validate && (opts.trait != 'search' || def.validateSearch !== false)) {
-      return ajax({
-        url: '/api/' + this.collection.def.name + '/' + this.pathName + '/validate/'
-        method: 'put',
-        data: JSON.stringify({
+      return Tyr.fetch('/api/' + this.collection.def.name + '/' + this.pathName + '/validate/', {
+        method: 'PUT',
+        body: JSON.stringify({
           document: doc,
           opts
         }), 
-        contentType: 'application/json'
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
     }
   }
@@ -1241,22 +1238,24 @@ export function generateClientLibrary() {
     opts = _.assign({}, opts);
     opts.limit = 1;
 
-    return ajax({
+    return Tyr.fetch('/api/' + col.def.name, {
       method: 'POST',
-      url: '/api/' + col.def.name,
-      data: Tyr.stringify(opts),
-      contentType: 'application/json'
+      body: Tyr.stringify(opts),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }).then(docs => docs && docs.length ? new col(docs[0]) : null);
   };
 
   Collection.prototype.findAll = function(opts) {
     const col = this;
 
-    return ajax({
+    return Tyr.fetch('/api/' + col.def.name, {
       method: 'POST',
-      url: '/api/' + col.def.name,
-      data: Tyr.stringify(opts),
-      contentType: 'application/json'
+      body: Tyr.stringify(opts),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }).then(rslt => {
       let docs;
 
@@ -1276,10 +1275,7 @@ export function generateClientLibrary() {
   };
 
   Collection.prototype.count = function(opts) {
-    return ajax({
-      url: '/api/' + this.def.name + '/count',
-      data: { opts: JSON.stringify(opts) }
-    });
+    return Tyr.fetch('/api/' + this.def.name + '/count?opts=' + JSON.stringify(opts || {}));
   };
 
 
@@ -1314,10 +1310,9 @@ export function generateClientLibrary() {
       return resolve();
     }
 
-    return ajax({
-      url: '/api/' + this.def.name + '/labelsById',
-      data: { opts: JSON.stringify(missingIds) }
-    }).then(docs => {
+    return Tyr.fetch(
+      '/api/' + this.def.name + '/labelsById?opts=' + JSON.stringify(missingIds)
+    ).then(docs => {
       docs = docs.map(doc => new this(doc));
       for (const d of docs) {
         this.cache(d, undefined, true);
@@ -1369,40 +1364,39 @@ export function generateClientLibrary() {
         return values;
       }
 
-      return ajax({
-        url: '/api/' + this.def.name + '/label/' + (search || '')
-      //}).then(function(docs) {
+      return Tyr.fetch(
+        '/api/' + this.def.name + '/label/' + (search || '')
+      //).then(function(docs) {
         //return docs.map(doc => new this(doc));
-      }).catch(err => console.error(err));
+      ).catch(err => console.error(err));
     }
   };
 
   Collection.prototype.save = function(doc) {
 
-    return ajax({
-      url: '/api/' + this.def.name,
-      method: 'put',
-      data: JSON.stringify(doc),
-      contentType: 'application/json'
+    return Tyr.fetch('/api/' + this.def.name, {
+      method: 'PUT',
+      body: JSON.stringify(doc),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }).then(docs => Array.isArray(docs) ? docs.map(doc => new this(doc)) : new this(docs));
   };
 
   Collection.prototype.remove = function(idOrQuery) {
-    return ajax(
-      (typeof idOrQuery === 'string') ?
-      {
-        url: '/api/' + this.def.name + '/' + idOrQuery,
-        method: 'delete'
-      } :
-      {
-        url: '/api/' + this.def.name,
-        data: JSON.stringify(idOrQuery),
-        method: 'delete',
-        contentType: 'application/json'
-      }
-    ).catch(function(err) {
-      console.error(err);
-    });
+    if (typeof idOrQuery === 'string') {
+      return Tyr.fetch('/api/' + this.def.name + '/' + idOrQuery, {
+        method: 'DELETE'
+      });
+    } else {
+      return Tyr.fetch('/api/' + this.def.name, {
+        body: JSON.stringify(idOrQuery),
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
   };
 
   Collection.prototype.update = function(query, update, opts) {
@@ -1417,21 +1411,23 @@ export function generateClientLibrary() {
       opts = query;
     }
 
-    return ajax({
-      url: '/api/' + col.def.name + '/update',
-      method: 'put',
-      data: JSON.stringify(opts),
-      contentType: 'application/json'
+    return Tyr.fetch('/api/' + col.def.name + '/update', {
+      method: 'PUT',
+      body: JSON.stringify(opts),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
   };
 
   Collection.prototype.updateDoc = function(doc, opts) {
 
-    return ajax({
-      url: '/api/' + this.def.name + '/updateDoc',
-      method: 'put',
-      data: JSON.stringify({ doc, opts }),
-      contentType: 'application/json'
+    return Tyr.fetch('/api/' + this.def.name + '/updateDoc', {
+      method: 'PUT',
+      body: JSON.stringify({ doc, opts }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }).then(docs => Array.isArray(docs) ? docs.map(doc => new this(doc)) : new this(docs));
   };
 
@@ -1446,11 +1442,12 @@ export function generateClientLibrary() {
     //}
 
     try {
-      let def = await ajax({
-        type: 'put',
-        url: '/api/' + col.def.name + '/fieldsFor',
-        data: JSON.stringify(opts),
-        contentType: 'application/json'
+      let def = await Tyr.fetch('/api/' + col.def.name + '/fieldsFor', {
+        method: 'PUT',
+        body: JSON.stringify(opts),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       def = JSON.parse(def);
@@ -1586,18 +1583,13 @@ export function generateClientLibrary() {
       );
       return Promise.resolve();
     }
-    return ajax({
-      url: '/api/' + this.def.name + '/subscribe',
-      data: { opts: JSON.stringify({ query, cancel }) }
-    }).catch(function(err) {
-      console.error(err);
-    });
+    return Tyr.fetch('/api/' + this.def.name + '/subscribe?opts=' + JSON.stringify({ query, cancel }));
   };
 
   Tyr.Collection = Collection;
 `;
 
-  Tyr.collections.forEach(col => {
+  Tyr.collections.forEach((col) => {
     const def = col.def;
 
     if (def.client !== false) {
@@ -1621,7 +1613,7 @@ export function generateClientLibrary() {
         'aux',
         'singleton',
         'internal',
-        'generated'
+        'generated',
       ]) {
         if (col.def[key])
           file += `
@@ -1631,7 +1623,7 @@ export function generateClientLibrary() {
       const values = !col.isDb() && def.values;
       if (values) {
         file += `
-    values: ${JSON.stringify(values.map(v => v.$toClient()))},`;
+    values: ${JSON.stringify(values.map((v) => v.$toClient()))},`;
       }
 
       const ser = new Serializer('.', 2);
@@ -1659,7 +1651,7 @@ export function generateClientLibrary() {
   file += `
   Tyr.collections.forEach(function(c) { c.compile(); });`;
 
-  Tyr.components.forEach(comp => {
+  Tyr.components.forEach((comp) => {
     if (comp.clientCode) {
       file = comp.clientCode(file);
     }
@@ -1699,11 +1691,11 @@ function compile(code) {
   const result = ts.transpileModule(code, {
     compilerOptions: {
       module: ts.ModuleKind.None,
-      target: ts.ScriptTarget.ES2017
-    }
+      target: ts.ScriptTarget.ES2017,
+    },
   });
 
-  result.diagnostics.forEach(diagnostic => {
+  result.diagnostics.forEach((diagnostic) => {
     const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
       diagnostic.start
     );
@@ -1754,7 +1746,7 @@ export default function connect(app, auth, opts) {
       });
   }
 
-  Tyr.collections.forEach(col => col.connect(opts));
+  Tyr.collections.forEach((col) => col.connect(opts));
 
   if (app) {
     /*
@@ -1805,7 +1797,7 @@ export default function connect(app, auth, opts) {
 
     Tyr.app = app;
 
-    Tyr.components.forEach(comp => {
+    Tyr.components.forEach((comp) => {
       if (comp.routes) {
         comp.routes(app, auth);
       } else if (comp.def && comp.def.routes) {
@@ -1818,7 +1810,7 @@ export default function connect(app, auth, opts) {
   if (http) {
     const io = (Tyr.io = Tyr.socketIo = socketIo(http));
 
-    io.on('connection', socket => {
+    io.on('connection', (socket) => {
       //con sole.log('*** connected', socket);
       //con sole.log('*** client', socket.client);
       //con sole.log('*** headers', socket.client.request.headers);
@@ -1915,7 +1907,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               query: rOpts.query ? await col.fromClientQuery(rOpts.query) : {},
               auth: req.user,
               user: req.user,
-              req
+              req,
             };
 
             const projection = rOpts.projection || rOpts.fields;
@@ -1945,7 +1937,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             if (opts.count) {
               res.json({
                 count: docs.count,
-                docs: cDocs
+                docs: cDocs,
               });
             } else {
               return res.json(cDocs);
@@ -1966,7 +1958,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 query: { _id: doc._id },
                 auth: req.user,
                 user: req.user,
-                req
+                req,
               });
               _.assign(existingDoc, doc);
               await existingDoc.$save({ auth: req.user, user: req.user, req });
@@ -1989,7 +1981,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               query: await col.fromClientQuery(req.body),
               auth: req.user,
               user: req.user,
-              req
+              req,
             });
             res.sendStatus(200);
           } catch (err) {
@@ -2088,7 +2080,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const idField = col.fields._id,
               ids = await Promise.all(
                 JSON.parse(req.query.opts).map(
-                  async id => await idField.type.fromClient(idField, id)
+                  async (id) => await idField.type.fromClient(idField, id)
                 )
               ),
               opts = {
@@ -2096,12 +2088,12 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 fields: { [col.labelField.pathName]: 1 },
                 auth: req.user,
                 user: req.user,
-                req
+                req,
               },
               results = await col.findAll(opts);
 
             flattenProjection(opts);
-            res.json(results.map(r => r.$toClient(opts)));
+            res.json(results.map((r) => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
           }
@@ -2173,17 +2165,17 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   {}
                 ),
                 limit: opts.query ? undefined : 1000,
-                auth: req.user
+                auth: req.user,
               });
 
               res.setHeader('content-type', 'text/csv');
               await Tyr.csv.toCsv({
                 collection: this,
                 documents,
-                columns: opts.fields.map(fieldName => ({
-                  field: fieldName
+                columns: opts.fields.map((fieldName) => ({
+                  field: fieldName,
                 })),
-                stream: res
+                stream: res,
               });
             } catch (err) {
               handleException(res, err);
@@ -2204,7 +2196,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const opts = {
               auth: req.user,
               user: req.user,
-              req
+              req,
             };
             const doc = await col.byId(req.params.id, opts);
             flattenProjection(opts);
@@ -2223,7 +2215,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               query: { _id: ObjectId(req.params.id) },
               auth: req.user,
               user: req.user,
-              req
+              req,
             });
             res.sendStatus(200);
           } catch (err) {
@@ -2247,7 +2239,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
        */
 
       if (express.rest || express.slice) {
-        _.each(col.paths, field => {
+        _.each(col.paths, (field) => {
           if (field.type.name === 'array') {
             app
               .route('/api/' + name + '/:id/' + field.pathName + '/slice')
@@ -2257,10 +2249,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   const opts = {
                     auth: req.user,
                     fields: {
-                      [field.spath]: 1
+                      [field.spath]: 1,
                     },
                     user: req.user,
-                    req
+                    req,
                   };
                   const doc = await col.byId(req.params.id, opts);
                   if (!doc) return res.sendStatus(404);
@@ -2289,11 +2281,11 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const opts = {
               auth: req.user,
               user: req.user,
-              req
+              req,
             };
             const results = await col.labels(req.params.search || '', opts);
             flattenProjection(opts);
-            res.json(results.map(r => r.$toClient(opts)));
+            res.json(results.map((r) => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
           }
@@ -2322,7 +2314,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               user: req.user,
               req,
               limit,
-              sort: { [field.spath]: 1 }
+              sort: { [field.spath]: 1 },
             };
             const results = await field.labels(
               doc,
@@ -2331,7 +2323,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             );
 
             flattenProjection(opts);
-            res.json(results.map(r => r.$toClient(opts)));
+            res.json(results.map((r) => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
           }
@@ -2343,7 +2335,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
        */
 
       if (express.rest || express.put) {
-        _.each(col.paths, field => {
+        _.each(col.paths, (field) => {
           const validateFn = field.def.validate;
           if (validateFn) {
             app

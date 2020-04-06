@@ -20,7 +20,7 @@ export function instrumentServerServices(col) {
             source: 'server',
             user: undefined, // TODO:  figure out some way to pass in the user ?
             req: undefined,
-            collection: col
+            collection: col,
           },
           arguments
         );
@@ -58,7 +58,7 @@ export function instrumentExpressServices(col, app, auth) {
               auth: req.user,
               user: req.user,
               req: req,
-              collection: col
+              collection: col,
             },
             args
           );
@@ -85,11 +85,12 @@ for (const col of Tyr.collections) {
       const method = service[methodName];
 
       col[methodName] = function() {
-        return ajax({
+        return Tyr.fetch(method.route, {
           method: 'POST',
-          url: method.route,
-          data: JSON.stringify(arguments),
-          contentType: 'application/json'
+          body: JSON.stringify(arguments),
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }).then(result => {
           // res.json('string') seems to return a {'message':'string'} ???
           if (method.return?.type.name === 'string' && result.message) {

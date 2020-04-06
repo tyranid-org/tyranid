@@ -44,7 +44,7 @@ const findByLabel = (
   const values =
     props && props.linkLabels ? props.linkLabels : collection.values;
 
-  return values.find(lv => {
+  return values.find((lv) => {
     const l = lv.$label;
     return l ? l.toLowerCase() === label : false;
   });
@@ -57,7 +57,7 @@ const findById = (
 ) => {
   const values =
     props && props.linkLabels ? props.linkLabels : collection.values;
-  return values.find(lv => lv.$id === id);
+  return values.find((lv) => lv.$id === id);
 };
 
 const sortLabels = (labels: any[], props: TyrPathProps) => {
@@ -90,7 +90,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   private createOption = (val: Tyr.Document) => {
     const { $label, $id } = val;
 
-    const key = this.mode === 'tags' ? $label : $id;
+    const key = this.mode === 'tags' ? $label + ($id || '') : $id;
 
     return (
       <Option key={key} value={key}>
@@ -130,7 +130,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     if (!this.link) {
       if (props.linkLabels) {
         this.setState({
-          documents: sortLabels(props.linkLabels, props)
+          documents: sortLabels(props.linkLabels, props),
         });
       } else {
         throw new Error('TyrLink passed a non-link');
@@ -139,12 +139,12 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       if (controlMode === 'view') {
         Tyr.mapAwait(
           path.tail.link!.idToLabel(path!.get(props.document)),
-          label => this.setState({ viewLabel: label })
+          (label) => this.setState({ viewLabel: label })
         );
       } else {
         if (this.link.isStatic()) {
           this.setState({
-            documents: sortLabels(this.link.values, props)
+            documents: sortLabels(this.link.values, props),
           });
         } else {
           await this.search();
@@ -212,7 +212,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       const fetchId = ++this.lastFetchId;
 
       const promises: Promise<Tyr.Document[]>[] = [
-        this.linkField!.labels(document!, text)
+        this.linkField!.labels(document!, text),
       ];
 
       // include the current value
@@ -239,7 +239,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
       if (addDocuments) {
         for (const addDocument of addDocuments) {
-          const existing = documents.find(doc => addDocument.$id === doc.$id);
+          const existing = documents.find((doc) => addDocument.$id === doc.$id);
           if (!existing) {
             documents.push(addDocument);
           }
@@ -249,7 +249,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       if (this.mounted) {
         this.setState({
           documents: sortLabels(documents, this.props),
-          loading: false
+          loading: false,
         });
       }
     },
@@ -287,7 +287,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       dropdownClassName: this.props.dropdownClassName,
       filterOption: false,
       loading: !!initialLoading,
-      allowClear: this.props.allowClear
+      allowClear: this.props.allowClear,
     };
 
     const onTypeChangeFunc = (ev: any) => {
@@ -296,14 +296,14 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     };
 
     if (this.mode === 'tags') {
-      selectProps.onChange = async value => {
+      selectProps.onChange = async (value) => {
         const values = value as string[];
         const link = this.link!;
         const { onStateChange } = this.props;
 
         if (link.def.tag) {
           await Promise.all(
-            values.map(async value => {
+            values.map(async (value) => {
               let label = (this.link as any).byIdIndex[value];
 
               if (!label) {
@@ -313,7 +313,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
                   onStateChange && onStateChange({ ready: false });
 
                   label = await link.save({
-                    [link.labelField.pathName]: value
+                    [link.labelField.pathName]: value,
                   });
 
                   label.$cache();
@@ -360,7 +360,7 @@ byName.link = {
   // Given ids, return the labels
   mapDocumentValueToFormValue(path, value, props) {
     if (Array.isArray(value)) {
-      value = value.map(v => {
+      value = value.map((v) => {
         const nv = findById(props!, linkFor(path)!, v);
         if (nv) {
           const column = (path.tail as any).column;
@@ -404,7 +404,7 @@ byName.link = {
     const path = props.searchPath || props.path!;
 
     return {
-      filterDropdown: filterDdProps => (
+      filterDropdown: (filterDdProps) => (
         <LinkFilterDropdown
           filterable={filterable}
           filterDdProps={filterDdProps}
@@ -443,7 +443,7 @@ byName.link = {
         if (Array.isArray(val)) return val.indexOf(value) > -1;
 
         return val === value;
-      }
+      },
       /*
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
@@ -462,7 +462,7 @@ byName.link = {
       opts.query[path.spath] =
         Array.isArray(searchValue) && (searchValue as any[]).length
           ? {
-              $in: searchValue
+              $in: searchValue,
             }
           : searchValue;
     }
@@ -485,7 +485,7 @@ byName.link = {
     return field.type
       ? field.type.format(field, path.get(document))
       : 'Unknown Link';
-  }
+  },
 };
 
 registerComponent('TyrLink', TyrLink);
@@ -505,7 +505,7 @@ interface LinkFilterProps {
 const LinkFilterDropdown = ({
   pathProps,
   filterDdProps,
-  filterable
+  filterable,
 }: LinkFilterProps) => {
   const path = pathProps.searchPath || pathProps.path!;
   const pathName = path.name;
@@ -557,21 +557,21 @@ const LinkFilterDropdown = ({
             if (!link.isStatic()) {
               linkField
                 .labels(new path.tail.collection({}), filterSearchValue)
-                .then(results => {
+                .then((results) => {
                   delaySetLabels(
-                    results.map(d => ({
+                    results.map((d) => ({
                       ...d,
                       $id: String(d.$id),
-                      $label: d.$label
+                      $label: d.$label,
                     }))
                   );
                 });
             } else {
               delaySetLabels(
-                linkFor(path)!.values.map(d => ({
+                linkFor(path)!.values.map((d) => ({
                   ...d,
                   $id: String(d.$id),
-                  $label: d.$label
+                  $label: d.$label,
                 }))
               );
             }
@@ -585,18 +585,18 @@ const LinkFilterDropdown = ({
                 placeholder="search for..."
                 size="small"
                 className="tyr-filter-search-input"
-                onChange={e => setFilterSearchValue(e.currentTarget.value)}
-                onSearch={async value => {
+                onChange={(e) => setFilterSearchValue(e.currentTarget.value)}
+                onSearch={async (value) => {
                   const results = await linkField.labels(
                     new path.tail.collection({}),
                     value
                   );
                   setFilterSearchValue(value);
                   setLabels(
-                    results.map(d => ({
+                    results.map((d) => ({
                       ...d,
                       $id: String(d.$id),
-                      $label: d.$label
+                      $label: d.$label,
                     }))
                   );
                 }}
@@ -633,7 +633,7 @@ const LinkFilterDropdown = ({
                 })
               }
             >
-              {sortLabels(labels || link.values, pathProps).map(v => {
+              {sortLabels(labels || link.values, pathProps).map((v) => {
                 const isChecked =
                   searchValue && searchValue.indexOf(v.$id) > -1;
 
@@ -645,7 +645,7 @@ const LinkFilterDropdown = ({
                       marginBottom: 0,
                       marginTop: 0,
                       lineHeight: '30px',
-                      height: '30px'
+                      height: '30px',
                     }}
                   >
                     <Checkbox checked={isChecked}>

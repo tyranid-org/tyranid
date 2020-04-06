@@ -113,7 +113,7 @@ declare module 'tyranid/client' {
       [key: string]: CollectionInstance;
     }
 
-    export const ajax: (url: string, opts: any) => Promise<any>;
+    export const fetch: (url: string, opts: any) => Promise<any>;
     export function aux(
       collectionDefinition: CollectionDefinition,
       component?: React.Component

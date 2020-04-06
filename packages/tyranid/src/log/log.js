@@ -38,7 +38,7 @@ const logLevelValues = [
   [4, 'warn', 'W', 'warn'],
   [5, 'error', 'E', 'error'],
   [6, 'fatal', 'F', 'error'],
-  [7, 'never', 'N', undefined]
+  [7, 'never', 'N', undefined],
 ];
 
 const LogLevel = new Collection({
@@ -53,10 +53,10 @@ const LogLevel = new Collection({
     code: { is: 'string' },
     method: {
       is: 'string',
-      help: 'The console.X() method to use when logging to the console.'
-    }
+      help: 'The console.X() method to use when logging to the console.',
+    },
   },
-  values: [['_id', 'name', 'code', 'method'], ...logLevelValues]
+  values: [['_id', 'name', 'code', 'method'], ...logLevelValues],
 });
 
 const LogEvent = new Collection({
@@ -68,15 +68,15 @@ const LogEvent = new Collection({
   fields: {
     _id: { is: 'string' },
     label: { is: 'string', labelField: true },
-    notes: { is: 'string' }
+    notes: { is: 'string' },
   },
   values: [
     ['_id', 'label', 'notes'],
     ['http', 'HTTP', 'HTTP Requests'],
     ['db', 'Database', 'Database Requests'],
     ['historical', 'Historical', 'Historical diagnostics'],
-    ['subscription', 'Subscriptions', 'Subscription diagnostics']
-  ]
+    ['subscription', 'Subscriptions', 'Subscription diagnostics'],
+  ],
 });
 
 const Log = new Collection({
@@ -105,13 +105,13 @@ const Log = new Collection({
         ua: { link: 'tyrUserAgent', label: 'User Agent' },
         q: { is: 'object', label: 'Query' },
         sid: { is: 'string', label: 'Session ID' },
-        sc: { is: 'integer', label: 'Status Code' }
-      }
+        sc: { is: 'integer', label: 'Status Code' },
+      },
     },
     c: { is: 'string', label: 'Collection ID' },
     q: { is: 'object', label: 'Query' },
-    upd: { is: 'object', label: 'findAndModify update' }
-  }
+    upd: { is: 'object', label: 'findAndModify update' },
+  },
 });
 
 //
@@ -205,7 +205,7 @@ async function log(level, ...opts) {
         (req.connection && req.connection.remoteAddress) ||
         undefined,
       ua: ua._id,
-      q: Tyr.adaptIllegalKeyCharAndEliminateRecursion(req.query)
+      q: Tyr.adaptIllegalKeyCharAndEliminateRecursion(req.query),
     };
 
     const sid = req.cookies && req.cookies['connect.sid'];
@@ -273,7 +273,7 @@ Log.updateDuration = async function(logResultPromise) {
   const logDoc = logResult.ops[0];
 
   return Log.db.findAndModify({ _id: logDoc._id }, undefined, {
-    $set: { du: (Date.now() - logDoc.on.getTime()) * 1000 }
+    $set: { du: (Date.now() - logDoc.on.getTime()) * 1000 },
   });
 
   //const diff = process.hrtime(req._startAt);
@@ -347,8 +347,8 @@ Log.request = function(req, res) {
       e: 'http',
       du: diff[0] * 1e9 + diff[1],
       req: req,
-      res: res
-    }).catch(err => {
+      res: res,
+    }).catch((err) => {
       console.error('Error when logging a request', err);
     });
   });
@@ -365,7 +365,7 @@ Log.routes = function(app, auth) {
     .get((req, res) => {
       try {
         const o = JSON.parse(req.query.o);
-        log(LogLevel.INFO, o).catch(err =>
+        log(LogLevel.INFO, o).catch((err) =>
           console.error(
             'Error from /api/log/_log route, object=',
             o,
@@ -446,12 +446,7 @@ function log() {
   }
 
   if (level._id >= ${serverLogLevel._id}) {
-    return ajax({
-      url: '/api/log/_log',
-      data: { o: JSON.stringify(obj) }
-    }).catch(function(err) {
-      console.log(err);
-    });
+    return Tyr.fetch('/api/log/_log?o=' + JSON.stringify(obj));
   }
 }
 
@@ -471,7 +466,7 @@ Log.boot = function(stage, pass) {
   if (stage === 'compile') {
     const config = Tyr.options;
 
-    const getLogLevel = propName => {
+    const getLogLevel = (propName) => {
       const level =
         propName in config
           ? config[propName]
@@ -495,7 +490,7 @@ Log.boot = function(stage, pass) {
       min,
       external: externalLogLevel._id,
       console: consoleLogLevel._id,
-      db: dbLogLevel._id
+      db: dbLogLevel._id,
     });
 
     for (const ll of logLevelValues) {
@@ -521,7 +516,7 @@ _.assign(Tyr, {
   info: Log.info.bind(Log),
   warn: Log.warn.bind(Log),
   error: Log.error.bind(Log),
-  fatal: Log.fatal.bind(Log)
+  fatal: Log.fatal.bind(Log),
 });
 
 export default Log;

@@ -723,7 +723,9 @@ export class TyrTableBase<
             <div className="tyr-table-cell">
               {render
                 ? render(document)
-                : getCellValue(path!, document, column as TyrTypeProps)}
+                : path
+                ? getCellValue(path, document, column as TyrTypeProps)
+                : ''}
             </div>
           );
         },
@@ -1136,7 +1138,6 @@ export class TyrTableBase<
       //});
       const Foo = ObsTable;
 
-      console.log('rerendering FULL table');
       const mainTable = paths ? (
         <Foo
           locale={{ emptyText }}
