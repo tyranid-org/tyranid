@@ -358,6 +358,13 @@ byName.link = {
 
   // Given ids, return the labels
   mapDocumentValueToFormValue(path, value, props) {
+    if (
+      props?.path?.tail.type.name !== 'array' ||
+      props?.path?.detail.link!.isStatic()
+    ) {
+      return value;
+    }
+
     if (Array.isArray(value)) {
       value = value.map(v => {
         const nv = findById(props!, linkFor(path)!, v);
