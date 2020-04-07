@@ -297,7 +297,9 @@ export class TyrManyComponent<
           : 0;
 
         if (result === 0) {
-          result = (a.$label || '').localeCompare(b.$label);
+          if (a.$model.labelField) {
+            result = (a.$label || '').localeCompare(b.$label);
+          }
 
           if (result === 0) {
             result = String(a.$id).localeCompare(String(b.$id));
