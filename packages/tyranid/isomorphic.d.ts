@@ -45,6 +45,7 @@ export namespace Tyr {
     | 'uppercase'
     | 'zero-based'
     | 'one-based'
+    | 'ordinal'
     | 'roman'
     | 'roman-lowercase';
 
@@ -251,11 +252,10 @@ export namespace Tyr {
     format(value: any): string;
     labelify(value: any): Promise<any>;
     labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
-    validate(obj: {}):
-      | Promise<string | false | undefined>
-      | string
-      | false
-      | undefined;
+    validate(
+      obj: {},
+      opts?: { trait?: ActionTrait }
+    ): Promise<string | false | undefined> | string | false | undefined;
   }
 
   export interface PathStatic {

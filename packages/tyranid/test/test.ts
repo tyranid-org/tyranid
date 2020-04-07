@@ -96,7 +96,8 @@ const oid1 = new ObjectId('55bb8ecff71d45b995ff8c83'),
   oid3 = new ObjectId('aaa7f2a8387fa9abdc6f3ced'),
   oid3_ = new ObjectId('aaa7f2a8387fa9abdc6f3ced');
 
-describe('tyranid', () => {
+describe('tyranid', function() {
+  //this.timeout(5*60*60*1000);
   let mongoClient = null;
   before(async () => {
     mongoClient = await mongodb.MongoClient.connect(
@@ -2547,7 +2548,9 @@ describe('tyranid', () => {
 
       it('support where', async () => {
         const u = await User.byId(3, { projection: { name: 1 } });
-        await u!.$slice('siblings', { where: v => v.name.startsWith('Jill') });
+        await u!.$slice('siblings', {
+          where: v => v.name.startsWith('Jill')
+        });
         expect(u!.siblings![0].name).to.eql('Jill Doe');
         expect(u!.siblings!.length).to.eql(1);
       });

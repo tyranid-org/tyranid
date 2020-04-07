@@ -20,7 +20,7 @@ export function instrumentServerServices(col) {
             source: 'server',
             user: undefined, // TODO:  figure out some way to pass in the user ?
             req: undefined,
-            collection: col,
+            collection: col
           },
           arguments
         );
@@ -58,7 +58,7 @@ export function instrumentExpressServices(col, app, auth) {
               auth: req.user,
               user: req.user,
               req: req,
-              collection: col,
+              collection: col
             },
             args
           );

@@ -1093,7 +1093,7 @@ export namespace Tyr {
     labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
     validate(
       document: D,
-      opts: { trait?: ActionTrait }
+      opts?: { trait?: ActionTrait }
     ): Promise<string | false | undefined> | string | false | undefined;
 
     width?: number;
@@ -1441,7 +1441,7 @@ export namespace Tyr {
      * This is useful for when you want to pass up to the server the current configuration of a Tyreant
      * TyrTable.
      */
-    FindOpts: any
+    FindOpts: any,
   };
 
   export type LogOption = string | Error | BaseTyrLog<ObjIdType>;

@@ -234,7 +234,7 @@ declare module 'tyranid/client' {
       // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
       validate?(
         this: D,
-        opts: { field: FieldInstance<D>; trait?: ActionTrait }
+        opts?: { field: FieldInstance<D>; trait?: ActionTrait }
       ): Promise<string | false | undefined> | string | false | undefined;
 
       of?: string | FieldDefinition<D>;
