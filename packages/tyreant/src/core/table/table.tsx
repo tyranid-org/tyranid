@@ -95,19 +95,20 @@ export function pathTitle(pathProps: TyrTableColumnPathProps) {
   return pathProps.label || pathProps.path?.pathLabel || '';
 }
 
-export function pathWidth(path: TyrPathProps, wrapTitle?: boolean) {
-  let width = path.width;
+export function pathWidth(pathProps: TyrPathProps, wrapTitle?: boolean) {
+  let width = pathProps.width;
 
   if (width) return width;
 
-  width = path.path?.detail.width || 0;
+  const { path } = pathProps;
+  if (path) width = path.tail.width || path.detail.width;
 
-  const pt = pathTitle(path);
+  const pt = pathTitle(pathProps);
   if (typeof pt === 'string') {
     const titleWidth =
         (wrapTitle ? wrappedStringWidth(pt, 15) : stringWidth(pt, 15)) +
         64 /* padding + sort/filter icon */;
-    return titleWidth > width ? titleWidth : width;
+    return width === undefined || titleWidth > width ? titleWidth : width;
   } else {
     return width;
   }
