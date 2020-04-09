@@ -5,7 +5,7 @@ import {
   FieldSchemaOptions,
   IndividualCollectionSchemaOptions,
   SchemaContainer,
-  SchemaOptions
+  SchemaOptions,
 } from '../interfaces';
 import { each, error, options, pascal, upperSnake, someOf } from '../utils';
 
@@ -15,7 +15,7 @@ import { each, error, options, pascal, upperSnake, someOf } from '../utils';
  */
 const PATH_MARKERS = {
   ARRAY: '_',
-  HASH: '[key: string]'
+  HASH: '[key: string]',
 };
 
 /**
@@ -56,8 +56,8 @@ export function schema(
     schema: {
       ['x-tyranid-openapi-collection-id']: def.id,
       type: 'object',
-      properties: schemaObject(def.fields, def.name, partitionName)
-    } as {}
+      properties: schemaObject(def.fields, def.name, partitionName),
+    } as {},
   };
 
   // if this is a partitioned collection...
@@ -147,7 +147,7 @@ function schemaType(
 
   const out: ExtendedSchema = {
     ['x-tyranid-openapi-name-path']: field.path.name,
-    ['x-tyranid-openapi-name']: field.name
+    ['x-tyranid-openapi-name']: field.name,
   };
 
   switch (type) {
@@ -170,7 +170,7 @@ function schemaType(
     case 'float':
     case 'double': {
       Object.assign(out, {
-        type: 'number'
+        type: 'number',
       });
       break;
     }
@@ -206,7 +206,7 @@ function schemaType(
       if (itemType) {
         Object.assign(out, {
           type: 'array',
-          items: itemType
+          items: itemType,
         });
       }
       break;
@@ -221,7 +221,7 @@ function schemaType(
       const subfields = field.fields;
 
       Object.assign(out, {
-        type: 'object'
+        type: 'object',
       });
 
       /**

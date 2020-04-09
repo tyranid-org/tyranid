@@ -11,7 +11,7 @@ import { observer } from 'mobx-react';
 
 import {
   MenuOutlined,
-  UploadOutlined,
+  DownloadOutlined,
   EllipsisOutlined,
 } from '@ant-design/icons';
 
@@ -228,11 +228,11 @@ export class TyrTableBase<
 
     // Replace all existing fields, and remove any not in new fields
     const newOtherPaths = compact(
-      this.otherPaths.map((otherPath) => {
+      this.otherPaths.map(otherPath => {
         const otherPathName = getPathName(otherPath.path);
 
         const p = nextOtherPaths.find(
-          (column) => otherPathName === tablePathName(column)
+          column => otherPathName === tablePathName(column)
         );
 
         return p ? this.resolveFieldLaxProps(p) : undefined;
@@ -244,12 +244,12 @@ export class TyrTableBase<
       const nextOtherFieldName = tablePathName(nextOtherField);
 
       const existingCol = newOtherPaths.find(
-        (column) => nextOtherFieldName === getPathName(column.path)
+        column => nextOtherFieldName === getPathName(column.path)
       );
 
       if (!existingCol) {
         const fld = this.componentConfig?.fields.find(
-          (f) => f.name === nextOtherFieldName
+          f => f.name === nextOtherFieldName
         );
 
         // If it is hidden, then don't add it to my fields
@@ -347,7 +347,7 @@ export class TyrTableBase<
 
       onChangeTableConfiguration &&
         onChangeTableConfiguration(
-          componentConfig.tableConfig.fields.map((f) => {
+          componentConfig.tableConfig.fields.map(f => {
             return {
               name: f.name,
               hidden: !!f.hidden,
@@ -402,7 +402,7 @@ export class TyrTableBase<
     }
 
     this.isSavingDocument = true;
-    const docIdx = findIndex(documents, (d) => d.$id === document!.$id);
+    const docIdx = findIndex(documents, d => d.$id === document!.$id);
     const collection = document.$model;
 
     const orig = document.$orig;
@@ -412,8 +412,8 @@ export class TyrTableBase<
       try {
         /*const values: TyrFormFields = */ await form.validateFields(
           this.activePaths
-            .map((path) => path.path?.name)
-            .filter((s) => s) as string[]
+            .map(path => path.path?.name)
+            .filter(s => s) as string[]
         );
 
         // Don't think this is needed anymore
@@ -517,7 +517,7 @@ export class TyrTableBase<
     } else if (editingDocument) {
       editingDocument.$revert();
 
-      const docIdx = findIndex(documents, (d) => d.$id === editingDocument.$id);
+      const docIdx = findIndex(documents, d => d.$id === editingDocument.$id);
 
       if (docIdx > -1) {
         this.documents = [
@@ -537,7 +537,7 @@ export class TyrTableBase<
   tableWidth: number = 0;
 
   private getColumnWidth(name: string) {
-    return this.componentConfig?.fields.find((f) => f.name === name)?.width;
+    return this.componentConfig?.fields.find(f => f.name === name)?.width;
   }
 
   private getColumns(newDocumentTable?: boolean): ColumnProps<D>[] {
@@ -560,7 +560,7 @@ export class TyrTableBase<
 
     const fieldCount = columns.length;
     const isEditingAnything = !!newDocumentTable || !!editingDocument;
-    const allWidthsDefined = columns.every((c) =>
+    const allWidthsDefined = columns.every(c =>
       pathWidth(c, wrapColumnHeaders)
     );
     let hasAnyFilter = false;
@@ -740,7 +740,7 @@ export class TyrTableBase<
         ...(column.align ? { align: column.align } : {}),
         ...(resizableColumns
           ? {
-              onHeaderCell: (tableColumn) =>
+              onHeaderCell: tableColumn =>
                 ({
                   width: colWidth,
                   onResize: (e: any, opts: any) => {
@@ -789,13 +789,13 @@ export class TyrTableBase<
 
     //if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
 
-    const singularActions = this.actions.filter((a) => a.input === 1);
+    const singularActions = this.actions.filter(a => a.input === 1);
     if (singularActions.length) {
       antColumns.push({
         key: '$actions',
         dataIndex: '$actions',
         align: 'center',
-        onHeaderCell: (props) => {
+        onHeaderCell: props => {
           if (props.key === '$actions' && !!config) {
             return {
               onClick: () => {
@@ -871,7 +871,7 @@ export class TyrTableBase<
           }
 
           const thisActions = singularActions.filter(
-            (action) => !action.hide || !action.isHidden(document)
+            action => !action.hide || !action.isHidden(document)
           );
 
           if (!thisActions.length) {
@@ -886,7 +886,7 @@ export class TyrTableBase<
               return (
                 <a
                   className="action-item"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
                     action.act({ caller: this, document });
@@ -900,7 +900,7 @@ export class TyrTableBase<
             return (
               <span
                 className="action-item"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
                   action.act({ caller: this, document });
@@ -913,7 +913,7 @@ export class TyrTableBase<
 
           const menu = (
             <Menu className="tyr-menu">
-              {thisActions.map((action) => (
+              {thisActions.map(action => (
                 <Menu.Item className="tyr-menu-item" key={action.name}>
                   <button
                     onClick={() => action.act({ caller: this, document })}
@@ -1075,10 +1075,14 @@ export class TyrTableBase<
     }${newDocument ? ' tyr-table-adding-row' : ''}`;
 
     const multiActions = this.actions.filter(
-      (a) => a.input === '*' && a.hide !== true
+      a => a.input === '*' && a.hide !== true
     );
     const voidActions = this.actions.filter(
-      (a) => (a.input === 0 || a.input === '0..*') && a.hide !== true
+      a =>
+        (a.input === 0 || a.input === '0..*') && a.hide !== true && !a.utility
+    );
+    const utilityActions = this.actions.filter(
+      a => (a.input === 0 || a.input === '0..*') && a.hide !== true && a.utility
     );
     const rowsSelectable =
       (!newDocument && onSelectRows) || multiActions.length;
@@ -1108,9 +1112,10 @@ export class TyrTableBase<
           {this.quickTotalComponent()}
           {this.paginationComponent()}
           <div className="tyr-footer-btns">
+            {utilityActions.map(a => a.button(this))}
             {exportProp && (
               <Button onClick={() => (this.showExport = true)}>
-                <UploadOutlined /> Export
+                <DownloadOutlined /> Export
               </Button>
             )}
             {footer?.(docs)}
@@ -1214,7 +1219,7 @@ export class TyrTableBase<
         <div
           className={netClassName}
           tabIndex={-1}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.keyCode === 13 && this.currentRowForm) {
               if (newDocument || editingDocument) {
                 this.saveDocument(this.currentRowForm);
@@ -1228,23 +1233,8 @@ export class TyrTableBase<
             <Row>
               <Col span={24} className="tyr-table-header">
                 {children}
-                {multiActions.map((a) => (
-                  <Button
-                    disabled={!this.selectedIds?.length}
-                    key={`a_${a.name}`}
-                    onClick={() => a.act(this.actionFnOpts())}
-                  >
-                    {a.label(this as any)}
-                  </Button>
-                ))}
-                {voidActions.map((a) => (
-                  <Button
-                    key={`a_${a.name}`}
-                    onClick={() => a.act(this.actionFnOpts())}
-                  >
-                    {a.label(this as any)}
-                  </Button>
-                ))}
+                {multiActions.map(a => a.button(this))}
+                {voidActions.map(a => a.button(this))}
               </Col>
             </Row>
           )}
@@ -1411,7 +1401,7 @@ const ResizableTitle = (props: ResizableProps) => {
       }*/
         <span
           className={`react-resizable-handle react-resizable-handle-se`}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         />
       }
       onResize={onResize}

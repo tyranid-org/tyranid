@@ -1,8 +1,10 @@
-import { notification } from 'antd';
+import * as React from 'react';
+import { Button, notification } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
-import { TyrComponent } from './component';
+import type { TyrComponent } from './component';
+import { isEntranceTrait, isExitTrait } from './trait';
 
 export type ActionSet<D extends Tyr.Document> =
   | { [actionName: string]: TyrAction<D> | Omit<TyrActionOpts<D>, 'name'> }
@@ -76,6 +78,14 @@ export interface TyrActionOpts<D extends Tyr.Document> {
   input?: Cardinality;
 
   /**
+   * This indicates that this action should behave like a "built-in" / utility
+   * function ... i.e. like import/export ... this probably needs to be fleshed out more.
+   *
+   * Other terms might be:  "generic", "builtin", etc.
+   */
+  utility?: boolean;
+
+  /**
    * If an action returns false or Promise<false> then the decorator action will not
    * be applied.  Note that undefined/void is treated as returning true (i.e. the
    * decorated action should be performed.
@@ -109,13 +119,33 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         actions.push(
           new TyrAction<D>({
             ...obj[name],
-            name
+            name,
           })
         );
       }
 
       return actions;
     }
+  }
+
+  static merge<D extends Tyr.Document = Tyr.Document>( base: ActionSet<D>, override: ActionSet<D>): TyrAction<D>[] {
+    const baseActions = TyrAction.parse(base),
+      overrideActions = TyrAction.parse(override);
+
+    if (!baseActions.length) return overrideActions;
+    if (!overrideActions.length) return baseActions;
+
+    const mergedActions: TyrAction<D>[] = [];
+
+    for (const a of baseActions) {
+      const oa = overrideActions.find(oa => oa.name === a.name);
+      if (!oa) {
+        mergedActions.push(a);
+      }
+    }
+
+    mergedActions.push(...overrideActions);
+    return mergedActions;
   }
 
   traits: Tyr.ActionTrait[];
@@ -130,6 +160,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     opts: TyrActionFnOpts<D>
   ) => void | boolean | Promise<void | boolean>;
   hide?: boolean | ((doc: D) => boolean);
+  utility?: boolean;
 
   /**
    * This is the component the action was defined on.
@@ -157,7 +188,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     title,
     input,
     action,
-    hide
+    hide,
+    utility,
   }: TyrActionOpts<D>) {
     this.traits = traits = traits || [];
     this.name = name;
@@ -168,6 +200,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.input =
       input ?? (traits.includes('create') || traits.includes('search') ? 0 : 1);
     this.hide = hide;
+    this.utility = utility;
   }
 
   is(...traits: Tyr.ActionTrait[]) {
@@ -175,6 +208,14 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       if (this.traits.indexOf(trait) >= 0) return true;
     }
     return false;
+  }
+
+  isEntrance() {
+    return this.traits.some(isEntranceTrait);
+  }
+
+  isExit() {
+    return this.traits.some(isExitTrait);
   }
 
   isHidden(document?: D) {
@@ -203,6 +244,31 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     }
   }
 
+  button(component: TyrComponent<any>) {
+    if (this.input === '*') {
+      return (
+        <Button
+          className={'tyr-action tyr-action-' + this.name}
+          disabled={!component.selectedIds?.length}
+          key={`a_${this.name}`}
+          onClick={() => this.act(component.actionFnOpts() as any)}
+        >
+          {this.label(component)}
+        </Button>
+      );
+    } else {
+      return (
+        <Button
+          className={'tyr-action tyr-action-' + this.name}
+          key={`a_${this.name}`}
+          onClick={() => this.act(component.actionFnOpts() as any)}
+        >
+          {this.label(component)}
+        </Button>
+      );
+    }
+  }
+
   decorate(opts: Partial<TyrActionOpts<D>>) {
     const newOpts: TyrActionOpts<D> = {
       traits: this.traits,
@@ -212,7 +278,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       self: this.self,
       action: this.action,
       hide: this.hide,
-      input: this.input
+      input: this.input,
+      utility: this.utility,
     };
 
     Object.assign(newOpts, opts);

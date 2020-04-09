@@ -336,7 +336,7 @@ const Tyr = {
   async promiseWithTimeout(promise, timeoutMs /*: number */ = 10000) {
     const rslt = await Promise.race([
       promise,
-      new Promise(resolve => setTimeout(() => resolve('timeout'), timeoutMs))
+      new Promise(resolve => setTimeout(() => resolve('timeout'), timeoutMs)),
     ]);
 
     if (rslt === 'timeout') throw new Error('timed out');
@@ -521,7 +521,7 @@ const Tyr = {
     array.length = tai;
   },
 
-  Roman
+  Roman,
 };
 
 /*

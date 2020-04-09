@@ -698,7 +698,7 @@ new Type({
 
   fromClient(field, value) {
     return (field.def.collection || field.collection).fromClientQuery(value);
-  }
+  },
 
   //toClient(field, value) {
   // TODO:  maybe need a "toClientQuery" equivalent to "fromClientQuery"
@@ -710,7 +710,7 @@ const query = {
   isQuery,
   merge,
   intersection: queryIntersection,
-  matches: queryMatches
+  matches: queryMatches,
 };
 
 Tyr.query = query;

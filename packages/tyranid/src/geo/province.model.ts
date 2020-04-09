@@ -12,7 +12,7 @@ const Province = new Tyr.Collection({
     name: { is: 'string', labelField: true },
     code: {
       is: 'string',
-      description: 'ISO 3166-2 province code.  Should be FIPS 5-2?'
+      description: 'ISO 3166-2 province code.  Should be FIPS 5-2?',
     },
 
     fips10_4: { is: 'string', description: 'FIPS 10-4 province code.' },
@@ -20,14 +20,14 @@ const Province = new Tyr.Collection({
     anyCode: {
       is: 'string',
       description:
-        'AnyChart code, maybe we can nuke this, but AnyChart is still active'
+        'AnyChart code, maybe we can nuke this, but AnyChart is still active',
     },
 
     country: { link: 'country' },
     region: { is: 'integer' }, // not currently used, but we're storing the the ints ids in case we add it later on
 
     aliases: { is: 'string' },
-    notes: { is: 'string' }
+    notes: { is: 'string' },
   },
   values: [
     /* eslint-disable quotes */
@@ -90,7 +90,7 @@ const Province = new Tyr.Collection({
       '',
       ,
       4306,
-      { code: 'AE' }
+      { code: 'AE' },
     ],
     [53, 'Armed Forces Pacific', '', , 4306, { code: 'AP' }],
     [
@@ -99,7 +99,7 @@ const Province = new Tyr.Collection({
       '03',
       ,
       4306,
-      { code: 'AS', notes: "Also FIPS 5-2 '60'" }
+      { code: 'AS', notes: "Also FIPS 5-2 '60'" },
     ],
     [55, 'Federated States of Micronesia', '64', , 4306, { code: 'FM' }],
     [56, 'Guam', '14', , 4306, { code: 'GU' }],
@@ -339,7 +339,7 @@ const Province = new Tyr.Collection({
       '85',
       'BGD-BRS',
       4097,
-      { notes: 'County, Province |Barisal|' }
+      { notes: 'County, Province |Barisal|' },
     ],
     [
       288,
@@ -347,7 +347,7 @@ const Province = new Tyr.Collection({
       '04',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       289,
@@ -355,7 +355,7 @@ const Province = new Tyr.Collection({
       '05',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       290,
@@ -363,7 +363,7 @@ const Province = new Tyr.Collection({
       '12',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       291,
@@ -371,7 +371,7 @@ const Province = new Tyr.Collection({
       '13',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       292,
@@ -379,7 +379,7 @@ const Province = new Tyr.Collection({
       '15',
       'BGD-BRS',
       4097,
-      { notes: 'County, Province |Barisal|' }
+      { notes: 'County, Province |Barisal|' },
     ],
     [
       293,
@@ -387,7 +387,7 @@ const Province = new Tyr.Collection({
       '22',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       294,
@@ -395,7 +395,7 @@ const Province = new Tyr.Collection({
       '23',
       'BGD-BRS',
       4097,
-      { notes: 'County, Province |Barisal|' }
+      { notes: 'County, Province |Barisal|' },
     ],
     [
       295,
@@ -403,7 +403,7 @@ const Province = new Tyr.Collection({
       '24',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       296,
@@ -411,7 +411,7 @@ const Province = new Tyr.Collection({
       '25',
       'BGD-BRS',
       4097,
-      { notes: 'County, Province |Barisal|' }
+      { notes: 'County, Province |Barisal|' },
     ],
     [
       297,
@@ -419,7 +419,7 @@ const Province = new Tyr.Collection({
       '26',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       298,
@@ -427,7 +427,7 @@ const Province = new Tyr.Collection({
       '27',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       299,
@@ -435,7 +435,7 @@ const Province = new Tyr.Collection({
       '28',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       300,
@@ -443,7 +443,7 @@ const Province = new Tyr.Collection({
       '29',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       301,
@@ -451,7 +451,7 @@ const Province = new Tyr.Collection({
       '30',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       302,
@@ -459,7 +459,7 @@ const Province = new Tyr.Collection({
       '31',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       303,
@@ -467,7 +467,7 @@ const Province = new Tyr.Collection({
       '81',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       304,
@@ -475,7 +475,7 @@ const Province = new Tyr.Collection({
       '33',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       305,
@@ -483,7 +483,7 @@ const Province = new Tyr.Collection({
       '34',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       306,
@@ -491,7 +491,7 @@ const Province = new Tyr.Collection({
       '35',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       307,
@@ -499,7 +499,7 @@ const Province = new Tyr.Collection({
       '36',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       308,
@@ -507,7 +507,7 @@ const Province = new Tyr.Collection({
       '37',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       309,
@@ -515,7 +515,7 @@ const Province = new Tyr.Collection({
       '38',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       310,
@@ -523,7 +523,7 @@ const Province = new Tyr.Collection({
       '39',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Sylhet|' }
+      { notes: 'County, Province |Sylhet|' },
     ],
     [
       311,
@@ -531,7 +531,7 @@ const Province = new Tyr.Collection({
       '40',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       312,
@@ -539,7 +539,7 @@ const Province = new Tyr.Collection({
       '41',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       313,
@@ -547,7 +547,7 @@ const Province = new Tyr.Collection({
       '42',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       314,
@@ -555,7 +555,7 @@ const Province = new Tyr.Collection({
       '43',
       'BGD-BRS',
       4097,
-      { notes: 'County, Province |Barisal|' }
+      { notes: 'County, Province |Barisal|' },
     ],
     [
       315,
@@ -563,7 +563,7 @@ const Province = new Tyr.Collection({
       '44',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       316,
@@ -571,7 +571,7 @@ const Province = new Tyr.Collection({
       '45',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       317,
@@ -579,7 +579,7 @@ const Province = new Tyr.Collection({
       '46',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       318,
@@ -587,7 +587,7 @@ const Province = new Tyr.Collection({
       '47',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       319,
@@ -595,7 +595,7 @@ const Province = new Tyr.Collection({
       '48',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       320,
@@ -603,7 +603,7 @@ const Province = new Tyr.Collection({
       '49',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       321,
@@ -611,7 +611,7 @@ const Province = new Tyr.Collection({
       '50',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       322,
@@ -619,7 +619,7 @@ const Province = new Tyr.Collection({
       '51',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       323,
@@ -627,7 +627,7 @@ const Province = new Tyr.Collection({
       '52',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       324,
@@ -635,7 +635,7 @@ const Province = new Tyr.Collection({
       '53',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       325,
@@ -643,7 +643,7 @@ const Province = new Tyr.Collection({
       '54',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       326,
@@ -651,7 +651,7 @@ const Province = new Tyr.Collection({
       '55',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       327,
@@ -659,7 +659,7 @@ const Province = new Tyr.Collection({
       '56',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Sylhet|' }
+      { notes: 'County, Province |Sylhet|' },
     ],
     [
       328,
@@ -667,7 +667,7 @@ const Province = new Tyr.Collection({
       '57',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       329,
@@ -675,7 +675,7 @@ const Province = new Tyr.Collection({
       '58',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       330,
@@ -683,7 +683,7 @@ const Province = new Tyr.Collection({
       '59',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       331,
@@ -691,7 +691,7 @@ const Province = new Tyr.Collection({
       '60',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       332,
@@ -699,7 +699,7 @@ const Province = new Tyr.Collection({
       '61',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       333,
@@ -707,7 +707,7 @@ const Province = new Tyr.Collection({
       '62',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       334,
@@ -715,7 +715,7 @@ const Province = new Tyr.Collection({
       '63',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       335,
@@ -723,7 +723,7 @@ const Province = new Tyr.Collection({
       '64',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       336,
@@ -731,7 +731,7 @@ const Province = new Tyr.Collection({
       '65',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       337,
@@ -739,7 +739,7 @@ const Province = new Tyr.Collection({
       '66',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       338,
@@ -747,7 +747,7 @@ const Province = new Tyr.Collection({
       '67',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       339,
@@ -755,7 +755,7 @@ const Province = new Tyr.Collection({
       '68',
       'BGD-BRS',
       4097,
-      { notes: 'County, Province |Barisal|' }
+      { notes: 'County, Province |Barisal|' },
     ],
     [
       340,
@@ -763,7 +763,7 @@ const Province = new Tyr.Collection({
       '69',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       341,
@@ -771,7 +771,7 @@ const Province = new Tyr.Collection({
       '70',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       342,
@@ -779,7 +779,7 @@ const Province = new Tyr.Collection({
       '71',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       343,
@@ -787,7 +787,7 @@ const Province = new Tyr.Collection({
       '72',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       344,
@@ -795,7 +795,7 @@ const Province = new Tyr.Collection({
       '73',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       345,
@@ -803,7 +803,7 @@ const Province = new Tyr.Collection({
       '74',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       346,
@@ -811,7 +811,7 @@ const Province = new Tyr.Collection({
       '75',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       347,
@@ -819,7 +819,7 @@ const Province = new Tyr.Collection({
       '76',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Sylhet|' }
+      { notes: 'County, Province |Sylhet|' },
     ],
     [
       348,
@@ -827,7 +827,7 @@ const Province = new Tyr.Collection({
       '77',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Sylhet|' }
+      { notes: 'County, Province |Sylhet|' },
     ],
     [
       349,
@@ -835,7 +835,7 @@ const Province = new Tyr.Collection({
       '78',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [
       350,
@@ -843,7 +843,7 @@ const Province = new Tyr.Collection({
       '79',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       351,
@@ -851,7 +851,7 @@ const Province = new Tyr.Collection({
       '82',
       'BGD-KHL',
       4097,
-      { notes: 'County, Province |Khulna|' }
+      { notes: 'County, Province |Khulna|' },
     ],
     [
       352,
@@ -859,7 +859,7 @@ const Province = new Tyr.Collection({
       '83',
       'BGD-RJS',
       4097,
-      { notes: 'County, Province |Rajshahi|' }
+      { notes: 'County, Province |Rajshahi|' },
     ],
     [
       353,
@@ -867,7 +867,7 @@ const Province = new Tyr.Collection({
       '84',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Chittagong|' }
+      { notes: 'County, Province |Chittagong|' },
     ],
     [
       354,
@@ -875,7 +875,7 @@ const Province = new Tyr.Collection({
       '86',
       'BGD-CHT',
       4097,
-      { notes: 'County, Province |Sylhet|' }
+      { notes: 'County, Province |Sylhet|' },
     ],
     [355, 'Antwerpen', '01', 'BEL-ANT', 4098],
     [356, 'Brabant', '02', 'BEL-BRB', 4098],
@@ -974,7 +974,7 @@ const Province = new Tyr.Collection({
       '09',
       'BHR-JHW',
       4101,
-      { aliases: 'Juzar Hawar' }
+      { aliases: 'Juzar Hawar' },
     ],
     [447, 'Al Mintaqah ash Shamaliyah', '10', 'BHR-AMS', 4101],
     [448, 'Al Mintaqah al Wusta', '11', 'BHR-AMW', 4101],
@@ -1023,7 +1023,7 @@ const Province = new Tyr.Collection({
       'M4',
       'GBR-ENG-HMP',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [489, 'Warwick', '11', , 4104],
     [490, 'Alibori', '07', , 4105],
@@ -1433,7 +1433,7 @@ const Province = new Tyr.Collection({
       '17',
       'DNK-FRD',
       4134,
-      { notes: 'Region of 02, 03, 05, 06' }
+      { notes: 'Region of 02, 03, 05, 06' },
     ],
     [
       892,
@@ -1441,7 +1441,7 @@ const Province = new Tyr.Collection({
       '18',
       'DNK-ARH',
       4134,
-      { notes: 'Region of 01, 09, southern part of 15' }
+      { notes: 'Region of 01, 09, southern part of 15' },
     ],
     [893, 'Nordjylland', '19', 'DNK-NRD', 4134],
     [894, 'Sjelland', '20', 'DNK-VST', 4134, { notes: 'Region of 10, 12, 14' }],
@@ -1451,7 +1451,7 @@ const Province = new Tyr.Collection({
       '21',
       'DNK-FYN',
       4134,
-      { notes: 'Region of 04, 08, 11, 13' }
+      { notes: 'Region of 04, 08, 11, 13' },
     ],
     [896, 'Saint David', '03', , 4310],
     [897, 'Saint Luke', '07', , 4135],
@@ -1629,8 +1629,8 @@ const Province = new Tyr.Collection({
       {
         aliases: 'Canary Islands',
         notes:
-          'This is not really in Andalucia, it is off-the-map, so is included in the nearest land area.'
-      }
+          'This is not really in Andalucia, it is off-the-map, so is included in the nearest land area.',
+      },
     ],
     [1064, 'Castilla-La Mancha', '54', 'ESP-CLM', 4143],
     [1065, 'Castilla y Leon', '55', 'ESP-CYL', 4143],
@@ -1662,7 +1662,7 @@ const Province = new Tyr.Collection({
       '54',
       'ETH-KEF',
       4144,
-      { aliases: "Southern Nations, Nationalities, and People's Region" }
+      { aliases: "Southern Nations, Nationalities, and People's Region" },
     ],
     [1089, 'Aland', '01', 'FIN-AHR', 4146],
     [1090, 'Lapland', '06', 'FIN-LAP', 4146],
@@ -1673,7 +1673,7 @@ const Province = new Tyr.Collection({
       '13',
       'FIN-UUS',
       4146,
-      { notes: 'Region of Kymi, Uusimaa' }
+      { notes: 'Region of Kymi, Uusimaa' },
     ],
     [
       1093,
@@ -1681,7 +1681,7 @@ const Province = new Tyr.Collection({
       '14',
       'FIN-PKR',
       4146,
-      { notes: 'Region of Kuopio, Mikkeli, and Pohjois-Karjala' }
+      { notes: 'Region of Kuopio, Mikkeli, and Pohjois-Karjala' },
     ],
     [
       1094,
@@ -1689,7 +1689,7 @@ const Province = new Tyr.Collection({
       '15',
       'FIN-VAA',
       4146,
-      { notes: 'Region of Hame, Keski-Suomi, Turku Ja Pori, and Vaasa' }
+      { notes: 'Region of Hame, Keski-Suomi, Turku Ja Pori, and Vaasa' },
     ],
     [1095, 'Eastern', '03', 'ZMB-EST', 4321],
     [1096, 'Northern', '05', 'ZMB-NRT', 4321],
@@ -1735,7 +1735,7 @@ const Province = new Tyr.Collection({
       '01',
       'GBR-ENG-AVO',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1134,
@@ -1743,7 +1743,7 @@ const Province = new Tyr.Collection({
       '03',
       'GBR-ENG-BRK',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1135,
@@ -1751,7 +1751,7 @@ const Province = new Tyr.Collection({
       '07',
       'GBR-ENG-CLV',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1136,
@@ -1759,7 +1759,7 @@ const Province = new Tyr.Collection({
       '17',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1137,
@@ -1767,7 +1767,7 @@ const Province = new Tyr.Collection({
       '18',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1138,
@@ -1775,7 +1775,7 @@ const Province = new Tyr.Collection({
       '20',
       'GBR-ENG-HAW',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1139,
@@ -1783,7 +1783,7 @@ const Province = new Tyr.Collection({
       '22',
       'GBR-ENG-HMB',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1140,
@@ -1791,7 +1791,7 @@ const Province = new Tyr.Collection({
       '28',
       'GBR-ENG-MRS',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1141,
@@ -1799,7 +1799,7 @@ const Province = new Tyr.Collection({
       '37',
       'GBR-ENG-SYR',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1142,
@@ -1807,7 +1807,7 @@ const Province = new Tyr.Collection({
       '41',
       'GBR-ENG-TAW',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1143,
@@ -1815,7 +1815,7 @@ const Province = new Tyr.Collection({
       '43',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1144,
@@ -1823,7 +1823,7 @@ const Province = new Tyr.Collection({
       '45',
       'GBR-ENG-WYR',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [1145, 'Grampian', '82', 'GBR-SCT-GRM', 4153, { region: 4347 }],
     [1146, 'Lothian', '84', 'GBR-SCT-LTH', 4153, { region: 4347 }],
@@ -1841,7 +1841,7 @@ const Province = new Tyr.Collection({
       'A1',
       'GBR-ENG-GLN',
       4153,
-      { region: 4348, notes: 'Unitary District' }
+      { region: 4348, notes: 'Unitary District' },
     ],
     [
       1156,
@@ -1849,7 +1849,7 @@ const Province = new Tyr.Collection({
       'A2',
       'GBR-ENG-GLN',
       4153,
-      { region: 4348, notes: 'Unitary District' }
+      { region: 4348, notes: 'Unitary District' },
     ],
     [
       1157,
@@ -1857,7 +1857,7 @@ const Province = new Tyr.Collection({
       'A3',
       'GBR-ENG-SYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1158,
@@ -1865,7 +1865,7 @@ const Province = new Tyr.Collection({
       'A4',
       'GBR-ENG-SMR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1159,
@@ -1873,7 +1873,7 @@ const Province = new Tyr.Collection({
       'A5',
       'GBR-ENG-BDF',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1160,
@@ -1881,7 +1881,7 @@ const Province = new Tyr.Collection({
       'A6',
       'GBR-ENG-GLN',
       4153,
-      { region: 4348, notes: 'Unitary District' }
+      { region: 4348, notes: 'Unitary District' },
     ],
     [
       1161,
@@ -1889,7 +1889,7 @@ const Province = new Tyr.Collection({
       'A7',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1162,
@@ -1897,7 +1897,7 @@ const Province = new Tyr.Collection({
       'A8',
       'GBR-ENG-LNC',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1163,
@@ -1905,7 +1905,7 @@ const Province = new Tyr.Collection({
       'A9',
       'GBR-ENG-LNC',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1164,
@@ -1913,7 +1913,7 @@ const Province = new Tyr.Collection({
       'B1',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1165,
@@ -1921,7 +1921,7 @@ const Province = new Tyr.Collection({
       'B2',
       'GBR-ENG-DRS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1166,
@@ -1929,7 +1929,7 @@ const Province = new Tyr.Collection({
       'B3',
       'GBR-ENG-BRK',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1167,
@@ -1937,7 +1937,7 @@ const Province = new Tyr.Collection({
       'B4',
       'GBR-ENG-WYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1168,
@@ -1945,7 +1945,7 @@ const Province = new Tyr.Collection({
       'B5',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1169,
@@ -1953,7 +1953,7 @@ const Province = new Tyr.Collection({
       'B6',
       'GBR-ENG-ESS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1170,
@@ -1961,7 +1961,7 @@ const Province = new Tyr.Collection({
       'B7',
       'GBR-ENG-AVO',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1171,
@@ -1969,7 +1969,7 @@ const Province = new Tyr.Collection({
       'B8',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1172,
@@ -1977,7 +1977,7 @@ const Province = new Tyr.Collection({
       'B9',
       'GBR-ENG-BCK',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1173,
@@ -1985,7 +1985,7 @@ const Province = new Tyr.Collection({
       'C1',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1174,
@@ -1993,7 +1993,7 @@ const Province = new Tyr.Collection({
       'C2',
       'GBR-ENG-WYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1175,
@@ -2001,7 +2001,7 @@ const Province = new Tyr.Collection({
       'C3',
       'GBR-ENG-CMB',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1176,
@@ -2009,7 +2009,7 @@ const Province = new Tyr.Collection({
       'C4',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1177,
@@ -2017,7 +2017,7 @@ const Province = new Tyr.Collection({
       'C5',
       'GBR-ENG-CHS',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1178,
@@ -2025,7 +2025,7 @@ const Province = new Tyr.Collection({
       'C6',
       'GBR-ENG-CRN',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1179,
@@ -2033,7 +2033,7 @@ const Province = new Tyr.Collection({
       'C7',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1180,
@@ -2041,7 +2041,7 @@ const Province = new Tyr.Collection({
       'C8',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1181,
@@ -2049,7 +2049,7 @@ const Province = new Tyr.Collection({
       'C9',
       'GBR-ENG-CMR',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1182,
@@ -2057,7 +2057,7 @@ const Province = new Tyr.Collection({
       'D1',
       'GBR-ENG-DRH',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1183,
@@ -2065,7 +2065,7 @@ const Province = new Tyr.Collection({
       'D2',
       'GBR-ENG-DRB',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1184,
@@ -2073,7 +2073,7 @@ const Province = new Tyr.Collection({
       'D3',
       'GBR-ENG-DRB',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1185,
@@ -2081,7 +2081,7 @@ const Province = new Tyr.Collection({
       'D4',
       'GBR-ENG-DEV',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1186,
@@ -2089,7 +2089,7 @@ const Province = new Tyr.Collection({
       'D5',
       'GBR-ENG-SYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1187,
@@ -2097,7 +2097,7 @@ const Province = new Tyr.Collection({
       'D6',
       'GBR-ENG-DRS',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1188,
@@ -2105,7 +2105,7 @@ const Province = new Tyr.Collection({
       'D7',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1189,
@@ -2113,7 +2113,7 @@ const Province = new Tyr.Collection({
       'D8',
       'GBR-ENG-DRH',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1190,
@@ -2121,7 +2121,7 @@ const Province = new Tyr.Collection({
       'D9',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1191,
@@ -2132,8 +2132,8 @@ const Province = new Tyr.Collection({
       {
         region: 4345,
         aliases: 'North Wolds } ],East Yorkshire',
-        notes: 'Unitary District'
-      }
+        notes: 'Unitary District',
+      },
     ],
     [
       1192,
@@ -2141,7 +2141,7 @@ const Province = new Tyr.Collection({
       'E2',
       'GBR-ENG-ESS',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1193,
@@ -2149,7 +2149,7 @@ const Province = new Tyr.Collection({
       'E3',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1194,
@@ -2157,7 +2157,7 @@ const Province = new Tyr.Collection({
       'E4',
       'GBR-ENG-ESX',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1195,
@@ -2165,7 +2165,7 @@ const Province = new Tyr.Collection({
       'E5',
       'GBR-ENG-TAW',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1196,
@@ -2173,7 +2173,7 @@ const Province = new Tyr.Collection({
       'E6',
       'GBR-ENG-GLC',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1197,
@@ -2181,7 +2181,7 @@ const Province = new Tyr.Collection({
       'E7',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1198,
@@ -2189,7 +2189,7 @@ const Province = new Tyr.Collection({
       'E8',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1199,
@@ -2197,7 +2197,7 @@ const Province = new Tyr.Collection({
       'E9',
       'GBR-ENG-CHS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1200,
@@ -2205,7 +2205,7 @@ const Province = new Tyr.Collection({
       'F1',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1201,
@@ -2213,7 +2213,7 @@ const Province = new Tyr.Collection({
       'F2',
       'GBR-ENG-HMP',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1202,
@@ -2221,7 +2221,7 @@ const Province = new Tyr.Collection({
       'F3',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1203,
@@ -2229,7 +2229,7 @@ const Province = new Tyr.Collection({
       'F4',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1204,
@@ -2237,7 +2237,7 @@ const Province = new Tyr.Collection({
       'F5',
       'GBR-ENG-DRH',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1205,
@@ -2245,7 +2245,7 @@ const Province = new Tyr.Collection({
       'F6',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1206,
@@ -2253,7 +2253,7 @@ const Province = new Tyr.Collection({
       'F7',
       'GBR-ENG-HRT',
       4153,
-      { region: 4345, aliases: 'Herefordshire', notes: 'County' }
+      { region: 4345, aliases: 'Herefordshire', notes: 'County' },
     ],
     [
       1207,
@@ -2261,7 +2261,7 @@ const Province = new Tyr.Collection({
       'F8',
       'GBR-ENG-HRT',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1208,
@@ -2269,7 +2269,7 @@ const Province = new Tyr.Collection({
       'F9',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1209,
@@ -2277,7 +2277,7 @@ const Province = new Tyr.Collection({
       'G1',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1210,
@@ -2285,7 +2285,7 @@ const Province = new Tyr.Collection({
       'G2',
       'GBR-ENG-IOW',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1211,
@@ -2293,7 +2293,7 @@ const Province = new Tyr.Collection({
       'G3',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1212,
@@ -2301,7 +2301,7 @@ const Province = new Tyr.Collection({
       'G4',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1213,
@@ -2309,7 +2309,7 @@ const Province = new Tyr.Collection({
       'G5',
       'GBR-ENG-KEN',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1214,
@@ -2317,7 +2317,7 @@ const Province = new Tyr.Collection({
       'G6',
       'GBR-ENG-HMB',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1215,
@@ -2325,7 +2325,7 @@ const Province = new Tyr.Collection({
       'G7',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1216,
@@ -2333,7 +2333,7 @@ const Province = new Tyr.Collection({
       'G8',
       'GBR-ENG-WYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1217,
@@ -2341,7 +2341,7 @@ const Province = new Tyr.Collection({
       'G9',
       'GBR-ENG-MRS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1218,
@@ -2349,7 +2349,7 @@ const Province = new Tyr.Collection({
       'H1',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1219,
@@ -2357,7 +2357,7 @@ const Province = new Tyr.Collection({
       'H2',
       'GBR-ENG-LNC',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1220,
@@ -2365,7 +2365,7 @@ const Province = new Tyr.Collection({
       'H3',
       'GBR-ENG-WYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1221,
@@ -2373,7 +2373,7 @@ const Province = new Tyr.Collection({
       'H4',
       'GBR-ENG-LCS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1222,
@@ -2381,7 +2381,7 @@ const Province = new Tyr.Collection({
       'H5',
       'GBR-ENG-LCS',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1223,
@@ -2389,7 +2389,7 @@ const Province = new Tyr.Collection({
       'H6',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1224,
@@ -2397,7 +2397,7 @@ const Province = new Tyr.Collection({
       'H7',
       'GBR-ENG-LNL',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1225,
@@ -2405,7 +2405,7 @@ const Province = new Tyr.Collection({
       'H8',
       'GBR-ENG-MRS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1226,
@@ -2413,7 +2413,7 @@ const Province = new Tyr.Collection({
       'H9',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1227,
@@ -2421,7 +2421,7 @@ const Province = new Tyr.Collection({
       'I1',
       'GBR-ENG-BDF',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [1228, 'Manchester', '04', 'JAM-MNC', 4188],
     [
@@ -2430,7 +2430,7 @@ const Province = new Tyr.Collection({
       'I3',
       'GBR-ENG-KEN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1230,
@@ -2438,7 +2438,7 @@ const Province = new Tyr.Collection({
       'I4',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1231,
@@ -2446,7 +2446,7 @@ const Province = new Tyr.Collection({
       'I5',
       'GBR-ENG-NYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1232,
@@ -2454,7 +2454,7 @@ const Province = new Tyr.Collection({
       'I6',
       'GBR-ENG-BCK',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1233,
@@ -2462,7 +2462,7 @@ const Province = new Tyr.Collection({
       'I7',
       'GBR-ENG-TAW',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1234,
@@ -2470,7 +2470,7 @@ const Province = new Tyr.Collection({
       'I8',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1235,
@@ -2478,7 +2478,7 @@ const Province = new Tyr.Collection({
       'I9',
       'GBR-ENG-NRF',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1236,
@@ -2486,7 +2486,7 @@ const Province = new Tyr.Collection({
       'J1',
       'GBR-ENG-NRT',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1237,
@@ -2494,7 +2494,7 @@ const Province = new Tyr.Collection({
       'J2',
       'GBR-ENG-HMB',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1238,
@@ -2502,7 +2502,7 @@ const Province = new Tyr.Collection({
       'J3',
       'GBR-ENG-HMB',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1239,
@@ -2510,7 +2510,7 @@ const Province = new Tyr.Collection({
       'J4',
       'GBR-ENG-SMR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1240,
@@ -2518,7 +2518,7 @@ const Province = new Tyr.Collection({
       'J5',
       'GBR-ENG-TAW',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1241,
@@ -2526,7 +2526,7 @@ const Province = new Tyr.Collection({
       'J6',
       'GBR-ENG-NRH',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1242,
@@ -2534,7 +2534,7 @@ const Province = new Tyr.Collection({
       'J7',
       'GBR-ENG-NYR',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1243,
@@ -2542,7 +2542,7 @@ const Province = new Tyr.Collection({
       'J8',
       'GBR-ENG-NTT',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1244,
@@ -2550,7 +2550,7 @@ const Province = new Tyr.Collection({
       'J9',
       'GBR-ENG-NTT',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1245,
@@ -2558,7 +2558,7 @@ const Province = new Tyr.Collection({
       'K1',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1246,
@@ -2566,7 +2566,7 @@ const Province = new Tyr.Collection({
       'K2',
       'GBR-ENG-OXF',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1247,
@@ -2574,7 +2574,7 @@ const Province = new Tyr.Collection({
       'K3',
       'GBR-ENG-CMB',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1248,
@@ -2582,7 +2582,7 @@ const Province = new Tyr.Collection({
       'K4',
       'GBR-ENG-DEV',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1249,
@@ -2590,7 +2590,7 @@ const Province = new Tyr.Collection({
       'K5',
       'GBR-ENG-DRS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1250,
@@ -2598,7 +2598,7 @@ const Province = new Tyr.Collection({
       'K6',
       'GBR-ENG-HMP',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1251,
@@ -2606,7 +2606,7 @@ const Province = new Tyr.Collection({
       'K7',
       'GBR-ENG-BRK',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1252,
@@ -2614,7 +2614,7 @@ const Province = new Tyr.Collection({
       'K8',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1253,
@@ -2622,7 +2622,7 @@ const Province = new Tyr.Collection({
       'K9',
       'GBR-ENG-NYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1254,
@@ -2630,7 +2630,7 @@ const Province = new Tyr.Collection({
       'L1',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1255,
@@ -2638,7 +2638,7 @@ const Province = new Tyr.Collection({
       'L2',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1256,
@@ -2646,7 +2646,7 @@ const Province = new Tyr.Collection({
       'L3',
       'GBR-ENG-SYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1257,
@@ -2654,7 +2654,7 @@ const Province = new Tyr.Collection({
       'L4',
       'GBR-ENG-LCS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1258,
@@ -2662,7 +2662,7 @@ const Province = new Tyr.Collection({
       'L5',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1259,
@@ -2670,7 +2670,7 @@ const Province = new Tyr.Collection({
       'L6',
       'GBR-ENG-SAL',
       4153,
-      { region: 4345, aliases: 'Salop', notes: 'County' }
+      { region: 4345, aliases: 'Salop', notes: 'County' },
     ],
     [
       1260,
@@ -2678,7 +2678,7 @@ const Province = new Tyr.Collection({
       'L7',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1261,
@@ -2686,7 +2686,7 @@ const Province = new Tyr.Collection({
       'L8',
       'GBR-ENG-MRS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1262,
@@ -2694,7 +2694,7 @@ const Province = new Tyr.Collection({
       'L9',
       'GBR-ENG-SYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1263,
@@ -2702,7 +2702,7 @@ const Province = new Tyr.Collection({
       'M1',
       'GBR-ENG-BRK',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1264,
@@ -2710,7 +2710,7 @@ const Province = new Tyr.Collection({
       'M2',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1265,
@@ -2718,7 +2718,7 @@ const Province = new Tyr.Collection({
       'M3',
       'GBR-ENG-SMR',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1266,
@@ -2726,7 +2726,7 @@ const Province = new Tyr.Collection({
       'M5',
       'GBR-ENG-ESX',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1267,
@@ -2734,7 +2734,7 @@ const Province = new Tyr.Collection({
       'M6',
       'GBR-ENG-GLC',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1268,
@@ -2742,7 +2742,7 @@ const Province = new Tyr.Collection({
       'M7',
       'GBR-ENG-TAW',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1269,
@@ -2750,7 +2750,7 @@ const Province = new Tyr.Collection({
       'M8',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1270,
@@ -2758,7 +2758,7 @@ const Province = new Tyr.Collection({
       'M9',
       'GBR-ENG-STF',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1271,
@@ -2766,7 +2766,7 @@ const Province = new Tyr.Collection({
       'N1',
       'GBR-ENG-MRS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1272,
@@ -2774,7 +2774,7 @@ const Province = new Tyr.Collection({
       'N2',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1273,
@@ -2785,8 +2785,8 @@ const Province = new Tyr.Collection({
       {
         region: 4345,
         notes:
-          'Unitary District, Parts of this are also in North Yorkshire, the part south of the Tees.'
-      }
+          'Unitary District, Parts of this are also in North Yorkshire, the part south of the Tees.',
+      },
     ],
     [
       1274,
@@ -2794,7 +2794,7 @@ const Province = new Tyr.Collection({
       'N4',
       'GBR-ENG-STF',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1275,
@@ -2802,7 +2802,7 @@ const Province = new Tyr.Collection({
       'N5',
       'GBR-ENG-SFF',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1276,
@@ -2810,7 +2810,7 @@ const Province = new Tyr.Collection({
       'N6',
       'GBR-ENG-TAW',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1277,
@@ -2818,7 +2818,7 @@ const Province = new Tyr.Collection({
       'N7',
       'GBR-ENG-SRR',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1278,
@@ -2826,7 +2826,7 @@ const Province = new Tyr.Collection({
       'N8',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1279,
@@ -2834,7 +2834,7 @@ const Province = new Tyr.Collection({
       'N9',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, aliases: 'Swinton', notes: 'Unitary District' }
+      { region: 4345, aliases: 'Swinton', notes: 'Unitary District' },
     ],
     [
       1280,
@@ -2842,7 +2842,7 @@ const Province = new Tyr.Collection({
       'O1',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1281,
@@ -2850,7 +2850,7 @@ const Province = new Tyr.Collection({
       'O2',
       'GBR-ENG-SAL',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1282,
@@ -2858,7 +2858,7 @@ const Province = new Tyr.Collection({
       'O3',
       'GBR-ENG-ESX',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1283,
@@ -2866,7 +2866,7 @@ const Province = new Tyr.Collection({
       'O4',
       'GBR-ENG-DEV',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1284,
@@ -2874,7 +2874,7 @@ const Province = new Tyr.Collection({
       'O5',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1285,
@@ -2882,7 +2882,7 @@ const Province = new Tyr.Collection({
       'O6',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1286,
@@ -2890,7 +2890,7 @@ const Province = new Tyr.Collection({
       'O7',
       'GBR-ENG-WYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1287,
@@ -2898,7 +2898,7 @@ const Province = new Tyr.Collection({
       'O8',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1288,
@@ -2906,7 +2906,7 @@ const Province = new Tyr.Collection({
       'O9',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1289,
@@ -2914,7 +2914,7 @@ const Province = new Tyr.Collection({
       'P1',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1290,
@@ -2922,7 +2922,7 @@ const Province = new Tyr.Collection({
       'P2',
       'GBR-ENG-CHS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1291,
@@ -2930,7 +2930,7 @@ const Province = new Tyr.Collection({
       'P3',
       'GBR-ENG-WRW',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1292,
@@ -2938,7 +2938,7 @@ const Province = new Tyr.Collection({
       'P4',
       'GBR-ENG-BRK',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1293,
@@ -2946,7 +2946,7 @@ const Province = new Tyr.Collection({
       'P5',
       'GBR-ENG-GLN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1294,
@@ -2954,7 +2954,7 @@ const Province = new Tyr.Collection({
       'P6',
       'GBR-ENG-WSS',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1295,
@@ -2962,7 +2962,7 @@ const Province = new Tyr.Collection({
       'P7',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1296,
@@ -2970,7 +2970,7 @@ const Province = new Tyr.Collection({
       'P8',
       'GBR-ENG-WLT',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1297,
@@ -2978,7 +2978,7 @@ const Province = new Tyr.Collection({
       'P9',
       'GBR-ENG-BRK',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1298,
@@ -2986,7 +2986,7 @@ const Province = new Tyr.Collection({
       'Q1',
       'GBR-ENG-MRS',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1299,
@@ -2994,7 +2994,7 @@ const Province = new Tyr.Collection({
       'Q2',
       'GBR-ENG-BRK',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1300,
@@ -3002,7 +3002,7 @@ const Province = new Tyr.Collection({
       'Q3',
       'GBR-ENG-WMD',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [
       1301,
@@ -3010,7 +3010,7 @@ const Province = new Tyr.Collection({
       'Q4',
       'GBR-ENG-HAW',
       4153,
-      { region: 4345, notes: 'County' }
+      { region: 4345, notes: 'County' },
     ],
     [
       1302,
@@ -3018,7 +3018,7 @@ const Province = new Tyr.Collection({
       'Q5',
       'GBR-ENG-NYR',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [1303, 'Antrim', 'Q6', 'GBR-NIR-ANT', 4153, { region: 4346 }],
     [1304, 'Ards', 'Q7', 'GBR-NIR-ARD', 4153, { region: 4346 }],
@@ -3044,7 +3044,7 @@ const Province = new Tyr.Collection({
       'S6',
       'GBR-NIR-LND',
       4153,
-      { region: 4346, aliases: 'Londonderry' }
+      { region: 4346, aliases: 'Londonderry' },
     ],
     [1322, 'Magherafelt', 'S7', 'GBR-NIR-MGH', 4153, { region: 4346 }],
     [1323, 'Moyle', 'S8', 'GBR-NIR-MOY', 4153, { region: 4346 }],
@@ -3063,7 +3063,7 @@ const Province = new Tyr.Collection({
       'T9',
       'GBR-SCT-BRD',
       4153,
-      { region: 4347 }
+      { region: 4347 },
     ],
     [1334, 'Clackmannanshire', 'U1', 'GBR-SCT-CNT', 4153, { region: 4347 }],
     [
@@ -3072,7 +3072,7 @@ const Province = new Tyr.Collection({
       'U2',
       'GBR-SCT-DAG',
       4153,
-      { region: 4347 }
+      { region: 4347 },
     ],
     [1336, 'Dundee City', 'U3', 'GBR-SCT-TYS', 4153, { region: 4347 }],
     [1337, 'East Ayrshire', 'U4', 'GBR-SCT-STT', 4153, { region: 4347 }],
@@ -3087,7 +3087,7 @@ const Province = new Tyr.Collection({
       'V1',
       'GBR-SCT-FYF',
       4153,
-      { region: 4347, aliases: 'Fyfe' }
+      { region: 4347, aliases: 'Fyfe' },
     ],
     [1344, 'Glasgow City', 'V2', 'GBR-SCT-STT', 4153, { region: 4347 }],
     [1345, 'Highland', 'V3', 'GBR-SCT-HGH', 4153, { region: 4347 }],
@@ -3132,7 +3132,7 @@ const Province = new Tyr.Collection({
       'Z3',
       'GBR-WLS-SGL',
       4153,
-      { region: 4348 }
+      { region: 4348 },
     ],
     [1382, 'Wrexham', 'Z4', 'GBR-WLS-CLW', 4153, { region: 4348 }],
     [1383, 'Abashis Raioni', '01', , 4155],
@@ -3283,7 +3283,7 @@ const Province = new Tyr.Collection({
       '25',
       'GRC-IIS',
       4165,
-      { region: 4393, aliases: 'Corfu' }
+      { region: 4393, aliases: 'Corfu' },
     ],
     [1526, 'Levkas', '26', 'GRC-IIS', 4165, { region: 4393 }],
     [
@@ -3292,7 +3292,7 @@ const Province = new Tyr.Collection({
       '27',
       'GRC-IIS',
       4165,
-      { region: 4393, aliases: 'Kefalonia' }
+      { region: 4393, aliases: 'Kefalonia' },
     ],
     [1528, 'Zakinthos', '28', 'GRC-IIS', 4165, { region: 4393 }],
     [1529, 'Fthiotis', '29', 'GRC-CGE', 4165, { region: 4391 }],
@@ -3330,7 +3330,7 @@ const Province = new Tyr.Collection({
       '07',
       'GTM-GTM',
       4167,
-      { aliases: 'Guatemala' }
+      { aliases: 'Guatemala' },
     ],
     [1559, 'Huehuetenango', '08', 'GTM-HHT', 4167],
     [1560, 'Izabal', '09', 'GTM-IZB', 4167],
@@ -3497,7 +3497,7 @@ const Province = new Tyr.Collection({
       '01',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1719,
@@ -3505,7 +3505,7 @@ const Province = new Tyr.Collection({
       '02',
       'IRE-ULT',
       4178,
-      { notes: 'County, Province Ulster' }
+      { notes: 'County, Province Ulster' },
     ],
     [
       1720,
@@ -3513,7 +3513,7 @@ const Province = new Tyr.Collection({
       '03',
       'IRE-MUN',
       4178,
-      { notes: 'County, Province Munster' }
+      { notes: 'County, Province Munster' },
     ],
     [
       1721,
@@ -3521,7 +3521,7 @@ const Province = new Tyr.Collection({
       '04',
       'IRE-MUN',
       4178,
-      { notes: 'County, Province Munster' }
+      { notes: 'County, Province Munster' },
     ],
     [
       1722,
@@ -3529,7 +3529,7 @@ const Province = new Tyr.Collection({
       '06',
       'IRE-ULT',
       4178,
-      { notes: 'County, Province Ulster' }
+      { notes: 'County, Province Ulster' },
     ],
     [
       1723,
@@ -3537,7 +3537,7 @@ const Province = new Tyr.Collection({
       '07',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1724,
@@ -3545,7 +3545,7 @@ const Province = new Tyr.Collection({
       '10',
       'IRE-CNN',
       4178,
-      { notes: 'County, Province Connacht' }
+      { notes: 'County, Province Connacht' },
     ],
     [
       1725,
@@ -3553,7 +3553,7 @@ const Province = new Tyr.Collection({
       '11',
       'IRE-MUN',
       4178,
-      { notes: 'County, Province Munster' }
+      { notes: 'County, Province Munster' },
     ],
     [
       1726,
@@ -3561,7 +3561,7 @@ const Province = new Tyr.Collection({
       '12',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1727,
@@ -3569,7 +3569,7 @@ const Province = new Tyr.Collection({
       '13',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1728,
@@ -3577,7 +3577,7 @@ const Province = new Tyr.Collection({
       '14',
       'IRE-CNN',
       4178,
-      { notes: 'County, Province Connacht' }
+      { notes: 'County, Province Connacht' },
     ],
     [
       1729,
@@ -3585,7 +3585,7 @@ const Province = new Tyr.Collection({
       '15',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1730,
@@ -3593,7 +3593,7 @@ const Province = new Tyr.Collection({
       '16',
       'IRE-MUN',
       4178,
-      { notes: 'County, Province Munster' }
+      { notes: 'County, Province Munster' },
     ],
     [
       1731,
@@ -3601,7 +3601,7 @@ const Province = new Tyr.Collection({
       '18',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1732,
@@ -3609,7 +3609,7 @@ const Province = new Tyr.Collection({
       '19',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1733,
@@ -3617,7 +3617,7 @@ const Province = new Tyr.Collection({
       '20',
       'IRE-CNN',
       4178,
-      { notes: 'County, Province Connacht' }
+      { notes: 'County, Province Connacht' },
     ],
     [
       1734,
@@ -3625,7 +3625,7 @@ const Province = new Tyr.Collection({
       '21',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1735,
@@ -3633,7 +3633,7 @@ const Province = new Tyr.Collection({
       '22',
       'IRE-ULT',
       4178,
-      { notes: 'County, Province Ulster' }
+      { notes: 'County, Province Ulster' },
     ],
     [
       1736,
@@ -3641,7 +3641,7 @@ const Province = new Tyr.Collection({
       '23',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1737,
@@ -3649,7 +3649,7 @@ const Province = new Tyr.Collection({
       '24',
       'IRE-CNN',
       4178,
-      { notes: 'County, Province Connacht' }
+      { notes: 'County, Province Connacht' },
     ],
     [
       1738,
@@ -3657,7 +3657,7 @@ const Province = new Tyr.Collection({
       '25',
       'IRE-CNN',
       4178,
-      { notes: 'County, Province Connacht' }
+      { notes: 'County, Province Connacht' },
     ],
     [
       1739,
@@ -3665,7 +3665,7 @@ const Province = new Tyr.Collection({
       '26',
       'IRE-MUN',
       4178,
-      { notes: 'County, Province Munster' }
+      { notes: 'County, Province Munster' },
     ],
     [
       1740,
@@ -3673,7 +3673,7 @@ const Province = new Tyr.Collection({
       '27',
       'IRE-MUN',
       4178,
-      { notes: 'County, Province Munster' }
+      { notes: 'County, Province Munster' },
     ],
     [
       1741,
@@ -3681,7 +3681,7 @@ const Province = new Tyr.Collection({
       '29',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1742,
@@ -3689,7 +3689,7 @@ const Province = new Tyr.Collection({
       '30',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [
       1743,
@@ -3697,7 +3697,7 @@ const Province = new Tyr.Collection({
       '31',
       'IRE-LEN',
       4178,
-      { notes: 'County, Province Leinster' }
+      { notes: 'County, Province Leinster' },
     ],
     [1744, 'HaDarom', '01', 'ISR-HDR', 4179],
     [1745, 'HaMerkaz', '02', 'ISR-HMR', 4179],
@@ -3779,7 +3779,7 @@ const Province = new Tyr.Collection({
       '18',
       'IRN-SMN',
       4184,
-      { aliases: 'Semn?n Province' }
+      { aliases: 'Semn?n Province' },
     ],
     [1819, 'Markazi', '19', 'IRN-MRK', 4184],
     [1820, 'Zanjan', '21', 'IRN-ZNJ', 4184],
@@ -3948,7 +3948,7 @@ const Province = new Tyr.Collection({
       '16',
       'KHM-SOM',
       4193,
-      { aliases: 'Siem Reap' }
+      { aliases: 'Siem Reap' },
     ],
     [1982, 'Stoeng Treng', '17', 'KHM-STR', 4193, { aliases: 'Stung Treng' }],
     [1983, 'Svay Rieng', '18', 'KHM-SRI', 4193],
@@ -4055,7 +4055,7 @@ const Province = new Tyr.Collection({
       '05',
       'LBN-JLB',
       4203,
-      { aliases: 'Mount Lebanon;Jabal Lubnan' }
+      { aliases: 'Mount Lebanon;Jabal Lubnan' },
     ],
     [2082, 'Liban-Sud', '06', 'LBN-SAY', 4203, { aliases: 'Sayda' }],
     [2083, 'Nabatiye', '07', 'LBN-ANB', 4203, { aliases: 'An Nabatiyah' }],
@@ -4669,7 +4669,7 @@ const Province = new Tyr.Collection({
       '11',
       'NI11',
       4239,
-      { aliases: 'Abjuba;Abuja Capital Territory' }
+      { aliases: 'Abjuba;Abuja Capital Territory' },
     ],
     [2689, 'Ogun', '16', 'NI16', 4239],
     [2690, 'Ondo', '17', 'NI17', 4239],
@@ -5000,7 +5000,7 @@ const Province = new Tyr.Collection({
       '23',
       'POL-BPD',
       4254,
-      { notes: 'City, Province 3064' }
+      { notes: 'City, Province 3064' },
     ],
     [
       3013,
@@ -5008,7 +5008,7 @@ const Province = new Tyr.Collection({
       '24',
       'POL-BLY',
       4254,
-      { notes: 'City, Province 3070' }
+      { notes: 'City, Province 3070' },
     ],
     [3014, 'Bielsko', '25', 'POL-BLS', 4254, { notes: 'City, Province 3072' }],
     [
@@ -5017,7 +5017,7 @@ const Province = new Tyr.Collection({
       '26',
       'POL-BYD',
       4254,
-      { notes: 'City, Province 3061' }
+      { notes: 'City, Province 3061' },
     ],
     [3016, 'Chelm', '27', 'POL-CHL', 4254, { notes: 'City, Province 3064' }],
     [
@@ -5026,7 +5026,7 @@ const Province = new Tyr.Collection({
       '28',
       'POL-CCH',
       4254,
-      { notes: 'City, Province 3067' }
+      { notes: 'City, Province 3067' },
     ],
     [
       3018,
@@ -5034,7 +5034,7 @@ const Province = new Tyr.Collection({
       '29',
       'POL-CZS',
       4254,
-      { notes: 'City, Province 3072' }
+      { notes: 'City, Province 3072' },
     ],
     [3019, 'Elblag', '30', 'POL-ELB', 4254, { notes: 'City, Province 3074' }],
     [3020, 'Gdansk', '31', 'POL-GDN', 4254, { notes: 'City, Province 3071' }],
@@ -5045,7 +5045,7 @@ const Province = new Tyr.Collection({
       '33',
       'POL-JGO',
       4254,
-      { notes: 'City, Province 3061' }
+      { notes: 'City, Province 3061' },
     ],
     [3023, 'Kalisz', '34', 'POL-KLS', 4254, { notes: 'City, Province 3075' }],
     [3024, 'Katowice', '35', 'POL-KTW', 4254, { notes: 'City, Province 3072' }],
@@ -5065,7 +5065,7 @@ const Province = new Tyr.Collection({
       '46',
       'POL-NSA',
       4254,
-      { notes: 'City, Province 3066' }
+      { notes: 'City, Province 3066' },
     ],
     [3036, 'Olsztyn', '47', 'POL-OLS', 4254, { notes: 'City, Province 3074' }],
     [3037, 'Opole', '48', 'POL-OPO', 4254, { notes: 'City, Province 3068' }],
@@ -5075,7 +5075,7 @@ const Province = new Tyr.Collection({
       '49',
       'POL-OST',
       4254,
-      { notes: 'City, Province 3067' }
+      { notes: 'City, Province 3067' },
     ],
     [3039, 'Pila', '50', 'POL-PIL', 4254, { notes: 'City, Province 3075' }],
     [3040, 'Piotrkow', '51', 'POL-PTR', 4254, { notes: 'City, Province 3063' }],
@@ -5092,7 +5092,7 @@ const Province = new Tyr.Collection({
       '59',
       'POL-SKR',
       4254,
-      { notes: 'City, Province 3063' }
+      { notes: 'City, Province 3063' },
     ],
     [3049, 'Slupsk', '60', 'POL-SLP', 4254, { notes: 'City, Province 3071' }],
     [3050, 'Suwalki', '61', 'POL-SWL', 4254, { notes: 'City, Province 3070' }],
@@ -5103,7 +5103,7 @@ const Province = new Tyr.Collection({
       '63',
       'POL-TRN',
       4254,
-      { notes: 'City, Province 3069' }
+      { notes: 'City, Province 3069' },
     ],
     [3053, 'Tarnow', '64', 'POL-TRW', 4254, { notes: 'City, Province 3066' }],
     [3054, 'Torun', '65', 'POL-TOR', 4254, { notes: 'City, Province 3062' }],
@@ -5113,7 +5113,7 @@ const Province = new Tyr.Collection({
       '66',
       'POL-WLB',
       4254,
-      { notes: 'City, Province 3061' }
+      { notes: 'City, Province 3061' },
     ],
     [
       3056,
@@ -5121,7 +5121,7 @@ const Province = new Tyr.Collection({
       '67',
       'POL-WRS',
       4254,
-      { aliases: 'Warsaw', notes: 'City, Province 3067' }
+      { aliases: 'Warsaw', notes: 'City, Province 3067' },
     ],
     [
       3057,
@@ -5129,7 +5129,7 @@ const Province = new Tyr.Collection({
       '68',
       'POL-WLC',
       4254,
-      { notes: 'City, Province 3062' }
+      { notes: 'City, Province 3062' },
     ],
     [3058, 'Wroclaw', '69', 'POL-WRC', 4254, { notes: 'City, Province 3061' }],
     [3059, 'Zamosc', '70', 'POL-ZMS', 4254, { notes: 'City, Province 3064' }],
@@ -5139,7 +5139,7 @@ const Province = new Tyr.Collection({
       '71',
       'POL-ZGO',
       4254,
-      { notes: 'City, Province 3065' }
+      { notes: 'City, Province 3065' },
     ],
     [
       3061,
@@ -5147,7 +5147,7 @@ const Province = new Tyr.Collection({
       '72',
       'POL-WRC',
       4254,
-      { aliases: 'Lower Silesian Voivodeship' }
+      { aliases: 'Lower Silesian Voivodeship' },
     ],
     [
       3062,
@@ -5155,7 +5155,7 @@ const Province = new Tyr.Collection({
       '73',
       'POL-TOR',
       4254,
-      { aliases: 'Kuyavian-Pomeranian Voivodeship' }
+      { aliases: 'Kuyavian-Pomeranian Voivodeship' },
     ],
     [3063, 'Lodzkie', '74', 'POL-LOD', 4254, { aliases: 'Lodz Voivodeship' }],
     [
@@ -5164,7 +5164,7 @@ const Province = new Tyr.Collection({
       '75',
       'POL-LBL',
       4254,
-      { aliases: 'Lublin Voivodeship' }
+      { aliases: 'Lublin Voivodeship' },
     ],
     [
       3065,
@@ -5172,7 +5172,7 @@ const Province = new Tyr.Collection({
       '76',
       'POL-GRZ',
       4254,
-      { aliases: 'Lubusz Voivodeship' }
+      { aliases: 'Lubusz Voivodeship' },
     ],
     [
       3066,
@@ -5180,7 +5180,7 @@ const Province = new Tyr.Collection({
       '77',
       'POL-KRK',
       4254,
-      { aliases: 'Lesser Poland Voivodeship' }
+      { aliases: 'Lesser Poland Voivodeship' },
     ],
     [
       3067,
@@ -5188,7 +5188,7 @@ const Province = new Tyr.Collection({
       '78',
       'POL-WRS',
       4254,
-      { aliases: 'Masovian Voivodeship' }
+      { aliases: 'Masovian Voivodeship' },
     ],
     [3068, 'Opolskie', '79', 'POL-OPO', 4254, { aliases: 'Opole Voivodeship' }],
     [
@@ -5197,7 +5197,7 @@ const Province = new Tyr.Collection({
       '80',
       'POL-RZS',
       4254,
-      { aliases: 'Subcarpathian Voivodeship' }
+      { aliases: 'Subcarpathian Voivodeship' },
     ],
     [
       3070,
@@ -5205,7 +5205,7 @@ const Province = new Tyr.Collection({
       '81',
       'POL-BLY',
       4254,
-      { aliases: 'Podlaskie Voivodeship' }
+      { aliases: 'Podlaskie Voivodeship' },
     ],
     [
       3071,
@@ -5213,7 +5213,7 @@ const Province = new Tyr.Collection({
       '82',
       'POL-GDN',
       4254,
-      { aliases: 'Pomeranian Voivodeship' }
+      { aliases: 'Pomeranian Voivodeship' },
     ],
     [
       3072,
@@ -5221,7 +5221,7 @@ const Province = new Tyr.Collection({
       '83',
       'POL-KTW',
       4254,
-      { aliases: 'Silesian Voivodeship' }
+      { aliases: 'Silesian Voivodeship' },
     ],
     [
       3073,
@@ -5229,7 +5229,7 @@ const Province = new Tyr.Collection({
       '84',
       'POL-KIE',
       4254,
-      { aliases: 'Swietokrzyskie Voivodeship' }
+      { aliases: 'Swietokrzyskie Voivodeship' },
     ],
     [
       3074,
@@ -5237,7 +5237,7 @@ const Province = new Tyr.Collection({
       '85',
       'POL-OLS',
       4254,
-      { aliases: 'Warmian-Masurian Voivodeship' }
+      { aliases: 'Warmian-Masurian Voivodeship' },
     ],
     [
       3075,
@@ -5245,7 +5245,7 @@ const Province = new Tyr.Collection({
       '86',
       'POL-PZN',
       4254,
-      { aliases: 'Greater Poland Voivodeship' }
+      { aliases: 'Greater Poland Voivodeship' },
     ],
     [
       3076,
@@ -5253,7 +5253,7 @@ const Province = new Tyr.Collection({
       '87',
       'POL-SZC',
       4254,
-      { aliases: 'West Pomeranian Voivodeship' }
+      { aliases: 'West Pomeranian Voivodeship' },
     ],
     [3077, 'West Bank', 'WE', , 4258],
     [3078, 'Aveiro', '02', 'PRT-AVE', 4259],
@@ -5272,8 +5272,8 @@ const Province = new Tyr.Collection({
       4259,
       {
         notes:
-          'This is not really part of Lisboa, it is an archipeligo off the mainland.'
-      }
+          'This is not really part of Lisboa, it is an archipeligo off the mainland.',
+      },
     ],
     [3087, 'Guarda', '11', 'PRT-GUA', 4259],
     [3088, 'Leiria', '13', 'PRT-LEI', 4259],
@@ -5527,7 +5527,7 @@ const Province = new Tyr.Collection({
       '27',
       'SWE-MLM',
       4272,
-      { notes: 'County consisting of Kristianstads & Malmohus.' }
+      { notes: 'County consisting of Kristianstads & Malmohus.' },
     ],
     [
       3334,
@@ -5537,8 +5537,8 @@ const Province = new Tyr.Collection({
       4272,
       {
         notes:
-          'New county formed in 1988 consisting of Alvsborgs, Goteborgs och Bohus Lan, and Skaraborgs.'
-      }
+          'New county formed in 1988 consisting of Alvsborgs, Goteborgs och Bohus Lan, and Skaraborgs.',
+      },
     ],
     [3335, 'Ascension', '01', , 4274],
     [3336, 'Saint Helena', '02', , 4274],
@@ -5822,7 +5822,7 @@ const Province = new Tyr.Collection({
       '26',
       'THA-CHY',
       4291,
-      { aliases: 'Chaiyaphum Province' }
+      { aliases: 'Chaiyaphum Province' },
     ],
     [3612, 'Nakhon Ratchasima', '27', 'THA-NRT', 4291],
     [3613, 'Buriram', '28', 'THA-BRR', 4291],
@@ -6032,7 +6032,7 @@ const Province = new Tyr.Collection({
       '02',
       'UKR-CHH',
       4303,
-      { aliases: 'Chernigov' }
+      { aliases: 'Chernigov' },
     ],
     [
       3815,
@@ -6040,7 +6040,7 @@ const Province = new Tyr.Collection({
       '03',
       'UKR-CHV',
       4303,
-      { aliases: 'Chernovtsy' }
+      { aliases: 'Chernovtsy' },
     ],
     [
       3816,
@@ -6048,7 +6048,7 @@ const Province = new Tyr.Collection({
       '04',
       'UKR-DNP',
       4303,
-      { aliases: 'Dnepropetrovsk' }
+      { aliases: 'Dnepropetrovsk' },
     ],
     [3817, "Donets'ka Oblast'", '05', 'UKR-DNT', 4303, { aliases: 'Donetsk' }],
     [3818, "Ivano-Frankivs'ka Oblast'", '06', 'UKR-IVF', 4303],
@@ -6061,7 +6061,7 @@ const Province = new Tyr.Collection({
       '10',
       'UKR-KVG',
       4303,
-      { aliases: 'Kirovograd' }
+      { aliases: 'Kirovograd' },
     ],
     [3823, 'Krym', '11', 'UKR-KRM', 4303, { aliases: 'Crimea' }],
     [3824, 'Kyyiv', '12', 'UKR-KYV', 4303, { aliases: 'Kiev City' }],
@@ -6071,7 +6071,7 @@ const Province = new Tyr.Collection({
       '13',
       'UKR-KYV',
       4303,
-      { aliases: 'Kiev Province' }
+      { aliases: 'Kiev Province' },
     ],
     [3826, "Luhans'ka Oblast'", '14', 'UKR-LHN', 4303, { aliases: 'Luhansk' }],
     [3827, "L'vivs'ka Oblast'", '15', 'UKR-LVV', 4303, { aliases: "L'viv" }],
@@ -6081,7 +6081,7 @@ const Province = new Tyr.Collection({
       '16',
       'UKR-MKL',
       4303,
-      { aliases: 'Mykolaiv;Nikolayev' }
+      { aliases: 'Mykolaiv;Nikolayev' },
     ],
     [3829, "Odes'ka Oblast'", '17', 'UKR-ODS', 4303, { aliases: 'Odessa' }],
     [3830, "Poltavs'ka Oblast'", '18', 'UKR-PLT', 4303, { aliases: 'Poltava' }],
@@ -6091,7 +6091,7 @@ const Province = new Tyr.Collection({
       '19',
       'UKR-RVN',
       4303,
-      { aliases: 'Rivne;Rovno' }
+      { aliases: 'Rivne;Rovno' },
     ],
     [
       3832,
@@ -6099,7 +6099,7 @@ const Province = new Tyr.Collection({
       '20',
       'UKR-KRM',
       4303,
-      { notes: 'City, Province 3823' }
+      { notes: 'City, Province 3823' },
     ],
     [3833, "Sums'ka Oblast'", '21', 'UKR-SUM', 4303, { aliases: 'Sumy' }],
     [
@@ -6108,7 +6108,7 @@ const Province = new Tyr.Collection({
       '22',
       'UKR-TRN',
       4303,
-      { aliases: 'Ternopil' }
+      { aliases: 'Ternopil' },
     ],
     [
       3835,
@@ -6116,7 +6116,7 @@ const Province = new Tyr.Collection({
       '23',
       'UKR-VNT',
       4303,
-      { aliases: 'Vinnytsia;Vinnitsa' }
+      { aliases: 'Vinnytsia;Vinnitsa' },
     ],
     [3836, "Volyns'ka Oblast'", '24', 'UKR-VLY', 4303, { aliases: 'Volyn' }],
     [3837, "Zakarpats'ka Oblast'", '25', 'UKR-ZKP', 4303],
@@ -6127,7 +6127,7 @@ const Province = new Tyr.Collection({
       '27',
       'UKR-ZTM',
       4303,
-      { aliases: 'Zhytomyr;Zhitomir' }
+      { aliases: 'Zhytomyr;Zhitomir' },
     ],
     [3840, 'Busoga', '05', 'UGA-BUS', 4304],
     [3841, 'Karamoja', '08', 'UGA-KRM', 4304],
@@ -6169,7 +6169,7 @@ const Province = new Tyr.Collection({
       '11',
       ,
       4306,
-      { code: 'DC', region: 4342, aliases: 'Washington, D.C.' }
+      { code: 'DC', region: 4342, aliases: 'Washington, D.C.' },
     ],
     [3875, 'Artigas', '01', 'URY-ART', 4307],
     [3876, 'Canelones', '02', 'URY-CNL', 4307],
@@ -6233,7 +6233,7 @@ const Province = new Tyr.Collection({
       '04',
       'VNM-QBN',
       4314,
-      { notes: 'Region, of Quang Binh, Quang Tri, Thua Thien' }
+      { notes: 'Region, of Quang Binh, Quang Tri, Thua Thien' },
     ],
     [3932, 'Cao Bang', '05', 'VNM-CBA', 4314],
     [3933, 'Dac Lac', '07', 'VNM-DLA', 4314],
@@ -6247,7 +6247,7 @@ const Province = new Tyr.Collection({
       '14',
       'VNM-NHA',
       4314,
-      { notes: 'Region, of Ha Nam, Nam Dinh, and Ninh Binh' }
+      { notes: 'Region, of Ha Nam, Nam Dinh, and Ninh Binh' },
     ],
     [
       3939,
@@ -6255,7 +6255,7 @@ const Province = new Tyr.Collection({
       '16',
       'VNM-HTY',
       4314,
-      { notes: 'Region, of Ha Tay and Hoa Binh' }
+      { notes: 'Region, of Ha Tay and Hoa Binh' },
     ],
     [3940, 'Ha Tuyen', '17', 'VNM-TQN', 4314],
     [3941, 'Hoang Lien Son', '19', 'VNM-LCA', 4314],
@@ -6271,7 +6271,7 @@ const Province = new Tyr.Collection({
       '26',
       'VNM-NAN',
       4314,
-      { notes: 'Region, of Nghe An and Ha Tinh' }
+      { notes: 'Region, of Nghe An and Ha Tinh' },
     ],
     [3949, 'Nghia Binh', '27', 'VNM-BDN', 4314],
     [3950, 'Phu Khanh', '28', 'VNM-KHO', 4314],
@@ -6477,7 +6477,7 @@ const Province = new Tyr.Collection({
       '19',
       'BHR-AMW',
       4101,
-      { aliases: 'Al Mintaqah al Wusta' }
+      { aliases: 'Al Mintaqah al Wusta' },
     ],
     [4439, 'Praslin', '11', , 4204],
     [4440, 'Central', '01', , 4147],
@@ -6494,7 +6494,7 @@ const Province = new Tyr.Collection({
       'I2',
       'GBR-ENG-GMN',
       4153,
-      { region: 4345, notes: 'Unitary District' }
+      { region: 4345, notes: 'Unitary District' },
     ],
     [4449, 'Saint George', '03', , 4080],
     [4450, 'Saint John', '04', , 4080],
@@ -6513,7 +6513,7 @@ const Province = new Tyr.Collection({
       '01',
       'BGD-BRS',
       4097,
-      { notes: 'County, Province |Barisal|' }
+      { notes: 'County, Province |Barisal|' },
     ],
     [
       4461,
@@ -6521,7 +6521,7 @@ const Province = new Tyr.Collection({
       '32',
       'BGD-DAK',
       4097,
-      { notes: 'County, Province |Dhaka|' }
+      { notes: 'County, Province |Dhaka|' },
     ],
     [4462, 'Montana', '47', 'BGR-MKH', 4100],
     [4463, "Ar Rifa' wa al Mintaqah al Janubiyah", '07', 'BHR-ARM', 4101],
@@ -6599,8 +6599,8 @@ const Province = new Tyr.Collection({
     [4535, 'Vinh Puc Province', '86', 'VNM-VPH', 4314],
     [4536, 'Boqueron', '24', 'PRY-BQR', 4261],
     [4537, 'Negros Occidental', '45', 'PHL-WVS', 4252],
-    [4538, 'Liban-Sud', '02', 'LBN-SAY', 4203]
-  ]
+    [4538, 'Liban-Sud', '02', 'LBN-SAY', 4203],
+  ],
 }) as Tyr.ProvinceCollection;
 
 export default Province;

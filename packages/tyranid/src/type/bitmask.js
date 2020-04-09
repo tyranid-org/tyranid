@@ -104,7 +104,7 @@ const BitmaskType = new Type({
     }
 
     return str;
-  }
+  },
 });
 
 export default BitmaskType;

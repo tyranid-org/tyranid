@@ -35,7 +35,7 @@ const TextType = new Type({
     return true;
   },
 
-  width: 200
+  width: 200,
 });
 
 export default TextType;

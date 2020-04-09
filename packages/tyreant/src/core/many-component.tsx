@@ -151,7 +151,7 @@ export class TyrManyComponent<
 
     const { projection } = this.props;
     if (projection !== 'all') {
-      const fields = Tyr.projectify(this.activePaths.map((p) => p.path));
+      const fields = Tyr.projectify(this.activePaths.map(p => p.path));
 
       if (Array.isArray(projection)) {
         for (const name in projection) {
@@ -308,7 +308,7 @@ export class TyrManyComponent<
     this.setSortedDocuments(this.documents.slice());
     this.setState({});
 
-    const sortColumn = this.paths.find((column) => !!column.defaultSort);
+    const sortColumn = this.paths.find(column => !!column.defaultSort);
     this.updateConfigSort(sortColumn?.path?.name, sortColumn?.defaultSort);
 
     if (notifySortSet) {
@@ -333,9 +333,9 @@ export class TyrManyComponent<
       delete this.sortDirections[key];
 
     const sortColumn = this.componentConfig?.fields.find(
-      (column) =>
+      column =>
         !!column.sortDirection &&
-        !!this.activePaths.find((ap) => getPathName(ap.path) === column.name)
+        !!this.activePaths.find(ap => getPathName(ap.path) === column.name)
     );
 
     const sortName = sortColumn?.name;
@@ -365,7 +365,7 @@ export class TyrManyComponent<
 
     // Find column
     if (sortColumnName) {
-      sortColumn = this.paths.find((f) => f.path?.name === sortColumnName);
+      sortColumn = this.paths.find(f => f.path?.name === sortColumnName);
     }
 
     if (sortColumn) {
@@ -415,7 +415,7 @@ export class TyrManyComponent<
     }
 
     for (const d of docs) {
-      const idx = this.documents.findIndex((cd) => cd.$id === d.$id);
+      const idx = this.documents.findIndex(cd => cd.$id === d.$id);
 
       if (idx > -1) {
         cDocs[idx] = d;
@@ -426,7 +426,7 @@ export class TyrManyComponent<
 
     for (let i = 0; i < cDocs.length; ) {
       const cDocId = cDocs[i].$id;
-      const idx = docs.findIndex((doc) => doc.$id === cDocId);
+      const idx = docs.findIndex(doc => doc.$id === cDocId);
 
       if (idx === -1) {
         cDocs.splice(i, 1);
@@ -469,7 +469,7 @@ export class TyrManyComponent<
         searchValue = searchValues[pathName];
 
       const onFilter = filter?.onFilter;
-      if (onFilter) checks.push((document) => onFilter(searchValue, document));
+      if (onFilter) checks.push(document => onFilter(searchValue, document));
     }
 
     let count = 0;
@@ -649,7 +649,7 @@ export class TyrManyComponent<
       this.cancelAutorun = autorun(() => {
         const { route } = this.props;
 
-        this.componentConfig?.fields.forEach((f) => {
+        this.componentConfig?.fields.forEach(f => {
           if (f.filter) {
             this.searchValues[f.name] = f.filter;
           }
@@ -680,22 +680,6 @@ export class TyrManyComponent<
         }
       });
     }
-  }
-
-  /*
-   * * * SELECTION
-   */
-
-  @observable
-  selectedIds: string[] = [];
-
-  actionFnOpts(): TyrActionFnOpts<D> {
-    return {
-      caller: this,
-      documents: this.selectedIds.map(
-        (id) => this.collection!.byIdIndex[id]
-      ) as D[],
-    } as any;
   }
 
   // TODO

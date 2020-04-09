@@ -17,7 +17,7 @@ export default async function server() {
       consoleLogLevel: 'ERROR',
       dbLogLevel: 'TRACE',
       //indexes: true,
-      validate: { glob: __dirname + '/models/**/*.js' }
+      validate: { glob: __dirname + '/models/**/*.js' },
     });
 
     await initModel();

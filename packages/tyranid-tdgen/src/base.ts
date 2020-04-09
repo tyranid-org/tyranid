@@ -36,7 +36,7 @@ export function baseInterface(
         field,
         indent,
         colName: name,
-        commentLineWidth
+        commentLineWidth,
       });
 
       properties.push(
@@ -77,7 +77,7 @@ function assignableToString(fieldName: string) {
 
 export function commentsFor({
   note,
-  help
+  help,
 }: { note?: string; help?: string } = {}) {
   let comment = '';
 
@@ -143,7 +143,7 @@ export function addField({
   parent,
   colName,
   commentLineWidth,
-  noPopulatedProperty = false
+  noPopulatedProperty = false,
 }: {
   name: string;
   field: Tyr.FieldInstance;
@@ -282,7 +282,7 @@ export function addField({
               name,
               field: field.of!,
               indent,
-              parent: 'array'
+              parent: 'array',
             })
           : 'any'
       }[]`;
@@ -308,7 +308,7 @@ export function addField({
           name: name + '_hash',
           field: field.of!,
           indent: indent + 1,
-          noPopulatedProperty: true
+          noPopulatedProperty: true,
         });
 
         const keyType = assignableToString(defKeysIs) ? 'string' : 'number';
@@ -342,7 +342,7 @@ export function addField({
         const subType = addField({
           name: sub,
           field: (subField as any) as Tyr.FieldInstance,
-          indent: indent + 1
+          indent: indent + 1,
         });
         const fieldDef = `${subName}: ${subType};`;
         const comment =

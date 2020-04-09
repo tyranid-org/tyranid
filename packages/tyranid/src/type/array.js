@@ -96,7 +96,7 @@ const ArrayType = new Type({
 
   sortValue(field, value) {
     return (value && value.length) || 0;
-  }
+  },
 });
 
 //

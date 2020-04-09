@@ -95,6 +95,7 @@ export namespace Tyr {
   export const secure: Secure;
 
   export type Numbering = Isomorphic.Numbering;
+  export type ActionTraitType = Isomorphic.ActionTraitType;
   export type ActionTrait = Isomorphic.ActionTrait;
 
   export namespace functions {

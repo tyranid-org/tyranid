@@ -58,7 +58,7 @@ export function docMethods(
         if (comments) {
           tags.push({
             tag: 'param ' + paramName,
-            text: comments
+            text: comments,
           });
         }
       }
@@ -68,7 +68,7 @@ export function docMethods(
         if (comments) {
           tags.push({
             tag: 'return',
-            text: comments
+            text: comments,
           });
         }
       }
@@ -90,7 +90,7 @@ export function docMethods(
             name: paramName,
             field: param,
             indent: 5,
-            noPopulatedProperty: true
+            noPopulatedProperty: true,
           });
         }
       }
@@ -101,7 +101,7 @@ export function docMethods(
             name: 'return',
             field: returns as Tyr.FieldInstance,
             indent: 4,
-            noPopulatedProperty: true
+            noPopulatedProperty: true,
           })
         : 'void';
       s += ';';

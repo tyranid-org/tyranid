@@ -15,14 +15,14 @@ var Book = new tyr.Collection({
       is: 'integer',
       async validate() {
         return this.pages > 5000 && 'Book is too big for the library';
-      }
+      },
     },
-    domain: { is: 'string' }
+    domain: { is: 'string' },
   },
   primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true },
   fromClient(opts) {
     this.domain = 'custom';
-  }
+  },
   //fromClient: function(opts) { this.domain = 'custom'; },
   //fromClient: opts => { this.domain = 'custom'; },
 });

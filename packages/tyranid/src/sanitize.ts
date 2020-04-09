@@ -21,7 +21,7 @@ export async function sanitize(iOpts?: Tyr.SanitizeOptions) {
   const {
     outDbName = Tyr.db.databaseName + '____sanitized',
     batchSize = 200,
-    seed
+    seed,
   } = opts;
 
   const { log, error } = createLogger(opts);
@@ -57,7 +57,7 @@ export async function sanitize(iOpts?: Tyr.SanitizeOptions) {
       const docs = await collection.findAll({
         query: {},
         skip,
-        limit: batchSize
+        limit: batchSize,
       });
       skip += batchSize;
       return docs;
@@ -218,13 +218,13 @@ function createLogger(opts: Tyr.SanitizeOptions) {
     format,
     log,
     error,
-    warn
+    warn,
   };
 }
 
 function extendPaths(path: string, state: WalkState): WalkState {
   return {
     ...state,
-    path: `${state.path}.${path}`
+    path: `${state.path}.${path}`,
   };
 }

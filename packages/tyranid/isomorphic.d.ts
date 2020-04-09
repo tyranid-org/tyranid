@@ -49,13 +49,16 @@ export namespace Tyr {
     | 'roman'
     | 'roman-lowercase';
 
+  export type ActionTraitType = 'entrance' | 'exit';
   export type ActionTrait =
     | 'create'
     | 'edit'
     | 'view'
+    | 'search'
+    | 'import'
+    | 'export'
     | 'save'
-    | 'cancel'
-    | 'search';
+    | 'cancel';
 
   export interface AccessResult {
     allowed: boolean;

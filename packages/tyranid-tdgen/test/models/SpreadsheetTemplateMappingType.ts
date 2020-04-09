@@ -13,6 +13,6 @@ export const SpreadsheetTemplateMappingType = new Tyr.Collection({
     ['_id', 'name'],
     [0, 'None'],
     [1, "'Tabular"],
-    [2, 'Cell']
-  ]
+    [2, 'Cell'],
+  ],
 });

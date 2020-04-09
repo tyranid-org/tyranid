@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { CloseOutlined } from '@ant-design/icons';
 
-import { Drawer, Button, Spin } from 'antd';
+import { Drawer, Spin } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -11,7 +11,7 @@ import {
   TyrDecorator,
   TyrDecoratorProps,
   TyrDecoratorState,
-  withThemeAndParent
+  withThemeAndParent,
 } from './decorator';
 
 export interface TyrDrawerProps<D extends Tyr.Document>
@@ -30,7 +30,7 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
 > {
   state: TyrDrawerState = {
     visible: false,
-    loading: false
+    loading: false,
   };
 
   create?: TyrAction<D>;
@@ -43,11 +43,11 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
 
     if (action.is('create', 'search')) {
       this.create = action.decorate({
-        action: () => this.openDrawer()
+        action: () => this.openDrawer(),
       });
     } else if (action.is('edit', 'view')) {
       const edit = action.decorate({
-        action: () => this.openDrawer()
+        action: () => this.openDrawer(),
       });
       this.edit = edit;
 
@@ -57,11 +57,11 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
       this.save = action.decorate({
         action: () => {
           this.closeDrawer();
-        }
+        },
       });
     } else if (action.is('cancel')) {
       this.cancel = action.decorate({
-        action: () => this.closeDrawer()
+        action: () => this.closeDrawer(),
       });
     }
   }
@@ -92,46 +92,21 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
 
     return (
       <div className="tyr-footer">
-        {cancel && (
-          <Button
-            key="back"
-            onClick={() => cancel.act({ caller: this.decorating })}
-            loading={loading}
-          >
-            {cancel.label}
-          </Button>
-        )}
-        {save && (
-          <Button
-            key="submit"
-            type="primary"
-            onClick={() => save.act({ caller: this.decorating })}
-            loading={loading}
-          >
-            {save.label}
-          </Button>
-        )}
+        {cancel?.button(this.decorating)}
+        {save?.button(this.decorating)}
       </div>
     );
   }
 
   render() {
-    const { cancel, create } = this;
+    const { create } = this;
     const { children, placement } = this.props;
     const { visible, loading } = this.state;
     console.log('rendering drawer, visible:', visible);
 
     return (
       <>
-        {create && (
-          <Button
-            type="primary"
-            onClick={() => create.act({ caller: this.decorating })}
-            className="tyr-primary-btn"
-          >
-            {create.label}
-          </Button>
-        )}
+        {create?.button(this.decorating)}
         <Drawer
           visible={visible}
           closable={false}

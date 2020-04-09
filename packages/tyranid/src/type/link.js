@@ -63,7 +63,7 @@ const LinkType = new Type({
 
   format(field, value) {
     return field.link.idToLabel(value);
-  }
+  },
 });
 
 LinkType.applyWhere = async function(field, doc, query, opts) {

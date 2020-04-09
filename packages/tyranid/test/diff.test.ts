@@ -28,7 +28,7 @@ export function add() {
       [{ a: 1, b: 2 }, { a: 2 }, { a: [2], b: 0 }],
       [{ a: 1, b: 2 }, { a: 2, b: 2 }, { a: [2] }],
       [{ a: oid1 }, { a: oid1_ }, {}],
-      [{ a: oid1 }, { a: oid2 }, { a: [oid2] }]
+      [{ a: oid1 }, { a: oid2 }, { a: [oid2] }],
     ];
 
     const simpleArrTests = [
@@ -42,7 +42,7 @@ export function add() {
       [[1, 2, 3, 4, 5], [2, 3, 4, 5], { 0: [1, 4], n: 4 }],
       [[2, 3, 4, 5], [1, 2, 3, 4, 5], { 0: [1], 1: [-1, 4] }],
       [[1, 2, 3, 4, 5, 6], [1, 3, 4, 5], { 1: [1, 3], n: 4 }],
-      [[1, 2, 3, 4, 5, 6], [2, 3, 5, 6], { 0: [1, 2], 2: [2, 2], n: 4 }]
+      [[1, 2, 3, 4, 5, 6], [2, 3, 5, 6], { 0: [1, 2], 2: [2, 2], n: 4 }],
     ];
 
     const complexObjTests = [
@@ -53,18 +53,18 @@ export function add() {
       [
         { a: { b: 1, c: 1 } },
         { a: { a: 1, b: 1 } },
-        { a: [1, { a: [1], c: 0 }] }
+        { a: [1, { a: [1], c: 0 }] },
       ],
       [
         { a: { b: { c: 1 } } },
         { a: { d: { c: 1 } } },
-        { a: [1, { b: 0, d: [{ c: 1 }] }] }
+        { a: [1, { b: 0, d: [{ c: 1 }] }] },
       ],
       [
         { a: { b: { c: 1 } } },
         { a: { b: { d: 1 } } },
-        { a: [1, { b: [1, { c: 0, d: [1] }] }] }
-      ]
+        { a: [1, { b: [1, { c: 0, d: [1] }] }] },
+      ],
     ];
 
     const propsObjTests = [
@@ -75,20 +75,20 @@ export function add() {
         { a: [1, 2], b: 3 },
         { a: [2, 1] },
         { a: [0, { 0: 1, 1: 0 }] },
-        { a: 1 }
+        { a: 1 },
       ],
       [
         { a: [1, 2], b: 3 },
         { a: [2, 1] },
         { a: [0, { 0: 1, 1: 0 }], b: 0 },
-        { a: 1, b: 1 }
+        { a: 1, b: 1 },
       ],
       [
         { a: { b: 1, c: 1 } },
         { a: { a: 1, b: 1 } },
         { a: [1, { a: [1], c: 0 }] },
-        { a: 1 }
-      ]
+        { a: 1 },
+      ],
     ];
 
     it('should diff simple objects', () => {
@@ -144,7 +144,7 @@ export function add() {
 
     it('should support patching O_TRUNCATE_ARRAY_BY_1 with simple paths', () => {
       const u = new User({
-        siblings: [{ name: 'Jan' }, { name: 'Frederick' }]
+        siblings: [{ name: 'Jan' }, { name: 'Frederick' }],
       });
 
       Tyr.diff.patchObj(u, { siblings: 1 });
@@ -154,7 +154,7 @@ export function add() {
 
     it('should support patching O_TRUNCATE_ARRAY_BY_1 with composite paths', () => {
       const u: Tyr.User = new User({
-        name: { first: 'Jan', suffices: ['Sr', 'The Awesome'] }
+        name: { first: 'Jan', suffices: ['Sr', 'The Awesome'] },
       });
 
       Tyr.diff.patchObj(u, { 'name.suffices': 1 });
@@ -168,7 +168,7 @@ export function add() {
       const tests = [
         [{ a: 1 }, { a: 2 }, ['a']],
         [{ a: 1 }, { a: 1 }, []],
-        [{ a: 1, b: 1 }, { a: 2 }, ['a', 'b']]
+        [{ a: 1, b: 1 }, { a: 2 }, ['a', 'b']],
       ];
       for (const test of tests) {
         // console.log(JSON.stringify(diff.diffObj(test[0], test[1])));

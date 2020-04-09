@@ -20,7 +20,7 @@ export function add() {
           [20, 'XXI'],
           [93, 'XCIV'],
           [883, 'DCCCLXXXIV'],
-          [9883, 'MↂDCCCLXXXIV']
+          [9883, 'MↂDCCCLXXXIV'],
         ];
 
         for (const test of tests) {

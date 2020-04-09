@@ -49,7 +49,7 @@ const UidType = new Type({
         ? cid
         : Tyr.byId[cid] || Tyr.byName[cid];
     });
-  }
+  },
 });
 
 Collection.prototype.isUid = function(uid) {
@@ -72,7 +72,7 @@ Tyr.parseUid = function(uid) {
 
   return {
     collection: col,
-    id: idType.fromString ? idType.fromString(strId) : strId
+    id: idType.fromString ? idType.fromString(strId) : strId,
   };
 };
 

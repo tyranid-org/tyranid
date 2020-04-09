@@ -12,5 +12,5 @@ yargs.command({
     const contents = fs.readFileSync(argv.file as string, 'utf-8');
     console.info(JSON.stringify(JSON.parse(contents), undefined, 2));
     exit();
-  }
+  },
 });

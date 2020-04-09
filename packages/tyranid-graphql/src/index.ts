@@ -20,7 +20,7 @@ import {
   GraphQLString,
   InlineFragmentNode,
   isLeafType,
-  Thunk
+  Thunk,
 } from 'graphql';
 
 export type GraphQLOutputTypeMap = Map<string, GraphQLOutputType>;
@@ -72,12 +72,12 @@ function createGraphQLFunction(
         query,
         auth,
         variables,
-        perm = 'view'
+        perm = 'view',
       } = q as Tyr.TyranidGraphQlQueryOptions;
 
       const context = {
         auth,
-        perm
+        perm,
       };
 
       return graphql(schema, query, null, context, variables);
@@ -85,7 +85,7 @@ function createGraphQLFunction(
   }
 
   return Object.assign(runQuery.bind(Tyr), {
-    schema
+    schema,
   }) as Tyr.TyranidGraphQLFunction;
 }
 
@@ -116,8 +116,8 @@ export function createGraphQLSchema(tyr: typeof Tyr): GraphQLSchema {
   return new GraphQLSchema({
     query: new GraphQLObjectType({
       name: 'Query',
-      fields: queryFields
-    })
+      fields: queryFields,
+    }),
   });
 }
 
@@ -188,9 +188,9 @@ export function collectionFieldConfig(
         query,
         projection: project,
         auth: context && context.auth,
-        perm: context && context.perm
+        perm: context && context.perm,
       });
-    }
+    },
   };
 }
 
@@ -273,14 +273,14 @@ export function createArguments(
 
         if (fieldType && isLeafType(fieldType.type)) {
           argMap[fieldName] = {
-            type: new GraphQLList(fieldType.type)
+            type: new GraphQLList(fieldType.type),
           };
         }
       }
 
       if (def.link || (def.is === 'array' && def.of && def.of.link)) {
         argMap[fieldName] = {
-          type: new GraphQLList(GraphQLID)
+          type: new GraphQLList(GraphQLID),
         };
       }
     }
@@ -310,11 +310,11 @@ export function createArgumentParser(fields: {
           (field.is === 'array' && field.of && field.of.link)
         ) {
           query[prop] = {
-            $in: [].concat(args[prop]).map((id: any) => new ObjectID(id))
+            $in: [].concat(args[prop]).map((id: any) => new ObjectID(id)),
           };
         } else {
           query[prop] = {
-            $in: args[prop]
+            $in: args[prop],
           };
         }
       }
@@ -443,7 +443,7 @@ export function createGraphQLFieldConfig(
         }
 
         return linkType.resolve(parent, linkArgs, context, info);
-      }
+      },
     };
   }
 
@@ -467,31 +467,31 @@ export function createGraphQLFieldConfig(
     case 's3':
       return {
         type: wrap(GraphQLString),
-        description: note
+        description: note,
       };
 
     case 'boolean':
       return {
         type: wrap(GraphQLBoolean),
-        description: note
+        description: note,
       };
 
     case 'double':
       return {
         type: wrap(GraphQLFloat),
-        description: note
+        description: note,
       };
 
     case 'integer':
       return {
         type: wrap(GraphQLInt),
-        description: note
+        description: note,
       };
 
     case 'mongoid':
       return {
         type: wrap(GraphQLID),
-        description: note
+        description: note,
       };
 
     case 'array': {
@@ -514,14 +514,14 @@ export function createGraphQLFieldConfig(
       if (isLeafType(subtype.type)) {
         return {
           type: subtype.type,
-          description: note
+          description: note,
         };
       } else {
         return {
           type: subtype.type,
           args: subtype.args,
           resolve: subtype.resolve,
-          description: note
+          description: note,
         };
       }
     }
@@ -546,11 +546,11 @@ export function createGraphQLFieldConfig(
       const type = new GraphQLObjectType({
         name: path,
         fields: defFields,
-        description: note
+        description: note,
       });
 
       return {
-        type: wrap(type)
+        type: wrap(type),
       };
     }
 

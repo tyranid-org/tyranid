@@ -24,12 +24,12 @@ export function add() {
             get(doc) {
               const { name } = doc;
               return name ? name.first + ' ' + name.last : 'Unnamed';
-            }
+            },
           },
           { field: 'job' },
-          { field: 'age' }
+          { field: 'age' },
         ],
-        filename: 'foo.csv'
+        filename: 'foo.csv',
       };
 
       await Tyr.csv.toCsv(csvDef);

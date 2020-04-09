@@ -5,22 +5,22 @@ Tyr.catalog = {
     is: 'object',
     fields: {
       query: {
-        is: 'query'
+        is: 'query',
       },
       skip: {
-        is: 'integer'
+        is: 'integer',
       },
       limit: {
-        is: 'integer'
+        is: 'integer',
       },
       sort: {
         is: 'object',
         keys: 'string',
-        of: 'integer'
+        of: 'integer',
       },
       count: {
-        is: 'boolean'
-      }
-    }
-  })
+        is: 'boolean',
+      },
+    },
+  }),
 };

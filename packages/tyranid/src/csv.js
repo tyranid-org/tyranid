@@ -103,7 +103,7 @@ async function fromCsv(opts) {
 
             const { path, type } = field;
             path.set(doc, type.fromString(row[label]), {
-              create: true
+              create: true,
             });
           }
 
@@ -120,5 +120,5 @@ async function fromCsv(opts) {
 
 Tyr.csv = {
   toCsv,
-  fromCsv
+  fromCsv,
 };

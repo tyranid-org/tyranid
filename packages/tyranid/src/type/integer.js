@@ -75,7 +75,7 @@ const IntegerType = new Type({
     }
   },
 
-  width: 80
+  width: 80,
 });
 
 export default IntegerType;

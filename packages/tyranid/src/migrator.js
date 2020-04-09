@@ -21,8 +21,8 @@ const MigrationStatus = new Collection({
   fields: {
     _id: { is: 'string' },
     appliedOn: { is: 'date' },
-    uuid: { is: 'string' }
-  }
+    uuid: { is: 'string' },
+  },
 });
 
 const doRemoveLock = async remove => {
@@ -34,7 +34,7 @@ const doRemoveLock = async remove => {
 
 const waitForUnLock = async () => {
   const lock = await MigrationStatus.findOne({
-    query: { _id: '$$MIGRATION-LOCK' }
+    query: { _id: '$$MIGRATION-LOCK' },
   });
 
   if (!lock) {
@@ -137,10 +137,10 @@ export async function migrate(migrationArray) {
     const lockObj = await MigrationStatus.findAndModify({
       query: { _id: '$$MIGRATION-LOCK' },
       update: {
-        $setOnInsert: setOnInsert
+        $setOnInsert: setOnInsert,
       },
       new: true,
-      upsert: true
+      upsert: true,
     });
 
     //console.log('lockObj', JSON.stringify(lockObj, null, 2));
@@ -164,7 +164,7 @@ export async function migrate(migrationArray) {
         log({
           migration: migrationName,
           action: 'skip',
-          note: 'Marked as skip'
+          note: 'Marked as skip',
         });
         continue;
       }
@@ -174,7 +174,7 @@ export async function migrate(migrationArray) {
       if (!m) {
         await MigrationStatus.db.insertOne({
           _id: migrationName,
-          appliedOn: new Date()
+          appliedOn: new Date(),
         });
 
         log({ migration: migrationName, action: 'start' });
@@ -191,7 +191,7 @@ export async function migrate(migrationArray) {
             log({
               migration: migrationName,
               action: 'complete',
-              note: 'Not committed'
+              note: 'Not committed',
             });
           } else {
             log({ migration: migrationName, action: 'complete' });
@@ -205,7 +205,7 @@ export async function migrate(migrationArray) {
         log({
           migration: migrationName,
           action: 'skip',
-          note: 'Already applied'
+          note: 'Already applied',
         });
       }
     }

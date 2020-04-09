@@ -6,8 +6,8 @@ export default class Role extends (new Tyr.Collection({
   name: 'role',
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string', labelField: true }
-  }
+    name: { is: 'string', labelField: true },
+  },
 })) {
   static async search(text) {
     return this.find({ query: { name: new RegExp(_.escapeRegExp(text)) } });

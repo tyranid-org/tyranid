@@ -30,16 +30,16 @@ export const arrayPopulated = {
               {
                 name: 'burritoMakers',
                 organizationId: {
-                  name: 'Chipotle'
-                }
+                  name: 'Chipotle',
+                },
               },
               {
                 name: 'chipotleMarketing',
                 organizationId: {
-                  name: 'Chipotle'
-                }
-              }
-            ]
+                  name: 'Chipotle',
+                },
+              },
+            ],
           },
           {
             name: 'ted',
@@ -47,19 +47,19 @@ export const arrayPopulated = {
               {
                 name: 'cavaEngineers',
                 organizationId: {
-                  name: 'Cava'
-                }
-              }
-            ]
+                  name: 'Cava',
+                },
+              },
+            ],
           },
           {
             name: 'noTeams',
-            teamIds: []
-          }
-        ]
-      }
+            teamIds: [],
+          },
+        ],
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

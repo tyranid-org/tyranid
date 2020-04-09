@@ -11,7 +11,7 @@ import {
   schema,
   spec,
   validate,
-  yaml
+  yaml,
 } from '../';
 
 /**
@@ -19,7 +19,7 @@ import {
  */
 test.before(async t => {
   await Tyr.config({
-    validate: [{ glob: join(__dirname, './models/*.js') }]
+    validate: [{ glob: join(__dirname, './models/*.js') }],
   });
   t.truthy(Tyr.collections.length);
 });

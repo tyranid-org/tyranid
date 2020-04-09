@@ -5,7 +5,7 @@ import {
   colInterface,
   enumIdAlias,
   enumStaticInterface,
-  colService
+  colService,
 } from './collection';
 import { docInterface, docMethods } from './document';
 import * as names from './names';
@@ -37,7 +37,7 @@ declare module 'tyranid/isomorphic' {
 
 ${generateIsomorphicInterfaces(collections, {
   client: true,
-  commentLineWidth: passedOptions.commentLineWidth
+  commentLineWidth: passedOptions.commentLineWidth,
 })}
   }
 

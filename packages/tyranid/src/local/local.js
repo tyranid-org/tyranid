@@ -18,7 +18,7 @@ function init() {
       },
       get(name) {
         return this._data[name];
-      }
+      },
     };
   }
 
@@ -35,9 +35,9 @@ function init() {
         get: () => ns.get(name),
         set: value => ns.set(name, value),
         enumerable: true,
-        configurable: false
+        configurable: false,
       });
-    }
+    },
   };
 
   local.define('user');
@@ -56,7 +56,7 @@ Object.defineProperty(Tyr, 'local', {
     }
 
     return local;
-  }
+  },
 });
 
 const api = {
@@ -78,7 +78,7 @@ const api = {
       Tyr.Log.request(req, res);
       next();
     }
-  }
+  },
 };
 
 export default api;

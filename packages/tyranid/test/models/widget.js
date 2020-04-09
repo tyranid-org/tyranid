@@ -9,8 +9,8 @@ var Widget = new tyr.Collection({
     name: { is: 'string', historical: true },
     alternate: { is: 'string' },
     tags: { is: 'array', of: 'string', historical: true },
-    creator: { link: 'user', historical: true }
-  }
+    creator: { link: 'user', historical: true },
+  },
 });
 
 export default Widget;

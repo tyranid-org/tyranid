@@ -8,8 +8,8 @@ const Global = new Tyr.Collection({
   singleton: true,
   fields: {
     _id: { is: 'mongoid' },
-    count: { is: 'integer' }
-  }
+    count: { is: 'integer' },
+  },
 });
 
 export default Global;

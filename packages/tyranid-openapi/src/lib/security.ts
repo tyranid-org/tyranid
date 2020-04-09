@@ -18,8 +18,8 @@ export function createSecurityDefinitions(
       authorizationUrl: `${host}/oauth2/authorize`,
       tokenUrl: `${host}/oauth2/token`,
       flow: 'accessCode',
-      scopes
-    }
+      scopes,
+    },
   };
 }
 
@@ -31,7 +31,7 @@ export function createSecurityDefinitions(
 export function collectionScopes(route: string, name: string) {
   return {
     [createScope(route, 'read')]: `Read access to ${name} objects`,
-    [createScope(route, 'write')]: `Write access to ${name} objects`
+    [createScope(route, 'write')]: `Write access to ${name} objects`,
   };
 }
 
@@ -45,7 +45,7 @@ export function requireScopes(...scopes: string[]) {
   // TODO: fix typings
   /* tslint:disable */
   return {
-    security: ([{ default: scopes }] as any) as Security[]
+    security: ([{ default: scopes }] as any) as Security[],
   };
   /* tslint:enable */
 }

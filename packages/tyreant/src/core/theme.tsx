@@ -10,6 +10,7 @@ import type { TyrKanbanProps } from './kanban';
 import type { TyrModalProps } from './modal';
 import type { TyrTableProps } from './table';
 import { TyrPanelProps } from './panel';
+import { TyrAction } from './action';
 
 export interface TyrThemeProps {
   drawer?: Partial<TyrDrawerProps<any>>;
@@ -34,7 +35,14 @@ export const useThemeProps = <
   const themeProps = useContext(ThemeContext);
 
   const tprops = themeProps?.[type];
-  return (tprops ? { ...tprops, ...props } : props) as P;
+
+  let baseActions: TyrAction<any>[],
+   overrideActions: TyrAction<any>[];
+  if ((baseActions = (tprops as any)?.actions) && (overrideActions = (props as any)?.actions)) {
+    return { ...tprops, ...props, actions: TyrAction.merge(baseActions, overrideActions)} as P;
+  } else {
+    return (tprops ? { ...tprops, ...props } : props) as P;
+  }
 };
 
 export const withTheme = <

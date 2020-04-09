@@ -17,16 +17,16 @@ export default new Tyr.Collection({
         note: 'A sub document comment',
         fields: {
           years: {
-            is: 'integer'
+            is: 'integer',
           },
           name: {
             is: 'string',
-            note: 'The name of a skill that the user has.'
-          }
-        }
-      }
+            note: 'The name of a skill that the user has.',
+          },
+        },
+      },
     },
-    linkedId: { link: 'linked?' }
+    linkedId: { link: 'linked?' },
   },
   service: {
     myMethod1: {
@@ -37,26 +37,26 @@ export default new Tyr.Collection({
           help:
             'help comment ... this is actually a pretty, sort of very long, actually it is an even longer comment that should, well, no, definitely have to be wrapped.',
           is: 'string',
-          required: true
+          required: true,
         },
         structure: {
           is: 'object',
           note: 'developer comment.',
           fields: {
             a: 'integer',
-            b: { is: 'array', of: 'string' }
-          }
+            b: { is: 'array', of: 'string' },
+          },
         },
-        friend: { link: 'user' }
+        friend: { link: 'user' },
       },
       return: {
         help: 'This returns a special string.',
-        is: 'string'
-      }
+        is: 'string',
+      },
     },
     myMethod2: {
-      return: { is: 'array', of: 'string' }
+      return: { is: 'array', of: 'string' },
     },
-    myMethod3: {}
-  }
+    myMethod3: {},
+  },
 });

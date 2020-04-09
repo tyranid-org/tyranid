@@ -6,7 +6,7 @@ export const subDocumentParameters = {
   name: 'Filtering by sub document parameter should work',
   fn: async (t: TestContext) => {
     const burritoMakers = await Tyr.byName.team.findOne({
-      query: { name: 'burritoMakers' }
+      query: { name: 'burritoMakers' },
     });
     if (!burritoMakers) {
       throw new Error(`No burrito`);
@@ -37,23 +37,23 @@ export const subDocumentParameters = {
               {
                 name: 'burritoMakers',
                 organizationId: {
-                  name: 'Chipotle'
-                }
-              }
-            ]
+                  name: 'Chipotle',
+                },
+              },
+            ],
           },
           {
             name: 'ted',
-            teamIds: []
+            teamIds: [],
           },
           {
             name: 'noTeams',
-            teamIds: []
-          }
-        ]
-      }
+            teamIds: [],
+          },
+        ],
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

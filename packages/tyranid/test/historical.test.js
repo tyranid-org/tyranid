@@ -67,7 +67,7 @@ export function add() {
         return new Widget({
           name: 'Foo',
           tags: ['Beta'],
-          alternate: 'Blue'
+          alternate: 'Blue',
         });
       }
 
@@ -182,7 +182,7 @@ export function add() {
         w.name = 'Bar';
         w.alternate = 'Red';
         await w.$update({
-          historical: 'partial'
+          historical: 'partial',
         });
 
         const history = await (
@@ -206,7 +206,7 @@ export function add() {
         let w = new Widget({
           name: 'Foo',
           tags: ['Alpha'],
-          alternate: 'Blue'
+          alternate: 'Blue',
         });
         await w.$save({ asOf: new Date('2017-06-01') });
 
@@ -216,7 +216,7 @@ export function add() {
 
         w = await Widget.findOne({
           query: { _id: w._id },
-          asOf: new Date('2017-06-23')
+          asOf: new Date('2017-06-23'),
         });
 
         expect(w.tags).to.eql(['Alpha']);
@@ -237,11 +237,11 @@ export function add() {
         historical.preserveInitialValues(User, u);
         u.age = 6;
         historical.snapshot(undefined, User, u, {
-          o: new Date('5-Oct-2016').getTime()
+          o: new Date('5-Oct-2016').getTime(),
         });
         u.age = 7;
         historical.snapshot(undefined, User, u, {
-          o: new Date('10-Oct-2016').getTime()
+          o: new Date('10-Oct-2016').getTime(),
         });
 
         return u;
@@ -279,7 +279,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          age: 36
+          age: 36,
         });
         await amy.$save();
 
@@ -296,7 +296,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          age: 36
+          age: 36,
         });
 
         await amy.$save();
@@ -323,7 +323,7 @@ export function add() {
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
           age: 36,
-          address: {}
+          address: {},
         });
 
         await amy.$save();
@@ -359,12 +359,12 @@ export function add() {
           name: {
             first: 'Amy',
             last: 'Tell',
-            suffices: ['The Awesome', 'Sr', 'The Nice']
+            suffices: ['The Awesome', 'Sr', 'The Nice'],
           },
           address: {
-            notes: ['one', 'two', 'three']
+            notes: ['one', 'two', 'three'],
           },
-          age: 36
+          age: 36,
         });
 
         await amy.$save();
@@ -390,7 +390,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          age: 36
+          age: 36,
         });
 
         await amy.$save();
@@ -412,7 +412,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          age: 36
+          age: 36,
         });
 
         await amy.$save();
@@ -435,7 +435,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          age: 36
+          age: 36,
         });
         await amy.$save();
 
@@ -459,7 +459,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          age: 36
+          age: 36,
         });
 
         await amy.$save();
@@ -482,7 +482,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          address: { street: '123 Mayberry' }
+          address: { street: '123 Mayberry' },
         });
 
         await amy.$save();
@@ -495,7 +495,7 @@ export function add() {
         amy = await User.byId(2001);
 
         expect(amy._history[0].p).to.eql({
-          address: [1, { street: ['123 Mayberry'] }]
+          address: [1, { street: ['123 Mayberry'] }],
         });
 
         await User.remove({ _id: 2001 });
@@ -507,7 +507,7 @@ export function add() {
         let amy = new User({
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
-          age: 36
+          age: 36,
         });
 
         await amy.$save();
@@ -528,7 +528,7 @@ export function add() {
         let cc = new Organization({
           _id: 2001,
           name: 'Concrete Crackers',
-          owner: 2001
+          owner: 2001,
         });
         await cc.$save();
         cc = await Organization.byId(2001);
@@ -539,7 +539,7 @@ export function add() {
           _id: 2001,
           name: { first: 'Amy', last: 'Tell' },
           age: 36,
-          organization: 2001
+          organization: 2001,
         });
         await amy.$save();
         amy = await User.byId(2001);
@@ -548,7 +548,7 @@ export function add() {
 
         const oAmy = await User.byId(amy._id, {
           asOf: new Date('8-Oct-2015'),
-          populate: { organization: $all }
+          populate: { organization: $all },
         });
         expect(oAmy.$historical).to.be.true;
         expect(oAmy.age).to.eql(36);

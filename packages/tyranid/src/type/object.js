@@ -129,7 +129,7 @@ const ObjectType = new Type({
     }
 
     return errors;
-  }
+  },
 });
 
 export default ObjectType;

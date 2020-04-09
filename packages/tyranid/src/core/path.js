@@ -590,19 +590,19 @@ Object.defineProperties(Path.prototype, {
   tail: {
     get() {
       return this.fields[this.fields.length - 1];
-    }
+    },
   },
 
   detail: {
     get() {
       return Path._skipArray(this.fields[this.fields.length - 1]);
-    }
+    },
   },
 
   groupCount: {
     get() {
       return this._groups?.length || 0;
-    }
+    },
   },
 
   label: {
@@ -616,7 +616,7 @@ Object.defineProperties(Path.prototype, {
       }
 
       return this._pathLabel(0, flen);
-    }
+    },
   },
 
   pathLabel: {
@@ -631,19 +631,19 @@ Object.defineProperties(Path.prototype, {
 
       const { _groups } = this;
       return this._pathLabel(_groups?.[_groups.length - 1] ?? 0, flen);
-    }
+    },
   },
 
   spath: {
     get() {
       return this._buildSpath();
-    }
+    },
   },
 
   spathArr: {
     get() {
       return this._buildSpath(true);
-    }
+    },
   },
 
   identifier: {
@@ -653,8 +653,8 @@ Object.defineProperties(Path.prototype, {
         id = this._identifier = this.name.replace(/\./g, '_');
       }
       return id;
-    }
-  }
+    },
+  },
 });
 
 Path.prototype.projectify = function(projection) {

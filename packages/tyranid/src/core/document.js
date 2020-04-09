@@ -42,7 +42,7 @@ export const documentPrototype = (Tyr.documentPrototype = {
 
       Object.defineProperty(this, '$access', {
         value: accessResult,
-        enumerable: false
+        enumerable: false,
       });
     }
   },
@@ -228,7 +228,7 @@ export const documentPrototype = (Tyr.documentPrototype = {
       collection: this.$model,
       type: 'remove',
       when: 'pre',
-      document: this
+      document: this,
     });
     const rslt = await this.$model.remove(
       { [this.$model.def.primaryKey.field]: this.$id },
@@ -239,7 +239,7 @@ export const documentPrototype = (Tyr.documentPrototype = {
       collection: this.$model,
       type: 'remove',
       when: 'post',
-      document: this
+      document: this,
     });
     return rslt;
   },
@@ -266,7 +266,7 @@ export const documentPrototype = (Tyr.documentPrototype = {
 
   $validate() {
     return ObjectType.validate(this.$model, this);
-  }
+  },
 });
 
 export function defineDocumentProperties(dp) {
@@ -276,7 +276,7 @@ export function defineDocumentProperties(dp) {
         return this[this.$model.def.primaryKey.field];
       },
       enumerable: false,
-      configurable: false
+      configurable: false,
     },
 
     $isNew: {
@@ -284,7 +284,7 @@ export function defineDocumentProperties(dp) {
         return !this.$id;
       },
       enumerable: false,
-      configurable: false
+      configurable: false,
     },
 
     $: {
@@ -292,7 +292,7 @@ export function defineDocumentProperties(dp) {
         return Path.taggedTemplateLiteral.bind(this);
       },
       enumerable: false,
-      configurable: false
+      configurable: false,
     },
 
     $label: {
@@ -300,7 +300,7 @@ export function defineDocumentProperties(dp) {
         return this.$model.labelFor(this);
       },
       enumerable: false,
-      configurable: false
+      configurable: false,
     },
 
     $tyr: {
@@ -308,7 +308,7 @@ export function defineDocumentProperties(dp) {
         return Tyr;
       },
       enumerable: false,
-      configurable: false
+      configurable: false,
     },
 
     $uid: {
@@ -317,7 +317,7 @@ export function defineDocumentProperties(dp) {
         return model.idToUid(this[model.def.primaryKey.field]);
       },
       enumerable: false,
-      configurable: false
-    }
+      configurable: false,
+    },
   });
 }

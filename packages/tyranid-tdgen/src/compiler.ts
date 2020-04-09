@@ -52,7 +52,7 @@ const resultFile = ts.createSourceFile(
   ts.ScriptKind.TS
 );
 const printer = ts.createPrinter({
-  newLine: ts.NewLineKind.LineFeed
+  newLine: ts.NewLineKind.LineFeed,
 });
 const result = printer.printNode(
   ts.EmitHint.Unspecified,

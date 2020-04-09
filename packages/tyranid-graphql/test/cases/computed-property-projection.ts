@@ -19,12 +19,12 @@ export const computedPropertyProjection = {
       data: {
         users: [
           {
-            computed: 'Hello ben from a computed property!'
-          }
-        ]
-      }
+            computed: 'Hello ben from a computed property!',
+          },
+        ],
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

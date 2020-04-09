@@ -34,14 +34,14 @@ export const parameters = {
             {
               name: 'cavaEngineers',
               organizationId: {
-                name: 'Cava'
-              }
-            }
-          ]
-        }
-      }
+                name: 'Cava',
+              },
+            },
+          ],
+        },
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

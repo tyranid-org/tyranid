@@ -8,7 +8,7 @@ const Continent = new Tyr.Collection({
   fields: {
     _id: { is: 'integer' },
     name: { is: 'string' },
-    code: { is: 'string' }
+    code: { is: 'string' },
   },
   values: [
     ['_id', 'name', 'code'],
@@ -18,8 +18,8 @@ const Continent = new Tyr.Collection({
     [4331, 'Europe', 'EU'],
     [4332, 'North America', 'NA'],
     [4333, 'Oceania', 'OC'],
-    [4334, 'South America', 'SA']
-  ]
+    [4334, 'South America', 'SA'],
+  ],
 }) as Tyr.ContinentCollection;
 
 export default Continent;

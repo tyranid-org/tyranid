@@ -12,13 +12,13 @@ export const SchemaType = new Collection({
   internal: true,
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string', labelField: true }
+    name: { is: 'string', labelField: true },
   },
   values: [
     ['_id', 'name'],
     [1, 'Full'],
-    [2, 'Partial']
-  ]
+    [2, 'Partial'],
+  ],
 });
 
 const Schema = new Collection({
@@ -32,9 +32,9 @@ const Schema = new Collection({
     type: { link: 'tyrSchemaType' },
     match: { is: 'object' },
     def: { is: 'object' },
-    src: { is: 'string' }
+    src: { is: 'string' },
   },
-  timestamps: true
+  timestamps: true,
 });
 
 let schemaCache;
@@ -44,7 +44,7 @@ Schema.on({
   when: 'post',
   handler: (/*event*/) => {
     Schema.fire({ type: 'tyrSchemaInvalidate', broadcast: true });
-  }
+  },
 });
 
 Schema.on({
@@ -52,7 +52,7 @@ Schema.on({
   handler: (/*event*/) => {
     // TODO:  analyze the event and only invalidate part of the schema ?
     schemaCache = null;
-  }
+  },
 });
 
 Collection.prototype.invalidateSchemaCache = function() {

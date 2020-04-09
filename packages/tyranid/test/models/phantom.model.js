@@ -9,6 +9,6 @@ export default class Phantom extends (new Tyr.Collection({
   name: 'phantom',
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string', labelField: true }
-  }
+    name: { is: 'string', labelField: true },
+  },
 })) {}

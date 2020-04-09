@@ -111,7 +111,7 @@ function keyForTmp(field, tmpId, filename) {
         for (const doc of await event.documents) {
           await s3.def.updateS3(doc);
         }
-      }
+      },
     });
 
     collection.on({
@@ -121,7 +121,7 @@ function keyForTmp(field, tmpId, filename) {
         for (const doc of await event.documents) {
           s3.def.removeS3(doc);
         }
-      }
+      },
     });
   },
 
@@ -150,7 +150,7 @@ function keyForTmp(field, tmpId, filename) {
 
           if (field.of && !MediaType.matches(field.of, mediaType)) {
             res.status(415).json({
-              msg: `"${mediaType}" is not a valid upload document type for this field.`
+              msg: `"${mediaType}" is not a valid upload document type for this field.`,
             });
             return;
           }
@@ -303,5 +303,5 @@ function keyForTmp(field, tmpId, filename) {
     await s3.saveObjectToFile(bucket, keyPath, path);
 
     return path;
-  }
+  },
 });

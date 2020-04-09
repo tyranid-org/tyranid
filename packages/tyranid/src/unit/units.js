@@ -105,13 +105,13 @@ class Units {
 
     const typeComponents = base.components.map(comp => ({
       type: comp.unit.type,
-      degree: comp.degree
+      degree: comp.degree,
     }));
 
     Uu.merge('type', typeComponents);
 
     Object.defineProperty(this, 'type', {
-      value: Tyr.UnitType.byComponents(typeComponents)
+      value: Tyr.UnitType.byComponents(typeComponents),
     });
   }
 
@@ -630,7 +630,7 @@ for (const prop of [
   'divide',
   'invert',
   'normal',
-  'toString'
+  'toString',
 ]) {
   Object.defineProperty(Units.prototype, prop, { enumerable: false });
 }

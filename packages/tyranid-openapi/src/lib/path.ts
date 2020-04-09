@@ -5,7 +5,7 @@ import {
   IndividualCollectionSchemaOptions,
   Method,
   PathContainer,
-  SchemaContainer
+  SchemaContainer,
 } from '../interfaces';
 import {
   each,
@@ -14,7 +14,7 @@ import {
   pascal,
   pick,
   pluralize,
-  isPartitionedOptions
+  isPartitionedOptions,
 } from '../utils';
 import * as baseParameters from './base-find-parameters';
 import ErrorResponse from './error-schema';
@@ -104,7 +104,7 @@ export function path(
       in: 'path',
       required: true,
       description: 'ID of linked ' + parentDef.name,
-      ['x-tyranid-openapi-object-id']: true
+      ['x-tyranid-openapi-object-id']: true,
     } as {}) as Parameter);
 
     /**
@@ -135,7 +135,7 @@ export function path(
     baseCollectionRoute = [
       pluralize(parentDef.name),
       `{${parentField.name}}`,
-      subRouteName
+      subRouteName,
     ].join('/');
   }
 
@@ -148,22 +148,22 @@ export function path(
   const out = {
     id: def.id,
     base: baseCollectionName,
-    paths: [] as { route: string; path: Path }[]
+    paths: [] as { route: string; path: Path }[],
   };
 
   const common = {
     ['x-tyranid-openapi-collection-id']: def.id,
-    tags: [tag]
+    tags: [tag],
     // https://github.com/CrossLead/tyranid-openapi/issues/17
   } as any; // TODO: hack for typings for now
 
   const returns = {
-    produces: ['application/json']
+    produces: ['application/json'],
   };
 
   const parameters = (...params: Parameter[]) => {
     return {
-      parameters: [...baseRouteParameters, ...params]
+      parameters: [...baseRouteParameters, ...params],
     };
   };
 
@@ -188,7 +188,7 @@ export function path(
     in: 'path',
     type: 'string',
     description: `ID of the ${pascalName} object`,
-    required: true
+    required: true,
   };
 
   (idParameter as any)['x-tyranid-openapi-object-id'] = true;
@@ -200,7 +200,7 @@ export function path(
    */
   const baseRoutes = {
     route: `/${baseCollectionRoute}`,
-    path: {} as Path
+    path: {} as Path,
   };
   out.paths.push(baseRoutes);
 
@@ -227,7 +227,7 @@ export function path(
           {
             type: 'array',
             maxItems: MAX_ARRAY_ITEMS,
-            items: filteredSchema
+            items: filteredSchema,
           },
           {
             paging: {
@@ -238,27 +238,27 @@ export function path(
                   $limit: pick(baseParameters.LIMIT, [
                     'type',
                     'description',
-                    'default'
+                    'default',
                   ]),
                   $skip: pick(baseParameters.SKIP, [
                     'type',
                     'description',
-                    'default'
+                    'default',
                   ]),
                   $sort: pick(baseParameters.SORT, [
                     'type',
                     'description',
-                    'default'
-                  ])
+                    'default',
+                  ]),
                 };
 
                 props.$skip.default = props.$limit.default;
                 return props;
-              })()
-            }
+              })(),
+            },
           } as any
-        )
-      }
+        ),
+      },
     };
   }
 
@@ -289,8 +289,8 @@ export function path(
         schema: {
           type: 'array',
           maxItems: MAX_ARRAY_ITEMS,
-          items: filteredBodySchema
-        }
+          items: filteredBodySchema,
+        },
       }),
       summary: `create new ${pascalName} objects`,
       responses: {
@@ -301,9 +301,9 @@ export function path(
         ...success(`created ${pascalName} objects`, {
           type: 'array',
           maxItems: MAX_ARRAY_ITEMS,
-          items: filteredResponseSchema
-        })
-      }
+          items: filteredResponseSchema,
+        }),
+      },
     };
   }
 
@@ -334,8 +334,8 @@ export function path(
         schema: {
           type: 'array',
           maxItems: MAX_ARRAY_ITEMS,
-          items: filteredBodySchema
-        }
+          items: filteredBodySchema,
+        },
       }),
       summary: `update multiple ${pascalName} objects`,
       responses: {
@@ -346,9 +346,9 @@ export function path(
         ...success(`updated ${pascalName} objects`, {
           type: 'array',
           maxItems: MAX_ARRAY_ITEMS,
-          items: filteredResponseSchema
-        })
-      }
+          items: filteredResponseSchema,
+        }),
+      },
     };
   }
 
@@ -366,10 +366,10 @@ export function path(
         maxItems: MAX_ARRAY_ITEMS,
         items: {
           type: 'string',
-          ['x-tyranid-openapi-object-id']: true
+          ['x-tyranid-openapi-object-id']: true,
         } as Schema,
         description: `IDs of the ${pascalName} objects to delete`,
-        required: true
+        required: true,
       }),
       summary: `delete multiple ${pascalName} object`,
       responses: {
@@ -377,8 +377,8 @@ export function path(
         ...invalid(),
         ...tooMany(),
         ...internalError(),
-        ...success(`deletes the ${pascalName} objects`)
-      }
+        ...success(`deletes the ${pascalName} objects`),
+      },
     };
   }
 
@@ -389,7 +389,7 @@ export function path(
    */
   const singleIdRoutes = {
     route: `/${baseCollectionRoute}/{_id}`,
-    path: {} as Path
+    path: {} as Path,
   };
   out.paths.push(singleIdRoutes);
 
@@ -408,8 +408,8 @@ export function path(
         ...invalid(),
         ...tooMany(),
         ...internalError(),
-        ...success(`sends the ${pascalName} object`, schemaRef)
-      }
+        ...success(`sends the ${pascalName} object`, schemaRef),
+      },
     };
   }
 
@@ -438,7 +438,7 @@ export function path(
             delete clone.required;
           }
           return clone;
-        })()
+        })(),
       }),
       summary: `update single ${pascalName} object`,
       responses: {
@@ -446,8 +446,8 @@ export function path(
         ...invalid(),
         ...tooMany(),
         ...internalError(),
-        ...success(`updated ${pascalName} object`, schemaRef)
-      }
+        ...success(`updated ${pascalName} object`, schemaRef),
+      },
     };
   }
 
@@ -465,8 +465,8 @@ export function path(
         ...invalid(),
         ...tooMany(),
         ...internalError(),
-        ...success(`deletes the ${pascalName} object`)
-      }
+        ...success(`deletes the ${pascalName} object`),
+      },
     };
   }
 
@@ -485,8 +485,8 @@ function tooMany() {
   return {
     429: {
       description: 'too many requests',
-      schema: errorRef('ErrorTooManyRequests')
-    }
+      schema: errorRef('ErrorTooManyRequests'),
+    },
   };
 }
 
@@ -499,8 +499,8 @@ function denied(description = 'permission denied') {
   return {
     403: {
       description,
-      schema: errorRef('ErrorPermissionDenied')
-    }
+      schema: errorRef('ErrorPermissionDenied'),
+    },
   };
 }
 
@@ -513,8 +513,8 @@ function internalError() {
   return {
     500: {
       description: 'Internal server error',
-      schema: errorRef('ErrorInternalServer')
-    }
+      schema: errorRef('ErrorInternalServer'),
+    },
   };
 }
 
@@ -537,10 +537,10 @@ function success(
           status: { type: 'number', enum: [200] },
           message: { type: 'string' },
           ...meta,
-          ...(schema ? { data: schema } : {})
-        }
-      }
-    }
+          ...(schema ? { data: schema } : {}),
+        },
+      },
+    },
   };
 }
 
@@ -553,8 +553,8 @@ function invalid(description = 'invalid request') {
   return {
     400: {
       description,
-      schema: errorRef('ErrorInvalidRequest')
-    }
+      schema: errorRef('ErrorInvalidRequest'),
+    },
   };
 }
 
@@ -646,7 +646,7 @@ function filterSchemaForMethod(
       if (filtered) {
         const updated = {
           ...schema,
-          items: filtered
+          items: filtered,
         } as ExtendedSchema;
         return updated;
       }
@@ -702,6 +702,6 @@ function errorRef(name: keyof typeof ErrorResponse) {
  */
 function toRef(name: string) {
   return {
-    $ref: `#/definitions/${name}`
+    $ref: `#/definitions/${name}`,
   };
 }

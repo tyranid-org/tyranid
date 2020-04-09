@@ -10,8 +10,8 @@ const Translation = new Collection({
   timestamps: true,
   fields: {
     _id: { is: 'string' },
-    locale: { is: 'string' }
-  }
+    locale: { is: 'string' },
+  },
 });
 
 const Term = new Collection({
@@ -23,8 +23,8 @@ const Term = new Collection({
   fields: {
     _id: { is: 'string' },
     locale: { is: 'string' },
-    lastAliveOn: { is: 'date' }
-  }
+    lastAliveOn: { is: 'date' },
+  },
 });
 
 /*

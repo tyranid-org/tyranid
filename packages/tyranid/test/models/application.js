@@ -12,7 +12,7 @@ export const Application = new Tyr.Collection({
     job: { link: 'job' },
     languages: {
       is: 'string',
-      if: { job: { $in: [Job.SOFTWARE_ENGINEER._id, Job.SOFTWARE_LEAD._id] } }
-    }
-  }
+      if: { job: { $in: [Job.SOFTWARE_ENGINEER._id, Job.SOFTWARE_LEAD._id] } },
+    },
+  },
 });

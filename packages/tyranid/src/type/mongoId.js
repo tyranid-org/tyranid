@@ -33,5 +33,5 @@ export const MongoIdType = new Type({
   },
   toClient(field, value) {
     return value ? value.toString() : value;
-  }
+  },
 });

@@ -50,7 +50,7 @@ function assignCellStyle(cell, style) {
     'borderLeft',
     'borderRight',
     'borderTop',
-    'borderBottom'
+    'borderBottom',
   ]) {
     const borderDef = style[borderType];
 
@@ -117,7 +117,7 @@ async function toExcel(opts) {
     stream,
     filename,
     header,
-    images
+    images,
   } = opts;
 
   // exceljs did not support images in the streaming api at time of writing
@@ -130,7 +130,7 @@ async function toExcel(opts) {
       stream,
       filename,
       useStyles: true,
-      useSharedStrings: true
+      useSharedStrings: true,
     });
   } else {
     workbook = new Excel.Workbook();
@@ -159,7 +159,7 @@ async function toExcel(opts) {
 
       image.id = workbook.addImage({
         filename: image.path,
-        extension: ext
+        extension: ext,
       });
     }
   }
@@ -172,13 +172,13 @@ async function toExcel(opts) {
 
     return {
       key: pathName,
-      width: column.width || 10
+      width: column.width || 10,
     };
   });
 
   sheet.autoFilter = {
     from: { row: 1 + extraRows.length, column: 1 },
-    to: { row: 1 + extraRows.length, column: columns.length }
+    to: { row: 1 + extraRows.length, column: columns.length },
   };
 
   let ri = 1;
@@ -297,7 +297,7 @@ async function fromExcel(opts) {
     return {
       def: column,
       path,
-      label: column.label || path.pathLabel
+      label: column.label || path.pathLabel,
     };
   });
 
@@ -354,5 +354,5 @@ async function fromExcel(opts) {
 
 Tyr.excel = {
   toExcel,
-  fromExcel
+  fromExcel,
 };

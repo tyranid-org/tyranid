@@ -13,7 +13,7 @@ const Unit = new Collection({
     sid: {
       is: 'string',
       label: 'String ID',
-      note: 'a unique id like _id, used when integers cannot be used'
+      note: 'a unique id like _id, used when integers cannot be used',
     },
     name: { is: 'string', labelField: true },
     abbreviation: { is: 'string' },
@@ -23,7 +23,7 @@ const Unit = new Collection({
     system: { link: 'unitSystem' },
     baseMultiplier: { is: 'double' },
     baseAdditive: { is: 'double' },
-    note: { is: 'string' }
+    note: { is: 'string' },
   },
   values: [
     ['_id', 'name', 'abbreviation', 'formula', 'type', 'system'],
@@ -77,7 +77,7 @@ const Unit = new Collection({
       null,
       'rad/s2',
       'angularAcceleration',
-      'metric'
+      'metric',
     ],
     [48, 'wattPerSquareMeter', null, 'W/m2', 'irradiance', 'metric'],
     [49, 'joulePerKelvin', null, 'J/K', 'entropy', 'metric'],
@@ -87,7 +87,7 @@ const Unit = new Collection({
       null,
       'J/kg1K1',
       'specificEntropy',
-      'metric'
+      'metric',
     ],
     [51, 'joulePerKilogram', null, 'J/kg', 'specificEnergy', 'metric'],
     [52, 'wattPerMeterKelvin', null, 'W/m1K1', 'thermalConductivity', 'metric'],
@@ -99,7 +99,7 @@ const Unit = new Collection({
       null,
       'C/m3',
       'electricChargeDensity',
-      'metric'
+      'metric',
     ],
     [
       56,
@@ -107,7 +107,7 @@ const Unit = new Collection({
       null,
       'C/m2',
       'electricFluxDensity',
-      'metric'
+      'metric',
     ],
     [57, 'faradPerMeter', null, 'F/m', 'permittivity', 'metric'],
     [58, 'henryPerMeter', null, 'H/m', 'permeability', 'metric'],
@@ -123,7 +123,7 @@ const Unit = new Collection({
       null,
       'kat/m3',
       'catalyticConcentration',
-      'metric'
+      'metric',
     ],
     [66, 'inch', 'in', null, 'length', 'english', { baseMultiplier: 0.0254 }],
     [67, 'foot', 'ft', null, 'length', 'english', { baseMultiplier: 0.3048 }],
@@ -134,7 +134,7 @@ const Unit = new Collection({
       null,
       'length',
       'english',
-      { baseMultiplier: 0.4572 }
+      { baseMultiplier: 0.4572 },
     ],
     [69, 'yard', 'yd', null, 'length', 'english', { baseMultiplier: 0.9144 }],
     [
@@ -144,7 +144,7 @@ const Unit = new Collection({
       null,
       'length',
       'english',
-      { baseMultiplier: 201.168 }
+      { baseMultiplier: 201.168 },
     ],
     [71, 'mile', 'mi', null, 'length', 'english', { baseMultiplier: 1609.344 }],
     [
@@ -154,7 +154,7 @@ const Unit = new Collection({
       null,
       'length',
       'english',
-      { baseMultiplier: 5556 }
+      { baseMultiplier: 5556 },
     ],
     [
       73,
@@ -163,7 +163,7 @@ const Unit = new Collection({
       null,
       'length',
       'english',
-      { baseMultiplier: 20.1168 }
+      { baseMultiplier: 20.1168 },
     ],
     [74, 'acre', 'acre', 'chain*furlong', 'area', 'english'],
     [
@@ -173,7 +173,7 @@ const Unit = new Collection({
       null,
       'temperature',
       'metric',
-      { baseAdditive: 273.15 }
+      { baseAdditive: 273.15 },
     ],
     [
       76,
@@ -182,7 +182,7 @@ const Unit = new Collection({
       null,
       'temperature',
       'english',
-      { baseMultiplier: 0.555555556, baseAdditive: 255.372222222 }
+      { baseMultiplier: 0.555555556, baseAdditive: 255.372222222 },
     ],
     [77, 'rod', 'rod', null, 'length', 'english', { baseMultiplier: 5.0292 }],
     [78, 'void', 'void', null, 'none', null],
@@ -197,7 +197,7 @@ const Unit = new Collection({
       null,
       'duration',
       'metric',
-      { baseMultiplier: 604800 }
+      { baseMultiplier: 604800 },
     ],
     [
       84,
@@ -206,7 +206,7 @@ const Unit = new Collection({
       null,
       'duration',
       'metric',
-      { baseMultiplier: 2419200 }
+      { baseMultiplier: 2419200 },
     ],
     [
       85,
@@ -215,7 +215,7 @@ const Unit = new Collection({
       null,
       'duration',
       'metric',
-      { baseMultiplier: 31449600 }
+      { baseMultiplier: 31449600 },
     ],
     [
       86,
@@ -224,7 +224,7 @@ const Unit = new Collection({
       null,
       'mass',
       'english',
-      { baseMultiplier: 0.06479891 }
+      { baseMultiplier: 0.06479891 },
     ],
     [87, 'dram', 'dr', null, 'mass', 'english', { baseMultiplier: 0.00177185 }],
     [88, 'ounce', 'oz', null, 'mass', 'english', { baseMultiplier: 0.0283495 }],
@@ -235,7 +235,7 @@ const Unit = new Collection({
       null,
       'mass',
       'english',
-      { baseMultiplier: 0.45359237 }
+      { baseMultiplier: 0.45359237 },
     ],
     [
       90,
@@ -244,7 +244,7 @@ const Unit = new Collection({
       null,
       'mass',
       'english',
-      { baseMultiplier: 50.80234544 }
+      { baseMultiplier: 50.80234544 },
     ],
     [
       91,
@@ -253,7 +253,7 @@ const Unit = new Collection({
       null,
       'mass',
       'english',
-      { baseMultiplier: 907.18474 }
+      { baseMultiplier: 907.18474 },
     ],
     [
       92,
@@ -262,7 +262,7 @@ const Unit = new Collection({
       null,
       'mass',
       'english',
-      { baseMultiplier: 1016.04691 }
+      { baseMultiplier: 1016.04691 },
     ],
     [93, 'liter', 'L', null, 'volume', 'metric', { baseMultiplier: 0.001 }],
     [
@@ -272,7 +272,7 @@ const Unit = new Collection({
       null,
       'volume',
       'metric',
-      { baseMultiplier: 0.000004929 }
+      { baseMultiplier: 0.000004929 },
     ],
     [
       95,
@@ -281,7 +281,7 @@ const Unit = new Collection({
       null,
       'volume',
       'metric',
-      { baseMultiplier: 0.000014787 }
+      { baseMultiplier: 0.000014787 },
     ],
     [
       96,
@@ -290,7 +290,7 @@ const Unit = new Collection({
       null,
       'volume',
       'metric',
-      { baseMultiplier: 0.000029574 }
+      { baseMultiplier: 0.000029574 },
     ],
     [
       97,
@@ -299,7 +299,7 @@ const Unit = new Collection({
       null,
       'volume',
       'metric',
-      { baseMultiplier: 0.000236588 }
+      { baseMultiplier: 0.000236588 },
     ],
     [
       98,
@@ -308,7 +308,7 @@ const Unit = new Collection({
       null,
       'volume',
       'metric',
-      { baseMultiplier: 0.000473176 }
+      { baseMultiplier: 0.000473176 },
     ],
     [
       99,
@@ -317,7 +317,7 @@ const Unit = new Collection({
       null,
       'volume',
       'metric',
-      { baseMultiplier: 0.000946353 }
+      { baseMultiplier: 0.000946353 },
     ],
     [
       100,
@@ -326,7 +326,7 @@ const Unit = new Collection({
       null,
       'volume',
       'metric',
-      { baseMultiplier: 0.003785412 }
+      { baseMultiplier: 0.003785412 },
     ],
     [
       101,
@@ -335,7 +335,7 @@ const Unit = new Collection({
       null,
       'length',
       'english',
-      { baseMultiplier: 1852 }
+      { baseMultiplier: 1852 },
     ],
     [102, 'knot', 'knot', 'nautmi/h', 'velocity', 'english'],
     [103, 'bit', 'bit', null, 'bit', 'metric'],
@@ -349,7 +349,7 @@ const Unit = new Collection({
       null,
       'length',
       'planck',
-      { baseMultiplier: 1.616199e-35 }
+      { baseMultiplier: 1.616199e-35 },
     ],
     [
       108,
@@ -358,7 +358,7 @@ const Unit = new Collection({
       null,
       'mass',
       'planck',
-      { baseMultiplier: 2.17651e-8 }
+      { baseMultiplier: 2.17651e-8 },
     ],
     [
       109,
@@ -367,7 +367,7 @@ const Unit = new Collection({
       null,
       'duration',
       'planck',
-      { baseMultiplier: 5.39106e-44 }
+      { baseMultiplier: 5.39106e-44 },
     ],
     [
       110,
@@ -376,7 +376,7 @@ const Unit = new Collection({
       null,
       'electricCharge',
       'planck',
-      { baseMultiplier: 1.875545956e-18 }
+      { baseMultiplier: 1.875545956e-18 },
     ],
     [
       111,
@@ -385,12 +385,12 @@ const Unit = new Collection({
       null,
       'temperature',
       'planck',
-      { baseMultiplier: 1.416833e32 }
+      { baseMultiplier: 1.416833e32 },
     ],
     [112, 'planckArea', null, 'lP2', 'area', 'planck'],
     [113, 'planckVolume', null, 'lP3', 'volume', 'planck'],
-    [114, 'euro', 'EUR', null, 'currency', 'currency']
-  ]
+    [114, 'euro', 'EUR', null, 'currency', 'currency'],
+  ],
 });
 
 const bySid = (Unit.bySid = {});

@@ -15,21 +15,21 @@ export const Country = new Tyr.Collection({
     code: {
       is: 'string',
       description:
-        'AKA iso166_1_a2 ...  Top-level internet domain names also use this code.'
+        'AKA iso166_1_a2 ...  Top-level internet domain names also use this code.',
     },
     iso3166_1_a3: {
       is: 'string',
-      description: 'ISO 3166-1.  Three-letter country code.'
+      description: 'ISO 3166-1.  Three-letter country code.',
     },
 
     iso3166_1_num: {
       is: 'integer',
-      description: 'ISO 3166-1.  Numeric country code.'
+      description: 'ISO 3166-1.  Numeric country code.',
     },
 
     fips10_4: {
       is: 'string',
-      description: 'FIPS 10-4.   Two-letter country code.'
+      description: 'FIPS 10-4.   Two-letter country code.',
     },
 
     anyCode: { is: 'string' },
@@ -37,7 +37,7 @@ export const Country = new Tyr.Collection({
     aliases: { is: 'string' },
     notes: { is: 'string' },
 
-    continent: { link: 'continent' }
+    continent: { link: 'continent' },
   },
   values: [
     /* eslint-disable quotes */
@@ -62,7 +62,7 @@ export const Country = new Tyr.Collection({
       'PRK',
       'KN',
       4330,
-      { aliases: 'Democratic Peoples Republic of Korea' }
+      { aliases: 'Democratic Peoples Republic of Korea' },
     ],
     [
       4198,
@@ -71,7 +71,7 @@ export const Country = new Tyr.Collection({
       'KOR',
       'KS',
       4330,
-      { aliases: 'Republic of Korea' }
+      { aliases: 'Republic of Korea' },
     ],
     [4199, 'Kuwait', 'KW', 'KWT', 'KU', 4330],
     [4200, 'Cayman Islands', 'KY', 'CYM', 'CJ', 4334],
@@ -83,7 +83,7 @@ export const Country = new Tyr.Collection({
       'LAO',
       'LA',
       4330,
-      { aliases: 'Laos' }
+      { aliases: 'Laos' },
     ],
     [4203, 'Lebanon', 'LB', 'LBN', 'LE', 4330],
     [4204, 'Saint Lucia', 'LC', 'LCA', 'ST', 4334],
@@ -174,7 +174,7 @@ export const Country = new Tyr.Collection({
       'SYR',
       'SY',
       4330,
-      { aliases: 'Syrian Arab Republic' }
+      { aliases: 'Syrian Arab Republic' },
     ],
     [4286, 'Swaziland', 'SZ', 'SWZ', 'WZ', 4328],
     [4287, 'Turks and Caicos Islands', 'TC', 'TCA', 'TK', 4334],
@@ -264,7 +264,7 @@ export const Country = new Tyr.Collection({
       'COD',
       'CG',
       4328,
-      { aliases: 'Zaire, Democratic Republic of Congo' }
+      { aliases: 'Zaire, Democratic Republic of Congo' },
     ],
     [4117, 'Central African Republic', 'CF', 'CAF', 'CT', 4328],
     [
@@ -274,7 +274,7 @@ export const Country = new Tyr.Collection({
       'COG',
       'CF',
       4328,
-      { aliases: 'Republic of the Congo' }
+      { aliases: 'Republic of the Congo' },
     ],
     [4119, 'Switzerland', 'CH', 'CHE', 'SZ', 4331],
     [
@@ -284,7 +284,7 @@ export const Country = new Tyr.Collection({
       'CIV',
       'IV',
       4328,
-      { aliases: 'Ivory Coast, Cote dIvoire' }
+      { aliases: 'Ivory Coast, Cote dIvoire' },
     ],
     [4121, 'Cook Islands', 'CK', 'COK', 'CW', 4333],
     [4122, 'Chile', 'CL', 'CHL', 'CI', 4334],
@@ -336,7 +336,7 @@ export const Country = new Tyr.Collection({
       'GS',
       'SGS',
       'SX',
-      4334
+      4334,
     ],
     [4167, 'Guatemala', 'GT', 'GTM', 'GT', 4332],
     [4168, 'Guam', 'GU', 'GUM', 'GQ', 4333],
@@ -353,22 +353,22 @@ export const Country = new Tyr.Collection({
     [4180, 'Isle of Man', 'IM', 'IMN', 'IM', 4331],
     [4181, 'India', 'IN', 'IND', 'IN', 4330],
     [4182, 'British Indian Ocean Territory', 'IO', 'IOT', 'IO', 4330],
-    [4183, 'Iraq', 'IQ', 'IRQ', 'IZ', 4330]
+    [4183, 'Iraq', 'IQ', 'IRQ', 'IZ', 4330],
   ],
   service: {
     byCode: {
       params: {
-        code: { is: 'string', required: true }
+        code: { is: 'string', required: true },
       },
-      return: { is: 'country' }
+      return: { is: 'country' },
     },
     byFips: {
       params: {
-        code: { is: 'string', required: true }
+        code: { is: 'string', required: true },
       },
-      return: { is: 'country' }
-    }
-  }
+      return: { is: 'country' },
+    },
+  },
 }) as Tyr.CountryCollection;
 
 // TODO:  these should be an isomorphic service
@@ -385,5 +385,5 @@ Country.service = {
   async byFips(fips: string) {
     // TODO:  create a hash for this if this ends up being used a lot ?
     return Country.values.find(country => country.fips10_4 === fips)!;
-  }
+  },
 };

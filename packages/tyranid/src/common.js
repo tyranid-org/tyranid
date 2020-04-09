@@ -93,7 +93,7 @@ export function processOptions(collection, opts) {
       if (f !== fields) {
         const newOpts = {
           ...opts,
-          projection: f
+          projection: f,
         };
         delete newOpts.fields;
         return newOpts;

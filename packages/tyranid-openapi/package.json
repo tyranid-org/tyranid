@@ -20,10 +20,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@types/js-yaml": "3.9.1",
-    "@types/swagger-schema-official": "^2.0.6",
-    "ajv": "^5.0.1",
-    "js-yaml": "^3.9.1",
-    "swagger-schema-official": "^2.0.0-bab6bed"
+    "@types/swagger-schema-official": "2.0.6",
+    "ajv": "5.0.1",
+    "js-yaml": "3.9.1",
+    "swagger-schema-official": "2.0.0-bab6bed"
   },
   "peerDependencies": {
     "tyranid": "^0.5.0"

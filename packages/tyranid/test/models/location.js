@@ -5,12 +5,12 @@ const Location = new Tyr.Collection({
   name: 'location',
   client: true,
   express: {
-    rest: true
+    rest: true,
   },
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string', labelField: true }
-  }
+    name: { is: 'string', labelField: true },
+  },
 });
 
 export default Location;

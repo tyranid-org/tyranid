@@ -24,25 +24,25 @@ export const singlePopulated = {
           {
             name: 'ben',
             organizationId: {
-              name: 'Chipotle'
-            }
+              name: 'Chipotle',
+            },
           },
           {
             name: 'ted',
             organizationId: {
-              name: 'Cava'
-            }
+              name: 'Cava',
+            },
           },
           {
             name: 'noTeams',
             organizationId: {
-              name: 'Chipotle'
-            }
-          }
-        ]
-      }
+              name: 'Chipotle',
+            },
+          },
+        ],
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

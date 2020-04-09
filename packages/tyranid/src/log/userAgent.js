@@ -7,8 +7,8 @@ const UserAgent = new Tyr.Collection({
   internal: true,
   fields: {
     _id: { is: 'mongoid' },
-    ua: { is: 'string', label: 'User Agent' }
-  }
+    ua: { is: 'string', label: 'User Agent' },
+  },
 });
 
 const byString = {};

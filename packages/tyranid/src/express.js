@@ -111,7 +111,7 @@ class Serializer {
       'required',
       'step',
       'validateSearch',
-      'width'
+      'width',
     ]) {
       const v = def[fieldName];
       if (v !== undefined) {
@@ -1619,7 +1619,7 @@ export function generateClientLibrary() {
         'aux',
         'singleton',
         'internal',
-        'generated'
+        'generated',
       ]) {
         if (col.def[key])
           file += `
@@ -1697,8 +1697,8 @@ function compile(code) {
   const result = ts.transpileModule(code, {
     compilerOptions: {
       module: ts.ModuleKind.None,
-      target: ts.ScriptTarget.ES2017
-    }
+      target: ts.ScriptTarget.ES2017,
+    },
   });
 
   result.diagnostics.forEach(diagnostic => {
@@ -1913,7 +1913,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               query: rOpts.query ? await col.fromClientQuery(rOpts.query) : {},
               auth: req.user,
               user: req.user,
-              req
+              req,
             };
 
             const projection = rOpts.projection || rOpts.fields;
@@ -1943,7 +1943,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             if (opts.count) {
               res.json({
                 count: docs.count,
-                docs: cDocs
+                docs: cDocs,
               });
             } else {
               return res.json(cDocs);
@@ -1964,7 +1964,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 query: { _id: doc._id },
                 auth: req.user,
                 user: req.user,
-                req
+                req,
               });
               Object.assign(existingDoc, doc);
               await existingDoc.$save({ auth: req.user, user: req.user, req });
@@ -1987,7 +1987,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               query: await col.fromClientQuery(req.body),
               auth: req.user,
               user: req.user,
-              req
+              req,
             });
             res.sendStatus(200);
           } catch (err) {
@@ -2095,7 +2095,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 fields: { [col.labelField.pathName]: 1 },
                 auth: req.user,
                 user: req.user,
-                req
+                req,
               },
               results = await col.findAll(opts);
 
@@ -2172,7 +2172,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   {}
                 ),
                 limit: opts.query ? undefined : 1000,
-                auth: req.user
+                auth: req.user,
               });
 
               res.setHeader('content-type', 'text/csv');
@@ -2180,9 +2180,9 @@ Collection.prototype.connect = function({ app, auth, http }) {
                 collection: this,
                 documents,
                 columns: opts.fields.map(fieldName => ({
-                  field: fieldName
+                  field: fieldName,
                 })),
-                stream: res
+                stream: res,
               });
             } catch (err) {
               handleException(res, err);
@@ -2203,7 +2203,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const opts = {
               auth: req.user,
               user: req.user,
-              req
+              req,
             };
             const doc = await col.byId(req.params.id, opts);
             flattenProjection(opts);
@@ -2222,7 +2222,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               query: { _id: ObjectId(req.params.id) },
               auth: req.user,
               user: req.user,
-              req
+              req,
             });
             res.sendStatus(200);
           } catch (err) {
@@ -2256,10 +2256,10 @@ Collection.prototype.connect = function({ app, auth, http }) {
                   const opts = {
                     auth: req.user,
                     fields: {
-                      [field.spath]: 1
+                      [field.spath]: 1,
                     },
                     user: req.user,
-                    req
+                    req,
                   };
                   const doc = await col.byId(req.params.id, opts);
                   if (!doc) return res.sendStatus(404);
@@ -2288,7 +2288,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
             const opts = {
               auth: req.user,
               user: req.user,
-              req
+              req,
             };
             const results = await col.labels(req.params.search || '', opts);
             flattenProjection(opts);
@@ -2321,7 +2321,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               user: req.user,
               req,
               limit,
-              sort: { [field.spath]: 1 }
+              sort: { [field.spath]: 1 },
             };
             const results = await field.labels(
               doc,

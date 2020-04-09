@@ -71,8 +71,8 @@ const Page = new Tyr.Collection({
     _id: { is: 'mongoid' },
     path: { is: 'string' },
     content: { is: 'markup' },
-    fragment: { is: 'boolean' }
-  }
+    fragment: { is: 'boolean' },
+  },
 });
 
 export default Page;

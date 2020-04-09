@@ -7,7 +7,7 @@ function run() {
     type: 'find',
     hander(event: any) {
       event.document.email = adjustedEmail;
-    }
+    },
   });
   Tyr.byName.user.findAll({ query: {} }).then(docs => {
     const doc = docs[0];

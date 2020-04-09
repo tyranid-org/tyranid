@@ -31,5 +31,5 @@ export function paths(fn) {
 }
 
 Tyr.functions = {
-  paths
+  paths,
 };

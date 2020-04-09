@@ -2,14 +2,14 @@ import * as React from 'react';
 
 import { CloseOutlined } from '@ant-design/icons';
 
-import { Modal, Button, Spin } from 'antd';
+import { Modal, Spin } from 'antd';
 
 import { TyrAction, TyrActionFnOpts } from './action';
 import {
   TyrDecorator,
   TyrDecoratorProps,
   TyrDecoratorState,
-  withThemeAndParent
+  withThemeAndParent,
 } from './decorator';
 import { Tyr } from 'tyranid/client';
 
@@ -27,39 +27,32 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
 > {
   state: TyrModalState = {
     visible: false,
-    loading: false
+    loading: false,
   };
 
-  create?: TyrAction<D>;
-  edit?: TyrAction<D>;
-  save?: TyrAction<D>;
-  cancel?: TyrAction<D>;
   callerOpts?: TyrActionFnOpts<D>;
+  cancel?: TyrAction<D>;
+  entranceVoidActions: TyrAction<D>[] = [];
+  exitActions: TyrAction<D>[] = [];
 
   enact(action: TyrAction<D>) {
     if (!this.decorating) throw new Error('modal not connected');
 
-    if (action.is('create', 'search')) {
-      this.create = action.decorate({
-        action: opts => this.openModal(opts)
+    if (action.isEntrance()) {
+      const a = action.decorate({
+        action: opts => this.openModal(opts),
       });
       this.setState({});
-    } else if (action.is('edit', 'view')) {
-      const edit = action.decorate({
-        action: opts => this.openModal(opts)
-      });
-      this.edit = edit;
 
+      if (a.input === 0) this.entranceVoidActions.push(a);
       const parent = this.decorating.parent;
-      if (parent) parent.enact(edit as any);
-    } else if (action.is('save')) {
-      this.save = action.decorate({
-        action: () => this.closeModal()
+      if (parent) parent.enact(a as any);
+    } else if (action.isExit()) {
+      const a = action.decorate({
+        action: () => this.closeModal(),
       });
-    } else if (action.is('cancel')) {
-      this.cancel = action.decorate({
-        action: () => this.closeModal()
-      });
+      this.exitActions.push(a);
+      if (a.is('cancel')) this.cancel = a;
     }
   }
 
@@ -72,16 +65,13 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
 
   renderHeader() {
     const { loading } = this.state;
-    const { edit, create, cancel, callerOpts } = this;
+    const { cancel } = this;
 
-    const title =
-      (edit && callerOpts?.document && edit.title) ||
-      (create && create.title) ||
-      (edit && edit.title);
+    const title = this.decorating.parentAction?.title;
 
     return (
       <div className="tyr-modal-header">
-        <h4>{title}</h4>
+        {title && <h4>{title}</h4>}
         {!loading && cancel && (
           <CloseOutlined
             className="tyr-modal-close-icon"
@@ -93,47 +83,16 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
   }
 
   renderFooter() {
-    const { loading } = this.state;
-    const { save, cancel } = this;
-
-    return (
-      <div>
-        {cancel && (
-          <Button
-            key="back"
-            onClick={() => cancel.act({ caller: this.decorating })}
-            loading={loading}
-          >
-            {cancel.label(this.decorating as any)}
-          </Button>
-        )}
-        {save && (
-          <Button
-            key="submit"
-            type="primary"
-            onClick={() => save.act({ caller: this.decorating })}
-            loading={loading}
-          >
-            {save.label(this.decorating as any)}
-          </Button>
-        )}
-      </div>
-    );
+    return <div>{this.exitActions.map(a => a.button(this.decorating))}</div>;
   }
 
   render() {
-    const { cancel, create } = this;
+    const { cancel } = this;
     const { children, className } = this.props;
     const { visible, loading } = this.state;
 
     return (
       <>
-        {create && (
-          <Button onClick={() => create.act({ caller: this.decorating })}>
-            {create.label(this.decorating as any)}
-          </Button>
-        )}
-
         <Modal
           className={'tyr-modal' + (className ? ' ' + className : '')}
           visible={visible}

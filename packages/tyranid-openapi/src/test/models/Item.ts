@@ -9,22 +9,22 @@ export default new Tyr.Collection({
       {
         name: 'plan',
         partialFilterExpression: {
-          kind: 'plan'
-        }
+          kind: 'plan',
+        },
       },
       {
         name: 'task',
         partialFilterExpression: {
-          kind: 'task'
-        }
+          kind: 'task',
+        },
       },
       {
         name: 'project',
         partialFilterExpression: {
-          kind: 'project'
-        }
-      }
-    ]
+          kind: 'project',
+        },
+      },
+    ],
   },
   fields: {
     _id: { is: 'mongoid' },
@@ -34,14 +34,14 @@ export default new Tyr.Collection({
     planField: {
       is: 'string',
       openAPI: {
-        partition: 'plan'
-      }
+        partition: 'plan',
+      },
     },
     taskField: {
       is: 'string',
       openAPI: {
-        partition: 'task'
-      }
+        partition: 'task',
+      },
     },
     nestedPartitionField: {
       is: 'object',
@@ -50,11 +50,11 @@ export default new Tyr.Collection({
           is: 'string',
           openAPI: {
             partition: ['plan', 'project'],
-            name: 'renamedPartitionField'
-          }
+            name: 'renamedPartitionField',
+          },
         },
-        innerTaskField: { is: 'string', openAPI: { partition: 'task' } }
-      }
-    }
-  }
+        innerTaskField: { is: 'string', openAPI: { partition: 'task' } },
+      },
+    },
+  },
 });

@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { UploadOutlined } from '@ant-design/icons';
+
 import { Tyr } from 'tyranid/client';
 import { TyrField, createForm } from '../core';
 
@@ -7,23 +9,29 @@ export const TyrImport = createForm<Tyr.TyrImport>(
   {
     actions: [
       {
-        traits: ['view'],
+        traits: ['import'],
         input: 0,
         name: 'import',
-        action: ({ caller, self }) => {
+        label: (
+          <>
+            <UploadOutlined /> Import
+          </>
+        ),
+        utility: true,
+        action({ caller, self }) {
           const { collection } = caller;
 
           self.document = new Tyr.collections.TyrImport({
             collectionName: collection.name,
-            defaults: new collection()
+            defaults: new collection(),
           });
-        }
+        },
       },
       {
         traits: ['save'],
-        name: 'import'
-      }
-    ]
+        name: 'import',
+      },
+    ],
   },
   ({ document: importDoc }) => {
     //$scope.title = Tyr.pluralize(collection.label);

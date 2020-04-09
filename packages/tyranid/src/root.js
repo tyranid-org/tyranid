@@ -335,7 +335,7 @@ _.assign(Tyr, {
       delete Tyr.byId[collectionId];
       delete Type.byName[col.def.name];
     }
-  }
+  },
 });
 
 if (global.__TyranidGlobal) {

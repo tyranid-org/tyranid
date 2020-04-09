@@ -162,8 +162,8 @@ export function add() {
           {
             $and: [
               { $or: [{ blog: 1 }, { org: 1 }] },
-              { $or: [{ foo: 1 }, { bar: 2 }] }
-            ]
+              { $or: [{ foo: 1 }, { bar: 2 }] },
+            ],
           }
         );
       });
@@ -178,8 +178,8 @@ export function add() {
               { $or: [{ foo: 1 }, { bar: 2 }] },
               { a1: 1 },
               { b1: 1 },
-              { c1: 1 }
-            ]
+              { c1: 1 },
+            ],
           }
         );
       });
@@ -189,15 +189,15 @@ export function add() {
           {
             $and: [
               { $or: [{ blogId: { $in: [O('56fc2aacbb4c31a277f9a454')] } }] },
-              { $and: [{ _id: { $nin: [O('56fc2aacbb4c31a277f9a45b')] } }] }
-            ]
+              { $and: [{ _id: { $nin: [O('56fc2aacbb4c31a277f9a45b')] } }] },
+            ],
           },
           {},
           {
             $and: [
               { $or: [{ blogId: { $in: [O('56fc2aacbb4c31a277f9a454')] } }] },
-              { $and: [{ _id: { $nin: [O('56fc2aacbb4c31a277f9a45b')] } }] }
-            ]
+              { $and: [{ _id: { $nin: [O('56fc2aacbb4c31a277f9a45b')] } }] },
+            ],
           }
         );
       });
@@ -207,36 +207,36 @@ export function add() {
           {
             $or: [
               {
-                a: 3
-              }
-            ]
+                a: 3,
+              },
+            ],
           },
           {
             $or: [
               {
-                b: 'test'
-              }
+                b: 'test',
+              },
             ],
-            _id: '5567f2ab387fa974fc6f3a70'
+            _id: '5567f2ab387fa974fc6f3a70',
           },
           {
             $and: [
               {
                 $or: [
                   {
-                    a: 3
-                  }
-                ]
+                    a: 3,
+                  },
+                ],
               },
               {
                 $or: [
                   {
-                    b: 'test'
-                  }
-                ]
-              }
+                    b: 'test',
+                  },
+                ],
+              },
             ],
-            _id: '5567f2ab387fa974fc6f3a70'
+            _id: '5567f2ab387fa974fc6f3a70',
           }
         );
       });
@@ -300,7 +300,7 @@ export function add() {
           { $and: [{ a1: 1 }, { b1: 1 }] },
           {
             $or: [{ blog: 1 }, { org: 1 }],
-            $and: [{ a1: 1 }, { b1: 1 }]
+            $and: [{ a1: 1 }, { b1: 1 }],
           }
         );
       });
@@ -453,7 +453,7 @@ export function add() {
         const title = 'Browsers';
         const clientQuery = {
           title,
-          isbn: '5614c2f00000000000000000'
+          isbn: '5614c2f00000000000000000',
         };
         const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.title).to.be.eql(title);
@@ -463,8 +463,8 @@ export function add() {
       it('should variation 2', () => {
         const clientQuery = {
           isbn: {
-            $in: ['5614c2f00000000000000000', '5614c2f00000000000000001']
-          }
+            $in: ['5614c2f00000000000000000', '5614c2f00000000000000001'],
+          },
         };
         const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.isbn.$in.length).to.be.eql(2);
@@ -475,7 +475,7 @@ export function add() {
       it('should variation 3', () => {
         const clientQuery = {
           isbn: { $ne: '5614c2f00000000000000000' },
-          title: { $exists: true }
+          title: { $exists: true },
         };
         const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.title.$exists).to.be.eql(true);
@@ -486,8 +486,8 @@ export function add() {
         const clientQuery = {
           $or: [
             { title: { $exists: true } },
-            { isbn: { $in: ['5614c2f00000000000000000'] } }
-          ]
+            { isbn: { $in: ['5614c2f00000000000000000'] } },
+          ],
         };
         const serverQuery = Book.fromClientQuery(clientQuery);
         expect(serverQuery.$or[0].title.$exists).to.be.eql(true);
@@ -499,8 +499,8 @@ export function add() {
         const clientQuery = {
           name: {
             first: { $eq: 'An' },
-            last: 'Anon'
-          }
+            last: 'Anon',
+          },
         };
         const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery.name.first.$eq).to.be.eql('An');
@@ -510,7 +510,7 @@ export function add() {
       it('should variation 6', () => {
         const stringId = '5d6829a446f48f8b741a466a';
         const clientQuery = {
-          _id: stringId
+          _id: stringId,
         };
         const serverQuery = Role.fromClientQuery(clientQuery);
         expect(new ObjectId(stringId).equals(serverQuery._id)).to.eql(true);
@@ -519,8 +519,8 @@ export function add() {
       it('should support $in for array fields', () => {
         const clientQuery = {
           secretCodes: {
-            $in: ['5614c2f00000000000000000', '5614c2f00000000000000001']
-          }
+            $in: ['5614c2f00000000000000000', '5614c2f00000000000000001'],
+          },
         };
         const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery.secretCodes.$in.length).to.be.eql(2);
@@ -530,7 +530,7 @@ export function add() {
 
       it('should support support paths strings', () => {
         const clientQuery = {
-          'name.first': 'An'
+          'name.first': 'An',
         };
         const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery['name.first']).to.be.eql('An');
@@ -538,7 +538,7 @@ export function add() {
 
       it('should support fail on invalid paths strings', () => {
         const clientQuery = {
-          'name.foo': 'An'
+          'name.foo': 'An',
         };
 
         expect(() => {
@@ -548,7 +548,7 @@ export function add() {
 
       it('should support queries against denormalized properties', () => {
         const clientQuery = {
-          'organization_.owner_.name.last': 'Anon'
+          'organization_.owner_.name.last': 'Anon',
         };
         const serverQuery = User.fromClientQuery(clientQuery);
         expect(serverQuery['organization_.owner_.name.last']).to.eql('Anon');
@@ -556,7 +556,7 @@ export function add() {
 
       it('should support $exists', () => {
         const clientQuery = {
-          organization: { $exists: false }
+          organization: { $exists: false },
         };
         const serverQuery = User.fromClientQuery(clientQuery);
         const v = serverQuery.organization.$exists;

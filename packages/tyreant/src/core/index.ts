@@ -14,3 +14,4 @@ export * from './panel';
 export * from './router';
 export * from './table';
 export * from './theme';
+export * from './trait';

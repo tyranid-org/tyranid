@@ -33,7 +33,7 @@ const EmailType = new Type({
     }
 
     return true;
-  }
+  },
 });
 
 export default EmailType;

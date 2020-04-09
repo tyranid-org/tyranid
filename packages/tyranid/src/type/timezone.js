@@ -38,7 +38,7 @@ const TimeZone = new Type({
     }
 
     return true;
-  }
+  },
 });
 
 export default TimeZone;

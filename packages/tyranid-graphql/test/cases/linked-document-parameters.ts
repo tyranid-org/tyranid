@@ -6,7 +6,7 @@ export const linkedDocumentParameters = {
   name: 'Filtering by linked doc parameter should work',
   fn: async (t: TestContext) => {
     const burritoMakers = await Tyr.byName.team.findOne({
-      query: { name: 'burritoMakers' }
+      query: { name: 'burritoMakers' },
     });
     if (!burritoMakers) {
       throw new Error(`No burrito`);
@@ -37,21 +37,21 @@ export const linkedDocumentParameters = {
               {
                 name: 'burritoMakers',
                 organizationId: {
-                  name: 'Chipotle'
-                }
+                  name: 'Chipotle',
+                },
               },
               {
                 name: 'chipotleMarketing',
                 organizationId: {
-                  name: 'Chipotle'
-                }
-              }
-            ]
-          }
-        ]
-      }
+                  name: 'Chipotle',
+                },
+              },
+            ],
+          },
+        ],
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

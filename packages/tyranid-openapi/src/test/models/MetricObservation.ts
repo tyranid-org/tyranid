@@ -6,7 +6,7 @@ export default new Tyr.Collection({
   dbName: 'metricObservations',
   openAPI: {
     parent: 'metric',
-    useParentScope: true
+    useParentScope: true,
   },
   fields: {
     _id: { is: 'mongoid' },
@@ -18,9 +18,9 @@ export default new Tyr.Collection({
       is: 'object',
       fields: {
         hidden: {
-          is: 'boolean'
-        }
-      }
+          is: 'boolean',
+        },
+      },
     },
     nested2: {
       is: 'object',
@@ -28,9 +28,9 @@ export default new Tyr.Collection({
         notApiField: { is: 'string' },
         hidden: {
           is: 'boolean',
-          openAPI: true
-        }
-      }
-    }
-  }
+          openAPI: true,
+        },
+      },
+    },
+  },
 });

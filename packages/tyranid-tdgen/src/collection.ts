@@ -139,7 +139,7 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
       if (comments) {
         tags.push({
           tag: 'param ' + paramName,
-          text: comments
+          text: comments,
         });
       }
     }
@@ -149,7 +149,7 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
       if (comments) {
         tags.push({
           tag: 'return',
-          text: comments
+          text: comments,
         });
       }
     }
@@ -223,7 +223,7 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
           name: paramName,
           field: param,
           indent: 5,
-          noPopulatedProperty: true
+          noPopulatedProperty: true,
         });
       }
     }
@@ -234,7 +234,7 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
           name: 'return',
           field: returns as Tyr.FieldInstance,
           indent: 4,
-          noPopulatedProperty: true
+          noPopulatedProperty: true,
         }) + (returns.def.required ? '' : ' | undefined')
       : 'void';
     s += '>;';

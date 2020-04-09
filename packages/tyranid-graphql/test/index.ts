@@ -19,9 +19,9 @@ test.before(async () => {
     validate: [
       {
         dir: __dirname,
-        fileMatch: 'models.js'
-      }
-    ]
+        fileMatch: 'models.js',
+      },
+    ],
   });
 
   await createTestData();

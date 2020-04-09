@@ -5,7 +5,7 @@ const TyrImport = new Tyr.Collection({
   name: 'tyrImport',
   internal: true,
   express: {
-    rest: true
+    rest: true,
   },
   fields: {
     _id: { is: 'mongoid' },
@@ -13,14 +13,14 @@ const TyrImport = new Tyr.Collection({
     file: { is: 's3' },
     on: { is: 'datetime' },
     by: { link: 'user?' },
-    defaults: { is: 'object' }
+    defaults: { is: 'object' },
   },
   async fromClient(opts) {
     const user = opts.req.user;
 
     if (!this.on) this.on = new Date();
     if (!this.by) this.by = user._id;
-  }
+  },
 });
 
 TyrImport.on({
@@ -37,9 +37,9 @@ TyrImport.on({
         columns: Object.values(collection.fields)
           .filter(field => !field.readonly && field.relate !== 'ownedBy')
           .map(field => ({
-            field: field.name
+            field: field.name,
           })),
-        filename: await fileField.type.def.downloadS3(fileField, imp)
+        filename: await fileField.type.def.downloadS3(fileField, imp),
       });
 
       if (imp.defaults) {
@@ -58,7 +58,7 @@ TyrImport.on({
         await doc.$save();
       }
     }
-  }
+  },
 });
 
 export default TyrImport;

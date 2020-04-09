@@ -10,7 +10,7 @@ const UnitSystem = new Collection({
   fields: {
     _id: { is: 'integer' },
     name: { is: 'string', labelField: true },
-    url: { is: 'url' }
+    url: { is: 'url' },
   },
   values: [
     ['_id', 'name', 'url'],
@@ -18,12 +18,12 @@ const UnitSystem = new Collection({
     [
       1,
       'metric',
-      'https://en.wikipedia.org/wiki/International_System_of_Units'
+      'https://en.wikipedia.org/wiki/International_System_of_Units',
     ],
     [2, 'english', 'https://en.wikipedia.org/wiki/English_units'],
     [3, 'planck', 'https://en.wikipedia.org/wiki/Planck_units'],
-    [4, 'currency', 'Uses Fixer for exchange rates -- https://fixer.io']
-  ]
+    [4, 'currency', 'Uses Fixer for exchange rates -- https://fixer.io'],
+  ],
 });
 
 Tyr.UnitSystem = UnitSystem;

@@ -59,7 +59,7 @@ export function add() {
       it('should work with findOne() populate in options', async () => {
         const user = await User.findOne({
           query: { 'name.first': 'John' },
-          populate: 'organization'
+          populate: 'organization',
         });
         expect(user).to.be.an.instanceof(User);
         expect(user!.organization$).to.be.an.instanceof(Organization);
@@ -69,7 +69,7 @@ export function add() {
       it('should work with findAll() populate in options', async () => {
         const users = await User.findAll({
           query: {},
-          populate: 'organization'
+          populate: 'organization',
         });
         verifyPeople(users);
       });
@@ -116,7 +116,7 @@ export function add() {
           .then(
             User.populate({
               organization: $all,
-              'siblings.bestFriend': { $all: 1, organization: $all }
+              'siblings.bestFriend': { $all: 1, organization: $all },
             })
           )
           .then(users => {
@@ -156,7 +156,7 @@ export function add() {
         return Department.byId(1).then(department => {
           return department!
             .$populate({
-              'permissions.members': { $all: 1, organization: $all }
+              'permissions.members': { $all: 1, organization: $all },
             })
             .then(() => {
               const members$ = department!.permissions!.members$!;
@@ -176,7 +176,7 @@ export function add() {
           return department!
             .$populate({
               creator: { $all: 1, organization: $all },
-              head: { $all: 1, organization: $all }
+              head: { $all: 1, organization: $all },
             })
             .then(() => {
               expect(department!.creator$!._id).to.be.eql(2);
@@ -209,13 +209,13 @@ export function add() {
 
         department = (await Department.byId(1))!;
         await department.$populate({
-          creator: ['nameAndAge', { homepage: 1 }]
+          creator: ['nameAndAge', { homepage: 1 }],
         });
         expect(_.keys(department.creator$)).to.eql([
           '_id',
           'name',
           'age',
-          'homepage'
+          'homepage',
         ]);
       });
     });
@@ -228,9 +228,9 @@ export function add() {
           departments: [
             {
               secondName: 'some second name',
-              department: 1
-            }
-          ]
+              department: 1,
+            },
+          ],
         });
         expect((task!.departments![0] as any).department_!.name).to.eql(
           'Engineering'
@@ -244,8 +244,8 @@ export function add() {
           [{ organization: '1' }, { organization: 1 }],
           [
             { organization: { name: '1', $all } },
-            { organization: { name: 1, $all } }
-          ]
+            { organization: { name: 1, $all } },
+          ],
         ];
 
         for (const test of tests) {

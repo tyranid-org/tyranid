@@ -47,7 +47,7 @@ program
   if (!outFile) console.log = log;
 
   const stream = generateStream(Tyr.collections, {
-    type: program.type || 'isomorphic'
+    type: program.type || 'isomorphic',
   });
 
   if (outFile) {

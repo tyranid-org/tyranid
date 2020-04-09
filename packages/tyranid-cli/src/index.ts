@@ -75,12 +75,13 @@ yargs
   .scriptName('tyr')
   .option('db', {
     type: 'string',
-    describe: 'a MongoDB connection URL or a database name (will use localhost)'
+    describe:
+      'a MongoDB connection URL or a database name (will use localhost)',
   })
   .option('query', {
     alias: 'q',
     type: 'string',
-    describe: 'a MongoDB query'
+    describe: 'a MongoDB query',
   });
 
 const commandDir = __dirname + '/commands';
@@ -101,7 +102,7 @@ yargs
     boxen(`${orange.bold('tyranid')} command line tool v${version}`, {
       padding: 1,
       margin: 1,
-      borderStyle: 'single' as any
+      borderStyle: 'single' as any,
     }) + '$0 <cmd> [args]'
   )
   .demandCommand()

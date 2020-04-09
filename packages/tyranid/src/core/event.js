@@ -190,9 +190,9 @@ export default class Event {
         lastAliveOn: {
           $gte: moment()
             .subtract(30, 'minutes')
-            .toDate()
-        }
-      }
+            .toDate(),
+        },
+      },
     });
 
     const adaptedEvent = Tyr.adaptIllegalKeyCharAndEliminateRecursion(event);

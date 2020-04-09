@@ -23,20 +23,20 @@ export const enumCollection = {
     const result = await Tyr.graphql({
       query,
       variables: {
-        id: [ted.$id]
-      }
+        id: [ted.$id],
+      },
     });
 
     const expected = {
       data: {
         user: {
           status: {
-            name: 'Active'
-          }
-        }
-      }
+            name: 'Active',
+          },
+        },
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

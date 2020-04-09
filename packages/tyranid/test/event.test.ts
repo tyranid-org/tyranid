@@ -26,7 +26,7 @@ export function add() {
         type: 'remove',
         handler(/*event*/) {
           throw new Error('stop');
-        }
+        },
       });
 
       let u1;
@@ -54,7 +54,7 @@ export function add() {
         type: 'remove',
         handler(/*event*/) {
           throw new Error('stop');
-        }
+        },
       });
 
       let u1;
@@ -84,7 +84,7 @@ export function add() {
           for (const doc of await event.documents) {
             doc.pages = doc.pages ? doc.pages + 1 : 1;
           }
-        }
+        },
       });
 
       try {
@@ -121,7 +121,7 @@ export function add() {
               expect(doc._id).to.not.be.undefined;
             }
           }
-        }
+        },
       });
 
       try {
@@ -129,7 +129,7 @@ export function add() {
           { title: 'event-number-1' },
           { title: 'event-number-2' },
           { title: 'event-number-3' },
-          { title: 'event-number-4' }
+          { title: 'event-number-4' },
         ]);
 
         const books = await Book.findAll({ query: { title: /event-number/ } });
@@ -155,21 +155,21 @@ export function add() {
         type: 'insert',
         async handler(event) {
           insertInvoked++;
-        }
+        },
       });
 
       const dereg2 = Book.on({
         type: 'update',
         async handler(event) {
           updateInvoked++;
-        }
+        },
       });
 
       const dereg3 = Book.on({
         type: 'change',
         async handler(event) {
           changeInvoked++;
-        }
+        },
       });
 
       try {
@@ -195,7 +195,7 @@ export function add() {
           { title: 'event-number-1' },
           { title: 'event-number-2' },
           { title: 'event-number-3' },
-          { title: 'event-number-4' }
+          { title: 'event-number-4' },
         ]);
 
         let invoked = 0;
@@ -207,12 +207,12 @@ export function add() {
             expect(event.query).to.eql({ title: /event-number/ });
             expect(event.update.$set.description).to.eql('common');
             invoked++;
-          }
+          },
         });
 
         await Book.findAndModify({
           query: { title: /event-number/ },
-          update: { $set: { description: 'common' } }
+          update: { $set: { description: 'common' } },
         });
 
         expect(invoked).to.eql(2);
@@ -235,13 +235,13 @@ export function add() {
           for (const doc of await event.documents) {
             (doc as any)['manufacturedId'] = 'ID' + doc._id;
           }
-        }
+        },
       });
 
       try {
         const users = (await User.findAll({
           query: { _id: { $lte: 4 } },
-          sort: { _id: 1 }
+          sort: { _id: 1 },
         })) as (Tyr.User & { manufacturedId: string })[];
 
         expect(users.length).to.eql(4);
@@ -259,12 +259,12 @@ export function add() {
           for (const doc of await event.documents) {
             (doc as any)['manufacturedId'] = 'ID' + doc._id;
           }
-        }
+        },
       });
 
       try {
         const cursor = await User.find({
-          query: { _id: { $lte: 4 } }
+          query: { _id: { $lte: 4 } },
         });
 
         let user;
@@ -283,7 +283,7 @@ export function add() {
           for (const doc of await event.documents) {
             (doc as any)['manufacturedId'] = 'ID' + doc._id;
           }
-        }
+        },
       });
 
       try {
@@ -305,7 +305,7 @@ export function add() {
         type: 'find',
         async handler(event) {
           invoked++;
-        }
+        },
       });
 
       try {
@@ -324,11 +324,11 @@ export function add() {
         type: 'myCustomEvent',
         async handler(event) {
           count++;
-        }
+        },
       });
 
       await User.fire({
-        type: 'myCustomEvent'
+        type: 'myCustomEvent',
       });
 
       await Tyr.sleepUntil(() => !!count);
@@ -343,7 +343,7 @@ export function add() {
         type: 'change',
         async handler(event) {
           foundAuth = event.opts!.auth as Tyr.User;
-        }
+        },
       });
 
       try {
@@ -366,7 +366,7 @@ export function add() {
         async handler(event) {
           if (!bCalled) aCalledBeforeB = true;
           aCalled++;
-        }
+        },
       });
 
       const deregB = User.on({
@@ -374,7 +374,7 @@ export function add() {
         order: 0,
         async handler(event) {
           bCalled++;
-        }
+        },
       });
 
       try {

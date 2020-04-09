@@ -11,8 +11,8 @@ const configField = {
     hidden: { is: 'boolean' },
     width: { is: 'integer' },
     filter: { is: 'object' },
-    sortDirection: { is: 'string', note: 'ascend, descend, or null' }
-  }
+    sortDirection: { is: 'string', note: 'ascend, descend, or null' },
+  },
 };
 
 const ComponentConfig = new Collection({
@@ -26,33 +26,33 @@ const ComponentConfig = new Collection({
       is: 'array',
       of: configField,
       required: true,
-      defaultValue: []
+      defaultValue: [],
     },
 
     name: {
       is: 'string',
       help: 'Component Name (table, kanban, etc)',
-      required: true
+      required: true,
     },
     key: {
       is: 'string',
       help:
         'Idenifier to distinguish between like type components used in different areas',
-      defaultValue: 'default'
+      defaultValue: 'default',
     },
     documentUid: { is: 'string', requried: true },
     userId: { link: 'user?' },
     collectionId: { is: 'string', requried: true },
-    pageSize: { is: 'integer', defaultValue: 20 }
+    pageSize: { is: 'integer', defaultValue: 20 },
   },
   indexes: [
     {
-      key: { documentUid: 1, userId: 1, key: 1 }
+      key: { documentUid: 1, userId: 1, key: 1 },
     },
     {
-      key: { collectionId: 1, userId: 1, key: 1 }
-    }
-  ]
+      key: { collectionId: 1, userId: 1, key: 1 },
+    },
+  ],
 });
 
 export default ComponentConfig;

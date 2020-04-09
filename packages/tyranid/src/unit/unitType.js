@@ -15,7 +15,7 @@ const UnitType = new Collection({
     abbreviation: { is: 'string' },
     formula: { is: 'string' },
     normal: { is: 'string' },
-    note: { is: 'string' }
+    note: { is: 'string' },
   },
   values: [
     ['_id', 'name', 'formula'],
@@ -23,7 +23,7 @@ const UnitType = new Collection({
       1,
       'none',
       null,
-      { abbreviation: 'none', normal: 'none', note: 'No units.' }
+      { abbreviation: 'none', normal: 'none', note: 'No units.' },
     ],
     [2, 'length', null, { abbreviation: 'l', normal: 'm', note: 'Length.' }],
     [3, 'mass', null, { abbreviation: 'm', normal: 'kg', note: 'Mass.' }],
@@ -32,32 +32,32 @@ const UnitType = new Collection({
       5,
       'current',
       null,
-      { abbreviation: 'cur', normal: 'A', note: 'Electric current.' }
+      { abbreviation: 'cur', normal: 'A', note: 'Electric current.' },
     ],
     [
       6,
       'temperature',
       null,
-      { abbreviation: 't', normal: 'K', note: 'Thermodynamic temperature.' }
+      { abbreviation: 't', normal: 'K', note: 'Thermodynamic temperature.' },
     ],
     [
       7,
       'substance',
       null,
-      { abbreviation: 'sub', normal: 'mol', note: 'Amount of substance.' }
+      { abbreviation: 'sub', normal: 'mol', note: 'Amount of substance.' },
     ],
     [
       8,
       'luminosity',
       null,
-      { abbreviation: 'lum', normal: 'cd', note: 'Luminous intensity.' }
+      { abbreviation: 'lum', normal: 'cd', note: 'Luminous intensity.' },
     ],
     [9, 'currency', null, { abbreviation: 'c', note: '' }],
     [
       10,
       'bit',
       null,
-      { abbreviation: 'bit', normal: 'bit', note: 'Binary digit.' }
+      { abbreviation: 'bit', normal: 'bit', note: 'Binary digit.' },
     ],
     [11, 'area', 'l2'],
     [12, 'volume', 'l3'],
@@ -82,7 +82,7 @@ const UnitType = new Collection({
       30,
       'electricCharge',
       's1cur1',
-      { note: 'Electric charge, quantity of electricity.' }
+      { note: 'Electric charge, quantity of electricity.' },
     ],
     [
       31,
@@ -90,8 +90,8 @@ const UnitType = new Collection({
       'l2m1/s3cur1',
       {
         note:
-          'Voltage, electric tension, electric potential difference, electromotive force.'
-      }
+          'Voltage, electric tension, electric potential difference, electromotive force.',
+      },
     ],
     [32, 'capacitance', 's4cur2/m1l2'],
     [33, 'electricResistance', 'l2m1/s3cur2'],
@@ -106,7 +106,7 @@ const UnitType = new Collection({
       41,
       'absorbedDose',
       'l2/s2',
-      { note: 'Absorbed dose, specific energy (imparted), kerma.' }
+      { note: 'Absorbed dose, specific energy (imparted), kerma.' },
     ],
     [
       42,
@@ -114,8 +114,8 @@ const UnitType = new Collection({
       'l2/s2',
       {
         note:
-          'Dose equivalent, ambient dose equivalent, directional dose equivalent, personal dose equivalent, organ dose equivalent.'
-      }
+          'Dose equivalent, ambient dose equivalent, directional dose equivalent, personal dose equivalent, organ dose equivalent.',
+      },
     ],
     [43, 'catalyticActivity', 'sub/s'],
     [44, 'dynamicViscosity', 'm1/l1s1'],
@@ -128,7 +128,7 @@ const UnitType = new Collection({
       50,
       'specificEntropy',
       'l2/s2t1',
-      { note: 'Specific heat capacity, specific entropy.' }
+      { note: 'Specific heat capacity, specific entropy.' },
     ],
     [51, 'specificEnergy', 'l2/s2'],
     [52, 'thermalConductivity', 'l1m1/s3t1'],
@@ -143,7 +143,7 @@ const UnitType = new Collection({
       60,
       'molarEntropy',
       'l2m1/s2t1sub1',
-      { note: 'Molar entropy, molar heat capacity.' }
+      { note: 'Molar entropy, molar heat capacity.' },
     ],
     [61, 'exposure', 's1cur1/m1'],
     [62, 'absorbedDoseRate', 'l2/s3'],
@@ -153,10 +153,10 @@ const UnitType = new Collection({
       65,
       'catalyticConcentration',
       'sub1/l3s1',
-      { note: 'Catalytic (activity) concentration.' }
+      { note: 'Catalytic (activity) concentration.' },
     ],
-    [66, 'bitRate', 'bit/s']
-  ]
+    [66, 'bitRate', 'bit/s'],
+  ],
 });
 
 const bySid = {};
@@ -294,7 +294,7 @@ function parseComponents(components) {
 
   return {
     sid: sid,
-    components: components
+    components: components,
   };
 }
 

@@ -7,15 +7,15 @@ const MarkupType = new Tyr.Collection({
   internal: true,
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string', labelField: true }
+    name: { is: 'string', labelField: true },
   },
   values: [
     ['_id', 'name'],
 
     [1, 'HTML'],
     [2, 'Markdown'],
-    [3, 'SASS'] // ???
-  ]
+    [3, 'SASS'], // ???
+  ],
 });
 
 Tyr.MarkupType = MarkupType;

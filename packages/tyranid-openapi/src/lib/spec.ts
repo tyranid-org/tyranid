@@ -2,7 +2,7 @@ import {
   OAuth2ApplicationSecurity,
   Path,
   Security,
-  Spec
+  Spec,
 } from 'swagger-schema-official';
 
 import { Tyr as Tyranid } from 'tyranid';
@@ -12,7 +12,7 @@ import {
   PartitionedCollectionSchemaOptions,
   SchemaContainer,
   SchemaOptions,
-  CollectionSchemaOptions
+  CollectionSchemaOptions,
 } from '../interfaces';
 import {
   each,
@@ -23,7 +23,7 @@ import {
   yaml,
   pascal,
   sortByName,
-  isPartitionedOptions
+  isPartitionedOptions,
 } from '../utils';
 import ErrorResponse from './error-schema';
 import { path } from './path';
@@ -52,7 +52,7 @@ export function spec(Tyr: typeof Tyranid, opts: Options = {}): Spec | string {
     title = 'Public API',
     host = 'localhost:9000',
     basePath = '/',
-    schemes = ['https']
+    schemes = ['https'],
   } = opts;
 
   const oauth2Scopes = {};
@@ -62,13 +62,13 @@ export function spec(Tyr: typeof Tyranid, opts: Options = {}): Spec | string {
     info: {
       description,
       title,
-      version
+      version,
     },
     basePath,
     schemes,
     host,
     paths: {} as { [key: string]: Path },
-    definitions: {} as { [key: string]: ExtendedSchema }
+    definitions: {} as { [key: string]: ExtendedSchema },
   };
 
   const lookup = {} as { [key: string]: SchemaContainer };
@@ -83,7 +83,7 @@ export function spec(Tyr: typeof Tyranid, opts: Options = {}): Spec | string {
       return {
         name: result.pascalName,
         result,
-        schema: result.schema
+        schema: result.schema,
       };
     });
 
@@ -155,7 +155,7 @@ export function spec(Tyr: typeof Tyranid, opts: Options = {}): Spec | string {
     securityDefinitions: createSecurityDefinitions(
       scheme + '://' + host,
       oauth2Scopes
-    )
+    ),
   });
 
   const result = validate(specObject);

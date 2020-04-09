@@ -140,7 +140,7 @@ function patchObj(a, patch, props) {
         Tyr.warn(
           {
             e: 'historical',
-            m: `the array at path "${prop}" in the patch is already empty`
+            m: `the array at path "${prop}" in the patch is already empty`,
           },
           new Error()
         );
@@ -335,7 +335,7 @@ const ns = {
   diffPropsObj,
 
   diffArr,
-  patchArr
+  patchArr,
 };
 
 Tyr.diff = ns;

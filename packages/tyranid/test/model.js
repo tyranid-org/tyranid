@@ -33,7 +33,7 @@ export default async function initModel() {
   // Test validate load models and byName
   Tyr._validateCalled = false;
   Tyr.validate({
-    glob: __dirname + '/models/**/*.js'
+    glob: __dirname + '/models/**/*.js',
     //dir: __dirname + '/models',
     // note, we want fileMatch to match the "subdir" directory to test that tyranid ignores directories
     //fileMatch: '[a-z].*'
@@ -52,7 +52,7 @@ export default async function initModel() {
   await Organization.db.deleteMany({});
   await Organization.db.insertMany([
     { _id: 1, name: 'Acme Unlimited' },
-    { _id: 2, name: '123 Construction', owner: 3 }
+    { _id: 2, name: '123 Construction', owner: 3 },
   ]);
   await Department.db.deleteMany({});
   await Department.db.insertMany([
@@ -61,13 +61,13 @@ export default async function initModel() {
       name: 'Engineering',
       creator: 2,
       head: 3,
-      permissions: { members: [2, 3] }
-    }
+      permissions: { members: [2, 3] },
+    },
   ]);
   await Role.db.deleteMany({});
   await Role.db.insertMany([
     { _id: AdministratorRoleId, name: 'Administrator' },
-    { _id: UserRoleId, name: 'User' }
+    { _id: UserRoleId, name: 'User' },
   ]);
   await User.db.deleteMany({});
   await User.insert([
@@ -78,7 +78,7 @@ export default async function initModel() {
       name: { first: 'An', last: 'Anon' },
       title: 'Developer',
       job: 1,
-      backupJobs: [3]
+      backupJobs: [3],
     },
     {
       _id: 2,
@@ -87,14 +87,14 @@ export default async function initModel() {
       homepage: 'https://www.tyranid.org',
       siblings: [
         { name: 'Tom Doe', bestFriend: 1, friends: [{ user: 3 }, { user: 1 }] },
-        { name: 'George Doe', friends: [{ user: 1 }, { user: 3 }] }
+        { name: 'George Doe', friends: [{ user: 1 }, { user: 3 }] },
       ],
       age: 35,
       ageAppropriateSecret: 'Eats at Chipotle way to much...',
       roles: [
         { role: AdministratorRoleId, active: true },
-        { role: UserRoleId, active: true }
-      ]
+        { role: UserRoleId, active: true },
+      ],
     },
     {
       _id: 3,
@@ -102,19 +102,19 @@ export default async function initModel() {
       name: { first: 'Jane', last: 'Doe' },
       siblings: [
         { name: 'Jill Doe', friends: [{ user: 1 }, { user: 2 }] },
-        { name: 'Bill Doe', friends: [{ user: 2 }, { user: 3 }] }
+        { name: 'Bill Doe', friends: [{ user: 2 }, { user: 3 }] },
       ],
       age: 20,
-      ageAppropriateSecret: 'Not a fan of construction companies...'
+      ageAppropriateSecret: 'Not a fan of construction companies...',
     },
-    { _id: 4, organization: 2, name: { first: 'Jill', last: 'Doe' }, age: 20 }
+    { _id: 4, organization: 2, name: { first: 'Jill', last: 'Doe' }, age: 20 },
   ]);
   await Book.db.deleteMany({});
   await Book.db.insertMany([
-    { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' }
+    { _id: 1, isbn: BookIsbn, title: 'Tyranid User Guide' },
   ]);
   await Book.db.insertMany([
-    { _id: 2, isbn: Book2Isbn, title: 'Home Gardening 101' }
+    { _id: 2, isbn: Book2Isbn, title: 'Home Gardening 101' },
   ]);
   await Task.db.deleteMany({});
   await Task.db.insertMany([
@@ -122,28 +122,28 @@ export default async function initModel() {
       _id: 1,
       title: 'Write instance validation tests',
       assigneeUid: User.idToUid(1),
-      manual: BookIsbn
-    }
+      manual: BookIsbn,
+    },
   ]);
   await Widget.db.deleteMany({});
   await Widget.db.insertMany([
     {
       name: 'Toxulin',
       creator: 1,
-      tags: ['toxic']
+      tags: ['toxic'],
     },
     {
       name: 'Sundae',
       creator: 1,
-      tags: ['food']
-    }
+      tags: ['food'],
+    },
   ]);
   await TyrSchema.db.deleteMany({});
   await TyrSchema.db.insertMany([
     {
       collection: User.id,
       match: {
-        organization: 1
+        organization: 1,
       },
       type: TyrSchemaType.PARTIAL._id,
       def: {
@@ -154,18 +154,18 @@ export default async function initModel() {
             is: 'object',
             custom: true,
             fields: {
-              nested1: { is: 'integer', label: 'Nested 1' }
-            }
-          }
-        }
-      }
-    }
+              nested1: { is: 'integer', label: 'Nested 1' },
+            },
+          },
+        },
+      },
+    },
   ]);
   await TyrSchema.db.insertMany([
     {
       collection: User.id,
       match: {
-        organization: 1
+        organization: 1,
       },
       type: TyrSchemaType.PARTIAL._id,
       def: {
@@ -174,12 +174,12 @@ export default async function initModel() {
             is: 'object',
             custom: true,
             fields: {
-              nested2: { is: 'integer', label: 'Nested 2' }
-            }
-          }
-        }
-      }
-    }
+              nested2: { is: 'integer', label: 'Nested 2' },
+            },
+          },
+        },
+      },
+    },
   ]);
   Tyr.invalidateSchemaCache();
   await Tyr.Log.remove({});

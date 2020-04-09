@@ -8,9 +8,9 @@ var Department = {
     secondName: { is: 'string' },
     department: {
       link: 'department',
-      denormal: { name: 1, 'permissions.members': 1 }
-    }
-  }
+      denormal: { name: 1, 'permissions.members': 1 },
+    },
+  },
 };
 
 var Task = new tyr.Collection({
@@ -25,16 +25,16 @@ var Task = new tyr.Collection({
     assigneeUid: {
       is: 'uid',
       label: 'Assignee UID',
-      of: [User, 'department']
+      of: [User, 'department'],
     },
     departments: {
       is: 'array',
       of: Department,
       pathLabel: '',
-      numbering: 'ordinal'
+      numbering: 'ordinal',
     },
-    manual: { link: 'book' }
-  }
+    manual: { link: 'book' },
+  },
 });
 
 export default Task;

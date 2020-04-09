@@ -14,15 +14,15 @@ export default new Tyr.Collection({
       of: {
         is: 'object',
         keys: { is: 'string' },
-        of: { is: 'object', keys: { is: 'string' }, of: { link: 'user' } }
-      }
+        of: { is: 'object', keys: { is: 'string' }, of: { link: 'user' } },
+      },
     },
     list: {
       is: 'array',
       of: {
         is: 'object',
-        fields: { type: { is: 'integer' }, name: { is: 'string' } }
-      }
-    }
-  }
+        fields: { type: { is: 'integer' }, name: { is: 'string' } },
+      },
+    },
+  },
 });

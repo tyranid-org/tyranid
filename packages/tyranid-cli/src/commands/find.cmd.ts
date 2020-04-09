@@ -9,11 +9,11 @@ yargs.command({
     yargs
       .positional('collection', {
         type: 'string',
-        describe: 'The collection to extract from'
+        describe: 'The collection to extract from',
       })
       .positional('field', {
         type: 'string',
-        describe: 'The field to project'
+        describe: 'The field to project',
       }),
   async handler(argv) {
     const { collection, field } = argv;
@@ -33,5 +33,5 @@ yargs.command({
 
     console.info(JSON.stringify(val, undefined, 2));
     exit();
-  }
+  },
 });

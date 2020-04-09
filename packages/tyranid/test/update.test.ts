@@ -30,8 +30,8 @@ export function add() {
         const clientUpdate = {
           $set: {
             title,
-            isbn: '5614c2f00000000000000000'
-          }
+            isbn: '5614c2f00000000000000000',
+          },
         };
         const serverUpdate = Book.fromClientUpdate(clientUpdate);
         expect(serverUpdate.$set.title).to.be.eql(title);
@@ -40,7 +40,7 @@ export function add() {
 
       it('should support support paths strings', () => {
         const clientUpdate = {
-          'name.first': 'An'
+          'name.first': 'An',
         };
         const serverUpdate = User.fromClientQuery(clientUpdate);
         expect(serverUpdate['name.first']).to.be.eql('An');
@@ -49,8 +49,8 @@ export function add() {
       it('should support fail on invalid paths strings', () => {
         const clientUpdate = {
           $set: {
-            'name.foo': 'An'
-          }
+            'name.foo': 'An',
+          },
         };
 
         expect(() => {

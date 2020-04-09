@@ -6,6 +6,7 @@ import { observer } from 'mobx-react';
 import { Tyr } from 'tyranid/client';
 
 import { Filter } from './filter';
+import { isEntranceTrait } from './trait';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts, ActionSet } from './action';
 import { TyrDecorator } from './decorator';
 import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
@@ -107,7 +108,7 @@ export class TyrComponent<
 
   refreshPaths() {
     if (this.props.paths) {
-      this.paths = this.props.paths.map((laxFieldProps) =>
+      this.paths = this.props.paths.map(laxFieldProps =>
         this.resolveFieldLaxProps(laxFieldProps)
       );
     }
@@ -148,7 +149,7 @@ export class TyrComponent<
           paths = parent.props.paths;
 
         if (paths)
-          this.paths = paths.map((laxPathProps) =>
+          this.paths = paths.map(laxPathProps =>
             this.resolveFieldLaxProps(laxPathProps)
           );
       }
@@ -173,8 +174,21 @@ export class TyrComponent<
   }
   */
 
+  /*
+   * * * SELECTION
+   */
+
+  @observable
+  selectedIds: string[] = [];
+
   actionFnOpts(): TyrActionFnOpts<D> {
-    return { caller: this } as any;
+    return {
+      caller: this,
+      document: this.document,
+      documents: this.selectedIds.map(
+        id => this.collection!.byIdIndex[id]
+      ) as D[],
+    } as any;
   }
 
   parentAction: TyrAction<D> | undefined;
@@ -221,13 +235,19 @@ export class TyrComponent<
     let searchAction: TyrAction<D> | undefined;
 
     const { traits } = this.props;
-    const enacted = (trait: Tyr.ActionTrait) =>
-      actions.some((a) => a.is(trait));
+    const enacted = (trait: Tyr.ActionTrait) => actions.some(a => a.is(trait));
+    const enactedEntrance = () =>
+      actions.some(a => isEntranceTrait(a.traits[0]));
+
     const auto = (trait: Tyr.ActionTrait) => {
       if (enacted(trait)) return false;
       let def = true;
 
       switch (trait) {
+        case 'import':
+        case 'export':
+          return false;
+
         case 'create':
           if (enacted('search')) return false;
           break;
@@ -258,12 +278,12 @@ export class TyrComponent<
       if (!actFn) {
         if (action.is('edit', 'view')) {
           if (this.canMultiple && parentLink) {
-            actFn = (opts) => {
+            actFn = opts => {
               opts.self._parentDocument = opts.document;
               opts.self.requery();
             };
           } else if (action.input === '*' || action.input === '0..*') {
-            actFn = async (opts) => {
+            actFn = async opts => {
               const { documents } = opts;
               if (documents) this.documents = documents;
 
@@ -274,13 +294,13 @@ export class TyrComponent<
               }
             };
           } else {
-            actFn = async (opts) => {
+            actFn = async opts => {
               await this.find(opts.document!);
               if (!this.document) this.document = this.createDocument(opts);
             };
           }
         } else if (action.is('create', 'search')) {
-          actFn = (opts) => {
+          actFn = opts => {
             this.document = this.createDocument(opts);
           };
         } else if (action.is('cancel')) {
@@ -293,7 +313,7 @@ export class TyrComponent<
       }
 
       if (action.is('save')) {
-        action.action = (opts) => {
+        action.action = opts => {
           // we assign to the existing opts here rather than create a new opts because
           // we are given a TyrActionFnOptsWrapper
           opts.document = this.document;
@@ -301,10 +321,10 @@ export class TyrComponent<
         };
       }
 
-      if (action.is('edit', 'view', 'create', 'search')) {
+      if (action.isEntrance()) {
         const actFn = action.action;
 
-        action.action = (opts) => {
+        action.action = opts => {
           this.parentAction = action;
           actFn!(opts);
         };
@@ -326,15 +346,12 @@ export class TyrComponent<
 
     for (const action of actions) enactUp(action);
 
-    // Automatic Actions
+    // Default Actions
 
     if (
       this.canEdit &&
       !enacted('create') &&
-      ((!parentLink &&
-        !enacted('view') &&
-        !enacted('edit') &&
-        auto('create')) ||
+      ((!parentLink && !enactedEntrance() && auto('create')) ||
         traits?.includes('create'))
     ) {
       enactUp({
@@ -383,7 +400,8 @@ export class TyrComponent<
       });
     }
 
-    // auto actions
+    // Automatic Actions
+
     if (!parent && (createAction || searchAction)) {
       setTimeout(() => {
         (createAction || searchAction)!.act({});
@@ -691,7 +709,7 @@ export class TyrComponent<
     sortDirection?: TyrSortDirection
   ) => {
     if (this.componentConfig) {
-      const fields = this.componentConfig.fields.forEach((f) => {
+      const fields = this.componentConfig.fields.forEach(f => {
         if (!columnName) {
           delete f.sortDirection;
         } else if (f.name === columnName) {
@@ -714,7 +732,7 @@ export class TyrComponent<
 
   updateConfigFilter = async (columnName?: string, filter?: Object) => {
     if (this.componentConfig) {
-      const fields = this.componentConfig.fields.forEach((f) => {
+      const fields = this.componentConfig.fields.forEach(f => {
         if (!columnName) {
           delete f.filter;
         } else if (f.name === columnName) {

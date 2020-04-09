@@ -11,8 +11,8 @@ const root = __dirname.replace(`${path.sep}test`, '');
 test.before(async () => {
   await Tyr.config({
     validate: [
-      { dir: root + `${path.sep}test${path.sep}models`, fileMatch: '.*.js' }
-    ]
+      { dir: root + `${path.sep}test${path.sep}models`, fileMatch: '.*.js' },
+    ],
   });
 });
 
@@ -81,7 +81,7 @@ test('Should be able to break union type', t => {
   const wrapped = wordWrap(unionType, {
     split: /\|/,
     breakWords: false,
-    join: '|'
+    join: '|',
   });
   const postWrapping = wrapped.join('|').split('|');
   const union = unionType.split('|');

@@ -14,8 +14,8 @@ const Instance = new Collection({
   internal: true,
   fields: {
     _id: { is: 'string' },
-    lastAliveOn: { is: 'date' }
-  }
+    lastAliveOn: { is: 'date' },
+  },
 });
 
 let compiled = false;
@@ -48,7 +48,7 @@ Instance.boot = async function(stage /*, pass*/) {
     }
 
     await Instance.db.deleteMany({
-      _id: { $in: oldInstances.map(i => i._id) }
+      _id: { $in: oldInstances.map(i => i._id) },
     });
 
     try {
@@ -70,13 +70,13 @@ Instance.boot = async function(stage /*, pass*/) {
     function heartbeat() {
       Instance.db.updateOne(
         {
-          _id: instanceId
+          _id: instanceId,
         },
         {
-          $set: { lastAliveOn: new Date() }
+          $set: { lastAliveOn: new Date() },
         },
         {
-          upsert: true
+          upsert: true,
         }
       );
     }
@@ -90,7 +90,7 @@ Instance.boot = async function(stage /*, pass*/) {
     eventdb = await Tyr.db.createCollection(instanceId + '_event', {
       capped: true,
       size: 1000000,
-      max: 10000
+      max: 10000,
     });
 
     const now = new Date();
@@ -114,7 +114,7 @@ Instance.boot = async function(stage /*, pass*/) {
     const eventStream = eventdb
       .find(
         {
-          date: { $gte: now }
+          date: { $gte: now },
         },
         {
           tailable: true,
@@ -124,7 +124,7 @@ Instance.boot = async function(stage /*, pass*/) {
           await_data: true,
 
           timeout: false,
-          numberOfRetries: Number.MAX_VALUE
+          numberOfRetries: Number.MAX_VALUE,
         }
       )
       .stream();

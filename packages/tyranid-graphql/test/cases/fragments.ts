@@ -28,16 +28,16 @@ export const fragments = {
           name: 'ben',
           teamIds: [
             {
-              name: 'burritoMakers'
+              name: 'burritoMakers',
             },
             {
-              name: 'chipotleMarketing'
-            }
-          ]
-        }
-      }
+              name: 'chipotleMarketing',
+            },
+          ],
+        },
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

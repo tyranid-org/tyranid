@@ -7,8 +7,8 @@ var Friend = {
   fields: {
     user: { link: 'user' },
     birthDate: { is: 'date' },
-    age: { is: 'integer' }
-  }
+    age: { is: 'integer' },
+  },
 };
 
 var Sibling = {
@@ -17,8 +17,8 @@ var Sibling = {
     name: { is: 'string' },
     bestFriend: { link: 'user' },
     friends: { is: 'array', of: Friend },
-    scores: { is: 'array', of: 'double' }
-  }
+    scores: { is: 'array', of: 'double' },
+  },
 };
 
 var RoleStatus = {
@@ -26,8 +26,8 @@ var RoleStatus = {
   fields: {
     role: { link: 'role' },
     active: { is: 'boolean' },
-    duration: { is: 'integer' }
-  }
+    duration: { is: 'integer' },
+  },
 };
 
 Sibling.Friend = Friend;
@@ -41,11 +41,11 @@ var User = new tyr.Collection({
   indexes: [
     {
       key: { 'name.first': 1, 'name.last': 1 },
-      name: 'firstLastName'
-    }
+      name: 'firstLastName',
+    },
   ],
   express: {
-    rest: true
+    rest: true,
   },
   fields: {
     _id: { is: 'integer' },
@@ -57,7 +57,7 @@ var User = new tyr.Collection({
       db: true,
       get: function() {
         return this.name ? this.name.first + ' ' + this.name.last : undefined;
-      }
+      },
     },
 
     name: {
@@ -68,8 +68,8 @@ var User = new tyr.Collection({
       fields: {
         first: { is: 'string', label: 'First Name', required: true },
         last: { is: 'string', label: 'Last Name', pathLabel: 'Last' },
-        suffices: { is: 'array', of: 'string' }
-      }
+        suffices: { is: 'array', of: 'string' },
+      },
     },
 
     address: {
@@ -78,8 +78,8 @@ var User = new tyr.Collection({
       fields: {
         street: { is: 'string' },
         zip: { is: 'integer' },
-        notes: { is: 'array', of: 'string' }
-      }
+        notes: { is: 'array', of: 'string' },
+      },
     },
 
     birthDate: { is: 'date', label: () => 'Dyn Birth Date' },
@@ -96,19 +96,19 @@ var User = new tyr.Collection({
       $base: { is: 'string' },
 
       oldName: { deprecated: 'use name.first and name.last' },
-      ssn: { client: 'conditional' }
+      ssn: { client: 'conditional' },
     },
 
     favoriteColor: {
       is: 'string',
-      client: (value, opts, proj) => proj && proj.favoriteColor
+      client: (value, opts, proj) => proj && proj.favoriteColor,
     },
 
     ageAppropriateSecret: {
       is: 'string',
       client: function() {
         return this.age > 30;
-      }
+      },
     },
 
     siblings: { is: 'array', of: Sibling },
@@ -116,7 +116,7 @@ var User = new tyr.Collection({
     title: { is: 'string', defaultValue: 'Employee' },
     organization: {
       link: 'organization',
-      denormal: { name: 1, owner: { name: 1 } }
+      denormal: { name: 1, owner: { name: 1 } },
     },
     department: { link: 'department' },
     homepage: { is: 'url' },
@@ -124,7 +124,7 @@ var User = new tyr.Collection({
       is: 'integer',
       defaultValue: function() {
         return 0;
-      }
+      },
     },
     createdAt: { is: 'datetime' },
     secretCodes: { is: 'array', of: 'mongoid' },
@@ -133,25 +133,25 @@ var User = new tyr.Collection({
 
     lochNess: { link: 'lochNess?' },
 
-    custom: { is: 'object', custom: true }
+    custom: { is: 'object', custom: true },
   },
   methods: {
     canDrink: {
       return: { is: 'boolean' },
       fn() {
         return this.age >= 21;
-      }
-    }
+      },
+    },
   },
   service: {
     canServe: {
       params: {
         user: {
           required: true,
-          link: 'user'
-        }
+          link: 'user',
+        },
       },
-      return: 'boolean'
+      return: 'boolean',
     },
     canServeArray: {
       params: {
@@ -159,18 +159,18 @@ var User = new tyr.Collection({
           is: 'array',
           required: true,
           of: {
-            link: 'user'
-          }
-        }
+            link: 'user',
+          },
+        },
       },
-      return: 'integer'
-    }
+      return: 'integer',
+    },
   },
   projections: {
     nameAndAge: {
       name: 1,
-      age: 1
-    }
+      age: 1,
+    },
   },
   toClient: function() {
     if (this.foo) {
@@ -178,7 +178,7 @@ var User = new tyr.Collection({
     }
   },
   customMeta1: { name: 'foo' },
-  customMeta2: { name: 'bar' }
+  customMeta2: { name: 'bar' },
 });
 
 User.service = {
@@ -190,7 +190,7 @@ User.service = {
   async canServeArray(ids) {
     const users = await User.byIds(ids);
     return users.filter(user => user.age >= 21).length;
-  }
+  },
 };
 
 User.Sibling = Sibling;

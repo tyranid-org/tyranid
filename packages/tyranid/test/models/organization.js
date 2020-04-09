@@ -5,7 +5,7 @@ var Organization = new tyr.Collection({
   name: 'organization',
   historical: 'patch',
   express: {
-    rest: true
+    rest: true,
   },
   fields: {
     _id: { is: 'integer' },
@@ -14,9 +14,9 @@ var Organization = new tyr.Collection({
       link: 'user',
       relate: 'ownedBy',
       historical: true,
-      denormal: { name: 1 }
-    }
-  }
+      denormal: { name: 1 },
+    },
+  },
 });
 
 export default Organization;

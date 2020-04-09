@@ -5,7 +5,7 @@ import {
   CollectionSchemaOptions,
   FieldSchemaOptions,
   SchemaOptions,
-  PartitionedCollectionSchemaOptions
+  PartitionedCollectionSchemaOptions,
 } from './interfaces';
 
 import { Parameter, Schema, Spec } from 'swagger-schema-official';
@@ -130,7 +130,7 @@ export function validate(spec: Spec) {
 
   return {
     valid: result,
-    errors: (ajv.errors || []).slice()
+    errors: (ajv.errors || []).slice(),
   };
 }
 

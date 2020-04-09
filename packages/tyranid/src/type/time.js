@@ -38,7 +38,7 @@ const TimeType = new Type({
     if (where) {
       query[path.name] = {
         $gte: new Date(where.startDate),
-        $lte: new Date(where.endDate)
+        $lte: new Date(where.endDate),
       };
     }
   },
@@ -52,7 +52,7 @@ const TimeType = new Type({
     if (value !== undefined && !(value instanceof Date)) {
       return new UserError({ field, suffix: 'is not a date' });
     }
-  }
+  },
 });
 
 export default TimeType;

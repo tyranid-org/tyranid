@@ -65,7 +65,7 @@ const fakeSecure = {
     } else if (collection.name === 'Widget') {
       query.SECURED = {
         perm,
-        auth: auth.$uid
+        auth: auth.$uid,
       };
     }
 
@@ -82,7 +82,7 @@ const fakeSecure = {
     }
 
     return true;
-  }
+  },
 };
 
 chai.use(chaiAsPromised);
@@ -113,13 +113,13 @@ describe('tyranid', function() {
       meta: {
         collection: {
           customMeta1: {
-            client: true
+            client: true,
           },
           customMeta2: {
-            client: false
-          }
-        }
-      }
+            client: false,
+          },
+        },
+      },
     });
 
     await Tyr.db.dropDatabase();
@@ -140,7 +140,7 @@ describe('tyranid', function() {
         ['599a2e1453ceg2d33e99938c', false],
         ['599a2e145 ceg2d33e99938c', false],
         ['599a2e145ceg2d33e99938c', false],
-        ['599a2e1453ce22d33e99938c', true]
+        ['599a2e1453ce22d33e99938c', true],
       ];
 
       for (const test of tests) {
@@ -153,7 +153,7 @@ describe('tyranid', function() {
   describe('Mongo object utilities', () => {
     it('should support adaptIllegalKeyCharAndEliminateRecursion()', () => {
       const r1 = {
-        foo: 1
+        foo: 1,
       };
 
       (r1 as any).bar = r1;
@@ -165,26 +165,29 @@ describe('tyranid', function() {
         [r1, { foo: 1, bar: '_recurse' }],
         [
           { foo: 1, bar: r1 },
-          { foo: 1, bar: { foo: 1, bar: '_recurse' } }
+          { foo: 1, bar: { foo: 1, bar: '_recurse' } },
         ],
         [
           { $foo: 1, bar: r1 },
-          { _$foo: 1, bar: { foo: 1, bar: '_recurse' } }
+          { _$foo: 1, bar: { foo: 1, bar: '_recurse' } },
         ],
         [
           { foo: 1, bar: { $foo: 1 } },
-          { foo: 1, bar: { _$foo: 1 } }
+          { foo: 1, bar: { _$foo: 1 } },
         ],
         [
           {
-            $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }]
+            $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }],
           },
           {
-            _$or: [{ title: new RegExp('foo', 'i') }, { foo: { _$in: [1, 2] } }]
-          }
+            _$or: [
+              { title: new RegExp('foo', 'i') },
+              { foo: { _$in: [1, 2] } },
+            ],
+          },
         ],
         [oid1, oid1],
-        [{ foo: oid1 }, { foo: oid1 }]
+        [{ foo: oid1 }, { foo: oid1 }],
       ];
 
       for (const test of tests) {
@@ -230,7 +233,7 @@ describe('tyranid', function() {
         [oid1, oid1_, true],
         [oid1, oid1.toString(), true],
         [oid1.toString(), oid1.toString(), true],
-        [oid1.toString(), oid2.toString(), false]
+        [oid1.toString(), oid2.toString(), false],
       ];
 
       for (const test of tests) {
@@ -260,7 +263,7 @@ describe('tyranid', function() {
         [{ group: 1 }, {}, false],
         [{ group: [1, 2] }, { group: 1 }, true],
         [{ group: [1, 2] }, { group: [1, 2] }, true],
-        [{ group: [1, 2] }, { group: 3 }, false]
+        [{ group: [1, 2] }, { group: 3 }, false],
       ];
 
       for (const testCase of tests) {
@@ -274,7 +277,7 @@ describe('tyranid', function() {
       const tests = [
         [[3, 2], '[3,2]'],
         [oid1, `"${oid1.toString()}"`],
-        [{ foo: oid1, bar: 3 }, `{"foo":"${oid1.toString()}","bar":3}`]
+        [{ foo: oid1, bar: 3 }, `{"foo":"${oid1.toString()}","bar":3}`],
       ];
 
       for (const testCase of tests) {
@@ -294,7 +297,7 @@ describe('tyranid', function() {
       expect(
         projection.resolveProjection({ default: { a: 1, b: 1 } }, [
           'default',
-          { c: 1 }
+          { c: 1 },
         ])
       ).to.eql({ a: 1, b: 1, c: 1 });
     });
@@ -325,14 +328,14 @@ describe('tyranid', function() {
       expect(
         projection.resolveProjection({ $minimal: { a: 1 }, foo: { b: 1 } }, [
           'foo',
-          { c: 1 }
+          { c: 1 },
         ])
       ).to.eql({ a: 1, b: 1, c: 1 });
 
       expect(
         projection.resolveProjection({ $minimal: { a: 1 }, foo: { b: 1 } }, [
           'foo',
-          { c: 1, $minimal: false }
+          { c: 1, $minimal: false },
         ])
       ).to.eql({ b: 1, c: 1 });
     });
@@ -350,8 +353,8 @@ describe('tyranid', function() {
         new Tyr.Collection({
           id: 't00',
           fields: {
-            _id: { is: 'mongoid' }
-          }
+            _id: { is: 'mongoid' },
+          },
         } as any); // testing invalid config
       }).to.throw();
     });
@@ -362,8 +365,8 @@ describe('tyranid', function() {
           id: 't00',
           name: 3 as any, // testing invalid config
           fields: {
-            _id: { is: 'mongoid' }
-          }
+            _id: { is: 'mongoid' },
+          },
         });
       }).to.throw();
     });
@@ -394,8 +397,8 @@ describe('tyranid', function() {
           id: 't00',
           name: 'test',
           fields: {
-            emptyArray: []
-          }
+            emptyArray: [],
+          },
         });
       }).to.throw();
     });
@@ -407,8 +410,8 @@ describe('tyranid', function() {
           name: 'test',
           fields: {
             _id: { is: 'mongoid' },
-            self: { link: 'test' }
-          }
+            self: { link: 'test' },
+          },
         });
       }).to.not.throw();
     });
@@ -419,8 +422,8 @@ describe('tyranid', function() {
           id: 't01',
           name: 'test1',
           fields: {
-            cat: 3 as any // testing invalid config
-          }
+            cat: 3 as any, // testing invalid config
+          },
         });
       }).to.throw(/Invalid field definition/i);
 
@@ -429,8 +432,8 @@ describe('tyranid', function() {
           id: 't02',
           name: 'test2',
           fields: {
-            cat: [3]
-          }
+            cat: [3],
+          },
         });
       }).to.throw(/Unknown field definition/i);
     });
@@ -445,8 +448,8 @@ describe('tyranid', function() {
         const Meta = {
           is: 'object',
           fields: {
-            name: { is: 'string' }
-          }
+            name: { is: 'string' },
+          },
         };
 
         new Tyr.Collection({
@@ -455,8 +458,8 @@ describe('tyranid', function() {
           fields: {
             _id: { is: 'mongoid' },
             one: Tyr.cloneDeep(Meta),
-            two: Tyr.cloneDeep(Meta)
-          }
+            two: Tyr.cloneDeep(Meta),
+          },
         });
       }).to.not.throw();
     });
@@ -478,7 +481,7 @@ describe('tyranid', function() {
     before(async () => {
       // Test validate load models and byName
       await Tyr.validate({
-        glob: __dirname + '/models/**/*.js'
+        glob: __dirname + '/models/**/*.js',
         // dir: __dirname + '/models',
         // note, we want fileMatch to match the "subdir" directory to test that tyranid ignores directories
         // fileMatch: '[a-z].*'
@@ -574,7 +577,7 @@ describe('tyranid', function() {
           'favoriteColor',
           'ageAppropriateSecret',
           'siblings.name',
-          'title'
+          'title',
         ]);
       });
 
@@ -590,8 +593,8 @@ describe('tyranid', function() {
       it('should support mixin()', () => {
         Department.mixin({
           fields: {
-            city: { is: 'string' }
-          }
+            city: { is: 'string' },
+          },
         });
 
         expect(Department.def.fields.city.def.is).to.eql('string');
@@ -609,7 +612,7 @@ describe('tyranid', function() {
       it('should support matching fieldsFor()', async () => {
         const fields = await User.fieldsFor({
           match: { organization: 1 },
-          static: true
+          static: true,
         });
         expect(_.values(fields).length).to.be.eql(27);
       });
@@ -617,7 +620,7 @@ describe('tyranid', function() {
       it('should support unmatching fieldsFor()', async () => {
         const fields = await User.fieldsFor({
           match: { organization: 2 },
-          static: true
+          static: true,
         });
         expect(_.values(fields).length).to.be.eql(25);
       });
@@ -627,7 +630,7 @@ describe('tyranid', function() {
           _id: dynUserId,
           organization: 1,
           name: { first: 'Dynamic', last: 'Schema' },
-          acmeX: 999
+          acmeX: 999,
         }).then(p => {
           expect((p as any).acmeX).to.be.eql(999);
         });
@@ -638,7 +641,7 @@ describe('tyranid', function() {
           _id: dynUserId,
           organization: 2,
           name: { first: 'Not', last: 'Dynamic' },
-          acmeX: 999
+          acmeX: 999,
         }).then(p => {
           expect((p as any).acmeX).to.not.exist;
         });
@@ -659,7 +662,7 @@ describe('tyranid', function() {
         const secured = await Widget.secureQuery({}, 'view', user!);
         expect(secured.SECURED).to.deep.equal({
           perm: 'view',
-          auth: user!.$uid
+          auth: user!.$uid,
         });
       });
 
@@ -677,7 +680,7 @@ describe('tyranid', function() {
           await Book.find({
             query: {},
             projection: { title: 1 },
-            auth: anon
+            auth: anon,
           })
         ).toArray();
 
@@ -689,7 +692,7 @@ describe('tyranid', function() {
           await Book.find({
             query: {},
             projection: { title: 1 },
-            auth: jane
+            auth: jane,
           })
         ).toArray();
         expect(books.length).to.eql(2);
@@ -701,7 +704,7 @@ describe('tyranid', function() {
           await Book.find({
             query: {},
             projection: { title: 1 },
-            auth: anon
+            auth: anon,
           })
         ).toArray();
         expect(books.length).to.eql(1);
@@ -714,7 +717,7 @@ describe('tyranid', function() {
           await Book.find({
             query: {},
             projection: { title: 1 },
-            auth: anon
+            auth: anon,
           })
         ).toArray();
         expect(books.length).to.eql(1);
@@ -731,7 +734,7 @@ describe('tyranid', function() {
         let books = await (
           await Book.find({
             query: {},
-            auth: jane
+            auth: jane,
           })
         ).toArray();
         expect(books.length).to.eql(0);
@@ -759,7 +762,7 @@ describe('tyranid', function() {
       it('should find wrapped objects', async () => {
         const docs = await (
           await User.find({
-            query: { 'name.first': 'An' }
+            query: { 'name.first': 'An' },
           })
         ).toArray();
         expect(docs.length).to.be.eql(1);
@@ -803,7 +806,7 @@ describe('tyranid', function() {
       it('should findOne() with projection', async () => {
         const doc = await User.findOne({
           query: { 'name.first': 'An' },
-          projection: { name: 1 }
+          projection: { name: 1 },
         });
         expect(doc).to.be.an.instanceof(User);
         expect(_.keys(doc)).to.eql(['_id', 'name']);
@@ -818,7 +821,7 @@ describe('tyranid', function() {
       it('should findOne() with a null projection and options, 1', async () => {
         const doc = await User.findOne({
           query: { 'name.first': 'An' },
-          projection: { name: 1 }
+          projection: { name: 1 },
         });
         expect(doc).to.be.an.instanceof(User);
         expect(_.keys(doc)).to.eql(['_id', 'name']);
@@ -834,7 +837,7 @@ describe('tyranid', function() {
       it('should findOne() with just options', async () => {
         const doc = await User.findOne({
           query: { 'name.first': 'An' },
-          projection: { name: 1 }
+          projection: { name: 1 },
         });
         expect(doc).to.be.an.instanceof(User);
       });
@@ -850,7 +853,7 @@ describe('tyranid', function() {
         return User.findAll({
           query: { 'name.first': /^J/ },
           skip: 1,
-          limit: 1
+          limit: 1,
         }).then(docs => {
           expect(docs.length).to.be.eql(1);
           expect(docs[0]).to.be.an.instanceof(User);
@@ -862,7 +865,7 @@ describe('tyranid', function() {
           query: { _id: 1 },
           update: { $set: { age: 32 } },
           new: true,
-          historical: false
+          historical: false,
         }).then(result => {
           const user = result!.value;
           expect(user).to.be.an.instanceof(User);
@@ -900,7 +903,7 @@ describe('tyranid', function() {
 
       it('should support projection merging', async () => {
         const u = await User.byId(4, {
-          projection: ['nameAndAge', { organization: 1 }]
+          projection: ['nameAndAge', { organization: 1 }],
         });
         expect(_.keys(u).length).to.eql(4);
       });
@@ -908,7 +911,7 @@ describe('tyranid', function() {
       it('should support support exclusions', async () => {
         const u = await User.findOne({
           query: { _id: 4 },
-          projection: { organization: 0 }
+          projection: { organization: 0 },
         });
         expect(u!.organization).to.be.undefined;
       });
@@ -932,7 +935,7 @@ describe('tyranid', function() {
         const docs = await User.findAll({
           query: { _id: { $in: [1, 2, 3, 4] } },
           limit: 1,
-          count: true
+          count: true,
         });
 
         expect(docs.length).to.eql(1);
@@ -942,7 +945,7 @@ describe('tyranid', function() {
       it('should not count unless requested', async () => {
         const docs = await User.findAll({
           query: { _id: { $in: [1, 2, 3, 4] } },
-          limit: 1
+          limit: 1,
         });
 
         expect(docs.length).to.eql(1);
@@ -961,7 +964,7 @@ describe('tyranid', function() {
       it('should support support capitalize', async () => {
         for (const test of [
           ['cat', 'Cat'],
-          ['latestProjection', 'LatestProjection']
+          ['latestProjection', 'LatestProjection'],
         ]) {
           expect(Tyr.capitalize(test[0])).to.eql(test[1]);
         }
@@ -970,7 +973,7 @@ describe('tyranid', function() {
       it('should support support labelize', async () => {
         for (const test of [
           ['cat', 'Cat'],
-          ['latestProjection', 'Latest Projection']
+          ['latestProjection', 'Latest Projection'],
         ]) {
           expect(Tyr.labelize(test[0])).to.eql(test[1]);
         }
@@ -980,7 +983,7 @@ describe('tyranid', function() {
         for (const test of [
           ['cats', 'cat'],
           ['quizzes', 'quiz'],
-          ['industries', 'industry']
+          ['industries', 'industry'],
         ]) {
           expect(Tyr.singularize(test[0])).to.eql(test[1]);
         }
@@ -988,7 +991,7 @@ describe('tyranid', function() {
       it('should support support pluralize', async () => {
         for (const test of [
           ['cat', 'cats'],
-          ['quiz', 'quizzes']
+          ['quiz', 'quizzes'],
         ]) {
           expect(Tyr.pluralize(test[0])).to.eql(test[1]);
         }
@@ -1018,7 +1021,7 @@ describe('tyranid', function() {
       it('should return custom primaryKey if not specified in projection', () => {
         return Book.findAll({
           query: { isbn: BookIsbn },
-          projection: { _id: 1 }
+          projection: { _id: 1 },
         }).then(docs => {
           expect(docs.length).to.be.eql(1);
           expect(docs[0].title).to.not.exist;
@@ -1029,7 +1032,7 @@ describe('tyranid', function() {
       it('should not include custom primaryKey if specifically excluded', () => {
         return Book.findOne({
           query: { isbn: BookIsbn },
-          projection: { isbn: 0 }
+          projection: { isbn: 0 },
         }).then(doc => {
           expect(doc!.isbn).to.not.exist;
         });
@@ -1039,7 +1042,7 @@ describe('tyranid', function() {
         return Book.findAndModify({
           query: { isbn: BookIsbn },
           update: { $set: { fakeProp: 'fake' } },
-          projection: { title: 1 }
+          projection: { title: 1 },
         }).then(doc => {
           expect(doc!.value.isbn).to.be.eql(BookIsbn);
         });
@@ -1050,7 +1053,7 @@ describe('tyranid', function() {
           fullName: 1,
           name: 1,
           'name.first': 1,
-          'name.last': 1
+          'name.last': 1,
         });
       });
     });
@@ -1192,7 +1195,7 @@ describe('tyranid', function() {
       it('should save new objects', () => {
         const book = new Book({
           isbn: newIsbn,
-          title: 'Datamodeling for Dummies'
+          title: 'Datamodeling for Dummies',
         });
 
         return book.$save().then(() => {
@@ -1231,7 +1234,7 @@ describe('tyranid', function() {
           await Role.save([
             new Role({ name: 'A-1' }),
             new Role({ name: 'A-2' }),
-            new Role({ name: 'A-3' })
+            new Role({ name: 'A-3' }),
           ]);
 
           const roles = await Role.findAll({ query: { name: /^A-/ } });
@@ -1262,7 +1265,7 @@ describe('tyranid', function() {
           'John',
           'John Doe',
           'Not a fan of construction companies...',
-          'Tom Doe'
+          'Tom Doe',
         ];
 
         return (User.valuesFor(
@@ -1301,7 +1304,7 @@ describe('tyranid', function() {
           'Tyranid User Guide',
           'User',
           'food',
-          'toxic'
+          'toxic',
         ];
 
         return (Tyr.valuesBy(
@@ -1347,7 +1350,7 @@ describe('tyranid', function() {
         julia = new User({
           _id: 2000,
           name: { first: 'Julia', last: 'Doe' },
-          organization: 1
+          organization: 1,
         });
         return julia.$save();
       });
@@ -1371,7 +1374,7 @@ describe('tyranid', function() {
         const bookObj = {
           title,
           isbn: '5614c2f00000000000000000',
-          serial: null
+          serial: null,
         };
         const book = await Book.fromClient(bookObj);
         expect(book).to.be.an.instanceof(Book);
@@ -1389,9 +1392,9 @@ describe('tyranid', function() {
             {
               role: AdministratorRoleId.toString(),
               active: 'true',
-              duration: '5'
-            }
-          ]
+              duration: '5',
+            },
+          ],
         };
         let user = await User.fromClient(userObj);
         expect(user.roles![0].role).to.be.an.instanceof(ObjectId);
@@ -1412,9 +1415,9 @@ describe('tyranid', function() {
             {
               name: 'Sasha',
               friends: [{ age: '25' }],
-              scores: ['2.3']
-            }
-          ]
+              scores: ['2.3'],
+            },
+          ],
         };
 
         const user = await User.fromClient(userObj);
@@ -1426,7 +1429,7 @@ describe('tyranid', function() {
         const bookObj = {
           title: 'Browsers',
           isbn: '5614c2f00000000000000000',
-          serial: null
+          serial: null,
         };
         const book = await Book.fromClient(bookObj);
         expect(book.domain).to.equal('custom');
@@ -1442,7 +1445,7 @@ describe('tyranid', function() {
       it('should allow parametric client flags', () => {
         return User.findAll({
           query: { age: { $exists: true } },
-          sort: { _id: 1 }
+          sort: { _id: 1 },
         }).then(users => {
           const clientData = User.toClient(users);
           expect(clientData[1].ageAppropriateSecret).to.be.eql(
@@ -1508,7 +1511,7 @@ describe('tyranid', function() {
           _id: 1000,
           organization: 1,
           department: 1,
-          name: { first: 'Default', last: 'Employee' }
+          name: { first: 'Default', last: 'Employee' },
         });
         return p.$insert().then(newUser => {
           expect(newUser.title).to.be.eql('Employee');
@@ -1522,7 +1525,7 @@ describe('tyranid', function() {
           organization: 1,
           department: 1,
           name: { first: 'New', last: 'User' },
-          title: 'Developer'
+          title: 'Developer',
         });
         return p.$insert().then(newUser => {
           expect(newUser._id).to.be.eql(200);
@@ -1535,7 +1538,7 @@ describe('tyranid', function() {
           organization: 1,
           department: 1,
           name: { first: 'New', last: 'User' },
-          title: 'Developer'
+          title: 'Developer',
         });
         return (p.$insert().should as any).eventually.be.rejectedWith(Error);
       });
@@ -1547,15 +1550,15 @@ describe('tyranid', function() {
             organization: 1,
             department: 1,
             name: { first: 'First', last: 'User' },
-            title: 'Developer'
+            title: 'Developer',
           }),
           new User({
             _id: 1002,
             organization: 1,
             department: 1,
             name: { first: 'Second', last: 'User' },
-            title: 'Developer'
-          })
+            title: 'Developer',
+          }),
         ];
         return User.insert(users).then(newPeople => {
           expect(newPeople).to.be.instanceof(Array);
@@ -1584,7 +1587,7 @@ describe('tyranid', function() {
           expect(l._id).to.be.instanceof(ObjectId);
 
           const locs = await Location.findAll({
-            query: { name: 'Test Location' }
+            query: { name: 'Test Location' },
           });
           expect(locs.length).to.eql(1);
           expect(locs[0]._id).to.eql(l._id);
@@ -1628,7 +1631,7 @@ describe('tyranid', function() {
         let dale = new User({
           _id: 2001,
           name: { first: 'Dale', last: 'Doe' },
-          organization: 1
+          organization: 1,
         });
         await dale.$save();
         dale = (await User.byId(2001))!;
@@ -1682,7 +1685,7 @@ describe('tyranid', function() {
         let dale = new User({
           _id: 2001,
           name: { first: 'Dale', last: 'Doe' },
-          organization: 1
+          organization: 1,
         });
         await dale.$save();
         dale = (await User.byId(2001))!;
@@ -1717,7 +1720,7 @@ describe('tyranid', function() {
       it('should update', async () => {
         const rslt = await User.update({
           query: { _id: 4 },
-          update: { $set: { title: 'Software Engineer' } }
+          update: { $set: { title: 'Software Engineer' } },
         });
         console.log('rslt', rslt);
         const user = await User.byId(4);
@@ -1728,7 +1731,7 @@ describe('tyranid', function() {
         await User.update({
           query: { _id: 4 },
           update: { $set: { title: 'Software Engineer' } },
-          multi: false
+          multi: false,
         });
         const user = await User.byId(4);
         expect(user!.title).to.be.eql('Software Engineer');
@@ -1740,7 +1743,7 @@ describe('tyranid', function() {
         const dale = new User({
           _id: 2001,
           name: { first: 'Dale', last: 'Doe' },
-          organization: 1
+          organization: 1,
         });
         await dale.$save();
         await User.remove({ query: { _id: 2001 } });
@@ -1761,7 +1764,7 @@ describe('tyranid', function() {
       it('should parse', () => {
         Tyr.parseUid('u001').should.eql({
           collection: User,
-          id: 1
+          id: 1,
         });
       });
 
@@ -1889,7 +1892,7 @@ describe('tyranid', function() {
         return User.findAndModify({
           query: { _id: 2 },
           update: { $set: { age: 31 }, $setOnInsert: { title: 'Uh oh' } },
-          new: true
+          new: true,
         }).then(result => {
           const user = result!.value;
           expect(user.age).to.be.eql(31);
@@ -1903,10 +1906,10 @@ describe('tyranid', function() {
           query: { _id: 1003 },
           update: {
             $set: { age: 31 },
-            $setOnInsert: { name: { first: 'Bill', last: 'Gates' } }
+            $setOnInsert: { name: { first: 'Bill', last: 'Gates' } },
           },
           upsert: true,
-          new: true
+          new: true,
         }).then(result => {
           const user = result!.value;
           expect(user.name.first).to.be.eql('Bill');
@@ -1921,7 +1924,7 @@ describe('tyranid', function() {
           query: { _id: 1003 },
           update: { title: 'Good Boy', goldStars: 3, createdAt },
           upsert: true,
-          new: true
+          new: true,
         });
 
         const user = result!.value;
@@ -1936,7 +1939,7 @@ describe('tyranid', function() {
           query: { _id: 1004 },
           update: { age: 24 },
           upsert: true,
-          new: true
+          new: true,
         }).then(result => {
           const user = result!.value;
           expect(user.name).to.not.exist;
@@ -1951,7 +1954,7 @@ describe('tyranid', function() {
         const dale = new User({
           _id: 2001,
           name: { first: 'Dale', last: 'Doe' },
-          organization: 1
+          organization: 1,
         });
         await dale.$save();
 
@@ -1976,7 +1979,7 @@ describe('tyranid', function() {
           _id: 2001,
           name: { first: 'Dale', last: 'Doe' },
           organization: 1,
-          updatedAt
+          updatedAt,
         });
 
         let dale = await User.byId(2001);
@@ -2008,7 +2011,7 @@ describe('tyranid', function() {
       it('should support call post-processing functions', () => {
         const user = new User({
           name: { first: 'Jane', last: 'Smith' },
-          age: 5
+          age: 5,
         });
         (user as any).foo = 'bar';
         (user as any).bar = 'foo';
@@ -2050,7 +2053,7 @@ describe('tyranid', function() {
           _id: 222,
           name: { first: 'Some', last: 'User' },
           ssn: '111-23-1232',
-          favoriteColor: 'blue'
+          favoriteColor: 'blue',
         });
         let userc = user.$toClient();
         expect(_.keys(userc)).to.eql(['_id', 'name', 'fullName']);
@@ -2059,7 +2062,7 @@ describe('tyranid', function() {
           _id: 222,
           name: { first: 'Some', last: 'User' },
           ssn: '111-23-1232',
-          favoriteColor: 'blue'
+          favoriteColor: 'blue',
         });
         userc = user.$toClient({ projection: { name: 1, ssn: 1 } });
         expect(_.keys(userc)).to.eql(['_id', 'name', 'ssn']);
@@ -2068,10 +2071,10 @@ describe('tyranid', function() {
           _id: 222,
           name: { first: 'Some', last: 'User' },
           ssn: '111-23-1232',
-          favoriteColor: 'blue'
+          favoriteColor: 'blue',
         });
         userc = user.$toClient({
-          projection: { name: 1, ssn: 1, favoriteColor: 1 }
+          projection: { name: 1, ssn: 1, favoriteColor: 1 },
         });
         expect(_.keys(userc)).to.eql(['_id', 'name', 'ssn', 'favoriteColor']);
       });
@@ -2081,7 +2084,7 @@ describe('tyranid', function() {
           _id: 222,
           name: { first: 'Some', last: 'User' },
           ssn: '111-23-1232',
-          favoriteColor: 'blue'
+          favoriteColor: 'blue',
         });
         user.$options = { query: {} };
         const userc = user.$toClient();
@@ -2093,7 +2096,7 @@ describe('tyranid', function() {
       it('should support computed properties', () => {
         const user = new User({
           name: { first: 'Jane', last: 'Smith' },
-          age: 5
+          age: 5,
         });
         expect(user.fullName).to.be.eql('Jane Smith');
       });
@@ -2101,7 +2104,7 @@ describe('tyranid', function() {
       it('should work with CollectionInstance.toClient()', () => {
         const user = new User({
           name: { first: 'Jane', last: 'Smith' },
-          age: 5
+          age: 5,
         }).$toClient();
         expect(user.fullName).to.be.eql('Jane Smith');
       });
@@ -2127,13 +2130,13 @@ describe('tyranid', function() {
       it('should support methods', () => {
         const child = new User({
           name: { first: 'Jane', last: 'Smith' },
-          age: 5
+          age: 5,
         });
         expect(child.canDrink()).to.be.eql(false);
 
         const adult = new User({
           name: { first: 'Jill', last: 'Smith' },
-          age: 32
+          age: 32,
         });
         expect(adult.canDrink()).to.be.eql(true);
       });
@@ -2141,7 +2144,7 @@ describe('tyranid', function() {
       it('should work with CollectionInstance.toClient()', () => {
         const user = new User({
           name: { first: 'Jane', last: 'Smith' },
-          age: 5
+          age: 5,
         }).$toClient();
         expect(user.fullName).to.be.eql('Jane Smith');
       });
@@ -2156,14 +2159,14 @@ describe('tyranid', function() {
     describe('phantom collections', () => {
       it('should let you query from phantom collections', async () => {
         const docs = await (Phantom as Tyr.CollectionInstance).findAll({
-          query: {}
+          query: {},
         });
         expect(docs.length).to.equal(0);
       });
 
       it('should let you query from phantom collections', async () => {
         const doc = await (Phantom as Tyr.CollectionInstance).findOne({
-          query: {}
+          query: {},
         });
         expect(doc).to.equal(null);
       });
@@ -2190,7 +2193,7 @@ describe('tyranid', function() {
         await Tyr.info('test');
 
         const logs = await Tyr.Log.findAll({
-          query: { c: { $ne: Log.id } }
+          query: { c: { $ne: Log.id } },
         });
         expect(logs.length).to.be.eql(1);
         expect((logs[0] as any).m).to.be.eql('test');
@@ -2282,7 +2285,7 @@ describe('tyranid', function() {
         try {
           await Location.save({ name: 'Mount Everest' });
           const loc = await Location.findOne({
-            query: { name: 'Mount Everest' }
+            query: { name: 'Mount Everest' },
           });
 
           await Log.db.deleteMany({});
@@ -2325,8 +2328,8 @@ describe('tyranid', function() {
       it('should log queries with regular expressions, #3', async () => {
         await Book.findAll({
           query: {
-            $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }]
-          }
+            $or: [{ title: new RegExp('foo', 'i') }, { foo: { $in: [1, 2] } }],
+          },
         });
 
         await Tyr.sleep(100); // SLEEP-RETRY
@@ -2335,7 +2338,7 @@ describe('tyranid', function() {
         expect(logs.length).to.be.eql(1);
         expect((logs[0] as any).e).to.be.eql('db');
         expect((logs[0] as any).q).to.be.eql({
-          _$or: [{ title: /foo/i }, { foo: { _$in: [1, 2] } }]
+          _$or: [{ title: /foo/i }, { foo: { _$in: [1, 2] } }],
         });
         expect((logs[0] as any).l).to.be.eql(LogLevel.TRACE._id);
       });
@@ -2445,7 +2448,7 @@ describe('tyranid', function() {
           [1, false],
           [{}, true],
           [oid1, false],
-          [{ a: 1 }, true]
+          [{ a: 1 }, true],
         ];
 
         for (const test of tests) {
@@ -2460,7 +2463,7 @@ describe('tyranid', function() {
           [1, false],
           [{}, false],
           [oid1, true],
-          [{ a: 1 }, false]
+          [{ a: 1 }, false],
         ];
 
         for (const test of tests) {
@@ -2473,7 +2476,7 @@ describe('tyranid', function() {
       it('pass through regular values but parse bson objects', () => {
         const tests = [
           [1, 1],
-          [{ _bsontype: 'ObjectID', id: 'Ugò¨8©tüo:Z' }, oid2]
+          [{ _bsontype: 'ObjectID', id: 'Ugò¨8©tüo:Z' }, oid2],
         ];
 
         for (const test of tests) {
@@ -2490,7 +2493,7 @@ describe('tyranid', function() {
           {},
           { b: 1 },
           { b: 'alpha', c: 2 },
-          { b: 'alpha' }
+          { b: 'alpha' },
         ]);
       });
 
@@ -2504,7 +2507,7 @@ describe('tyranid', function() {
           { a: {} },
           { a: 3 },
           { a: new Date('2016-12-1') },
-          { a: null }
+          { a: null },
         ];
         Tyr.arraySort(myArray, { a: 1 });
         expect(myArray).to.eql([
@@ -2516,7 +2519,7 @@ describe('tyranid', function() {
           { a: {} },
           { a: { a: 'bar' } },
           { a: { c: 'foo' } },
-          { a: new Date('2016-12-1') }
+          { a: new Date('2016-12-1') },
         ]);
       });
     });
@@ -2549,7 +2552,7 @@ describe('tyranid', function() {
       it('support where', async () => {
         const u = await User.byId(3, { projection: { name: 1 } });
         await u!.$slice('siblings', {
-          where: v => v.name.startsWith('Jill')
+          where: v => v.name.startsWith('Jill'),
         });
         expect(u!.siblings![0].name).to.eql('Jill Doe');
         expect(u!.siblings!.length).to.eql(1);
@@ -2610,7 +2613,7 @@ describe('tyranid', function() {
       it('should support exclude', async () => {
         const refs = await User.findReferences({
           ids: [1, 3],
-          exclude: [Tyr.byName.organization, Tyr.byName.widget]
+          exclude: [Tyr.byName.organization, Tyr.byName.widget],
         });
         expect(refs.length).to.eql(4);
       });
@@ -2633,7 +2636,7 @@ describe('tyranid', function() {
           organization: 1,
           name: { first: 'test user', last: 'Anon' },
           title: 'Developer',
-          job: 1
+          job: 1,
         });
 
         await Department.insert({
@@ -2641,7 +2644,7 @@ describe('tyranid', function() {
           name: 'References Dept',
           creator: 2,
           head: userId,
-          permissions: { members: [userId, 3] }
+          permissions: { members: [userId, 3] },
         });
       });
 
@@ -2725,7 +2728,7 @@ describe('tyranid', function() {
               }
 
               res();
-            }
+            },
           });
         });
       });

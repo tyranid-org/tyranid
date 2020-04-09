@@ -34,7 +34,7 @@ export function add() {
       const MongoStore = connectMongo(session as any);
       const store = new MongoStore({
         url: 'mongodb://localhost:27017/tyranid_test',
-        stringify: false
+        stringify: false,
       });
 
       const COOKIE_SECRET = 'tyranid-test-secret';
@@ -44,7 +44,7 @@ export function add() {
         resave: false,
         rolling: true,
         saveUninitialized: true,
-        store
+        store,
       });
 
       Tyr.connect({ store });
@@ -68,7 +68,7 @@ export function add() {
         auth: (req, res, next) => {
           (req as any).user = user; // "log in" user 1
           return next();
-        }
+        },
       });
 
       await new Promise((resolve, reject) => {
@@ -113,9 +113,9 @@ export function add() {
       let result = await fetch(urlPrefix + '/api/user/fieldsFor', {
         method: 'put',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ match: { organization: 1 }, custom: true })
+        body: JSON.stringify({ match: { organization: 1 }, custom: true }),
       });
       let json = await result.json();
       expect(_.keys(json.fields)).to.eql(['acmeY', 'custom']);
@@ -131,9 +131,9 @@ export function add() {
       result = await fetch(urlPrefix + '/api/organization/fieldsFor', {
         method: 'put',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ match: { foo: 1 } })
+        body: JSON.stringify({ match: { foo: 1 } }),
       });
 
       json = await result.json();
@@ -214,8 +214,8 @@ export function add() {
           await page.evaluate('Tyr.byName.application.fields.languages.def.if')
         ).to.eql({
           job: {
-            $in: [Job.SOFTWARE_ENGINEER._id, Job.SOFTWARE_LEAD._id]
-          }
+            $in: [Job.SOFTWARE_ENGINEER._id, Job.SOFTWARE_LEAD._id],
+          },
         });
       });
 
@@ -253,7 +253,7 @@ test();`);
         const cleanup = () =>
           Promise.all([
             Location.remove({ query: {} }),
-            Subscription.remove({ query: {} })
+            Subscription.remove({ query: {} }),
           ]);
 
         await cleanup();
@@ -271,7 +271,7 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
 
           await Tyr.sleepUntil(async () =>
             Subscription.exists({
-              query: { u: 1, c: Location.id }
+              query: { u: 1, c: Location.id },
             })
           );
 
@@ -288,7 +288,7 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
           window._gotUpdateEvent = false;
           window._gotInsertEvent = false;`);
           let location = await Location.findOne({
-            query: { name: 'Yosemite Valley' }
+            query: { name: 'Yosemite Valley' },
           });
           location!.name = 'Yosemite Valley 2';
           await location!.$save();
@@ -300,7 +300,7 @@ Location.on({ type: 'remove', handler(event) { window._gotRemoveEvent = true; } 
           );
 
           location = await Location.findOne({
-            query: { name: 'Yosemite Valley 2' }
+            query: { name: 'Yosemite Valley 2' },
           });
           await location!.$remove();
 

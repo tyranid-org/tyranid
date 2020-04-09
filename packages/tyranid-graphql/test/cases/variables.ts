@@ -27,8 +27,8 @@ export const variables = {
     const result = await Tyr.graphql({
       query,
       variables: {
-        id: [ted.$id]
-      }
+        id: [ted.$id],
+      },
     });
 
     const expected = {
@@ -39,14 +39,14 @@ export const variables = {
             {
               name: 'cavaEngineers',
               organizationId: {
-                name: 'Cava'
-              }
-            }
-          ]
-        }
-      }
+                name: 'Cava',
+              },
+            },
+          ],
+        },
+      },
     };
 
     t.deepEqual<ExecutionResult>(result, expected);
-  }
+  },
 };

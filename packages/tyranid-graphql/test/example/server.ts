@@ -18,9 +18,9 @@ import { createTestData } from '../data';
     validate: [
       {
         dir: __dirname,
-        fileMatch: 'models.js'
-      }
-    ]
+        fileMatch: 'models.js',
+      },
+    ],
   });
 
   await createTestData();
@@ -33,14 +33,14 @@ import { createTestData } from '../data';
     '/graphql',
     bodyParser.json(),
     graphqlExpress({
-      schema: createGraphQLSchema(Tyr)
+      schema: createGraphQLSchema(Tyr),
     })
   );
 
   graphQLServer.use(
     '/graphiql',
     graphiqlExpress({
-      endpointURL: '/graphql'
+      endpointURL: '/graphql',
     })
   );
 

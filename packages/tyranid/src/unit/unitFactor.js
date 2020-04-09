@@ -11,7 +11,7 @@ const UnitFactor = new Collection({
     _id: { is: 'integer' },
     symbol: { is: 'string' },
     prefix: { is: 'string', labelField: true },
-    factor: { is: 'double' }
+    factor: { is: 'double' },
   },
   values: [
     ['_id', 'symbol', 'prefix', 'factor'],
@@ -47,8 +47,8 @@ const UnitFactor = new Collection({
     [1, 'Pi', 'pebi', Math.pow(2, 50)],
     [1, 'Ei', 'exbi', Math.pow(2, 60)],
     [1, 'Zi', 'zebi', Math.pow(2, 70)],
-    [1, 'Yi', 'yobi', Math.pow(2, 80)]
-  ]
+    [1, 'Yi', 'yobi', Math.pow(2, 80)],
+  ],
 });
 
 Tyr.UnitFactor = UnitFactor;

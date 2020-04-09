@@ -33,7 +33,7 @@ const UnitsType = new Type({
     if (value !== undefined && !(value instanceof Units)) {
       return new UserError({ field, suffix: 'is not a units' });
     }
-  }
+  },
 });
 
 export default UnitsType;

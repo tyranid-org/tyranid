@@ -35,7 +35,7 @@ const StringType = new Type({
     }
 
     return true;
-  }
+  },
 });
 
 export default StringType;

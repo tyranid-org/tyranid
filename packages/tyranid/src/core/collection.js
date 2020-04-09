@@ -25,7 +25,7 @@ import {
   toClient,
   hasMongoUpdateOperator,
   extractUpdateFields,
-  isArrow
+  isArrow,
 } from '../common';
 
 import { extractProjection } from './projection';
@@ -40,7 +40,7 @@ async function _count(collection, query) {
       e: 'db',
       c: collection.id,
       m: 'count',
-      q: query
+      q: query,
     });
     const result = await collection.db.countDocuments(query);
     Tyr.Log.updateDuration(logPromise);
@@ -56,10 +56,10 @@ async function _exists(collection, query) {
       e: 'db',
       c: collection.id,
       m: 'findOne/exists',
-      q: query
+      q: query,
     });
     const result = !!(await collection.db.findOne(query, {
-      projection: { _id: 1 }
+      projection: { _id: 1 },
     }));
     Tyr.Log.updateDuration(logPromise);
     return result;
@@ -91,7 +91,7 @@ async function _findOne(collection, query, projection, opts) {
       e: 'db',
       c: collection.id,
       m: 'findOne',
-      q: query
+      q: query,
     });
     const result = await collection.db.findOne(query, adjOpts);
     Tyr.Log.updateDuration(logPromise);
@@ -110,7 +110,7 @@ async function _findAndModify(collection, opts) {
       c: collection.id,
       m: 'findAndModify',
       q: query,
-      upd: update
+      upd: update,
     });
     const result = await collection.db.findAndModify(query, sort, update, opts);
     Tyr.Log.updateDuration(logPromise);
@@ -171,7 +171,7 @@ async function postFind(collection, opts, documents, auth) {
           configurable: false,
           enumerable: false,
           value: opts,
-          writable: false
+          writable: false,
         });
       }
     } else {
@@ -179,7 +179,7 @@ async function postFind(collection, opts, documents, auth) {
         configurable: false,
         enumerable: false,
         value: opts,
-        writable: false
+        writable: false,
       });
     }
   }
@@ -190,7 +190,7 @@ async function postFind(collection, opts, documents, auth) {
       type: 'find',
       when: 'post',
       _documents: documents,
-      opts
+      opts,
     });
   } else {
     await Tyr.Event.fire({
@@ -198,7 +198,7 @@ async function postFind(collection, opts, documents, auth) {
       type: 'find',
       when: 'post',
       document: documents,
-      opts
+      opts,
     });
   }
 
@@ -367,11 +367,11 @@ export default class Collection {
 
     if (!def.primaryKey) {
       def.primaryKey = {
-        field: '_id'
+        field: '_id',
       };
     } else if (_.isString(def.primaryKey)) {
       def.primaryKey = {
-        field: def.primaryKey
+        field: def.primaryKey,
       };
     } else if (!_.isObject(def.primaryKey)) {
       throw new Error('Invalid "primaryKey" parameter');
@@ -393,7 +393,7 @@ export default class Collection {
         Object.defineProperty(dp, key, {
           enumerable: false,
           writable: false,
-          configurable: false
+          configurable: false,
         });
       }
     }
@@ -429,7 +429,7 @@ export default class Collection {
       if (get || set) {
         const prop = {
           enumerable: isDb !== undefined ? isDb : false,
-          configurable: false
+          configurable: false,
         };
 
         if (get) {
@@ -476,7 +476,7 @@ export default class Collection {
         enumerable: false,
         writable: false,
         configurable: false,
-        value: fn
+        value: fn,
       });
     });
 
@@ -596,7 +596,7 @@ export default class Collection {
     } else {
       const idFieldName = this.def.primaryKey.field;
       const opts = combineOptions(options, {
-        query: { [idFieldName]: { $in: ids } }
+        query: { [idFieldName]: { $in: ids } },
       });
 
       const docs = await collection.findAll(opts);
@@ -657,7 +657,7 @@ export default class Collection {
     const lf = this.labelField;
 
     const fields = {
-      [lf.pathName]: 1
+      [lf.pathName]: 1,
     };
 
     const getFn = lf.def.get;
@@ -691,7 +691,7 @@ export default class Collection {
     const query = _.isObject(text)
       ? text
       : {
-          [lf.pathName]: new RegExp(text, 'i')
+          [lf.pathName]: new RegExp(text, 'i'),
         };
 
     const fields = this.labelProjection();
@@ -706,7 +706,7 @@ export default class Collection {
       query,
       projection: fields,
       sort,
-      ...opts
+      ...opts,
     });
 
     return labels.filter(l => !!l.$label);
@@ -770,7 +770,7 @@ export default class Collection {
             }
 
             return doc;
-          }
+          },
         },
         toArray: {
           async value() {
@@ -781,8 +781,8 @@ export default class Collection {
             }
 
             return docs;
-          }
-        }
+          },
+        },
       });
     }
 
@@ -859,7 +859,7 @@ export default class Collection {
         e: 'db',
         c: collection.id,
         m: 'findAll' + (opts.count ? '+count' : ''),
-        q: query
+        q: query,
       });
     const cursor = collection.db.find(query, opts);
 
@@ -882,7 +882,7 @@ export default class Collection {
     if (opts.count) {
       const [documents, count] = await Promise.all([
         documentsPromise,
-        cursor.count()
+        cursor.count(),
       ]);
 
       documents.count = count;
@@ -1030,7 +1030,7 @@ export default class Collection {
           collection,
           type: 'update',
           when: 'post',
-          opts
+          opts,
         });
       }
     } else {
@@ -1039,7 +1039,7 @@ export default class Collection {
           collection,
           type: 'update',
           when: 'post',
-          opts
+          opts,
         });
       }
     }
@@ -1142,7 +1142,7 @@ export default class Collection {
         type: 'update',
         when: 'pre',
         document: obj,
-        opts
+        opts,
       });
 
       if (historicalType === 'document')
@@ -1150,7 +1150,7 @@ export default class Collection {
 
       const updOpts = combineOptions(opts, {
         query: { [keyFieldName]: keyValue },
-        upsert: true
+        upsert: true,
       });
 
       const auth = extractAuthorization(opts);
@@ -1176,7 +1176,7 @@ export default class Collection {
         type: 'update',
         when: 'post',
         document: obj,
-        opts
+        opts,
       });
 
       rslt = update;
@@ -1228,7 +1228,7 @@ export default class Collection {
         type: 'insert',
         when: 'pre',
         _documents: parsedArr,
-        opts
+        opts,
       });
 
       const docs = parsedArr.length
@@ -1248,7 +1248,7 @@ export default class Collection {
         type: 'insert',
         when: 'post',
         _documents: docs,
-        opts
+        opts,
       });
       return docs;
     } else {
@@ -1298,7 +1298,7 @@ export default class Collection {
         type: 'insert',
         when: 'pre',
         document: parsedObj,
-        opts
+        opts,
       });
 
       const rslt = await collection.db.insertOne(parsedObj);
@@ -1315,7 +1315,7 @@ export default class Collection {
         type: 'insert',
         when: 'post',
         document: doc,
-        opts
+        opts,
       });
 
       return doc;
@@ -1333,7 +1333,7 @@ export default class Collection {
       _.omit(obj.$options, ['fields', 'projection']),
       extractOptions(collection, args),
       {
-        query: { [keyFieldName]: obj[keyFieldName] }
+        query: { [keyFieldName]: obj[keyFieldName] },
       }
     );
 
@@ -1409,7 +1409,7 @@ export default class Collection {
       type: 'update',
       when: 'pre',
       document: obj,
-      opts
+      opts,
     });
 
     /*const rslt = */ await collection.db.updateOne(query, opts.update, opts);
@@ -1423,7 +1423,7 @@ export default class Collection {
       type: 'update',
       when: 'post',
       document: obj,
-      opts
+      opts,
     });
 
     if (diffProps) {
@@ -1481,7 +1481,7 @@ export default class Collection {
       type: 'update',
       when: 'pre',
       query,
-      opts
+      opts,
     });
     const rslt = opts.multi
       ? await collection.db.updateMany(query, update, opts)
@@ -1491,7 +1491,7 @@ export default class Collection {
       type: 'update',
       when: 'post',
       query,
-      opts
+      opts,
     });
     return rslt;
   }
@@ -1555,7 +1555,7 @@ export default class Collection {
     }
 
     const pv = {
-      [path]: value
+      [path]: value,
     };
 
     if (history === 'patch') {
@@ -1611,7 +1611,7 @@ export default class Collection {
         type: 'remove',
         when: 'pre',
         query,
-        opts
+        opts,
       });
     }
     const rslt = justOne
@@ -1623,7 +1623,7 @@ export default class Collection {
         type: 'remove',
         when: 'post',
         query,
-        opts
+        opts,
       });
     }
     return rslt;
@@ -1973,7 +1973,7 @@ export default class Collection {
           'getServer',
           'setServer',
           'validate',
-          'where'
+          'where',
         ]) {
           if (fieldDef[fnName] && isArrow(fieldDef[fnName])) {
             throw compiler.err(
@@ -2028,7 +2028,7 @@ export default class Collection {
                   newDefFields[fieldName] = {
                     ...base,
                     ...group[fieldName],
-                    group: name
+                    group: name,
                   };
                 }
               }
@@ -2126,7 +2126,7 @@ export default class Collection {
 
             if (!(field instanceof Field))
               field = params[paramName] = new Field(field, {
-                method: methodName
+                method: methodName,
               });
 
             compiler.field(paramName, field);
@@ -2169,7 +2169,7 @@ export default class Collection {
           );
 
         for (const name in serviceDef) compiler.method(name, serviceDef[name]);
-      }
+      },
     };
 
     return compiler;

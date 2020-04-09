@@ -20,8 +20,8 @@ const Subscription = new Collection({
 
     // TODO:  this is temporary, long-term would like to hook up tyranid to session table and use that to
     //        determine user -> instance bindings
-    i: { is: 'string', label: 'Instance' }
-  }
+    i: { is: 'string', label: 'Instance' },
+  },
 });
 
 /*
@@ -53,7 +53,7 @@ async function fireEvent(colId, queryDef, refinedDocument, refinedQuery, type) {
       e: 'subscription',
       c: colId,
       m: 'matched',
-      instances: queryDef.instances
+      instances: queryDef.instances,
     });
   const promises = [];
 
@@ -66,7 +66,7 @@ async function fireEvent(colId, queryDef, refinedDocument, refinedQuery, type) {
       type: 'subscriptionEvent',
       when: 'pre',
       instanceId: instanceId,
-      subType: type
+      subType: type,
     });
 
     if (instanceId === Tyr.instanceId) {
@@ -175,7 +175,7 @@ async function parseSubscriptions(subscription, userId) {
           }
 
           await Promise.all(promises);
-        }
+        },
       });
 
       const removeHandlerDereg = col.on({
@@ -217,13 +217,13 @@ async function parseSubscriptions(subscription, userId) {
           }
 
           await Promise.all(promises);
-        }
+        },
       });
 
       listener = localListeners[colId] = {
         changeHandlerDereg,
         removeHandlerDereg,
-        queries: {}
+        queries: {},
       };
     }
 
@@ -234,7 +234,7 @@ async function parseSubscriptions(subscription, userId) {
       queryDef = listener.queries[queryStr] = {
         queryObj: col.fromClientQuery(JSON.parse(queryStr)),
         instances: {},
-        users: {}
+        users: {},
       };
     }
 
@@ -248,7 +248,7 @@ Subscription.on({
   when: 'post',
   async handler(event) {
     await parseSubscriptions(event.subscription);
-  }
+  },
 });
 
 Subscription.on({
@@ -256,7 +256,7 @@ Subscription.on({
   when: 'post',
   async handler(event) {
     await parseSubscriptions(undefined, event.user);
-  }
+  },
 });
 
 //let bootNeeded = 'Subscription needs to be booted';
@@ -279,7 +279,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
       e: 'subscription',
       m: 'subscribe:' + (user ? user._id : 'no user'),
       q: query,
-      cancel
+      cancel,
     });
   }
 
@@ -299,7 +299,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
         type: 'unsubscribe',
         when: 'post',
         broadcast: true,
-        user: user._id
+        user: user._id,
       });
 
       return;
@@ -312,8 +312,8 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
     query: {
       u: user._id,
       c: this.id,
-      q: queryStr
-    }
+      q: queryStr,
+    },
   });
 
   if (cancel) {
@@ -325,7 +325,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
         type: 'unsubscribe',
         when: 'post',
         broadcast: true,
-        user: user._id
+        user: user._id,
       });
     }
 
@@ -345,7 +345,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
         c: this.id,
         q: queryStr,
         on: new Date(),
-        i: Tyr.instanceId
+        i: Tyr.instanceId,
       });
     }
 
@@ -356,9 +356,9 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
       query,
       opts: {
         query,
-        auth: user
+        auth: user,
       },
-      subscription: s
+      subscription: s,
     });
 
     await s.$save();
@@ -368,7 +368,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
       type: 'subscribe',
       when: 'post',
       broadcast: true,
-      subscription: s
+      subscription: s,
     });
   }
 };
@@ -376,8 +376,8 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
 Subscription.unsubscribe = async function(userId) {
   const rslts = await Subscription.remove({
     query: {
-      u: userId
-    }
+      u: userId,
+    },
   });
 
   if (rslts.result.n) {
@@ -386,7 +386,7 @@ Subscription.unsubscribe = async function(userId) {
       type: 'unsubscribe',
       when: 'post',
       broadcast: true,
-      user: userId
+      user: userId,
     });
   }
 };
@@ -428,7 +428,7 @@ async function handleSubscriptionEvent(event) {
         socket.emit('subscriptionEvent', {
           colId: event.dataCollectionId,
           type: event.subType,
-          docs: documents.map(doc => doc.$toClient())
+          docs: documents.map(doc => doc.$toClient()),
         });
       }
     }
@@ -437,7 +437,7 @@ async function handleSubscriptionEvent(event) {
 
 Subscription.on({
   type: 'subscriptionEvent',
-  handler: handleSubscriptionEvent
+  handler: handleSubscriptionEvent,
 });
 
 export default Subscription;

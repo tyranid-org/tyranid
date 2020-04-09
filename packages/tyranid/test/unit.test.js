@@ -155,7 +155,7 @@ export function add() {
           [1, 'm3', 10000, 'm*cm2'],
           [1, 'ft*ms', 0.012, 'in*s'],
           [2, 'USD', 1.68, 'EUR'],
-          [2, 'EUR', 2.38095, 'USD']
+          [2, 'EUR', 2.38095, 'USD'],
         ];
 
         for (const test of tests) {
@@ -176,7 +176,7 @@ export function add() {
           [0, 'degC', 'degF*s'],
           [80, 'kg', 'm'],
           [5, 'm*s', 'm*s2'],
-          [1, 'ft', 'in2']
+          [1, 'ft', 'in2'],
         ];
 
         for (const test of tests) {

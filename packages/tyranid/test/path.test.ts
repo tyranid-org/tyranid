@@ -70,13 +70,13 @@ export function add() {
       const obj = new Department({
         checkouts: {
           u002: 1.0,
-          u001: 2.0
+          u001: 2.0,
         },
         cubicles: {
           1: { name: 'West', size: 100 },
           3: { name: 'East', size: 200 },
-          old3: { name: 'Old East', size: 170 }
-        }
+          old3: { name: 'Old East', size: 170 },
+        },
       });
 
       expect(np.get(obj)).to.eql([1.0, 2.0]);
@@ -104,13 +104,13 @@ export function add() {
       const u = new User({
         name: {
           first: 'Joseph',
-          suffices: ['Dr.', 'Mr.', 'Crazy']
+          suffices: ['Dr.', 'Mr.', 'Crazy'],
         },
         siblings: [
           { name: 'Tom Doe' },
           { name: 'Mia Doe' },
-          { name: 'George Doe' }
-        ]
+          { name: 'George Doe' },
+        ],
       });
 
       let np = u.$model.paths['name.suffices._'].path;
@@ -126,7 +126,7 @@ export function add() {
       expect(u.siblings).to.eql([
         { name: 'Thor' },
         { name: 'Thor' },
-        { name: 'Thor' }
+        { name: 'Thor' },
       ]);
     });
 
@@ -134,13 +134,13 @@ export function add() {
       const u = new User({
         name: {
           first: 'Joseph',
-          suffices: ['Dr.', 'Mr.', 'Crazy']
+          suffices: ['Dr.', 'Mr.', 'Crazy'],
         },
         siblings: [
           { name: 'Tom Doe' },
           { name: 'Mia Doe' },
-          { name: 'George Doe' }
-        ]
+          { name: 'George Doe' },
+        ],
       });
 
       const np = u.$model.parsePath('name.suffices.0');
@@ -247,7 +247,7 @@ export function add() {
     it('should support a mix of denormalization and population pathing', () => {
       for (const path of [
         'organization_.owner$.name.first',
-        'organization$.owner_.name.first'
+        'organization$.owner_.name.first',
       ]) {
         const np = new Path(User, path),
           field = np.detail;
@@ -287,10 +287,10 @@ export function add() {
           organization: {
             $all,
             owner: {
-              name: 1
-            }
-          }
-        }
+              name: 1,
+            },
+          },
+        },
       });
 
       expect(np.get(u)).to.eql('Jane');
@@ -299,8 +299,8 @@ export function add() {
     it('should used populated or denormalized values when dereferencing a link even if the link is in an array', async () => {
       const u = await User.byId(1, {
         populate: {
-          backupJobs: { name: 1 }
-        }
+          backupJobs: { name: 1 },
+        },
       });
 
       expect(u!.$`backupJobs.0.name`).to.eql('Designer');
@@ -313,10 +313,10 @@ export function add() {
           organization: {
             $all,
             owner: {
-              name: 1
-            }
-          }
-        }
+              name: 1,
+            },
+          },
+        },
       });
 
       expect(u!.$get('organization.owner.name.first')).to.eql('Jane');
@@ -328,10 +328,10 @@ export function add() {
           organization: {
             $all,
             owner: {
-              name: 1
-            }
-          }
-        }
+              name: 1,
+            },
+          },
+        },
       });
 
       expect(u!.$`organization.owner.name.first`).to.eql('Jane');
@@ -359,7 +359,7 @@ export function add() {
         fullName: 1,
         name: 1,
         'name.first': 1,
-        'name.last': 1
+        'name.last': 1,
       });
     });
 

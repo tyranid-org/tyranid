@@ -76,7 +76,7 @@ const DoubleType = new Type({
     }
   },
 
-  width: 80
+  width: 80,
 });
 
 export default DoubleType;

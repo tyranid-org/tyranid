@@ -1,13 +1,11 @@
 import * as React from 'react';
 
-import { Button } from 'antd';
-
 import { TyrAction, TyrActionFnOpts } from './action';
 import {
   TyrDecorator,
   TyrDecoratorProps,
   TyrDecoratorState,
-  withThemeAndParent
+  withThemeAndParent,
 } from './decorator';
 import { Tyr } from 'tyranid/client';
 
@@ -22,7 +20,7 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
   TyrPanelState
 > {
   state: TyrPanelState = {
-    visible: true
+    visible: true,
   };
 
   create?: TyrAction<D>;
@@ -36,12 +34,12 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
 
     if (action.is('create', 'search')) {
       this.create = action.decorate({
-        action: opts => this.open(opts)
+        action: opts => this.open(opts),
       });
       this.setState({});
     } else if (action.is('edit', 'view')) {
       const edit = action.decorate({
-        action: opts => this.open(opts)
+        action: opts => this.open(opts),
       });
       this.edit = edit;
 
@@ -49,11 +47,11 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
       if (parent) parent.enact(edit as any);
     } else if (action.is('save')) {
       this.save = action.decorate({
-        action: () => this.close()
+        action: () => this.close(),
       });
     } else if (action.is('cancel')) {
       this.cancel = action.decorate({
-        action: () => this.close()
+        action: () => this.close(),
       });
     }
   }
@@ -83,28 +81,12 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
   }
 
   renderFooter() {
-    const { save, cancel } = this;
+    const { save /*, cancel */ } = this;
 
     return (
       <div>
-        {/* {cancel && (
-          <Button
-            key="back"
-            onClick={() => cancel.act({ caller: this.decorating })}
-            loading={loading}
-          >
-            {cancel.label(this.decorating as any)}
-          </Button>
-        )} */}
-        {save && (
-          <Button
-            key="submit"
-            type="primary"
-            onClick={() => save.act({ caller: this.decorating })}
-          >
-            {save.label(this.decorating as any)}
-          </Button>
-        )}
+        {/* cancel?.button(this.decorating) */}
+        {save?.button(this.decorating)}
       </div>
     );
   }
@@ -115,12 +97,7 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
 
     return (
       <>
-        {create && this.decorating.parent && (
-          <Button onClick={() => create.act({ caller: this.decorating })}>
-            {create.label(this.decorating as any)}
-          </Button>
-        )}
-
+        {create && this.decorating.parent && create.button(this.decorating)}
         <div
           className={'tyr-panel' + (className ? ' ' + className : '')}
           //onCancel={() => cancel!.act({ caller: this.decorating })}

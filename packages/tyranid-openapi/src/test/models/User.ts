@@ -26,14 +26,14 @@ export default new Tyr.Collection({
         note: 'A sub document comment',
         fields: {
           years: {
-            is: 'integer'
+            is: 'integer',
           },
           name: {
             is: 'string',
-            note: 'The name of a skill that the user has.'
-          }
-        }
-      }
-    }
-  }
+            note: 'The name of a skill that the user has.',
+          },
+        },
+      },
+    },
+  },
 });

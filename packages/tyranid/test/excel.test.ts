@@ -21,9 +21,9 @@ export function add() {
             path: testDataPathPrefix + 'apple_logo.jpeg',
             location: {
               tl: { col: 0.1, row: 0.1 },
-              br: { col: 1, row: 1 }
-            }
-          }
+              br: { col: 1, row: 1 },
+            },
+          },
         ],
         header: {
           height: 30,
@@ -32,13 +32,13 @@ export function add() {
               height: 50,
               columns: [
                 {
-                  label: ''
+                  label: '',
                 },
                 {
                   colspan: 3,
                   alignment: { vertical: 'middle', horizontal: 'center' },
                   label: 'A long header spanning 3 columns',
-                  borderBottom: { color: '#f00', style: 'dashDot' }
+                  borderBottom: { color: '#f00', style: 'dashDot' },
                 },
                 {
                   label: 'Bar',
@@ -46,11 +46,11 @@ export function add() {
                   borderBottom: { color: '#00f', style: 'double' },
                   borderLeft: { color: '#000', style: 'thick' },
                   fill: { type: 'pattern', pattern: 'solid', fgColor: '#eee' },
-                  font: { color: '#f00', size: 30 }
-                }
-              ]
-            }
-          ]
+                  font: { color: '#f00', size: 30 },
+                },
+              ],
+            },
+          ],
         },
         columns: [
           { field: 'name.first', label: 'First Name', width: 15 },
@@ -61,7 +61,7 @@ export function add() {
               const { name } = doc;
               return name ? name.first + ' ' + name.last : 'Unnamed';
             },
-            width: 20
+            width: 20,
           },
           { field: 'job', width: 20 },
           {
@@ -70,18 +70,18 @@ export function add() {
               font: { color: '#fff' },
               fill: { type: 'pattern', pattern: 'solid', fgColor: '#000' },
               borderLeft: { style: 'thick' },
-              borderRight: { style: 'thick' }
+              borderRight: { style: 'thick' },
             },
             cell: {
               fill: { type: 'pattern', pattern: 'solid', fgColor: '#ffb' },
               format: '0.00',
               borderLeft: { style: 'thick' },
-              borderRight: { style: 'thick' }
+              borderRight: { style: 'thick' },
             },
-            width: 10
-          }
+            width: 10,
+          },
         ],
-        filename: 'foo.xlsx'
+        filename: 'foo.xlsx',
       };
 
       await Tyr.excel.toExcel(excelDef);
@@ -104,18 +104,18 @@ export function add() {
               font: { color: '#fff' },
               fill: { type: 'pattern', pattern: 'solid', fgColor: '#000' },
               borderLeft: { style: 'thick' },
-              borderRight: { style: 'thick' }
+              borderRight: { style: 'thick' },
             },
             cell: {
               fill: { type: 'pattern', pattern: 'solid', fgColor: '#ffb' },
               format: '0.00',
               borderLeft: { style: 'thick' },
-              borderRight: { style: 'thick' }
+              borderRight: { style: 'thick' },
             },
-            width: 10
-          }
+            width: 10,
+          },
         ],
-        filename: 'foo.xlsx'
+        filename: 'foo.xlsx',
       });
     });
   });

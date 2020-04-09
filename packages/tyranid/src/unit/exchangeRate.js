@@ -6,8 +6,8 @@ import Collection from '../core/collection';
 
 let rates = {
   USD: {
-    EUR: 0.84
-  }
+    EUR: 0.84,
+  },
 };
 
 const ExchangeRate = new Collection({
@@ -18,8 +18,8 @@ const ExchangeRate = new Collection({
   fields: {
     _id: { is: 'string' },
     updatedOn: { is: 'datetime' },
-    rates: { is: 'object' }
-  }
+    rates: { is: 'object' },
+  },
 });
 
 async function updateExchangeRates() {
@@ -43,8 +43,8 @@ async function updateExchangeRates() {
         _id: 'STANDARD',
         updatedOn: new Date(),
         rates: {
-          [json.base]: json.rates
-        }
+          [json.base]: json.rates,
+        },
       });
     }
 
@@ -100,5 +100,5 @@ export function getExchangeRate(from, to) {
 
 export default {
   boot,
-  getExchangeRate
+  getExchangeRate,
 };

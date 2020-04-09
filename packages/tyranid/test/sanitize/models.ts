@@ -7,8 +7,8 @@ export const Blog = new Tyr.Collection({
   fields: {
     _id: { is: 'mongoid' },
     name: { is: 'string', sanitize: 'name' },
-    organizationId: { link: 'organization' }
-  }
+    organizationId: { link: 'organization' },
+  },
 });
 
 export const Chart = new Tyr.Collection({
@@ -19,24 +19,24 @@ export const Chart = new Tyr.Collection({
     _id: { is: 'mongoid' },
     name: { is: 'string', sanitize: 'name' },
     organizationId: {
-      link: 'organization'
+      link: 'organization',
     },
     blogId: {
-      link: 'blog'
+      link: 'blog',
     },
     postIds: {
       is: 'array',
-      of: { link: 'post' }
+      of: { link: 'post' },
     },
     teamIds: {
       is: 'array',
-      of: { link: 'team' }
+      of: { link: 'team' },
     },
     userIds: {
       is: 'array',
-      of: { link: 'user' }
-    }
-  }
+      of: { link: 'user' },
+    },
+  },
 });
 
 export const Comment = new Tyr.Collection({
@@ -47,8 +47,8 @@ export const Comment = new Tyr.Collection({
     _id: { is: 'mongoid' },
     text: { is: 'string', sanitize: 'lorem' },
     postId: { link: 'post' },
-    blogId: { link: 'blog' }
-  }
+    blogId: { link: 'blog' },
+  },
 });
 
 export const Inventory = new Tyr.Collection({
@@ -61,9 +61,9 @@ export const Inventory = new Tyr.Collection({
     items: { is: 'array', of: { is: 'string', sanitize: true } },
     organizationId: {
       link: 'organization',
-      relate: 'ownedBy'
-    }
-  }
+      relate: 'ownedBy',
+    },
+  },
 });
 
 export const Organization = new Tyr.Collection({
@@ -72,8 +72,8 @@ export const Organization = new Tyr.Collection({
   dbName: 'organizations',
   fields: {
     _id: { is: 'mongoid' },
-    name: { is: 'string' }
-  }
+    name: { is: 'string' },
+  },
 });
 
 export const Post = new Tyr.Collection({
@@ -84,8 +84,8 @@ export const Post = new Tyr.Collection({
     _id: { is: 'mongoid' },
     title: { is: 'string' },
     text: { is: 'string' },
-    blogId: { link: 'blog' }
-  }
+    blogId: { link: 'blog' },
+  },
 });
 
 export const Team = new Tyr.Collection({
@@ -95,8 +95,8 @@ export const Team = new Tyr.Collection({
   fields: {
     _id: { is: 'mongoid' },
     name: { is: 'string' },
-    organizationId: { link: 'organization' }
-  }
+    organizationId: { link: 'organization' },
+  },
 });
 
 export const Usage = new Tyr.Collection({
@@ -105,8 +105,8 @@ export const Usage = new Tyr.Collection({
   dbName: 'usagelogs',
   fields: {
     _id: { is: 'mongoid' },
-    text: { is: 'string' }
-  }
+    text: { is: 'string' },
+  },
 });
 
 export const User = new Tyr.Collection({
@@ -121,35 +121,35 @@ export const User = new Tyr.Collection({
       sanitize: 'lorem',
       get(this: Tyr.Document & { name: string }) {
         return `Hello ${this.name} from a computed property!`;
-      }
+      },
     },
     teamIds: {
       is: 'array',
       of: {
-        link: 'team'
-      }
+        link: 'team',
+      },
     },
     nested: {
       is: 'object',
       fields: {
         inner: { is: 'integer' },
         innerIllDefined: {
-          is: 'object'
-        }
-      }
+          is: 'object',
+        },
+      },
     },
     illDefined: {
-      is: 'object'
+      is: 'object',
     },
     noValidFields: {
       is: 'object',
       fields: {
-        invalidField: { is: 'object' }
-      }
+        invalidField: { is: 'object' },
+      },
     },
     status: { link: 'userStatus' },
-    organizationId: { link: 'organization' }
-  }
+    organizationId: { link: 'organization' },
+  },
 });
 
 export const UserStatus = new Tyr.Collection({
@@ -158,11 +158,11 @@ export const UserStatus = new Tyr.Collection({
   enum: true,
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string', labelField: true }
+    name: { is: 'string', labelField: true },
   },
   values: [
     ['_id', 'name'],
     [1, 'Active'],
-    [2, 'Deleted']
-  ]
+    [2, 'Deleted'],
+  ],
 });

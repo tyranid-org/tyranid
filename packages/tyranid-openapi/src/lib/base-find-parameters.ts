@@ -12,7 +12,7 @@ Search against a text field.
 For example \`?$search=name:ben\`
 searches the \`name\` property for the string \`ben\`. Nested properties
 can be specified using dot syntax (for example: \`?$search=info.nested.name:ben\`)
-  `.trim()
+  `.trim(),
 };
 
 export const MIN_DATE = {
@@ -26,7 +26,7 @@ Restrict minimum date value for a date field.
 For example \`?$minDate=date:1494522427127\`
 returns matches with the \`date\` field having values greater
 than 1494522427127 (milliseconds since the unix epoch)
-  `
+  `,
 };
 
 export const MAX_DATE = {
@@ -39,7 +39,7 @@ Restrict maximum date value for a date field.
 For example \`?$maxDate=date:1494522427127\`
 returns matches with the "date" field having values less
 than 1494522427127 (milliseconds since the unix epoch)
-  `
+  `,
 };
 
 export const LIMIT = {
@@ -47,7 +47,7 @@ export const LIMIT = {
   in: 'query',
   type: 'number',
   description: `Number of results to include in response`,
-  default: 10
+  default: 10,
 };
 
 export const SKIP = {
@@ -55,7 +55,7 @@ export const SKIP = {
   in: 'query',
   type: 'number',
   description: `Number of results to skip in search`,
-  default: 0
+  default: 0,
 };
 
 export const SORT = {
@@ -63,7 +63,7 @@ export const SORT = {
   in: 'query',
   type: 'string',
   description: `Property to sort on`,
-  default: '_id'
+  default: '_id',
 };
 
 export const ASCEND = {
@@ -71,7 +71,7 @@ export const ASCEND = {
   in: 'query',
   type: 'boolean',
   description: `Ascending sort`,
-  default: false
+  default: false,
 };
 
 export const DEFAULT_PARAMETERS = [
@@ -81,5 +81,5 @@ export const DEFAULT_PARAMETERS = [
   LIMIT,
   SKIP,
   SORT,
-  ASCEND
+  ASCEND,
 ];

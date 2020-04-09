@@ -6,15 +6,15 @@ const TargetType = new Tyr.Collection({
   enum: true,
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string', labelField: true }
+    name: { is: 'string', labelField: true },
   },
   values: [
     ['_id', 'name'],
 
     [1, 'Value'],
     [2, 'Metric'],
-    [3, 'Value With Spaces']
-  ]
+    [3, 'Value With Spaces'],
+  ],
 });
 
 export default new Tyr.Collection({
@@ -23,7 +23,7 @@ export default new Tyr.Collection({
   dbName: 'metricTargets',
   openAPI: {
     parent: 'metric',
-    useParentScope: true
+    useParentScope: true,
   },
   fields: {
     _id: { is: 'mongoid' },
@@ -34,7 +34,7 @@ export default new Tyr.Collection({
     excludeProperty: { is: 'string' },
     type: {
       link: 'metricTargetType',
-      openAPI: true
-    }
-  }
+      openAPI: true,
+    },
+  },
 });

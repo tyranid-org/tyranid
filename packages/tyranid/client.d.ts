@@ -69,6 +69,7 @@ declare module 'tyranid/client' {
     };
 
     export type Numbering = Isomorphic.Numbering;
+    export type ActionTraitType = Isomorphic.ActionTraitType;
     export type ActionTrait = Isomorphic.ActionTrait;
 
     export function mapAwait<T, U>(

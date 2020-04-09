@@ -35,7 +35,7 @@ export function preserveInitialValues(collection, doc, props) {
 
     Object.defineProperty(doc, '$orig', {
       enumerable: false,
-      configurable: false
+      configurable: false,
     });
   }
 
@@ -120,7 +120,7 @@ export function snapshotPartial(
 
       snapshot = {
         o: new Date().getTime(),
-        p
+        p,
       };
 
       assignPatchProps(collection, snapshot, patchProps);
@@ -138,7 +138,7 @@ export function snapshotPartial(
     case 'document':
       snapshot = {
         __id: doc._id,
-        _on: (opts && opts.asOf) || new Date()
+        _on: (opts && opts.asOf) || new Date(),
       };
 
       assignPatchProps(collection, snapshot, patchProps);
@@ -252,7 +252,7 @@ export function snapshot(
 export function snapshotPush(path, patchProps) {
   const snapshot = {
     o: new Date().getTime(),
-    p: { [Tyr.Path.encode(path)]: 1 }
+    p: { [Tyr.Path.encode(path)]: 1 },
   };
 
   if (patchProps) {
@@ -270,10 +270,10 @@ export async function asOf(collection, doc, date, props) {
         {
           __id: doc._id,
           _partial: false,
-          _on: { $lte: date }
+          _on: { $lte: date },
         },
         {
-          sort: { _on: -1 }
+          sort: { _on: -1 },
         }
       );
 
@@ -291,10 +291,10 @@ export async function asOf(collection, doc, date, props) {
         earliest = await hDb.findOne(
           {
             __id: doc._id,
-            _partial: false
+            _partial: false,
           },
           {
-            sort: { _on: 1 }
+            sort: { _on: 1 },
           }
         );
       }
@@ -311,8 +311,8 @@ export async function asOf(collection, doc, date, props) {
                 __id: doc._id,
                 _on: {
                   $gte: earliest._on,
-                  $lte: date
-                }
+                  $lte: date,
+                },
               })
               .sort({ _on: 1 })
           ).toArray();
@@ -372,7 +372,7 @@ export async function asOf(collection, doc, date, props) {
         Object.defineProperty(doc, '$historical', {
           enumerable: false,
           configurable: false,
-          value: true
+          value: true,
         });
       }
 
@@ -432,7 +432,7 @@ export async function syncIndexes(collection) {
   if (collection.def.historical === 'document') {
     await historicalDb(collection).createIndex({
       __id: 1,
-      _on: 1
+      _on: 1,
     });
   }
 }
@@ -486,7 +486,7 @@ function migrateDocumentPatchToDocument(bulkOp, collection, doc) {
       const snapshot = {
         __id: doc._id,
         _on: new Date(h.o),
-        _partial: false
+        _partial: false,
       };
 
       for (const fieldName in collection._historicalFields) {

@@ -9,7 +9,7 @@ export class Roman {
     { letter: 'L', value: 50, adj: 1 },
     { letter: 'X', value: 10, adj: 2 },
     { letter: 'V', value: 5, adj: 1 },
-    { letter: 'I', value: 1, adj: 0 }
+    { letter: 'I', value: 1, adj: 0 },
   ];
 
   static toRoman(number) {

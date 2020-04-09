@@ -13,25 +13,25 @@ export function add() {
           fn(this: { foo: string }) {
             return this.foo;
           },
-          paths: ['foo']
+          paths: ['foo'],
         },
         {
           fn(this: { foo: string; bar: number }) {
             return this.foo + '--' + this.bar;
           },
-          paths: ['foo', 'bar']
+          paths: ['foo', 'bar'],
         },
         {
           fn(this: { foo: { cat: number }; bar: number }) {
             return this.foo.cat + '--' + this.bar;
           },
-          paths: ['foo.cat', 'bar']
+          paths: ['foo.cat', 'bar'],
         },
         {
           fn(this: { foo: { cat: number }; bar: number }) {
             return this.foo.cat + '--' + this.bar;
           },
-          paths: ['foo.cat', 'bar']
+          paths: ['foo.cat', 'bar'],
         },
         {
           fn(this: { postalCode: string }) {
@@ -39,8 +39,8 @@ export function add() {
               ? this.postalCode.replace(/\s/g, '')
               : '';
           },
-          paths: ['postalCode']
-        }
+          paths: ['postalCode'],
+        },
       ];
 
       for (const test of tests) {
