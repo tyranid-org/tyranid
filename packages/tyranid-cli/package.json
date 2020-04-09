@@ -1,6 +1,6 @@
 {
   "name": "tyranid-cli",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Tyranid command line tool",
   "main": "./bin/src/index.js",
   "homepage": "http://tyranid.org",
