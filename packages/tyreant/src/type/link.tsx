@@ -44,7 +44,7 @@ const findByLabel = (
   const values =
     props && props.linkLabels ? props.linkLabels : collection.values;
 
-  return values.find((lv) => {
+  return values.find(lv => {
     const l = lv.$label;
     return l ? l.toLowerCase() === label : false;
   });
@@ -57,7 +57,7 @@ const findById = (
 ) => {
   const values =
     props && props.linkLabels ? props.linkLabels : collection.values;
-  return values.find((lv) => lv.$id === id);
+  return values.find(lv => lv.$id === id);
 };
 
 const sortLabels = (labels: any[], props: TyrPathProps) => {
@@ -139,7 +139,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
       if (controlMode === 'view') {
         Tyr.mapAwait(
           path.tail.link!.idToLabel(path!.get(props.document)),
-          (label) => this.setState({ viewLabel: label })
+          label => this.setState({ viewLabel: label })
         );
       } else {
         if (this.link.isStatic()) {
@@ -239,7 +239,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
 
       if (addDocuments) {
         for (const addDocument of addDocuments) {
-          const existing = documents.find((doc) => addDocument.$id === doc.$id);
+          const existing = documents.find(doc => addDocument.$id === doc.$id);
           if (!existing) {
             documents.push(addDocument);
           }
@@ -296,14 +296,14 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
     };
 
     if (this.mode === 'tags') {
-      selectProps.onChange = async (value) => {
+      selectProps.onChange = async value => {
         const values = value as string[];
         const link = this.link!;
         const { onStateChange } = this.props;
 
         if (link.def.tag) {
           await Promise.all(
-            values.map(async (value) => {
+            values.map(async value => {
               let label = (this.link as any).byIdIndex[value];
 
               if (!label) {
@@ -346,7 +346,9 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
         {...selectProps}
         onChange={selectProps.onChange || onTypeChangeFunc}
       >
-        {documents.map(this.createOption)}
+        {(props.optionFilter ? props.optionFilter(documents) : documents).map(
+          this.createOption
+        )}
       </Select>
     ));
   }
@@ -367,7 +369,7 @@ byName.link = {
     }
 
     if (Array.isArray(value)) {
-      value = value.map((v) => {
+      value = value.map(v => {
         const nv = findById(props!, linkFor(path)!, v);
         if (nv) {
           const column = (path.tail as any).column;
@@ -411,7 +413,7 @@ byName.link = {
     const path = props.searchPath || props.path!;
 
     return {
-      filterDropdown: (filterDdProps) => (
+      filterDropdown: filterDdProps => (
         <LinkFilterDropdown
           filterable={filterable}
           filterDdProps={filterDdProps}
@@ -564,9 +566,9 @@ const LinkFilterDropdown = ({
             if (!link.isStatic()) {
               linkField
                 .labels(new path.tail.collection({}), filterSearchValue)
-                .then((results) => {
+                .then(results => {
                   delaySetLabels(
-                    results.map((d) => ({
+                    results.map(d => ({
                       ...d,
                       $id: String(d.$id),
                       $label: d.$label,
@@ -575,7 +577,7 @@ const LinkFilterDropdown = ({
                 });
             } else {
               delaySetLabels(
-                linkFor(path)!.values.map((d) => ({
+                linkFor(path)!.values.map(d => ({
                   ...d,
                   $id: String(d.$id),
                   $label: d.$label,
@@ -592,15 +594,15 @@ const LinkFilterDropdown = ({
                 placeholder="search for..."
                 size="small"
                 className="tyr-filter-search-input"
-                onChange={(e) => setFilterSearchValue(e.currentTarget.value)}
-                onSearch={async (value) => {
+                onChange={e => setFilterSearchValue(e.currentTarget.value)}
+                onSearch={async value => {
                   const results = await linkField.labels(
                     new path.tail.collection({}),
                     value
                   );
                   setFilterSearchValue(value);
                   setLabels(
-                    results.map((d) => ({
+                    results.map(d => ({
                       ...d,
                       $id: String(d.$id),
                       $label: d.$label,
@@ -640,7 +642,7 @@ const LinkFilterDropdown = ({
                 })
               }
             >
-              {sortLabels(labels || link.values, pathProps).map((v) => {
+              {sortLabels(labels || link.values, pathProps).map(v => {
                 const isChecked =
                   searchValue && searchValue.indexOf(v.$id) > -1;
 

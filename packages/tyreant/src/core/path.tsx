@@ -15,7 +15,7 @@ import {
   FieldState,
   generateRules,
   className,
-  getCellValue
+  getCellValue,
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
@@ -169,6 +169,7 @@ export interface TyrPathProps
   validateTrigger?: string | string[] | false;
   textAreaRows?: number;
   onPressEnter?: () => void;
+  optionFilter?: (documents: Tyr.Document[]) => Tyr.Document[];
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
@@ -208,7 +209,7 @@ export const decorateField = (
     colon,
     noStyle,
     dependencies,
-    validateTrigger
+    validateTrigger,
   } = props;
   const field = path?.tail;
 
