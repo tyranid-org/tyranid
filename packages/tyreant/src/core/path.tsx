@@ -14,7 +14,7 @@ import {
   TyrTypeProps,
   FieldState,
   generateRules,
-  className
+  className,
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
@@ -140,6 +140,7 @@ export interface TyrPathProps {
   labelInValue?: boolean;
   linkLabels?: { $id: any; $label: string }[];
   manuallySortedLabels?: boolean;
+  optionFilter?: (documents: Tyr.Document[]) => Tyr.Document[];
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
