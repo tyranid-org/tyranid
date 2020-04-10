@@ -254,11 +254,13 @@ export class TyrComponent<
         case 'search':
           return !enacted('create') && traits?.includes('search');
         case 'edit':
-          if (enacted('view')) return false;
+          if (enacted('view') || enacted('import') || enacted('export'))
+            return false;
           def = !!this.parent;
           break;
         case 'view':
-          if (enacted('edit')) return false;
+          if (enacted('edit') || enacted('import') || enacted('export'))
+            return false;
           def = !!this.parent;
           break;
         default:

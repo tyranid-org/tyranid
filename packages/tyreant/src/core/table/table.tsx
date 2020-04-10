@@ -41,15 +41,20 @@ import { Tyr } from 'tyranid/client';
 import { useThemeProps } from '../theme';
 import { getCellValue, TyrTypeProps } from '../../type';
 import { TyrComponentState, useComponent } from '../component';
-import { TyrPathLaxProps, getPathName, TyrThemedFieldBase } from '../path';
+import {
+  TyrPathLaxProps,
+  getPathName,
+  TyrThemedFieldBase,
+  TyrPathProps,
+  pathTitle,
+  pathWidth,
+} from '../path';
 import { TyrTableConfig } from './typedef';
+import { TyrSortDirection } from '../typedef';
 import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
 import { EditableFormRow, EditableContext } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
-import { TyrPathProps } from '../path';
-import { TyrSortDirection } from '../typedef';
-import { stringWidth, wrappedStringWidth } from '../../util/font';
 
 const findColumnByDataIndex = <D extends Tyr.Document>(
   columns: (ColumnType<D> | ColumnGroupType<D>)[],
@@ -76,7 +81,7 @@ export interface OurColumnProps<T> extends ColumnType<T> {
 
 const ObsTable = observer(Table);
 
-interface TableColumnPathProps {
+export interface TableColumnPathProps {
   pinned?: 'left' | 'right';
   align?: 'left' | 'right' | 'center';
   ellipsis?: boolean;
@@ -90,32 +95,6 @@ interface TableColumnPathProps {
 
 export type TyrTableColumnPathLaxProps = TableColumnPathProps & TyrPathLaxProps;
 export type TyrTableColumnPathProps = TableColumnPathProps & TyrPathProps;
-
-export function pathTitle(pathProps: TyrTableColumnPathProps) {
-  return pathProps.label || pathProps.path?.pathLabel || '';
-}
-
-export function pathWidth(pathProps: TyrPathProps, wrapTitle?: boolean) {
-  let width = pathProps.width;
-
-  if (width) return width;
-
-  const { path } = pathProps;
-  if (path) width = path.tail.width || path.detail.width;
-
-  const pt = pathTitle(pathProps);
-  if (typeof pt === 'string') {
-    const titleWidth =
-        (wrapTitle ? wrappedStringWidth(pt, 15) : stringWidth(pt, 15)) +
-        64 /* padding + sort/filter icon */;
-    return width === undefined || titleWidth > width ? titleWidth : width;
-  } else {
-    return width;
-  }
-}
-
-export const tablePathName = (column: TyrTableColumnPathLaxProps | string) =>
-  typeof column === 'string' ? column : getPathName(column.path);
 
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
@@ -147,7 +126,6 @@ export interface TyrTableProps<D extends Tyr.Document>
   scroll?: { x?: number | true | string; y?: number | string };
   footer?: (currentPageData: D[]) => React.ReactNode;
   title?: (currentPageData: D[]) => React.ReactNode;
-  showHeader?: boolean;
   /**
    * If a string is specified, it is the name of the key to use.
    * If true is specified, a key of 'default' will be used.
@@ -175,8 +153,6 @@ export class TyrTableBase<
   // TODO:  is this redundant with super().fields ?
   @observable
   otherPaths: TyrTableColumnPathProps[] = [];
-
-  //static whyDidYouRender = true;
 
   get activePaths(): TyrTableColumnPathProps[] {
     return this.otherPaths;
@@ -233,7 +209,7 @@ export class TyrTableBase<
         const otherPathName = getPathName(otherPath.path);
 
         const p = nextOtherPaths.find(
-          column => otherPathName === tablePathName(column)
+          column => otherPathName === getPathName(column)
         );
 
         return p ? this.resolveFieldLaxProps(p) : undefined;
@@ -242,7 +218,7 @@ export class TyrTableBase<
 
     // Add any new fields (unless they are hidden)
     for (const nextOtherField of nextOtherPaths) {
-      const nextOtherFieldName = tablePathName(nextOtherField);
+      const nextOtherFieldName = getPathName(nextOtherField);
 
       const existingCol = newOtherPaths.find(
         column => nextOtherFieldName === getPathName(column.path)
@@ -267,10 +243,7 @@ export class TyrTableBase<
     this.refreshPaths();
   }
 
-  componentDidUpdate(
-    prevProps: TyrTableProps<D>,
-    prevState: TyrComponentState<D>
-  ) {
+  componentDidUpdate(prevProps: TyrTableProps<D>) {
     const { documents: newDocuments } = this.props;
     const { documents } = prevProps;
 
@@ -429,7 +402,7 @@ export class TyrTableBase<
 
         if (orig) {
           for (const column of this.props.paths) {
-            const pathName = tablePathName(column);
+            const pathName = getPathName(column);
             const field = pathName && collection.paths[pathName];
 
             if (field) {
@@ -532,14 +505,10 @@ export class TyrTableBase<
       delete this.editingDocument;
     }
 
-    this.setState({});
+    this.refresh();
   };
 
   tableWidth: number = 0;
-
-  private getColumnWidth(name: string) {
-    return this.componentConfig?.fields.find(f => f.name === name)?.width;
-  }
 
   private getColumns(newDocumentTable?: boolean): ColumnProps<D>[] {
     const {
@@ -561,14 +530,13 @@ export class TyrTableBase<
 
     const fieldCount = columns.length;
     const isEditingAnything = !!newDocumentTable || !!editingDocument;
-    const allWidthsDefined = columns.every(c =>
-      pathWidth(c, wrapColumnHeaders)
-    );
     let hasAnyFilter = false;
 
     const antColumns: OurColumnProps<D>[] = [];
     let curGroupName: string | undefined;
     let curGroupColumn: OurColumnProps<D>;
+
+    let seenAnyColumnsWithNoWidth = false;
 
     this.tableWidth = 0;
     columns.forEach((column, columnIdx) => {
@@ -585,8 +553,11 @@ export class TyrTableBase<
       }
 
       const pWidth =
-        (pathName && this.getColumnWidth(pathName)) ||
+        (pathName &&
+          this.componentConfig?.fields.find(f => f.name === name)?.width) ||
         pathWidth(column, wrapColumnHeaders);
+
+      if (!pWidth) seenAnyColumnsWithNoWidth = true;
       this.tableWidth += pWidth ? Number.parseInt(pWidth as string) + 8 : 275;
       // TODO: check if the type has a width on it
 
@@ -608,9 +579,9 @@ export class TyrTableBase<
 
       const isLast = columnIdx === fieldCount - 1;
       const colWidth = isLast
-        ? allWidthsDefined
-          ? undefined
-          : pWidth
+        ? seenAnyColumnsWithNoWidth
+          ? pWidth
+          : undefined
         : fieldCount > 1
         ? pWidth
         : undefined;
@@ -645,9 +616,6 @@ export class TyrTableBase<
         {};
 
       const netClassName = column.className;
-      //if (colWidth && !editable && !fixedLeft && !fixedRight && !no fixed headers ) {
-
-      //}
 
       const tableColumn: OurColumnProps<D> = {
         dataIndex: pathName,
@@ -745,18 +713,7 @@ export class TyrTableBase<
                 ({
                   width: colWidth,
                   onResize: (e: any, opts: any) => {
-                    //console.log('tableColumn',tableColumn,'new size',opts.size);
                     const { width } = opts.size;
-                    /*const { rerenderTable } = this;
-                    if (rerenderTable) {
-                      const c = findColumnByDataIndex(
-                        rerenderTable.props.columns,
-                        (tableColumn as ColumnType<D>).dataIndex as string
-                      )!;
-                      c.width = width;
-                      //(tableColumn as ColumnType<D>).width = width;
-                      //rerenderTable.refresh();
-                    }*/
                     column.width = width;
                     this.updateConfigWidths(pathName, width);
                     // TODO:  save
@@ -974,9 +931,7 @@ export class TyrTableBase<
     sortDirections[sortFieldName] = sorter.order!;
 
     this.updateConfigSort(sortFieldName, sorter.order);
-
     this.execute();
-
     this.props.notifySortSet?.(sortFieldName, sorter.order);
   };
 
@@ -985,10 +940,7 @@ export class TyrTableBase<
     this.props.setEditing && this.props.setEditing(true);
     document.$snapshot();
 
-    // Trigger redraw
-    setTimeout(() => {
-      this.setState({});
-    }, 250);
+    setTimeout(() => this.refresh(), 250);
   };
 
   //rerenderTable?: RerenderableApi;
@@ -1059,7 +1011,6 @@ export class TyrTableBase<
       scroll,
       footer,
       title,
-      showHeader,
       config: tableConfig,
       decorator,
       onSelectRows,
@@ -1136,13 +1087,8 @@ export class TyrTableBase<
             : { x: this.tableWidth }
           : undefined;
 
-      //const Foo = Rerenderable(ObsTable, api => {
-      //this.rerenderTable = api;
-      //});
-      const Foo = ObsTable;
-
       const mainTable = paths ? (
-        <Foo
+        <ObsTable
           locale={{ emptyText }}
           bordered={bordered}
           rowSelection={
@@ -1160,12 +1106,7 @@ export class TyrTableBase<
           pagination={false}
           onChange={this.handleTableChange as any}
           footer={netFooter as (rows: Object[]) => React.ReactNode}
-          title={
-            newDocument
-              ? undefined
-              : (title as (rows: Object[]) => React.ReactNode)
-          }
-          showHeader={newDocument ? false : showHeader}
+          showHeader={false}
           dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
           scroll={tableScroll}
@@ -1233,6 +1174,7 @@ export class TyrTableBase<
           {(children || multiActions.length > 0 || voidActions.length > 0) && (
             <Row>
               <Col span={24} className="tyr-table-header">
+                {title?.(this.documents)}
                 {children}
                 {multiActions.map(a => a.button(this))}
                 {voidActions.map(a => a.button(this))}
@@ -1248,10 +1190,9 @@ export class TyrTableBase<
                   loading={loading}
                   components={components}
                   rowKey={() => 'new'}
-                  title={title as (docs: Object[]) => React.ReactNode}
                   size={size || 'small'}
                   pagination={false}
-                  showHeader={true}
+                  showHeader={false}
                   dataSource={[newDocument]}
                   columns={this.getColumns(true)}
                   scroll={tableScroll}
@@ -1389,17 +1330,6 @@ const ResizableTitle = (props: ResizableProps) => {
       width={width}
       height={0}
       handle={
-        /*resizeHandle => {
-        console.log('resizableHandle', resizeHandle); /* this was always 'se' so using the abbreviated variant
-        return (
-          <span
-            className={`react-resizable-handle react-resizable-handle-${resizeHandle}`}
-            onClick={e => {
-              e.stopPropagation();
-            }}
-          />
-        );
-      }*/
         <span
           className={`react-resizable-handle react-resizable-handle-se`}
           onClick={e => e.stopPropagation()}

@@ -455,6 +455,7 @@ export function generateClientLibrary() {
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
   Tyr.capitalize = ${es5Fn(Tyr.capitalize)};
+  Tyr.kebabize = ${es5Fn(Tyr.kebabize)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};
   Tyr.numberize = ${es5Fn(Tyr.numberize)};
   Tyr.mapAwait = ${es5Fn(Tyr.mapAwait)};
@@ -462,6 +463,7 @@ export function generateClientLibrary() {
   Tyr.pluralize = ${es5Fn(Tyr.pluralize)};
   Tyr.projectify = ${es5Fn(Tyr.projectify)};
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
+  Tyr.snakize = ${es5Fn(Tyr.snakize)};
   Tyr.stringify = ${es5Fn(Tyr.stringify)};
   Tyr.unitize = ${es5Fn(Tyr.unitize)};
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
@@ -1041,7 +1043,7 @@ export function generateClientLibrary() {
       const byIdIndex = CollectionInstance.byIdIndex;
       vals = def.values = vals.map(v => {
         v = new CollectionInstance(v);
-        CollectionInstance[_.snakeCase(v.name).toUpperCase()] = v;
+        CollectionInstance[Tyr.snakize(v.name).toUpperCase()] = v;
         byIdIndex[v._id] = v;
         return v;
       });

@@ -22,7 +22,6 @@ import {
   TyrTableBase,
   TyrTableColumnPathProps,
   TyrTableColumnPathLaxProps,
-  tablePathName,
 } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
@@ -85,7 +84,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     return compact(
       fields.map((column: TyrTableColumnPathProps, index: number) => {
         const savedField = tableConfig.fields.find(
-          (c) => c.name === column.path?.name
+          c => c.name === column.path?.name
         );
         const pathName = column.path?.name;
 
@@ -118,7 +117,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     } else {
       const { documentUid } = config;
       const columnFields = compact(
-        columns.map((c) => getPathName(c.path))
+        columns.map(c => getPathName(c.path))
       ) as string[];
 
       const { TyrComponentConfig } = Tyr.collections;
@@ -126,7 +125,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
         documentUid,
         collection: collection.id,
         userId,
-        fields: columnFields.map((c) => {
+        fields: columnFields.map(c => {
           return {
             name: c,
           };
@@ -184,7 +183,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   };
 
   const onChangeVisibility = (field: ColumnConfigField) => {
-    const columnField = columnFields.find((df) => df.name === field.name);
+    const columnField = columnFields.find(df => df.name === field.name);
 
     if (columnField) {
       columnField.hidden = !columnField.hidden;
@@ -194,12 +193,12 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   const resetSort = () => {
     const defaultSort = originalPaths.find(
-      (p) => typeof p !== 'string' && !!p.defaultSort
+      p => typeof p !== 'string' && !!p.defaultSort
     );
-    const defSortPath = defaultSort ? tablePathName(defaultSort) : undefined;
+    const defSortPath = defaultSort ? getPathName(defaultSort) : undefined;
 
     setColumnFields(
-      columnFields.map((c) => {
+      columnFields.map(c => {
         if (c.name === defSortPath) {
           c.sortDirection = (defaultSort as any)?.defaultSort;
         } else {
@@ -216,7 +215,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   const resetFilters = () => {
     setColumnFields(
-      columnFields.map((c) => {
+      columnFields.map(c => {
         delete c.hasFilter;
         return c;
       })
@@ -246,7 +245,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
         label = p.label as string;
       }
 
-      const configField = columnFields.find((c) => c.name == pathName);
+      const configField = columnFields.find(c => c.name == pathName);
 
       return {
         name: pathName,
@@ -265,7 +264,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   const resetWidths = () => {
     setColumnFields(
-      columnFields.map((c) => {
+      columnFields.map(c => {
         delete c.width;
         return c;
       })
@@ -287,7 +286,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
         {incomingTableConfig && (
           <div className="tyr-config-columns-list tyr-config-columns-list-locked">
-            {lockedFields.map((f) => (
+            {lockedFields.map(f => (
               <TyrTableColumnConfigItem
                 key={f.name}
                 field={f}
@@ -348,7 +347,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       href={`/api/${collection.def.name}/export?opts=${encodeURIComponent(
         JSON.stringify({
           query: table.findOpts?.query,
-          fields: columnFields.filter((f) => !f.hidden).map((f) => f.name),
+          fields: columnFields.filter(f => !f.hidden).map(f => f.name),
         })
       )}`}
       role="button"
@@ -509,7 +508,7 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
         collectionId: table.collection.id,
         userId,
         key,
-        fields: columns.map((c) => {
+        fields: columns.map(c => {
           return {
             name: getPathName(c.path),
             hidden: !!c.defaultHidden,
@@ -526,9 +525,9 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
 
   const orderedColumns = orderedArray(
     tableConfig.fields,
-    columns.filter((column) => {
+    columns.filter(column => {
       const fieldName = getPathName(column.path);
-      const configField = tableConfig.fields.find((f) => f.name === fieldName);
+      const configField = tableConfig.fields.find(f => f.name === fieldName);
 
       return fieldName ? !configField || !configField.hidden : undefined;
     })
@@ -551,7 +550,7 @@ const orderedArray = (
     const fieldName = getPathName(current.path);
 
     if (fieldName) {
-      const index = findIndex(arrayWithOrder, (f) => f.name === fieldName);
+      const index = findIndex(arrayWithOrder, f => f.name === fieldName);
 
       if (index > -1) {
         orderedArray[index] = current;

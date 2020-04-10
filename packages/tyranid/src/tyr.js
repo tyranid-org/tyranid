@@ -176,6 +176,11 @@ const Tyr = {
   },
 
   /** @isomorphic */
+  kebabize(name) {
+    return _.kebabCase(name);
+  },
+
+  /** @isomorphic */
   labelize(name) {
     // TODO:  more cases to be added here later on
     if (name.endsWith('Id')) {
@@ -264,6 +269,11 @@ const Tyr = {
     } else {
       return name;
     }
+  },
+
+  /** @isomorphic */
+  snakize(name) {
+    return _.snakeCase(name);
   },
 
   /** @isomorphic */

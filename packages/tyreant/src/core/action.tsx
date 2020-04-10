@@ -244,11 +244,15 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     }
   }
 
+  get className() {
+    return 'tyr-action tyr-action-' + Tyr.kebabize(this.name);
+  }
+
   button(component: TyrComponent<any>) {
     if (this.input === '*') {
       return (
         <Button
-          className={'tyr-action tyr-action-' + this.name}
+          className={this.className}
           disabled={!component.selectedIds?.length}
           key={`a_${this.name}`}
           onClick={() => this.act(component.actionFnOpts() as any)}
@@ -259,7 +263,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     } else {
       return (
         <Button
-          className={'tyr-action tyr-action-' + this.name}
+          className={this.className}
           key={`a_${this.name}`}
           onClick={() => this.act(component.actionFnOpts() as any)}
         >

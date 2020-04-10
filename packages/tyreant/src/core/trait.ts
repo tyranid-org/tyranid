@@ -16,10 +16,7 @@ export const traits: {
   cancel: { type: 'exit' },
 };
 
-export function isEntranceTrait(trait: string) {
-  return traits[trait].type === 'entrance';
-}
+export const isEntranceTrait = (trait: string) =>
+  traits[trait].type === 'entrance';
 
-export function isExitTrait(trait: string) {
-  return traits[trait].type === 'exit';
-}
+export const isExitTrait = (trait: string) => traits[trait].type === 'exit';

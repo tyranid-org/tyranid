@@ -4,7 +4,7 @@ import { Moment } from 'moment';
 
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-import { Form, Tooltip } from 'antd';
+import { Form, Tooltip, Typography } from 'antd';
 import { SelectValue } from 'antd/lib/select';
 
 import { Tyr } from 'tyranid/client';
@@ -15,12 +15,13 @@ import {
   FieldState,
   generateRules,
   className,
-  getCellValue
+  getCellValue,
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
 import { FormItemProps } from 'antd/lib/form';
 import { TyrSortDirection } from './typedef';
+import { stringWidth, wrappedStringWidth } from '../util/font';
 
 const FormItem = Form.Item;
 
@@ -175,9 +176,15 @@ export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
   path: Tyr.PathInstance;
 };
 
-export const getPathName = (path: string | Tyr.PathInstance | undefined) => {
+export const getPathName = (
+  path: string | Tyr.PathInstance | TyrPathProps | undefined
+): string | undefined => {
   if (typeof path === 'string') return path;
-  if (path) return path.name;
+  if (path instanceof Tyr.Path) return path.name;
+  if (path) {
+    const p = path.path;
+    if (p) return getPathName(p);
+  }
   //return undefined;
 };
 
@@ -185,6 +192,29 @@ export type TyrPathLaxProps = Omit<TyrPathProps, 'path' | 'searchPath'> & {
   path?: Tyr.PathInstance | string;
   searchPath?: Tyr.PathInstance | string;
 };
+
+export function pathTitle(pathProps: TyrPathProps) {
+  return pathProps.label || pathProps.path?.pathLabel || '';
+}
+
+export function pathWidth(pathProps: TyrPathProps, wrapTitle?: boolean) {
+  let width = pathProps.width;
+
+  if (width) return width;
+
+  const { path } = pathProps;
+  if (path) width = path.tail.width || path.detail.width;
+
+  const pt = pathTitle(pathProps);
+  if (typeof pt === 'string') {
+    const titleWidth =
+        (wrapTitle ? wrappedStringWidth(pt, 15) : stringWidth(pt, 15)) +
+        64 /* padding + sort/filter icon */;
+    return width === undefined || titleWidth > width ? titleWidth : width;
+  } else {
+    return width;
+  }
+}
 
 export const labelForProps = (props: TyrTypeProps) => {
   const label = props.label;
@@ -208,7 +238,7 @@ export const decorateField = (
     colon,
     noStyle,
     dependencies,
-    validateTrigger
+    validateTrigger,
   } = props;
   const field = path?.tail;
 
