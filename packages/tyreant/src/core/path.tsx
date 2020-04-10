@@ -170,6 +170,7 @@ export interface TyrPathProps
   validateTrigger?: string | string[] | false;
   textAreaRows?: number;
   onPressEnter?: () => void;
+  optionFilter?: (documents: Tyr.Document[]) => Tyr.Document[];
 }
 
 export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {

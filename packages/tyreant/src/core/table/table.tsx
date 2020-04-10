@@ -28,6 +28,7 @@ import {
   Table,
   Tooltip,
 } from 'antd';
+
 import {
   ColumnType,
   ColumnProps,
@@ -660,6 +661,7 @@ export class TyrTableBase<
               max: column.max,
               //ellipsis: true,
               label: column.label,
+              optionFilter: column.optionFilter,
             };
 
             return (
