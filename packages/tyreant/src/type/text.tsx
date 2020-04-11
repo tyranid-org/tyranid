@@ -24,7 +24,9 @@ const CKEditorWrapper = <D extends Tyr.Document = Tyr.Document>({
   const [editor, setEditor] = React.useState<any>();
 
   React.useEffect(() => {
-    if (editor) editor.setData(value);
+    if (editor) {
+      editor.setData(value);
+    }
   }, [editor]);
 
   return (
