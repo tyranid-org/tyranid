@@ -72,11 +72,11 @@ export class TyrFormBase<
     return this.props.form!;
   }
 
-  private renderField(pathProps: TyrPathExistsProps) {
+  private renderField(pathProps: TyrPathExistsProps<D>) {
     const { document } = this;
 
     return (
-      <TyrThemedFieldBase
+      <TyrThemedFieldBase<D>
         {...pathProps}
         form={this.props.form!}
         document={document!}
@@ -92,7 +92,7 @@ export class TyrFormBase<
       render,
       labelCol,
       wrapperCol,
-      labelAlign
+      labelAlign,
     } = this.props;
     const paths = this.activePaths;
 
@@ -110,7 +110,7 @@ export class TyrFormBase<
             value={{
               component: (this as unknown) as TyrComponent,
               form: this.props.form!,
-              document
+              document,
             }}
           >
             {render &&
@@ -125,7 +125,7 @@ export class TyrFormBase<
             {paths &&
               !children &&
               !render &&
-              (paths as TyrPathExistsProps[]).map(pathProps => {
+              (paths as TyrPathExistsProps<D>[]).map(pathProps => {
                 const { path } = pathProps; // path might be a string
                 return (
                   <Row key={path.name || ((path as any) as string)} gutter={10}>

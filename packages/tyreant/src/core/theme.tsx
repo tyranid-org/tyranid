@@ -59,14 +59,14 @@ export const TyrTheme: React.FunctionComponent<TyrThemeProps> = props => (
   <ThemeContext.Provider value={props}>{props.children}</ThemeContext.Provider>
 );
 
-export const TypeContext = React.createContext<TyrTypeProps | undefined>(
+export const TypeContext = React.createContext<TyrTypeProps<any> | undefined>(
   undefined
 );
 
-export const withThemedTypeContext = <T extends {} = {}>(
+export const withThemedTypeContext = (
   type: string | undefined,
-  TypeControl: React.ComponentType<T & TyrTypeProps>
-) => (rawProps: T & TyrTypeLaxProps) => {
+  TypeControl: React.ComponentType<TyrTypeProps<any>>
+) => (rawProps: TyrTypeLaxProps<any>) => {
   const parentProps = useContext(TypeContext);
   const props = useThemeProps(type as keyof TyrThemeProps, rawProps);
 

@@ -36,7 +36,7 @@ const linkFor = (path: Tyr.PathInstance) => linkFieldFor(path)?.link;
 
 // TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search....
 const findByLabel = (
-  props: TyrTypeProps,
+  props: TyrTypeProps<any>,
   collection: Tyr.CollectionInstance,
   label: string
 ) => {
@@ -51,7 +51,7 @@ const findByLabel = (
 };
 
 const findById = (
-  props: TyrTypeProps,
+  props: TyrTypeProps<any>,
   collection: Tyr.CollectionInstance,
   id: string
 ) => {
@@ -60,7 +60,7 @@ const findById = (
   return values.find(lv => lv.$id === id);
 };
 
-const sortLabels = (labels: any[], props: TyrPathProps) => {
+const sortLabels = (labels: any[], props: TyrPathProps<any>) => {
   if (!!props.manuallySortedLabels) {
     return labels.slice();
   }
@@ -82,7 +82,9 @@ const sortLabels = (labels: any[], props: TyrPathProps) => {
   return sortedLabels;
 };
 
-export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
+export class TyrLinkBase<
+  D extends Tyr.Document = Tyr.Document
+> extends React.Component<TyrTypeProps<D>, TyrLinkState> {
   state: TyrLinkState = { documents: [], loading: false, initialLoading: true };
 
   protected lastFetchId = 0;
@@ -354,7 +356,7 @@ export class TyrLinkBase extends React.Component<TyrTypeProps, TyrLinkState> {
   }
 }
 
-export const TyrLink = withThemedTypeContext<{}>('link', TyrLinkBase);
+export const TyrLink = withThemedTypeContext('link', TyrLinkBase);
 
 byName.link = {
   component: TyrLinkBase,
@@ -507,7 +509,7 @@ interface LabelDocument {
 
 interface LinkFilterProps {
   filterable: Filterable;
-  pathProps: TyrPathProps;
+  pathProps: TyrPathProps<any>;
   filterDdProps: FilterDdProps;
 }
 

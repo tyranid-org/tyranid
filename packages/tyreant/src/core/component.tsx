@@ -23,7 +23,7 @@ export const useComponent = () => React.useContext(ComponentContext);
 export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   className?: string;
   collection?: Tyr.CollectionInstance<D>;
-  paths?: (TyrPathLaxProps | string)[];
+  paths?: (TyrPathLaxProps<D> | string)[];
   decorator?: React.ReactElement;
   traits?: Tyr.ActionTrait[];
   actions?: ActionSet<D>;
@@ -37,7 +37,7 @@ export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {}
 
 /**
  * A TyrComponent represents a react component that contains documents.  Examples
- * are TyrTable and TyrForm.
+ * are TyrTable, TyrForm, TyrKanBan, and so on.
  */
 @observer
 export class TyrComponent<
@@ -46,25 +46,12 @@ export class TyrComponent<
   State extends TyrComponentState<D> = TyrComponentState<D>
 > extends React.Component<Props, State> {
   collection!: Tyr.CollectionInstance<D>;
-  paths!: TyrPathProps[];
 
-  //static whyDidYouRender = true;
+  componentName = '';
 
   get displayName() {
     return this.constructor.name + ':' + this.collection.name;
   }
-
-  /**
-   * "paths" contains all of the paths available to the component,
-   * "activePaths" contains paths that are currently active on the screen
-   *   (e.g. what paths are enabled in table configuration)
-   */
-  get activePaths(): TyrPathProps[] {
-    return this.paths;
-  }
-
-  children: TyrComponent[] = [];
-  decorator?: TyrDecorator<D>;
 
   @observable
   loading = false;
@@ -73,54 +60,6 @@ export class TyrComponent<
   visible = false;
 
   mounted = false;
-
-  /**
-   * Can this component edit documents?
-   */
-  canEdit = false;
-
-  /**
-   *  Can this component display multiple documents at once or only one?
-   */
-  canMultiple = false;
-
-  hasPaging = false;
-
-  hasSortDirection = false;
-
-  hasFilters = false;
-
-  componentName = '';
-
-  /*
-   * * * TyrOneComponent properties defined here for convenience in callbacks * * *
-   */
-  @observable
-  document!: D;
-
-  /*
-   * * * TyrManyComponent properties defined here for convenience in callbacks * * *
-   */
-
-  get isLocal() {
-    return false;
-  }
-
-  refreshPaths() {
-    if (this.props.paths) {
-      this.paths = this.props.paths.map(laxFieldProps =>
-        this.resolveFieldLaxProps(laxFieldProps)
-      );
-    }
-  }
-
-  /**
-   * if isLocal then this has *all* the data, otherwise it just has the current page
-   */
-  @observable
-  documents: D[] & { count?: number } = [] as D[] & {
-    count?: number;
-  };
 
   constructor(props: Props, state: State) {
     super(props, state);
@@ -142,11 +81,11 @@ export class TyrComponent<
 
       const parentCollection = parent.collection;
 
-      let paths: (TyrPathLaxProps | string)[] | undefined = this.paths;
+      let paths: (TyrPathLaxProps<D> | string)[] | undefined = this.paths;
       if (!paths && collection) {
         paths = this.props.paths;
         if (!paths && collection === parentCollection)
-          paths = parent.props.paths;
+          paths = parent.props.paths as any;
 
         if (paths)
           this.paths = paths.map(laxPathProps =>
@@ -154,7 +93,7 @@ export class TyrComponent<
           );
       }
 
-      this.setupLink();
+      this.setupParentLink();
     }
   }
 
@@ -173,29 +112,6 @@ export class TyrComponent<
     }
   }
   */
-
-  /*
-   * * * SELECTION
-   */
-
-  @observable
-  selectedIds: string[] = [];
-
-  actionFnOpts(): TyrActionFnOpts<D> {
-    return {
-      caller: this,
-      document: this.document,
-      documents: this.selectedIds.map(
-        id => this.collection!.byIdIndex[id]
-      ) as D[],
-    } as any;
-  }
-
-  parentAction: TyrAction<D> | undefined;
-
-  get isSearching() {
-    return this.parentAction?.is('search') ?? false;
-  }
 
   componentDidMount() {
     this.mounted = true;
@@ -222,14 +138,366 @@ export class TyrComponent<
         'could not determine collection for Tyr.Component'
       );
 
+    this.setupActions();
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
+    this.descendantWillUnmount(this);
+  }
+
+  descendantWillUnmount(component: TyrComponent<any>) {
+    const { actions } = this;
+    for (let i = 0; i < actions.length; )
+      if (actions[i].self === component) actions.splice(i, 1);
+      else i++;
+
+    this.parent?.descendantWillUnmount(component);
+  }
+
+  /*
+   * * * PATHS
+   */
+
+  paths!: TyrPathProps<D>[];
+
+  /**
+   * "paths" contains all of the paths available to the component,
+   * "activePaths" contains paths that are currently active on the screen
+   *   (e.g. what paths are enabled in table configuration)
+   */
+  get activePaths(): TyrPathProps<D>[] {
+    return this.paths;
+  }
+
+  refreshPaths() {
+    if (this.props.paths) {
+      this.paths = this.props.paths.map(laxFieldProps =>
+        this.resolveFieldLaxProps(laxFieldProps)
+      );
+    }
+  }
+
+  resolveFieldLaxProps(laxPathProps: TyrPathLaxProps<D> | string) {
+    const pathProps: TyrPathLaxProps<D> = {};
+    if (typeof laxPathProps === 'string') {
+      pathProps.path = laxPathProps;
+    } else {
+      Object.assign(pathProps, laxPathProps);
+    }
+
+    let p = pathProps.path;
+    if (typeof p === 'string')
+      p = pathProps.path = this.collection.parsePath(p);
+
+    if (p) {
+      // TODO:  handle multiple groups
+      if (p.groupCount && !pathProps.group) {
+        pathProps.group = p.groupLabel(0);
+      }
+    }
+
+    p = pathProps.searchPath;
+    if (typeof p === 'string')
+      pathProps.searchPath = this.collection.parsePath(p);
+
+    return pathProps as TyrPathProps<D>;
+  }
+
+  /*
+   * * * DOCUMENTS
+   */
+
+  /**
+   * Can this component edit documents?
+   */
+  canEdit = false;
+
+  /**
+   *  Can this component display multiple documents at once or only one?
+   */
+  canMultiple = false;
+
+  @observable
+  document!: D;
+
+  /**
+   * if isLocal then this has *all* the data, otherwise it just has the current page
+   */
+  @observable
+  documents: D[] & { count?: number } = [] as D[] & {
+    count?: number;
+  };
+
+  count?: number;
+
+  async submit(): Promise<boolean> {
+    throw new Error('submit() not defined');
+  }
+
+  /**
+   * This creates a new document for this control that is related to the parent documents
+   * according to how the component hierarchy is laid out.
+   */
+  createDocument(actionOpts: TyrActionFnOpts<D>) {
+    const { linkToParent, parent } = this;
+
+    const doc = new this.collection!({});
+
+    if (parent) {
+      if (parent.collection === this.collection && parent.canMultiple) {
+        const { parentDocument, linkToParent } = parent;
+
+        if (parentDocument && linkToParent)
+          linkToParent.path.set(doc, parentDocument.$id);
+      } else if (linkToParent) {
+        linkToParent.path.set(doc, actionOpts.document!.$id);
+      }
+    }
+
+    return doc;
+  }
+
+  /*
+   * * * QUERYING
+   */
+
+  get isLocal() {
+    return false;
+  }
+
+  async refresh() {
+    this.setState({});
+  }
+
+  async requery() {}
+
+  /**
+   * These are the options that were passed to the most recent query().
+   *
+   * This is useful if you want to query what the user was looking at in a server
+   * method in a background worker.
+   *
+   * For example, the query is "table.findOpts.query".
+   */
+  findOpts?: any; // Tyr.FindAllOptions
+
+  async find(document: D) {
+    // TODO:  move this logic to OneComponent?
+    const { collection, linkToParent, linkFromParent } = this;
+    let updatedDocument: D | null | undefined;
+
+    if (!collection) throw new Error('no collection');
+
+    if (linkToParent) {
+      updatedDocument = (await collection.findOne({
+        query: {
+          [linkToParent.path.spath]: document.$id,
+        },
+      })) as D;
+    } else if (linkFromParent) {
+      const id = linkFromParent.path.get(document);
+
+      updatedDocument = (await collection.findOne({
+        _id: id,
+      })) as D;
+    } else {
+      if (collection.id !== document.$model.id) {
+        throw new Error('mismatched collection ids');
+      }
+
+      updatedDocument = (await collection.byId(document.$id)) as D;
+      if (!updatedDocument) {
+        throw new Error('could not find document');
+      }
+    }
+
+    if (updatedDocument) {
+      this.document = updatedDocument;
+      this.refresh();
+    }
+  }
+
+  /*
+   * * * PARENT LINKING
+   */
+
+  parent?: TyrComponent;
+  children: TyrComponent[] = [];
+
+  /**
+   * This indicates that this component was created through a link Field on a child component.
+   *
+   * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "OrderLineItem::orderId"
+   */
+  linkToParent?: Tyr.FieldInstance<any>;
+
+  /**
+   * This indicates that this component was created through a link Field on a parent component.
+   *
+   * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "Order::lineItems"
+   *
+   * Only one of linkToParent or linkFromParent can be set at one time -- they are mutually exclusive.
+   */
+  linkFromParent?: Tyr.FieldInstance<any>;
+
+  setupParentLink() {
+    const { collection, parent, props } = this;
+    if (!parent) return;
+
+    const parentCollection = parent.collection;
+
+    const {
+      linkToParent: propsLinkToParent,
+      linkFromParent: propsLinkFromParent,
+    } = props;
+
+    if (propsLinkToParent) {
+      this.linkToParent = collection.paths[propsLinkToParent as string];
+
+      if (!this.linkToParent)
+        throw new Tyr.AppError(
+          `linkToParent "${propsLinkToParent}" not found on ${collection.name}`
+        );
+
+      return;
+    }
+
+    if (propsLinkFromParent) {
+      this.linkFromParent =
+        parentCollection.paths[propsLinkFromParent as string];
+
+      if (!this.linkFromParent)
+        throw new Tyr.AppError(
+          `linkFromParent "${propsLinkFromParent}" not found on ${parentCollection.name}`
+        );
+
+      return;
+    }
+
+    /*
+     * Tyranid cannot currently automatically determine a recursive link between two collections
+     * because usually when parentCollection === collection it means that the parent and child
+     * are working with the SAME document.  So you currently need to use the linkToParent/linkFromParent
+     * properties on the component in this case.
+     */
+    if (parentCollection === collection) return;
+
+    // first try to find a link from the child to the parent
+
+    let paths: { [pathName: string]: Tyr.FieldInstance<any> } =
+      collection.paths;
+    for (const pathName in paths) {
+      const field = paths[pathName];
+
+      if (field.link === parentCollection) {
+        this.linkToParent = field;
+        return;
+      }
+    }
+
+    // next try to find a link from the parent to the child
+
+    paths = parentCollection.paths;
+    for (const pathName in paths) {
+      const field = paths[pathName];
+
+      if (field.link === collection) {
+        this.linkFromParent = field;
+        return;
+      }
+    }
+  }
+
+  _parentDocument?: Tyr.Document<any>;
+
+  /**
+   * Note that this is NOT usually the same as "this.parent.document".  For example,
+   * if the parent component is a Table, this.parent.document will be undefined,
+   * this.parent.documents will have the list of documents and this.parentDocument
+   * will be the selected parent document.
+   */
+  get parentDocument(): Tyr.Document | undefined {
+    const { _parentDocument } = this;
+    if (_parentDocument) return _parentDocument;
+
+    const { parent } = this;
+    if (parent) {
+      const { document } = parent;
+      if (document) return document;
+    }
+
+    //return undefined;
+  }
+
+  /*
+   * * * SELECTION
+   */
+
+  @observable
+  selectedIds: string[] = [];
+
+  /*
+   * * * ACTIONS
+   */
+
+  actions: TyrAction<D>[] = [];
+
+  /**
+   * This is the action we entered this component with up ... it is an "entrance" action.
+   */
+  parentAction: TyrAction<D> | undefined;
+
+  get isSearching() {
+    return this.parentAction?.is('search') ?? false;
+  }
+
+  enact(action: TyrAction<D> | TyrActionOpts<D>) {
+    const _action = TyrAction.get(action);
+
+    const { actions } = this;
+
+    for (let ai = 0; ai < actions.length; ai++) {
+      const a = actions[ai];
+      if (a.name === action.name && a.self === action.self) {
+        actions[ai] = _action;
+        return;
+      }
+    }
+
+    this.actions.push(_action);
+    this.refresh();
+  }
+
+  enactUp(action: TyrAction<D> | TyrActionOpts<D>) {
+    const _action = TyrAction.get(action);
+
+    const { decorator } = this;
+
+    if (decorator) {
+      decorator.enact(_action);
+    } else {
+      const { parent } = this;
+      if (parent) parent.enact(_action as any);
+    }
+  }
+
+  actionFnOpts(): TyrActionFnOpts<D> {
+    return {
+      caller: this,
+      document: this.document,
+      documents: this.selectedIds.map(
+        id => this.collection!.byIdIndex[id]
+      ) as D[],
+    } as any;
+  }
+
+  setupActions() {
+    const { collection, props } = this;
     const actions = TyrAction.parse(props.actions as ActionSet<D>);
 
     const { parent, linkToParent, linkFromParent } = this;
     const parentLink = linkToParent || linkFromParent;
-
-    //
-    // Set up Actions
-    //
 
     let createAction: TyrAction<D> | undefined;
     let searchAction: TyrAction<D> | undefined;
@@ -270,7 +538,7 @@ export class TyrComponent<
       return !traits ? def : traits.includes(trait);
     };
 
-    const enactUp = (_action: TyrActionOpts<D>) => {
+    const enactUp = (_action: TyrActionOpts<D> | TyrAction<D>) => {
       // TODO:  clone action if self is already defined?
       const action = TyrAction.get(_action) as TyrAction<D>;
       action.self = this;
@@ -411,274 +679,37 @@ export class TyrComponent<
     }
   }
 
-  componentWillUnmount() {
-    this.mounted = false;
-    this.descendantWillUnmount(this);
-  }
-
-  descendantWillUnmount(component: TyrComponent<any>) {
-    const { actions } = this;
-    for (let i = 0; i < actions.length; )
-      if (actions[i].self === component) actions.splice(i, 1);
-      else i++;
-
-    this.parent?.descendantWillUnmount(component);
-  }
-
-  actions: TyrAction<D>[] = [];
-  enact(action: TyrAction<D> | TyrActionOpts<D>) {
-    const _action = TyrAction.get(action);
-
-    const { actions } = this;
-
-    for (let ai = 0; ai < actions.length; ai++) {
-      const a = actions[ai];
-      if (a.name === action.name && a.self === action.self) {
-        actions[ai] = _action;
-        return;
-      }
-    }
-
-    this.actions.push(_action);
-    this.refresh();
-  }
-
-  enactUp(action: TyrAction<D> | TyrActionOpts<D>) {
-    const _action = TyrAction.get(action);
-
-    const { decorator } = this;
-
-    if (decorator) {
-      decorator.enact(_action);
-    } else {
-      const { parent } = this;
-      if (parent) parent.enact(_action as any);
-    }
-  }
-
-  async submit(): Promise<boolean> {
-    throw new Error('submit() not defined');
-  }
-
-  resolveFieldLaxProps(laxPathProps: TyrPathLaxProps | string) {
-    const pathProps: TyrPathLaxProps = {};
-    if (typeof laxPathProps === 'string') {
-      pathProps.path = laxPathProps;
-    } else {
-      Object.assign(pathProps, laxPathProps);
-    }
-
-    let p = pathProps.path;
-    if (typeof p === 'string')
-      p = pathProps.path = this.collection.parsePath(p);
-
-    if (p) {
-      // TODO:  handle multiple groups
-      if (p.groupCount && !pathProps.group) {
-        pathProps.group = p.groupLabel(0);
-      }
-    }
-
-    p = pathProps.searchPath;
-    if (typeof p === 'string')
-      pathProps.searchPath = this.collection.parsePath(p);
-
-    return pathProps as TyrPathProps;
-  }
-
-  /**
-   * This creates a new document for this control that is related to the parent documents
-   * according to how the component hierarchy is laid out.
+  /*
+   * * * PAGINATION
    */
-  createDocument(actionOpts: TyrActionFnOpts<D>) {
-    const { linkToParent, parent } = this;
 
-    const doc = new this.collection!({});
+  hasPaging = false;
 
-    if (parent) {
-      if (parent.collection === this.collection && parent.canMultiple) {
-        const { parentDocument, linkToParent } = parent;
-
-        if (parentDocument && linkToParent)
-          linkToParent.path.set(doc, parentDocument.$id);
-      } else if (linkToParent) {
-        linkToParent.path.set(doc, actionOpts.document!.$id);
-      }
-    }
-
-    return doc;
-  }
-
-  async refresh() {
-    this.setState({});
-  }
-
-  async requery() {}
-
-  /**
-   * These are the options that were passed to the most recent query().
-   *
-   * This is useful if you want to query what the user was looking at in a server
-   * method in a background worker.
-   *
-   * For example, the query is "table.findOpts.query".
+  /*
+   * * * SORTING
    */
-  findOpts?: any; // Tyr.FindAllOptions
 
-  async find(document: D) {
-    // TODO:  move this logic to OneComponent?
-    const { collection, linkToParent, linkFromParent } = this;
-    let updatedDocument: D | null | undefined;
+  hasSortDirection = false;
 
-    if (!collection) throw new Error('no collection');
+  /*
+   * * * FILTERS
+   */
 
-    if (linkToParent) {
-      updatedDocument = (await collection.findOne({
-        query: {
-          [linkToParent.path.spath]: document.$id,
-        },
-      })) as D;
-    } else if (linkFromParent) {
-      const id = linkFromParent.path.get(document);
+  hasFilters = false;
 
-      updatedDocument = (await collection.findOne({
-        _id: id,
-      })) as D;
-    } else {
-      if (collection.id !== document.$model.id) {
-        throw new Error('mismatched collection ids');
-      }
-
-      updatedDocument = (await collection.byId(document.$id)) as D;
-      if (!updatedDocument) {
-        throw new Error('could not find document');
-      }
-    }
-
-    if (updatedDocument) {
-      this.document = updatedDocument;
-      this.refresh();
-    }
+  getFilter(props: TyrPathProps<D>): ReturnType<Filter> {
+    return undefined;
   }
 
-  //
-  // Parent Linking
-  //
-
-  parent?: TyrComponent;
-
-  /**
-   * This indicates that this component was created through a link Field on a child component.
-   *
-   * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "OrderLineItem::orderId"
+  /*
+   * * * DECORATORS
    */
-  linkToParent?: Tyr.FieldInstance<any>;
 
-  /**
-   * This indicates that this component was created through a link Field on a parent component.
-   *
-   * i.e. if our component's collection is "OrderLineItem", our "linkToParent" might be "Order::lineItems"
-   *
-   * Only one of linkToParent or linkFromParent can be set at one time -- they are mutually exclusive.
-   */
-  linkFromParent?: Tyr.FieldInstance<any>;
-
-  setupLink() {
-    const { collection, parent, props } = this;
-    if (!parent) return;
-
-    const parentCollection = parent.collection;
-
-    const {
-      linkToParent: propsLinkToParent,
-      linkFromParent: propsLinkFromParent,
-    } = props;
-
-    if (propsLinkToParent) {
-      this.linkToParent = collection.paths[propsLinkToParent as string];
-
-      if (!this.linkToParent)
-        throw new Tyr.AppError(
-          `linkToParent "${propsLinkToParent}" not found on ${collection.name}`
-        );
-
-      return;
-    }
-
-    if (propsLinkFromParent) {
-      this.linkFromParent =
-        parentCollection.paths[propsLinkFromParent as string];
-
-      if (!this.linkFromParent)
-        throw new Tyr.AppError(
-          `linkFromParent "${propsLinkFromParent}" not found on ${parentCollection.name}`
-        );
-
-      return;
-    }
-
-    /*
-     * Tyranid cannot currently automatically determine a recursive link between two collections
-     * because usually when parentCollection === collection it means that the parent and child
-     * are working with the SAME document.  So you currently need to use the linkToParent/linkFromParent
-     * properties on the component in this case.
-     */
-    if (parentCollection === collection) return;
-
-    // first try to find a link from the child to the parent
-
-    let paths: { [pathName: string]: Tyr.FieldInstance<any> } =
-      collection.paths;
-    for (const pathName in paths) {
-      const field = paths[pathName];
-
-      if (field.link === parentCollection) {
-        this.linkToParent = field;
-        return;
-      }
-    }
-
-    // next try to find a link from the parent to the child
-
-    paths = parentCollection.paths;
-    for (const pathName in paths) {
-      const field = paths[pathName];
-
-      if (field.link === collection) {
-        this.linkFromParent = field;
-        return;
-      }
-    }
-  }
-
-  _parentDocument?: Tyr.Document<any>;
-
-  /**
-   * Note that this is NOT usually the same as "this.parent.document".  For example,
-   * if the parent component is a Table, this.parent.document will be undefined,
-   * this.parent.documents will have the list of documents and this.parentDocument
-   * will be the selected parent document.
-   */
-  get parentDocument(): Tyr.Document | undefined {
-    const { _parentDocument } = this;
-    if (_parentDocument) return _parentDocument;
-
-    const { parent } = this;
-    if (parent) {
-      const { document } = parent;
-      if (document) return document;
-    }
-
-    //return undefined;
-  }
+  decorator?: TyrDecorator<D>;
 
   setDecoratorRef = (decorator: TyrDecorator<D>) => {
     this.decorator = decorator;
   };
-
-  getFilter(props: TyrPathProps): ReturnType<Filter> {
-    return undefined;
-  }
 
   wrap(children: () => React.ReactNode) {
     const { parent, decorator } = this.props;
@@ -699,9 +730,9 @@ export class TyrComponent<
     );
   }
 
-  //
-  // Component Config
-  //
+  /*
+   * * * COMPONENT CONFIG
+   */
 
   @observable
   componentConfig?: Tyr.TyrComponentConfig;

@@ -20,7 +20,7 @@ interface S3Value {
   tmpId?: string;
 }
 
-export const TyrS3Base = (props: TyrTypeProps) => {
+export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
   const CF_PREFIX = (Tyr.options as any).aws.cloudfrontPrefix;
 
   const [uploading, setUploading] = useState(false);
@@ -44,7 +44,7 @@ export const TyrS3Base = (props: TyrTypeProps) => {
     setUploading(true);
     const response = await fetch(url, {
       method: 'POST',
-      body: formData
+      body: formData,
     });
     const json = await response.json();
     setUploading(false);
@@ -55,7 +55,7 @@ export const TyrS3Base = (props: TyrTypeProps) => {
       const value: S3Value = {
         key,
         filename: file.name,
-        type: file.type
+        type: file.type,
       };
       if (tmpId) value.tmpId = tmpId;
       setValue(value);
@@ -66,7 +66,7 @@ export const TyrS3Base = (props: TyrTypeProps) => {
   // TODO:  look into using Ant Design's Upload control instead?
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    multiple: false
+    multiple: false,
   });
 
   return decorateField('s3', props, () => {
@@ -105,7 +105,7 @@ export const TyrS3Base = (props: TyrTypeProps) => {
 export const TyrS3 = withThemedTypeContext('s3', TyrS3Base);
 
 byName.s3 = {
-  component: TyrS3Base
+  component: TyrS3Base,
 };
 
 registerComponent('TyrS3', TyrS3);

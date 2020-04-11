@@ -6,7 +6,7 @@ import { FilterTwoTone, SearchOutlined } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
 import {
   ColumnFilterItem,
-  FilterDropdownProps
+  FilterDropdownProps,
 } from 'antd/lib/table/interface';
 
 import { Tyr } from 'tyranid/client';
@@ -24,7 +24,7 @@ export interface Filterable {
 
 export type Filter = (
   filterable: Filterable,
-  props: TyrPathProps
+  props: TyrPathProps<any>
 ) =>
   | {
       filterDropdown?:
@@ -47,7 +47,7 @@ export type Finder = (
 export interface TyrFilterProps<SearchValueType> {
   typeName: string;
   filterable: Filterable;
-  pathProps: TyrPathProps;
+  pathProps: TyrPathProps<any>;
   filterDdProps: FilterDdProps;
   children: (
     searchValue: SearchValueType | undefined,
@@ -61,7 +61,7 @@ export function TyrFilter<SearchValueType>({
   pathProps,
   filterable,
   filterDdProps,
-  children
+  children,
 }: TyrFilterProps<SearchValueType>) {
   const { path } = pathProps;
   const pathName = path!.name;
@@ -183,7 +183,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
                           connect: connection => {
                             connections[path.name] = connection;
                           },
-                          visible: true
+                          visible: true,
                         })
                       : filterDropdown}
                   </div>

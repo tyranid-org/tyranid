@@ -28,7 +28,6 @@ import {
   Table,
   Tooltip,
 } from 'antd';
-
 import {
   ColumnType,
   ColumnProps,
@@ -41,6 +40,7 @@ import { Tyr } from 'tyranid/client';
 
 import { useThemeProps } from '../theme';
 import { getCellValue, TyrTypeProps } from '../../type';
+import { TyrActionBar } from '../action';
 import { TyrComponentState, useComponent } from '../component';
 import {
   TyrPathLaxProps,
@@ -82,7 +82,7 @@ export interface OurColumnProps<T> extends ColumnType<T> {
 
 const ObsTable = observer(Table);
 
-export interface TableColumnPathProps {
+export interface TableColumnPathProps<D extends Tyr.Document> {
   pinned?: 'left' | 'right';
   align?: 'left' | 'right' | 'center';
   ellipsis?: boolean;
@@ -91,11 +91,15 @@ export interface TableColumnPathProps {
   /**
    * What table column grouping should this be grouped under.
    */
-  children?: TableColumnPathProps[];
+  children?: TableColumnPathProps<D>[];
 }
 
-export type TyrTableColumnPathLaxProps = TableColumnPathProps & TyrPathLaxProps;
-export type TyrTableColumnPathProps = TableColumnPathProps & TyrPathProps;
+export type TyrTableColumnPathLaxProps<
+  D extends Tyr.Document
+> = TableColumnPathProps<D> & TyrPathLaxProps<D>;
+export type TyrTableColumnPathProps<
+  D extends Tyr.Document
+> = TableColumnPathProps<D> & TyrPathProps<D>;
 
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
@@ -103,7 +107,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   bordered?: boolean;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean;
-  paths: (TyrTableColumnPathLaxProps | string)[];
+  paths: (TyrTableColumnPathLaxProps<D> | string)[];
   actionHeaderLabel?: string | React.ReactNode;
   actionIcon?: Tyr.anny;
   actionTrigger?: 'hover' | 'click';
@@ -126,7 +130,6 @@ export interface TyrTableProps<D extends Tyr.Document>
   ) => void;
   scroll?: { x?: number | true | string; y?: number | string };
   footer?: (currentPageData: D[]) => React.ReactNode;
-  title?: (currentPageData: D[]) => React.ReactNode;
   /**
    * If a string is specified, it is the name of the key to use.
    * If true is specified, a key of 'default' will be used.
@@ -139,6 +142,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   onSelectRows?: (selectedRowIds: string[]) => void;
   orderable?: boolean;
   moveRow?: (dragIndex: number, hoverIndex: number) => void;
+  showHeader?: boolean;
 
   wrapColumnHeaders?: boolean;
 
@@ -153,9 +157,9 @@ export class TyrTableBase<
 > extends TyrManyComponent<D, TyrTableProps<D>> {
   // TODO:  is this redundant with super().fields ?
   @observable
-  otherPaths: TyrTableColumnPathProps[] = [];
+  otherPaths: TyrTableColumnPathProps<D>[] = [];
 
-  get activePaths(): TyrTableColumnPathProps[] {
+  get activePaths(): TyrTableColumnPathProps<D>[] {
     return this.otherPaths;
   }
 
@@ -215,7 +219,7 @@ export class TyrTableBase<
 
         return p ? this.resolveFieldLaxProps(p) : undefined;
       })
-    ) as TyrTableColumnPathProps[];
+    ) as TyrTableColumnPathProps<D>[];
 
     // Add any new fields (unless they are hidden)
     for (const nextOtherField of nextOtherPaths) {
@@ -690,7 +694,7 @@ export class TyrTableBase<
               {render
                 ? render(document)
                 : path
-                ? getCellValue(path, document, column as TyrTypeProps)
+                ? getCellValue(path, document, column as TyrTypeProps<any>)
                 : ''}
             </div>
           );
@@ -1004,7 +1008,6 @@ export class TyrTableBase<
     const {
       bordered,
       className,
-      children,
       rowEdit,
       setEditing,
       export: exportProp,
@@ -1012,7 +1015,6 @@ export class TyrTableBase<
       size,
       scroll,
       footer,
-      title,
       config: tableConfig,
       decorator,
       onSelectRows,
@@ -1030,13 +1032,6 @@ export class TyrTableBase<
 
     const multiActions = this.actions.filter(
       a => a.input === '*' && a.hide !== true
-    );
-    const voidActions = this.actions.filter(
-      a =>
-        (a.input === 0 || a.input === '0..*') && a.hide !== true && !a.utility
-    );
-    const utilityActions = this.actions.filter(
-      a => (a.input === 0 || a.input === '0..*') && a.hide !== true && a.utility
     );
     const rowsSelectable =
       (!newDocument && onSelectRows) || multiActions.length;
@@ -1066,7 +1061,7 @@ export class TyrTableBase<
           {this.quickTotalComponent()}
           {this.paginationComponent()}
           <div className="tyr-footer-btns">
-            {utilityActions.map(a => a.button(this))}
+            <TyrActionBar component={this} utility={true} />
             {exportProp && (
               <Button onClick={() => (this.showExport = true)}>
                 <DownloadOutlined /> Export
@@ -1108,10 +1103,10 @@ export class TyrTableBase<
           pagination={false}
           onChange={this.handleTableChange as any}
           footer={netFooter as (rows: Object[]) => React.ReactNode}
+          showHeader={!newDocument && this.props.showHeader !== false}
           dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
           scroll={tableScroll}
-          showHeader={!newDocument}
           onRow={(record: any, rowIndex: any) => {
             return {
               onClick: () => {
@@ -1173,16 +1168,7 @@ export class TyrTableBase<
             }
           }}
         >
-          {(children || multiActions.length > 0 || voidActions.length > 0) && (
-            <Row>
-              <Col span={24} className="tyr-table-header">
-                {title?.(this.documents)}
-                {children}
-                {multiActions.map(a => a.button(this))}
-                {voidActions.map(a => a.button(this))}
-              </Col>
-            </Row>
-          )}
+          <TyrActionBar component={this} />
           <Row>
             <Col span={24}>
               {paths && newDocument && (
@@ -1243,6 +1229,7 @@ export class TyrTableBase<
               )}
             </Col>
           </Row>
+          {this.props.children}
         </div>
       );
     });

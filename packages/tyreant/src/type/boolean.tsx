@@ -12,7 +12,9 @@ import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrBooleanBase: React.FunctionComponent<TyrTypeProps> = props => {
+export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('boolean', props, () => {
@@ -43,7 +45,7 @@ export const TyrBoolean = withThemedTypeContext('boolean', TyrBooleanBase);
 
 export const booleanFilter: Filter = (
   filterable: Filterable,
-  props: TyrPathProps
+  props: TyrPathProps<any>
 ) => {
   const path = props.path!;
 
@@ -121,7 +123,7 @@ export const booleanFilter: Filter = (
       }
 
       return true;
-    }
+    },
   };
 };
 
@@ -139,7 +141,7 @@ export const booleanFinder: Finder = (
 byName.boolean = {
   component: TyrBooleanBase,
   filter: booleanFilter,
-  finder: booleanFinder
+  finder: booleanFinder,
 };
 
 registerComponent('TyrBoolean', TyrBoolean);

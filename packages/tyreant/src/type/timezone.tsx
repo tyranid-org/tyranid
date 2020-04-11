@@ -5,6 +5,8 @@ import * as moment from 'moment-timezone';
 
 import { Select } from 'antd';
 
+import { Tyr } from 'tyranid/client';
+
 import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
@@ -37,7 +39,9 @@ const createOption = (tzName: string) => {
   );
 };
 
-export const TyrTimeZoneBase = ((props: TyrTypeProps) => {
+export const TyrTimeZoneBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('timezone', props, () => (
@@ -50,12 +54,12 @@ export const TyrTimeZoneBase = ((props: TyrTypeProps) => {
       {moment.tz.names().map(createOption)}
     </Select>
   ));
-}) as React.ComponentType<TyrTypeProps>;
+}; //) as React.ComponentType<TyrTypeProps<D>>;
 
 export const TyrTimeZone = withThemedTypeContext('timezone', TyrTimeZoneBase);
 
 byName.timezone = {
-  component: TyrTimeZoneBase
+  component: TyrTimeZoneBase,
 };
 
 registerComponent('TyrTimeZone', TyrTimeZone);

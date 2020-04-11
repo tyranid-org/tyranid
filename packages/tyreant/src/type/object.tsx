@@ -11,13 +11,10 @@ import { decorateField } from '../core/path';
 import { TyrThemedFieldBase, TyrPathExistsProps } from '../core';
 import { registerComponent } from '../common';
 
-interface TyrObjectExtraProps {
-  paths?: TyrPathExistsProps[];
-}
-
-type TyrObjectProps = TyrTypeProps & TyrObjectExtraProps;
-
-const renderField = (props: TyrObjectProps, pathProps: TyrPathExistsProps) => {
+const renderField = (
+  props: TyrTypeProps<any>,
+  pathProps: TyrPathExistsProps<any>
+) => {
   const { form, document } = props;
   const { path: field } = pathProps;
 
@@ -31,7 +28,9 @@ const renderField = (props: TyrObjectProps, pathProps: TyrPathExistsProps) => {
   );
 };
 
-export const TyrMapLinkToBoolean: React.FunctionComponent<TyrTypeProps> = props => {
+export const TyrMapLinkToBoolean: React.FunctionComponent<TyrTypeProps<
+  any
+>> = props => {
   const path = props.path!;
   const { document } = props;
   const field = path.detail;
@@ -82,7 +81,9 @@ export const TyrMapLinkToBoolean: React.FunctionComponent<TyrTypeProps> = props 
   ));
 };
 
-export const TyrObjectBase = (props: TyrObjectProps) => {
+export const TyrObjectBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   const { path, children, paths, document, form } = props;
 
   let contents: JSX.Element;
@@ -157,17 +158,14 @@ export const TyrObjectBase = (props: TyrObjectProps) => {
   return className ? <div className={className}>{contents}</div> : contents;
 };
 
-export const TyrObject = withThemedTypeContext<TyrObjectExtraProps>(
-  'object',
-  TyrObjectBase
-);
+export const TyrObject = withThemedTypeContext('object', TyrObjectBase);
 
 byName.object = {
   component: TyrObject,
   mapDocumentValueToFormValue(
     path: Tyr.PathInstance,
     value: any,
-    props: TyrTypeProps
+    props: TyrTypeProps<any>
   ) {
     const { detail: field } = path;
 
@@ -185,7 +183,7 @@ byName.object = {
     path: Tyr.PathInstance,
     values: any,
     document: Tyr.Document,
-    props: TyrTypeProps
+    props: TyrTypeProps<any>
   ) {
     for (const pathName in values) {
       mapFormValueToDocument(
@@ -195,7 +193,7 @@ byName.object = {
         props
       );
     }
-  }
+  },
 };
 
 registerComponent('TyrObject', TyrObject);

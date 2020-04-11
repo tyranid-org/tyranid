@@ -4,7 +4,7 @@ import { Moment } from 'moment';
 
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-import { Form, Tooltip, Typography } from 'antd';
+import { Form, Tooltip } from 'antd';
 import { SelectValue } from 'antd/lib/select';
 
 import { Tyr } from 'tyranid/client';
@@ -22,6 +22,7 @@ import { registerComponent } from '../common';
 import { FormItemProps } from 'antd/lib/form';
 import { TyrSortDirection } from './typedef';
 import { stringWidth, wrappedStringWidth } from '../util/font';
+import { TyrRouter } from './router';
 
 const FormItem = Form.Item;
 
@@ -48,7 +49,7 @@ export function defaultPathsProp(collection: Tyr.CollectionInstance) {
   return pathsArr;
 }
 
-export interface TyrPathProps
+export interface TyrPathProps<D extends Tyr.Document>
   extends Pick<
     FormItemProps,
     | 'labelCol'
@@ -63,6 +64,7 @@ export interface TyrPathProps
   > {
   path?: Tyr.PathInstance;
   searchPath?: Tyr.PathInstance;
+  paths?: TyrPathExistsProps<D>[];
   getSearchIds?: (val: any) => any[];
 
   label?: string | React.ReactNode;
@@ -78,11 +80,8 @@ export interface TyrPathProps
    * This indicates that the following render function should be used to render values.  If render is specified
    * then field is not required/needed.
    */
-  renderField?: (
-    doc: Tyr.Document,
-    options?: Tyr.Document[]
-  ) => React.ReactElement;
-  renderDisplay?: (doc: Tyr.Document) => React.ReactElement | string;
+  renderField?: (doc: D, options?: Tyr.Document[]) => React.ReactElement;
+  renderDisplay?: (doc: D) => React.ReactElement | string;
 
   /**
    * Do not show this field when creating new documents.
@@ -108,7 +107,7 @@ export interface TyrPathProps
   dropdownClassName?: string;
   width?: number | string;
 
-  onChange?: (value: any, event: any, props: TyrTypeProps) => void;
+  onChange?: (value: any, event: any, props: TyrTypeProps<D>) => void;
   onStateChange?: (value: FieldState) => void;
 
   onSelect?: (value: SelectValue, option: any) => any;
@@ -173,12 +172,15 @@ export interface TyrPathProps
   optionFilter?: (documents: Tyr.Document[]) => Tyr.Document[];
 }
 
-export type TyrPathExistsProps = Omit<TyrPathProps, 'path'> & {
+export type TyrPathExistsProps<D extends Tyr.Document> = Omit<
+  TyrPathProps<D>,
+  'path'
+> & {
   path: Tyr.PathInstance;
 };
 
 export const getPathName = (
-  path: string | Tyr.PathInstance | TyrPathProps | undefined
+  path: string | Tyr.PathInstance | TyrPathProps<any> | undefined
 ): string | undefined => {
   if (typeof path === 'string') return path;
   if (path instanceof Tyr.Path) return path.name;
@@ -189,16 +191,19 @@ export const getPathName = (
   //return undefined;
 };
 
-export type TyrPathLaxProps = Omit<TyrPathProps, 'path' | 'searchPath'> & {
+export type TyrPathLaxProps<D extends Tyr.Document> = Omit<
+  TyrPathProps<D>,
+  'path' | 'searchPath'
+> & {
   path?: Tyr.PathInstance | string;
   searchPath?: Tyr.PathInstance | string;
 };
 
-export function pathTitle(pathProps: TyrPathProps) {
+export function pathTitle(pathProps: TyrPathProps<any>) {
   return pathProps.label || pathProps.path?.pathLabel || '';
 }
 
-export function pathWidth(pathProps: TyrPathProps, wrapTitle?: boolean) {
+export function pathWidth(pathProps: TyrPathProps<any>, wrapTitle?: boolean) {
   let width = pathProps.width;
 
   if (width) return width;
@@ -217,14 +222,14 @@ export function pathWidth(pathProps: TyrPathProps, wrapTitle?: boolean) {
   }
 }
 
-export const labelForProps = (props: TyrTypeProps) => {
+export const labelForProps = (props: TyrTypeProps<any>) => {
   const label = props.label;
   return label || props.path!.pathLabel;
 };
 
 export const decorateField = (
   name: string,
-  props: TyrTypeProps,
+  props: TyrTypeProps<any>,
   component: () => React.ReactElement
 ) => {
   const {
@@ -297,7 +302,9 @@ export const decorateField = (
   );
 };
 
-export const TyrFieldBase = (props: TyrTypeProps) => {
+export const TyrFieldBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   const { path } = props;
   const { tail: field } = path!;
   const { type } = field;
@@ -305,7 +312,9 @@ export const TyrFieldBase = (props: TyrTypeProps) => {
   return React.createElement(typeUi.component, props);
 };
 
-export const TyrThemedFieldBase = (props: TyrTypeProps) => {
+export const TyrThemedFieldBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   const { path } = props;
   const { tail: field } = path!;
   const { type } = field;

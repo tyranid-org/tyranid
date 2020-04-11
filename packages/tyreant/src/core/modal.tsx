@@ -83,7 +83,9 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
   }
 
   renderFooter() {
-    return <div>{this.exitActions.map(a => a.button(this.decorating))}</div>;
+    return (
+      <div>{this.exitActions.map(a => a.renderFrom(this.decorating))}</div>
+    );
   }
 
   render() {
@@ -92,19 +94,17 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<
     const { visible, loading } = this.state;
 
     return (
-      <>
-        <Modal
-          className={'tyr-modal' + (className ? ' ' + className : '')}
-          visible={visible}
-          onCancel={() => cancel!.act({ caller: this.decorating })}
-          title={this.renderHeader()}
-          footer={this.renderFooter()}
-          maskClosable={!loading}
-          closable={false}
-        >
-          <Spin spinning={loading}>{visible && children}</Spin>
-        </Modal>
-      </>
+      <Modal
+        className={'tyr-modal' + (className ? ' ' + className : '')}
+        visible={visible}
+        onCancel={() => cancel!.act({ caller: this.decorating })}
+        title={this.renderHeader()}
+        footer={this.renderFooter()}
+        maskClosable={!loading}
+        closable={false}
+      >
+        <Spin spinning={loading}>{visible && children}</Spin>
+      </Modal>
     );
   }
 }

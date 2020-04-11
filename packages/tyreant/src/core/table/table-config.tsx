@@ -32,7 +32,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | true /* if true, key is "default" */;
   export?: boolean;
   tableConfig?: Tyr.TyrComponentConfig;
-  originalPaths: (TyrTableColumnPathLaxProps | string)[];
+  originalPaths: (TyrTableColumnPathLaxProps<D> | string)[];
   onCancel: () => void;
   onUpdate: (
     tableConfig: Tyr.TyrComponentConfig,
@@ -40,7 +40,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     filtersHaveBeenReset?: boolean,
     widthsHaveBeenReset?: boolean
   ) => void;
-  columns: TyrTableColumnPathProps[];
+  columns: TyrTableColumnPathProps<D>[];
   containerEl: React.RefObject<HTMLDivElement>;
 }
 
@@ -78,11 +78,11 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   const { collection } = table;
 
   const getColumnFields = (
-    fields: TyrTableColumnPathProps[],
+    fields: TyrTableColumnPathProps<D>[],
     tableConfig: Tyr.TyrComponentConfig
   ) => {
     return compact(
-      fields.map((column: TyrTableColumnPathProps, index: number) => {
+      fields.map((column: TyrTableColumnPathProps<D>, index: number) => {
         const savedField = tableConfig.fields.find(
           c => c.name === column.path?.name
         );
@@ -470,7 +470,7 @@ const ResetArea = (props: {
 
 export const ensureTableConfig = async <D extends Tyr.Document>(
   table: TyrTableBase<D>,
-  columns: TyrTableColumnPathProps[],
+  columns: TyrTableColumnPathProps<D>[],
   config: TyrTableConfig | string | boolean,
   existingTableConfig?: Tyr.TyrComponentConfig
 ) => {
@@ -538,12 +538,12 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
 
 const orderedArray = (
   arrayWithOrder: { name: string }[],
-  array: TyrTableColumnPathProps[],
+  array: TyrTableColumnPathProps<any>[],
   includeHidden?: boolean
 ) => {
   const arrayToOrder = [...array];
-  const orderedArray: TyrTableColumnPathProps[] = [];
-  const extra: TyrTableColumnPathProps[] = [];
+  const orderedArray: TyrTableColumnPathProps<any>[] = [];
+  const extra: TyrTableColumnPathProps<any>[] = [];
 
   while (arrayToOrder.length) {
     const current = arrayToOrder[0];

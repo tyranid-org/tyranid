@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
+import { Tyr } from 'tyranid/client';
+
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
 import { withThemedTypeContext } from '../core/theme';
@@ -11,7 +13,9 @@ import { registerComponent } from '../common';
 
 const { TextArea } = Input;
 
-export const TyrTextBase = ((props: TyrTypeProps) => {
+export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('text', props, () => (
@@ -24,14 +28,14 @@ export const TyrTextBase = ((props: TyrTypeProps) => {
       onPressEnter={props.onPressEnter}
     />
   ));
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrText = withThemedTypeContext('text', TyrTextBase);
 
 byName.text = {
   component: TyrTextBase,
   filter: stringFilter,
-  finder: stringFinder
+  finder: stringFinder,
 };
 
 registerComponent('TyrText', TyrText);

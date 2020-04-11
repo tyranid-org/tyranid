@@ -3,13 +3,17 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
+import { Tyr } from 'tyranid/client';
+
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrUrlBase = ((props: TyrTypeProps) => {
+export const TyrUrlBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('url', props, () => {
@@ -29,14 +33,14 @@ export const TyrUrlBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrUrl = withThemedTypeContext('url', TyrUrlBase);
 
 byName.url = {
   component: TyrUrlBase,
   filter: stringFilter,
-  finder: stringFinder
+  finder: stringFinder,
 };
 
 registerComponent('TyrUrl', TyrUrl);

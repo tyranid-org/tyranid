@@ -12,14 +12,16 @@ import { TypeContext } from '../core/theme';
 /**
  * This control renders an array as a key - value editor
  */
-export const TyrArrayKeyValue = (props: TyrTypeProps) => {
+export const TyrArrayKeyValue = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   const { document, form, path, children } = props;
   const { tail: field } = path!;
 
   const {
     keyField: keyFieldName,
     valueField: valueFieldName,
-    keyFieldDefault: keyFieldDefaultLabel
+    keyFieldDefault: keyFieldDefaultLabel,
   } = props;
   if (!keyFieldName || !valueFieldName)
     throw new Error(
@@ -59,7 +61,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
 
     if (ai === array.length) {
       array.push({
-        [keyFieldName]: selectedKey
+        [keyFieldName]: selectedKey,
       });
     }
 
@@ -71,7 +73,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
       //{
       [keyPath.identifier]:
         //key: selectedKey, label:
-        keyFieldLink.byIdIndex[selectedKey].$label
+        keyFieldLink.byIdIndex[selectedKey].$label,
       //}
     });
   };
@@ -88,7 +90,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
   }
 
   const [keyValue, setKeyValue] = useState<{ value?: any }>({
-    value: undefined
+    value: undefined,
   });
 
   const onSelect = (
@@ -98,7 +100,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
 
   const childProps = {
     ...props,
-    path: valueSubPath && path!.walk(valueSubPath!)
+    path: valueSubPath && path!.walk(valueSubPath!),
   };
 
   return (
@@ -111,7 +113,7 @@ export const TyrArrayKeyValue = (props: TyrTypeProps) => {
         onSelect={onSelect}
       />
       {valueSubPath && (
-        <TypeContext.Provider value={childProps as TyrTypeProps}>
+        <TypeContext.Provider value={childProps as TyrTypeProps<D>}>
           {children}
         </TypeContext.Provider>
       )}

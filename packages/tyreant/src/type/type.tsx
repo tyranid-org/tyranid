@@ -10,14 +10,15 @@ import {
   Filterable,
   TyrPathLaxProps,
   TyrPathProps,
-  TyrComponent
+  TyrComponent,
+  TyrRouter,
 } from '../core';
 
-export const className = (className: string, props: TyrTypeProps) => {
+export const className = (className: string, props: TyrTypeProps<any>) => {
   return className + (props.className ? ' ' + props.className : '');
 };
 
-export function generateRules(props: TyrTypeProps): Rule[] {
+export function generateRules(props: TyrTypeProps<any>): Rule[] {
   const rules: Rule[] = [];
   const { path } = props;
 
@@ -28,7 +29,7 @@ export function generateRules(props: TyrTypeProps): Rule[] {
       requiredMessage,
       max,
       maxMessage,
-      validator
+      validator,
     } = props;
 
     const { tail: field } = path;
@@ -37,20 +38,20 @@ export function generateRules(props: TyrTypeProps): Rule[] {
         max,
         message:
           maxMessage ||
-          `The ${label || field.label} must be ${max} characters or less.`
+          `The ${label || field.label} must be ${max} characters or less.`,
       });
     }
 
     if (required || field.def.required) {
       rules.push({
         required: true,
-        message: requiredMessage || `${label || field.label} is required.`
+        message: requiredMessage || `${label || field.label} is required.`,
       });
     }
 
     if (validator) {
       const rule: Rule = {
-        validator
+        validator,
       };
 
       rules.push(rule);
@@ -60,10 +61,10 @@ export function generateRules(props: TyrTypeProps): Rule[] {
       const rule: Rule = {
         validator: async (rule, value, callback) => {
           const msg = field.validate(props.document!, {
-            trait: props.component!.parentAction!.traits[0]
+            trait: props.component!.parentAction!.traits[0],
           });
           if (typeof msg === 'string') callback(msg);
-        }
+        },
       };
 
       rules.push(rule);
@@ -77,44 +78,44 @@ export interface FieldState {
   ready?: boolean;
 }
 
-export type TyrTypeLaxProps = {
+export type TyrTypeLaxProps<D extends Tyr.Document> = {
   form?: FormInstance;
   document?: Tyr.Document;
   component?: TyrComponent;
   value?: { value?: any };
   aux?: string;
   children?: React.ReactNode;
-} & TyrPathLaxProps;
+} & TyrPathLaxProps<D>;
 
-export type TyrTypeProps = {
+export type TyrTypeProps<D extends Tyr.Document> = {
   form: FormInstance;
-  document?: Tyr.Document;
+  document?: D;
   component?: TyrComponent;
   value?: { value?: any };
   aux?: string;
   children?: React.ReactNode;
-} & TyrPathProps;
+} & TyrPathProps<D>;
 
 export interface TypeUi {
   // standard form control
-  component: React.ComponentType<TyrTypeProps>;
+  component: React.ComponentType<TyrTypeProps<any>>;
 
   // mapping between Tyr.Document and ant forms
   mapDocumentValueToFormValue?(
     path: Tyr.PathInstance,
     value: any,
-    props?: TyrTypeProps
+    props?: TyrTypeProps<any>
   ): any;
   mapFormValueToDocumentValue?(
     path: Tyr.PathInstance,
     value: any,
-    props?: TyrTypeProps
+    props?: TyrTypeProps<any>
   ): any;
   mapFormValueToDocument?(
     path: Tyr.PathInstance,
     value: any,
     document: Tyr.Document,
-    props?: TyrTypeProps
+    props?: TyrTypeProps<any>
   ): any;
 
   // table-related values
@@ -123,7 +124,7 @@ export interface TypeUi {
   cellValue?: (
     path: Tyr.PathInstance,
     document: Tyr.Document,
-    props: TyrTypeProps
+    props: TyrTypeProps<any>
   ) => React.ReactNode;
 }
 
@@ -141,7 +142,7 @@ export const assertTypeUi = (typeName: string) => {
 export const mapDocumentValueToFormValue = (
   path: Tyr.PathInstance,
   value: any,
-  props?: TyrTypeProps
+  props?: TyrTypeProps<any>
 ) => {
   const { tail: field } = path;
   const { type } = field;
@@ -161,7 +162,7 @@ export const mapDocumentValueToFormValue = (
   return value;
 };
 
-export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
+export const getTypeValue = (props: TyrTypeProps<any>, defaultValue?: any) => {
   const { value } = props;
   let v: any;
 
@@ -189,12 +190,12 @@ export const getTypeValue = (props: TyrTypeProps, defaultValue?: any) => {
   return v;
 };
 
-export const fieldDecoratorName = (props: TyrTypeProps) => {
+export const fieldDecoratorName = (props: TyrTypeProps<any>) => {
   // ant forms act weird when there are '.'s in the property names
   return props.path!.name.replace(/\./g, '_');
 };
 
-export const mapPropsToForm = (props: TyrTypeProps) => {
+export const mapPropsToForm = (props: TyrTypeProps<any>) => {
   const { path, document, form, value, default: defaultValue } = props;
 
   if (value !== undefined) {
@@ -206,7 +207,7 @@ export const mapPropsToForm = (props: TyrTypeProps) => {
     if (oldValue !== newValue) {
       form.setFieldsValue({
         // TODO:  should this be "value" instead of "newValue" ?
-        [pathid]: newValue
+        [pathid]: newValue,
       });
     }
   } else {
@@ -218,7 +219,7 @@ export const mapDocumentToForm = (
   path: Tyr.PathInstance,
   document: Tyr.Document,
   form: FormInstance,
-  props?: TyrTypeProps
+  props?: TyrTypeProps<any>
 ) => {
   const pathid = path.identifier;
   const oldValue = form.getFieldsValue([pathid])[pathid];
@@ -232,7 +233,7 @@ export const mapDocumentToForm = (
 
   if (oldValue !== newValue) {
     form.setFieldsValue({
-      [pathid]: newValue
+      [pathid]: newValue,
     });
   }
 };
@@ -240,7 +241,7 @@ export const mapDocumentToForm = (
 export const mapFormValueToDocumentValue = (
   path: Tyr.PathInstance,
   value: any,
-  props?: TyrTypeProps
+  props?: TyrTypeProps<any>
 ) => {
   const { tail: field } = path;
   const { type } = field;
@@ -256,7 +257,7 @@ export const mapFormValueToDocument = (
   path: Tyr.PathInstance,
   value: any,
   document: Tyr.Document,
-  props?: TyrTypeProps
+  props?: TyrTypeProps<any>
 ) => {
   const { tail: field } = path;
   const { type } = field;
@@ -276,7 +277,7 @@ export const mapFormValueToDocument = (
   }
 
   path.set(document, value, {
-    create: true
+    create: true,
   });
 };
 
@@ -284,7 +285,11 @@ export const mapFormValueToDocument = (
  * We want to keep the document up-to-date and in-sync with the form so that
  * computed values and computed validations are always up-to-date.
  */
-export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
+export const onTypeChange = (
+  props: TyrTypeProps<any>,
+  value: any,
+  event: any
+) => {
   const { document, onChange } = props;
 
   // if (event) {
@@ -302,7 +307,7 @@ export const onTypeChange = (props: TyrTypeProps, value: any, event: any) => {
   }
 };
 
-export const getFilter = (filterable: Filterable, props: TyrPathProps) => {
+export const getFilter = (filterable: Filterable, props: TyrPathProps<any>) => {
   const path = props.path!;
   const { filter } = assertTypeUi(props.typeUi || path.tail.type.name);
 
@@ -317,7 +322,7 @@ export const getFinder = (path: Tyr.PathInstance) => {
 export const getCellValue = (
   path: Tyr.PathInstance,
   document: Tyr.Document,
-  props: TyrTypeProps
+  props: TyrTypeProps<any>
 ) => {
   const { tail: field } = path;
 

@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { Tyr } from 'tyranid/client';
+
 import { TyrLink } from './link';
 import {
   byName,
@@ -8,7 +10,7 @@ import {
   mapFormValueToDocument,
   mapFormValueToDocumentValue,
   getCellValue,
-  getFinder
+  getFinder,
 } from './type';
 import { TyrArrayKeyValue } from './array.key-value';
 import { TyrArrayList } from './array.list';
@@ -16,7 +18,9 @@ import { TyrArrayFixed } from './array.fixed';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrArrayBase = (props: TyrTypeProps) => {
+export const TyrArrayBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   const path = props.path!;
 
   if (!props.document) throw new Error('no "document" passed to TyrArray');
@@ -120,7 +124,7 @@ byName.array = {
     } else {
       return arr;
     }
-  }
+  },
 };
 
 registerComponent('TyrArray', TyrArray);

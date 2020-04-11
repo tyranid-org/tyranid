@@ -13,7 +13,9 @@ import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrDoubleBase = ((props: TyrTypeProps) => {
+export const TyrDoubleBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('double', props, () => {
@@ -27,7 +29,7 @@ export const TyrDoubleBase = ((props: TyrTypeProps) => {
         {...(props.searchRange
           ? {
               min: props.searchRange[0] as number,
-              max: props.searchRange[1] as number
+              max: props.searchRange[1] as number,
             }
           : {})}
         onChange={onTypeChangeFunc}
@@ -39,13 +41,13 @@ export const TyrDoubleBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrDouble = withThemedTypeContext('double', TyrDoubleBase);
 
 export const doubleFilter: Filter = (
   filterable: Filterable,
-  props: TyrPathProps
+  props: TyrPathProps<any>
 ) => {
   const path = props.path!;
   const pathName = path.name;
@@ -56,7 +58,7 @@ export const doubleFilter: Filter = (
       : { min: 0 }),
     ...(props.searchRange
       ? { max: props.searchRange[1] as number }
-      : { max: 100 })
+      : { max: 100 }),
   };
 
   const defaultValue: SliderValue =
@@ -91,7 +93,7 @@ export const doubleFilter: Filter = (
       if (value === undefined) return true;
       const intVal = (path.get(doc) as number) || 0;
       return intVal >= value[0] && intVal <= value[1];
-    }
+    },
     /*
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
@@ -112,7 +114,7 @@ export const doubleFinder: Finder = (
 
     const searchParams = [
       { [path.spath]: { $gte: searchValue[0] } },
-      { [path.spath]: { $lte: searchValue[1] } }
+      { [path.spath]: { $lte: searchValue[1] } },
     ];
 
     if (opts.query.$and) {
@@ -126,7 +128,7 @@ export const doubleFinder: Finder = (
 byName.double = {
   component: TyrDoubleBase,
   filter: doubleFilter,
-  finder: doubleFinder
+  finder: doubleFinder,
 };
 
 registerComponent('TyrDouble', TyrDouble);

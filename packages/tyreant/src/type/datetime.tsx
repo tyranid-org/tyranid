@@ -18,7 +18,9 @@ type RangePickerValue = [moment.Moment, moment.Moment];
 
 const DATETIME_FORMAT = 'MM/DD/YYYY HH:mm:ss';
 
-export const TyrDateTimeBase = ((props: TyrTypeProps) => {
+export const TyrDateTimeBase = <D extends Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('datetime', props, () => {
@@ -37,7 +39,7 @@ export const TyrDateTimeBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrDateTime = withThemedTypeContext('datetime', TyrDateTimeBase);
 
@@ -53,7 +55,7 @@ function parseSearchValue(value: any) {
 
 export const dateTimeFilter: Filter = (
   filterable: Filterable,
-  props: TyrPathProps
+  props: TyrPathProps<any>
 ) => {
   const path = props.path!;
 
@@ -72,8 +74,8 @@ export const dateTimeFilter: Filter = (
             showTime={{
               defaultValue: [
                 moment('00:00:00', 'HH:mm:ss'),
-                moment('11:59:59', 'HH:mm:ss')
-              ]
+                moment('11:59:59', 'HH:mm:ss'),
+              ],
             }}
             onChange={v => {
               setSearchValue(v as RangePickerValue);
@@ -106,7 +108,7 @@ export const dateTimeFilter: Filter = (
       if (visible) {
         // setTimeout(() => searchInputRef!.focus());
       }
-    }
+    },
   };
 };
 
@@ -120,7 +122,7 @@ export const dateTimeFinder: Finder = (
     if (!opts.query) opts.query = {};
     opts.query[path.spath] = {
       $gte: sv[0],
-      $lte: sv[1]
+      $lte: sv[1],
     };
   }
 };
@@ -131,7 +133,7 @@ byName.datetime = {
     return moment(value);
   },
   filter: dateTimeFilter,
-  finder: dateTimeFinder
+  finder: dateTimeFinder,
 };
 
 registerComponent('TyrDateTime', TyrDateTime);

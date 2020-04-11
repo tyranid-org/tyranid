@@ -3,12 +3,16 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
+import { Tyr } from 'tyranid/client';
+
 import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
-export const TyrPasswordBase = ((props: TyrTypeProps) => {
+export const TyrPasswordBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('password', props, () => (
@@ -21,12 +25,12 @@ export const TyrPasswordBase = ((props: TyrTypeProps) => {
       onPressEnter={props.onPressEnter}
     />
   ));
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrPassword = withThemedTypeContext('password', TyrPasswordBase);
 
 byName.password = {
-  component: TyrPasswordBase
+  component: TyrPasswordBase,
 };
 
 registerComponent('TyrPassword', TyrPassword);

@@ -14,7 +14,9 @@ const { TextArea } = Input;
 
 const { TyrMarkupType } = Tyr.collections;
 
-export const TyrMarkupBase = ((props: TyrTypeProps) => {
+export const TyrMarkupBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('string', props, () => {
@@ -36,7 +38,7 @@ export const TyrMarkupBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrMarkup = withThemedTypeContext('markup', TyrMarkupBase);
 
@@ -47,7 +49,7 @@ byName.markup = {
   },
   mapFormValueToDocumentValue(path, value, props) {
     return { type: TyrMarkupType.HTML._id, content: value };
-  }
+  },
 };
 
 registerComponent('TyrMarkup', TyrMarkup);

@@ -100,9 +100,9 @@
     margin: 8px 0 0;
   }
 
-  .ant-row.ant-form-item {
-    // margin-bottom: 0;
-  }
+  //.ant-row.ant-form-item {
+  // margin-bottom: 0;
+  //}
 
   .date {
     display: block;
@@ -138,6 +138,51 @@
 .tyr-label-field-field {
   display: inline-block;
   width: 60%;
+}
+
+//
+// Actions
+//
+
+//.tyr-action {
+//}
+
+.ant-col.tyr-action-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+
+  .ant-checkbox-wrapper {
+    padding-left: 10px;
+  }
+
+  & > span {
+    white-space: nowrap;
+  }
+
+  button {
+    height: 39px;
+  }
+
+  button + button {
+    margin-left: 8px;
+  }
+
+  &.tyr-sectioned {
+    .tyr-action-bar-section {
+      display: flex;
+    }
+
+    .tyr-left {
+      align-self: flex-start;
+    }
+    .tyr-center {
+      align-self: flex-center;
+    }
+    .tyr-right {
+      align-self: flex-end;
+    }
+  }
 }
 
 //
@@ -328,25 +373,6 @@ form textarea.tyr-markup-editor {
 .tyr-table {
   width: 100%;
   padding: var(--table-padding);
-
-  .tyr-table-header {
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: 10px;
-
-    .ant-checkbox-wrapper {
-      padding-left: 10px;
-    }
-
-    & > span {
-      white-space: nowrap;
-    }
-
-    button {
-      margin-right: 8px;
-      height: 39px;
-    }
-  }
 
   .tyr-table-config-icon {
     cursor: pointer;

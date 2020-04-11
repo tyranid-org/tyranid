@@ -86,7 +86,7 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
     return (
       <div>
         {/* cancel?.button(this.decorating) */}
-        {save?.button(this.decorating)}
+        {save?.renderFrom(this.decorating)}
       </div>
     );
   }
@@ -97,7 +97,7 @@ class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<
 
     return (
       <>
-        {create && this.decorating.parent && create.button(this.decorating)}
+        {create && this.decorating.parent && create.renderFrom(this.decorating)}
         <div
           className={'tyr-panel' + (className ? ' ' + className : '')}
           //onCancel={() => cancel!.act({ caller: this.decorating })}

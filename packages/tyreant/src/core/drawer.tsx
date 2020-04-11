@@ -92,8 +92,8 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
 
     return (
       <div className="tyr-footer">
-        {cancel?.button(this.decorating)}
-        {save?.button(this.decorating)}
+        {cancel?.renderFrom(this.decorating)}
+        {save?.renderFrom(this.decorating)}
       </div>
     );
   }
@@ -106,7 +106,7 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
 
     return (
       <>
-        {create?.button(this.decorating)}
+        {create?.renderFrom(this.decorating)}
         <Drawer
           visible={visible}
           closable={false}

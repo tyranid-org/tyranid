@@ -258,7 +258,7 @@ export class TyrManyComponent<
   } = {};
 
   filters: { [path: string]: ReturnType<Filter> | undefined } = {};
-  getFilter(props: TyrPathProps) {
+  getFilter(props: TyrPathProps<D>) {
     const path = props.path!;
     const pathName = path.name;
     const existingFilter = this.filters[pathName];
@@ -352,7 +352,7 @@ export class TyrManyComponent<
   // not any different than what the sort currently is.
   setSortedDocuments = (docs: D[]) => {
     let documents = docs;
-    let sortColumn: TyrPathProps | undefined;
+    let sortColumn: TyrPathProps<D> | undefined;
 
     let sortColumnName: string | null = null;
 

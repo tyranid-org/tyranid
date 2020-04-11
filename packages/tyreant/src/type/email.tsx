@@ -3,13 +3,17 @@ import { useEffect } from 'react';
 
 import { Input } from 'antd';
 
+import { Tyr } from 'tyranid/client';
+
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrEmailBase = ((props: TyrTypeProps) => {
+export const TyrEmailBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('email', props, () => {
@@ -29,14 +33,14 @@ export const TyrEmailBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrEmail = withThemedTypeContext('email', TyrEmailBase);
 
 byName.email = {
   component: TyrEmailBase,
   filter: stringFilter,
-  finder: stringFinder
+  finder: stringFinder,
 };
 
 registerComponent('TyrEmail', TyrEmail);

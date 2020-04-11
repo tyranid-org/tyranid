@@ -11,7 +11,9 @@ import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
-export const TyrTimeBase = ((props: TyrTypeProps) => {
+export const TyrTimeBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('time', props, () => {
@@ -28,7 +30,7 @@ export const TyrTimeBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrTime = withThemedTypeContext('time', TyrTimeBase);
 
@@ -36,7 +38,7 @@ byName.time = {
   component: TyrTimeBase,
   mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return moment(value);
-  }
+  },
 };
 
 registerComponent('TyrTime', TyrTime);

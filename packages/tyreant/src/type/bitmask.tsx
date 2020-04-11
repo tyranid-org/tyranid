@@ -3,24 +3,28 @@ import { useEffect } from 'react';
 
 import Checkbox from 'antd/es/checkbox';
 
+import { Tyr } from 'tyranid/client';
+
 import { byName, TyrTypeProps, onTypeChange, mapPropsToForm } from './type';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrBitmaskBase = ((props: TyrTypeProps) => {
+export const TyrBitmaskBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('bitmask', props, () => (
     <Checkbox.Group
       options={props.path!.tail.link!.values.map(value => ({
         label: value.$label,
-        value: value.$id
+        value: value.$id,
       }))}
       onChange={e => onTypeChange(props, e, e)}
     />
   ));
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrBitmask = withThemedTypeContext('bitmask', TyrBitmaskBase);
 
@@ -57,7 +61,7 @@ byName.bitmask = {
     } else {
       return invertNeeded ? invert(0x0) : 0x0;
     }
-  }
+  },
 };
 
 registerComponent('TyrBitmask', TyrBitmask);

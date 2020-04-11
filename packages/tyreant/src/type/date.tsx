@@ -18,7 +18,9 @@ type RangePickerValue = [moment.Moment, moment.Moment];
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
-export const TyrDateBase = ((props: TyrTypeProps) => {
+export const TyrDateBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('date', props, () => {
@@ -38,7 +40,7 @@ export const TyrDateBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrDate = withThemedTypeContext('date', TyrDateBase);
 
@@ -51,7 +53,7 @@ function parseSearchValue(value: any) {
 
 export const dateFilter: Filter = (
   filterable: Filterable,
-  props: TyrPathProps
+  props: TyrPathProps<any>
 ) => {
   const path = props.path!;
 
@@ -98,7 +100,7 @@ export const dateFilter: Filter = (
       if (visible) {
         // setTimeout(() => searchInputRef!.focus());
       }
-    }
+    },
   };
 };
 
@@ -112,7 +114,7 @@ export const dateFinder: Finder = (
     if (!opts.query) opts.query = {};
     opts.query[path.name] = {
       $gte: sv[0],
-      $lte: sv[1]
+      $lte: sv[1],
     };
   }
 };
@@ -127,7 +129,7 @@ byName.date = {
   cellValue: (
     path: Tyr.PathInstance,
     document: Tyr.Document,
-    props: TyrTypeProps
+    props: TyrTypeProps<any>
   ) => {
     const v = path.get(document);
 
@@ -138,7 +140,7 @@ byName.date = {
     return moment(v).format(
       ((props.dateFormat as string) || DATE_FORMAT).toUpperCase()
     );
-  }
+  },
 };
 
 registerComponent('TyrDate', TyrDate);

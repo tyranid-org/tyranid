@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { Tyr } from 'tyranid/client';
+
 import { TyrTypeProps, getTypeValue } from './type';
 import { TyrThemedFieldBase } from '../core';
 import { TypeContext } from '../core/theme';
@@ -7,7 +9,9 @@ import { TypeContext } from '../core/theme';
 /**
  * This control renders an array as a fixed list indexed by a predefined list.
  */
-export const TyrArrayFixed = (props: TyrTypeProps) => {
+export const TyrArrayFixed = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   const { path, children } = props;
 
   const array = getTypeValue(props, []) as any[];
@@ -36,7 +40,7 @@ export const TyrArrayFixed = (props: TyrTypeProps) => {
     const match = array.find(v => v[fixedFieldName] === id);
     if (!match) {
       array.push({
-        [fixedFieldName]: id
+        [fixedFieldName]: id,
       });
     }
   }

@@ -13,7 +13,9 @@ import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrIntegerBase = ((props: TyrTypeProps) => {
+export const TyrIntegerBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
 
   return decorateField('integer', props, () => {
@@ -22,7 +24,7 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
         {...(props.searchRange
           ? {
               min: props.searchRange[0] as number,
-              max: props.searchRange[1] as number
+              max: props.searchRange[1] as number,
             }
           : {})}
         onChange={ev => onTypeChange(props, ev, undefined)}
@@ -35,13 +37,13 @@ export const TyrIntegerBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrInteger = withThemedTypeContext('integer', TyrIntegerBase);
 
 export const integerFilter: Filter = (
   filterable: Filterable,
-  props: TyrPathProps
+  props: TyrPathProps<any>
 ) => {
   const path = props.path!;
 
@@ -55,7 +57,7 @@ export const integerFilter: Filter = (
       : { min: 0 }),
     ...(props.searchRange
       ? { max: props.searchRange[1] as number }
-      : { max: 100 })
+      : { max: 100 }),
   };
 
   return {
@@ -83,7 +85,7 @@ export const integerFilter: Filter = (
       if (value === undefined) return true;
       const intVal = (path.get(doc) as number) || 0;
       return intVal >= value[0] && intVal <= value[1];
-    }
+    },
     /*
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
@@ -104,7 +106,7 @@ export const integerFinder: Finder = (
 
     const searchParams = [
       { [path.spath]: { $gte: searchValue[0] } },
-      { [path.spath]: { $lte: searchValue[1] } }
+      { [path.spath]: { $lte: searchValue[1] } },
     ];
 
     if (opts.query.$and) {
@@ -118,7 +120,7 @@ export const integerFinder: Finder = (
 byName.integer = {
   component: TyrIntegerBase,
   filter: integerFilter,
-  finder: integerFinder
+  finder: integerFinder,
 };
 
 registerComponent('TyrInteger', TyrInteger);

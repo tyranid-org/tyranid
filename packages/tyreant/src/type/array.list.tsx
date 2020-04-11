@@ -11,7 +11,9 @@ import { Button } from 'antd';
 /**
  * This control renders an array as a list of its contents.
  */
-export const TyrArrayList = (props: TyrTypeProps) => {
+export const TyrArrayList = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   const path = props.path!;
 
   const { tail: field, detail: elField } = path;

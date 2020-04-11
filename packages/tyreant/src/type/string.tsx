@@ -12,12 +12,14 @@ import {
   Filter,
   Filterable,
   FilterDdProps,
-  Finder
+  Finder,
 } from '../core/filter';
 import { TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
-export const TyrStringBase = ((props: TyrTypeProps) => {
+export const TyrStringBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('string', props, () => {
@@ -34,13 +36,13 @@ export const TyrStringBase = ((props: TyrTypeProps) => {
       />
     );
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrString = withThemedTypeContext('string', TyrStringBase);
 
 export const stringFilter: Filter = (
   filterable: Filterable,
-  props: TyrPathProps
+  props: TyrPathProps<any>
 ) => {
   const { path } = props;
   //let searchInputRef: Input | null = null;
@@ -80,7 +82,7 @@ export const stringFilter: Filter = (
     },
     onFilterDropdownVisibleChange: (visible: boolean) => {
       //if (visible) setTimeout(() => searchInputRef!.focus());
-    }
+    },
   };
 };
 
@@ -93,7 +95,7 @@ export const stringFinder: Finder = (
     if (!opts.query) opts.query = {};
     opts.query[path.spath] = {
       $regex: searchValue,
-      $options: 'i'
+      $options: 'i',
     };
   }
 };
@@ -101,7 +103,7 @@ export const stringFinder: Finder = (
 byName.string = {
   component: TyrStringBase,
   filter: stringFilter,
-  finder: stringFinder
+  finder: stringFinder,
 };
 
 registerComponent('TyrString', TyrString);

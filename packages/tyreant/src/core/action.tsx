@@ -1,5 +1,7 @@
 import * as React from 'react';
-import { Button, notification } from 'antd';
+import { Fragment } from 'react';
+import { Button, Col, Row, notification } from 'antd';
+
 
 import { Tyr } from 'tyranid/client';
 
@@ -7,7 +9,7 @@ import type { TyrComponent } from './component';
 import { isEntranceTrait, isExitTrait } from './trait';
 
 export type ActionSet<D extends Tyr.Document> =
-  | { [actionName: string]: TyrAction<D> | Omit<TyrActionOpts<D>, 'name'> }
+  | { [actionName: string]: TyrAction<D> | TyrActionOpts<D> }
   | (TyrAction<D> | TyrActionOpts<D>)[];
 
 export interface TyrActionFnOpts<D extends Tyr.Document> {
@@ -68,12 +70,15 @@ export type Cardinality = 0 | 1 | '0..*' | '*';
 
 export interface TyrActionOpts<D extends Tyr.Document> {
   traits?: Tyr.ActionTrait[];
-  name: string;
+  name?: string;
   self?: TyrComponent<D>;
   label?:
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
+  render?:
+    //| React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
   title?: string | React.ReactNode;
   input?: Cardinality;
 
@@ -81,9 +86,16 @@ export interface TyrActionOpts<D extends Tyr.Document> {
    * This indicates that this action should behave like a "built-in" / utility
    * function ... i.e. like import/export ... this probably needs to be fleshed out more.
    *
-   * Other terms might be:  "generic", "builtin", etc.
+   * Probably not a great name, other terms might be:  "generic", "builtin", etc. ?
    */
   utility?: boolean;
+
+  align?: 'left' | 'center' | 'right';
+
+  /**
+   * Default order is 100 if no order is given.
+   */
+  order?: number;
 
   /**
    * If an action returns false or Promise<false> then the decorator action will not
@@ -95,6 +107,8 @@ export interface TyrActionOpts<D extends Tyr.Document> {
   ) => void | boolean | Promise<void | boolean>;
   hide?: boolean | ((doc: D) => boolean);
 }
+
+let nextKey = 0;
 
 export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   static get<D extends Tyr.Document = Tyr.Document>(
@@ -149,11 +163,14 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   traits: Tyr.ActionTrait[];
-  name: string;
+  name?: string;
   labelValue:
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
+  renderVal?:
+    | React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
   title: string | React.ReactNode;
   input: Cardinality;
   action?: (
@@ -161,6 +178,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   ) => void | boolean | Promise<void | boolean>;
   hide?: boolean | ((doc: D) => boolean);
   utility?: boolean;
+  align?: 'left' | 'center' | 'right';
+  order?: number;
 
   /**
    * This is the component the action was defined on.
@@ -185,22 +204,28 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     name,
     self,
     label,
+    render,
     title,
     input,
     action,
     hide,
     utility,
+    align,
+    order,
   }: TyrActionOpts<D>) {
     this.traits = traits = traits || [];
     this.name = name;
     this.self = self;
-    this.labelValue = label || Tyr.labelize(name);
+    this.labelValue = label || (name && Tyr.labelize(name));
+    this.renderVal = render;
     this.title = title || this.labelValue;
     this.action = action;
     this.input =
-      input ?? (traits.includes('create') || traits.includes('search') ? 0 : 1);
+      input ?? (traits.includes('create') || traits.includes('search') || render ? 0 : 1);
     this.hide = hide;
     this.utility = utility;
+    this.align = align;
+    this.order = order;
   }
 
   is(...traits: Tyr.ActionTrait[]) {
@@ -228,15 +253,19 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     }
   }
 
+  wrappedFnOpts(opts: Partial<TyrActionFnOpts<D>>) {
+    const wrapper = new TyrActionFnOptsWrapper<D>();
+    Object.assign(wrapper, opts);
+    wrapper.self = this.self as TyrComponent<D>;
+    return wrapper;
+  }
+
   act(opts: Partial<TyrActionFnOpts<D>>) {
     try {
       const { action } = this;
 
       if (action) {
-        const wrapper = new TyrActionFnOptsWrapper<D>();
-        Object.assign(wrapper, opts);
-        wrapper.self = this.self as TyrComponent<D>;
-        action(wrapper as any);
+        action(this.wrappedFnOpts(opts) as any);
       }
     } catch (err) {
       console.log(err);
@@ -244,17 +273,37 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     }
   }
 
-  get className() {
-    return 'tyr-action tyr-action-' + Tyr.kebabize(this.name);
+  private _key: string | undefined;
+  get key() {
+    const { name } = this;
+    if (name) return `a_${this.name}`;
+    let { _key } = this;
+    if (!_key) _key = String(++nextKey);
+    return _key;
   }
 
-  button(component: TyrComponent<any>) {
-    if (this.input === '*') {
+  get className() {
+    const { name } = this;
+    return name ? 'tyr-action tyr-action-' + Tyr.kebabize(name) : 'tyr-action';
+  }
+
+  renderFrom(component: TyrComponent<any>) {
+    const { renderVal, key } = this;
+
+    if (renderVal) {
+      return (
+        <Fragment key={key}>{
+          typeof renderVal === 'function'
+            ? renderVal(this.wrappedFnOpts(component.actionFnOpts() as any) as any)
+            : renderVal
+        }</Fragment>
+      );
+    } else if (this.input === '*') {
       return (
         <Button
+          key={key}
           className={this.className}
           disabled={!component.selectedIds?.length}
-          key={`a_${this.name}`}
           onClick={() => this.act(component.actionFnOpts() as any)}
         >
           {this.label(component)}
@@ -263,8 +312,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     } else {
       return (
         <Button
+          key={key}
           className={this.className}
-          key={`a_${this.name}`}
           onClick={() => this.act(component.actionFnOpts() as any)}
         >
           {this.label(component)}
@@ -284,6 +333,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       hide: this.hide,
       input: this.input,
       utility: this.utility,
+      align: this.align,
+      order: this.order,
     };
 
     Object.assign(newOpts, opts);
@@ -314,3 +365,46 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return new TyrAction<D>(newOpts as any);
   }
 }
+
+export interface TyrActionBarProps<D extends Tyr.Document = Tyr.Document> {
+  utility?: boolean;
+  component: TyrComponent<D>;
+};
+
+export function TyrActionBar<D extends Tyr.Document>({ utility, component }: TyrActionBarProps<D>) {
+  const u = !utility;
+  const actions = component.actions.filter(
+    a => a.input !== 1 && a.hide !== true && !a.utility === u
+  );
+
+  actions.sort((a, b) => Math.sign((a.order ?? 100) - (b.order ?? 100)));
+
+  const leftActions = actions.filter(a => !a.align || a.align === 'left');
+  const centerActions = actions.filter(a => a.align === 'center');
+  const rightActions = actions.filter(a => a.align === 'right');
+
+  const sectionCount = !!leftActions.length as any + !!centerActions.length  + !!rightActions.length;
+
+  switch (sectionCount) {
+    case 0:
+      return <></>;
+    case 1: 
+      return (
+        <Row>
+          <Col span={24} className="tyr-action-bar">
+            {actions.map(a => a.renderFrom(component))}
+          </Col>
+        </Row>
+      );
+    default:
+      return (
+        <Row>
+          <Col span={24} className="tyr-action-bar tyr-sectioned">
+            {leftActions.length > 0 && <div className="tyr-action-bar-section tyr-left">{leftActions.map(a => a.renderFrom(component))}</div>}
+            {centerActions.length > 0 && <div className="tyr-action-bar-section tyr-center">{centerActions.map(a => a.renderFrom(component))}</div>}
+            {rightActions.length > 0 && <div className="tyr-action-bar-section tyr-right">{rightActions.map(a => a.renderFrom(component))}</div>}
+          </Col>
+        </Row>
+      );
+  }
+};

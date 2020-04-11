@@ -1,12 +1,16 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
+import { Tyr } from 'tyranid/client';
+
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
-import { decorateField } from '../core';
+import { decorateField, TyrRouter } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-export const TyrUidBase = ((props: TyrTypeProps) => {
+export const TyrUidBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
+) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
   return decorateField('uid', props, () => {
@@ -17,12 +21,12 @@ export const TyrUidBase = ((props: TyrTypeProps) => {
 
     return <div>TODO: uid</div>;
   });
-}) as React.ComponentType<TyrTypeProps>;
+};
 
 export const TyrUid = withThemedTypeContext('uid', TyrUidBase);
 
 byName.uid = {
-  component: TyrUidBase
+  component: TyrUidBase,
 };
 
 registerComponent('TyrUid', TyrUid);
