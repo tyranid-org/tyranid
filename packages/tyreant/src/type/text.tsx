@@ -1,20 +1,74 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
-import { Input } from 'antd';
-
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { stringFilter, stringFinder } from './string';
 import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 
-const { TextArea } = Input;
+import CKEditor from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+
+const CKEditorWrapper = ({
+  value = {},
+  onChange,
+  props,
+}: {
+  value?: any;
+  onChange?: any;
+  props: TyrTypeProps;
+}) => {
+  const [editor, setEditor] = React.useState<any>();
+
+  React.useEffect(() => {
+    if (editor) editor.setData(value);
+  }, [editor]);
+
+  return (
+    <CKEditor
+      editor={ClassicEditor}
+      onInit={(editor: any) => {
+        setEditor(editor);
+      }}
+      config={{
+        placeholder: props.placeholder,
+      }}
+      onChange={(event: any, editor: any) => {
+        const data = editor.getData();
+        onTypeChange(props, data, event);
+        onChange({ ...value, ...data });
+      }}
+      onBlur={(event: any, editor: any) => {
+        //console.log('Blur.', editor);
+      }}
+      onFocus={(event: any, editor: any) => {
+        //console.log('Focus.', editor);
+      }}
+    />
+  );
+};
 
 export const TyrTextBase = ((props: TyrTypeProps) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
-  return decorateField('text', props, () => (
+  return decorateField('text', props, () => <CKEditorWrapper props={props} />);
+}) as React.ComponentType<TyrTypeProps>;
+
+export const TyrText = withThemedTypeContext('text', TyrTextBase);
+
+byName.text = {
+  component: TyrTextBase,
+  filter: stringFilter,
+  finder: stringFinder,
+};
+
+registerComponent('TyrText', TyrText);
+
+/*
+import { Input } from 'antd';
+const { TextArea } = Input;
+
     <TextArea
       placeholder={props.placeholder}
       autoFocus={props.autoFocus}
@@ -23,15 +77,4 @@ export const TyrTextBase = ((props: TyrTypeProps) => {
       rows={props.textAreaRows || 6}
       onPressEnter={props.onPressEnter}
     />
-  ));
-}) as React.ComponentType<TyrTypeProps>;
-
-export const TyrText = withThemedTypeContext('text', TyrTextBase);
-
-byName.text = {
-  component: TyrTextBase,
-  filter: stringFilter,
-  finder: stringFinder
-};
-
-registerComponent('TyrText', TyrText);
+*/

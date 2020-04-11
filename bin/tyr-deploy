@@ -98,7 +98,7 @@ fi
 if [[ -n $OPENAPI ]]; then
   npm run build-tyreant &&
     rm -rf $TARGET/node_modules/tyranid-openapi/* &&
-    cp -r ./packages/tyranid-openapi/* $TARGET/node_modules/tyranid-openapi/
+    cp -r ./packages/tyranid-openapi/* $TARGET/node_modules/tyranid-openapi/    
   SOMETHING=1
 fi
 

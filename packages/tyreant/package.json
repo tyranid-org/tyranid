@@ -22,6 +22,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@ant-design/icons": "4.0.2",
+    "@ckeditor/ckeditor5-react": "2.1.0",
+    "@ckeditor/ckeditor5-build-classic": "18.0.0",
     "antd": "4.0.3",
     "lodash": "3.10.1",
     "mobx": "5.13.0",
@@ -37,7 +39,9 @@
     "react-dnd-html5-backend": "10.0.2",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
-    "tyranid": "^0.6.144"
+    "tyranid": "^0.6.144",
+    "@ckeditor/ckeditor5-react": "2.1.0",
+    "@ckeditor/ckeditor5-build-classic": "18.0.0"
   },
   "devDependencies": {
     "@types/react": "16.9.23",
