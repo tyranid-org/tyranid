@@ -13,5 +13,5 @@
     "jsx": "react",
     "types": ["moment", "react", "react-dom", "antd"]
   },
-  "include": ["./src/**/*.ts", "./src/**/*.tsx"]
+  "include": ["./src/**/*.ts", "./src/**/*.tsx", "./declarations.d.ts"]
 }
