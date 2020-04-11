@@ -1108,10 +1108,10 @@ export class TyrTableBase<
           pagination={false}
           onChange={this.handleTableChange as any}
           footer={netFooter as (rows: Object[]) => React.ReactNode}
-          showHeader={false}
           dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
           scroll={tableScroll}
+          showHeader={!newDocument}
           onRow={(record: any, rowIndex: any) => {
             return {
               onClick: () => {
@@ -1194,7 +1194,7 @@ export class TyrTableBase<
                   rowKey={() => 'new'}
                   size={size || 'small'}
                   pagination={false}
-                  showHeader={false}
+                  showHeader={true}
                   dataSource={[newDocument]}
                   columns={this.getColumns(true)}
                   scroll={tableScroll}
