@@ -60,13 +60,14 @@ declare module 'tyranid/client' {
       | PathInstance
       | Document;
 
-    export const local: {
-      // TODO:  get this typed as "User" instead of "Document" via td-gen
+    export interface Local {
       /*
        * The currently-logged in user.
        */
       user: User;
-    };
+    }
+
+    export const local: Local;
 
     export type Numbering = Isomorphic.Numbering;
     export type ActionTraitType = Isomorphic.ActionTraitType;

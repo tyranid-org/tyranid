@@ -61,15 +61,11 @@ export abstract class TyrDecorator<
 
     let a: TyrAction<D>;
 
-    if (action.is('create', 'search')) {
+    if (action.isEntrance()) {
       a = action.decorate({
         on: opts => this.open(opts),
       });
       this.setState({});
-    } else if (action.is('edit', 'view')) {
-      a = action.decorate({
-        on: opts => this.open(opts),
-      });
     } else if (action.isExit()) {
       a = action.decorate({
         on: () => this.close(),
