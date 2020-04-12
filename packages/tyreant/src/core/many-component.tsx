@@ -39,12 +39,6 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
     documents: D[]
   ) => Promise<void> | void;
 
-  // FILTERING
-  notifyFilterExists?: (exists: boolean) => void;
-
-  // SORTING
-  notifySortSet?: (columnName?: string, order?: TyrSortDirection) => void;
-
   // PAGINATION
   pageSize?: number; // a.k.a. limit,
   pageSizeOptions?: string[];
@@ -52,6 +46,12 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   showTotal?: (total: number, range: [number, number]) => React.ReactNode;
 
   showQuickTotal?: boolean;
+
+  // FILTERING
+  notifyFilterExists?: (exists: boolean) => void;
+
+  // SORTING
+  notifySortSet?: (columnName?: string, order?: TyrSortDirection) => void;
 
   // URL ROUTING
   route?: string;
@@ -246,6 +246,131 @@ export class TyrManyComponent<
   }
 
   /*
+   * * * PAGINATION
+   */
+
+  defaultPageSize: number = (this.props.pageSize !== undefined
+    ? this.props.pageSize
+    : DEFAULT_PAGE_SIZE) as number;
+
+  skip?: number;
+  limit: number = this.defaultPageSize;
+
+  count = this.props.documents?.length || 0;
+
+  updateCount() {
+    if (!this.isLocal) return;
+
+    const { searchValues } = this;
+
+    const checks: ((doc: Tyr.Document) => boolean)[] = [];
+
+    for (const pathProps of this.paths) {
+      const { path } = pathProps;
+
+      if (!path) continue;
+
+      const filter = this.getFilter(pathProps);
+
+      const pathName = path.name,
+        searchValue = searchValues[pathName];
+
+      const onFilter = filter?.onFilter;
+      if (onFilter) checks.push(document => onFilter(searchValue, document));
+    }
+
+    let count = 0;
+
+    OUTER: for (const doc of this.documents) {
+      for (const check of checks) if (!check(doc)) continue OUTER;
+
+      count++;
+    }
+
+    this.count = count;
+  }
+
+  private paginationItemRenderer = (
+    page: number,
+    type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next',
+    originalElement: React.ReactElement<HTMLElement>
+  ) => {
+    if (type === 'prev') return <a>Previous</a>;
+    if (type === 'next') return <a>Next</a>;
+    return originalElement;
+  };
+
+  paginationProps = () => {
+    if (!this.limit) return false;
+
+    const { showSizeChanger, pageSizeOptions, showTotal } = this.props;
+
+    const { skip = 0, limit } = this;
+    const totalCount = this.count || 0;
+
+    //const morePages = totalCount > limit;
+
+    const a = {
+      current: Math.floor(skip / limit) + 1,
+      //defaultCurrent: Math.floor(skip / limit) + 1,
+      total: totalCount,
+      defaultPageSize: limit,
+      pageSize: limit,
+      size: 'default',
+      itemRender: this.paginationItemRenderer,
+      showSizeChanger: showSizeChanger === false ? false : true,
+      pageSizeOptions,
+      hideOnSinglePage: true,
+      showTotal,
+    };
+
+    return a;
+  };
+
+  handlePaginationChange = (page: number, pageSize?: number) => {
+    const { limit } = this;
+
+    this.skip = (page - 1) * limit;
+
+    if (pageSize !== undefined && pageSize !== limit)
+      this.limit = pageSize || this.defaultPageSize;
+
+    this.execute();
+  };
+
+  currentPageDocuments() {
+    if (this.isLocal && this.limit) {
+      const { skip = 0, limit } = this;
+      return this.documents.slice(skip, skip + limit);
+    } else {
+      return this.documents.slice();
+    }
+  }
+
+  paginationComponent() {
+    return this.props.pageSize === 0 ? (
+      <span />
+    ) : (
+      <Pagination
+        {...this.paginationProps()}
+        onChange={this.handlePaginationChange}
+        onShowSizeChange={this.handlePaginationChange}
+      />
+    );
+  }
+
+  quickTotalComponent() {
+    return !this.props.showQuickTotal ? (
+      <span />
+    ) : (
+      <span className="tyr-quick-total">
+        <span className="quick-total-label">Total:</span>{' '}
+        <span className="quick-total-value">{this.count}</span>
+      </span>
+    );
+  }
+
+  /*
    * * * FILTERS
    */
 
@@ -427,131 +552,6 @@ export class TyrManyComponent<
 
     this.count = cDocs.length;
   };
-
-  /*
-   * * * PAGINATION
-   */
-
-  defaultPageSize: number = (this.props.pageSize !== undefined
-    ? this.props.pageSize
-    : DEFAULT_PAGE_SIZE) as number;
-
-  skip?: number;
-  limit: number = this.defaultPageSize;
-
-  count = this.props.documents?.length || 0;
-
-  updateCount() {
-    if (!this.isLocal) return;
-
-    const { searchValues } = this;
-
-    const checks: ((doc: Tyr.Document) => boolean)[] = [];
-
-    for (const pathProps of this.paths) {
-      const { path } = pathProps;
-
-      if (!path) continue;
-
-      const filter = this.getFilter(pathProps);
-
-      const pathName = path.name,
-        searchValue = searchValues[pathName];
-
-      const onFilter = filter?.onFilter;
-      if (onFilter) checks.push(document => onFilter(searchValue, document));
-    }
-
-    let count = 0;
-
-    OUTER: for (const doc of this.documents) {
-      for (const check of checks) if (!check(doc)) continue OUTER;
-
-      count++;
-    }
-
-    this.count = count;
-  }
-
-  private paginationItemRenderer = (
-    page: number,
-    type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next',
-    originalElement: React.ReactElement<HTMLElement>
-  ) => {
-    if (type === 'prev') return <a>Previous</a>;
-    if (type === 'next') return <a>Next</a>;
-    return originalElement;
-  };
-
-  paginationProps = () => {
-    if (!this.limit) return false;
-
-    const { showSizeChanger, pageSizeOptions, showTotal } = this.props;
-
-    const { skip = 0, limit } = this;
-    const totalCount = this.count || 0;
-
-    //const morePages = totalCount > limit;
-
-    const a = {
-      current: Math.floor(skip / limit) + 1,
-      //defaultCurrent: Math.floor(skip / limit) + 1,
-      total: totalCount,
-      defaultPageSize: limit,
-      pageSize: limit,
-      size: 'default',
-      itemRender: this.paginationItemRenderer,
-      showSizeChanger: showSizeChanger === false ? false : true,
-      pageSizeOptions,
-      hideOnSinglePage: true,
-      showTotal,
-    };
-
-    return a;
-  };
-
-  handlePaginationChange = (page: number, pageSize?: number) => {
-    const { limit } = this;
-
-    this.skip = (page - 1) * limit;
-
-    if (pageSize !== undefined && pageSize !== limit)
-      this.limit = pageSize || this.defaultPageSize;
-
-    this.execute();
-  };
-
-  currentPageDocuments() {
-    if (this.isLocal && this.limit) {
-      const { skip = 0, limit } = this;
-      return this.documents.slice(skip, skip + limit);
-    } else {
-      return this.documents.slice();
-    }
-  }
-
-  paginationComponent() {
-    return this.props.pageSize === 0 ? (
-      <span />
-    ) : (
-      <Pagination
-        {...this.paginationProps()}
-        onChange={this.handlePaginationChange}
-        onShowSizeChange={this.handlePaginationChange}
-      />
-    );
-  }
-
-  quickTotalComponent() {
-    return !this.props.showQuickTotal ? (
-      <span />
-    ) : (
-      <span className="tyr-quick-total">
-        <span className="quick-total-label">Total:</span>{' '}
-        <span className="quick-total-value">{this.count}</span>
-      </span>
-    );
-  }
 
   /*
    * * * URL ROUTING

@@ -22,12 +22,22 @@ export const useComponent = () => React.useContext(ComponentContext);
 
 export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   className?: string;
+
+  // QUERYING
   collection?: Tyr.CollectionInstance<D>;
+
+  // PATHS
   paths?: (TyrPathLaxProps<D> | string)[];
+  aux?: { [key: string]: Tyr.FieldDefinition<D> };
+
+  // DECORATORS
   decorator?: React.ReactElement;
+
+  // ACTIONS
   traits?: Tyr.ActionTrait[];
   actions?: ActionSet<D>;
-  aux?: { [key: string]: Tyr.FieldDefinition<D> };
+
+  // PARENT LINKING
   parent?: TyrComponent;
   linkFromParent?: string;
   linkToParent?: string;
@@ -678,6 +688,35 @@ export class TyrComponent<
   }
 
   /*
+   * * * DECORATORS
+   */
+
+  decorator?: TyrDecorator<D>;
+
+  setDecoratorRef = (decorator: TyrDecorator<D>) => {
+    this.decorator = decorator;
+  };
+
+  wrap(children: () => React.ReactNode) {
+    const { parent, decorator } = this.props;
+
+    const Modal = TyrModal as any;
+    const Panel = TyrPanel as any;
+
+    return (
+      <ComponentContext.Provider value={this as any}>
+        {decorator ? (
+          React.cloneElement(decorator!, {}, children())
+        ) : parent ? (
+          <Modal className="tyr-wide-modal">{children()}</Modal>
+        ) : (
+          <Panel>{children()}</Panel>
+        )}
+      </ComponentContext.Provider>
+    );
+  }
+
+  /*
    * * * PAGINATION
    */
 
@@ -745,35 +784,6 @@ export class TyrComponent<
       });
     }
   };
-
-  /*
-   * * * DECORATORS
-   */
-
-  decorator?: TyrDecorator<D>;
-
-  setDecoratorRef = (decorator: TyrDecorator<D>) => {
-    this.decorator = decorator;
-  };
-
-  wrap(children: () => React.ReactNode) {
-    const { parent, decorator } = this.props;
-
-    const Modal = TyrModal as any;
-    const Panel = TyrPanel as any;
-
-    return (
-      <ComponentContext.Provider value={this as any}>
-        {decorator ? (
-          React.cloneElement(decorator!, {}, children())
-        ) : parent ? (
-          <Modal className="tyr-wide-modal">{children()}</Modal>
-        ) : (
-          <Panel>{children()}</Panel>
-        )}
-      </ComponentContext.Provider>
-    );
-  }
 
   /*
    * * * WIDTHS
