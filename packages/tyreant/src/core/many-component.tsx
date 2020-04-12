@@ -283,12 +283,6 @@ export class TyrManyComponent<
     return filter;
   }
 
-  /*
-   * * * SORTING
-   */
-
-  sortDirections: { [pathName: string]: TyrSortDirection } = {};
-
   resetFilters = () => {
     const { notifyFilterExists } = this.props;
     const { searchValues } = this;
@@ -300,6 +294,12 @@ export class TyrManyComponent<
     // Update if on props
     notifyFilterExists && notifyFilterExists(false);
   };
+
+  /*
+   * * * SORTING
+   */
+
+  sortDirections: { [pathName: string]: TyrSortDirection } = {};
 
   resetSort = () => {
     const { notifySortSet } = this.props;
@@ -315,16 +315,6 @@ export class TyrManyComponent<
       // Update if on props
       notifySortSet(sortColumn?.path?.name, sortColumn?.defaultSort);
     }
-  };
-
-  resetFiltersAndSort = () => {
-    this.resetFilters();
-    this.resetSort();
-  };
-
-  resetWidths = () => {
-    this.updateConfigWidths();
-    this.setState({});
   };
 
   setDefaultSort() {

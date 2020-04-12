@@ -689,6 +689,32 @@ export class TyrComponent<
 
   hasSortDirection = false;
 
+  updateConfigSort = async (
+    columnName?: string,
+    sortDirection?: TyrSortDirection
+  ) => {
+    if (this.componentConfig) {
+      const fields = this.componentConfig.fields.forEach(f => {
+        if (!columnName) {
+          delete f.sortDirection;
+        } else if (f.name === columnName) {
+          f.sortDirection = sortDirection;
+        } else {
+          delete f.sortDirection;
+        }
+      });
+
+      await this.componentConfig.$update({
+        query: { _id: this.componentConfig._id },
+        update: {
+          $set: {
+            columns: fields,
+          },
+        },
+      });
+    }
+  };
+
   /*
    * * * FILTERS
    */
@@ -698,6 +724,27 @@ export class TyrComponent<
   getFilter(props: TyrPathProps<D>): ReturnType<Filter> {
     return undefined;
   }
+
+  updateConfigFilter = async (columnName?: string, filter?: Object) => {
+    if (this.componentConfig) {
+      const fields = this.componentConfig.fields.forEach(f => {
+        if (!columnName) {
+          delete f.filter;
+        } else if (f.name === columnName) {
+          f.filter = filter;
+        }
+      });
+
+      await this.componentConfig.$update({
+        query: { _id: this.componentConfig._id },
+        update: {
+          $set: {
+            columns: fields,
+          },
+        },
+      });
+    }
+  };
 
   /*
    * * * DECORATORS
@@ -729,57 +776,12 @@ export class TyrComponent<
   }
 
   /*
-   * * * COMPONENT CONFIG
+   * * * WIDTHS
    */
 
-  @observable
-  componentConfig?: Tyr.TyrComponentConfig;
-
-  updateConfigSort = async (
-    columnName?: string,
-    sortDirection?: TyrSortDirection
-  ) => {
-    if (this.componentConfig) {
-      const fields = this.componentConfig.fields.forEach(f => {
-        if (!columnName) {
-          delete f.sortDirection;
-        } else if (f.name === columnName) {
-          f.sortDirection = sortDirection;
-        } else {
-          delete f.sortDirection;
-        }
-      });
-
-      await this.componentConfig.$update({
-        query: { _id: this.componentConfig._id },
-        update: {
-          $set: {
-            columns: fields,
-          },
-        },
-      });
-    }
-  };
-
-  updateConfigFilter = async (columnName?: string, filter?: Object) => {
-    if (this.componentConfig) {
-      const fields = this.componentConfig.fields.forEach(f => {
-        if (!columnName) {
-          delete f.filter;
-        } else if (f.name === columnName) {
-          f.filter = filter;
-        }
-      });
-
-      await this.componentConfig.$update({
-        query: { _id: this.componentConfig._id },
-        update: {
-          $set: {
-            columns: fields,
-          },
-        },
-      });
-    }
+  resetWidths = () => {
+    this.updateConfigWidths();
+    this.setState({});
   };
 
   updateConfigWidths = async (columnName?: string, width?: number) => {
@@ -803,4 +805,30 @@ export class TyrComponent<
       });
     }
   };
+
+  /*
+   * * * COMPONENT CONFIG
+   */
+
+  @observable
+  componentConfig?: Tyr.TyrComponentConfig;
+
+  resetFilters() {}
+  resetSort() {}
+
+  reset(...args: ('filters' | 'sort' | 'widths')[]) {
+    for (const arg of args) {
+      switch (arg) {
+        case 'filters':
+          this.resetFilters();
+          break;
+        case 'sort':
+          this.resetSort();
+          break;
+        case 'widths':
+          this.resetWidths();
+          break;
+      }
+    }
+  }
 }
