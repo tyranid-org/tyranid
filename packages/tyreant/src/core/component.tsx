@@ -532,7 +532,7 @@ export class TyrComponent<
           def = !!this.parent;
           break;
         default:
-          return true;
+          return !!parentLink;
       }
 
       return !traits ? def : traits.includes(trait);
@@ -656,6 +656,7 @@ export class TyrComponent<
     if (auto('cancel')) {
       enact({
         traits: ['cancel'],
+        input: 0,
         name: enacted('save') || addingSave ? 'cancel' : 'close',
       });
     }
