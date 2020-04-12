@@ -18,7 +18,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
           </>
         ),
         utility: true,
-        action({ caller, self }) {
+        on({ caller, self }) {
           const { collection } = caller;
 
           self.document = new Tyr.collections.TyrImport({

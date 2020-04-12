@@ -5,20 +5,19 @@ import { Tyr } from 'tyranid/client';
 
 import type { TyrTypeProps, TyrTypeLaxProps } from '../type/type';
 import type { TyrDrawerProps } from './drawer';
-import type { TyrFormBase, TyrFormProps } from './form';
+import type { TyrFormProps } from './form';
 import type { TyrKanbanProps } from './kanban';
-import type { TyrModalProps } from './modal';
+import type { TyrDecoratorProps } from './decorator';
 import type { TyrTableProps } from './table';
-import { TyrPanelProps } from './panel';
 import { TyrAction } from './action';
 
 export interface TyrThemeProps {
   drawer?: Partial<TyrDrawerProps<any>>;
   form?: Partial<TyrFormProps<any>>;
   kanban?: Partial<TyrKanbanProps<any>>;
-  modal?: Partial<TyrModalProps<any>>;
+  modal?: Partial<TyrDecoratorProps<any>>;
   table?: Partial<TyrTableProps<any>>;
-  panel?: Partial<TyrPanelProps<any>>;
+  panel?: Partial<TyrDecoratorProps<any>>;
 }
 
 export const ThemeContext = React.createContext<TyrThemeProps | undefined>(

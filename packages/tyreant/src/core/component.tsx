@@ -452,33 +452,33 @@ export class TyrComponent<
     return this.parentAction?.is('search') ?? false;
   }
 
-  enact(action: TyrAction<D> | TyrActionOpts<D>) {
-    const _action = TyrAction.get(action);
-
+  private enactLocal(action: TyrAction<D>) {
     const { actions } = this;
 
     for (let ai = 0; ai < actions.length; ai++) {
       const a = actions[ai];
       if (a.name === action.name && a.self === action.self) {
-        actions[ai] = _action;
+        actions[ai] = action;
         return;
       }
     }
 
-    this.actions.push(_action);
+    this.actions.push(action);
     this.refresh();
   }
 
-  enactUp(action: TyrAction<D> | TyrActionOpts<D>) {
-    const _action = TyrAction.get(action);
+  enact(action: TyrAction<D> | TyrActionOpts<D>) {
+    let a = TyrAction.get(action);
 
-    const { decorator } = this;
+    if (!a.isLocal()) {
+      const { decorator } = this;
+      if (decorator) a = decorator.enact(a);
+    }
 
-    if (decorator) {
-      decorator.enact(_action);
+    if (a.isEntrance()) {
+      this.parent?.enactLocal(a as TyrAction<any>);
     } else {
-      const { parent } = this;
-      if (parent) parent.enact(_action as any);
+      this.enactLocal(a);
     }
   }
 
@@ -538,12 +538,12 @@ export class TyrComponent<
       return !traits ? def : traits.includes(trait);
     };
 
-    const enactUp = (_action: TyrActionOpts<D> | TyrAction<D>) => {
+    const enact = (_action: TyrActionOpts<D> | TyrAction<D>) => {
       // TODO:  clone action if self is already defined?
       const action = TyrAction.get(_action) as TyrAction<D>;
       action.self = this;
 
-      let actFn = action.action;
+      let actFn = action.on;
 
       if (!actFn) {
         if (action.is('edit', 'view')) {
@@ -579,11 +579,11 @@ export class TyrComponent<
           actFn = () => this.submit();
         }
 
-        action.action = actFn;
+        action.on = actFn;
       }
 
       if (action.is('save')) {
-        action.action = opts => {
+        action.on = opts => {
           // we assign to the existing opts here rather than create a new opts because
           // we are given a TyrActionFnOptsWrapper
           opts.document = this.document;
@@ -592,18 +592,15 @@ export class TyrComponent<
       }
 
       if (action.isEntrance()) {
-        const actFn = action.action;
+        const actFn = action.on;
 
-        action.action = opts => {
+        action.on = opts => {
           this.parentAction = action;
           actFn!(opts);
         };
       }
 
-      // TODO:  do we ever want to enact() locally on this component or always up?
-      //        (save/cancel need to be enacted up so that the decorator sees it)
-      if (action.traits?.length) this.enactUp(action);
-      else this.enact(action); // i.e. traitless table actions
+      this.enact(action);
 
       if (action.is('create')) {
         createAction = action;
@@ -614,7 +611,7 @@ export class TyrComponent<
 
     // Manual Actions
 
-    for (const action of actions) enactUp(action);
+    for (const action of actions) enact(action);
 
     // Default Actions
 
@@ -624,7 +621,7 @@ export class TyrComponent<
       ((!parentLink && !enactedEntrance() && auto('create')) ||
         traits?.includes('create'))
     ) {
-      enactUp({
+      enact({
         traits: ['create'],
         name: 'create',
         label: 'Create ' + collection.label,
@@ -637,7 +634,7 @@ export class TyrComponent<
       ((!parentLink && !enacted('view') && auto('search')) ||
         traits?.includes('search'))
     ) {
-      enactUp({
+      enact({
         traits: ['search'],
         name: 'search',
         label: 'Search ' + collection.label,
@@ -645,7 +642,7 @@ export class TyrComponent<
     }
 
     if (auto('view') || auto('edit')) {
-      enactUp({
+      enact({
         name: parentLink ? collection.label : 'edit',
         traits: [auto('edit') ? 'edit' : 'view'],
         title: !this.canMultiple
@@ -657,14 +654,14 @@ export class TyrComponent<
     const addingSave = this.canEdit && auto('view');
 
     if (auto('cancel')) {
-      enactUp({
+      enact({
         traits: ['cancel'],
         name: enacted('save') || addingSave ? 'cancel' : 'close',
       });
     }
 
     if (addingSave && !enacted('save')) {
-      enactUp({
+      enact({
         traits: ['save'],
         name: 'save',
       });

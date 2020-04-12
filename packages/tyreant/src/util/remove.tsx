@@ -7,17 +7,17 @@ export const TyrRemove = createForm(
     actions: [
       {
         traits: ['view'],
-        name: 'remove'
+        name: 'remove',
       },
       {
         traits: ['save'],
         name: 'remove',
-        action: async ({ self, document }) => {
+        on: async ({ self, document }) => {
           await document!.$remove();
           self.parent?.requery();
-        }
-      }
-    ]
+        },
+      },
+    ],
   },
   ({}) => (
     <div className="tyr-import-help">

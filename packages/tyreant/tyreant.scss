@@ -1,5 +1,7 @@
 :root {
   --background-color: #fff;
+
+  --primary-text-color: #fff;
   --primary-background-color: #6a8fbe;
 
   --highlight-color: #1890ff;
@@ -146,6 +148,12 @@
 
 //.tyr-action {
 //}
+
+.tyr-action-save,
+.ant-btn.tyr-action-save {
+  color: var(--primary-text-color);
+  background-color: var(--primary-background-color);
+}
 
 .ant-col.tyr-action-bar {
   display: flex;
@@ -850,9 +858,14 @@ form textarea.tyr-markup-editor {
 
 .tyr-panel {
   padding: 8px;
+  width: 100%;
 
   .tyr-panel-header {
     font-size: 20px;
+  }
+
+  .tyr-panel-footer {
+    margin-top: 16px;
   }
 }
 

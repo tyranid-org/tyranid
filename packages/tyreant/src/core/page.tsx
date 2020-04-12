@@ -128,7 +128,7 @@ export class TyrPage extends React.Component<TyrPageProps, TyrPageState> {
 
     if (!pageEntry) {
       const page = await TyrPageCol.findOne({
-        query: { path }
+        query: { path },
       });
 
       let html: React.ReactElement[] | undefined;
@@ -146,7 +146,7 @@ export class TyrPage extends React.Component<TyrPageProps, TyrPageState> {
 
       pageEntry = pageCache[path] = {
         page: page!,
-        html: html!
+        html: html!,
       };
     }
 
@@ -190,12 +190,12 @@ export const TyrPageAdmin = () => (
     actions={[
       {
         name: 'preview',
-        action: async opts => {
+        on: async opts => {
           const path = opts.document?.path;
           if (path) location.href = path;
           return true;
-        }
-      }
+        },
+      },
     ]}
   >
     <TyrForm<Tyr.TyrPage> decorator={<TyrModal className="tyr-page-editor" />}>
@@ -215,7 +215,7 @@ registerComponent('TyrPageAdmin', TyrPageAdmin);
 export const generatePageRoutes = async () => {
   const pages = await TyrPageCol.findAll({
     query: { path: /^\// },
-    fields: { path: 1 }
+    fields: { path: 1 },
   });
 
   return pages.map(page => (

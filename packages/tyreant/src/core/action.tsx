@@ -102,7 +102,7 @@ export interface TyrActionOpts<D extends Tyr.Document> {
    * be applied.  Note that undefined/void is treated as returning true (i.e. the
    * decorated action should be performed.
    */
-  action?: (
+  on?: (
     opts: TyrActionFnOpts<D>
   ) => void | boolean | Promise<void | boolean>;
   hide?: boolean | ((doc: D) => boolean);
@@ -173,7 +173,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
   title: string | React.ReactNode;
   input: Cardinality;
-  action?: (
+  on?: (
     opts: TyrActionFnOpts<D>
   ) => void | boolean | Promise<void | boolean>;
   hide?: boolean | ((doc: D) => boolean);
@@ -207,7 +207,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     render,
     title,
     input,
-    action,
+    on,
     hide,
     utility,
     align,
@@ -219,7 +219,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.labelValue = label || (name && Tyr.labelize(name));
     this.renderVal = render;
     this.title = title || this.labelValue;
-    this.action = action;
+    this.on = on;
     this.input =
       input ?? (traits.includes('create') || traits.includes('search') || render ? 0 : 1);
     this.hide = hide;
@@ -243,6 +243,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return this.traits.some(isExitTrait);
   }
 
+  isLocal() {
+    return !this.traits?.length;
+  }
+
   isHidden(document?: D) {
     const { hide } = this;
 
@@ -262,11 +266,9 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
   act(opts: Partial<TyrActionFnOpts<D>>) {
     try {
-      const { action } = this;
+      const { on } = this;
 
-      if (action) {
-        action(this.wrappedFnOpts(opts) as any);
-      }
+      on?.(this.wrappedFnOpts(opts) as any);
     } catch (err) {
       console.log(err);
       notification.error(err.message || 'Unknown error');
@@ -283,8 +285,12 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   get className() {
-    const { name } = this;
-    return name ? 'tyr-action tyr-action-' + Tyr.kebabize(name) : 'tyr-action';
+    const { name, traits } = this;
+
+    let s = 'tyr-action'
+    if (name) s += ' tyr-action-' + Tyr.kebabize(name);
+    if (traits?.[0] === 'save' && name !== 'save') s += ' tyr-action-save';
+    return s;
   }
 
   renderFrom(component: TyrComponent<any>) {
@@ -329,7 +335,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       label: this.labelValue,
       title: this.title,
       self: this.self,
-      action: this.action,
+      on: this.on,
       hide: this.hide,
       input: this.input,
       utility: this.utility,
@@ -339,23 +345,23 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
     Object.assign(newOpts, opts);
 
-    if (opts.action) {
-      newOpts.action = (fnOpts: TyrActionFnOpts<D>) => {
-        const result = this.action?.(fnOpts);
+    if (opts.on) {
+      newOpts.on = (fnOpts: TyrActionFnOpts<D>) => {
+        const result = this.on?.(fnOpts);
 
         switch (typeof result) {
           case 'undefined':
-            opts.action!(fnOpts);
+            opts.on!(fnOpts);
             break;
           case 'boolean':
             if (result) {
-              opts.action!(fnOpts);
+              opts.on!(fnOpts);
             }
             break;
           default:
             result.then(promisedResult => {
               if (promisedResult === undefined || promisedResult) {
-                opts.action!(fnOpts);
+                opts.on!(fnOpts);
               }
             });
         }
@@ -367,14 +373,16 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 }
 
 export interface TyrActionBarProps<D extends Tyr.Document = Tyr.Document> {
+  actions?: TyrAction<D>[];
   utility?: boolean;
   component: TyrComponent<D>;
+  className?: string;
 };
 
-export function TyrActionBar<D extends Tyr.Document>({ utility, component }: TyrActionBarProps<D>) {
+export function TyrActionBar<D extends Tyr.Document>({ actions: propsActions, utility, component, className }: TyrActionBarProps<D>) {
   const u = !utility;
-  const actions = component.actions.filter(
-    a => a.input !== 1 && a.hide !== true && !a.utility === u
+  const actions = propsActions || component.actions.filter(
+    a => !a.isExit() && a.input !== 1 && a.hide !== true && !a.utility === u
   );
 
   actions.sort((a, b) => Math.sign((a.order ?? 100) - (b.order ?? 100)));
@@ -391,7 +399,7 @@ export function TyrActionBar<D extends Tyr.Document>({ utility, component }: Tyr
     case 1: 
       return (
         <Row>
-          <Col span={24} className="tyr-action-bar">
+          <Col span={24} className={'tyr-action-bar' + (className ? ' ' + className : '')}>
             {actions.map(a => a.renderFrom(component))}
           </Col>
         </Row>
@@ -399,7 +407,7 @@ export function TyrActionBar<D extends Tyr.Document>({ utility, component }: Tyr
     default:
       return (
         <Row>
-          <Col span={24} className="tyr-action-bar tyr-sectioned">
+          <Col span={24} className={'tyr-action-bar tyr-sectioned' + (className ? ' ' + className : '')}>
             {leftActions.length > 0 && <div className="tyr-action-bar-section tyr-left">{leftActions.map(a => a.renderFrom(component))}</div>}
             {centerActions.length > 0 && <div className="tyr-action-bar-section tyr-center">{centerActions.map(a => a.renderFrom(component))}</div>}
             {rightActions.length > 0 && <div className="tyr-action-bar-section tyr-right">{rightActions.map(a => a.renderFrom(component))}</div>}
