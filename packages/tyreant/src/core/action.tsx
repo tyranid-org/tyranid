@@ -70,6 +70,7 @@ export type Cardinality = 0 | 1 | '0..*' | '*';
 
 export interface TyrActionOpts<D extends Tyr.Document> {
   traits?: Tyr.ActionTrait[];
+  trait?: Tyr.ActionTrait;
   name?: string;
   self?: TyrComponent<D>;
   label?:
@@ -201,6 +202,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
   constructor({
     traits,
+    trait,
     name,
     self,
     label,
@@ -214,6 +216,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     order,
   }: TyrActionOpts<D>) {
     this.traits = traits = traits || [];
+    if (trait) this.traits.push(trait);
     this.name = name;
     this.self = self;
     this.labelValue = label || (name && Tyr.labelize(name));

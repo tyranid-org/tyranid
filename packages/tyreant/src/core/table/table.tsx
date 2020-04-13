@@ -56,6 +56,7 @@ import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
 import { EditableFormRow, EditableContext } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
+import { classNames } from '../../util';
 
 const findColumnByDataIndex = <D extends Tyr.Document>(
   columns: (ColumnType<D> | ColumnGroupType<D>)[],
@@ -82,32 +83,12 @@ export interface OurColumnProps<T> extends ColumnType<T> {
 
 const ObsTable = observer(Table);
 
-export interface TableColumnPathProps<D extends Tyr.Document> {
-  pinned?: 'left' | 'right';
-  align?: 'left' | 'right' | 'center';
-  ellipsis?: boolean;
-  editClassName?: string;
-
-  /**
-   * What table column grouping should this be grouped under.
-   */
-  children?: TableColumnPathProps<D>[];
-}
-
-export type TyrTableColumnPathLaxProps<
-  D extends Tyr.Document
-> = TableColumnPathProps<D> & TyrPathLaxProps<D>;
-export type TyrTableColumnPathProps<
-  D extends Tyr.Document
-> = TableColumnPathProps<D> & TyrPathProps<D>;
-
 export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
   //fixedWidthHack?: boolean;
   bordered?: boolean;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean;
-  paths: (TyrTableColumnPathLaxProps<D> | string)[];
   actionHeaderLabel?: string | React.ReactNode;
   actionIcon?: Tyr.anny;
   actionTrigger?: 'hover' | 'click';
@@ -157,9 +138,9 @@ export class TyrTableBase<
 > extends TyrManyComponent<D, TyrTableProps<D>> {
   // TODO:  is this redundant with super().fields ?
   @observable
-  otherPaths: TyrTableColumnPathProps<D>[] = [];
+  otherPaths: TyrPathProps<D>[] = [];
 
-  get activePaths(): TyrTableColumnPathProps<D>[] {
+  get activePaths(): TyrPathProps<D>[] {
     return this.otherPaths;
   }
 
@@ -213,16 +194,16 @@ export class TyrTableBase<
       this.otherPaths.map(otherPath => {
         const otherPathName = getPathName(otherPath.path);
 
-        const p = nextOtherPaths.find(
+        const p = nextOtherPaths!.find(
           column => otherPathName === getPathName(column)
         );
 
         return p ? this.resolveFieldLaxProps(p) : undefined;
       })
-    ) as TyrTableColumnPathProps<D>[];
+    ) as TyrPathProps<D>[];
 
     // Add any new fields (unless they are hidden)
-    for (const nextOtherField of nextOtherPaths) {
+    for (const nextOtherField of nextOtherPaths!) {
       const nextOtherFieldName = getPathName(nextOtherField);
 
       const existingCol = newOtherPaths.find(
@@ -406,7 +387,7 @@ export class TyrTableBase<
         // }
 
         if (orig) {
-          for (const column of this.props.paths) {
+          for (const column of this.props.paths!) {
             const pathName = getPathName(column);
             const field = pathName && collection.paths[pathName];
 
@@ -651,7 +632,10 @@ export class TyrTableBase<
               noLabel: true,
               tabIndex: columnIdx,
               dropdownClassName: column.dropdownClassName,
-              className: column.editClassName,
+              className: classNames(
+                path && 'tyr-edit-' + path.detail.type.name,
+                column.editClassName
+              ),
               searchRange: column.searchRange,
               onChange: () => this.setState({}),
               typeUi: column.typeUi,
@@ -1208,7 +1192,7 @@ export class TyrTableBase<
                   columns={this.paths}
                   config={tableConfig}
                   tableConfig={this.componentConfig}
-                  originalPaths={this.props.paths}
+                  originalPaths={this.props.paths!}
                   onCancel={() => (this.showConfig = false)}
                   onUpdate={this.onUpdateTableConfig}
                   containerEl={this.tableWrapper!}
@@ -1219,7 +1203,7 @@ export class TyrTableBase<
                   table={this}
                   columns={this.paths}
                   config={tableConfig || true}
-                  originalPaths={this.props.paths}
+                  originalPaths={this.props.paths!}
                   export={true}
                   tableConfig={this.componentConfig}
                   onCancel={() => (this.showExport = false)}

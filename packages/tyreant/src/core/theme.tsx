@@ -3,6 +3,7 @@ import { useContext } from 'react';
 
 import { Tyr } from 'tyranid/client';
 
+import type { TyrPathLaxProps } from './path';
 import type { TyrTypeProps, TyrTypeLaxProps } from '../type/type';
 import type { TyrDrawerProps } from './drawer';
 import type { TyrFormProps } from './form';
@@ -11,13 +12,26 @@ import type { TyrDecoratorProps } from './decorator';
 import type { TyrTableProps } from './table';
 import { TyrAction } from './action';
 
+
 export interface TyrThemeProps {
+  boolean?: Partial<TyrTypeProps<any>>;
+  date?: Partial<TyrTypeProps<any>>;
+  datetime?: Partial<TyrTypeProps<any>>;
+  string?: Partial<TyrTypeProps<any>>;
+  time?: Partial<TyrTypeProps<any>>;
   drawer?: Partial<TyrDrawerProps<any>>;
   form?: Partial<TyrFormProps<any>>;
   kanban?: Partial<TyrKanbanProps<any>>;
   modal?: Partial<TyrDecoratorProps<any>>;
   table?: Partial<TyrTableProps<any>>;
   panel?: Partial<TyrDecoratorProps<any>>;
+  collections?: {
+    [CollectionName in keyof Tyr.CollectionsByName]?: {
+      paths?: {
+        [pathName: string]: Partial<TyrPathLaxProps<Tyr.DocumentType<Tyr.CollectionsByName[CollectionName]>>>
+      }
+    }
+  }
 }
 
 export const ThemeContext = React.createContext<TyrThemeProps | undefined>(
@@ -38,9 +52,9 @@ export const useThemeProps = <
   let baseActions: TyrAction<any>[],
    overrideActions: TyrAction<any>[];
   if ((baseActions = (tprops as any)?.actions) && (overrideActions = (props as any)?.actions)) {
-    return { ...tprops, ...props, actions: TyrAction.merge(baseActions, overrideActions)} as P;
+    return { theme: themeProps, ...tprops, ...props, actions: TyrAction.merge(baseActions, overrideActions)} as P;
   } else {
-    return (tprops ? { ...tprops, ...props } : props) as P;
+    return (tprops ? { theme: themeProps, ...tprops, ...props } : { theme: themeProps, ...props}) as P;
   }
 };
 

@@ -9,10 +9,16 @@ import { Filter } from './filter';
 import { isEntranceTrait } from './trait';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts, ActionSet } from './action';
 import { TyrDecorator } from './decorator';
-import { defaultPathsProp, TyrPathProps, TyrPathLaxProps } from './path';
+import {
+  defaultPathsProp,
+  TyrPathProps,
+  TyrPathLaxProps,
+  getPathName,
+} from './path';
 import { TyrModal } from './modal';
 import { TyrSortDirection } from './typedef';
 import { TyrPanel } from './panel';
+import { TyrThemeProps } from './theme';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -22,6 +28,8 @@ export const useComponent = () => React.useContext(ComponentContext);
 
 export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   className?: string;
+
+  theme?: TyrThemeProps;
 
   // QUERYING
   collection?: Tyr.CollectionInstance<D>;
@@ -189,11 +197,22 @@ export class TyrComponent<
   }
 
   resolveFieldLaxProps(laxPathProps: TyrPathLaxProps<D> | string) {
+    const { theme } = this.props;
+    const { collection } = this;
+
+    const pathName = getPathName(laxPathProps);
+
     const pathProps: TyrPathLaxProps<D> = {};
-    if (typeof laxPathProps === 'string') {
-      pathProps.path = laxPathProps;
-    } else {
-      Object.assign(pathProps, laxPathProps);
+    if (collection && pathName) {
+      const themeProps =
+        theme?.collections?.[collection.name]?.paths?.[pathName];
+      if (themeProps) Object.assign(pathProps, themeProps);
+
+      if (typeof laxPathProps === 'string') {
+        pathProps.path = laxPathProps;
+      } else {
+        Object.assign(pathProps, laxPathProps);
+      }
     }
 
     let p = pathProps.path;

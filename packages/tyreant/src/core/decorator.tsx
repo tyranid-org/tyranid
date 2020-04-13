@@ -9,6 +9,8 @@ import { TyrThemeProps, useThemeProps } from './theme';
 export interface TyrDecoratorProps<D extends Tyr.Document> {
   parent?: TyrComponent<D>;
   className?: string;
+  defaultOpen?: boolean;
+  title?: string;
 }
 export interface TyrDecoratorState {
   visible: boolean;
@@ -27,6 +29,11 @@ export abstract class TyrDecorator<
   State extends TyrDecoratorState = TyrDecoratorState
 > extends React.Component<Props, State> {
   componentName = 'decorator';
+
+  state = {
+    visible: !!this.props.defaultOpen,
+    loading: false,
+  } as State;
 
   decorating!: TyrComponent<D>;
   callerOpts?: TyrActionFnOpts<D>;
@@ -90,7 +97,7 @@ export abstract class TyrDecorator<
     //(edit && callerOpts?.document && edit.title) ||
     //(create && create.title) ||
     //(edit && edit.title);
-    return this.decorating.parentAction?.title;
+    return this.props.title || this.decorating.parentAction?.title;
   }
 
   footer() {

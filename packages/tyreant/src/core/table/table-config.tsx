@@ -15,14 +15,10 @@ import { Modal, Button, Drawer, Breadcrumb, message } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
-import { getPathName } from '../path';
+import { getPathName, TyrPathProps, TyrPathLaxProps } from '../path';
 import { TyrTableConfig, ColumnConfigField } from './typedef';
 import TyrTableColumnConfigItem from './table-config-item';
-import {
-  TyrTableBase,
-  TyrTableColumnPathProps,
-  TyrTableColumnPathLaxProps,
-} from './table';
+import { TyrTableBase } from './table';
 
 interface TyrTableConfigProps<D extends Tyr.Document> {
   table: TyrTableBase<D>;
@@ -32,7 +28,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     | true /* if true, key is "default" */;
   export?: boolean;
   tableConfig?: Tyr.TyrComponentConfig;
-  originalPaths: (TyrTableColumnPathLaxProps<D> | string)[];
+  originalPaths: (TyrPathLaxProps<D> | string)[];
   onCancel: () => void;
   onUpdate: (
     tableConfig: Tyr.TyrComponentConfig,
@@ -40,7 +36,7 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
     filtersHaveBeenReset?: boolean,
     widthsHaveBeenReset?: boolean
   ) => void;
-  columns: TyrTableColumnPathProps<D>[];
+  columns: TyrPathProps<D>[];
   containerEl: React.RefObject<HTMLDivElement>;
 }
 
@@ -78,11 +74,11 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   const { collection } = table;
 
   const getColumnFields = (
-    fields: TyrTableColumnPathProps<D>[],
+    fields: TyrPathProps<D>[],
     tableConfig: Tyr.TyrComponentConfig
   ) => {
     return compact(
-      fields.map((column: TyrTableColumnPathProps<D>, index: number) => {
+      fields.map((column: TyrPathProps<D>, index: number) => {
         const savedField = tableConfig.fields.find(
           c => c.name === column.path?.name
         );
@@ -470,7 +466,7 @@ const ResetArea = (props: {
 
 export const ensureTableConfig = async <D extends Tyr.Document>(
   table: TyrTableBase<D>,
-  columns: TyrTableColumnPathProps<D>[],
+  columns: TyrPathProps<D>[],
   config: TyrTableConfig | string | boolean,
   existingTableConfig?: Tyr.TyrComponentConfig
 ) => {
@@ -538,12 +534,12 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
 
 const orderedArray = (
   arrayWithOrder: { name: string }[],
-  array: TyrTableColumnPathProps<any>[],
+  array: TyrPathProps<any>[],
   includeHidden?: boolean
 ) => {
   const arrayToOrder = [...array];
-  const orderedArray: TyrTableColumnPathProps<any>[] = [];
-  const extra: TyrTableColumnPathProps<any>[] = [];
+  const orderedArray: TyrPathProps<any>[] = [];
+  const extra: TyrPathProps<any>[] = [];
 
   while (arrayToOrder.length) {
     const current = arrayToOrder[0];

@@ -10,11 +10,6 @@ import { TyrDecorator, withThemeAndParent } from './decorator';
 class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
   componentName = 'modal';
 
-  state = {
-    visible: false,
-    loading: false,
-  };
-
   render() {
     const { cancel } = this;
     const { children, className } = this.props;
@@ -28,7 +23,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
         onCancel={() => cancel!.act({ caller: this.decorating })}
         title={
           <div className="tyr-header tyr-modal-header">
-            {title && <h4>{title}</h4>}
+            {title && <div className="ant-modal-title">{title}</div>}
             {!loading && cancel && (
               <CloseOutlined
                 className="tyr-modal-close-icon"

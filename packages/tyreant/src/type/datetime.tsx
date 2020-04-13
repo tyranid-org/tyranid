@@ -70,7 +70,9 @@ export const dateTimeFilter: Filter = (
         {(searchValue, setSearchValue, search) => (
           <RangePicker
             value={searchValue}
-            format={props.dateFormat || DATETIME_FORMAT}
+            format={
+              props.dateFormat || Tyr.local.dateTimeFormat || DATETIME_FORMAT
+            }
             showTime={{
               defaultValue: [
                 moment('00:00:00', 'HH:mm:ss'),

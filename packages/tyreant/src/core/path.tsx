@@ -22,7 +22,6 @@ import { registerComponent } from '../common';
 import { FormItemProps } from 'antd/lib/form';
 import { TyrSortDirection } from './typedef';
 import { stringWidth, wrappedStringWidth } from '../util/font';
-import { TyrRouter } from './router';
 
 const FormItem = Form.Item;
 
@@ -75,6 +74,15 @@ export interface TyrPathProps<D extends Tyr.Document>
   mode?: 'view' | 'edit' | 'search';
   multiple?: boolean;
   group?: string;
+  pinned?: 'left' | 'right';
+  align?: 'left' | 'right' | 'center';
+  ellipsis?: boolean;
+  editClassName?: string;
+
+  /**
+   * What table column grouping should this be grouped under.
+   */
+  childPaths?: TyrPathProps<D>[];
 
   /**
    * This indicates that the following render function should be used to render values.  If render is specified

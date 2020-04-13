@@ -189,7 +189,7 @@ export namespace Tyr {
     denormal?: MongoDocument;
     link?: string;
     relate?: 'owns' | 'ownedBy' | 'associate';
-    where?: any;
+    where?: MongoQuery | ((this: D, opts: any) => MongoQuery);
 
     pathLabel?: string;
 

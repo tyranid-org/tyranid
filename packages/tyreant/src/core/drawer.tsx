@@ -22,11 +22,6 @@ class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
 > {
   componentName = 'Drawer';
 
-  state = {
-    visible: false,
-    loading: false,
-  };
-
   render() {
     const { children, placement } = this.props;
     const { cancel } = this;

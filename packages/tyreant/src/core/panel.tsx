@@ -7,11 +7,6 @@ import { TyrDecorator, withThemeAndParent } from './decorator';
 class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<D> {
   componentName = 'panel';
 
-  state = {
-    visible: true,
-    loading: false,
-  };
-
   render() {
     const { children, className } = this.props;
     const title = this.title();

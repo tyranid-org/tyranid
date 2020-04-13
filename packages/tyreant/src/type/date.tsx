@@ -35,8 +35,12 @@ export const TyrDateBase = <D extends Tyr.Document = Tyr.Document>(
         autoFocus={props.autoFocus}
         placeholder={props.placeholder}
         onChange={onTypeChangeFunc}
-        format={((props.dateFormat as string) || DATE_FORMAT).toUpperCase()}
-        {...{ tabIndex: props.tabIndex }}
+        format={(
+          (props.dateFormat as string) ||
+          Tyr.local.dateFormat ||
+          DATE_FORMAT
+        ).toUpperCase()}
+        tabIndex={props.tabIndex}
       />
     );
   });

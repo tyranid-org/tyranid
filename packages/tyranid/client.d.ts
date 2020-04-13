@@ -65,6 +65,21 @@ declare module 'tyranid/client' {
        * The currently-logged in user.
        */
       user: User;
+
+      /*
+       * The currently-logged in user's date format.
+       */
+      dateFormat: string;
+
+      /*
+       * The currently-logged in user's time format.
+       */
+      timeFormat: string;
+
+      /*
+       * The currently-logged in user's datetime format.
+       */
+      dateTimeFormat: string;
     }
 
     export const local: Local;
@@ -321,6 +336,10 @@ declare module 'tyranid/client' {
 
       width?: number;
     }
+
+    export type DocumentType<
+      C extends CollectionInstance
+    > = D extends CollectionInstance<infer Document> ? Document : never;
 
     export type IdType<D extends Document> = D extends Document<infer ID>
       ? ID
