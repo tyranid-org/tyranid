@@ -9,7 +9,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
   {
     actions: [
       {
-        traits: ['import'],
+        trait: 'import',
         input: 0,
         name: 'import',
         label: (
@@ -28,7 +28,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         },
       },
       {
-        traits: ['save'],
+        trait: 'save',
         name: 'import',
       },
     ],

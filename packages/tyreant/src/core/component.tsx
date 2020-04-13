@@ -561,7 +561,7 @@ export class TyrComponent<
           def = !!this.parent;
           break;
         default:
-          return !!parentLink;
+          return !!this.parent;
       }
 
       return !traits ? def : traits.includes(trait);
@@ -651,7 +651,7 @@ export class TyrComponent<
         traits?.includes('create'))
     ) {
       enact({
-        traits: ['create'],
+        trait: 'create',
         name: 'create',
         label: 'Create ' + collection.label,
       });
@@ -664,7 +664,7 @@ export class TyrComponent<
         traits?.includes('search'))
     ) {
       enact({
-        traits: ['search'],
+        trait: 'search',
         name: 'search',
         label: 'Search ' + collection.label,
       });
@@ -673,7 +673,7 @@ export class TyrComponent<
     if (auto('view') || auto('edit')) {
       enact({
         name: parentLink ? collection.label : 'edit',
-        traits: [auto('edit') ? 'edit' : 'view'],
+        trait: auto('edit') ? 'edit' : 'view',
         title: !this.canMultiple
           ? (auto('edit') ? 'Edit ' : 'View ') + collection.label
           : Tyr.pluralize(collection.label),
@@ -684,7 +684,7 @@ export class TyrComponent<
 
     if (auto('cancel')) {
       enact({
-        traits: ['cancel'],
+        trait: 'cancel',
         input: 0,
         name: enacted('save') || addingSave ? 'cancel' : 'close',
       });
@@ -692,7 +692,7 @@ export class TyrComponent<
 
     if (addingSave && !enacted('save')) {
       enact({
-        traits: ['save'],
+        trait: 'save',
         name: 'save',
       });
     }

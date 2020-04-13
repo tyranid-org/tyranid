@@ -1861,6 +1861,7 @@ Tyr.connect = Tyr.express /* deprecated */ = connect;
 connect.middleware = local.express.bind(local);
 
 export function handleException(res, err) {
+  // TODO:  add ConflictError() -- using code 419 for when multiple concurrent updates happen
   if (err instanceof UserError) {
     res
       .status(_.get(Tyr.options, 'exceptions.user.httpCode') || 400)

@@ -6,11 +6,11 @@ export const TyrRemove = createForm(
   {
     actions: [
       {
-        traits: ['view'],
+        trait: 'view',
         name: 'remove',
       },
       {
-        traits: ['save'],
+        trait: 'save',
         name: 'remove',
         on: async ({ self, document }) => {
           await document!.$remove();
