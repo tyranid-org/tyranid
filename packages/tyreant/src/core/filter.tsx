@@ -6,7 +6,7 @@ import { FilterTwoTone, SearchOutlined } from '@ant-design/icons';
 import { Button, Popover } from 'antd';
 import {
   ColumnFilterItem,
-  FilterDropdownProps
+  FilterDropdownProps,
 } from 'antd/lib/table/interface';
 
 import { Tyr } from '../tyreant';
@@ -60,7 +60,7 @@ export function TyrFilter<SearchValueType>({
   pathProps,
   filterable,
   filterDdProps,
-  children
+  children,
 }: TyrFilterProps<SearchValueType>) {
   const { path } = pathProps;
   const pathName = path!.name;
@@ -68,6 +68,10 @@ export function TyrFilter<SearchValueType>({
   const [searchValue, setSearchValue] = useState<SearchValueType | undefined>(
     filterable.searchValues[pathName]
   );
+
+  React.useEffect(() => {
+    setSearchValue(filterable.searchValues[pathName]);
+  }, [filterable.searchValues[pathName]]);
 
   const setLiveSetSearchValue = (value: SearchValueType | undefined) => {
     setSearchValue(value);
@@ -139,7 +143,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
   const [visible, setVisible] = useState(false);
   const c = component || useComponent();
   if (!c) return <div className="no-component" />;
-  const paths = c.paths?.filter(f => f.path);
+  const paths = c.paths?.filter((f) => f.path);
   if (!paths) return <div className="no-paths"></div>;
 
   return (
@@ -154,7 +158,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
       content={
         <>
           <div className="tyr-filter-body">
-            {paths.map(f => {
+            {paths.map((f) => {
               const path = f.path!;
 
               const filter = c.getFilter(f);
@@ -179,10 +183,10 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
                           clearFilters: () => {},
                           //filters?: ColumnFilterItem[];
                           //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
-                          connect: connection => {
+                          connect: (connection) => {
                             connections[path.name] = connection;
                           },
-                          visible: true
+                          visible: true,
                         })
                       : filterDropdown}
                   </div>
