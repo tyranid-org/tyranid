@@ -70,6 +70,10 @@ export function TyrFilter<SearchValueType>({
     filterable.searchValues[pathName]
   );
 
+  React.useEffect(() => {
+    setSearchValue(filterable.searchValues[pathName]);
+  }, [filterable.searchValues[pathName]]);
+
   const setLiveSetSearchValue = (value: SearchValueType | undefined) => {
     setSearchValue(value);
 
