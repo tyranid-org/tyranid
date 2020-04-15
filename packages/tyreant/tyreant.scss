@@ -157,7 +157,6 @@
 
 .ant-col.tyr-action-bar {
   display: flex;
-  justify-content: space-between;
   margin-bottom: 10px;
 
   .ant-checkbox-wrapper {
@@ -177,6 +176,8 @@
   }
 
   &.tyr-sectioned {
+    justify-content: space-between;
+
     .tyr-action-bar-section {
       display: flex;
     }
