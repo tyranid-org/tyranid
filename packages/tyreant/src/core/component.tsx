@@ -699,10 +699,15 @@ export class TyrComponent<
 
     // Automatic Actions
 
-    if (!parent && (createAction || searchAction)) {
-      setTimeout(() => {
-        (createAction || searchAction)!.act({});
-      });
+    if (!parent) {
+      if (createAction || searchAction) {
+        setTimeout(() => {
+          (createAction || searchAction)!.act({});
+        });
+      } else {
+        const { decorator } = this;
+        if (decorator) decorator.visible = true;
+      }
     }
   }
 

@@ -662,9 +662,9 @@ export class TyrManyComponent<
         } else if (!this.isLocal) {
           const { decorator } = this;
           if (
+            this.activePaths.length &&
             (!decorator || decorator.visible) &&
-            (!this.parent || this.mounted) &&
-            this.activePaths.length
+            (!this.parent || this.mounted)
           )
             this.findAll();
         }

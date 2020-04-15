@@ -62,91 +62,12 @@ export interface TyrPathProps<D extends Tyr.Document>
     | 'dependencies'
   > {
   path?: Tyr.PathInstance;
-  searchPath?: Tyr.PathInstance;
   paths?: TyrPathExistsProps<D>[];
-  getSearchIds?: (val: any) => any[];
 
+  default?: any;
   label?: string | React.ReactNode;
   className?: string;
   placeholder?: string;
-  dateFormat?: string | string[];
-  default?: any;
-  mode?: 'view' | 'edit' | 'search';
-  multiple?: boolean;
-  group?: string;
-  pinned?: 'left' | 'right';
-  align?: 'left' | 'right' | 'center';
-  ellipsis?: boolean;
-  editClassName?: string;
-
-  /**
-   * What table column grouping should this be grouped under.
-   */
-  childPaths?: TyrPathProps<D>[];
-
-  /**
-   * This indicates that the following render function should be used to render values.  If render is specified
-   * then field is not required/needed.
-   */
-  renderField?: (doc: D, options?: Tyr.Document[]) => React.ReactElement;
-  renderDisplay?: (doc: D) => React.ReactElement | string;
-
-  /**
-   * Do not show this field when creating new documents.
-   */
-  hideOnCreate?: boolean;
-
-  /**
-   * Suppress the default generation of field labels.
-   */
-  noLabel?: boolean;
-
-  // fixed array display format
-  fixedField?: string;
-
-  // key-value display format -- field must be an array
-  keyField?: string;
-  keyFieldClass?: string;
-  keyFieldDefault?: string; // the default value to set the key field control to (label)
-  valueField?: string;
-
-  defaultSort?: TyrSortDirection;
-  defaultFilter?: Object;
-  dropdownClassName?: string;
-  width?: number | string;
-
-  onChange?: (value: any, event: any, props: TyrTypeProps<D>) => void;
-  onStateChange?: (value: FieldState) => void;
-
-  onSelect?: (value: SelectValue, option: any) => any;
-  onDeselect?: (value: SelectValue) => any;
-
-  autoFocus?: boolean;
-  required?: boolean;
-  max?: number;
-  sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
-  searchRange?: [number, number] | [Moment, Moment];
-  tabIndex?: number;
-  noFilter?: boolean;
-  onFilter?: (value: any, doc: Tyr.Document) => boolean;
-  filterOptionRenderer?: (value: any) => React.ReactElement;
-  filterOptionLabel?: (
-    doc: Tyr.Document
-  ) =>
-    | { $id: any; $label: string }
-    | { $id: any; $label: string }[]
-    | undefined;
-  filterValues?: {
-    $id: any;
-    $label: string;
-  }[];
-  searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
-  searchSortById?: boolean;
-  liveSearch?: boolean;
-  defaultHidden?: boolean;
-  readonly?: boolean;
-  isEditable?: (document: Tyr.Document) => boolean;
-  translateForWhiteLabel?: (label: string) => string;
   typeUi?:
     | 'link'
     | 'string'
@@ -158,11 +79,34 @@ export interface TyrPathProps<D extends Tyr.Document>
     | 'datetime'
     | 'email'
     | undefined;
+
+  // FORM ITEMS
+  autoFocus?: boolean;
+  editClassName?: string;
+  /**
+   * Do not show this field when creating new documents.
+   */
+  hideOnCreate?: boolean;
+  isEditable?: (document: Tyr.Document) => boolean;
   mapDocumentValueToForm?: (value: any, document: Tyr.Document) => any;
   mapFormValueToDocument?: (value: any, document: Tyr.Document) => any;
-  labelInValue?: boolean;
-  linkLabels?: { $id: any; $label: string }[];
-  manuallySortedLabels?: boolean;
+  mode?: 'view' | 'edit' | 'search';
+  /**
+   * Suppress the default generation of field labels.
+   */
+  noLabel?: boolean;
+  onChange?: (value: any, event: any, props: TyrTypeProps<D>) => void;
+  readonly?: boolean;
+  tabIndex?: number;
+  validateTrigger?: string | string[] | false;
+
+  // VALIDATION
+  required?: boolean;
+  requiredMessage?: string;
+
+  max?: number;
+  maxMessage?: string;
+
   minimum?: number;
   maximum?: number;
   validator?: (
@@ -170,14 +114,94 @@ export interface TyrPathProps<D extends Tyr.Document>
     value: any,
     callback: (error?: string) => void
   ) => Promise<void> | void;
+
+  // DATE / DATETIME
+  dateFormat?: string | string[];
+
+  // NUMBERS / DATES
+  searchRange?: [number, number] | [Moment, Moment];
+
+  /**
+   * This indicates that the following render function should be used to render values.  If render is specified
+   * then field is not required/needed.
+   */
+  renderField?: (doc: D, options?: Tyr.Document[]) => React.ReactElement;
+  renderDisplay?: (doc: D) => React.ReactElement | string;
+
+  // ARRAY fixed array display format
+  fixedField?: string;
+
+  // ARRAY key-value display format
+  keyField?: string;
+  keyFieldClass?: string;
+  keyFieldDefault?: string; // the default value to set the key field control to (label)
+  valueField?: string;
+
+  // BOOLEAN
   asSwitch?: boolean;
-  allowClear?: boolean;
-  maxMessage?: string;
-  requiredMessage?: string;
-  validateTrigger?: string | string[] | false;
-  textAreaRows?: number;
-  onPressEnter?: () => void;
+  filterValues?: {
+    $id: any;
+    $label: string;
+  }[];
+
+  // LINK
+  dropdownClassName?: string;
+  filterOptionLabel?: (
+    doc: Tyr.Document
+  ) =>
+    | { $id: any; $label: string }
+    | { $id: any; $label: string }[]
+    | undefined;
+  filterOptionRenderer?: (value: any) => React.ReactElement;
+  getSearchIds?: (val: any) => any[];
+  labelInValue?: boolean;
+  linkLabels?: { $id: any; $label: string }[];
+  manuallySortedLabels?: boolean;
+  multiple?: boolean;
+  onDeselect?: (value: SelectValue) => any;
+  onSelect?: (value: SelectValue, option: any) => any;
+  onStateChange?: (value: FieldState) => void;
   optionFilter?: (documents: Tyr.Document[]) => Tyr.Document[];
+  searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
+  searchPath?: Tyr.PathInstance;
+  searchSortById?: boolean;
+  translateForWhiteLabel?: (label: string) => string;
+
+  // STRING (incl EMAIL, PASSWORD, etc.)
+  onPressEnter?: () => void;
+
+  // TEXT
+  textAreaRows?: number;
+
+  // DATE, DATETIME, LINK
+  /**
+   * Whether to show the clear button.
+   */
+  allowClear?: boolean;
+
+  // MANY-COMPONENT
+  liveSearch?: boolean;
+
+  // TABLE
+  align?: 'left' | 'right' | 'center';
+  defaultHidden?: boolean;
+  ellipsis?: boolean;
+  /**
+   * What table column grouping should this be grouped under.
+   */
+  childPaths?: TyrPathProps<D>[];
+  group?: string;
+  pinned?: 'left' | 'right';
+  width?: number | string;
+
+  // SORT
+  defaultSort?: TyrSortDirection;
+  sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
+
+  // FILTER
+  defaultFilter?: Object;
+  noFilter?: boolean;
+  onFilter?: (value: any, doc: Tyr.Document) => boolean;
 }
 
 export type TyrPathExistsProps<D extends Tyr.Document> = Omit<

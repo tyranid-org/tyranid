@@ -13,7 +13,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
   render() {
     const { cancel } = this;
     const { children, className } = this.props;
-    const { visible, loading } = this.state;
+    const { visible, loading } = this;
     const title = this.title();
 
     return (

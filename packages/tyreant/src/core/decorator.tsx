@@ -5,16 +5,13 @@ import { Tyr } from 'tyranid/client';
 import { TyrAction, TyrActionBar, TyrActionFnOpts } from './action';
 import { TyrComponent, useComponent } from './component';
 import { TyrThemeProps, useThemeProps } from './theme';
+import { observable } from 'mobx';
 
 export interface TyrDecoratorProps<D extends Tyr.Document> {
   parent?: TyrComponent<D>;
   className?: string;
   defaultOpen?: boolean;
   title?: string;
-}
-export interface TyrDecoratorState {
-  visible: boolean;
-  loading: boolean;
 }
 
 /**
@@ -25,37 +22,26 @@ export interface TyrDecoratorState {
  */
 export abstract class TyrDecorator<
   D extends Tyr.Document,
-  Props extends TyrDecoratorProps<D> = TyrDecoratorProps<D>,
-  State extends TyrDecoratorState = TyrDecoratorState
-> extends React.Component<Props, State> {
+  Props extends TyrDecoratorProps<D> = TyrDecoratorProps<D>
+> extends React.Component<Props> {
   componentName = 'decorator';
 
-  state = {
-    visible: !!this.props.defaultOpen,
-    loading: false,
-  } as State;
+  @observable
+  visible = !!this.props.defaultOpen;
+
+  @observable
+  loading = false;
 
   decorating!: TyrComponent<D>;
   callerOpts?: TyrActionFnOpts<D>;
 
-  constructor(props: Props, state: State) {
-    super(props, state);
+  constructor(props: Props) {
+    super(props);
 
     const { parent } = props;
     if (parent) {
       this.decorating = parent;
       parent.setDecoratorRef(this);
-    }
-  }
-
-  get visible() {
-    return this.state && this.state.visible;
-  }
-
-  setVisible(visible: boolean) {
-    this.setState({ visible });
-    if (this.decorating) {
-      this.decorating.setState({ visible });
     }
   }
 
@@ -86,11 +72,11 @@ export abstract class TyrDecorator<
 
   open(opts: TyrActionFnOpts<D>) {
     this.callerOpts = opts;
-    this.setVisible(true);
+    this.visible = true;
   }
 
   close() {
-    this.setVisible(false);
+    this.visible = false;
   }
 
   title() {
