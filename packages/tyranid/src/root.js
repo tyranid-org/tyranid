@@ -9,6 +9,7 @@ import './type/boolean';
 import './type/date';
 import './type/datetime';
 import './type/double';
+import './type/duration';
 import './type/email';
 import './type/image';
 import './type/integer';

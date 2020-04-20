@@ -17,6 +17,7 @@ export interface TyrThemeProps {
   boolean?: Partial<TyrTypeProps<any>>;
   date?: Partial<TyrTypeProps<any>>;
   datetime?: Partial<TyrTypeProps<any>>;
+  duration?: Partial<TyrTypeProps<any>>;
   string?: Partial<TyrTypeProps<any>>;
   time?: Partial<TyrTypeProps<any>>;
   drawer?: Partial<TyrDrawerProps<any>>;
@@ -43,18 +44,21 @@ export const useThemeProps = <
   P extends TyrThemeProps[K]
 >(
   type: K,
-  props: P
+  props: P,
+  path?: Tyr.PathInstance
 ) => {
   const themeProps = useContext(ThemeContext);
 
   const tprops = themeProps?.[type];
+  const pProps = path && themeProps?.collections?.[path.collection.def.name]?.paths?.[path.name];
+ 
 
   let baseActions: TyrAction<any>[],
-   overrideActions: TyrAction<any>[];
+    overrideActions: TyrAction<any>[];
   if ((baseActions = (tprops as any)?.actions) && (overrideActions = (props as any)?.actions)) {
-    return { theme: themeProps, ...tprops, ...props, actions: TyrAction.merge(baseActions, overrideActions)} as P;
+    return { theme: themeProps, ...tprops, ...pProps, ...props, actions: TyrAction.merge(baseActions, overrideActions)} as P;
   } else {
-    return (tprops ? { theme: themeProps, ...tprops, ...props } : { theme: themeProps, ...props}) as P;
+    return { theme: themeProps, ...tprops, ...pProps, ...props } as P;
   }
 };
 
@@ -81,45 +85,52 @@ export const withThemedTypeContext = (
   TypeControl: React.ComponentType<TyrTypeProps<any>>
 ) => (rawProps: TyrTypeLaxProps<any>) => {
   const parentProps = useContext(TypeContext);
-  const props = useThemeProps(type as keyof TyrThemeProps, rawProps);
 
-  const form = props.form || parentProps?.form;
-  if (!form) return <div className="no-form" />;
-
-  let document = props.document || (parentProps?.document);
-  if (!document) {
-    const { component } = props;
+  let document = rawProps.document || (parentProps?.document);
+  if (!document && parentProps) {
+    const { component } = parentProps;
     if (component) document = component.document;
-
-    if (!document)
-      return <div className="no-document" />;
   }
 
-  const collection = document.$model;
-
-  const { aux } = props;
-  if (aux) {
-    if (props.path) return <div className="both-aux-and-path-specified" />;
-    if (!type) return <div className="aux-not-valid-on-TyrField" />;
-
+  const { aux } = rawProps;
+  let auxValid = false;
+  if (aux && type && document) {
     document.$model.aux({
       [aux]: { is: type }
     });
+    auxValid = true;
   }
 
-  let path = Tyr.Path.resolve(
-    collection,
-    parentProps?.path,
-    aux || props.path
-  );
-  if (!path) {
-    const p = props.path;
-    if (typeof p === 'string') path = document.$model.paths[p]?.path;
-    else if (p) path = p;
+  const collection = document?.$model;
+  let path: Tyr.PathInstance | undefined;
+
+  if (collection && (!aux || auxValid)) {
+    path = Tyr.Path.resolve(
+      collection,
+      parentProps?.path,
+      aux || rawProps.path
+    );
     if (!path) {
-      return <div className="no-path" />;
+      const p = rawProps.path;
+      if (typeof p === 'string') path = document?.$model.paths[p]?.path;
+      else if (p) path = p;
     }
   }
+
+  // we can't return errors until we've used both hooks
+  const props = useThemeProps(type as keyof TyrThemeProps, rawProps, path);
+
+  if (!path) return <div className="no-path" />;
+  if (!document) return <div className="no-document" />;
+
+  const form = rawProps.form || parentProps?.form;
+  if (!form) return <div className="no-form" />;
+
+  if (aux) {
+    if (rawProps.path) return <div className="both-aux-and-path-specified" />;
+    if (!type) return <div className="aux-not-valid-on-TyrField" />;
+  }
+
 
   let { searchPath } = props;
   if (typeof searchPath === 'string')

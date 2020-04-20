@@ -107,7 +107,7 @@ export namespace Tyr {
     uid: string
   ): { collection: CollectionInstance; id: AnyIdType };
 
-  export function capitalize(name: string): string;
+  export function capitalize(name: string, all?: boolean): string;
   export function kebabize(str: string): string;
   export function labelize(name: string): string;
   export function numberize(numbering: Numbering, num: number): string;
@@ -271,6 +271,8 @@ export namespace Tyr {
      * plug-in. Can also be "true" to auto-detect the current user.
      */
     auth?: Tyr.Document | null;
+
+    user?: User;
 
     /**
      * The permission to use when an auth object is specified.

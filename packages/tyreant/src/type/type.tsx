@@ -288,9 +288,9 @@ export const mapFormValueToDocument = (
 export const onTypeChange = (
   props: TyrTypeProps<any>,
   value: any,
-  event: any
+  event?: any
 ) => {
-  const { document, onChange } = props;
+  const { document } = props;
 
   // if (event) {
   //   event.stopPropagation();
@@ -303,7 +303,7 @@ export const onTypeChange = (
       mapFormValueToDocument(props.path!, value, document, props);
     }
 
-    onChange && onChange(value, event, props);
+    props.onChange?.(value, event, props);
   }
 };
 

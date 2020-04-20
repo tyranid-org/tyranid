@@ -22,6 +22,7 @@ import { registerComponent } from '../common';
 import { FormItemProps } from 'antd/lib/form';
 import { TyrSortDirection } from './typedef';
 import { stringWidth, wrappedStringWidth } from '../util/font';
+import { responsiveMap } from 'antd/lib/_util/responsiveObserve';
 
 const FormItem = Form.Item;
 
@@ -64,6 +65,9 @@ export interface TyrPathProps<D extends Tyr.Document>
   path?: Tyr.PathInstance;
   paths?: TyrPathExistsProps<D>[];
 
+  as?:
+    | 'radio' // links
+    | 'switch'; // booleans
   default?: any;
   label?: string | React.ReactNode;
   className?: string;
@@ -138,7 +142,6 @@ export interface TyrPathProps<D extends Tyr.Document>
   valueField?: string;
 
   // BOOLEAN
-  asSwitch?: boolean;
   filterValues?: {
     $id: any;
     $label: string;
@@ -165,7 +168,6 @@ export interface TyrPathProps<D extends Tyr.Document>
   searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
   searchPath?: Tyr.PathInstance;
   searchSortById?: boolean;
-  translateForWhiteLabel?: (label: string) => string;
 
   // STRING (incl EMAIL, PASSWORD, etc.)
   onPressEnter?: () => void;
@@ -246,8 +248,8 @@ export function pathWidth(pathProps: TyrPathProps<any>, wrapTitle?: boolean) {
   const pt = pathTitle(pathProps);
   if (typeof pt === 'string') {
     const titleWidth =
-        (wrapTitle ? wrappedStringWidth(pt, 15) : stringWidth(pt, 15)) +
-        64 /* padding + sort/filter icon */;
+      (wrapTitle ? wrappedStringWidth(pt, 15) : stringWidth(pt, 15)) +
+      64; /* padding + sort/filter icon */
     return width === undefined || titleWidth > width ? titleWidth : width;
   } else {
     return width;
@@ -257,6 +259,11 @@ export function pathWidth(pathProps: TyrPathProps<any>, wrapTitle?: boolean) {
 export const labelForProps = (props: TyrTypeProps<any>) => {
   const label = props.label;
   return label || props.path!.pathLabel;
+};
+
+export const getValue = (props: TyrTypeProps<any>) => {
+  const { path, document, value } = props;
+  return value ? value.value : path!.get(document);
 };
 
 export const decorateField = (

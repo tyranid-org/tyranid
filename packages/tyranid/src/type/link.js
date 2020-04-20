@@ -140,7 +140,7 @@ Collection.prototype.links = function(search) {
 
   if (!direction || direction === 'outgoing') {
     _.each(this.paths, field => {
-      if (field.link && matchesRelate(field)) {
+      if (field.link && !field.isId() && matchesRelate(field)) {
         links.push(field);
       }
     });
@@ -150,7 +150,7 @@ Collection.prototype.links = function(search) {
     for (const col of Tyr.collections) {
       if (col !== this) {
         _.each(col.paths, field => {
-          if (field.link === this && matchesRelate(field)) {
+          if (field.link === this && !field.isId() && matchesRelate(field)) {
             links.push(field);
           }
         });
@@ -170,9 +170,7 @@ Collection.prototype.findReferences = async function(opts) {
     ids = ids ? [ids] : [];
   }
 
-  if (!ids.length) {
-    return refs;
-  }
+  if (!ids.length) return refs;
 
   const fields = opts.idsOnly ? { _id: 1 } : undefined;
 
@@ -194,7 +192,8 @@ Collection.prototype.findReferences = async function(opts) {
     const queries = [];
 
     _.each(col.paths, field => {
-      if (field.link === this) {
+      if (field.isId()) {
+      } else if (field.link === this) {
         queries.push({ [field.spath]: idMatch });
       } else if (field.type.name === 'uid') {
         if (!uidMatch) {
@@ -244,7 +243,9 @@ Collection.prototype.removeReferences = async function(opts) {
 
     _.each(col.paths, field => {
       if (!field.parent) console.log('field has no parent', field.pathName);
-      if (field.type.name === 'array' && field.of.link === this) {
+      if (field.isId()) {
+        // do nothing
+      } else if (field.type.name === 'array' && field.of.link === this) {
         const { spath, pathName } = field;
         const arrayPath = pathName.replace(/_/g, '$');
         removals.push(

@@ -169,8 +169,10 @@ const Tyr = {
   //
 
   /** @isomorphic */
-  capitalize(name) {
-    return name.length
+  capitalize(name, all) {
+    return all
+      ? _.startCase(name)
+      : name.length
       ? name.substring(0, 1).toUpperCase() + name.substring(1)
       : name;
   },

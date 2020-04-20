@@ -163,7 +163,7 @@ declare module 'tyranid/client' {
       b: AnyIdType | null | undefined
     ): boolean;
 
-    export function capitalize(name: string): string;
+    export function capitalize(name: string, all?: boolean): string;
     export function kebabize(str: string): string;
     export function labelize(name: string): string;
     export function numberize(numbering: Numbering, num: number): string;

@@ -133,8 +133,9 @@ export class TyrFormBase<
                   </Row>
                 );
               })}
-            {typeof children === 'function' && document
-              ? (children as (
+            {typeof children === 'function' ? (
+              document ? (
+                (children as (
                   props: FormRenderComponentProps<D>
                 ) => JSX.Element)(
                   new FormRenderComponentPropsWrapper(
@@ -143,7 +144,12 @@ export class TyrFormBase<
                     this.documents
                   ) as any
                 )
-              : children}
+              ) : (
+                <></>
+              )
+            ) : (
+              children
+            )}
           </TypeContext.Provider>
         </Form>
       );

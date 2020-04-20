@@ -33,6 +33,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
 
   // QUERYING
   collection?: Tyr.CollectionInstance<D>;
+  document?: D;
 
   // PATHS
   paths?: (TyrPathLaxProps<D> | string)[];
@@ -311,12 +312,23 @@ export class TyrComponent<
    */
   findOpts?: any; // Tyr.FindAllOptions
 
+  async findById(id: Tyr.IdType<D>) {
+    const { collection } = this;
+    if (!collection) throw new Tyr.AppError('no collection');
+
+    const updatedDocument = await collection.byId(id);
+    if (updatedDocument) {
+      this.document = updatedDocument;
+      this.refresh();
+    }
+  }
+
   async find(document: D) {
     // TODO:  move this logic to OneComponent?
     const { collection, linkToParent, linkFromParent } = this;
     let updatedDocument: D | null | undefined;
 
-    if (!collection) throw new Error('no collection');
+    if (!collection) throw new Tyr.AppError('no collection');
 
     if (linkToParent) {
       updatedDocument = (await collection.findOne({
@@ -332,12 +344,12 @@ export class TyrComponent<
       })) as D;
     } else {
       if (collection.id !== document.$model.id) {
-        throw new Error('mismatched collection ids');
+        throw new Tyr.AppError('mismatched collection ids');
       }
 
       updatedDocument = (await collection.byId(document.$id)) as D;
       if (!updatedDocument) {
-        throw new Error('could not find document');
+        throw new Tyr.AppError('could not find document');
       }
     }
 
@@ -598,10 +610,6 @@ export class TyrComponent<
               if (!this.document) this.document = this.createDocument(opts);
             };
           }
-        } else if (action.is('create', 'search')) {
-          actFn = opts => {
-            this.document = this.createDocument(opts);
-          };
         } else if (action.is('cancel')) {
           actFn = () => {};
         } else if (action.is('save')) {
@@ -609,6 +617,16 @@ export class TyrComponent<
         }
 
         action.on = actFn;
+      }
+
+      if (action.is('create', 'search')) {
+        action.on = opts => {
+          const d = (opts.document = this.createDocument(opts));
+          const rslt = actFn?.(opts);
+          // delay setting the document until after the create actFn is done to avoid multiple renders
+          this.document = d;
+          return rslt;
+        };
       }
 
       if (action.is('save')) {
@@ -700,6 +718,7 @@ export class TyrComponent<
     // Automatic Actions
 
     if (!parent) {
+      if (props.document) this.document = props.document as D;
       if (createAction || searchAction) {
         setTimeout(() => {
           (createAction || searchAction)!.act({});

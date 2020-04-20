@@ -1,362 +1,39 @@
-import { compact, debounce, uniq } from 'lodash';
+import { compact, uniq } from 'lodash';
 import * as React from 'react';
 import { useState } from 'react';
 
-import { Select, Spin, Menu, Input, Checkbox } from 'antd';
-import { SelectProps, SelectValue } from 'antd/lib/select';
-const { Option } = Select;
+import { Menu, Input, Checkbox } from 'antd';
 const { Search } = Input;
 
 import { Tyr } from 'tyranid/client';
 
-import { mapPropsToForm, onTypeChange, byName, TyrTypeProps } from './type';
+import { byName, TyrTypeProps } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import { TyrPathProps, decorateField } from '../core';
+import { TyrPathProps } from '../core';
 import { TyrFilter, FilterDdProps, Filterable } from '../core/filter';
 import { registerComponent } from '../common';
+import {
+  findById,
+  findByLabel,
+  linkFor,
+  linkFieldFor,
+  sortLabels,
+} from './link.abstract';
+import { TyrLinkAutoComplete } from './link.autocomplete';
+import { TyrLinkRadio } from './link.radio';
+import { TyrLinkSelect } from './link.select';
 
-type ModeOption = SelectProps<any>['mode'];
-
-export interface TyrLinkState {
-  documents: Tyr.Document[];
-  loading: boolean;
-  initialLoading: boolean;
-  viewLabel?: string;
-}
-
-const linkFieldFor = (path: Tyr.PathInstance) => {
-  const field = path.detail;
-
-  return field.type.name === 'array' && field.of!.type.name === 'link'
-    ? field.of
-    : field;
-};
-
-const linkFor = (path: Tyr.PathInstance) => linkFieldFor(path)?.link;
-
-// TODO:  replace with collection.byLabel(label) once that is fixed to perform a case-insensitive search....
-const findByLabel = (
-  props: TyrTypeProps<any>,
-  collection: Tyr.CollectionInstance,
-  label: string
+export const TyrLinkBase = <D extends Tyr.Document = Tyr.Document>(
+  props: TyrTypeProps<D>
 ) => {
-  label = typeof label === 'string' ? label.toLowerCase() : label;
-  const values =
-    props && props.linkLabels ? props.linkLabels : collection.values;
-
-  return values.find(lv => {
-    const l = lv.$label;
-    return l ? l.toLowerCase() === label : false;
-  });
+  if (props.path?.name === '_id') return <TyrLinkAutoComplete {...props} />;
+  else if (props.as === 'radio') return <TyrLinkRadio {...props} />;
+  else return <TyrLinkSelect {...props} />;
 };
-
-const findById = (
-  props: TyrTypeProps<any>,
-  collection: Tyr.CollectionInstance,
-  id: string
-) => {
-  const values =
-    props && props.linkLabels ? props.linkLabels : collection.values;
-  return values.find(lv => lv.$id === id);
-};
-
-const sortLabels = (labels: any[], props: TyrPathProps<any>) => {
-  if (!!props.manuallySortedLabels) {
-    return labels.slice();
-  }
-
-  const searchSortById = !!props.searchSortById;
-  const sortedLabels = labels.slice();
-
-  sortedLabels.sort((a, b) => {
-    if (searchSortById) return a.$id - b.$id;
-    if (a.$label === b.$label) return 0;
-    if (a.$label === undefined && b.$label !== undefined) return -1;
-    if (b.$label === undefined && a.$label !== undefined) return 1;
-
-    const aLabel = a.$label.toLowerCase?.() ?? '';
-    const bLabel = b.$label.toLowerCase?.() ?? '';
-    return aLabel.localeCompare(bLabel);
-  });
-
-  return sortedLabels;
-};
-
-export class TyrLinkBase<
-  D extends Tyr.Document = Tyr.Document
-> extends React.Component<TyrTypeProps<D>, TyrLinkState> {
-  state: TyrLinkState = { documents: [], loading: false, initialLoading: true };
-
-  protected lastFetchId = 0;
-
-  private createOption = (val: Tyr.Document) => {
-    const { $label, $id } = val;
-
-    const key = this.mode === 'tags' ? $label + ($id || '') : $id;
-
-    return (
-      <Option key={key} value={key}>
-        {this.props.searchOptionRenderer
-          ? this.props.searchOptionRenderer(val)
-          : $label}
-      </Option>
-    );
-  };
-
-  link?: Tyr.CollectionInstance;
-  linkField?: Tyr.FieldInstance;
-  mounted = false;
-  mode: ModeOption | undefined = undefined;
-
-  async componentDidMount() {
-    const props = this.props;
-    let searched = false;
-
-    this.mounted = true;
-    const { path, searchPath, mode: controlMode } = props;
-
-    if (!path) throw new Error('TyrLink not passed a path!');
-
-    if (searchPath) {
-      const { detail: searchField } = searchPath;
-      this.linkField =
-        searchField.type.name === 'array' ? searchField.of : searchField;
-
-      this.link = linkFor(searchPath);
-    } else {
-      const { detail: field } = path;
-      this.linkField = field.type.name === 'array' ? field.of : field;
-      this.link = linkFor(path);
-    }
-
-    if (!this.link) {
-      if (props.linkLabels) {
-        this.setState({
-          documents: sortLabels(props.linkLabels, props),
-        });
-      } else {
-        throw new Error('TyrLink passed a non-link');
-      }
-    } else {
-      if (controlMode === 'view') {
-        Tyr.mapAwait(
-          path.tail.link!.idToLabel(path!.get(props.document)),
-          label => this.setState({ viewLabel: label })
-        );
-      } else {
-        if (this.link.isStatic()) {
-          this.setState({
-            documents: sortLabels(this.link.values, props),
-          });
-        } else {
-          await this.search();
-          searched = true;
-        }
-      }
-    }
-
-    const { tail: field } = path!;
-
-    let mode: ModeOption;
-    // TODO:  'tags', 'combobox'
-    if (field.type.name === 'array') {
-      mode =
-        field.of!.link &&
-        field.of!.link!.def.tag &&
-        this.props.mode !== 'search'
-          ? 'tags'
-          : 'multiple';
-
-      // if mode is search, but you do not want multiple selection, then override
-      if (this.props.multiple === false && this.props.mode === 'search') {
-        mode = undefined;
-      }
-    } else {
-      mode = undefined;
-    }
-
-    this.mode = mode;
-
-    if (searched)
-      setTimeout(() => {
-        mapPropsToForm(props);
-        this.setState({ initialLoading: false });
-      }, 0);
-    else {
-      mapPropsToForm(props);
-      this.setState({ initialLoading: false });
-    }
-  }
-
-  getValue() {
-    const { path, document, value } = this.props;
-
-    if (value) {
-      return value.value;
-    }
-
-    return path!.get(document);
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
-  }
-
-  search = debounce(
-    async (text?: string) => {
-      const { document, getSearchIds } = this.props;
-      const link = this.link!;
-
-      if (this.mounted) {
-        this.setState({ loading: true });
-      }
-
-      const fetchId = ++this.lastFetchId;
-
-      const promises: Promise<Tyr.Document[]>[] = [
-        this.linkField!.labels(document!, text),
-      ];
-
-      // include the current value
-      const val = this.getValue();
-
-      if (val) {
-        const fields = link.labelProjection();
-
-        // switch to simple Array.isArray() once we move to mobx 5
-        const ids =
-          typeof val === 'string'
-            ? [val]
-            : getSearchIds
-            ? getSearchIds(val)
-            : val;
-
-        promises.push(link.byIds(ids, { fields }));
-      }
-
-      const [documents, addDocuments] = await Promise.all(promises);
-      if (fetchId !== this.lastFetchId) {
-        return;
-      }
-
-      if (addDocuments) {
-        for (const addDocument of addDocuments) {
-          const existing = documents.find(doc => addDocument.$id === doc.$id);
-          if (!existing) {
-            documents.push(addDocument);
-          }
-        }
-      }
-
-      if (this.mounted) {
-        this.setState({
-          documents: sortLabels(documents, this.props),
-          loading: false,
-        });
-      }
-    },
-    200,
-    { leading: true } // debounce'd async functions need leading: true
-  );
-
-  render(): React.ReactNode {
-    const { props } = this;
-    const { mode: controlMode, onSelect, onDeselect } = props;
-    const { documents, loading, initialLoading, viewLabel } = this.state;
-
-    if (controlMode === 'view') {
-      return decorateField('link', props, () => (
-        <span className="tyr-value">{viewLabel}</span>
-      ));
-    }
-
-    if (initialLoading) return <></>;
-
-    const selectProps: SelectProps<Tyr.AnyIdType | Tyr.AnyIdType[]> = {
-      mode: this.mode,
-      labelInValue: !!props.labelInValue,
-      notFoundContent: loading ? (
-        <Spin size="small" style={{ position: 'static' }} />
-      ) : null,
-      showSearch: true,
-      onSearch: this.search,
-      placeholder: this.props.placeholder,
-      onSelect,
-      onDeselect,
-      autoFocus: this.props.autoFocus,
-      tabIndex: this.props.tabIndex,
-      className: this.props.className,
-      dropdownClassName: this.props.dropdownClassName,
-      filterOption: false,
-      loading: !!initialLoading,
-      allowClear: this.props.allowClear,
-    };
-
-    const onTypeChangeFunc = (ev: any) => {
-      onTypeChange(props, ev, ev);
-      this.props.onChange && this.props.onChange(ev, ev, props);
-    };
-
-    if (this.mode === 'tags') {
-      selectProps.onChange = async value => {
-        const values = value as string[];
-        const link = this.link!;
-        const { onStateChange } = this.props;
-
-        if (link.def.tag) {
-          await Promise.all(
-            values.map(async value => {
-              let label = (this.link as any).byIdIndex[value];
-
-              if (!label) {
-                label = findByLabel(props, this.link!, value);
-
-                if (!label) {
-                  onStateChange && onStateChange({ ready: false });
-
-                  label = await link.save({
-                    [link.labelField.pathName]: value,
-                  });
-
-                  label.$cache();
-                  onStateChange && onStateChange({ ready: true });
-                }
-              }
-            })
-          );
-        }
-
-        onTypeChangeFunc(value);
-      };
-    }
-
-    if (onSelect) {
-      selectProps.onSelect = (value: SelectValue, option: any) => {
-        const v = findByLabel(props, this.link!, value as string);
-
-        onSelect(
-          v
-            ? ({ value: v.$id, label: v.$label, document: v } as SelectValue)
-            : value,
-          option
-        );
-      };
-    }
-
-    return decorateField('link', props, () => (
-      <Select
-        {...selectProps}
-        onChange={selectProps.onChange || onTypeChangeFunc}
-      >
-        {(props.optionFilter ? props.optionFilter(documents) : documents).map(
-          this.createOption
-        )}
-      </Select>
-    ));
-  }
-}
 
 export const TyrLink = withThemedTypeContext('link', TyrLinkBase);
+
+registerComponent('TyrLink', TyrLink);
 
 byName.link = {
   component: TyrLinkBase,
@@ -498,8 +175,6 @@ byName.link = {
       : 'Unknown Link';
   },
 };
-
-registerComponent('TyrLink', TyrLink);
 
 // TODO: use real Tyr.Document's so we can get the portrait image as well ?
 interface LabelDocument {

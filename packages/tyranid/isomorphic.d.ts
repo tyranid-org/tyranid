@@ -277,6 +277,7 @@ export namespace Tyr {
   export interface PathInstance {
     $metaType: 'path';
 
+    collection: CollectionInstance;
     detail: FieldInstance;
     name: string;
     identifier: string;

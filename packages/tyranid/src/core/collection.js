@@ -316,7 +316,7 @@ export default class Collection {
     //
 
     const dp = {};
-    _.assign(dp, documentPrototype);
+    Object.assign(dp, documentPrototype);
 
     // hack so that our custom functions have the proper name
     let CollectionInstance;
@@ -1883,12 +1883,11 @@ export default class Collection {
               throw compiler.err(path, 'Unknown type ' + linkDef);
             }
 
-            if (!(type instanceof Collection)) {
+            if (!(type instanceof Collection))
               throw compiler.err(
                 path,
                 'Links must link to a collection, instead linked to ' + linkDef
               );
-            }
 
             field.link = type;
 
@@ -1907,9 +1906,7 @@ export default class Collection {
                 );
               }
 
-              if (type) {
-                field.type = type;
-              }
+              if (type) field.type = type;
             }
 
             field.type.compile(compiler, field);
@@ -1931,9 +1928,7 @@ export default class Collection {
                 );
               }
 
-              if (type) {
-                field.type = type;
-              }
+              if (type) field.type = type;
             }
           }
 
@@ -1950,6 +1945,11 @@ export default class Collection {
             path,
             'Unknown field definition: ' + JSON.stringify(fieldDef)
           );
+        }
+
+        if (field.name === '_id' && !field.link && collection.labelField) {
+          // an _id can be viewed as a link to its own collection
+          field.link = collection;
         }
 
         if (fieldDef.denormal) {
@@ -2271,7 +2271,7 @@ export default class Collection {
 
       function parseValue(field, value) {
         const link = field.link;
-        if (link && _.isString(value)) {
+        if (link && !field.isId() && typeof value === 'string') {
           const doc = link.byLabel(value);
 
           if (!doc) {
@@ -2290,7 +2290,7 @@ export default class Collection {
       for (hi = 0; hi < hlen; hi++) {
         name = header[hi];
 
-        if (!_.isString(name)) {
+        if (typeof name !== 'string') {
           throw new Error(
             'Expected value ' +
               hi +
@@ -2362,7 +2362,7 @@ export default class Collection {
             );
           }
 
-          collection[_.snakeCase(name).toUpperCase()] = v;
+          collection[Tyr.snakize(name).toUpperCase()] = v;
         }
 
         newValues.push(v);

@@ -24,7 +24,7 @@ export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
       props.onChange && props.onChange(value, ev, props);
     };
 
-    return props.asSwitch ? (
+    return props.as === 'radio' ? (
       <Switch
         //autoComplete="off"
         autoFocus={props.autoFocus}

@@ -83,7 +83,7 @@ export abstract class TyrDecorator<
     //(edit && callerOpts?.document && edit.title) ||
     //(create && create.title) ||
     //(edit && edit.title);
-    return this.props.title || this.decorating.parentAction?.title;
+    return this.props.title ?? this.decorating.parentAction?.title;
   }
 
   footer() {

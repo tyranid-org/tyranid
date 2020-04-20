@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Fragment } from 'react';
 import { Button, Col, Row, notification } from 'antd';
 
-
 import { Tyr } from 'tyranid/client';
 
 import type { TyrComponent } from './component';
@@ -77,9 +76,8 @@ export interface TyrActionOpts<D extends Tyr.Document> {
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
-  render?:
-    //| React.ReactNode
-    | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
+  render?: //| React.ReactNode
+  (opts: TyrActionFnOpts<D>) => React.ReactNode;
   title?: string | React.ReactNode;
   input?: Cardinality;
 
@@ -103,9 +101,7 @@ export interface TyrActionOpts<D extends Tyr.Document> {
    * be applied.  Note that undefined/void is treated as returning true (i.e. the
    * decorated action should be performed.
    */
-  on?: (
-    opts: TyrActionFnOpts<D>
-  ) => void | boolean | Promise<void | boolean>;
+  on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
   hide?: boolean | ((doc: D) => boolean);
 }
 
@@ -143,7 +139,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     }
   }
 
-  static merge<D extends Tyr.Document = Tyr.Document>( base: ActionSet<D>, override: ActionSet<D>): TyrAction<D>[] {
+  static merge<D extends Tyr.Document = Tyr.Document>(
+    base: ActionSet<D>,
+    override: ActionSet<D>
+  ): TyrAction<D>[] {
     const baseActions = TyrAction.parse(base),
       overrideActions = TyrAction.parse(override);
 
@@ -169,14 +168,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
-  renderVal?:
-    | React.ReactNode
-    | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
+  renderVal?: React.ReactNode | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
   title: string | React.ReactNode;
   input: Cardinality;
-  on?: (
-    opts: TyrActionFnOpts<D>
-  ) => void | boolean | Promise<void | boolean>;
+  on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
   hide?: boolean | ((doc: D) => boolean);
   utility?: boolean;
   align?: 'left' | 'center' | 'right';
@@ -224,7 +219,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.title = title || this.labelValue;
     this.on = on;
     this.input =
-      input ?? (traits.includes('create') || traits.includes('search') || render ? 0 : 1);
+      input ??
+      (traits.includes('create') || traits.includes('search') || render
+        ? 0
+        : 1);
     this.hide = hide;
     this.utility = utility;
     this.align = align;
@@ -290,7 +288,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   get className() {
     const { name, traits } = this;
 
-    let s = 'tyr-action'
+    let s = 'tyr-action';
     if (name) s += ' tyr-action-' + Tyr.kebabize(name);
     if (traits?.[0] === 'save' && name !== 'save') s += ' tyr-action-save';
     return s;
@@ -301,11 +299,13 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
     if (renderVal) {
       return (
-        <Fragment key={key}>{
-          typeof renderVal === 'function'
-            ? renderVal(this.wrappedFnOpts(component.actionFnOpts() as any) as any)
-            : renderVal
-        }</Fragment>
+        <Fragment key={key}>
+          {typeof renderVal === 'function'
+            ? renderVal(
+                this.wrappedFnOpts(component.actionFnOpts() as any) as any
+              )
+            : renderVal}
+        </Fragment>
       );
     } else if (this.input === '*') {
       return (
@@ -380,13 +380,20 @@ export interface TyrActionBarProps<D extends Tyr.Document = Tyr.Document> {
   utility?: boolean;
   component: TyrComponent<D>;
   className?: string;
-};
+}
 
-export function TyrActionBar<D extends Tyr.Document>({ actions: propsActions, utility, component, className }: TyrActionBarProps<D>) {
+export function TyrActionBar<D extends Tyr.Document>({
+  actions: propsActions,
+  utility,
+  component,
+  className,
+}: TyrActionBarProps<D>) {
   const u = !utility;
-  const actions = propsActions || component.actions.filter(
-    a => !a.isExit() && a.input !== 1 && a.hide !== true && !a.utility === u
-  );
+  const actions =
+    propsActions ||
+    component.actions.filter(
+      a => !a.isExit() && a.input !== 1 && a.hide !== true && !a.utility === u
+    );
 
   actions.sort((a, b) => Math.sign((a.order ?? 100) - (b.order ?? 100)));
 
@@ -394,15 +401,29 @@ export function TyrActionBar<D extends Tyr.Document>({ actions: propsActions, ut
   const centerActions = actions.filter(a => a.align === 'center');
   const rightActions = actions.filter(a => a.align === 'right');
 
-  const sectionCount = !!leftActions.length as any + !!centerActions.length  + !!rightActions.length;
+  const sectionCount =
+    (!!leftActions.length as any) +
+    !!centerActions.length +
+    !!rightActions.length;
 
   switch (sectionCount) {
     case 0:
       return <></>;
-    case 1: 
+    case 1:
       return (
         <Row>
-          <Col span={24} className={'tyr-action-bar' + (className ? ' ' + className : '')}>
+          <Col
+            span={24}
+            className={
+              'tyr-action-bar' +
+              (className ? ' ' + className : '') +
+              (centerActions.length
+                ? ' tyr-center'
+                : rightActions.length
+                ? ' tyr-right'
+                : '')
+            }
+          >
             {actions.map(a => a.renderFrom(component))}
           </Col>
         </Row>
@@ -410,12 +431,30 @@ export function TyrActionBar<D extends Tyr.Document>({ actions: propsActions, ut
     default:
       return (
         <Row>
-          <Col span={24} className={'tyr-action-bar tyr-sectioned' + (className ? ' ' + className : '')}>
-            {leftActions.length > 0 && <div className="tyr-action-bar-section tyr-left">{leftActions.map(a => a.renderFrom(component))}</div>}
-            {centerActions.length > 0 && <div className="tyr-action-bar-section tyr-center">{centerActions.map(a => a.renderFrom(component))}</div>}
-            {rightActions.length > 0 && <div className="tyr-action-bar-section tyr-right">{rightActions.map(a => a.renderFrom(component))}</div>}
+          <Col
+            span={24}
+            className={
+              'tyr-action-bar tyr-sectioned' +
+              (className ? ' ' + className : '')
+            }
+          >
+            {leftActions.length > 0 && (
+              <div className="tyr-action-bar-section tyr-left">
+                {leftActions.map(a => a.renderFrom(component))}
+              </div>
+            )}
+            {centerActions.length > 0 && (
+              <div className="tyr-action-bar-section tyr-center">
+                {centerActions.map(a => a.renderFrom(component))}
+              </div>
+            )}
+            {rightActions.length > 0 && (
+              <div className="tyr-action-bar-section tyr-right">
+                {rightActions.map(a => a.renderFrom(component))}
+              </div>
+            )}
           </Col>
         </Row>
       );
   }
-};
+}

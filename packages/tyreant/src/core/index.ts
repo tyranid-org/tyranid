@@ -8,6 +8,7 @@ export * from './path';
 export * from './filter';
 export * from './form';
 export * from './kanban';
+export * from './label';
 export * from './modal';
 export * from './page';
 export * from './panel';

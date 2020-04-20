@@ -599,6 +599,12 @@ Object.defineProperties(Path.prototype, {
     },
   },
 
+  collection: {
+    get() {
+      return this.base.collection;
+    },
+  },
+
   groupCount: {
     get() {
       return this._groups?.length || 0;

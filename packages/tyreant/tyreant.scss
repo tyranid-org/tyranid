@@ -1,5 +1,9 @@
 :root {
+  --z-index-popover: 1030;
+
   --background-color: #fff;
+
+  --light-black-color: #3d454c;
 
   --primary-text-color: #fff;
   --primary-background-color: #6a8fbe;
@@ -15,6 +19,9 @@
   --text-label-color: #444;
   --text-highlight-color: #7f3f00;
   --text-delete-color: var(--text-highlight-color);
+
+  --cell-highlight-color: #ebf6ff;
+  --cell-selected-color: #e3eef7;
 
   --table-fixed-column-background-color: #fcfcfc;
 
@@ -158,6 +165,7 @@
 .ant-col.tyr-action-bar {
   display: flex;
   margin-bottom: 10px;
+  width: 100%;
 
   .ant-checkbox-wrapper {
     padding-left: 10px;
@@ -173,6 +181,16 @@
 
   button + button {
     margin-left: 8px;
+  }
+
+  &.tyr-left {
+    justify-content: flex-start;
+  }
+  &.tyr-center {
+    justify-content: flex-center;
+  }
+  &.tyr-right {
+    justify-content: flex-end;
   }
 
   &.tyr-sectioned {
@@ -265,6 +283,67 @@ form textarea.tyr-markup-editor {
 
 .tyr-link-btn {
   text-decoration: none;
+}
+
+//
+// Duration
+//
+
+.tyr-duration {
+  label {
+    color: var(--light-black-color);
+  }
+
+  .expanded {
+    position: absolute;
+    background: #fff;
+    box-shadow: 0 -6px 4px #ddd, -3px 0 4px #ddd, 3px 0 4px #ddd,
+      0px 0px 4px #ddd;
+    z-index: var(--z-index-popover);
+
+    .column {
+      width: 74px;
+      display: inline-block;
+    }
+
+    .column + .column {
+      border-left: 1px solid #ddd;
+    }
+
+    .input-area {
+      height: 28px;
+
+      .column {
+        input {
+          background: var(--cell-highlight-color);
+          border: none;
+          font-size: 14px;
+          padding: 3px 3px 3px 6px;
+          width: 36px;
+          margin-right: 6px;
+        }
+      }
+    }
+
+    .pane {
+      display: flex;
+      border-top: 1px solid #ddd;
+
+      .column {
+        height: 200px;
+        overflow-y: scroll;
+
+        .entry {
+          padding-right: 14px;
+          text-align: right;
+          &:hover,
+          &.selected {
+            background: var(--cell-highlight-color);
+          }
+        }
+      }
+    }
+  }
 }
 
 //
@@ -867,6 +946,16 @@ form textarea.tyr-markup-editor {
 
   .tyr-panel-footer {
     margin-top: 16px;
+  }
+}
+
+.tyr-raised-panel {
+  border: 1px solid var(--light-border-color);
+  padding: 16px;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+
+  .tyr-action-bar {
+    margin-bottom: 0;
   }
 }
 

@@ -132,6 +132,10 @@ export default class Field {
     return this.path.spath;
   }
 
+  isId() {
+    return this.name === '_id';
+  }
+
   isMethod() {
     return !!this.method || this.parent?.isMethod();
   }
