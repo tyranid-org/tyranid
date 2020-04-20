@@ -674,7 +674,12 @@ export class TyrTableBase<
           const render = column.renderDisplay;
 
           return (
-            <div className="tyr-table-cell">
+            <div
+              className={classNames(
+                'tyr-table-cell',
+                column.columnClassName && column.columnClassName(document)
+              )}
+            >
               {render
                 ? render(document)
                 : path

@@ -195,6 +195,7 @@ export interface TyrPathProps<D extends Tyr.Document>
   group?: string;
   pinned?: 'left' | 'right';
   width?: number | string;
+  columnClassName?: (doc: Tyr.Document) => string | undefined;
 
   // SORT
   defaultSort?: TyrSortDirection;
