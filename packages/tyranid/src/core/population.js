@@ -7,7 +7,7 @@ import { resolveProjection } from './projection';
 
 const $all = Tyr.$all;
 
-export default class Population {
+export class Population {
   constructor(path, projection) {
     if (!(path instanceof Path)) {
       throw new Error('parameter path is not an instanceof Path, got: ' + path);
@@ -41,7 +41,7 @@ export default class Population {
       // process simplified array of pathnames format
       return new Population(
         path,
-        projection.map(function(field) {
+        projection.map(function (field) {
           if (!_.isString(field)) {
             throw new Error(
               'The simplified array format must contain an array of strings that contain pathnames.  Use the object format for more advanced queries.'
@@ -57,7 +57,7 @@ export default class Population {
     if (_.isObject(projection)) {
       // process advanced object format which supports nested populations and projections
 
-      const parseProjection = function(base, fields) {
+      const parseProjection = function (base, fields) {
         const projection = [];
 
         for (const key in fields) {
@@ -246,5 +246,53 @@ export default class Population {
     }
 
     return population;
+  }
+}
+
+/** @isomorphic */
+export function visitPopulations(metadata, obj, visitor) {
+  if (!obj) return;
+
+  const { fields } = metadata;
+  if (fields) {
+    for (const fieldName in fields) {
+      const field = fields[fieldName];
+
+      // TODO:  this doesn't handle UIDs
+      switch (field.type.name) {
+        case 'link':
+          const pv = obj[field.populateName];
+          if (pv) visitor(field, pv);
+          break;
+        case 'array':
+          const { of } = field;
+          switch (of.type.name) {
+            case 'link':
+              const pv = obj[field.populateName];
+              if (pv) {
+                for (const apv of pv) {
+                  if (apv) visitor(field, apv);
+                }
+              }
+              break;
+            case 'object':
+              const v = obj[fieldName];
+              if (v) {
+                for (const av of v) {
+                  visitPopulations(of, av, visitor);
+                }
+              }
+              break;
+            case 'array':
+              // TODO
+              break;
+          }
+          break;
+        case 'object':
+          const v = obj[fieldName];
+          if (v) visitPopulations(field, v, visitor);
+          break;
+      }
+    }
   }
 }

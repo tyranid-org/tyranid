@@ -261,7 +261,7 @@ async function log(level, ...opts) {
   return result;
 }
 
-Log.updateDuration = async function(logResultPromise) {
+Log.updateDuration = async function (logResultPromise) {
   let logResult = await logResultPromise;
   if (!logResult) return;
 
@@ -288,34 +288,34 @@ Log.updateDuration = async function(logResultPromise) {
   //});
 };
 
-Log.trace = function() {
+Log.trace = function () {
   return log(LogLevel.TRACE, ...arguments);
 };
 
-Log.log = function() {
+Log.log = function () {
   // TODO:  allow some way to specify the log level in opts ?
   //Log.log = function(level, ...opts) {
 
   return log(LogLevel.LOG, ...arguments);
 };
 
-Log.info = function() {
+Log.info = function () {
   return log(LogLevel.INFO, ...arguments);
 };
 
-Log.warn = function() {
+Log.warn = function () {
   return log(LogLevel.WARN, ...arguments);
 };
 
-Log.error = function() {
+Log.error = function () {
   return log(LogLevel.ERROR, ...arguments);
 };
 
-Log.fatal = function() {
+Log.fatal = function () {
   return log(LogLevel.FATAL, ...arguments);
 };
 
-Log.addEvent = function(name, label, notes) {
+Log.addEvent = function (name, label, notes) {
   if (LogEvent.byId(name)) {
     throw new Error(`Event "${name}" already exists.`);
   }
@@ -334,13 +334,13 @@ function recordStartTime() {
 }
 
 /** @private */
-Log.request = function(req, res) {
+Log.request = function (req, res) {
   recordStartTime.call(req);
 
   //res._startAt = undefined;
   //onHeaders(res, recordStartTime);
 
-  onFinished(res, function() {
+  onFinished(res, function () {
     const diff = process.hrtime(req._startAt);
 
     Log.info({
@@ -358,7 +358,7 @@ Log.request = function(req, res) {
 // Express Routing
 //
 
-Log.routes = function(app, auth) {
+Log.routes = function (app, auth) {
   app
     .route('/api/log/_log')
     .all(auth)
@@ -386,7 +386,7 @@ Log.routes = function(app, auth) {
 // Client
 //
 
-Log.clientCode = function(file) {
+Log.clientCode = function (file) {
   const config = Tyr.config(),
     clientLogLevel = config.clientLogLevel || LogLevel.ERROR,
     consoleLogLevel =
@@ -462,7 +462,7 @@ Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
   return file;
 };
 
-Log.boot = function(stage, pass) {
+Log.boot = function (stage, pass) {
   if (stage === 'compile') {
     const config = Tyr.options;
 

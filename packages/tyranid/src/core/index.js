@@ -150,7 +150,7 @@ function indexCreationConflict(want, have1, have2) {
   `);
 }
 
-Tyr.createIndexes = async function() {
+Tyr.createIndexes = async function () {
   for (const col of Tyr.collections) {
     await syncIndexes(col);
   }

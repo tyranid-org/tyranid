@@ -8,7 +8,7 @@ import {
   DropResult,
   ResponderProvided,
   Droppable,
-  Draggable
+  Draggable,
 } from 'react-beautiful-dnd';
 
 import { Tyr } from 'tyranid/client';
@@ -65,14 +65,8 @@ export class TyrKanbanBase<
     super(props, state);
   }
 
-  async componentDidMount() {
-    super.componentDidMount();
-
-    this.findAll();
-  }
-
-  async postFind() {
-    let { documents } = this;
+  async postQuery() {
+    const documents = this.documents;
     const { ordering } = this.props;
     let { columns } = this.props;
 
@@ -98,9 +92,9 @@ export class TyrKanbanBase<
       columns = columns.values.map((v, idx) => ({
         label: v.$label,
         match: {
-          [name]: v.$id
+          [name]: v.$id,
         },
-        default: idx === 0
+        default: idx === 0,
       }));
     }
 
@@ -118,16 +112,14 @@ export class TyrKanbanBase<
           await d.$update({ [ordering]: 1 });
         }
       } else {
-        documents = this.documents = documents
-          .slice()
-          .sort((a, b) => orderingPath.get(a) - orderingPath.get(b));
+        documents.sort((a, b) => orderingPath.get(a) - orderingPath.get(b));
       }
     }
 
     const tColumns = columns.map((column, index) => ({
       id: String(index),
       def: column,
-      cards: [] as D[] // new Array(this.columns / 2) ?
+      cards: [] as D[], // new Array(this.columns / 2) ?
     }));
 
     const defIdx = columns.findIndex(c => c.default);
@@ -210,24 +202,29 @@ export class TyrKanbanBase<
     const { columns } = this;
     const { cardRenderer } = this.props;
 
-    return this.wrap(() => (
-      <div className="tyr-kanban-container">
-        <TyrFilters />
-        <DragDropContext onDragEnd={this.onDragEnd}>
-          <div className="tyr-kanban">
-            {columns.map((column, index) => (
-              <TyrKanbanColumn
-                key={column.id}
-                column={column}
-                cards={column.cards}
-                cardRenderer={cardRenderer}
-                index={index}
-              />
-            ))}
-          </div>
-        </DragDropContext>
-      </div>
-    ));
+    return this.wrap(() => {
+      // want to delay querying until the control is actually shown
+      if (!this.reacting) setTimeout(() => this.startReacting(), 0);
+
+      return (
+        <div className="tyr-kanban-container">
+          <TyrFilters />
+          <DragDropContext onDragEnd={this.onDragEnd}>
+            <div className="tyr-kanban">
+              {columns.map((column, index) => (
+                <TyrKanbanColumn
+                  key={column.id}
+                  column={column}
+                  cards={column.cards}
+                  cardRenderer={cardRenderer}
+                  index={index}
+                />
+              ))}
+            </div>
+          </DragDropContext>
+        </div>
+      );
+    });
   }
 }
 
@@ -249,7 +246,7 @@ export const TyrKanbanColumn = observer(
   <D extends Tyr.Document>({
     column,
     cards,
-    cardRenderer
+    cardRenderer,
   }: TyrKanbanColumnProps<D>) => {
     const [ref, setRef] = React.useState<HTMLElement | null>(null);
 
@@ -296,7 +293,7 @@ export interface TyrCardProps<D extends Tyr.Document> {
 export const TyrCard = <D extends Tyr.Document>({
   document,
   index,
-  cardRenderer
+  cardRenderer,
 }: TyrCardProps<D>) => {
   const [ref, setRef] = React.useState<HTMLElement | null>(null);
 

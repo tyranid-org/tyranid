@@ -12,8 +12,8 @@ export function add() {
       User = Tyr.byName.user;
     });
 
-    describe('fake.js', function() {
-      describe('Fake data generation', function() {
+    describe('fake.js', function () {
+      describe('Fake data generation', function () {
         const seed = 100;
 
         it('faker: should successfully create valid document', async () => {

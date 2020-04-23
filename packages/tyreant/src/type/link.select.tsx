@@ -7,7 +7,6 @@ const { Option } = Select;
 import { Tyr } from 'tyranid/client';
 
 import { decorateField } from '../core';
-
 import { findByLabel, TyrLinkAbstract } from './link.abstract';
 
 export class TyrLinkSelect<
@@ -20,9 +19,7 @@ export class TyrLinkSelect<
 
     return (
       <Option key={key} value={key}>
-        {this.props.searchOptionRenderer
-          ? this.props.searchOptionRenderer(val)
-          : $label}
+        {this.renderLabel(val)}
       </Option>
     );
   };

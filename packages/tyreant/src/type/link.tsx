@@ -9,8 +9,8 @@ import { Tyr } from 'tyranid/client';
 
 import { byName, TyrTypeProps } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import { TyrPathProps } from '../core';
-import { TyrFilter, FilterDdProps, Filterable } from '../core/filter';
+import { TyrPathProps, TyrComponent, getLabelRenderer } from '../core';
+import { TyrFilter, FilterDdProps } from '../core/filter';
 import { registerComponent } from '../common';
 import {
   findById,
@@ -22,6 +22,7 @@ import {
 import { TyrLinkAutoComplete } from './link.autocomplete';
 import { TyrLinkRadio } from './link.radio';
 import { TyrLinkSelect } from './link.select';
+import { propagateMaybeChanged } from 'mobx/lib/internal';
 
 export const TyrLinkBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -88,13 +89,13 @@ byName.link = {
   /**
    * Note that this filter handles both the "link" and the "array of link" cases
    */
-  filter(filterable, props) {
+  filter(component, props) {
     const path = props.searchPath || props.path!;
 
     return {
       filterDropdown: filterDdProps => (
         <LinkFilterDropdown
-          filterable={filterable}
+          component={component}
           filterDdProps={filterDdProps}
           pathProps={props}
         />
@@ -157,7 +158,7 @@ byName.link = {
 
     if (link.labelField && !link.isStatic()) {
       if (!opts.populate) opts.populate = {};
-      opts.populate[path.spath] = link.labelProjection();
+      Tyr.assignDeep(opts.populate, { [path.spath]: link.labelProjection() });
     }
   },
 
@@ -176,14 +177,8 @@ byName.link = {
   },
 };
 
-// TODO: use real Tyr.Document's so we can get the portrait image as well ?
-interface LabelDocument {
-  $id: string;
-  $label: string;
-}
-
 interface LinkFilterProps {
-  filterable: Filterable;
+  component: TyrComponent<any>;
   pathProps: TyrPathProps<any>;
   filterDdProps: FilterDdProps;
 }
@@ -191,25 +186,25 @@ interface LinkFilterProps {
 const LinkFilterDropdown = ({
   pathProps,
   filterDdProps,
-  filterable,
+  component,
 }: LinkFilterProps) => {
   const path = pathProps.searchPath || pathProps.path!;
   const pathName = path.name;
   const linkField = linkFieldFor(path)!;
   const link = linkField.link!;
-  const { localSearch, localDocuments } = filterable;
+  const { local, documents } = component;
 
-  const [labels, setLabels] = useState<LabelDocument[] | undefined>(undefined);
+  const [labels, setLabels] = useState<Tyr.Document[] | undefined>(undefined);
   const [filterSearchValue, setFilterSearchValue] = React.useState('');
 
-  let initialValues = filterable.searchValues[pathName];
+  let initialValues = component.searchValues[pathName];
   if (!Array.isArray(initialValues))
     initialValues = initialValues ? [initialValues] : [];
   // we clone the searchValues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
   initialValues = Tyr.cloneDeep(initialValues);
 
   const delaySetLabels = (
-    value: React.SetStateAction<LabelDocument[] | undefined>
+    value: React.SetStateAction<Tyr.Document[] | undefined>
   ) => {
     setTimeout(() => setLabels(value));
   };
@@ -217,28 +212,51 @@ const LinkFilterDropdown = ({
   return (
     <TyrFilter<string[]>
       typeName="link"
-      filterable={filterable}
+      component={component}
       filterDdProps={filterDdProps}
       pathProps={pathProps}
     >
-      {(searchValue, setSearchValue, search) => {
+      {(searchValue, setSearchValue) => {
         if (!labels) {
-          if (localSearch && localDocuments && pathProps.filterOptionLabel) {
-            // Go get all the values for the filter
+          if (local) {
+            if (documents) {
+              const allLabels: Tyr.Document[] = [];
 
-            const allLabels: LabelDocument[] = [];
+              if (pathProps.filterOptionLabel) {
+                const allLabels: Tyr.Document[] = [];
 
-            for (const d of localDocuments) {
-              const values = pathProps.filterOptionLabel!(d);
+                for (const d of documents) {
+                  const values = pathProps.filterOptionLabel!(
+                    d
+                  ) as Tyr.Document[];
 
-              if (Array.isArray(values)) {
-                allLabels.push(...values);
-              } else if (values) {
-                allLabels.push(values);
+                  if (Array.isArray(values)) {
+                    allLabels.push(...values);
+                  } else if (values) {
+                    allLabels.push(values);
+                  }
+                }
+              } else {
+                const add = (v: Tyr.AnyIdType) => {
+                  const lv = link.byIdIndex[v];
+                  if (lv) allLabels.push(lv);
+                  //else TODO:  queue up a label find ?
+                };
+
+                for (const d of documents) {
+                  const values = path.get(d);
+                  if (Array.isArray(values)) {
+                    for (const v of values) {
+                      add(v);
+                    }
+                  } else if (values) {
+                    add(values);
+                  }
+                }
               }
-            }
 
-            delaySetLabels(uniq(compact(allLabels), '$id'));
+              delaySetLabels(uniq(compact(allLabels), '$id'));
+            }
           } else {
             if (!link.isStatic()) {
               linkField
@@ -254,7 +272,7 @@ const LinkFilterDropdown = ({
                 });
             } else {
               delaySetLabels(
-                linkFor(path)!.values.map(d => ({
+                link.values.map(d => ({
                   ...d,
                   $id: String(d.$id),
                   $label: d.$label,
@@ -264,9 +282,11 @@ const LinkFilterDropdown = ({
           }
         }
 
+        const labelRenderer = getLabelRenderer(pathProps);
+
         return (
           <>
-            {!pathProps.liveSearch && !link.isStatic() && (
+            {!component.local && !link.isStatic() && (
               <Search
                 placeholder="search for..."
                 size="small"
@@ -334,11 +354,7 @@ const LinkFilterDropdown = ({
                       height: '30px',
                     }}
                   >
-                    <Checkbox checked={isChecked}>
-                      {pathProps.filterOptionRenderer
-                        ? pathProps.filterOptionRenderer(v)
-                        : v.$label}
-                    </Checkbox>
+                    <Checkbox checked={isChecked}>{labelRenderer(v)}</Checkbox>
                   </Menu.Item>
                 );
               })}

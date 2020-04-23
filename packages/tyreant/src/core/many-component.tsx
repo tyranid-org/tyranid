@@ -29,6 +29,8 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
     | Tyr.MongoQuery
     | ((this: TyrManyComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
   projection?: 'auto' | 'all' | string[];
+  populate?: Tyr.Population;
+  local?: boolean;
   documents?: D[] & { count?: number };
   preFind?: (
     this: TyrManyComponent<D>,
@@ -85,7 +87,7 @@ export class TyrManyComponent<
     this.setDefaultSort();
 
     if (documents) {
-      this.setSortedDocuments(documents.slice());
+      this.sort();
 
       if (query) {
         // we need to know the query even for in-memory tables because when we run an csv export we need to query the same rows
@@ -106,17 +108,50 @@ export class TyrManyComponent<
   /**
    * "local" means that the data displayed in the table is passed in and we don't do a find() for it
    */
-  get isLocal() {
-    return !!this.props.documents;
+  get local() {
+    const { props } = this;
+    return !!(props.local || props.documents);
   }
 
-  async requery() {
-    if (this.isLocal) this.refresh();
-    else this.findAll();
+  /**
+   * This has all the documents when local is active.
+   */
+  allDocuments!: D[];
+
+  async query() {
+    if (this.loading) return;
+
+    const { props } = this;
+
+    if (props.route) {
+      Tyreant.router.go({
+        route: props.route,
+        query: this.getUrlQuery(),
+      });
+    } else {
+      if (this.mounted) {
+        if (this.local) {
+          if (!this.allDocuments) {
+            if (props.documents) this.allDocuments = props.documents!;
+            else await this.findAll();
+          }
+
+          this.filterLocal();
+          this.sort();
+        } else {
+          this.findAll();
+        }
+
+        await this.postQuery();
+        //this.refresh();
+      }
+    }
   }
+
+  async postQuery() {}
 
   async buildFindOpts() {
-    const { query: baseQuery } = this.props;
+    const { query: baseQuery, projection, populate } = this.props;
     const { searchValues, sortDirections } = this;
 
     const query: Tyr.MongoQuery = {};
@@ -149,7 +184,6 @@ export class TyrManyComponent<
       sort,
     };
 
-    const { projection } = this.props;
     if (projection !== 'all') {
       const fields = Tyr.projectify(this.activePaths.map(p => p.path));
 
@@ -181,18 +215,18 @@ export class TyrManyComponent<
       opts.limit = limit;
     }
 
+    if (populate) opts.populate = Tyr.cloneDeep(populate);
+
     for (const pathProps of this.paths) {
       const { path } = pathProps;
 
       if (!path) continue;
 
-      const finder = path && getFinder(path),
-        pathName = path.name,
-        searchValue = searchValues[pathName],
-        sortDirection = sortDirections[pathName];
+      const pathName = path.name;
 
-      if (finder) finder(path, opts, searchValue);
+      if (!this.local) getFinder(path)?.(path, opts, searchValues[pathName]);
 
+      const sortDirection = sortDirections[pathName];
       if (sortDirection) sort[pathName] = sortDirection === 'ascend' ? 1 : -1;
     }
 
@@ -212,11 +246,16 @@ export class TyrManyComponent<
       const docs = await collection!.findAll(this.findOpts);
 
       this.count = docs.count!;
-      this.documents = docs;
+
+      if (this.local) {
+        this.allDocuments = docs;
+      } else {
+        this.documents = docs;
+      }
 
       await this.postFind();
 
-      await this.props.postFind?.call(this, this.documents);
+      await this.props.postFind?.call(this, docs);
 
       this.loading = false;
     } catch (err) {
@@ -225,25 +264,6 @@ export class TyrManyComponent<
   }
 
   async postFind() {}
-
-  async execute() {
-    if (this.props.route) {
-      Tyreant.router.go({
-        route: this.props.route,
-        query: this.getUrlQuery(),
-      });
-    } else {
-      if (this.mounted) {
-        if (this.isLocal) {
-          this.setSortedDocuments(this.documents.slice());
-          this.updateCount();
-          this.refresh();
-        } else {
-          this.findAll();
-        }
-      }
-    }
-  }
 
   /*
    * * * PAGINATION
@@ -256,39 +276,7 @@ export class TyrManyComponent<
   skip?: number;
   limit: number = this.defaultPageSize;
 
-  count = this.props.documents?.length || 0;
-
-  updateCount() {
-    if (!this.isLocal) return;
-
-    const { searchValues } = this;
-
-    const checks: ((doc: Tyr.Document) => boolean)[] = [];
-
-    for (const pathProps of this.paths) {
-      const { path } = pathProps;
-
-      if (!path) continue;
-
-      const filter = this.getFilter(pathProps);
-
-      const pathName = path.name,
-        searchValue = searchValues[pathName];
-
-      const onFilter = filter?.onFilter;
-      if (onFilter) checks.push(document => onFilter(searchValue, document));
-    }
-
-    let count = 0;
-
-    OUTER: for (const doc of this.documents) {
-      for (const check of checks) if (!check(doc)) continue OUTER;
-
-      count++;
-    }
-
-    this.count = count;
-  }
+  count = 0;
 
   private paginationItemRenderer = (
     page: number,
@@ -335,11 +323,11 @@ export class TyrManyComponent<
     if (pageSize !== undefined && pageSize !== limit)
       this.limit = pageSize || this.defaultPageSize;
 
-    this.execute();
+    this.query();
   };
 
   currentPageDocuments() {
-    if (this.isLocal && this.limit) {
+    if (this.local && this.limit) {
       const { skip = 0, limit } = this;
       return this.documents.slice(skip, skip + limit);
     } else {
@@ -374,38 +362,14 @@ export class TyrManyComponent<
    * * * FILTERS
    */
 
-  /**
-   * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
-   * search value while it is being edited in the search control, it needs to keep that copy locally.
-   */
-  searchValues: {
-    [pathName: string]: any;
-  } = {};
-
   filters: { [path: string]: ReturnType<Filter> | undefined } = {};
-  getFilter(props: TyrPathProps<D>) {
+  getFilter(props: TyrPathProps<D>): ReturnType<Filter> {
     const path = props.path!;
     const pathName = path.name;
     const existingFilter = this.filters[pathName];
     if (existingFilter) return existingFilter;
 
-    const filterable = {
-      component: this,
-      searchValues: this.searchValues,
-      onSearch: () => {
-        this.skip = 0;
-        this.execute();
-
-        // Save the filters in filter config
-        this.updateConfigFilter(pathName, this.searchValues[pathName]);
-      },
-      localSearch: this.isLocal,
-      localDocuments: this.documents,
-    };
-
-    const filter = (path && getFilter(filterable, props)) || {};
-    this.filters[pathName] = filter;
-    return filter;
+    return (this.filters[pathName] = path && getFilter(this, props));
   }
 
   resetFilters = () => {
@@ -420,6 +384,31 @@ export class TyrManyComponent<
     notifyFilterExists && notifyFilterExists(false);
   };
 
+  filterLocal() {
+    const { searchValues } = this;
+
+    const checks: ((doc: Tyr.Document) => boolean)[] = [];
+
+    for (const pathProps of this.paths) {
+      const { path } = pathProps;
+
+      if (!path) continue;
+
+      const filter = this.getFilter(pathProps);
+
+      const pathName = path.name,
+        searchValue = searchValues[pathName];
+      if (searchValue === undefined) continue;
+
+      const onFilter = filter?.onFilter;
+      if (onFilter) checks.push(document => onFilter(searchValue, document));
+    }
+
+    this.count = (this.documents = this.allDocuments.filter(doc =>
+      checks.every(check => check(doc))
+    )).length;
+  }
+
   /*
    * * * SORTING
    */
@@ -430,7 +419,7 @@ export class TyrManyComponent<
     const { notifySortSet } = this.props;
 
     this.setDefaultSort();
-    this.setSortedDocuments(this.documents.slice());
+    this.sort();
     this.setState({});
 
     const sortColumn = this.paths.find(column => !!column.defaultSort);
@@ -465,8 +454,8 @@ export class TyrManyComponent<
   // We need to do this so that when we enter editing mode
   // and disable sorting, the natural sort of the rows is
   // not any different than what the sort currently is.
-  setSortedDocuments = (docs: D[]) => {
-    let documents = docs;
+  sort() {
+    const documents = this.documents;
     let sortColumn: TyrPathProps<D> | undefined;
 
     let sortColumnName: string | null = null;
@@ -490,7 +479,7 @@ export class TyrManyComponent<
 
       const sortComparator = sortColumn.sortComparator;
 
-      docs.sort((a: Tyr.Document, b: Tyr.Document) => {
+      documents.sort((a: Tyr.Document, b: Tyr.Document) => {
         let result = sortComparator
           ? sortComparator(a, b)
           : path
@@ -511,14 +500,11 @@ export class TyrManyComponent<
       });
 
       if (pathName && this.sortDirections[pathName] === 'descend')
-        docs.reverse();
-
-      documents = docs;
+        documents.reverse();
     }
 
-    this.documents = documents;
     this.count = documents.length;
-  };
+  }
 
   setStableDocuments = (docs: D[]) => {
     const cDocs = this.documents;
@@ -633,42 +619,44 @@ export class TyrManyComponent<
   }
 
   cancelAutorun?: () => void;
-
+  reacting = false;
   startReacting() {
-    if (!this.cancelAutorun) {
-      this.cancelAutorun = autorun(() => {
-        const { route } = this.props;
+    if (this.reacting) return;
+    this.reacting = true;
 
-        this.componentConfig?.fields.forEach(f => {
-          if (f.filter) {
-            this.searchValues[f.name] = f.filter;
+    const { route } = this.props;
+    if (route) {
+      if (!this.cancelAutorun) {
+        this.cancelAutorun = autorun(() => {
+          this.componentConfig?.fields.forEach(f => {
+            if (f.filter) {
+              this.searchValues[f.name] = f.filter;
+            }
+          });
+
+          // TODO:  route only works with non-local so far
+          const location = Tyreant.router.location!;
+          if (location.route === route) {
+            const currentUrl = this.getUrlQuery();
+            this.fromUrlQuery(
+              location.query! as {
+                [name: string]: string;
+              }
+            );
+            const newUrl = this.getUrlQuery();
+
+            if (currentUrl !== newUrl) this.query();
           }
         });
-
-        if (route) {
-          const location = Tyreant.router.location!;
-          if (location.route !== route) return;
-
-          const currentUrl = this.getUrlQuery();
-          this.fromUrlQuery(
-            location.query! as {
-              [name: string]: string;
-            }
-          );
-          const newUrl = this.getUrlQuery();
-
-          if (currentUrl === newUrl) return;
-          this.findAll();
-        } else if (!this.isLocal) {
-          const { decorator } = this;
-          if (
-            this.activePaths.length &&
-            (!decorator || decorator.visible) &&
-            (!this.parent || this.mounted)
-          )
-            this.findAll();
-        }
-      });
+      }
+    } else if (!this.props.documents) {
+      const { decorator } = this;
+      if (
+        this.activePaths.length &&
+        (!decorator || decorator.visible) &&
+        (!this.parent || this.mounted)
+      )
+        this.query();
     }
   }
 

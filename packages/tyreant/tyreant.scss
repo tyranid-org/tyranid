@@ -89,6 +89,22 @@
 // Form Layout & Labels
 //
 
+.ant-checkbox + span {
+  position: relative;
+  top: 3px;
+
+  .tyr-image-label.ant-avatar {
+    position: relative;
+    top: -1px;
+  }
+}
+
+.tyr-image-label.ant-avatar {
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+}
+
 .tyr-form {
   border: none;
   margin-top: 6px;

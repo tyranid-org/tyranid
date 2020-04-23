@@ -351,6 +351,7 @@ export const computed = true;
 export const readonly = true;
 export const required = true;
 export const labelField = true;
+export const labelImageField = true;
 
 global.__TyranidGlobal = exports.Tyr = Tyr;
 

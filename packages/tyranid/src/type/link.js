@@ -66,7 +66,7 @@ const LinkType = new Type({
   },
 });
 
-LinkType.applyWhere = async function(field, doc, query, opts) {
+LinkType.applyWhere = async function (field, doc, query, opts) {
   const where = field.def.where;
   if (where) {
     if (typeof where === 'function') {
@@ -106,7 +106,7 @@ LinkType.applyWhere = async function(field, doc, query, opts) {
   }
 };
 
-Collection.prototype.links = function(search) {
+Collection.prototype.links = function (search) {
   search = search || {};
 
   const relate = search.relate;
@@ -161,7 +161,7 @@ Collection.prototype.links = function(search) {
   return links;
 };
 
-Collection.prototype.findReferences = async function(opts) {
+Collection.prototype.findReferences = async function (opts) {
   const thisCol = this,
     refs = [];
 
@@ -214,7 +214,7 @@ Collection.prototype.findReferences = async function(opts) {
   return refs;
 };
 
-Collection.prototype.removeReferences = async function(opts) {
+Collection.prototype.removeReferences = async function (opts) {
   const thisCol = this;
 
   let ids = opts.ids || opts.id;

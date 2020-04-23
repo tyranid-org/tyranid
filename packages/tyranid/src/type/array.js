@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 
 import Tyr from '../tyr';
 import Type from '../core/type';
-import Population from '../core/population';
+import { Population } from '../core/population';
 import Populator from '../core/populator';
 import { valueFromAST } from 'graphql';
 
@@ -217,7 +217,7 @@ function inverseMongoCompare(a, b) {
   return -1 * mongoCompare(a, b);
 }
 
-Tyr.arraySort = function(array, sortObj) {
+Tyr.arraySort = function (array, sortObj) {
   const sortProps = [];
 
   for (const key in sortObj) {
@@ -249,7 +249,7 @@ Tyr.arraySort = function(array, sortObj) {
   return array;
 };
 
-Tyr._slice = async function(doc, path, opts) {
+Tyr._slice = async function (doc, path, opts) {
   const col = doc.$model,
     field = col.paths[path],
     np = field.path;

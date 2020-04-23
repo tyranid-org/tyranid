@@ -260,7 +260,7 @@ Subscription.on({
 });
 
 //let bootNeeded = 'Subscription needs to be booted';
-Subscription.boot = async function(stage, pass) {
+Subscription.boot = async function (stage, pass) {
   if (stage === 'link' && Tyr.db) {
     //if (bootNeeded) {
     await parseSubscriptions();
@@ -272,7 +272,7 @@ Subscription.boot = async function(stage, pass) {
   }
 };
 
-Collection.prototype.subscribe = async function(query, user, cancel) {
+Collection.prototype.subscribe = async function (query, user, cancel) {
   if (Tyr.logging.trace) {
     Tyr.trace({
       c: this.id,
@@ -373,7 +373,7 @@ Collection.prototype.subscribe = async function(query, user, cancel) {
   }
 };
 
-Subscription.unsubscribe = async function(userId) {
+Subscription.unsubscribe = async function (userId) {
   const rslts = await Subscription.remove({
     query: {
       u: userId,

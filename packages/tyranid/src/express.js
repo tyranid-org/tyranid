@@ -11,7 +11,7 @@ import Collection from './core/collection';
 import Field from './core/field';
 import { Roman } from './math/roman';
 import Path from './core/path';
-import Population from './core/population';
+import { Population, visitPopulations } from './core/population';
 import { AppError } from './core/appError';
 import { UserError } from './core/userError';
 import Type from './core/type';
@@ -97,6 +97,7 @@ class Serializer {
       'keys',
       'label',
       'labelField',
+      'labelImageField',
       'min',
       'minlength',
       'max',
@@ -448,9 +449,11 @@ export function generateClientLibrary() {
     }
   }
 
+  Tyr.isObject = ${es5Fn(Tyr.isObject)};
   Tyr.clear = ${es5Fn(Tyr.clear)};
   Tyr.clone = obj => _.clone(obj);
   Tyr.cloneDeep = obj => _.cloneDeep(obj);
+  Tyr.assignDeep = ${es5Fn(Tyr.assignDeep)};
   Tyr.compactMap = ${es5Fn(Tyr.compactMap)};
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
@@ -915,7 +918,13 @@ export function generateClientLibrary() {
 
     if (def.label === undefined && field.name) def.label = Tyr.labelize(field.name);
 
-    if (def.link) field.link = Tyr.byName[def.link];
+    if (def.link) {
+      field.link = Tyr.byName[def.link];
+      field.populateName = Path.populateNameFor(field.name || parent.name);
+    }
+
+    if (def.labelField) collection.labelField = field;
+    if (def.labelImageField) collection.labelImageField = field;
   }
 
   function compileFields(path, parent, fieldDefs, dynamic, aux, method) {
@@ -1091,12 +1100,6 @@ export function generateClientLibrary() {
     Tyr.byId[CollectionInstance.id] = CollectionInstance;
     byName[def.name] = CollectionInstance;
 
-    var lf = def.labelField;
-    if (lf) {
-      CollectionInstance.labelField = CollectionInstance.paths[lf];
-      delete def.labelField;
-    }
-
     return CollectionInstance;
   }
 
@@ -1105,9 +1108,6 @@ export function generateClientLibrary() {
   Collection.prototype.compile = function() {
 
     var def = this.def;
-    if (def.labelField) {
-      this.labelField = new Path(this, def.labelField).tail;
-    }
 
     this.values = def.values || [];
 
@@ -1492,6 +1492,8 @@ export function generateClientLibrary() {
     }
   }
 
+  const visitPopulations = ${es5Fn(visitPopulations)};
+
   Collection.prototype.cache = function(doc, type, silent) {
     const existing = this.byIdIndex[doc._id];
 
@@ -1504,12 +1506,15 @@ export function generateClientLibrary() {
 
       // TODO:  send existing or doc?
       if (!silent) {
-         fireDocUpdate(existing || (new this(doc)), 'remove');
+        fireDocUpdate(existing || (new this(doc)), 'remove');
       }
 
       return existing;
+    }
+    
+    visitPopulations(this, doc, (field, value) => field.link.cache(value));
 
-    } else if (existing) {
+    if (existing) {
       const fields = this.fields;
       for (const fName in fields) {
         if (fields.hasOwnProperty(fName)) {
@@ -1524,8 +1529,6 @@ export function generateClientLibrary() {
             }
           }
         }
-
-        // TODO:  copy unknown properties?
       }
 
       if (!silent) fireDocUpdate(existing, 'update');
@@ -1614,6 +1617,10 @@ export function generateClientLibrary() {
         file += `
     labelField: ${JSON.stringify(col.labelField.pathName)},`;
 
+      if (col.labelImageField)
+        file += `
+    labelImageField: ${JSON.stringify(col.labelImageField.pathName)},`;
+
       for (const key of [
         'enum',
         'tag',
@@ -1622,6 +1629,7 @@ export function generateClientLibrary() {
         'singleton',
         'internal',
         'generated',
+        'labelImageField',
       ]) {
         if (col.def[key])
           file += `
@@ -1827,9 +1835,7 @@ export default function connect(app, auth, opts) {
         socket.client.request.headers.cookie
       );
       if (rawSessionId && rawSessionId.length) {
-        const sessionId = unescape(rawSessionId[1])
-          .split('.')[0]
-          .slice(2);
+        const sessionId = unescape(rawSessionId[1]).split('.')[0].slice(2);
 
         Tyr.sessions.get(sessionId, async (error, session) => {
           if (session) {
@@ -1886,7 +1892,7 @@ export function handleException(res, err) {
  *
  * auth is deprecated, use opts.auth instead
  */
-Collection.prototype.connect = function({ app, auth, http }) {
+Collection.prototype.connect = function ({ app, auth, http }) {
   const col = this,
     express = col.def.express;
 
@@ -1958,7 +1964,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       }
 
       if (express.rest || express.put) {
-        r.put(async function(req, res) {
+        r.put(async function (req, res) {
           try {
             let doc = await col.fromClient(req.body, undefined, { req });
 
@@ -2095,7 +2101,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
               ),
               opts = {
                 query: { _id: { $in: ids } },
-                fields: { [col.labelField.pathName]: 1 },
+                fields: col.labelProjection(),
                 auth: req.user,
                 user: req.user,
                 req,
@@ -2118,7 +2124,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       r.all(auth);
 
       if (express.rest || express.put) {
-        r.put(async function(req, res) {
+        r.put(async function (req, res) {
           try {
             const opts = req.body;
 
@@ -2141,7 +2147,7 @@ Collection.prototype.connect = function({ app, auth, http }) {
       r.all(auth);
 
       if (express.rest || express.put) {
-        r.put(async function(req, res) {
+        r.put(async function (req, res) {
           try {
             let { doc, opts } = req.body;
 

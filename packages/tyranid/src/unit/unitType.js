@@ -329,7 +329,7 @@ function baseify(components) {
   }
 }
 
-UnitType.byComponents = function(components) {
+UnitType.byComponents = function (components) {
   baseify(components);
 
   const parsed = parseComponents(components);
@@ -346,7 +346,7 @@ UnitType.byComponents = function(components) {
   return ut;
 };
 
-UnitType.parse = function(text) {
+UnitType.parse = function (text) {
   if (!text) {
     return; // undefined
   }
@@ -370,7 +370,7 @@ UnitType.parse = function(text) {
   return ut;
 };
 
-UnitType.boot = function(stage, pass) {
+UnitType.boot = function (stage, pass) {
   if (stage === 'compile' && pass === 1) {
     //let baseCount = 0;
 

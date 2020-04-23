@@ -9,8 +9,8 @@ import { DatePicker } from 'antd';
 const { RangePicker } = DatePicker;
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
-import { TyrFilter, Filter, Filterable, Finder } from '../core/filter';
-import { TyrPathProps, decorateField } from '../core';
+import { TyrFilter } from '../core/filter';
+import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
@@ -55,95 +55,81 @@ function parseSearchValue(value: any) {
     : undefined;
 }
 
-export const dateFilter: Filter = (
-  filterable: Filterable,
-  props: TyrPathProps<any>
-) => {
-  const path = props.path!;
-
-  return {
-    filterDropdown: filterDdProps => (
-      <TyrFilter<RangePickerValue>
-        typeName="date"
-        filterable={filterable}
-        filterDdProps={filterDdProps}
-        pathProps={props}
-      >
-        {(searchValue, setSearchValue, search) => (
-          <RangePicker
-            value={searchValue}
-            format={props.dateFormat || DATE_FORMAT}
-            onChange={v => {
-              setSearchValue(v as RangePickerValue);
-            }}
-            //style={{ width: 188, marginBottom: 8, display: 'block' }}
-          />
-        )}
-      </TyrFilter>
-    ),
-    onFilter: (value: any, doc: Tyr.Document) => {
-      if (value === undefined) return true;
-      value = parseSearchValue(value);
-
-      if (props.onFilter) {
-        return props.onFilter(value, doc);
-      }
-
-      const val = path.get(doc);
-
-      if (val) {
-        const dateVal = moment(val);
-        return (
-          dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1])
-        );
-      }
-
-      return false;
-    },
-    onFilterDropdownVisibleChange: (visible: boolean) => {
-      if (visible) {
-        // setTimeout(() => searchInputRef!.focus());
-      }
-    },
-  };
-};
-
-export const dateFinder: Finder = (
-  path: Tyr.PathInstance,
-  opts: Tyr.anny /* Tyr.Options_Find */,
-  searchValue: Tyr.anny
-) => {
-  const sv = parseSearchValue(searchValue);
-  if (sv) {
-    if (!opts.query) opts.query = {};
-    opts.query[path.name] = {
-      $gte: sv[0],
-      $lte: sv[1],
-    };
-  }
-};
-
 byName.date = {
   component: TyrDateBase,
   mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return value ? moment(value) : null;
   },
-  filter: dateFilter,
-  finder: dateFinder,
+  filter(component, props) {
+    const path = props.path!;
+
+    return {
+      filterDropdown: filterDdProps => (
+        <TyrFilter<RangePickerValue>
+          typeName="date"
+          component={component}
+          filterDdProps={filterDdProps}
+          pathProps={props}
+        >
+          {(searchValue, setSearchValue, search) => (
+            <RangePicker
+              value={searchValue}
+              format={props.dateFormat || DATE_FORMAT}
+              onChange={v => {
+                setSearchValue(v as RangePickerValue);
+              }}
+              //style={{ width: 188, marginBottom: 8, display: 'block' }}
+            />
+          )}
+        </TyrFilter>
+      ),
+      onFilter: (value: any, doc: Tyr.Document) => {
+        if (value === undefined) return true;
+        value = parseSearchValue(value);
+
+        if (props.onFilter) {
+          return props.onFilter(value, doc);
+        }
+
+        const val = path.get(doc);
+
+        if (val) {
+          const dateVal = moment(val);
+          return (
+            dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1])
+          );
+        }
+
+        return false;
+      },
+      onFilterDropdownVisibleChange: (visible: boolean) => {
+        if (visible) {
+          // setTimeout(() => searchInputRef!.focus());
+        }
+      },
+    };
+  },
+  finder(path, opts, searchValue) {
+    const sv = parseSearchValue(searchValue);
+    if (sv) {
+      if (!opts.query) opts.query = {};
+      opts.query[path.name] = {
+        $gte: sv[0],
+        $lte: sv[1],
+      };
+    }
+  },
   cellValue: (
     path: Tyr.PathInstance,
     document: Tyr.Document,
     props: TyrTypeProps<any>
   ) => {
     const v = path.get(document);
-
-    if (!v) {
-      return '';
-    }
-
-    return moment(v).format(
-      ((props.dateFormat as string) || DATE_FORMAT).toUpperCase()
-    );
+    return !v
+      ? ''
+      : moment(v).format(
+          ((props.dateFormat as string) || DATE_FORMAT).toUpperCase()
+        );
   },
 };
 

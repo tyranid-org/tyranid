@@ -25,7 +25,7 @@ Tyr.Secure = Secure;
       then try to query for that _id using the user’s secureQuery() api and see if you can find
 
  */
-Collection.prototype.canInsert = function(document, permissionType, authObj) {
+Collection.prototype.canInsert = function (document, permissionType, authObj) {
   const secure = Tyr.secure;
 
   return secure
@@ -33,7 +33,7 @@ Collection.prototype.canInsert = function(document, permissionType, authObj) {
     : true;
 };
 
-Collection.prototype.secureQuery = function(query, permissionType, authObj) {
+Collection.prototype.secureQuery = function (query, permissionType, authObj) {
   const secure = Tyr.secure;
 
   query = query || {};
@@ -47,7 +47,7 @@ Collection.prototype.secureQuery = function(query, permissionType, authObj) {
   return query;
 };
 
-Collection.prototype.secureFindQuery = function(
+Collection.prototype.secureFindQuery = function (
   query,
   permissionType,
   authObj

@@ -27,3 +27,19 @@ export * from './time';
 export * from './timezone';
 export * from './uid';
 export * from './url';
+
+import { byName } from './type';
+
+for (const typeName in byName) {
+  const typeUi = byName[typeName]!;
+
+  const { extends: parentName } = typeUi;
+  if (parentName) {
+    const parentTypeUi = byName[parentName];
+
+    for (const key in parentTypeUi) {
+      const v = (typeUi as any)[key];
+      if (!v) (typeUi as any)[key] = (parentTypeUi as any)[key];
+    }
+  }
+}

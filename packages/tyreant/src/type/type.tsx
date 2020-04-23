@@ -7,11 +7,11 @@ import { Tyr } from 'tyranid/client';
 import {
   Filter,
   Finder,
-  Filterable,
   TyrPathLaxProps,
   TyrPathProps,
   TyrComponent,
   TyrRouter,
+  TyrThemeProps,
 } from '../core';
 
 export const className = (className: string, props: TyrTypeProps<any>) => {
@@ -88,6 +88,7 @@ export type TyrTypeLaxProps<D extends Tyr.Document> = {
 } & TyrPathLaxProps<D>;
 
 export type TyrTypeProps<D extends Tyr.Document> = {
+  theme?: TyrThemeProps;
   form: FormInstance;
   document?: D;
   component?: TyrComponent;
@@ -97,6 +98,8 @@ export type TyrTypeProps<D extends Tyr.Document> = {
 } & TyrPathProps<D>;
 
 export interface TypeUi {
+  extends?: string; // typeName
+
   // standard form control
   component: React.ComponentType<TyrTypeProps<any>>;
 
@@ -307,11 +310,14 @@ export const onTypeChange = (
   }
 };
 
-export const getFilter = (filterable: Filterable, props: TyrPathProps<any>) => {
+export const getFilter = (
+  component: TyrComponent<any>,
+  props: TyrPathProps<any>
+) => {
   const path = props.path!;
   const { filter } = assertTypeUi(props.typeUi || path.tail.type.name);
 
-  return filter ? filter(filterable, props) : undefined;
+  return filter ? filter(component, props) : undefined;
 };
 
 export const getFinder = (path: Tyr.PathInstance) => {

@@ -413,7 +413,7 @@ function register(unit) {
 }
 
 let bootNeeded = 'UnitType needs to be booted';
-Unit.boot = async function(stage, pass) {
+Unit.boot = async function (stage, pass) {
   const UnitType = Tyr.UnitType,
     UnitSystem = Tyr.UnitSystem;
 
@@ -447,7 +447,7 @@ Unit.boot = async function(stage, pass) {
   return bootNeeded;
 };
 
-Unit.parse = function(name) {
+Unit.parse = function (name) {
   const UnitFactor = Tyr.UnitFactor;
 
   let u = bySymbol[name];

@@ -197,7 +197,7 @@ function Path(base, pathName, opts) {
 
 Path._numberRegex = /^[0-9]+$/;
 
-Path._skipArray = function(field) {
+Path._skipArray = function (field) {
   if (field && !field.type) {
     throw new Error('field missing type');
   }
@@ -211,15 +211,15 @@ Path._skipArray = function(field) {
 
 Path.prototype.metaType = 'path';
 
-Path.prototype.parsePath = function(path, skipArray) {
+Path.prototype.parsePath = function (path, skipArray) {
   return new Path(this, path, { skipArray });
 };
 
-Path.decode = function(path) {
+Path.decode = function (path) {
   return path.replace(/\|/g, '.');
 };
 
-Path.encode = function(path) {
+Path.encode = function (path) {
   return path.replace(/\./g, '|');
 };
 
@@ -231,18 +231,16 @@ Path.encode = function(path) {
  *    3. organization   -> organization
  *
  */
-Path.populateNameFor = function(name, denormal) {
-  const l = name.length;
-
-  if (name.substring(l - 2) === 'Id') {
-    name = name.substring(0, l - 2);
+Path.populateNameFor = function (name, denormal) {
+  if (name.endsWith('Id')) {
+    name = name.substring(0, name.length - 2);
     return denormal ? name + '_' : name;
   }
 
   return denormal ? name + '_' : name + '$';
 };
 
-Path.prototype.walk = function(path /*: string | number*/) {
+Path.prototype.walk = function (path /*: string | number*/) {
   /*
       TODO NAMEPATH-1:
 
@@ -254,7 +252,7 @@ Path.prototype.walk = function(path /*: string | number*/) {
   return this.base.parsePath(this.name + '.' + path);
 };
 
-Path.resolve = function(
+Path.resolve = function (
   collection, // Tyr.CollectionInstance,
   parentPath, //?: Tyr.PathInstance,
   path //?: Tyr.PathInstance | string
@@ -276,13 +274,13 @@ Path.resolve = function(
   return path;
 };
 
-Path.prototype.pathName = function(pi) {
+Path.prototype.pathName = function (pi) {
   return pi <= 1
     ? this.name
     : this.path.slice(0, pi + 1).join('.') + ' in ' + this.name;
 };
 
-Path.prototype.toString = function() {
+Path.prototype.toString = function () {
   return (
     (this.base instanceof Tyr.Collection
       ? this.base.def.name + ':'
@@ -290,14 +288,14 @@ Path.prototype.toString = function() {
   );
 };
 
-Path.prototype.isHistorical = function() {
+Path.prototype.isHistorical = function () {
   const fields = this.fields;
 
   // only the top-most field can be marked "historical"
   return fields.length && fields[0].def.historical;
 };
 
-Path.prototype.resolveObj = function(obj) {
+Path.prototype.resolveObj = function (obj) {
   if (this.collectionSpecified) {
     // singleton behavior
     let values = this.base.values;
@@ -309,7 +307,7 @@ Path.prototype.resolveObj = function(obj) {
   return obj;
 };
 
-Path.prototype.get = function(obj) {
+Path.prototype.get = function (obj) {
   obj = this.resolveObj(obj);
 
   const np = this,
@@ -406,7 +404,7 @@ Path.prototype.get = function(obj) {
   return values;
 };
 
-Path.prototype.set = function(obj, value, opts) {
+Path.prototype.set = function (obj, value, opts) {
   obj = this.resolveObj(obj);
 
   const np = this,
@@ -478,12 +476,12 @@ Path.prototype.set = function(obj, value, opts) {
   walk(0, obj);
 };
 
-Path.prototype.uniq = function(obj) {
+Path.prototype.uniq = function (obj) {
   const val = this.get(obj);
   return _.isArray(val) ? _.uniq(val) : [val];
 };
 
-Path.prototype.groupRange = function(groupNum) {
+Path.prototype.groupRange = function (groupNum) {
   const { _groups } = this;
 
   return groupNum
@@ -491,11 +489,11 @@ Path.prototype.groupRange = function(groupNum) {
     : [0, _groups[0]];
 };
 
-Path.prototype.groupLabel = function(groupNum) {
+Path.prototype.groupLabel = function (groupNum) {
   return this._pathLabel(...this.groupRange(groupNum));
 };
 
-Path.prototype._pathLabel = function(startIdx, endIdx) {
+Path.prototype._pathLabel = function (startIdx, endIdx) {
   const { fields } = this;
   let i = startIdx,
     label = '',
@@ -549,7 +547,7 @@ Path.prototype._pathLabel = function(startIdx, endIdx) {
   return label;
 };
 
-Path.prototype._buildSpath = function(arr) {
+Path.prototype._buildSpath = function (arr) {
   const key = arr ? '_spathArr' : '_spath';
 
   let sp = this[key];
@@ -663,7 +661,7 @@ Object.defineProperties(Path.prototype, {
   },
 });
 
-Path.prototype.projectify = function(projection) {
+Path.prototype.projectify = function (projection) {
   const { detail, spath } = this;
 
   if (detail.db) projection[spath] = 1;
@@ -689,7 +687,7 @@ Path.prototype.projectify = function(projection) {
   //}
 };
 
-Path.taggedTemplateLiteral = function(strings, ...keys) {
+Path.taggedTemplateLiteral = function (strings, ...keys) {
   if (keys.length) {
     let s = '',
       i = 0;

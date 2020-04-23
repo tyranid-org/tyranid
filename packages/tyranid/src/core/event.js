@@ -8,7 +8,7 @@ import Instance from './instance';
 const EVENT_HANDLER_TIMEOUT_MS = 30000;
 
 /** @isomorphic */
-Collection.prototype.on = function(opts) {
+Collection.prototype.on = function (opts) {
   const { type } = opts;
 
   let types;
@@ -68,7 +68,7 @@ Collection.prototype.on = function(opts) {
     });
   }
 
-  return function() {
+  return function () {
     for (const opts of optsArr) {
       const handlers = events[opts.type],
         idx = handlers.indexOf(opts);
@@ -80,7 +80,7 @@ Collection.prototype.on = function(opts) {
   };
 };
 
-Collection.prototype.fire = function(event) {
+Collection.prototype.fire = function (event) {
   event.collection = this;
   return Tyr.Event.fire(event);
 };
@@ -188,9 +188,7 @@ export default class Event {
       query: {
         _id: instanceId || { $ne: Tyr.instanceId },
         lastAliveOn: {
-          $gte: moment()
-            .subtract(30, 'minutes')
-            .toDate(),
+          $gte: moment().subtract(30, 'minutes').toDate(),
         },
       },
     });

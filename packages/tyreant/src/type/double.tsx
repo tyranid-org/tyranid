@@ -7,9 +7,9 @@ import { SliderValue } from 'antd/lib/slider';
 import { Tyr } from 'tyranid/client';
 
 import { mapPropsToForm, onTypeChange } from './type';
-import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
+import { TyrFilter } from '../core/filter';
 import { byName, TyrTypeProps } from './type';
-import { TyrPathProps, decorateField } from '../core';
+import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
@@ -36,8 +36,8 @@ export const TyrDoubleBase = <D extends Tyr.Document = Tyr.Document>(
         placeholder={props.placeholder}
         tabIndex={props.tabIndex}
         step={0.1}
-        {...(props.minimum !== undefined && { min: props.minimum })}
-        {...(props.maximum !== undefined && { max: props.maximum })}
+        {...(props.min !== undefined && { min: props.min })}
+        {...(props.max !== undefined && { max: props.max })}
       />
     );
   });
@@ -45,90 +45,79 @@ export const TyrDoubleBase = <D extends Tyr.Document = Tyr.Document>(
 
 export const TyrDouble = withThemedTypeContext('double', TyrDoubleBase);
 
-export const doubleFilter: Filter = (
-  filterable: Filterable,
-  props: TyrPathProps<any>
-) => {
-  const path = props.path!;
-  const pathName = path.name;
+byName.double = {
+  component: TyrDoubleBase,
+  filter(component, props) {
+    const path = props.path!;
+    const pathName = path.name;
 
-  const sliderProps = {
-    ...(props.searchRange
-      ? { min: props.searchRange[0] as number }
-      : { min: 0 }),
-    ...(props.searchRange
-      ? { max: props.searchRange[1] as number }
-      : { max: 100 }),
-  };
+    const sliderProps = {
+      ...(props.searchRange
+        ? { min: props.searchRange[0] as number }
+        : { min: 0 }),
+      ...(props.searchRange
+        ? { max: props.searchRange[1] as number }
+        : { max: 100 }),
+    };
 
-  const defaultValue: SliderValue =
-    filterable.searchValues[pathName] ||
-    ((props.searchRange
-      ? (props.searchRange as SliderValue)
-      : [0, 100]) as SliderValue);
+    const defaultValue: SliderValue =
+      component.searchValues[pathName] ||
+      ((props.searchRange
+        ? (props.searchRange as SliderValue)
+        : [0, 100]) as SliderValue);
 
-  return {
-    // maybe use a different UI than integer?
-    filterDropdown: filterDdProps => (
-      <TyrFilter<SliderValue>
-        typeName="double"
-        filterable={filterable}
-        filterDdProps={filterDdProps}
-        pathProps={props}
-      >
-        {(searchValue, setSearchValue, search) => (
-          <Slider
-            range
-            {...sliderProps}
-            value={(searchValue || defaultValue) as SliderValue}
-            onChange={(e: SliderValue) => {
-              setSearchValue(e);
-            }}
-            style={{ width: 188 }}
-          />
-        )}
-      </TyrFilter>
-    ),
-    onFilter: (value: number[] | undefined, doc: Tyr.Document) => {
-      if (value === undefined) return true;
-      const intVal = (path.get(doc) as number) || 0;
-      return intVal >= value[0] && intVal <= value[1];
-    },
-    /*
+    return {
+      // maybe use a different UI than integer?
+      filterDropdown: filterDdProps => (
+        <TyrFilter<SliderValue>
+          typeName="double"
+          component={component}
+          filterDdProps={filterDdProps}
+          pathProps={props}
+        >
+          {(searchValue, setSearchValue, search) => (
+            <Slider
+              range
+              {...sliderProps}
+              value={(searchValue || defaultValue) as SliderValue}
+              onChange={(e: SliderValue) => {
+                setSearchValue(e);
+              }}
+              style={{ width: 188 }}
+            />
+          )}
+        </TyrFilter>
+      ),
+      onFilter: (value: number[] | undefined, doc: Tyr.Document) => {
+        if (value === undefined) return true;
+        const intVal = (path.get(doc) as number) || 0;
+        return intVal >= value[0] && intVal <= value[1];
+      },
+      /*
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
         setTimeout(() => searchInputRef!.focus());
       }
     }
     */
-  };
-};
+    };
+  },
+  finder(path, opts, searchValue) {
+    if (searchValue) {
+      if (!opts.query) opts.query = {};
 
-export const doubleFinder: Finder = (
-  path: Tyr.PathInstance,
-  opts: Tyr.anny /* Tyr.Options_Find */,
-  searchValue: Tyr.anny
-) => {
-  if (searchValue) {
-    if (!opts.query) opts.query = {};
+      const searchParams = [
+        { [path.spath]: { $gte: searchValue[0] } },
+        { [path.spath]: { $lte: searchValue[1] } },
+      ];
 
-    const searchParams = [
-      { [path.spath]: { $gte: searchValue[0] } },
-      { [path.spath]: { $lte: searchValue[1] } },
-    ];
-
-    if (opts.query.$and) {
-      opts.query.$and = [...opts.query.$and, ...searchParams];
-    } else {
-      opts.query.$and = searchParams;
+      if (opts.query.$and) {
+        opts.query.$and = [...opts.query.$and, ...searchParams];
+      } else {
+        opts.query.$and = searchParams;
+      }
     }
-  }
-};
-
-byName.double = {
-  component: TyrDoubleBase,
-  filter: doubleFilter,
-  finder: doubleFinder,
+  },
 };
 
 registerComponent('TyrDouble', TyrDouble);

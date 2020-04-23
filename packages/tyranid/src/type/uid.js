@@ -52,12 +52,12 @@ const UidType = new Type({
   },
 });
 
-Collection.prototype.isUid = function(uid) {
+Collection.prototype.isUid = function (uid) {
   return uid && uid.substring(0, 3) === this.id;
 };
 
 /** @isomorphic */
-Tyr.parseUid = function(uid) {
+Tyr.parseUid = function (uid) {
   const colId = uid.substring(0, 3);
 
   const col = Tyr.byId[colId];
@@ -77,12 +77,12 @@ Tyr.parseUid = function(uid) {
 };
 
 /** @isomorphic */
-Tyr.byUid = function(uid, opts) {
+Tyr.byUid = function (uid, opts) {
   const p = Tyr.parseUid(uid);
   return p.collection.byId(p.id, opts);
 };
 
-Tyr.byUids = async function(uids, opts) {
+Tyr.byUids = async function (uids, opts) {
   const byColId = {};
 
   for (const uid of uids) {

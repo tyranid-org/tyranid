@@ -13,7 +13,7 @@ const UserAgent = new Tyr.Collection({
 
 const byString = {};
 
-UserAgent.by = async function(uaString) {
+UserAgent.by = async function (uaString) {
   let ua = byString[uaString];
   if (ua) {
     return ua;

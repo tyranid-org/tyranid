@@ -78,6 +78,7 @@ export class TyrFormBase<
     return (
       <TyrThemedFieldBase<D>
         {...pathProps}
+        theme={this.props.theme}
         form={this.props.form!}
         document={document!}
       />
@@ -158,7 +159,7 @@ export class TyrFormBase<
 
   async submit(): Promise<boolean> {
     const result = await submitForm(this, this.document!);
-    if (result) this.parent?.requery();
+    if (result) this.parent?.query();
     return result;
   }
 }

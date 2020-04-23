@@ -7,8 +7,8 @@ import { Tyr } from 'tyranid/client';
 import { DatePicker } from 'antd';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
-import { TyrFilter, Finder, Filter, Filterable } from '../core/filter';
-import { decorateField, TyrPathProps } from '../core';
+import { TyrFilter } from '../core/filter';
+import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
@@ -53,89 +53,78 @@ function parseSearchValue(value: any) {
     : undefined;
 }
 
-export const dateTimeFilter: Filter = (
-  filterable: Filterable,
-  props: TyrPathProps<any>
-) => {
-  const path = props.path!;
-
-  return {
-    filterDropdown: filterDdProps => (
-      <TyrFilter<RangePickerValue>
-        typeName="datetime"
-        filterable={filterable}
-        filterDdProps={filterDdProps}
-        pathProps={props}
-      >
-        {(searchValue, setSearchValue, search) => (
-          <RangePicker
-            value={searchValue}
-            format={
-              props.dateFormat || Tyr.local.dateTimeFormat || DATETIME_FORMAT
-            }
-            showTime={{
-              defaultValue: [
-                moment('00:00:00', 'HH:mm:ss'),
-                moment('11:59:59', 'HH:mm:ss'),
-              ],
-            }}
-            onChange={v => {
-              setSearchValue(v as RangePickerValue);
-            }}
-            //style={{ width: 188, marginBottom: 8, display: 'block' }}
-          />
-        )}
-      </TyrFilter>
-    ),
-    onFilter: (value: any, doc: Tyr.Document) => {
-      if (value === undefined) return true;
-      value = parseSearchValue(value);
-
-      if (props.onFilter) {
-        return props.onFilter(value, doc);
-      }
-
-      const val = path.get(doc);
-
-      if (val) {
-        const dateVal = moment(val);
-        return (
-          dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1])
-        );
-      }
-
-      return false;
-    },
-    onFilterDropdownVisibleChange: (visible: boolean) => {
-      if (visible) {
-        // setTimeout(() => searchInputRef!.focus());
-      }
-    },
-  };
-};
-
-export const dateTimeFinder: Finder = (
-  path: Tyr.PathInstance,
-  opts: Tyr.anny /* Tyr.Options_Find */,
-  searchValue: Tyr.anny
-) => {
-  const sv = parseSearchValue(searchValue);
-  if (sv) {
-    if (!opts.query) opts.query = {};
-    opts.query[path.spath] = {
-      $gte: sv[0],
-      $lte: sv[1],
-    };
-  }
-};
-
 byName.datetime = {
   component: TyrDateTimeBase,
   mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return moment(value);
   },
-  filter: dateTimeFilter,
-  finder: dateTimeFinder,
+  filter(component, props) {
+    const path = props.path!;
+
+    return {
+      filterDropdown: filterDdProps => (
+        <TyrFilter<RangePickerValue>
+          typeName="datetime"
+          component={component}
+          filterDdProps={filterDdProps}
+          pathProps={props}
+        >
+          {(searchValue, setSearchValue, search) => (
+            <RangePicker
+              value={searchValue}
+              format={
+                props.dateFormat || Tyr.local.dateTimeFormat || DATETIME_FORMAT
+              }
+              showTime={{
+                defaultValue: [
+                  moment('00:00:00', 'HH:mm:ss'),
+                  moment('11:59:59', 'HH:mm:ss'),
+                ],
+              }}
+              onChange={v => {
+                setSearchValue(v as RangePickerValue);
+              }}
+              //style={{ width: 188, marginBottom: 8, display: 'block' }}
+            />
+          )}
+        </TyrFilter>
+      ),
+      onFilter: (value: any, doc: Tyr.Document) => {
+        if (value === undefined) return true;
+        value = parseSearchValue(value);
+
+        if (props.onFilter) {
+          return props.onFilter(value, doc);
+        }
+
+        const val = path.get(doc);
+
+        if (val) {
+          const dateVal = moment(val);
+          return (
+            dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1])
+          );
+        }
+
+        return false;
+      },
+      onFilterDropdownVisibleChange: (visible: boolean) => {
+        if (visible) {
+          // setTimeout(() => searchInputRef!.focus());
+        }
+      },
+    };
+  },
+  finder(path, opts, searchValue) {
+    const sv = parseSearchValue(searchValue);
+    if (sv) {
+      if (!opts.query) opts.query = {};
+      opts.query[path.spath] = {
+        $gte: sv[0],
+        $lte: sv[1],
+      };
+    }
+  },
 };
 
 registerComponent('TyrDateTime', TyrDateTime);

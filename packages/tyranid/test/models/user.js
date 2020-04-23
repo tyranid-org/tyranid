@@ -55,7 +55,7 @@ var User = new tyr.Collection({
       client: true,
       labelField: true,
       db: true,
-      get: function() {
+      get: function () {
         return this.name ? this.name.first + ' ' + this.name.last : undefined;
       },
     },
@@ -106,7 +106,7 @@ var User = new tyr.Collection({
 
     ageAppropriateSecret: {
       is: 'string',
-      client: function() {
+      client: function () {
         return this.age > 30;
       },
     },
@@ -122,7 +122,7 @@ var User = new tyr.Collection({
     homepage: { is: 'url' },
     goldStars: {
       is: 'integer',
-      defaultValue: function() {
+      defaultValue: function () {
         return 0;
       },
     },
@@ -172,7 +172,7 @@ var User = new tyr.Collection({
       age: 1,
     },
   },
-  toClient: function() {
+  toClient: function () {
     if (this.foo) {
       delete this.foo;
     }

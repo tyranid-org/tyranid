@@ -55,12 +55,12 @@ Schema.on({
   },
 });
 
-Collection.prototype.invalidateSchemaCache = function() {
+Collection.prototype.invalidateSchemaCache = function () {
   // TODO:  only invalidate the cache for this collection
   schemaCache = null;
 };
 
-Tyr.invalidateSchemaCache = function() {
+Tyr.invalidateSchemaCache = function () {
   schemaCache = null;
 };
 
@@ -163,7 +163,7 @@ async function ensureCache() {
 }
 
 // undocumented for now since this bypasses schema matching
-Collection.prototype.findField = async function(pathName) {
+Collection.prototype.findField = async function (pathName) {
   const missing = await ensureCache();
 
   for (const schema of schemaCache) {
@@ -189,7 +189,7 @@ Collection.prototype.findField = async function(pathName) {
   //return undefined;
 };
 
-Collection.prototype.fieldsFor = async function(opts) {
+Collection.prototype.fieldsFor = async function (opts) {
   const missing = await ensureCache();
   const fields = {};
 
@@ -219,7 +219,7 @@ Collection.prototype.fieldsFor = async function(opts) {
   return fields;
 };
 
-Collection.prototype.mixin = function(def) {
+Collection.prototype.mixin = function (def) {
   const collection = this;
 
   this.createCompiler(def, 'compile').fields('', collection, def.fields);

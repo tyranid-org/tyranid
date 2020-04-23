@@ -12,7 +12,6 @@ import type { TyrDecoratorProps } from './decorator';
 import type { TyrTableProps } from './table';
 import { TyrAction } from './action';
 
-
 export interface TyrThemeProps {
   boolean?: Partial<TyrTypeProps<any>>;
   date?: Partial<TyrTypeProps<any>>;
@@ -28,11 +27,18 @@ export interface TyrThemeProps {
   panel?: Partial<TyrDecoratorProps<any>>;
   collections?: {
     [CollectionName in keyof Tyr.CollectionsByName]?: {
+      labelRenderer?: (
+        document: Tyr.DocumentType<Tyr.CollectionsByName[CollectionName]>
+      ) => JSX.Element;
       paths?: {
-        [pathName: string]: Partial<TyrPathLaxProps<Tyr.DocumentType<Tyr.CollectionsByName[CollectionName]>>>
-      }
-    }
-  }
+        [pathName: string]: Partial<
+          TyrPathLaxProps<
+            Tyr.DocumentType<Tyr.CollectionsByName[CollectionName]>
+          >
+        >;
+      };
+    };
+  };
 }
 
 export const ThemeContext = React.createContext<TyrThemeProps | undefined>(
@@ -50,13 +56,22 @@ export const useThemeProps = <
   const themeProps = useContext(ThemeContext);
 
   const tprops = themeProps?.[type];
-  const pProps = path && themeProps?.collections?.[path.collection.def.name]?.paths?.[path.name];
- 
+  const pProps =
+    path &&
+    themeProps?.collections?.[path.collection.def.name]?.paths?.[path.name];
 
-  let baseActions: TyrAction<any>[],
-    overrideActions: TyrAction<any>[];
-  if ((baseActions = (tprops as any)?.actions) && (overrideActions = (props as any)?.actions)) {
-    return { theme: themeProps, ...tprops, ...pProps, ...props, actions: TyrAction.merge(baseActions, overrideActions)} as P;
+  let baseActions: TyrAction<any>[], overrideActions: TyrAction<any>[];
+  if (
+    (baseActions = (tprops as any)?.actions) &&
+    (overrideActions = (props as any)?.actions)
+  ) {
+    return {
+      theme: themeProps,
+      ...tprops,
+      ...pProps,
+      ...props,
+      actions: TyrAction.merge(baseActions, overrideActions),
+    } as P;
   } else {
     return { theme: themeProps, ...tprops, ...pProps, ...props } as P;
   }
@@ -86,7 +101,7 @@ export const withThemedTypeContext = (
 ) => (rawProps: TyrTypeLaxProps<any>) => {
   const parentProps = useContext(TypeContext);
 
-  let document = rawProps.document || (parentProps?.document);
+  let document = rawProps.document || parentProps?.document;
   if (!document && parentProps) {
     const { component } = parentProps;
     if (component) document = component.document;
@@ -96,7 +111,7 @@ export const withThemedTypeContext = (
   let auxValid = false;
   if (aux && type && document) {
     document.$model.aux({
-      [aux]: { is: type }
+      [aux]: { is: type },
     });
     auxValid = true;
   }
@@ -131,7 +146,6 @@ export const withThemedTypeContext = (
     if (!type) return <div className="aux-not-valid-on-TyrField" />;
   }
 
-
   let { searchPath } = props;
   if (typeof searchPath === 'string')
     searchPath = Tyr.Path.resolve(
@@ -154,6 +168,6 @@ export const withThemedTypeContext = (
     document,
     path,
     searchPath,
-    component: parentProps && parentProps.component
+    component: parentProps && parentProps.component,
   });
 };

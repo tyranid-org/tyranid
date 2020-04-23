@@ -22,7 +22,7 @@ let compiled = false;
 
 let eventdb;
 
-Instance.boot = async function(stage /*, pass*/) {
+Instance.boot = async function (stage /*, pass*/) {
   if (!Instance.db) {
     return;
   }

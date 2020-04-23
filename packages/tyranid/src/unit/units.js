@@ -146,7 +146,7 @@ function make(unitDegrees) {
   return units;
 }
 
-Units.parse = function(text) {
+Units.parse = function (text) {
   if (!text) {
     return; // undefined
   }
@@ -268,7 +268,7 @@ class UnitConversionError {
 const INCOMPATIBLE = 'INCOMPATIBLE',
   MANUAL = 'MANUAL';
 
-Units.prototype.convert = function(value, targetUnit) {
+Units.prototype.convert = function (value, targetUnit) {
   if (targetUnit === this) {
     return value;
   }
@@ -487,12 +487,12 @@ Units.prototype.convert = function(value, targetUnit) {
 //  Unit Arithmetic
 //
 
-Units.prototype.add = function(value, addUnit, addValue) {
+Units.prototype.add = function (value, addUnit, addValue) {
   addValue = addUnit.convert(addValue, this);
   return value + addValue;
 };
 
-Units.prototype.subtract = function(value, subUnit, subValue) {
+Units.prototype.subtract = function (value, subUnit, subValue) {
   subValue = subUnit.convert(subValue, this);
   return value - subValue;
 };
@@ -544,15 +544,15 @@ function mult(name, units, by) {
   return is;
 }
 
-Units.prototype.multiply = function(byUnits) {
+Units.prototype.multiply = function (byUnits) {
   return mult('multipliers', this, byUnits);
 };
 
-Units.prototype.divide = function(byUnits) {
+Units.prototype.divide = function (byUnits) {
   return mult('divisors', this, byUnits);
 };
 
-Units.prototype.invert = function() {
+Units.prototype.invert = function () {
   let inversion = this.inversion;
   if (!inversion) {
     const components = new Array(this.components.length);
@@ -569,7 +569,7 @@ Units.prototype.invert = function() {
 // Normals
 //
 
-Units.prototype.normal = function() {
+Units.prototype.normal = function () {
   const Unit = Tyr.Unit;
   let normal = this._normal;
 
@@ -589,7 +589,7 @@ Units.prototype.normal = function() {
 // Units formatting
 //
 
-Units.prototype.toString = function() {
+Units.prototype.toString = function () {
   let str = '',
     positiveFound = false,
     inverse = false,

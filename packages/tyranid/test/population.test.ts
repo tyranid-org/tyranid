@@ -4,7 +4,7 @@ import * as mongodb from 'mongodb';
 
 import { Tyr } from 'tyranid';
 
-import Population from '../src/core/population';
+import { Population } from '../src/core/population';
 
 const { ObjectId } = mongodb;
 

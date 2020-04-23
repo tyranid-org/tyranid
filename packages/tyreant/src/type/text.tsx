@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { Tyr } from 'tyranid/client';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
-import { stringFilter, stringFinder } from './string';
 import { withThemedTypeContext } from '../core/theme';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
@@ -64,9 +63,8 @@ export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
 export const TyrText = withThemedTypeContext('text', TyrTextBase);
 
 byName.text = {
+  extends: 'string',
   component: TyrTextBase,
-  filter: stringFilter,
-  finder: stringFinder,
 };
 
 registerComponent('TyrText', TyrText);

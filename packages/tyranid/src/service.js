@@ -14,7 +14,7 @@ export function instrumentServerServices(col) {
         method.route = `/api/${col.def.name}/${methodName}`;
       }
 
-      col[methodName] = function() {
+      col[methodName] = function () {
         return col.service[methodName].apply(
           {
             source: 'server',

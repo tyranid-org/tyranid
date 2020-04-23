@@ -27,7 +27,7 @@ export function add() {
       User = Tyr.byName.user;
     });
 
-    describe('unit types', function() {
+    describe('unit types', function () {
       it('should parse base and composite unit types', () => {
         expect(UnitType.parse('l').name === 'length').to.be.true;
         expect(UnitType.parse('l^2').name === 'area').to.be.true;
@@ -44,7 +44,7 @@ export function add() {
       });
     });
 
-    describe('units', function() {
+    describe('units', function () {
       it('should parse unit factors', () => {
         let u = Unit.parse('km');
         expect(u.abbreviation).to.be.eql('km');

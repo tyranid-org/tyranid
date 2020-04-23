@@ -105,6 +105,10 @@ declare module 'tyranid/client' {
       [key: string]: number;
     }
 
+    export interface Population {
+      [key: string]: number | '$all' | Population;
+    }
+
     export interface Class<T> {
       new (...args: any[]): T;
     }
@@ -148,6 +152,7 @@ declare module 'tyranid/client' {
       : B extends undefined
       ? never
       : B)[];
+    export function assignDeep(obj: object, ...sources: object[]): object;
     export function clone<T>(obj: T): T;
     export function cloneDeep<T>(obj: T): T;
     export const collections: CollectionInstance[] & CollectionsByClassName;
@@ -275,6 +280,7 @@ declare module 'tyranid/client' {
       step?: number;
 
       labelField?: boolean | { uses: string[] };
+      labelImageField?: boolean | { uses: string[] };
       pattern?: RegExp;
       minlength?: number;
       maxlength?: number;
@@ -325,6 +331,8 @@ declare module 'tyranid/client' {
       keys?: this;
       fields?: { [key: string]: this };
       method: string;
+      populateName?: string;
+      width?: number;
 
       format(value: any): string;
       labelify(value: any): Promise<any>;
@@ -333,8 +341,6 @@ declare module 'tyranid/client' {
         document: D,
         opts: { trait?: ActionTrait }
       ): Promise<string | false | undefined> | string | false | undefined;
-
-      width?: number;
     }
 
     export type DocumentType<
@@ -381,6 +387,7 @@ declare module 'tyranid/client' {
       isUid(uid: string): boolean;
       label: string;
       labelField: any;
+      labelImageField: any;
       labelFor(doc: D | object): string;
       labelProjection(): any; // Mongo Projection
       labels(text: string): Promise<D[]>;

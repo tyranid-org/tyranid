@@ -437,6 +437,7 @@ const Tyr = {
     return true;
   },
 
+  /** @isopmorphic */
   isObject(value) {
     // want to treat ObjectIds as primitive values in most places
     return (
@@ -450,11 +451,45 @@ const Tyr = {
     return _.isObject(value) && value.constructor.name === 'ObjectID';
   },
 
+  /** @isopmorphic */
   cloneDeep(obj) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
     return _.cloneDeepWith
       ? _.cloneDeepWith(obj, cloneCustomizer)
       : _.cloneDeep(obj, cloneCustomizer);
+  },
+
+  /**
+   * Target is modified in place, sources are not modified.
+   *
+   * When merging, if the target has an object where the source has a value, the object will be preserved.
+   *
+   * NOTE:  this function currently merges arrays by index .. i.e. Tyr.assignDeep([1,2], [2,3,4]) === [2,3,4]
+   *
+   * @isopmorphic
+   */
+  assignDeep(target, ...sources) {
+    for (const source of sources) {
+      if (Tyr.isObject(source)) {
+        for (const key in source) {
+          const sv = source[key],
+            tv = target[key];
+
+          if (Tyr.isObject(sv)) {
+            if (Tyr.isObject(tv)) {
+              Tyr.assignDeep(tv, sv);
+            } else {
+              // overwrite target's value with source's object
+              target[key] = Tyr.cloneDeep(sv);
+            }
+          } else if (!Tyr.isObject(tv)) {
+            target[key] = sv;
+            //} else {
+            // target is an object and source is not, so do nothing because we want to prefer objects over values
+          }
+        }
+      }
+    }
   },
 
   parseBson(value) {
@@ -546,7 +581,7 @@ const Tyr = {
  * @param s the specificiation
  * @param v the value
  */
-const isCompliant = (Tyr.isCompliant = function(s, v) {
+const isCompliant = (Tyr.isCompliant = function (s, v) {
   if (arguments.length === 1) {
     return v2 => isCompliant(s, v2);
   }

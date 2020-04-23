@@ -194,7 +194,7 @@ export async function parseSaveObj(col, obj, opts) {
     insertObj.updatedAt = obj.updatedAt;
   }
 
-  _.each(col.denormal, function(field, name) {
+  _.each(col.denormal, function (field, name) {
     // we only need to copy it if it is a top-level level, nested values will be copied below
     if (name.indexOf('.') < 1) {
       name = Path.populateNameFor(name, true);
@@ -202,7 +202,7 @@ export async function parseSaveObj(col, obj, opts) {
     }
   });
 
-  _.each(fields, function(field, name) {
+  _.each(fields, function (field, name) {
     const fieldDef = field.def;
 
     if (fieldDef.db !== false && !(fieldDef.get || fieldDef.getServer)) {
@@ -312,9 +312,15 @@ export function toClient(col, doc, opts) {
       return populate[baseKey] || populate.includes?.(baseKey);
     } else {
       if (!proj) return key !== '_history' && key !== '$options';
+      if (key === '_id') return proj[key] || proj[key] === undefined;
 
       const v = proj[key];
-      return v === undefined ? key === '_id' : v;
+      if (v !== undefined) return true;
+
+      if (populate) {
+        const unpopulateName = key + 'Id';
+        return populate[unpopulateName] || populate.includes?.(unpopulateName);
+      }
     }
   }
 

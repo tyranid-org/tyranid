@@ -29,11 +29,18 @@ import { stream } from 'exceljs';
 export const generated = true;
 
 /**
- * Minor shorthand for declaring a readonly property in a field definition.
+ * Minor shorthand for declaring a label field property in a field definition.
  *
  * i.e. "..., labelField ..." instead of "..., labelField: true, ..."
  */
 export const labelField = true;
+
+/**
+ * Minor shorthand for declaring a label image field property in a field definition.
+ *
+ * i.e. "..., labelImageField ..." instead of "..., labelImageField: true, ..."
+ */
+export const labelImageField = true;
 
 /**
  * Minor shorthand for declaring a readonly property in a field definition.
@@ -186,6 +193,7 @@ export namespace Tyr {
   export function indexOf(arr: any[], item: any): number;
   export function addToSet(set: any[], item: any): void;
   export function pullAll(arr: any[], item: any): void;
+  export function assignDeep(obj: object, ...sources: object[]): object;
   export function clone<T>(obj: T): T;
   export function cloneDeep<T>(obj: T): T;
   export function arraySort(arr: any[], order: { [key: string]: number }): void;
@@ -969,6 +977,7 @@ export namespace Tyr {
 
     label: string;
     labelField: FieldInstance<D>;
+    labelImageField: FieldInstance<D>;
     labelFor(doc: MaybeRawDocument): string;
     labels(text: string): Promise<D[]>;
     labels(ids: string[]): Promise<D[]>;
@@ -1092,6 +1101,7 @@ export namespace Tyr {
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance<D> };
     method: string;
+    populateName?: string;
 
     format(value: any): string;
     labelify(value: any): Promise<any>;

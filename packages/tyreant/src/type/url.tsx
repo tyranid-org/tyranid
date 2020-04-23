@@ -6,7 +6,6 @@ import { Input } from 'antd';
 import { Tyr } from 'tyranid/client';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
-import { stringFilter, stringFinder } from './string';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
@@ -38,9 +37,8 @@ export const TyrUrlBase = <D extends Tyr.Document = Tyr.Document>(
 export const TyrUrl = withThemedTypeContext('url', TyrUrlBase);
 
 byName.url = {
+  extends: 'string',
   component: TyrUrlBase,
-  filter: stringFilter,
-  finder: stringFinder,
 };
 
 registerComponent('TyrUrl', TyrUrl);

@@ -50,7 +50,7 @@ function init() {
 }
 
 Object.defineProperty(Tyr, 'local', {
-  value: function() {
+  value: function () {
     if (!initialized) {
       init();
     }

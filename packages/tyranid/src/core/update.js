@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 //import Tyr from '../tyr';
 import Collection from './collection';
 
-Collection.prototype.fromClientUpdate = function(update) {
+Collection.prototype.fromClientUpdate = function (update) {
   const col = this;
 
   function convertValue(field, value) {

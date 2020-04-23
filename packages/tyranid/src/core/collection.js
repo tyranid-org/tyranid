@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import Tyr from '../tyr';
 import Component from './component';
 import Type from './type';
-import Population from './population';
+import { Population } from './population';
 import Populator from './populator';
 import Path from './path';
 import Field from './field';
@@ -400,7 +400,7 @@ export default class Collection {
 
     defineDocumentProperties(dp);
 
-    _.each(def.fields, function(fieldDef, name) {
+    _.each(def.fields, function (fieldDef, name) {
       const get = fieldDef.getServer || fieldDef.get,
         set = fieldDef.setServer || fieldDef.set,
         fn = fieldDef.fn || fieldDef.fnClient || fieldDef.fnServer,
@@ -448,7 +448,7 @@ export default class Collection {
       }
     });
 
-    _.each(def.methods, function(method, name) {
+    _.each(def.methods, function (method, name) {
       if (!method.fn && !method.fnClient && !method.fnServer) {
         throw new Error(
           'Method ' +
@@ -623,7 +623,7 @@ export default class Collection {
       matchLower = n.toLowerCase();
 
     if (!collection.isDb()) {
-      const value = _.find(collection.def.values, function(v) {
+      const value = _.find(collection.def.values, function (v) {
         const name = v[findName];
         return name && name.toLowerCase() === matchLower;
       });
@@ -659,6 +659,9 @@ export default class Collection {
     const fields = {
       [lf.pathName]: 1,
     };
+
+    const lif = this.labelImageField;
+    if (lif) fields[lif.pathName] = 1;
 
     const getFn = lf.def.get;
     if (getFn) {
@@ -1839,9 +1842,8 @@ export default class Collection {
           fieldDef.db = db = false;
         }
 
-        if (fieldDef.labelField) {
-          collection.labelField = field;
-        }
+        if (fieldDef.labelField) collection.labelField = field;
+        if (fieldDef.labelImageField) collection.labelImageField = field;
 
         // Store the field path and name on the field itself to support methods on Field
         field.collection = collection;
@@ -1890,6 +1892,9 @@ export default class Collection {
               );
 
             field.link = type;
+            field.populateName = Path.populateNameFor(
+              field.name || parent.name // parent name for an array of links
+            );
 
             if (!fieldDef.is || fieldDef.is === 'link') {
               field.type = Type.byName.link;
@@ -2332,7 +2337,7 @@ export default class Collection {
         if (orow.length > hlen) {
           const extraVals = orow[hi];
 
-          _.each(extraVals, function(v, n) {
+          _.each(extraVals, function (v, n) {
             const field = def.fields[n];
             if (!field) {
               throw new Error(
@@ -2385,7 +2390,7 @@ export default class Collection {
     }
 
     const byIdIndex = (collection.byIdIndex = {});
-    def.values.forEach(function(doc) {
+    def.values.forEach(function (doc) {
       byIdIndex[doc[collection.def.primaryKey.field]] = doc;
     });
   }

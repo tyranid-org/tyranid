@@ -252,7 +252,7 @@ export class TyrComponent<
   document!: D;
 
   /**
-   * if isLocal then this has *all* the data, otherwise it just has the current page
+   * if local then this has *all* the data, otherwise it just has the current page
    */
   @observable
   documents: D[] & { count?: number } = [] as D[] & {
@@ -292,7 +292,7 @@ export class TyrComponent<
    * * * QUERYING
    */
 
-  get isLocal() {
+  get local() {
     return false;
   }
 
@@ -300,7 +300,7 @@ export class TyrComponent<
     this.setState({});
   }
 
-  async requery() {}
+  async query() {}
 
   /**
    * These are the options that were passed to the most recent query().
@@ -591,7 +591,7 @@ export class TyrComponent<
           if (this.canMultiple && parentLink) {
             actFn = opts => {
               opts.self._parentDocument = opts.document;
-              opts.self.requery();
+              opts.self.query();
             };
           } else if (action.input === '*' || action.input === '0..*') {
             actFn = async opts => {
@@ -802,6 +802,14 @@ export class TyrComponent<
    */
 
   hasFilters = false;
+
+  /**
+   * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
+   * search value while it is being edited in the search control, it needs to keep that copy locally.
+   */
+  searchValues: {
+    [pathName: string]: any;
+  } = {};
 
   getFilter(props: TyrPathProps<D>): ReturnType<Filter> {
     return undefined;

@@ -50,10 +50,7 @@ Duis enim elit reprehenderit laborum quis sint irure cupidatat. Consequat quis c
   const wrapped = wordWrap(str, length);
   const words = str.trim().split(/\s+/g);
   words.sort();
-  const wrappedWords = wrapped
-    .join(' ')
-    .trim()
-    .split(/\s+/g);
+  const wrappedWords = wrapped.join(' ').trim().split(/\s+/g);
   wrappedWords.sort();
 
   t.deepEqual(words, wrappedWords);

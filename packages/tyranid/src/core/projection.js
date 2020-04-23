@@ -89,7 +89,7 @@ export function flattenProjection(opts) {
 }
 
 /** @isomorphic */
-Tyr.projectify = function(value) {
+Tyr.projectify = function (value) {
   const projection = {};
 
   if (Array.isArray(value)) {

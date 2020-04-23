@@ -22,7 +22,6 @@ import { registerComponent } from '../common';
 import { FormItemProps } from 'antd/lib/form';
 import { TyrSortDirection } from './typedef';
 import { stringWidth, wrappedStringWidth } from '../util/font';
-import { responsiveMap } from 'antd/lib/_util/responsiveObserve';
 
 const FormItem = Form.Item;
 
@@ -64,6 +63,8 @@ export interface TyrPathProps<D extends Tyr.Document>
   > {
   path?: Tyr.PathInstance;
   paths?: TyrPathExistsProps<D>[];
+
+  theme?: TyrThemeProps;
 
   as?:
     | 'radio' // links
@@ -108,11 +109,10 @@ export interface TyrPathProps<D extends Tyr.Document>
   required?: boolean;
   requiredMessage?: string;
 
+  min?: number;
   max?: number;
   maxMessage?: string;
 
-  minimum?: number;
-  maximum?: number;
   validator?: (
     rule: any,
     value: any,
@@ -152,10 +152,11 @@ export interface TyrPathProps<D extends Tyr.Document>
   filterOptionLabel?: (
     doc: Tyr.Document
   ) =>
+    | Tyr.Document
     | { $id: any; $label: string }
     | { $id: any; $label: string }[]
     | undefined;
-  filterOptionRenderer?: (value: any) => React.ReactElement;
+  filterOptionRenderer?: (value: Tyr.Document) => React.ReactElement;
   getSearchIds?: (val: any) => any[];
   labelInValue?: boolean;
   linkLabels?: { $id: any; $label: string }[];
@@ -165,7 +166,6 @@ export interface TyrPathProps<D extends Tyr.Document>
   onSelect?: (value: SelectValue, option: any) => any;
   onStateChange?: (value: FieldState) => void;
   optionFilter?: (documents: Tyr.Document[]) => Tyr.Document[];
-  searchOptionRenderer?: (optionDocument: Tyr.Document) => React.ReactElement;
   searchPath?: Tyr.PathInstance;
   searchSortById?: boolean;
 
@@ -181,8 +181,14 @@ export interface TyrPathProps<D extends Tyr.Document>
    */
   allowClear?: boolean;
 
-  // MANY-COMPONENT
-  liveSearch?: boolean;
+  // SORT
+  defaultSort?: TyrSortDirection;
+  sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
+
+  // FILTER
+  defaultFilter?: Object;
+  noFilter?: boolean;
+  onFilter?: (value: any, doc: Tyr.Document) => boolean;
 
   // TABLE
   align?: 'left' | 'right' | 'center';
@@ -196,15 +202,6 @@ export interface TyrPathProps<D extends Tyr.Document>
   pinned?: 'left' | 'right';
   width?: number | string;
   columnClassName?: (doc: Tyr.Document) => string | undefined;
-
-  // SORT
-  defaultSort?: TyrSortDirection;
-  sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
-
-  // FILTER
-  defaultFilter?: Object;
-  noFilter?: boolean;
-  onFilter?: (value: any, doc: Tyr.Document) => boolean;
 }
 
 export type TyrPathExistsProps<D extends Tyr.Document> = Omit<

@@ -18,7 +18,7 @@ var Job = new tyr.Collection({
   ],
 });
 
-Job.prototype.isSoftware = function() {
+Job.prototype.isSoftware = function () {
   return this.name.substring(0, 8) === 'Software';
 };
 

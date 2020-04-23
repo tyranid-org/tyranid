@@ -605,7 +605,7 @@ function queryMatches(query, doc) {
 // fromClient Query Conversion
 //
 
-Collection.prototype.fromClientQuery = function(query) {
+Collection.prototype.fromClientQuery = function (query) {
   const col = this;
 
   function convertValue(field, value) {

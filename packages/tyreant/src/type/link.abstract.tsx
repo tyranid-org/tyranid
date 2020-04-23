@@ -7,7 +7,13 @@ import { SelectProps } from 'antd/lib/select';
 import { Tyr } from 'tyranid/client';
 
 import { mapPropsToForm, onTypeChange, TyrTypeProps } from './type';
-import { TyrPathProps, decorateField, getValue } from '../core';
+import {
+  TyrPathProps,
+  TyrLabelRenderer,
+  decorateField,
+  getValue,
+  getLabelRenderer,
+} from '../core';
 
 type ModeOption = SelectProps<any>['mode'];
 
@@ -135,9 +141,7 @@ export class TyrLinkAbstract<
     // TODO:  'tags', 'combobox'
     if (field.type.name === 'array') {
       mode =
-        field.of!.link &&
-        field.of!.link!.def.tag &&
-        this.props.mode !== 'search'
+        field.of!.link?.def.tag && this.props.mode !== 'search'
           ? 'tags'
           : 'multiple';
 
@@ -164,6 +168,15 @@ export class TyrLinkAbstract<
 
   componentWillUnmount() {
     this.mounted = false;
+  }
+
+  // TODO:  @memo
+  _labelRenderer?: TyrLabelRenderer;
+  get renderLabel(): TyrLabelRenderer {
+    return (
+      this._labelRenderer ||
+      (this._labelRenderer = getLabelRenderer(this.props))
+    );
   }
 
   search = debounce(

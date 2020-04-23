@@ -44,7 +44,7 @@ const ObjectType = new Type({
     } else {
       const obj = {};
 
-      _.each(value, function(v, k) {
+      _.each(value, function (v, k) {
         const field = fields[k];
 
         if (field) {
@@ -111,7 +111,7 @@ const ObjectType = new Type({
     const errors = [];
 
     if (obj) {
-      _.each(field.fields, function(field, fieldName) {
+      _.each(field.fields, function (field, fieldName) {
         const fieldDef = field.def;
 
         if (!fieldDef.get) {

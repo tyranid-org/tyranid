@@ -13,17 +13,10 @@ import { Tyr } from 'tyranid/client';
 
 import { TyrPathProps } from './path';
 import { useComponent, TyrComponent } from './component';
-
-export interface Filterable {
-  searchValues: { [pathName: string]: any };
-  onSearch(): void;
-
-  localSearch: boolean;
-  localDocuments?: Tyr.Document<any>[];
-}
+import { TyrManyComponent } from './many-component';
 
 export type Filter = (
-  filterable: Filterable,
+  component: TyrComponent<any>,
   props: TyrPathProps<any>
 ) =>
   | {
@@ -46,7 +39,7 @@ export type Finder = (
 
 export interface TyrFilterProps<SearchValueType> {
   typeName: string;
-  filterable: Filterable;
+  component: TyrComponent<any>;
   pathProps: TyrPathProps<any>;
   filterDdProps: FilterDdProps;
   children: (
@@ -59,7 +52,7 @@ export interface TyrFilterProps<SearchValueType> {
 export function TyrFilter<SearchValueType>({
   typeName,
   pathProps,
-  filterable,
+  component,
   filterDdProps,
   children,
 }: TyrFilterProps<SearchValueType>) {
@@ -67,48 +60,54 @@ export function TyrFilter<SearchValueType>({
   const pathName = path!.name;
 
   const [searchValue, setSearchValue] = useState<SearchValueType | undefined>(
-    filterable.searchValues[pathName]
+    component.searchValues[pathName]
   );
 
   React.useEffect(() => {
-    setSearchValue(filterable.searchValues[pathName]);
-  }, [filterable.searchValues[pathName]]);
+    setSearchValue(component.searchValues[pathName]);
+  }, [component.searchValues[pathName]]);
+
+  const onSearch = () => {
+    (component as TyrManyComponent).skip = 0;
+    (component as TyrManyComponent).query();
+    component.updateConfigFilter(pathName, component.searchValues[pathName]);
+  };
 
   const setLiveSetSearchValue = (value: SearchValueType | undefined) => {
     setSearchValue(value);
 
-    if (pathProps.liveSearch) {
-      filterable.searchValues[pathName] = value;
-      filterable.onSearch();
+    if (component.local) {
+      component.searchValues[pathName] = value;
+      onSearch();
     }
   };
 
   const clear = () => {
-    delete filterable.searchValues[pathName];
+    delete component.searchValues[pathName];
     setSearchValue(undefined);
     filterDdProps.clearFilters?.();
-    filterable.onSearch();
+    onSearch();
   };
 
   const search = (onChange?: boolean) => {
-    filterable.searchValues[pathName] = searchValue;
-    filterable.onSearch();
+    component.searchValues[pathName] = searchValue;
+    onSearch();
     if (!onChange) filterDdProps.confirm?.();
   };
 
   const { connect } = filterDdProps;
-  if (connect) connect({ clear, search, searchValue, setSearchValue });
+  connect?.({ clear, search, searchValue, setSearchValue });
 
   return (
     <div className={`tyr-filter tyr-${typeName}-filter`}>
       {children(searchValue, setLiveSetSearchValue, search)}
-      {!filterDdProps.connect && (
+      {!connect && (
         <div className="tyr-filter-footer">
           <Button onClick={() => clear()} size="small" style={{ width: 90 }}>
             Reset
           </Button>
 
-          {!pathProps.liveSearch && (
+          {!component.local && (
             <Button
               type="primary"
               onClick={() => search()}
@@ -179,7 +178,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
                           },
                           selectedKeys: [],
                           confirm: () => {
-                            c.requery();
+                            c.query();
                           },
                           clearFilters: () => {},
                           //filters?: ColumnFilterItem[];
@@ -213,7 +212,7 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
               Reset
             </Button>
 
-            {!c.isLocal && (
+            {!c.local && (
               <Button
                 type="primary"
                 onClick={() => {

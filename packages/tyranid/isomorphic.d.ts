@@ -199,6 +199,7 @@ export namespace Tyr {
     step?: number;
 
     labelField?: boolean | { uses: string[] };
+    labelImageField?: boolean;
     pattern?: RegExp;
     minlength?: number;
     maxlength?: number;
@@ -250,6 +251,7 @@ export namespace Tyr {
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance<D> };
     method: string;
+    populateName?: string;
     width?: number;
 
     format(value: any): string;
@@ -349,6 +351,7 @@ export namespace Tyr {
     isUid(uid: string): boolean;
     label: string;
     labelField: any;
+    labelImageField: any;
     labelFor(doc: D | object): string;
     labelProjection(): any; // Mongo Projection
     labels(text: string): Promise<D[]>;

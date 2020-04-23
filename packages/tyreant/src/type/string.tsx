@@ -7,14 +7,8 @@ import { Input } from 'antd';
 
 import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import {
-  TyrFilter,
-  Filter,
-  Filterable,
-  FilterDdProps,
-  Finder,
-} from '../core/filter';
-import { TyrPathProps, decorateField } from '../core';
+import { TyrFilter, Filter, FilterDdProps, Finder } from '../core/filter';
+import { TyrComponent, TyrPathProps, decorateField } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrStringBase = <D extends Tyr.Document = Tyr.Document>(
@@ -40,70 +34,59 @@ export const TyrStringBase = <D extends Tyr.Document = Tyr.Document>(
 
 export const TyrString = withThemedTypeContext('string', TyrStringBase);
 
-export const stringFilter: Filter = (
-  filterable: Filterable,
-  props: TyrPathProps<any>
-) => {
-  const { path } = props;
-  //let searchInputRef: Input | null = null;
-
-  return {
-    filterDropdown: (filterDdProps: FilterDdProps) => (
-      <TyrFilter<string>
-        typeName="string"
-        filterable={filterable}
-        filterDdProps={filterDdProps}
-        pathProps={props}
-      >
-        {(searchValue, setSearchValue, search) => (
-          <Input
-            //ref={node => {
-            //searchInputRef = node;
-            //}}
-            placeholder={`Search ${props.label || path!.pathLabel}`}
-            value={searchValue}
-            onChange={e => {
-              setSearchValue(e.target.value);
-            }}
-            onPressEnter={() => search()}
-            style={{ width: 188, marginBottom: 8, display: 'block' }}
-          />
-        )}
-      </TyrFilter>
-    ),
-    onFilter: (value: string, doc: Tyr.Document) => {
-      return value !== undefined
-        ? props
-            .path!.get(doc)
-            ?.toString()
-            .toLowerCase()
-            .includes(value.toLowerCase()) ?? false
-        : true;
-    },
-    onFilterDropdownVisibleChange: (visible: boolean) => {
-      //if (visible) setTimeout(() => searchInputRef!.focus());
-    },
-  };
-};
-
-export const stringFinder: Finder = (
-  path: Tyr.PathInstance,
-  opts: Tyr.anny /* Tyr.Options_Find */,
-  searchValue: Tyr.anny
-) => {
-  if (searchValue) {
-    if (!opts.query) opts.query = {};
-    opts.query[path.spath] = {
-      $regex: searchValue,
-      $options: 'i',
-    };
-  }
-};
-
 byName.string = {
   component: TyrStringBase,
-  filter: stringFilter,
-  finder: stringFinder,
+  filter(component, props) {
+    const { path } = props;
+    //let searchInputRef: Input | null = null;
+
+    return {
+      filterDropdown: (filterDdProps: FilterDdProps) => (
+        <TyrFilter<string>
+          typeName="string"
+          component={component}
+          filterDdProps={filterDdProps}
+          pathProps={props}
+        >
+          {(searchValue, setSearchValue, search) => (
+            <Input
+              //ref={node => {
+              //searchInputRef = node;
+              //}}
+              placeholder={`Search ${props.label || path!.pathLabel}`}
+              value={searchValue}
+              onChange={e => {
+                setSearchValue(e.target.value);
+              }}
+              onPressEnter={() => search()}
+              style={{ width: 188, marginBottom: 8, display: 'block' }}
+            />
+          )}
+        </TyrFilter>
+      ),
+      onFilter: (value: string, doc: Tyr.Document) => {
+        return value !== undefined
+          ? props
+              .path!.get(doc)
+              ?.toString()
+              .toLowerCase()
+              .includes(value.toLowerCase()) ?? false
+          : true;
+      },
+      onFilterDropdownVisibleChange: (visible: boolean) => {
+        //if (visible) setTimeout(() => searchInputRef!.focus());
+      },
+    };
+  },
+  finder(path, opts, searchValue) {
+    if (searchValue) {
+      if (!opts.query) opts.query = {};
+      opts.query[path.spath] = {
+        $regex: searchValue,
+        $options: 'i',
+      };
+    }
+  },
 };
 
 registerComponent('TyrString', TyrString);

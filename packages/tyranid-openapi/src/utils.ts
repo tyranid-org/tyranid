@@ -153,10 +153,7 @@ export function pick<T, K extends keyof T>(obj: T, keys: K[]) {
  * @param str string
  */
 export function upperSnake(str: string) {
-  return str
-    .split(/\s+/)
-    .join('_')
-    .toUpperCase();
+  return str.split(/\s+/).join('_').toUpperCase();
 }
 
 /**

@@ -43,7 +43,6 @@ import { getCellValue, TyrTypeProps } from '../../type';
 import { TyrActionBar } from '../action';
 import { TyrComponentState, useComponent } from '../component';
 import {
-  TyrPathLaxProps,
   getPathName,
   TyrThemedFieldBase,
   TyrPathProps,
@@ -57,6 +56,7 @@ import { EditableFormRow, EditableContext } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { classNames } from '../../util';
+import { getLabelRenderer } from '../label';
 
 const findColumnByDataIndex = <D extends Tyr.Document>(
   columns: (ColumnType<D> | ColumnGroupType<D>)[],
@@ -239,7 +239,8 @@ export class TyrTableBase<
         this.count = newDocuments.length;
       } else {
         if (!this.documents) {
-          this.setSortedDocuments(newDocuments.slice());
+          this.documents = newDocuments.slice();
+          this.sort();
         } else {
           //if (!this.editingDocument)
           this.setStableDocuments(newDocuments.slice());
@@ -326,7 +327,7 @@ export class TyrTableBase<
       }
 
       if (sortHasBeenReset || filtersHaveBeenReset) {
-        this.requery();
+        this.query();
       }
 
       if (widthsHaveBeenReset) {
@@ -471,7 +472,7 @@ export class TyrTableBase<
       setEditing && setEditing(false);
       delete this.newDocument;
 
-      if (!this.isLocal) {
+      if (!this.local) {
         this.findAll();
       }
     } else if (editingDocument) {
@@ -511,7 +512,12 @@ export class TyrTableBase<
       resizableColumns,
     } = this.props;
 
-    const { sortDirections, editingDocument, newDocument, isLocal } = this;
+    const {
+      sortDirections,
+      editingDocument,
+      newDocument,
+      local: isLocal,
+    } = this;
     const columns = this.activePaths;
 
     const fieldCount = columns.length;
@@ -625,7 +631,7 @@ export class TyrTableBase<
               width: colWidth,
               multiple: column.multiple,
               mode: column.mode,
-              searchOptionRenderer: column.searchOptionRenderer,
+              searchOptionRenderer: getLabelRenderer(column),
               searchSortById: column.searchSortById,
               renderField: column.renderField,
               renderDisplay: column.renderDisplay,
@@ -926,7 +932,7 @@ export class TyrTableBase<
     sortDirections[sortFieldName] = sorter.order!;
 
     this.updateConfigSort(sortFieldName, sorter.order);
-    this.execute();
+    this.query();
     this.props.notifySortSet?.(sortFieldName, sorter.order);
   };
 
@@ -1139,9 +1145,7 @@ export class TyrTableBase<
             };
           }}
         />
-      ) : (
-        undefined
-      );
+      ) : undefined;
 
       return (
         <div
