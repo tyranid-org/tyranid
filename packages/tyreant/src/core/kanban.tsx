@@ -204,11 +204,11 @@ export class TyrKanbanBase<
 
     return this.wrap(() => {
       // want to delay querying until the control is actually shown
-      if (!this.reacting) setTimeout(() => this.startReacting(), 0);
+      this.startReacting();
 
       return (
         <div className="tyr-kanban-container">
-          <TyrFilters />
+          <TyrFilters component={this} />
           <DragDropContext onDragEnd={this.onDragEnd}>
             <div className="tyr-kanban">
               {columns.map((column, index) => (

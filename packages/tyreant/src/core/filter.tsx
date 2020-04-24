@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { FilterTwoTone, SearchOutlined } from '@ant-design/icons';
 
-import { Button, Popover } from 'antd';
+import { Button, Drawer, Popover } from 'antd';
 import {
   ColumnFilterItem,
   FilterDropdownProps,
@@ -135,7 +135,11 @@ export interface FilterDdProps extends FilterDropdownProps {
   connect?: (connection: TyrFilterConnection) => void;
 }
 
-export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
+export const TyrFilters = ({
+  component,
+}: {
+  component?: TyrComponent<any>;
+}) => {
   const [connections] = useState<{
     [name: string]: TyrFilterConnection;
   }>({});
@@ -146,93 +150,126 @@ export const TyrFilters = ({ component }: { component?: TyrComponent }) => {
   const paths = c.paths?.filter(f => f.path);
   if (!paths) return <div className="no-paths"></div>;
 
-  return (
-    <Popover
-      overlayClassName="tyr-filters"
-      title="Filters"
-      trigger="click"
-      visible={visible}
-      placement="bottomLeft"
-      onVisibleChange={setVisible}
-      align={{ offset: [0, -3] }}
-      content={
-        <>
-          <div className="tyr-filter-body">
-            {paths.map(f => {
-              const path = f.path!;
+  const body = (
+    <>
+      {paths.map(f => {
+        const path = f.path!;
 
-              const filter = c.getFilter(f);
-              if (!filter) return <div className="no-filter" />;
+        const filter = c.getFilter(f);
+        if (!filter) return <div className="no-filter" />;
 
-              const { filterDropdown } = filter;
+        const { filterDropdown } = filter;
 
-              if (filterDropdown) {
-                return (
-                  <div className="tyr-filter-container" key={path.name}>
-                    <h1>{path.pathLabel}</h1>
-                    {typeof filterDropdown === 'function'
-                      ? filterDropdown({
-                          prefixCls: '',
-                          setSelectedKeys: (selectedKeys: string[]) => {
-                            c.refresh();
-                          },
-                          selectedKeys: [],
-                          confirm: () => {
-                            c.query();
-                          },
-                          clearFilters: () => {},
-                          //filters?: ColumnFilterItem[];
-                          //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
-                          connect: connection => {
-                            connections[path.name] = connection;
-                          },
-                          visible: true,
-                        })
-                      : filterDropdown}
-                  </div>
-                );
-              }
+        if (filterDropdown) {
+          return (
+            <div className="tyr-filter-container" key={path.name}>
+              <h1>{path.pathLabel}</h1>
+              {typeof filterDropdown === 'function'
+                ? filterDropdown({
+                    prefixCls: '',
+                    setSelectedKeys: (selectedKeys: string[]) => {
+                      c.refresh();
+                    },
+                    selectedKeys: [],
+                    confirm: () => {
+                      c.query();
+                    },
+                    clearFilters: () => {},
+                    //filters?: ColumnFilterItem[];
+                    //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
+                    connect: connection => {
+                      connections[path.name] = connection;
+                    },
+                    visible: true,
+                  })
+                : filterDropdown}
+            </div>
+          );
+        }
 
-              return (
-                <div className="tyr-filter-container" key={f.path!.name}>
-                  {f.path!.name} Filter TODO
-                </div>
-              );
-            })}
+        return (
+          <div className="tyr-filter-container" key={f.path!.name}>
+            {f.path!.name} Filter TODO
           </div>
-          <div className="tyr-filter-footer">
-            <Button
-              onClick={() => {
-                for (const name in connections) connections[name]?.clear();
-                setVisible(false);
-              }}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-
-            {!c.local && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  for (const name in connections) connections[name]?.search();
-                  setVisible(false);
-                }}
-                icon={<SearchOutlined />}
-                size="small"
-                style={{ width: 90 }}
-              >
-                Search
-              </Button>
-            )}
-          </div>
-        </>
-      }
-    >
-      <Button>
-        <FilterTwoTone twoToneColor="#386695" />
-      </Button>
-    </Popover>
+        );
+      })}
+    </>
   );
+
+  const footer = (
+    <>
+      <Button
+        onClick={() => {
+          for (const name in connections) connections[name]?.clear();
+          setVisible(false);
+        }}
+        size="small"
+        style={{ width: 90 }}
+      >
+        Reset
+      </Button>
+
+      {!c.local && (
+        <Button
+          type="primary"
+          onClick={() => {
+            for (const name in connections) connections[name]?.search();
+            setVisible(false);
+          }}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Search
+        </Button>
+      )}
+    </>
+  );
+
+  const title = component?.collection.label + ' Filters';
+
+  switch (component?.props.theme?.filter?.as) {
+    case 'popover':
+      return (
+        <Popover
+          overlayClassName="tyr-filters tyr-popover"
+          title={title}
+          trigger="click"
+          visible={visible}
+          placement="bottomLeft"
+          onVisibleChange={setVisible}
+          align={{ offset: [0, -3] }}
+          content={
+            <>
+              <div className="tyr-filter-body">{body}</div>
+              <div className="tyr-filter-footer">{footer}</div>
+            </>
+          }
+        >
+          <Button>
+            <FilterTwoTone twoToneColor="#386695" />
+          </Button>
+        </Popover>
+      );
+    default:
+      return (
+        <>
+          <Drawer
+            visible={visible}
+            closable={true}
+            onClose={() => setVisible(false)}
+            placement="left"
+            className="tyr-filters tyr-drawer"
+            title={title}
+            width={280}
+            footer={footer}
+          >
+            {body}
+          </Drawer>
+          <Button onClick={() => setVisible(true)}>
+            <FilterTwoTone twoToneColor="#386695" />
+          </Button>
+        </>
+      );
+  }
 };

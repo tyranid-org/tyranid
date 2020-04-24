@@ -622,42 +622,48 @@ export class TyrManyComponent<
   reacting = false;
   startReacting() {
     if (this.reacting) return;
-    this.reacting = true;
 
-    const { route } = this.props;
-    if (route) {
-      if (!this.cancelAutorun) {
-        this.cancelAutorun = autorun(() => {
-          this.componentConfig?.fields.forEach(f => {
-            if (f.filter) {
-              this.searchValues[f.name] = f.filter;
+    // this happens inside the render (after wrap()) and we don't want to kick this off during the render
+    // TOOD:  move this logic into wrap()
+    setTimeout(() => {
+      const { route } = this.props;
+      if (route) {
+        this.reacting = true;
+        if (!this.cancelAutorun) {
+          this.cancelAutorun = autorun(() => {
+            this.componentConfig?.fields.forEach(f => {
+              if (f.filter) {
+                this.searchValues[f.name] = f.filter;
+              }
+            });
+
+            // TODO:  route only works with non-local so far
+            const location = Tyreant.router.location!;
+            if (location.route === route) {
+              const currentUrl = this.getUrlQuery();
+              this.fromUrlQuery(
+                location.query! as {
+                  [name: string]: string;
+                }
+              );
+              const newUrl = this.getUrlQuery();
+
+              if (currentUrl !== newUrl) this.query();
             }
           });
-
-          // TODO:  route only works with non-local so far
-          const location = Tyreant.router.location!;
-          if (location.route === route) {
-            const currentUrl = this.getUrlQuery();
-            this.fromUrlQuery(
-              location.query! as {
-                [name: string]: string;
-              }
-            );
-            const newUrl = this.getUrlQuery();
-
-            if (currentUrl !== newUrl) this.query();
-          }
-        });
+        }
+      } else if (!this.props.documents) {
+        const { decorator } = this;
+        if (
+          this.activePaths.length &&
+          (!decorator || decorator.visible) &&
+          (!this.parent || this.mounted)
+        ) {
+          this.reacting = true;
+          this.query();
+        }
       }
-    } else if (!this.props.documents) {
-      const { decorator } = this;
-      if (
-        this.activePaths.length &&
-        (!decorator || decorator.visible) &&
-        (!this.parent || this.mounted)
-      )
-        this.query();
-    }
+    }, 0);
   }
 
   // TODO

@@ -233,9 +233,12 @@
 //
 
 .ant-checkbox-wrapper {
+  position: relative;
+  top: -3px;
+
   .ant-checkbox {
     position: relative;
-    top: 2px;
+    top: 1px;
   }
 
   span {
@@ -412,23 +415,39 @@ form textarea.tyr-markup-editor {
 }
 
 .tyr-filters {
-  .ant-popover-title {
-    background-color: var(--filters-background-color);
+  &.tyr-popover {
+    .ant-popover-title {
+      background-color: var(--filters-background-color);
+    }
+
+    .ant-popover-inner-content {
+      padding: 0;
+    }
+
+    .tyr-filter-body {
+      max-height: 700px;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .tyr-filter-container {
+      width: 240px;
+    }
   }
 
-  .ant-popover-inner-content {
-    padding: 0;
-  }
+  &.tyr-drawer.ant-drawer {
+    .ant-drawer-mask {
+      // so they can see the content their filters are adjusting
+      opacity: 0.1;
+    }
 
-  .tyr-filter-body {
-    max-height: 700px;
-    overflow-x: hidden;
-    overflow-y: auto;
+    .ant-drawer-body {
+      padding: 0;
+    }
   }
 
   .tyr-filter-container {
     margin: 12px;
-    width: 240px;
 
     h1 {
       border-top: 1px solid var(--filters-label-border-top-color);
@@ -445,6 +464,7 @@ form textarea.tyr-markup-editor {
           margin: 0;
           border-left: none;
           border-bottom: none;
+          border-right: none;
         }
 
         .ant-menu {
@@ -454,6 +474,7 @@ form textarea.tyr-markup-editor {
     }
   }
 
+  .ant-drawer-footer,
   .tyr-filter-footer {
     border-top: 1px solid var(--filter-footer-border-top-color);
     background-color: var(--filter-footer-background-color);

@@ -25,6 +25,9 @@ export interface TyrThemeProps {
   modal?: Partial<TyrDecoratorProps<any>>;
   table?: Partial<TyrTableProps<any>>;
   panel?: Partial<TyrDecoratorProps<any>>;
+  filter?: {
+    as?: 'popover' | 'drawer';
+  };
   collections?: {
     [CollectionName in keyof Tyr.CollectionsByName]?: {
       labelRenderer?: (
