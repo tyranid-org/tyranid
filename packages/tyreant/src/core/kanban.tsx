@@ -204,7 +204,7 @@ export class TyrKanbanBase<
 
     return this.wrap(() => {
       // want to delay querying until the control is actually shown
-      this.startReacting();
+      this.activate();
 
       return (
         <div className="tyr-kanban-container">

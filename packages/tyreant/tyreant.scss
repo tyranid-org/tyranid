@@ -439,6 +439,7 @@ form textarea.tyr-markup-editor {
     .ant-drawer-mask {
       // so they can see the content their filters are adjusting
       opacity: 0.1;
+      animation: none;
     }
 
     .ant-drawer-body {

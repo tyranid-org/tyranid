@@ -163,6 +163,7 @@ declare module 'tyranid/client' {
 
     export const init: () => void;
     export function isCompliant(spec: any, value: any): boolean;
+    export function isEqual(a: any, b: any): boolean;
     export function isSameId(
       a: AnyIdType | null | undefined,
       b: AnyIdType | null | undefined

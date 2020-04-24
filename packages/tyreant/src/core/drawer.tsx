@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { observer } from 'mobx-react';
+
 import { CloseOutlined } from '@ant-design/icons';
 import { Drawer, Spin } from 'antd';
 
@@ -16,6 +18,7 @@ export interface TyrDrawerProps<D extends Tyr.Document>
   placement?: 'top' | 'right' | 'bottom' | 'left';
 }
 
+@observer
 class TyrDrawerBase<D extends Tyr.Document> extends TyrDecorator<
   D,
   TyrDrawerProps<D>

@@ -14,7 +14,7 @@ export const TyrRemove = createForm(
         name: 'remove',
         on: async ({ self, document }) => {
           await document!.$remove();
-          self.parent?.query();
+          self.parent?.requery();
         },
       },
     ],

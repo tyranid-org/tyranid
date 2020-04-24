@@ -60,37 +60,37 @@ export function TyrFilter<SearchValueType>({
   const pathName = path!.name;
 
   const [searchValue, setSearchValue] = useState<SearchValueType | undefined>(
-    component.searchValues[pathName]
+    component.filterValues[pathName]
   );
 
   React.useEffect(() => {
-    setSearchValue(component.searchValues[pathName]);
-  }, [component.searchValues[pathName]]);
+    setSearchValue(component.filterValues[pathName]);
+  }, [component.filterValues[pathName]]);
 
   const onSearch = () => {
     (component as TyrManyComponent).skip = 0;
     (component as TyrManyComponent).query();
-    component.updateConfigFilter(pathName, component.searchValues[pathName]);
+    component.updateConfigFilter(pathName, component.filterValues[pathName]);
   };
 
   const setLiveSetSearchValue = (value: SearchValueType | undefined) => {
     setSearchValue(value);
 
     if (component.local) {
-      component.searchValues[pathName] = value;
+      component.filterValues[pathName] = value;
       onSearch();
     }
   };
 
   const clear = () => {
-    delete component.searchValues[pathName];
+    delete component.filterValues[pathName];
     setSearchValue(undefined);
     filterDdProps.clearFilters?.();
     onSearch();
   };
 
   const search = (onChange?: boolean) => {
-    component.searchValues[pathName] = searchValue;
+    component.filterValues[pathName] = searchValue;
     onSearch();
     if (!onChange) filterDdProps.confirm?.();
   };
@@ -171,9 +171,7 @@ export const TyrFilters = ({
                       c.refresh();
                     },
                     selectedKeys: [],
-                    confirm: () => {
-                      c.query();
-                    },
+                    confirm: () => c.query(),
                     clearFilters: () => {},
                     //filters?: ColumnFilterItem[];
                     //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;

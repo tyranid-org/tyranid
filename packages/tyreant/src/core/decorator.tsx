@@ -1,11 +1,12 @@
 import * as React from 'react';
 
+import { observable } from 'mobx';
+
 import { Tyr } from 'tyranid/client';
 
 import { TyrAction, TyrActionBar, TyrActionFnOpts } from './action';
 import { TyrComponent, useComponent } from './component';
 import { TyrThemeProps, useThemeProps } from './theme';
-import { observable } from 'mobx';
 
 export interface TyrDecoratorProps<D extends Tyr.Document> {
   parent?: TyrComponent<D>;
@@ -20,6 +21,7 @@ export interface TyrDecoratorProps<D extends Tyr.Document> {
  *
  * Examples of Decorators are modals, drawers, panels, and so on.
  */
+
 export abstract class TyrDecorator<
   D extends Tyr.Document,
   Props extends TyrDecoratorProps<D> = TyrDecoratorProps<D>
@@ -73,10 +75,12 @@ export abstract class TyrDecorator<
   open(opts: TyrActionFnOpts<D>) {
     this.callerOpts = opts;
     this.visible = true;
+    this.decorating.visible = true;
   }
 
   close() {
     this.visible = false;
+    this.decorating.visible = false;
   }
 
   title() {

@@ -197,7 +197,7 @@ const LinkFilterDropdown = ({
   const [labels, setLabels] = useState<Tyr.Document[] | undefined>(undefined);
   const [filterSearchValue, setFilterSearchValue] = React.useState('');
 
-  let initialValues = component.searchValues[pathName];
+  let initialValues = component.filterValues[pathName];
   if (!Array.isArray(initialValues))
     initialValues = initialValues ? [initialValues] : [];
   // we clone the searchValues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
@@ -322,6 +322,9 @@ const LinkFilterDropdown = ({
                   const strKey = String(key);
 
                   if (searchValue) {
+                    if (!Array.isArray(searchValue))
+                      searchValue = [searchValue];
+
                     const keyIdx = searchValue.indexOf(strKey);
 
                     if (keyIdx > -1) {

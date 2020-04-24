@@ -134,7 +134,6 @@ export class TyrComponent<
 
   componentDidMount() {
     this.mounted = true;
-    this.visible = true;
 
     const props = this.props as Props;
     const { aux } = props;
@@ -300,7 +299,15 @@ export class TyrComponent<
     this.setState({});
   }
 
+  /**
+   * This will reload data if the query has changed.
+   */
   async query() {}
+
+  /**
+   * This will force a reload even if it is the same query.
+   */
+  async requery() {}
 
   /**
    * These are the options that were passed to the most recent query().
@@ -724,8 +731,7 @@ export class TyrComponent<
           (createAction || searchAction)!.act({});
         });
       } else {
-        const { decorator } = this;
-        if (decorator) decorator.visible = true;
+        this.decorator?.open(this.actionFnOpts());
       }
     }
   }
@@ -807,7 +813,7 @@ export class TyrComponent<
    * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
    * search value while it is being edited in the search control, it needs to keep that copy locally.
    */
-  searchValues: {
+  filterValues: {
     [pathName: string]: any;
   } = {};
 

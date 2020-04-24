@@ -1,9 +1,12 @@
 import * as React from 'react';
 
+import { observer } from 'mobx-react';
+
 import { Tyr } from 'tyranid/client';
 
 import { TyrDecorator, withThemeAndParent } from './decorator';
 
+@observer
 class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<D> {
   componentName = 'panel';
 

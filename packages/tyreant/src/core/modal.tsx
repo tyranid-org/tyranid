@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { observer } from 'mobx-react';
+
 import { Modal, Spin } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 
@@ -7,6 +9,7 @@ import { Tyr } from 'tyranid/client';
 
 import { TyrDecorator, withThemeAndParent } from './decorator';
 
+@observer
 class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
   componentName = 'modal';
 

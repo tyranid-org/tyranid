@@ -1,11 +1,11 @@
 import * as React from 'react';
 
 import { observer } from 'mobx-react';
-import { autorun, observable } from 'mobx';
+import { autorun } from 'mobx';
 
 import { Tyr } from 'tyranid/client';
 
-import { getFinder, Filter, TyrActionFnOpts } from '../tyreant';
+import { getFinder, Filter } from '../tyreant';
 import {
   TyrComponentProps,
   TyrComponentState,
@@ -118,17 +118,27 @@ export class TyrManyComponent<
    */
   allDocuments!: D[];
 
-  async query() {
-    if (this.loading) return;
+  currentlyLoaded: any /* Tyr.FindAllOpts */;
 
-    const { props } = this;
+  getQuery() {
+    return {
+      filterValues: this.filterValues,
+      sortDirection: this.sortDirections,
+      skip: this.skip,
+      limit: this.limit,
+    };
+  }
 
-    if (props.route) {
-      Tyreant.router.go({
-        route: props.route,
-        query: this.getUrlQuery(),
-      });
-    } else {
+  async load() {
+    const aboutToLoad = this.getQuery();
+
+    if (Tyr.isEqual(aboutToLoad, this.currentlyLoaded)) return;
+    this.currentlyLoaded = Tyr.cloneDeep(aboutToLoad);
+
+    try {
+      this.loading = true;
+      const { props } = this;
+
       if (this.mounted) {
         if (this.local) {
           if (!this.allDocuments) {
@@ -145,14 +155,41 @@ export class TyrManyComponent<
         await this.postQuery();
         //this.refresh();
       }
+    } finally {
+      this.loading = false;
     }
+  }
+
+  /**
+   * query -- handles URL, and calls
+   *  load -- handles arranging data, and calls
+   *    findAll -- handles querying data from the database
+   */
+  async query() {
+    if (!this.visible || this.loading) return;
+
+    const { props } = this;
+
+    if (props.route) {
+      Tyreant.router.go({
+        route: props.route,
+        query: this.getUrlQuery(),
+      });
+    } else {
+      this.load();
+    }
+  }
+
+  async requery() {
+    this.currentlyLoaded = undefined;
+    this.query();
   }
 
   async postQuery() {}
 
   async buildFindOpts() {
     const { query: baseQuery, projection, populate } = this.props;
-    const { searchValues, sortDirections } = this;
+    const { filterValues: searchValues, sortDirections } = this;
 
     const query: Tyr.MongoQuery = {};
     const { linkToParent, linkFromParent, parentDocument } = this;
@@ -239,8 +276,6 @@ export class TyrManyComponent<
     const { collection } = this.props;
 
     try {
-      this.loading = true;
-
       await this.buildFindOpts();
 
       const docs = await collection!.findAll(this.findOpts);
@@ -256,8 +291,6 @@ export class TyrManyComponent<
       await this.postFind();
 
       await this.props.postFind?.call(this, docs);
-
-      this.loading = false;
     } catch (err) {
       message.error(err.message);
     }
@@ -374,7 +407,7 @@ export class TyrManyComponent<
 
   resetFilters = () => {
     const { notifyFilterExists } = this.props;
-    const { searchValues } = this;
+    const { filterValues: searchValues } = this;
     for (const key of Object.keys(searchValues)) delete searchValues[key];
 
     this.setState({});
@@ -385,7 +418,7 @@ export class TyrManyComponent<
   };
 
   filterLocal() {
-    const { searchValues } = this;
+    const { filterValues: searchValues } = this;
 
     const checks: ((doc: Tyr.Document) => boolean)[] = [];
 
@@ -546,7 +579,7 @@ export class TyrManyComponent<
   fromUrlQuery(query: { [name: string]: string }) {
     this.skip = 0;
     this.limit = this.defaultPageSize;
-    Tyr.clear(this.searchValues);
+    Tyr.clear(this.filterValues);
     let sortFound = false;
 
     for (const name in query) {
@@ -573,7 +606,7 @@ export class TyrManyComponent<
           if (searchValue) {
             // TODO:  we need to know the Field here because of it is a link or array of links we need to split the search value on '.'
             const canBeArray = searchValue.indexOf(',') >= 0; // this is not right -- need the Field
-            this.searchValues[name] = canBeArray
+            this.filterValues[name] = canBeArray
               ? searchValue.split(',')
               : searchValue;
           }
@@ -592,7 +625,7 @@ export class TyrManyComponent<
   getUrlQuery() {
     const query: { [name: string]: string } = {};
 
-    const { searchValues, sortDirections, skip, limit } = this;
+    const { filterValues: searchValues, sortDirections, skip, limit } = this;
 
     if (skip) query.skip = String(skip);
     if (limit !== undefined && limit !== DEFAULT_PAGE_SIZE)
@@ -619,36 +652,34 @@ export class TyrManyComponent<
   }
 
   cancelAutorun?: () => void;
-  reacting = false;
-  startReacting() {
-    if (this.reacting) return;
+  active = false;
+  activate() {
+    if (!this.visible || this.active) return;
 
     // this happens inside the render (after wrap()) and we don't want to kick this off during the render
     // TOOD:  move this logic into wrap()
     setTimeout(() => {
       const { route } = this.props;
       if (route) {
-        this.reacting = true;
         if (!this.cancelAutorun) {
           this.cancelAutorun = autorun(() => {
             this.componentConfig?.fields.forEach(f => {
               if (f.filter) {
-                this.searchValues[f.name] = f.filter;
+                this.filterValues[f.name] = f.filter;
               }
             });
 
             // TODO:  route only works with non-local so far
             const location = Tyreant.router.location!;
             if (location.route === route) {
-              const currentUrl = this.getUrlQuery();
               this.fromUrlQuery(
                 location.query! as {
                   [name: string]: string;
                 }
               );
-              const newUrl = this.getUrlQuery();
 
-              if (currentUrl !== newUrl) this.query();
+              this.load();
+              this.active = true;
             }
           });
         }
@@ -659,8 +690,8 @@ export class TyrManyComponent<
           (!decorator || decorator.visible) &&
           (!this.parent || this.mounted)
         ) {
-          this.reacting = true;
-          this.query();
+          this.active = true;
+          this.load();
         }
       }
     }, 0);

@@ -469,6 +469,7 @@ export function generateClientLibrary() {
   Tyr.snakize = ${es5Fn(Tyr.snakize)};
   Tyr.stringify = ${es5Fn(Tyr.stringify)};
   Tyr.unitize = ${es5Fn(Tyr.unitize)};
+  Tyr.isEqual = _.isEqual;
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
 
   Tyr.isCompliant = (spec, object) => {

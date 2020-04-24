@@ -438,9 +438,7 @@ export class TyrTableBase<
             ];
           }
 
-          if (!documents) {
-            this.findAll();
-          }
+          this.requery();
         }
 
         onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
@@ -471,10 +469,7 @@ export class TyrTableBase<
       onCancelAddNew && onCancelAddNew();
       setEditing && setEditing(false);
       delete this.newDocument;
-
-      if (!this.local) {
-        this.findAll();
-      }
+      this.requery();
     } else if (editingDocument) {
       editingDocument.$revert();
 
@@ -593,7 +588,7 @@ export class TyrTableBase<
         }
       }
 
-      const filteredValue = pathName ? this.searchValues[pathName] : undefined;
+      const filteredValue = pathName ? this.filterValues[pathName] : undefined;
 
       hasAnyFilter = hasAnyFilter || filteredValue !== undefined;
 
@@ -1035,7 +1030,7 @@ export class TyrTableBase<
       if (decorator && (!this.decorator || !this.decorator.visible))
         return <div />;
 
-      this.startReacting(); // want to delay finding until the control is actually shown
+      this.activate(); // want to delay finding until the control is actually shown
 
       const dndEnabled = !isEditingRow && !newDocument && orderable;
 
