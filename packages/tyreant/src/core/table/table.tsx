@@ -839,6 +839,7 @@ export class TyrTableBase<
             if (typeof label === 'string') {
               return (
                 <a
+                  style={{ whiteSpace: 'nowrap' }}
                   className="action-item"
                   onClick={e => {
                     e.preventDefault();

@@ -32,6 +32,7 @@ export const TyrIntegerBase = <D extends Tyr.Document = Tyr.Document>(
         tabIndex={props.tabIndex}
         precision={0}
         step="1"
+        {...(props.formatter !== undefined && { formater: props.formatter })}
         {...(props.min !== undefined && { min: props.min })}
         {...(props.max !== undefined && { max: props.max })}
       />
@@ -43,6 +44,14 @@ export const TyrInteger = withThemedTypeContext('integer', TyrIntegerBase);
 
 byName.integer = {
   component: TyrIntegerBase,
+  cellValue: (
+    path: Tyr.PathInstance,
+    document: Tyr.Document,
+    props: TyrTypeProps<any>
+  ) => {
+    const v = path.get(document);
+    return props.formatter ? props.formatter(v as number) : v;
+  },
   filter(component, props) {
     const path = props.path!;
 
