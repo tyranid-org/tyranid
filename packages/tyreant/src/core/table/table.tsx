@@ -129,7 +129,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   wrapColumnHeaders?: boolean;
 
   children?: React.ReactNode;
-  expandableTable?: ExpandableConfig<D>;
+  expandable?: ExpandableConfig<D>;
 }
 
 // TODO:  if they specify a sort function for a column and we're not local report an error
@@ -1015,7 +1015,7 @@ export class TyrTableBase<
       rowSelection,
       emptyTablePlaceholder,
       resizableColumns,
-      expandableTable,
+      expandable,
     } = this.props;
 
     const fieldCount = paths.length;
@@ -1101,7 +1101,7 @@ export class TyrTableBase<
           dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
           scroll={tableScroll}
-          {...(expandableTable ? { expandable: expandableTable } : {})}
+          {...(expandable ? { expandable } : {})}
           onRow={(record: any, rowIndex: any) => {
             return {
               onClick: () => {
