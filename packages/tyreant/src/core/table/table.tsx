@@ -57,6 +57,7 @@ import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { classNames } from '../../util';
 import { getLabelRenderer } from '../label';
+import { ExpandableConfig } from 'antd/lib/table/interface';
 
 const findColumnByDataIndex = <D extends Tyr.Document>(
   columns: (ColumnType<D> | ColumnGroupType<D>)[],
@@ -128,6 +129,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   wrapColumnHeaders?: boolean;
 
   children?: React.ReactNode;
+  expandableTable?: ExpandableConfig<D>;
 }
 
 // TODO:  if they specify a sort function for a column and we're not local report an error
@@ -1013,6 +1015,7 @@ export class TyrTableBase<
       rowSelection,
       emptyTablePlaceholder,
       resizableColumns,
+      expandableTable,
     } = this.props;
 
     const fieldCount = paths.length;
@@ -1098,6 +1101,7 @@ export class TyrTableBase<
           dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
           scroll={tableScroll}
+          {...(expandableTable ? { expandable: expandableTable } : {})}
           onRow={(record: any, rowIndex: any) => {
             return {
               onClick: () => {
