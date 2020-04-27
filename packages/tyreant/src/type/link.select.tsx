@@ -51,38 +51,37 @@ export class TyrLinkSelect<
       allowClear: this.props.allowClear,
     };
 
-    if (this.mode === 'tags') {
-      selectProps.onChange = async value => {
+    selectProps.onChange = async value => {
+      const link = this.link!;
+
+      if (this.mode === 'tags' && link.def.tag) {
         const values = value as string[];
-        const link = this.link!;
         const { onStateChange } = this.props;
 
-        if (link.def.tag) {
-          await Promise.all(
-            values.map(async value => {
-              let label = (this.link as any).byIdIndex[value];
+        await Promise.all(
+          values.map(async value => {
+            let label = (this.link as any).byIdIndex[value];
+
+            if (!label) {
+              label = findByLabel(props, this.link!, value);
 
               if (!label) {
-                label = findByLabel(props, this.link!, value);
+                onStateChange?.({ ready: false });
 
-                if (!label) {
-                  onStateChange?.({ ready: false });
+                label = await link.save({
+                  [link.labelField.pathName]: value,
+                });
 
-                  label = await link.save({
-                    [link.labelField.pathName]: value,
-                  });
-
-                  label.$cache();
-                  onStateChange?.({ ready: true });
-                }
+                label.$cache();
+                onStateChange?.({ ready: true });
               }
-            })
-          );
-        }
+            }
+          })
+        );
+      }
 
-        this.onTypeChangeFunc(value);
-      };
-    }
+      this.onTypeChangeFunc(value);
+    };
 
     if (onSelect) {
       selectProps.onSelect = (value: SelectValue, option: any) => {
