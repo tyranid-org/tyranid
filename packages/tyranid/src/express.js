@@ -703,6 +703,7 @@ export function generateClientLibrary() {
   Field.prototype._calcPathLabel = ${es5Fn(Field.prototype._calcPathLabel)};
 
   Field.prototype.format = ${es5Fn(Field.prototype.format)};
+  Field.prototype.isId = ${es5Fn(Field.prototype.isId)};
 
   Object.defineProperties(Field.prototype, {
     aux: {
@@ -848,6 +849,10 @@ export function generateClientLibrary() {
 
   Tyr.functions = { 
     paths: ${es5Fn(Tyr.functions.paths)}
+  };
+
+  Tyr.query = {
+    restrict: ${es5Fn(Tyr.query.restrict)}
   };
 
   Object.defineProperties(Collection.prototype, {
@@ -2313,7 +2318,7 @@ Collection.prototype.connect = function ({ app, auth, http }) {
         r.put(async (req, res) => {
           try {
             const data = req.body;
-            let { doc, rawOpts, path: pathName } = data;
+            let { doc, opts: rawOpts, path: pathName } = data;
 
             doc = await col.fromClient(doc, undefined, { req });
 
@@ -2323,16 +2328,16 @@ Collection.prototype.connect = function ({ app, auth, http }) {
             if (!to?.labelField && field.type.name !== 'uid')
               throw new AppError('labels not applicable to ' + pathName);
 
-            let limit = 30;
-            if (rawOpts && rawOpts.limit !== undefined) limit = rawOpts.limit;
-
             const opts = {
               auth: req.user,
               user: req.user,
               req,
-              limit,
+              limit: rawOpts?.limit ?? 30,
               sort: { [field.spath]: 1 },
             };
+            const q = rawOpts?.query;
+            if (q) opts.query = col.fromClientQuery(q);
+
             const results = await field.labels(
               doc,
               req.params.search || '',

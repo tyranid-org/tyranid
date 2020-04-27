@@ -5,7 +5,7 @@ import { Tyr } from 'tyranid/client';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import { decorateField } from '../core';
+import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 
 import CKEditor from '@ckeditor/ckeditor5-react';
@@ -65,6 +65,9 @@ export const TyrText = withThemedTypeContext('text', TyrTextBase);
 byName.text = {
   extends: 'string',
   component: TyrTextBase,
+  cellValue(path, document, props) {
+    return <>{getValue(props)}</>;
+  },
 };
 
 registerComponent('TyrText', TyrText);

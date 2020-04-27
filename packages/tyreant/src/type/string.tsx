@@ -7,8 +7,8 @@ import { Input } from 'antd';
 
 import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import { TyrFilter, Filter, FilterDdProps, Finder } from '../core/filter';
-import { TyrComponent, TyrPathProps, decorateField } from '../core';
+import { TyrFilter, FilterDdProps } from '../core/filter';
+import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 
 export const TyrStringBase = <D extends Tyr.Document = Tyr.Document>(
@@ -16,20 +16,18 @@ export const TyrStringBase = <D extends Tyr.Document = Tyr.Document>(
 ) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
-  return decorateField('string', props, () => {
-    return (
-      <Input
-        autoComplete="off"
-        type="text"
-        autoFocus={props.autoFocus}
-        placeholder={props.placeholder}
-        onChange={ev => onTypeChange(props, ev.target.value, ev)}
-        tabIndex={props.tabIndex}
-        className={props.className}
-        onPressEnter={props.onPressEnter}
-      />
-    );
-  });
+  return decorateField('string', props, () => (
+    <Input
+      autoComplete="off"
+      type="text"
+      autoFocus={props.autoFocus}
+      placeholder={props.placeholder}
+      onChange={ev => onTypeChange(props, ev.target.value, ev)}
+      tabIndex={props.tabIndex}
+      className={props.className}
+      onPressEnter={props.onPressEnter}
+    />
+  ));
 };
 
 export const TyrString = withThemedTypeContext('string', TyrStringBase);
@@ -86,6 +84,9 @@ byName.string = {
         $options: 'i',
       };
     }
+  },
+  cellValue(path, document, props) {
+    return <>{getValue(props)}</>;
   },
 };
 

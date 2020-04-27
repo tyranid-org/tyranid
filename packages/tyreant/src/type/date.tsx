@@ -10,7 +10,7 @@ const { RangePicker } = DatePicker;
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter } from '../core/filter';
-import { decorateField } from '../core';
+import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
@@ -119,16 +119,16 @@ byName.date = {
       };
     }
   },
-  cellValue: (
-    path: Tyr.PathInstance,
-    document: Tyr.Document,
-    props: TyrTypeProps<any>
-  ) => {
-    const v = path.get(document);
+  cellValue(path, document, props) {
+    const v = getValue(props);
     return !v
       ? ''
       : moment(v).format(
-          ((props.dateFormat as string) || DATE_FORMAT).toUpperCase()
+          (
+            (props.dateFormat as string) ||
+            Tyr.local.dateFormat ||
+            DATE_FORMAT
+          ).toUpperCase()
         );
   },
 };

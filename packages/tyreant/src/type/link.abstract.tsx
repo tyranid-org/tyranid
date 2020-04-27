@@ -120,7 +120,7 @@ export class TyrLinkAbstract<
     } else {
       if (controlMode === 'view') {
         Tyr.mapAwait(
-          path.tail.link!.idToLabel(path!.get(props.document)),
+          path.detail.link!.idToLabel(path!.get(props.document)),
           label => this.setState({ viewLabel: label })
         );
       } else {
@@ -182,15 +182,20 @@ export class TyrLinkAbstract<
   search = debounce(
     async (text?: string) => {
       const { props } = this;
-      const { document, getSearchIds } = props;
+      const { component, path, document, getSearchIds } = props;
       const link = this.link!;
 
       if (this.mounted) this.setState({ loading: true });
 
       const fetchId = ++this.lastFetchId;
 
+      let opts;
+      let query;
+      if (path?.detail.isId() && (query = component?.props.query))
+        opts = { query };
+
       const promises: Promise<Tyr.Document[]>[] = [
-        this.linkField!.labels(document!, text),
+        this.linkField!.labels(document!, text, opts),
       ];
 
       // include the current value

@@ -1,12 +1,37 @@
 import * as React from 'react';
 
-import { Avatar } from 'antd';
+import { Avatar, Tooltip } from 'antd';
 
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Tyr } from 'tyranid/client';
 
 import { TyrPathProps } from './path';
+import { TyrTypeProps } from '../type/type';
 
 export type TyrLabelRenderer = (doc: Tyr.Document<any>) => JSX.Element;
+
+export const labelForProps = (props: TyrTypeProps<any>) => {
+  const label = props.label;
+  return label || props.path!.pathLabel;
+};
+
+export const renderFieldLabel = (props: TyrTypeProps<any>) => {
+  const { path } = props;
+  const field = path?.tail;
+  const help = field?.def?.help;
+
+  return (
+    <>
+      {labelForProps(props)}
+      {help && (
+        <Tooltip title={help}>
+          &nbsp;
+          <ExclamationCircleOutlined />
+        </Tooltip>
+      )}
+    </>
+  );
+};
 
 export const getLabelRenderer = <D extends Tyr.Document>(
   pathProps: TyrPathProps<D>

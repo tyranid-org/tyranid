@@ -8,7 +8,7 @@ import { DatePicker } from 'antd';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter } from '../core/filter';
-import { decorateField } from '../core';
+import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
@@ -124,6 +124,18 @@ byName.datetime = {
         $lte: sv[1],
       };
     }
+  },
+  cellValue(path, document, props) {
+    const v = getValue(props);
+    return !v
+      ? ''
+      : moment(v).format(
+          (
+            (props.dateFormat as string) ||
+            Tyr.local.dateTimeFormat ||
+            DATETIME_FORMAT
+          ).toUpperCase()
+        );
   },
 };
 

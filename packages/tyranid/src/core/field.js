@@ -78,6 +78,9 @@ export default class Field {
 
       await LinkType.applyWhere(field, doc, query, opts);
 
+      const oq = opts.query;
+      if (oq) Object.assign(query, oq);
+
       return await to.labels(query, opts);
     } else if (field.type.name === 'uid') {
       const cols = field.of;
@@ -132,6 +135,7 @@ export default class Field {
     return this.path.spath;
   }
 
+  /** @isopmorphic */
   isId() {
     return this.name === '_id';
   }

@@ -255,6 +255,7 @@ export namespace Tyr {
     width?: number;
 
     format(value: any): string;
+    isId(): boolean;
     labelify(value: any): Promise<any>;
     labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
     validate(

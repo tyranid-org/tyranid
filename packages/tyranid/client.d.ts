@@ -336,6 +336,7 @@ declare module 'tyranid/client' {
       width?: number;
 
       format(value: any): string;
+      isId(): boolean;
       labelify(value: any): Promise<any>;
       labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
       validate(
@@ -446,5 +447,10 @@ declare module 'tyranid/client' {
     export function warn(...args: LogOption[]): Promise<void>;
     export function error(...args: LogOption[]): Promise<void>;
     export function fatal(...args: LogOption[]): Promise<void>;
+
+    export const query: QueryStatic;
+    export interface QueryStatic {
+      restrict(query: MongoQuery, doc: Tyr.Document): void;
+    }
   }
 }

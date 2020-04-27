@@ -2,9 +2,7 @@ import * as React from 'react';
 
 import { Moment } from 'moment';
 
-import { ExclamationCircleOutlined } from '@ant-design/icons';
-
-import { Form, Tooltip } from 'antd';
+import { Form } from 'antd';
 import { SelectValue } from 'antd/lib/select';
 
 import { Tyr } from 'tyranid/client';
@@ -22,6 +20,7 @@ import { registerComponent } from '../common';
 import { FormItemProps } from 'antd/lib/form';
 import { TyrSortDirection } from './typedef';
 import { stringWidth, wrappedStringWidth } from '../util/font';
+import { renderFieldLabel } from './label';
 
 const FormItem = Form.Item;
 
@@ -101,7 +100,6 @@ export interface TyrPathProps<D extends Tyr.Document>
    */
   noLabel?: boolean;
   onChange?: (value: any, event: any, props: TyrTypeProps<D>) => void;
-  readonly?: boolean;
   tabIndex?: number;
   validateTrigger?: string | string[] | false;
 
@@ -254,11 +252,6 @@ export function pathWidth(pathProps: TyrPathProps<any>, wrapTitle?: boolean) {
   }
 }
 
-export const labelForProps = (props: TyrTypeProps<any>) => {
-  const label = props.label;
-  return label || props.path!.pathLabel;
-};
-
 export const getValue = (props: TyrTypeProps<any>) => {
   const { path, document, value } = props;
   return value ? value.value : path!.get(document);
@@ -270,7 +263,7 @@ export const decorateField = (
   component: () => React.ReactElement
 ) => {
   const {
-    path,
+    colon,
     document,
     labelCol,
     wrapperCol,
@@ -278,35 +271,22 @@ export const decorateField = (
     help,
     htmlFor,
     hasFeedback,
-    colon,
+    mode,
+    path,
     noStyle,
     dependencies,
     validateTrigger,
   } = props;
-  const field = path?.tail;
 
-  if (props.hideOnCreate && document?.$isNew) {
+  if (props.hideOnCreate && document?.$isNew)
     return <div className="hide-on-create" />;
+
+  if (mode === 'view') {
+    const v = getValue(props);
+
+    if (v === undefined || (Array.isArray(v) && !v.length))
+      return <div className="hide-on-undefined" />;
   }
-
-  let label;
-  if (!props.noLabel) {
-    const help = field?.def?.help;
-
-    label = (
-      <>
-        {labelForProps(props)}
-        {help && (
-          <Tooltip title={help}>
-            &nbsp;
-            <ExclamationCircleOutlined />
-          </Tooltip>
-        )}
-      </>
-    );
-  }
-
-  const readonly = props.readonly;
 
   return (
     <FormItem
@@ -323,14 +303,14 @@ export const decorateField = (
       {...(validateTrigger !== undefined && { validateTrigger })}
       name={path!.identifier}
       className={className('tyr-' + name, props)}
-      label={label}
+      label={props.noLabel ? undefined : renderFieldLabel(props)}
       rules={generateRules(props)}
       // see https://github.com/ant-design/ant-design/issues/20803
       {...(name === 'boolean' && { valuePropName: 'checked' })}
     >
       {props.renderField && document ? (
         props.renderField(document)
-      ) : readonly ? (
+      ) : mode === 'view' ? (
         <span>{getCellValue(path!, document!, props)}</span>
       ) : (
         component()

@@ -389,11 +389,14 @@ export function TyrActionBar<D extends Tyr.Document>({
   className,
 }: TyrActionBarProps<D>) {
   const u = !utility;
-  const actions =
+  let actions =
     propsActions ||
     component.actions.filter(
       a => !a.isExit() && a.input !== 1 && a.hide !== true && !a.utility === u
     );
+
+  const { mode } = component.props;
+  if (mode) actions = actions.filter(a => mode !== 'view' || !a.is('save'));
 
   actions.sort((a, b) => Math.sign((a.order ?? 100) - (b.order ?? 100)));
 

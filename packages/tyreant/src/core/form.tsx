@@ -33,6 +33,10 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
     this.documents = documents;
   }
 
+  get component() {
+    return this.form;
+  }
+
   get id() {
     return this.document?.$id;
   }

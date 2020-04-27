@@ -1104,6 +1104,7 @@ export namespace Tyr {
     populateName?: string;
 
     format(value: any): string;
+    isId(): boolean;
     labelify(value: any): Promise<any>;
     labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
     validate(
@@ -1240,16 +1241,17 @@ export namespace Tyr {
   }
 
   export interface QueryStatic {
-    isQuery(doc: MongoQuery): boolean;
-    matches(doc: MongoQuery, b: RawMongoDocument): boolean;
-    merge(
-      a: MongoQuery | null | undefined,
-      b: MongoQuery | null | undefined
-    ): MongoQuery;
     intersection(
       a: MongoQuery | null | undefined,
       b: MongoQuery | null | undefined
     ): MongoQuery | undefined;
+    isQuery(query: MongoQuery): boolean;
+    matches(query: MongoQuery, doc: RawMongoDocument): boolean;
+    merge(
+      a: MongoQuery | null | undefined,
+      b: MongoQuery | null | undefined
+    ): MongoQuery;
+    restrict(query: MongoQuery, doc: Tyr.Document): void;
   }
 
   //

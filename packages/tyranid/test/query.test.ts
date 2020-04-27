@@ -11,6 +11,8 @@ const { expect } = chai;
 
 export function add() {
   describe('query.js', () => {
+    const { User, Job } = Tyr.collections;
+
     const { intersection, matches, merge } = Tyr.query,
       i1 = '111111111111111111111111',
       i2 = '222222222222222222222222',
@@ -561,6 +563,32 @@ export function add() {
         const serverQuery = User.fromClientQuery(clientQuery);
         const v = serverQuery.organization.$exists;
         expect(serverQuery.organization.$exists).to.eql(false);
+      });
+    });
+
+    describe('restrict()', () => {
+      it('perform simple restrictions', () => {
+        const user = new User();
+        Tyr.query.restrict({ job: Job.DESIGNER._id }, user);
+        expect(user.job).to.eql(Job.DESIGNER._id);
+      });
+
+      it('should not restrict on arrays unless the source is an array', () => {
+        const user = new User();
+        Tyr.query.restrict(
+          { job: [Job.DESIGNER._id, Job.SOFTWARE_ENGINEER._id] },
+          user
+        );
+        expect(user.job).to.be.undefined;
+
+        Tyr.query.restrict(
+          { backupJobs: [Job.DESIGNER._id, Job.SOFTWARE_ENGINEER._id] },
+          user
+        );
+        expect(user.backupJobs).to.eql([
+          Job.DESIGNER._id,
+          Job.SOFTWARE_ENGINEER._id,
+        ]);
       });
     });
   });

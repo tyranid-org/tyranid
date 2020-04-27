@@ -616,7 +616,7 @@ export class TyrTableBase<
 
           if (
             editable &&
-            !column.readonly &&
+            column.mode !== 'view' &&
             (!column.isEditable || column.isEditable(document))
           ) {
             const fieldProps = {

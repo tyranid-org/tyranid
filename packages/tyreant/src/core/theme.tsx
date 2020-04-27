@@ -165,12 +165,16 @@ export const withThemedTypeContext = (
       return <div className="no-path" />;
     }
   }
+
+  const component = parentProps && parentProps.component,
+    mode = component?.props.mode;
   return React.createElement(TypeControl, {
+    ...(mode && { mode }),
     ...props,
     form,
     document,
     path,
     searchPath,
-    component: parentProps && parentProps.component,
+    component,
   });
 };

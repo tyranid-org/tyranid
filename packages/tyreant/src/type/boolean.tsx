@@ -8,6 +8,7 @@ import { Tyr } from 'tyranid/client';
 
 import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
 import { TyrFilter } from '../core/filter';
+import { renderFieldLabel } from '../core/label';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
@@ -16,6 +17,10 @@ export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
   useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+
+  const inlineLabel = props.noLabel === undefined;
+
+  if (inlineLabel) props = { noLabel: true, ...props };
 
   return decorateField('boolean', props, () => {
     const onTypeChangeFunc = (ev: any) => {
@@ -29,14 +34,18 @@ export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
         //autoComplete="off"
         autoFocus={props.autoFocus}
         onChange={onTypeChangeFunc}
-      />
+      >
+        {inlineLabel && renderFieldLabel(props)}
+      </Switch>
     ) : (
       <Checkbox
         // autoComplete="off"
         autoFocus={props.autoFocus}
         onChange={onTypeChangeFunc}
         tabIndex={props.tabIndex}
-      />
+      >
+        {inlineLabel && renderFieldLabel(props)}
+      </Checkbox>
     );
   });
 };

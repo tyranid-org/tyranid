@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 
-import Tyr from '../tyr';
+const Tyr = require('../tyr').default;
 import Type from './type';
 import Collection from './collection';
 
@@ -27,22 +27,23 @@ function isOpObject(obj) {
   return true;
 }
 
-const queryPattern = /^\$/;
+//const queryPattern = /^\$/;
 
-const isQuery = value => {
-  if (true) return false;
+const isQuery = value => false;
+//if (true) return false;
 
+/*
   if (Tyr.isObject(value))
     for (const name in value)
       if (queryPattern.test(name) || isQuery(value[name])) return true;
 
   return false;
-};
+  */
+//};
 
 function validateInArray(arr) {
-  if (!_.isArray(arr)) {
+  if (!_.isArray(arr))
     throw new Error(`Invalid query, $in did not contain an array: "${arr}"`);
-  }
 
   return true;
 }
@@ -55,25 +56,13 @@ function validateInArray(arr) {
 
 // _.include() doesn't work with ObjectIds
 function arrayIncludes(arr, v) {
-  for (let i = 0, len = arr.length; i < len; i++) {
-    const av = arr[i];
-
-    if (Tyr.isEqual(av, v)) {
-      return true;
-    }
-  }
-
+  for (const av of arr) if (Tyr.isEqual(av, v)) return true;
   return false;
 }
 
 // _.intersection doesn't work with ObjectIds, TODO: replace with _.intersectionWith(..., Tyr.isEqual) when lodash upgraded
-function arrayIntersection(arr1, arr2) {
-  if (Tyr.isEqual(arr1, arr2)) {
-    return arr1;
-  }
-
-  return arr1.filter(v => arrayIncludes(arr2, v));
-}
+const arrayIntersection = (arr1, arr2) =>
+  Tyr.isEqual(arr1, arr2) ? arr1 : arr1.filter(v => arrayIncludes(arr2, v));
 
 // _.union doesn't work with ObjectIds, TODO: replace with _.unionWith(..., Tyr.isEqual) when lodash upgraded
 function union(arr1, arr2) {
@@ -602,6 +591,33 @@ function queryMatches(query, doc) {
 }
 
 //
+// Query Restriction
+//
+
+/** @isomorphic */
+function queryRestrict(query, doc) {
+  const col = doc.$model;
+  const { fields } = col;
+
+  for (const name in query) {
+    if (name.startsWith('$')) {
+      // TODO ... probably some TODO here, but some of this is dynamic and needs to be enforced in validations
+    } else {
+      const field = fields[name];
+      const qv = query[name];
+      // TODO:  what if query value is an array and doc[name] is not ...
+      //        if so, probably another thing that needs to be enforced in validation
+
+      if (Array.isArray(qv) && field?.type.name !== 'array') continue;
+
+      doc[name] = Tyr.cloneDeep(qv);
+    }
+  }
+
+  return true;
+}
+
+//
 // fromClient Query Conversion
 //
 
@@ -657,10 +673,12 @@ Collection.prototype.fromClientQuery = function (query) {
           server[n] = v;
           break;
         default:
+          const p = path ? path + '.' + n : n;
           if (_.isArray(v)) {
+            const field = col.parsePath(p).tail;
             server[n] = convertValue(field, v);
           } else {
-            server[n] = convert(col, path ? path + '.' + n : n, v);
+            server[n] = convert(col, p, v);
           }
       }
     }
@@ -711,6 +729,7 @@ const query = {
   merge,
   intersection: queryIntersection,
   matches: queryMatches,
+  restrict: queryRestrict,
 };
 
 Tyr.query = query;

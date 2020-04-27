@@ -30,10 +30,14 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   className?: string;
 
   theme?: TyrThemeProps;
+  mode?: 'edit' | 'view';
 
   // QUERYING
   collection?: Tyr.CollectionInstance<D>;
   document?: D;
+  query?:
+    | Tyr.MongoQuery
+    | ((this: TyrComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
 
   // PATHS
   paths?: (TyrPathLaxProps<D> | string)[];
@@ -268,8 +272,9 @@ export class TyrComponent<
    * This creates a new document for this control that is related to the parent documents
    * according to how the component hierarchy is laid out.
    */
-  createDocument(actionOpts: TyrActionFnOpts<D>) {
-    const { linkToParent, parent } = this;
+  createDocument(actionOpts?: TyrActionFnOpts<D>) {
+    const { linkToParent, parent, props } = this;
+    const { query } = props;
 
     const doc = new this.collection!({});
 
@@ -280,9 +285,12 @@ export class TyrComponent<
         if (parentDocument && linkToParent)
           linkToParent.path.set(doc, parentDocument.$id);
       } else if (linkToParent) {
-        linkToParent.path.set(doc, actionOpts.document!.$id);
+        // TODO:  if actionOpts isn't present, maybe use parentDocument ?
+        if (actionOpts) linkToParent.path.set(doc, actionOpts.document!.$id);
       }
     }
+
+    if (query) Tyr.query.restrict(query as Tyr.MongoQuery, doc);
 
     return doc;
   }
@@ -883,9 +891,12 @@ export class TyrComponent<
   resetFilters() {}
   resetSort() {}
 
-  reset(...args: ('filters' | 'sort' | 'widths')[]) {
+  reset(...args: ('filters' | 'sort' | 'widths' | 'document')[]) {
     for (const arg of args) {
       switch (arg) {
+        case 'document':
+          this.createDocument();
+          break;
         case 'filters':
           this.resetFilters();
           break;

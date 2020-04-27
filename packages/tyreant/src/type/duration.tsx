@@ -13,6 +13,7 @@ import { SliderValue } from 'antd/lib/slider';
 import { Tyr } from 'tyranid/client';
 
 import { mapPropsToForm, onTypeChange } from './type';
+import { getValue } from '../core/path';
 import { TyrFilter } from '../core/filter';
 import { byName, TyrTypeProps } from './type';
 import { decorateField } from '../core';
@@ -58,6 +59,18 @@ const columns: TimeMeta[] = [
   //timeMeta.seconds,
 ];
 
+const calculateUnitValues = (value: number) => {
+  const uvs = {} as { [timeUnit in TimeUnit]: number };
+  for (let v = value, ci = columns.length - 1; ci >= 0; ci--) {
+    const { name, size } = columns[ci];
+
+    uvs[name] = ci > 0 ? v % size : v;
+    v = Math.trunc(v / size);
+  }
+
+  return uvs;
+};
+
 export const TyrDurationBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
@@ -71,13 +84,7 @@ export const TyrDurationBase = <D extends Tyr.Document = Tyr.Document>(
   const [value, setValue] = useState(0);
   const [expanded, setExpanded] = useState(false);
 
-  const uvs = {} as { [timeUnit in TimeUnit]: number };
-  for (let v = value, ci = columns.length - 1; ci >= 0; ci--) {
-    const { name, size } = columns[ci];
-
-    uvs[name] = ci > 0 ? v % size : v;
-    v = Math.trunc(v / size);
-  }
+  const uvs = calculateUnitValues(value);
 
   const updateValue = (type: TimeUnit, unitValue: string | number) => {
     const parsedUnitValue = Number.parseInt(unitValue as string); // if it is a number this will also round it
@@ -270,6 +277,24 @@ byName.duration = {
         opts.query.$and = searchParams;
       }
     }
+  },
+  cellValue(path, document, props) {
+    const v = getValue(props),
+      uvs = calculateUnitValues(v);
+    return (
+      <>
+        {columns.map((column, cIdx) => {
+          const uv = uvs[column.name];
+          return (
+            <F key={cIdx}>
+              <b>{('0' + uv).slice(uv > 99 ? -3 : -2)}</b>
+              <label>{column.label}</label>
+              {cIdx + 1 < columns.length ? ' ' : ''}
+            </F>
+          );
+        })}
+      </>
+    );
   },
 };
 

@@ -8,8 +8,10 @@ import { TimePicker } from 'antd';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import { decorateField } from '../core';
+import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
+
+const TIME_FORMAT = 'HH:mm:ss';
 
 export const TyrTimeBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -38,6 +40,18 @@ byName.time = {
   component: TyrTimeBase,
   mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
     return moment(value);
+  },
+  cellValue(path, document, props) {
+    const v = getValue(props);
+    return !v
+      ? ''
+      : moment(v).format(
+          (
+            (props.dateFormat as string) ||
+            Tyr.local.timeFormat ||
+            TIME_FORMAT
+          ).toUpperCase()
+        );
   },
 };
 
