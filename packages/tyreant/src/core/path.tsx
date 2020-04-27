@@ -122,6 +122,7 @@ export interface TyrPathProps<D extends Tyr.Document>
 
   // NUMBERS / DATES
   searchRange?: [number, number] | [Moment, Moment];
+  formatter?: (value: number) => string;
 
   /**
    * This indicates that the following render function should be used to render values.  If render is specified
