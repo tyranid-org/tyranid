@@ -507,6 +507,7 @@ export class TyrTableBase<
       config,
       wrapColumnHeaders,
       resizableColumns,
+      onSelectRows,
     } = this.props;
 
     const {
@@ -518,7 +519,7 @@ export class TyrTableBase<
     const columns = this.activePaths;
 
     const fieldCount = columns.length;
-    const isEditingAnything = !!newDocumentTable || !!editingDocument;
+    const isEditingAnything = !!newDocument || !!editingDocument;
     let hasAnyFilter = false;
 
     const antColumns: OurColumnProps<D>[] = [];
@@ -527,7 +528,13 @@ export class TyrTableBase<
 
     let seenAnyColumnsWithNoWidth = false;
 
-    this.tableWidth = 0;
+    const multiActions = this.actions.filter(
+      a => a.input === '*' && a.hide !== true
+    );
+    const rowsSelectable =
+      (!newDocument && onSelectRows) || multiActions.length;
+
+    this.tableWidth = (rowsSelectable ? 60 : 0) + (isEditingAnything ? 128 : 0);
     columns.forEach((column, columnIdx) => {
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
@@ -787,7 +794,7 @@ export class TyrTableBase<
             }
 
             return (
-              <div style={{ display: 'flex' }}>
+              <div>
                 <Button
                   style={{ marginRight: 8, zIndex: 1 }}
                   size="small"
@@ -823,7 +830,8 @@ export class TyrTableBase<
 
           if (newDocument) {
             // Room for the save/cancel buttons, so column is same width
-            return <span style={{ width: '128px', display: 'inline-block' }} />;
+            // hide the actions when adding a new document
+            return <span />;
           }
 
           const thisActions = singularActions.filter(
@@ -892,7 +900,7 @@ export class TyrTableBase<
         },
         sorter: undefined,
         sortOrder: undefined,
-        width: isEditingAnything ? 160 : 40,
+        width: isEditingAnything ? 144 : 40,
         ...(pinActionsRight !== false ? { fixed: 'right' } : {}),
       });
     }

@@ -512,7 +512,8 @@ export class TyrManyComponent<
 
       const sortComparator = sortColumn.sortComparator;
 
-      documents.sort((a: Tyr.Document, b: Tyr.Document) => {
+      const tDocs = documents.slice();
+      tDocs.sort((a: Tyr.Document, b: Tyr.Document) => {
         let result = sortComparator
           ? sortComparator(a, b)
           : path
@@ -533,7 +534,9 @@ export class TyrManyComponent<
       });
 
       if (pathName && this.sortDirections[pathName] === 'descend')
-        documents.reverse();
+        tDocs.reverse();
+
+      this.documents = tDocs;
     }
 
     this.count = documents.length;

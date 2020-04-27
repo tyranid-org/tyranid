@@ -55,6 +55,8 @@ const DateType = new Type({
       return new UserError({ field, suffix: 'is not a date' });
     }
   },
+
+  width: 168,
 });
 
 export default DateType;
