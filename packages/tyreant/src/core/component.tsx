@@ -276,7 +276,7 @@ export class TyrComponent<
     const { linkToParent, parent, props } = this;
     const { query } = props;
 
-    const doc = new this.collection!({});
+    const doc = (props.document as D) || new this.collection!({});
 
     if (parent) {
       if (parent.collection === this.collection && parent.canMultiple) {

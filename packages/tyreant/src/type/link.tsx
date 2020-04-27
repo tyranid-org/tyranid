@@ -166,6 +166,8 @@ byName.link = {
     const link = linkFor(path);
     let { detail: field } = path;
 
+    if (field.isId()) return document.$label;
+
     if (link && link.labelField && !link.isStatic()) {
       path = path.walk(link.labelField.name);
       field = path.detail;
