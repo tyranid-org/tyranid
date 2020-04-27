@@ -61,7 +61,7 @@ export function generateRules(props: TyrTypeProps<any>): Rule[] {
       const rule: Rule = {
         validator: async (rule, value, callback) => {
           const msg = field.validate(props.document!, {
-            trait: props.component!.parentAction!.traits[0],
+            trait: props.component!.parentAction?.traits[0],
           });
           if (typeof msg === 'string') callback(msg);
         },

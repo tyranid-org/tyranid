@@ -93,7 +93,7 @@ export class TyrComponent<
     if (parent && !collection)
       collection = parent.collection as Tyr.CollectionInstance<D>;
 
-    this.collection = collection!;
+    this.collection = collection = (collection || props.document?.$model)!;
 
     if (paths && collection) this.refreshPaths();
     else if (collection) this.paths = defaultPathsProp(collection);
@@ -713,7 +713,8 @@ export class TyrComponent<
       });
     }
 
-    const addingSave = this.canEdit && auto('view');
+    const addingSave =
+      this.canEdit && (auto('view') || enacted('view') || enacted('edit'));
 
     if (auto('cancel')) {
       enact({
