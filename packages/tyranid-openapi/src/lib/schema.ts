@@ -162,7 +162,8 @@ function schemaType(
     case 'date':
     case 'datetime':
     case 'time':
-    case 'email': {
+    case 'email':
+    case 'text': {
       Object.assign(out, { type: 'string' });
       break;
     }

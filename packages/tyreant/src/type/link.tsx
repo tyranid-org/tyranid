@@ -162,15 +162,44 @@ byName.link = {
     }
   },
 
-  cellValue: (path, document, props) => {
+  cellValue(path, document, props) {
     const link = linkFor(path);
-    let { detail: field } = path;
+    const { detail: field } = path;
+
+    if (path.tail.type.name === 'array') {
+      // array of links
+      const arr = path.get(document);
+
+      if (Array.isArray(arr)) {
+        return arr
+          .map((val, idx) =>
+            byName.link.cellValue!(path.walk(idx), document, props)
+          )
+          .join(', ');
+      } else {
+        return arr;
+      }
+    }
 
     if (field.isId()) return document.$label;
 
-    if (link && link.labelField && !link.isStatic()) {
-      path = path.walk(link.labelField.name);
-      field = path.detail;
+    const lf = link?.labelField;
+    if (lf && !link!.isStatic()) {
+      const v = path.get(document);
+      if (!v) return undefined;
+
+      path = path.walk(lf.name);
+      const populatedLabelValue = path.get(document);
+      if (populatedLabelValue) {
+        const { detail } = path;
+        return detail.type.format(detail, populatedLabelValue);
+      }
+
+      const linkedDoc = link!.byIdIndex[v];
+      if (linkedDoc) return linkedDoc.$label;
+
+      // TODO:  queue up a label query and a rerender?
+      return 'N/A';
     }
 
     return field.type

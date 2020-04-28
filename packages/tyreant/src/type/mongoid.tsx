@@ -34,7 +34,7 @@ export const TyrMongoIdBase = <D extends Tyr.Document = Tyr.Document>(
   });
 };
 
-export const TyrMongoId = withThemedTypeContext('integer', TyrMongoIdBase);
+export const TyrMongoId = withThemedTypeContext('mongoid', TyrMongoIdBase);
 
 byName.mongoid = {
   component: TyrMongoIdBase,

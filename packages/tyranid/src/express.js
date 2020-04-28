@@ -1259,7 +1259,15 @@ export function generateClientLibrary() {
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(docs => docs && docs.length ? new col(docs[0]) : null);
+    }).then(docs => {
+      if (docs && docs.length) {
+        const d = new col(docs[0]);
+        this.cache(d, undefined, true);
+        return d;
+      }
+
+      return null;
+    });
   };
 
   Collection.prototype.findAll = function(opts) {

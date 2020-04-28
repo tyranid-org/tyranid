@@ -255,11 +255,11 @@ export function pathWidth(pathProps: TyrPathProps<any>, wrapTitle?: boolean) {
 
 export const getValue = (props: TyrTypeProps<any>) => {
   const { path, document, value } = props;
-  return value ? value.value : path!.get(document);
+  return (value ? value.value : path!.get(document)) || undefined; // convert null to undefined
 };
 
 export const decorateField = (
-  name: string,
+  typeName: string,
   props: TyrTypeProps<any>,
   component: () => React.ReactElement
 ) => {
@@ -303,16 +303,16 @@ export const decorateField = (
       {...(dependencies && { dependencies })}
       {...(validateTrigger !== undefined && { validateTrigger })}
       name={path!.identifier}
-      className={className('tyr-' + name, props)}
+      className={className('tyr-' + typeName, props)}
       label={props.noLabel ? undefined : renderFieldLabel(props)}
       rules={generateRules(props)}
       // see https://github.com/ant-design/ant-design/issues/20803
-      {...(name === 'boolean' && { valuePropName: 'checked' })}
+      {...(typeName === 'boolean' && { valuePropName: 'checked' })}
     >
       {props.renderField && document ? (
         props.renderField(document)
       ) : mode === 'view' ? (
-        <span>{getCellValue(path!, document!, props)}</span>
+        <span>{getCellValue(path!, document!, props, typeName)}</span>
       ) : (
         component()
       )}

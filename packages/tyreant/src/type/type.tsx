@@ -328,12 +328,14 @@ export const getFinder = (path: Tyr.PathInstance) => {
 export const getCellValue = (
   path: Tyr.PathInstance,
   document: Tyr.Document,
-  props: TyrTypeProps<any>
+  props: TyrTypeProps<any>,
+  typeName?: string
 ) => {
   const { tail: field } = path;
 
-  if (props.typeUi) {
-    const { cellValue } = assertTypeUi(props.typeUi);
+  typeName = props.typeUi || typeName;
+  if (typeName) {
+    const { cellValue } = assertTypeUi(typeName);
     if (cellValue) return cellValue(path, document, props);
   }
 

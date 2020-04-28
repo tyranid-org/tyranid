@@ -16,7 +16,7 @@
 
   --text-color: #000;
   --header-text-color: #222;
-  --text-label-color: #444;
+  --text-label-color: #888;
   --text-highlight-color: #7f3f00;
   --text-delete-color: var(--text-highlight-color);
 
@@ -125,9 +125,17 @@
     margin: 8px 0 0;
   }
 
-  //.ant-row.ant-form-item {
-  // margin-bottom: 0;
-  //}
+  .ant-row.ant-form-item {
+    color: var(--text-color);
+
+    .ant-col.ant-form-item-label {
+      padding-bottom: 0;
+
+      label {
+        color: var(--text-label-color);
+      }
+    }
+  }
 
   .date {
     display: block;

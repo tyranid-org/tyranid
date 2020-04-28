@@ -344,48 +344,50 @@ Path.prototype.get = function (obj) {
       throw new Error(
         'Expected an object or array at ' + np.pathName(pi) + ', but got ' + obj
       );
+    } else if (
+      pi &&
+      fields[pi - 1].type.name === 'object' &&
+      path[pi] === '_'
+    ) {
+      arrayOrMapInPath = true; // map
+      pi++;
+      _.each(obj, v => getInner(pi, v));
     } else {
-      if (pi && fields[pi - 1].type.name === 'object' && path[pi] === '_') {
-        arrayOrMapInPath = true; // map
-        pi++;
-        _.each(obj, v => getInner(pi, v));
-      } else {
-        let v,
-          name = path[pi];
+      let v,
+        name = path[pi];
 
-        if (
-          pi < plen - 1 &&
-          // link
-          (fields[pi].link ||
-            // array of link
-            (pi < plen - 2 &&
-              fields[pi].type.name === 'array' &&
-              fields[pi + 1].link))
-        ) {
-          // if they are dereferencing a link, first check to see if an object exists by the current name
-          // (the current name could be a denormalized or populated reference already)
-          v = obj[name];
-          if (!_.isObject(v) || Array.isArray(v)) {
-            // ... look for a populated or denormalized value
-            let popName = Path.populateNameFor(name, false);
+      if (
+        pi < plen - 1 &&
+        // link
+        (fields[pi].link ||
+          // array of link
+          (pi < plen - 2 &&
+            fields[pi].type.name === 'array' &&
+            fields[pi + 1].link))
+      ) {
+        // if they are dereferencing a link, first check to see if an object exists by the current name
+        // (the current name could be a denormalized or populated reference already)
+        v = obj[name];
+        if (!_.isObject(v) || Array.isArray(v)) {
+          // ... look for a populated or denormalized value
+          let popName = Path.populateNameFor(name, false);
+          v = obj[popName];
+          if (v === undefined) {
+            popName = Path.populateNameFor(name, true);
             v = obj[popName];
-            if (v === undefined) {
-              popName = Path.populateNameFor(name, true);
-              v = obj[popName];
 
-              if (v === undefined) {
-                // they are dereferencing a link but there is no populated or denormalized value, return undefined
-                // rather than throw an error
-                return undefined;
-              }
+            if (v === undefined) {
+              // they are dereferencing a link but there is no populated or denormalized value, return undefined
+              // rather than throw an error
+              return undefined;
             }
           }
-        } else {
-          v = obj[name];
         }
-
-        getInner(pi + 1, v);
+      } else {
+        v = obj[name];
       }
+
+      getInner(pi + 1, v);
     }
   }
 
