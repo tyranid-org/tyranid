@@ -254,9 +254,9 @@ export function pathWidth(pathProps: TyrPathProps<any>, wrapTitle?: boolean) {
   }
 }
 
-export const getValue = (props: TyrTypeProps<any>) => {
+export const getValue = (props: TyrTypeProps<any>, doc?: Tyr.Document<any>) => {
   const { path, document, value } = props;
-  return (value ? value.value : path!.get(document)) || undefined; // convert null to undefined
+  return (value ? value.value : path!.get(document || doc)) || undefined; // convert null to undefined
 };
 
 export const decorateField = (

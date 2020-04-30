@@ -279,7 +279,7 @@ byName.duration = {
     }
   },
   cellValue(path, document, props) {
-    const v = getValue(props),
+    const v = getValue(props, document),
       uvs = calculateUnitValues(v);
     return (
       <>

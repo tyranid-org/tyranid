@@ -87,7 +87,7 @@ byName.text = {
   extends: 'string',
   component: TyrTextBase,
   cellValue(path, document, props) {
-    return <>{getValue(props)}</>;
+    return <>{getValue(props, document)}</>;
   },
 };
 

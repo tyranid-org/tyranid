@@ -86,7 +86,7 @@ byName.string = {
     }
   },
   cellValue(path, document, props) {
-    return <>{getValue(props)}</>;
+    return <>{getValue(props, document)}</>;
   },
 };
 
