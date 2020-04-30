@@ -415,6 +415,7 @@ declare module 'tyranid/client' {
     export interface Document<ID extends AnyIdType = AnyIdType> {
       $access?: AccessResult;
       $cache(): this;
+      $changed: boolean;
       $clone(): this;
       $cloneDeep(): this;
       $id: IdType<this>;

@@ -582,6 +582,23 @@ export function generateClientLibrary() {
       configurable: false
     },
 
+    $changed: {
+      get() {
+        const { $model, $orig } = this;
+        if (!$orig) return true;
+
+        const { fields } = $model;
+        for (const fieldName in fields) {
+          if (!Tyr.isEqual(this[fieldName], $orig[fieldName]))
+            return true;
+        }
+
+        return false;
+      },
+      enumerable:   false,
+      configurable: false
+    },
+
     $id: {
       get() {
         return this[this.$model.def.primaryKey.field];

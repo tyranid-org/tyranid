@@ -364,6 +364,8 @@ export class TyrTableBase<
       return;
     }
 
+    if (!document.$changed) return;
+
     this.isSavingDocument = true;
     const docIdx = findIndex(documents, d => d.$id === document!.$id);
     const collection = document.$model;
