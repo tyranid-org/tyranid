@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
+import { Input } from 'antd';
+
 import { Tyr } from 'tyranid/client';
 
 import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
@@ -10,6 +12,8 @@ import { registerComponent } from '../common';
 
 import CKEditor from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+
+const { TextArea } = Input;
 
 const CKEditorWrapper = <D extends Tyr.Document = Tyr.Document>({
   value = {},
@@ -57,7 +61,24 @@ export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
 ) => {
   useEffect(() => mapPropsToForm(props), [props.path?.name]);
 
-  return decorateField('text', props, () => <CKEditorWrapper props={props} />);
+  return decorateField('text', props, () => {
+    switch (props.as) {
+      case 'textarea':
+        return (
+          <TextArea
+            placeholder={props.placeholder}
+            autoFocus={props.autoFocus}
+            onChange={ev => onTypeChange(props, ev.target.value, ev)}
+            tabIndex={props.tabIndex}
+            rows={props.textAreaRows || 6}
+            onPressEnter={props.onPressEnter}
+          />
+        );
+
+      default:
+        return <CKEditorWrapper props={props} />;
+    }
+  });
 };
 
 export const TyrText = withThemedTypeContext('text', TyrTextBase);
@@ -73,15 +94,5 @@ byName.text = {
 registerComponent('TyrText', TyrText);
 
 /*
-import { Input } from 'antd';
-const { TextArea } = Input;
 
-<TextArea
-placeholder={props.placeholder}
-autoFocus={props.autoFocus}
-onChange={ev => onTypeChange(props, ev.target.value, ev)}
-tabIndex={props.tabIndex}
-rows={props.textAreaRows || 6}
-onPressEnter={props.onPressEnter}
-/>
 */

@@ -1529,6 +1529,7 @@ export function generateClientLibrary() {
     visitPopulations(this, doc, (field, value) => field.link.cache(value));
 
     if (existing) {
+      const updating = [];
       const fields = this.fields;
       for (const fName in fields) {
         if (fields.hasOwnProperty(fName)) {
@@ -1538,14 +1539,15 @@ export function generateClientLibrary() {
           if (!f.readonly && !f.computed) {
             const n = f.name,
                   v = doc[n];
-            if (v !== undefined) {
+            if (v !== undefined && !Tyr.isEqual(existing[n], v)) {
               existing[n] = v;
+              updating.push(n);
             }
           }
         }
       }
 
-      if (!silent) fireDocUpdate(existing, 'update');
+      if (!silent && updating.length) fireDocUpdate(existing, 'update');
       return existing;
     } else {
       if (!(doc instanceof this)) {

@@ -67,7 +67,8 @@ export interface TyrPathProps<D extends Tyr.Document>
 
   as?:
     | 'radio' // links
-    | 'switch'; // booleans
+    | 'switch' // booleans
+    | 'textarea'; // text
   default?: any;
   label?: string | React.ReactNode;
   className?: string;

@@ -14,6 +14,7 @@ import {
   getValue,
   getLabelRenderer,
 } from '../core';
+import { SearchOutlined } from '@ant-design/icons';
 
 type ModeOption = SelectProps<any>['mode'];
 
@@ -90,7 +91,7 @@ export class TyrLinkAbstract<
   link?: Tyr.CollectionInstance;
   linkField?: Tyr.FieldInstance;
   mounted = false;
-  mode: ModeOption | undefined = undefined;
+  mode: ModeOption | undefined;
 
   private initLink(path: Tyr.PathInstance) {
     const { detail: field } = path;
@@ -103,7 +104,7 @@ export class TyrLinkAbstract<
     let searched = false;
 
     this.mounted = true;
-    const { path, searchPath, mode: controlMode } = props;
+    const { path, searchPath } = props;
 
     if (!path) throw new Error('TyrLink not passed a path!');
 
@@ -118,21 +119,7 @@ export class TyrLinkAbstract<
         throw new Error('TyrLink passed a non-link');
       }
     } else {
-      if (controlMode === 'view') {
-        Tyr.mapAwait(
-          path.detail.link!.idToLabel(path!.get(props.document)),
-          label => this.setState({ viewLabel: label })
-        );
-      } else {
-        if (this.link.isStatic()) {
-          this.setState({
-            documents: sortLabels(this.link.values, props),
-          });
-        } else {
-          await this.search();
-          searched = true;
-        }
-      }
+      searched = await this.initialSearch();
     }
 
     const { tail: field } = path!;
@@ -168,6 +155,36 @@ export class TyrLinkAbstract<
 
   componentWillUnmount() {
     this.mounted = false;
+  }
+
+  loadedMode?: 'view' | 'edit' | 'search';
+  async initialSearch() {
+    const { props } = this;
+    const { path, mode: controlMode } = props;
+    let searched = false;
+    let v = path!.get(props.document);
+    if (v === null) {
+      path!.set(props.document as D, undefined);
+      v = undefined;
+    }
+
+    if (controlMode === 'view') {
+      Tyr.mapAwait(path!.detail.link!.idToLabel(v), label =>
+        this.setState({ viewLabel: label })
+      );
+    } else {
+      if (this.link!.isStatic()) {
+        this.setState({
+          documents: sortLabels(this.link!.values, props),
+        });
+      } else {
+        await this.search();
+        searched = true;
+      }
+    }
+
+    this.loadedMode = controlMode;
+    return searched;
   }
 
   // TODO:  @memo
@@ -245,9 +262,16 @@ export class TyrLinkAbstract<
   };
 
   render() {
+    if (!this.mounted) return <></>;
+
     const { props } = this;
     const { mode: controlMode } = props;
     const { viewLabel, initialLoading } = this.state;
+
+    if (this.loadedMode !== this.props.mode) {
+      this.initialSearch();
+      return <></>;
+    }
 
     if (controlMode === 'view') {
       return decorateField('link', props, () => (

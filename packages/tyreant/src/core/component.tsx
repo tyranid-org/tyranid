@@ -555,13 +555,12 @@ export class TyrComponent<
     const { parent, linkToParent, linkFromParent } = this;
     const parentLink = linkToParent || linkFromParent;
 
-    let createAction: TyrAction<D> | undefined;
-    let searchAction: TyrAction<D> | undefined;
-
     const { traits } = this.props;
     const enacted = (trait: Tyr.ActionTrait) => actions.some(a => a.is(trait));
     const enactedEntrance = () =>
       actions.some(a => isEntranceTrait(a.traits[0]));
+
+    const entranceActions: TyrAction<D>[] = [];
 
     const auto = (trait: Tyr.ActionTrait) => {
       if (enacted(trait)) return false;
@@ -664,11 +663,7 @@ export class TyrComponent<
 
       this.enact(action);
 
-      if (action.is('create')) {
-        createAction = action;
-      } else if (action.is('search')) {
-        searchAction = action;
-      }
+      if (action.isEntrance()) entranceActions.push(action);
     };
 
     // Manual Actions
@@ -734,14 +729,22 @@ export class TyrComponent<
     // Automatic Actions
 
     if (!parent) {
-      if (props.document) this.document = props.document as D;
-      if (createAction || searchAction) {
-        setTimeout(() => {
-          (createAction || searchAction)!.act({});
-        });
+      if (props.document) {
+        this.document = props.document as D;
+        const a = entranceActions.find(a => a.is('edit', 'view', 'search'));
+        if (a) {
+          setTimeout(() => a.act(this.actionFnOpts()));
+          return;
+        }
       } else {
-        this.decorator?.open(this.actionFnOpts());
+        const a = entranceActions.find(a => a.is('create', 'search'));
+        if (a) {
+          setTimeout(() => a.act({}));
+          return;
+        }
       }
+
+      this.decorator?.open(this.actionFnOpts());
     }
   }
 
@@ -896,7 +899,7 @@ export class TyrComponent<
     for (const arg of args) {
       switch (arg) {
         case 'document':
-          this.createDocument();
+          this.document = this.createDocument();
           break;
         case 'filters':
           this.resetFilters();
