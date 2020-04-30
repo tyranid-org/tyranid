@@ -1526,10 +1526,10 @@ export function generateClientLibrary() {
       return existing;
     }
     
-    visitPopulations(this, doc, (field, value) => field.link.cache(value));
+    visitPopulations(this, doc, (field, value) => field.link.cache(value, undefined, silent));
 
     if (existing) {
-      const updating = [];
+      let updating = false;
       const fields = this.fields;
       for (const fName in fields) {
         if (fields.hasOwnProperty(fName)) {
@@ -1541,13 +1541,13 @@ export function generateClientLibrary() {
                   v = doc[n];
             if (v !== undefined && !Tyr.isEqual(existing[n], v)) {
               existing[n] = v;
-              updating.push(n);
+              updating = true;
             }
           }
         }
       }
 
-      if (!silent && updating.length) fireDocUpdate(existing, 'update');
+      if (!silent && updating) fireDocUpdate(existing, 'update');
       return existing;
     } else {
       if (!(doc instanceof this)) {
