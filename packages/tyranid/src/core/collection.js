@@ -663,7 +663,7 @@ export default class Collection {
     const lif = this.labelImageField;
     if (lif) fields[lif.pathName] = 1;
 
-    const getFn = lf.def.get;
+    const getFn = lf.def.get || lf.def.getServer;
     if (getFn) {
       const paths = Tyr.functions.paths(getFn);
 

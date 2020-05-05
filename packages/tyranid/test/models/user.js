@@ -55,7 +55,7 @@ var User = new tyr.Collection({
       client: true,
       labelField: true,
       db: true,
-      get: function () {
+      getServer() {
         return this.name ? this.name.first + ' ' + this.name.last : undefined;
       },
     },

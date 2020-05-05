@@ -665,6 +665,7 @@ Object.defineProperties(Path.prototype, {
 
 Path.prototype.projectify = function (projection) {
   const { detail, spath } = this;
+  const { def } = detail;
 
   if (detail.db) projection[spath] = 1;
 
@@ -672,7 +673,7 @@ Path.prototype.projectify = function (projection) {
   //        in case we might want to dynamically recalculate the value.  there might be some cases
   //        where we don't want to do this
   //if (!this.db) {
-  const getFn = detail.def.get;
+  const getFn = def.get || def.getServer || def.getClient;
   if (getFn) {
     let proj = detail._projection;
     if (!proj) {
