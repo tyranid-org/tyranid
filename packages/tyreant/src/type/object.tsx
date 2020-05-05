@@ -167,7 +167,7 @@ byName.object = {
     value: any,
     props: TyrTypeProps<any>
   ) {
-    const { detail: field } = path;
+    //const { detail: field } = path;
 
     /*
     if (value) {

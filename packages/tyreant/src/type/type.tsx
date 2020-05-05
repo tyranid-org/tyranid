@@ -10,7 +10,6 @@ import {
   TyrPathLaxProps,
   TyrPathProps,
   TyrComponent,
-  TyrRouter,
   TyrThemeProps,
 } from '../core';
 

@@ -249,6 +249,7 @@ export namespace Tyr {
     $metaType: 'document';
     $model: CollectionInstance<this>;
     $options: Options_AllFind;
+    $orig?: this;
     $populate(fields: any, denormal?: boolean): Promise<this>;
     $redact(): void;
     $remove(opts?: { auth?: Document }): Promise<void>;
@@ -626,6 +627,11 @@ export namespace Tyr {
 
   export interface ServiceMethodDefinition<D extends Document<AnyIdType>>
     extends BaseMethodDefinition<D> {
+    /**
+     * Determines whether this service can be called from the client.
+     */
+    client?: boolean;
+
     /**
      * This is the full URL path for this service.  This will be automatically generated
      * if you do not specify one.  Recommended to leave this blank and go with auto-generated

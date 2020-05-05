@@ -22,6 +22,7 @@ export default class Field {
     return this.def.aux === true;
   }
 
+  // TODO:  this should return true if it has a get ... computed && readonly means get and no setter
   get computed() {
     const def = this.def;
     return !!(def.get || def.getServer) && !(def.set || def.setServer);

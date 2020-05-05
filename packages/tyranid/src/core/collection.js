@@ -1723,8 +1723,13 @@ export default class Collection {
 
     _.each(pojo, (v, k) => {
       const field = fields[k];
+      let fdef;
 
-      if (field && (k === '_id' || !field.readonly)) {
+      if (
+        field &&
+        (k === '_id' || !field.readonly) &&
+        !((fdef = field.def).get || fdef.getServer)
+      ) {
         const type = field.type;
 
         if (!type) {

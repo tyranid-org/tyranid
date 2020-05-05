@@ -10,7 +10,7 @@ export function instrumentServerServices(col) {
     for (const methodName in service) {
       const method = service[methodName];
 
-      if (!method.route) {
+      if (!method.route && method.client !== false) {
         method.route = `/api/${col.def.name}/${methodName}`;
       }
 
@@ -34,6 +34,8 @@ export function instrumentExpressServices(col, app, auth) {
 
   for (const methodName in service) {
     const method = service[methodName];
+    if (method.client === false) continue;
+
     const { params, return: returns, route } = method;
 
     app

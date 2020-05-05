@@ -17,6 +17,7 @@ import { TyrArrayList } from './array.list';
 import { TyrArrayFixed } from './array.fixed';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
+import { propagateMaybeChanged } from 'mobx/lib/internal';
 
 export const TyrArrayBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -74,23 +75,35 @@ byName.array = {
       // TODO:  do we need to figure out a way to store a length on the form array somewhere to account for a sparse
       //        array?  right now we're assuming it's a dense array and we stop as soon as we find an undefined element
 
-      let v: any;
+      const { tail: field } = path;
+      if (field.def.set) {
+        // This is a computed array which means we cannot walk it's values below and instead need to assign it here
 
-      /*
-      let mappedArray = path.get(document);
-      if (!mappedArray) {
-        mappedArray = [];
-        path.set(document, mappedArray);
-      }
-      */
+        path.set(
+          document,
+          arrayValue.map((v: any) =>
+            mapFormValueToDocumentValue(path.walk('_'), v, props)
+          )
+        );
+      } else {
+        let v: any;
 
-      let i = 0;
-      for (; (v = arrayValue[i]) !== undefined; i++) {
-        mapFormValueToDocument(path.walk(i), v, document, props);
-      }
+        /*
+        let mappedArray = path.get(document);
+        if (!mappedArray) {
+          mappedArray = [];
+          path.set(document, mappedArray);
+        }
+        */
 
-      if (i === 0) {
-        // TODO: do we need to remove the array from the document ?
+        let i = 0;
+        for (; (v = arrayValue[i]) !== undefined; i++) {
+          mapFormValueToDocument(path.walk(i), v, document, props);
+        }
+
+        if (i === 0) {
+          // TODO: do we need to remove the array from the document ?
+        }
       }
     } else {
       // TODO: do we need to remove the array from the document ?

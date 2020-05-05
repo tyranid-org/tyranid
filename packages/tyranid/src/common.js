@@ -359,13 +359,16 @@ export function toClient(col, doc, opts) {
 
   if (doc.$access) obj.$access = doc.$access;
 
-  // send down computed fields ... maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
+  // send down computed fields we can't compute on the client ...
+  // maybe move everything into this so we only send down what we know about ... can also calculate populated names to send
   for (const name in fields) {
     if (!fields.hasOwnProperty(name)) continue;
 
     const field = fields[name];
-    const fieldDef = field.def,
-      getFn = fieldDef.getServer || fieldDef.get;
+    const fieldDef = field.def;
+    if (fieldDef.get || fieldDef.getClient) continue;
+
+    const getFn = fieldDef.getServer;
     if (!getFn) continue;
 
     if (

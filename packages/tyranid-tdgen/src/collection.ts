@@ -119,7 +119,10 @@ export function enumStaticInterface(col: Tyr.CollectionInstance) {
   `;
 }
 
-export function colServiceMethods(col: Tyr.CollectionInstance) {
+export function colServiceMethods(
+  col: Tyr.CollectionInstance,
+  mode: 'client' | 'server' | 'isomorphic'
+) {
   const { def: cdef } = col;
   const { service } = cdef;
 
@@ -129,6 +132,10 @@ export function colServiceMethods(col: Tyr.CollectionInstance) {
 
   for (const methodName in service) {
     const mdef = service[methodName];
+
+    if (mdef.client === false && (mode === 'client' || mode === 'isomorphic'))
+      continue;
+
     const { params, return: returns } = mdef;
 
     const tags = [];
@@ -264,7 +271,8 @@ export function colService(
      * Service definition for "${name}" collection
      */
     export interface ${colName}Service<ObjIdType = 'string'> {${colServiceMethods(
-        col
+        col,
+        mode
       )} 
     }\n`;
 
@@ -272,14 +280,14 @@ export function colService(
       //   return `
       // export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
       return `
-    export interface ${colName}Service {${colServiceMethods(col)}
+    export interface ${colName}Service {${colServiceMethods(col, mode)}
     }\n`;
 
     case 'server':
       //   return `;
       // export interface ${colName}Service extends Isomorphic.${colName}Service<ObjIdType> {}`;
       return `
-    export interface ${colName}Service {${colServiceMethods(col)}
+    export interface ${colName}Service {${colServiceMethods(col, mode)}
     }\n`;
   }
 }

@@ -250,7 +250,10 @@ class Serializer {
     this.depth++;
 
     for (const methodName in service) {
-      this.serviceMethod(methodName, service[methodName]);
+      const method = service[methodName];
+
+      if (method.client !== false)
+        this.serviceMethod(methodName, service[methodName]);
     }
 
     this.depth--;
@@ -1420,7 +1423,16 @@ export function generateClientLibrary() {
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(docs => Array.isArray(docs) ? docs.map(doc => new this(doc)) : new this(docs));
+    }).then(savedDoc => {
+      if (Array.isArray(savedDoc)) {
+        for (let i=0, len = savedDoc.length; i<len; i++)
+          doc[i]._id = savedDoc[i]._id;
+        return savedDoc.map(doc => new this(doc));
+      } else {
+        doc._id = savedDoc._id;
+        return new this(savedDoc);
+      }
+    });
   };
 
   Collection.prototype.remove = function(idOrQuery) {

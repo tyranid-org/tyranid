@@ -57,6 +57,7 @@ export class TyrLinkAutoComplete<
             } else {
               // they entered in a new string that does not match an existing option
               this.value = value;
+              document?.$model.labelField?.path.set(document, value);
             }
             //} else {
             //throw new Tyr.AppError('autocomplete mode not supported yet');
