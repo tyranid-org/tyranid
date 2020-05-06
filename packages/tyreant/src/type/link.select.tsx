@@ -96,6 +96,8 @@ export class TyrLinkSelect<
       };
     }
 
+    if (!documents?.length) return <></>;
+
     return decorateField('link', props, () => (
       <Select {...selectProps}>
         {(props.optionFilter ? props.optionFilter(documents) : documents).map(

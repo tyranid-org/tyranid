@@ -254,8 +254,6 @@ const LinkFilterDropdown = ({
               const allLabels: Tyr.Document[] = [];
 
               if (pathProps.filterOptionLabel) {
-                const allLabels: Tyr.Document[] = [];
-
                 for (const d of documents) {
                   const values = pathProps.filterOptionLabel!(
                     d
