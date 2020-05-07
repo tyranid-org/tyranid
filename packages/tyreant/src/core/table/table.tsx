@@ -534,7 +534,10 @@ export class TyrTableBase<
     const rowsSelectable =
       (!newDocument && onSelectRows) || multiActions.length;
 
-    this.tableWidth = (rowsSelectable ? 60 : 0) + (isEditingAnything ? 128 : 0);
+    this.tableWidth =
+      (rowsSelectable ? 60 : 0) +
+      (isEditingAnything ? 128 : 0) +
+      768 /* action bar */;
     columns.forEach((column, columnIdx) => {
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
