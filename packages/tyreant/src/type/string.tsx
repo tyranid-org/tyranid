@@ -39,7 +39,7 @@ byName.string = {
     //let searchInputRef: Input | null = null;
 
     return {
-      filterDropdown: (filterDdProps: FilterDdProps) => (
+      filterDropdown: filterDdProps => (
         <TyrFilter<string>
           typeName="string"
           component={component}
@@ -53,16 +53,14 @@ byName.string = {
               //}}
               placeholder={`Search ${props.label || path!.pathLabel}`}
               value={searchValue}
-              onChange={e => {
-                setSearchValue(e.target.value);
-              }}
+              onChange={e => setSearchValue(e.target.value)}
               onPressEnter={() => search()}
               style={{ width: 188, marginBottom: 8, display: 'block' }}
             />
           )}
         </TyrFilter>
       ),
-      onFilter: (value: string, doc: Tyr.Document) => {
+      onFilter: (value, doc) => {
         return value !== undefined
           ? props
               .path!.get(doc)
@@ -71,7 +69,7 @@ byName.string = {
               .includes(value.toLowerCase()) ?? false
           : true;
       },
-      onFilterDropdownVisibleChange: (visible: boolean) => {
+      onFilterDropdownVisibleChange: visible => {
         //if (visible) setTimeout(() => searchInputRef!.focus());
       },
     };

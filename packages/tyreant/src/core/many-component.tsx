@@ -49,7 +49,7 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
 
   showQuickTotal?: boolean;
 
-  // FILTERING
+  // FILTERS
   notifyFilterExists?: (exists: boolean) => void;
 
   // SORTING
@@ -189,7 +189,7 @@ export class TyrManyComponent<
 
   async buildFindOpts() {
     const { query: baseQuery, projection, populate } = this.props;
-    const { filterValues: searchValues, sortDirections } = this;
+    const { filterValues, sortDirections } = this;
 
     const query: Tyr.MongoQuery = {};
     const { linkToParent, linkFromParent, parentDocument } = this;
@@ -261,7 +261,7 @@ export class TyrManyComponent<
 
       const pathName = path.name;
 
-      if (!this.local) getFinder(path)?.(path, opts, searchValues[pathName]);
+      if (!this.local) getFinder(path)?.(path, opts, filterValues[pathName]);
 
       const sortDirection = sortDirections[pathName];
       if (sortDirection) sort[pathName] = sortDirection === 'ascend' ? 1 : -1;
@@ -406,19 +406,20 @@ export class TyrManyComponent<
   }
 
   resetFilters = () => {
-    const { notifyFilterExists } = this.props;
-    const { filterValues: searchValues } = this;
-    for (const key of Object.keys(searchValues)) delete searchValues[key];
+    const { filterConnections, filterValues } = this;
 
-    this.setState({});
+    Tyr.clear(filterValues);
+
+    for (const path in filterConnections) filterConnections[path]?.clear();
+
     this.updateConfigFilter();
+    this.setState({});
 
-    // Update if on props
-    notifyFilterExists && notifyFilterExists(false);
+    this.props.notifyFilterExists?.(false);
   };
 
   filterLocal() {
-    const { filterValues: searchValues } = this;
+    const { filterValues } = this;
 
     const checks: ((doc: Tyr.Document) => boolean)[] = [];
 
@@ -430,7 +431,7 @@ export class TyrManyComponent<
       const filter = this.getFilter(pathProps);
 
       const pathName = path.name,
-        searchValue = searchValues[pathName];
+        searchValue = filterValues[pathName];
       if (searchValue === undefined) continue;
 
       const onFilter = filter?.onFilter;
@@ -451,17 +452,18 @@ export class TyrManyComponent<
   resetSort = () => {
     const { notifySortSet } = this.props;
 
-    this.setDefaultSort();
-    this.sort();
-    this.setState({});
-
     const sortColumn = this.paths.find(column => !!column.defaultSort);
     this.updateConfigSort(sortColumn?.path?.name, sortColumn?.defaultSort);
+
+    this.setDefaultSort();
 
     if (notifySortSet) {
       // Update if on props
       notifySortSet(sortColumn?.path?.name, sortColumn?.defaultSort);
     }
+
+    this.sort();
+    this.setState({});
   };
 
   setDefaultSort() {
@@ -628,17 +630,17 @@ export class TyrManyComponent<
   getUrlQuery() {
     const query: { [name: string]: string } = {};
 
-    const { filterValues: searchValues, sortDirections, skip, limit } = this;
+    const { filterValues, sortDirections, skip, limit } = this;
 
     if (skip) query.skip = String(skip);
     if (limit !== undefined && limit !== DEFAULT_PAGE_SIZE)
       query.limit = String(limit);
 
     for (const fieldName of _.uniq([
-      ...Object.keys(searchValues),
+      ...Object.keys(filterValues),
       ...Object.keys(sortDirections),
     ])) {
-      const searchValue = searchValues[fieldName];
+      const searchValue = filterValues[fieldName];
       const sortDirection = sortDirections[fieldName];
 
       if (sortDirection || searchValue) {

@@ -528,8 +528,6 @@ export class TyrTableBase<
     let curGroupName: string | undefined;
     let curGroupColumn: OurColumnProps<D>;
 
-    let seenAnyColumnsWithNoWidth = false;
-
     const multiActions = this.actions.filter(
       a => a.input === '*' && a.hide !== true
     );
@@ -550,14 +548,12 @@ export class TyrTableBase<
         pathName = path.name;
       }
 
-      const pWidth =
+      const width =
         (pathName &&
           this.componentConfig?.fields.find(f => f.name === name)?.width) ||
         pathWidth(column, wrapColumnHeaders);
 
-      if (!pWidth) seenAnyColumnsWithNoWidth = true;
-      this.tableWidth += pWidth ? Number.parseInt(pWidth as string) + 8 : 275;
-      // TODO: check if the type has a width on it
+      this.tableWidth += width ? Number.parseInt(width as string) + 8 : 275;
 
       switch (typeof column.searchPath) {
         case 'string':
@@ -575,15 +571,6 @@ export class TyrTableBase<
 
       const sortDirection = pathName ? sortDirections[pathName] : undefined;
 
-      const isLast = columnIdx === fieldCount - 1;
-      const colWidth = isLast
-        ? seenAnyColumnsWithNoWidth
-          ? pWidth
-          : undefined
-        : fieldCount > 1
-        ? pWidth
-        : undefined;
-
       let sorter;
 
       if (!newDocumentTable) {
@@ -599,9 +586,9 @@ export class TyrTableBase<
         }
       }
 
-      const filteredValue = pathName ? this.filterValues[pathName] : undefined;
+      const filterValue = pathName ? this.filterValues[pathName] : undefined;
 
-      hasAnyFilter = hasAnyFilter || filteredValue !== undefined;
+      hasAnyFilter = hasAnyFilter || filterValue !== undefined;
 
       const sortingEnabled = !editingDocument && !newDocumentTable;
       const filteringEnabled = !newDocumentTable;
@@ -634,7 +621,7 @@ export class TyrTableBase<
               placeholder: column.placeholder,
               autoFocus: !!newDocumentTable && !!column.autoFocus,
               required: column.required,
-              width: colWidth,
+              width,
               multiple: column.multiple,
               mode: column.mode,
               searchOptionRenderer: getLabelRenderer(column),
@@ -703,11 +690,11 @@ export class TyrTableBase<
         sorter: sortingEnabled ? sorter : undefined,
         sortOrder: sortingEnabled ? sortDirection : undefined,
         title: pathTitle(column),
-        width: colWidth,
+        width,
         className: netClassName,
         ellipsis: column.ellipsis,
-        ...(filteringEnabled && filteredValue
-          ? { filteredValue: [filteredValue] }
+        ...(filteringEnabled && filterValue
+          ? { filteredValue: [filterValue] }
           : { filteredValue: undefined }),
         ...filter,
         ...(!isEditingAnything && column.pinned && fieldCount > 1
@@ -718,7 +705,7 @@ export class TyrTableBase<
           ? {
               onHeaderCell: tableColumn =>
                 ({
-                  width: colWidth,
+                  width,
                   onResize: (e: any, opts: any) => {
                     const { width } = opts.size;
                     column.width = width;
@@ -976,13 +963,9 @@ export class TyrTableBase<
     onSelectRows?.(selectedRowKeys as string[]);
   };
 
-  closeConfigModal = () => {
-    this.showConfig = false;
-  };
+  closeConfigModal = () => (this.showConfig = false);
 
-  setSelectedRows = (ids: string[]) => {
-    this.selectedIds = ids;
-  };
+  setSelectedRows = (ids: string[]) => (this.selectedIds = ids);
 
   moveRow = (dragIndex: number, hoverIndex: number) => {
     if (dragIndex === hoverIndex) return;
@@ -1112,48 +1095,46 @@ export class TyrTableBase<
           columns={this.getColumns()}
           scroll={tableScroll}
           {...(expandable ? { expandable } : {})}
-          onRow={(record: any, rowIndex: any) => {
-            return {
-              onClick: () => {
-                !!rowSelection && rowsSelectable && this.selectRow(record);
-              },
+          onRow={(record: any, rowIndex: any) => ({
+            onClick: () => {
+              !!rowSelection && rowsSelectable && this.selectRow(record);
+            },
 
-              index: rowIndex,
-              moveRow: this.moveRow,
-              dndEnabled,
-              className:
-                editingDocument && editingDocument.$id === record.$id
-                  ? 'tyr-editable-row'
-                  : undefined,
+            index: rowIndex,
+            moveRow: this.moveRow,
+            dndEnabled,
+            className:
+              editingDocument && editingDocument.$id === record.$id
+                ? 'tyr-editable-row'
+                : undefined,
 
-              onDoubleClick: async () => {
-                if (
-                  rowEdit &&
-                  record.$id &&
-                  (!canEditDocument || canEditDocument(record as any)) &&
-                  rowIndex !== undefined
-                ) {
-                  if ((editingDocument || newDocument) && this.currentRowForm) {
-                    if (
-                      editingDocument?.$id === record.$id ||
-                      newDocument?.$id === record.$id
-                    ) {
-                      // same document
-                      return;
-                    }
-
-                    await this.saveDocument(this.currentRowForm);
+            onDoubleClick: async () => {
+              if (
+                rowEdit &&
+                record.$id &&
+                (!canEditDocument || canEditDocument(record as any)) &&
+                rowIndex !== undefined
+              ) {
+                if ((editingDocument || newDocument) && this.currentRowForm) {
+                  if (
+                    editingDocument?.$id === record.$id ||
+                    newDocument?.$id === record.$id
+                  ) {
+                    // same document
+                    return;
                   }
 
-                  this.onEditRow(record, rowIndex);
-
-                  if (this.mounted) {
-                    setTimeout(() => this.refresh(), 400);
-                  }
+                  await this.saveDocument(this.currentRowForm);
                 }
-              },
-            };
-          }}
+
+                this.onEditRow(record, rowIndex);
+
+                if (this.mounted) {
+                  setTimeout(() => this.refresh(), 400);
+                }
+              }
+            },
+          })}
         />
       ) : undefined;
 
@@ -1197,12 +1178,13 @@ export class TyrTableBase<
                   }}
                   ref={this.tableWrapper}
                 >
-                  {dndEnabled && (
+                  {dndEnabled ? (
                     <DndProvider backend={HTML5Backend}>
                       {mainTable}
                     </DndProvider>
+                  ) : (
+                    mainTable
                   )}
-                  {!dndEnabled && mainTable}
                 </div>
               )}
               {showConfig && tableConfig && (

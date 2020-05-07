@@ -5,7 +5,7 @@ import { observer } from 'mobx-react';
 
 import { Tyr } from 'tyranid/client';
 
-import { Filter } from './filter';
+import { Filter, TyrFilterConnection } from './filter';
 import { isEntranceTrait } from './trait';
 import { TyrAction, TyrActionFnOpts, TyrActionOpts, ActionSet } from './action';
 import { TyrDecorator } from './decorator';
@@ -828,6 +828,7 @@ export class TyrComponent<
   filterValues: {
     [pathName: string]: any;
   } = {};
+  filterConnections: { [path: string]: TyrFilterConnection | undefined } = {};
 
   getFilter(props: TyrPathProps<D>): ReturnType<Filter> {
     return undefined;

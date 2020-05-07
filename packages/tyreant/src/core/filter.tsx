@@ -15,6 +15,10 @@ import { TyrPathProps } from './path';
 import { useComponent, TyrComponent } from './component';
 import { TyrManyComponent } from './many-component';
 
+export interface FilterDdProps extends FilterDropdownProps {
+  filtersContainer?: boolean;
+}
+
 export type Filter = (
   component: TyrComponent<any>,
   props: TyrPathProps<any>
@@ -95,13 +99,17 @@ export function TyrFilter<SearchValueType>({
     if (!onChange) filterDdProps.confirm?.();
   };
 
-  const { connect } = filterDdProps;
-  connect?.({ clear, search, searchValue, setSearchValue });
+  component.filterConnections[pathName] = {
+    clear,
+    search,
+    searchValue,
+    setSearchValue,
+  };
 
   return (
     <div className={`tyr-filter tyr-${typeName}-filter`}>
       {children(searchValue, setLiveSetSearchValue, search)}
-      {!connect && (
+      {!filterDdProps.filtersContainer && (
         <div className="tyr-filter-footer">
           <Button onClick={() => clear()} size="small" style={{ width: 90 }}>
             Reset
@@ -131,19 +139,11 @@ export interface TyrFilterConnection {
   setSearchValue: (v: any) => void;
 }
 
-export interface FilterDdProps extends FilterDropdownProps {
-  connect?: (connection: TyrFilterConnection) => void;
-}
-
 export const TyrFilters = ({
   component,
 }: {
   component?: TyrComponent<any>;
 }) => {
-  const [connections] = useState<{
-    [name: string]: TyrFilterConnection;
-  }>({});
-
   const [visible, setVisible] = useState(false);
   const c = component || useComponent();
   if (!c) return <div className="no-component" />;
@@ -175,9 +175,6 @@ export const TyrFilters = ({
                     clearFilters: () => {},
                     //filters?: ColumnFilterItem[];
                     //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
-                    connect: connection => {
-                      connections[path.name] = connection;
-                    },
                     visible: true,
                   })
                 : filterDropdown}
@@ -194,11 +191,14 @@ export const TyrFilters = ({
     </>
   );
 
+  const { filterConnections } = c;
+
   const footer = (
     <>
       <Button
         onClick={() => {
-          for (const name in connections) connections[name]?.clear();
+          for (const name in filterConnections)
+            filterConnections[name]?.clear();
           setVisible(false);
         }}
         size="small"
@@ -211,7 +211,8 @@ export const TyrFilters = ({
         <Button
           type="primary"
           onClick={() => {
-            for (const name in connections) connections[name]?.search();
+            for (const name in filterConnections)
+              filterConnections[name]?.search();
             setVisible(false);
           }}
           icon={<SearchOutlined />}
@@ -224,9 +225,9 @@ export const TyrFilters = ({
     </>
   );
 
-  const title = component?.collection.label + ' Filters';
+  const title = c.collection.label + ' Filters';
 
-  switch (component?.props.theme?.filter?.as) {
+  switch (c.props.theme?.filter?.as) {
     case 'popover':
       return (
         <Popover
