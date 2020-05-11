@@ -10,6 +10,7 @@
 | [tyranid-gracl](./packages/tyranid-gracl)       | [![npm version](https://badge.fury.io/js/tyranid-gracl.svg)](https://badge.fury.io/js/tyranid-gracl)       | Tyranid Permissions Library                 |
 | [tyranid-openapi](./packages/tyranid-openapi)   | [![npm version](https://badge.fury.io/js/tyranid-openapi.svg)](https://badge.fury.io/js/tyranid-openapi)   | OpenAPI Spec Generator for Tyranid          |
 | [tyranid-sanitize](./packages/tyranid-sanitize) | [![npm version](https://badge.fury.io/js/tyranid-sanitize.svg)](https://badge.fury.io/js/tyranid-sanitize) | Text sanitization plugin for Tyranid        |
+| [tyreant](./packages/tyreant) | [![npm version](https://badge.fury.io/js/tyreant.svg)](https://badge.fury.io/js/tyreant) | Ant driven UI component library for Tyranid        |
 
 ## Development
 
