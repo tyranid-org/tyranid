@@ -300,7 +300,9 @@ export namespace Tyr {
   /**
    * This provides a place to define options that are universal to all options methods
    */
-  export interface OptionsCommon {}
+  export interface OptionsCommon {
+    timeout?: number;
+  }
 
   export interface OptionsHistorical {
     /**

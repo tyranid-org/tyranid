@@ -58,6 +58,7 @@ import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { classNames } from '../../util';
 import { getLabelRenderer } from '../label';
 import { ExpandableConfig } from 'antd/lib/table/interface';
+import { TyrFilters } from '../filter';
 
 const findColumnByDataIndex = <D extends Tyr.Document>(
   columns: (ColumnType<D> | ColumnGroupType<D>)[],
@@ -88,6 +89,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
   //fixedWidthHack?: boolean;
   bordered?: boolean;
+  filter?: boolean;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean;
   actionHeaderLabel?: string | React.ReactNode;
@@ -1155,6 +1157,7 @@ export class TyrTableBase<
             }
           }}
         >
+          {this.props.filter && <TyrFilters component={this} />}
           <TyrActionBar component={this} />
           <Row>
             <Col span={24}>

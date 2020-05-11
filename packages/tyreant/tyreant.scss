@@ -422,6 +422,10 @@ form textarea.tyr-markup-editor {
   }
 }
 
+.tyr-filters-btn.ant-btn {
+  padding: 3px 1px;
+}
+
 .tyr-filters {
   &.tyr-popover {
     .ant-popover-title {
@@ -497,6 +501,50 @@ form textarea.tyr-markup-editor {
 
   .tyr-filter {
     border: none;
+  }
+}
+
+.tyr-tag-set {
+  display: inline-block;
+  margin-left: 8px;
+
+  label {
+    font-size: 10px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: -4px;
+  }
+}
+
+.tyr-tag {
+  border: 1px solid var(--border-color);
+  display: inline-block;
+  padding: 0 4px;
+  color: var(--primary-text-color);
+  background-color: var(--primary-background-color);
+  border-radius: 4px;
+  font-size: 13px;
+
+  .anticon {
+    font-size: 10px;
+    margin-left: 8px;
+  }
+}
+
+.tyr-filter-search-bar {
+  float: right;
+  width: calc(100% - 40px);
+
+  input {
+    padding: 0 8px 1px;
+  }
+}
+
+.tyr-filter-summary {
+  display: inline-block;
+
+  .tyr-tag + .tyr-tag {
+    margin-left: 8px;
   }
 }
 

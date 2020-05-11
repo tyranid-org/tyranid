@@ -12,6 +12,7 @@ import { TyrDecorator } from './decorator';
 import {
   defaultPathsProp,
   TyrPathProps,
+  TyrPathExistsProps,
   TyrPathLaxProps,
   getPathName,
 } from './path';
@@ -190,6 +191,14 @@ export class TyrComponent<
    */
   get activePaths(): TyrPathProps<D>[] {
     return this.paths;
+  }
+
+  activePath(pathName: string): TyrPathExistsProps<D> | undefined {
+    for (const pathProps of this.activePaths)
+      if (pathProps.path?.name === pathName)
+        return pathProps as TyrPathExistsProps<D>;
+
+    //return undefined;
   }
 
   refreshPaths() {
@@ -821,6 +830,21 @@ export class TyrComponent<
 
   hasFilters = false;
 
+  get filtering() {
+    const { filterValues } = this;
+    for (const name in filterValues) if (filterValues[name]) return true;
+    return false;
+  }
+
+  filterValue(pathName: string) {
+    return this.filterValues[pathName];
+  }
+
+  setFilterValue(pathName: string, value: any) {
+    this.filterValues[pathName] = value;
+    this.filterConnections[pathName]?.setSearchValue(value);
+  }
+
   /**
    * Note that these search values are the *live* search values.  If your control wants to keep an intermediate copy of the
    * search value while it is being edited in the search control, it needs to keep that copy locally.
@@ -828,6 +852,7 @@ export class TyrComponent<
   filterValues: {
     [pathName: string]: any;
   } = {};
+  filterSearchValue?: string;
   filterConnections: { [path: string]: TyrFilterConnection | undefined } = {};
 
   getFilter(props: TyrPathProps<D>): ReturnType<Filter> {

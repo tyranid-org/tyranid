@@ -229,9 +229,10 @@ export default class Event {
                 event = new Event(event);
               }
 
+              const { opts } = event;
               const rslt = await Tyr.promiseWithTimeout(
                 onOpts.handler(event),
-                EVENT_HANDLER_TIMEOUT_MS
+                (opts && opts.timeout) || EVENT_HANDLER_TIMEOUT_MS
               );
 
               if (rslt === false) {

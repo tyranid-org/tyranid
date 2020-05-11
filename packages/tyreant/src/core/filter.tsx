@@ -1,9 +1,13 @@
 import * as React from 'react';
 import { useState } from 'react';
 
-import { FilterTwoTone, SearchOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  FilterTwoTone,
+  SearchOutlined,
+} from '@ant-design/icons';
 
-import { Button, Drawer, Popover } from 'antd';
+import { Button, Drawer, Popover, Input } from 'antd';
 import {
   ColumnFilterItem,
   FilterDropdownProps,
@@ -167,15 +171,14 @@ export const TyrFilters = ({
               {typeof filterDropdown === 'function'
                 ? filterDropdown({
                     prefixCls: '',
-                    setSelectedKeys: (selectedKeys: string[]) => {
-                      c.refresh();
-                    },
+                    setSelectedKeys: (selectedKeys: string[]) => c.refresh(),
                     selectedKeys: [],
                     confirm: () => c.query(),
                     clearFilters: () => {},
                     //filters?: ColumnFilterItem[];
                     //getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
                     visible: true,
+                    filtersContainer: true,
                   })
                 : filterDropdown}
             </div>
@@ -227,7 +230,12 @@ export const TyrFilters = ({
 
   const title = c.collection.label + ' Filters';
 
-  switch (c.props.theme?.filter?.as) {
+  const filterTheme = c.props.theme?.filter;
+  const filterIcon = filterTheme?.icon || (
+    <FilterTwoTone twoToneColor="#386695" />
+  );
+
+  switch (filterTheme?.as) {
     case 'popover':
       return (
         <Popover
@@ -245,9 +253,15 @@ export const TyrFilters = ({
             </>
           }
         >
-          <Button>
-            <FilterTwoTone twoToneColor="#386695" />
+          <Button
+            className={
+              'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
+            }
+          >
+            {filterIcon}
           </Button>
+          <TyrFilterSearchBar />
+          <TyrFilterSummary />
         </Popover>
       );
     default:
@@ -265,10 +279,141 @@ export const TyrFilters = ({
           >
             {body}
           </Drawer>
-          <Button onClick={() => setVisible(true)}>
-            <FilterTwoTone twoToneColor="#386695" />
+          <Button
+            className={
+              'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
+            }
+            onClick={() => setVisible(true)}
+          >
+            {filterIcon}
           </Button>
+          <TyrFilterSearchBar />
+          <TyrFilterSummary />
         </>
       );
   }
+};
+
+export const TyrTagSet = ({
+  label,
+  children,
+}: {
+  label: string;
+  children?: React.ReactNode;
+}) => (
+  <div className="tyr-tag-set">
+    <label>{label}</label>
+    {children}
+  </div>
+);
+
+export const TyrTag = <C extends Tyr.CollectionInstance>({
+  id,
+  collection,
+  onClick,
+}: {
+  id: Tyr.IdType<Tyr.DocumentType<C>>;
+  collection: C;
+  onClick?: (filterValue: any) => void;
+}) => {
+  const doc = collection.byIdIndex[id];
+  return doc?.$label ? (
+    <div className="tyr-tag" onClick={() => onClick?.(id)}>
+      {doc.$label}
+      <CloseOutlined />
+    </div>
+  ) : (
+    <></>
+  );
+};
+
+function unselect(set: any[] | any, value: any): any {
+  if (Array.isArray(set)) {
+    set = set.filter(v => v !== value);
+    if (!set.length) set = undefined;
+  } else {
+    if (set === value) set = undefined;
+  }
+
+  return set;
+}
+
+export const TyrFilterSummary = ({
+  component,
+}: {
+  component?: TyrComponent<any>;
+}) => {
+  const c = component || useComponent();
+
+  if (!c) return <div className="no-component" />;
+
+  const tags: JSX.Element[] = [];
+
+  const { filterValues } = c;
+  for (const pathName in filterValues) {
+    const fv = filterValues[pathName];
+
+    if (fv) {
+      const pathProps = c.activePath(pathName);
+      if (pathProps) {
+        const { path } = pathProps;
+        const { link } = path.detail;
+
+        const onClick = (id: any) => {
+          c.setFilterValue(pathName, unselect(c.filterValue(pathName), id));
+          c.query();
+        };
+
+        if (link) {
+          if (Array.isArray(fv)) {
+            tags.push(
+              <TyrTagSet key={link.id} label={path.label}>
+                {fv.map(fv => (
+                  <TyrTag
+                    key={fv}
+                    id={fv}
+                    collection={link}
+                    onClick={onClick}
+                  />
+                ))}
+              </TyrTagSet>
+            );
+          } else {
+            tags.push(
+              <TyrTagSet key={link.id} label={path.label}>
+                <TyrTag key={fv} id={fv} collection={link} onClick={onClick} />
+              </TyrTagSet>
+            );
+          }
+        }
+      }
+    }
+  }
+
+  return <div className="tyr-filter-summary">{tags}</div>;
+};
+
+export const TyrFilterSearchBar = ({
+  component,
+}: {
+  component?: TyrComponent<any>;
+}) => {
+  const c = component || useComponent()!;
+  const [searchValue, setSearchValue] = useState(c.filterSearchValue || '');
+
+  if (!c) return <div className="no-component" />;
+
+  return (
+    <div className="tyr-filter-search-bar">
+      <Input.Search
+        enterButton
+        value={searchValue}
+        onChange={ev => {
+          const v = ev.target.value;
+          c.filterSearchValue = v;
+          setSearchValue(v);
+        }}
+      />
+    </div>
+  );
 };

@@ -27,6 +27,7 @@ export interface TyrThemeProps {
   panel?: Partial<TyrDecoratorProps<any>>;
   filter?: {
     as?: 'popover' | 'drawer';
+    icon?: JSX.Element;
   };
   collections?: {
     [CollectionName in keyof Tyr.CollectionsByName]?: {
