@@ -29,14 +29,17 @@ export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
       props.onChange && props.onChange(value, ev, props);
     };
 
-    return props.as === 'radio' ? (
-      <Switch
-        //autoComplete="off"
-        autoFocus={props.autoFocus}
-        onChange={onTypeChangeFunc}
-      >
-        {inlineLabel && renderFieldLabel(props)}
-      </Switch>
+    return props.as === 'switch' ? (
+      <>
+        <Switch
+          //autoComplete="off"
+          autoFocus={props.autoFocus}
+          onChange={onTypeChangeFunc}
+        ></Switch>
+        {inlineLabel && (
+          <span style={{ marginLeft: '5px' }}>{renderFieldLabel(props)}</span>
+        )}
+      </>
     ) : (
       <Checkbox
         // autoComplete="off"
