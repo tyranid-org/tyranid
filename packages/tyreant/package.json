@@ -1,6 +1,6 @@
 {
   "name": "tyreant",
-  "version": "0.0.198",
+  "version": "0.0.199",
   "description": "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
   "homepage": "http://tyranid.org/tyreant",
   "main": "dist/tyreant.js",
