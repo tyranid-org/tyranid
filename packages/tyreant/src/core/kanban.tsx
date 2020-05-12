@@ -13,7 +13,7 @@ import {
 
 import { Tyr } from 'tyranid/client';
 
-import { TyrFilters } from './filter';
+import { TyrFilters, TyrFilterSummary } from './filter';
 import { useComponent, TyrComponentState } from './component';
 import { TyrManyComponentProps, TyrManyComponent } from './many-component';
 import { useThemeProps } from './theme';
@@ -209,6 +209,7 @@ export class TyrKanbanBase<
       return (
         <div className="tyr-kanban-container">
           <TyrFilters component={this} />
+          <TyrFilterSummary />
           <DragDropContext onDragEnd={this.onDragEnd}>
             <div className="tyr-kanban">
               {columns.map((column, index) => (

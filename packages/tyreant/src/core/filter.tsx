@@ -261,7 +261,6 @@ export const TyrFilters = ({
             {filterIcon}
           </Button>
           <TyrFilterSearchBar />
-          <TyrFilterSummary />
         </Popover>
       );
     default:
@@ -288,7 +287,6 @@ export const TyrFilters = ({
             {filterIcon}
           </Button>
           <TyrFilterSearchBar />
-          <TyrFilterSummary />
         </>
       );
   }
