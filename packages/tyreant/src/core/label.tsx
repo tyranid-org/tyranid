@@ -58,7 +58,7 @@ export const getLabelRenderer = <D extends Tyr.Document>(
     }
   }
 
-  return (doc: Tyr.Document<any>) => <>{doc.$label}</>;
+  return (doc: D) => <>{doc.$label}</>;
 };
 
 export interface TyrLabelProps {

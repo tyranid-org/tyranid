@@ -10,6 +10,9 @@ declare module 'tyranid/client' {
     export const Path: PathStatic;
     export const Type: TypeStatic;
 
+    export const $all = '$all';
+    export const $label = '$label';
+
     export interface AppErrorStatic {
       new (opts?: string | Isomorphic.ErrorOptions): UserError;
     }
@@ -106,7 +109,7 @@ declare module 'tyranid/client' {
     }
 
     export interface Population {
-      [key: string]: number | '$all' | Population;
+      [key: string]: number | '$all' | '$label' | Population;
     }
 
     export interface Class<T> {
@@ -347,7 +350,7 @@ declare module 'tyranid/client' {
 
     export type DocumentType<
       C extends CollectionInstance
-    > = D extends CollectionInstance<infer Document> ? Document : never;
+    > = C extends CollectionInstance<infer Document> ? Document : never;
 
     export type IdType<D extends Document> = D extends Document<infer ID>
       ? ID

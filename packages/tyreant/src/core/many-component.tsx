@@ -515,7 +515,7 @@ export class TyrManyComponent<
       const sortComparator = sortColumn.sortComparator;
 
       const tDocs = documents.slice();
-      tDocs.sort((a: Tyr.Document, b: Tyr.Document) => {
+      tDocs.sort((a: D, b: D) => {
         let result = sortComparator
           ? sortComparator(a, b)
           : path

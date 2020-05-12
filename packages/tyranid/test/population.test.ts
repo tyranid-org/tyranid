@@ -27,7 +27,7 @@ export function add() {
       Task = Tyr.byName.task;
     });
 
-    const { $all } = Tyr;
+    const { $all, $label } = Tyr;
 
     describe('population', () => {
       function verifyPeople(users: Tyr.User[]) {
@@ -116,7 +116,7 @@ export function add() {
           .then(
             User.populate({
               organization: $all,
-              'siblings.bestFriend': { $all: 1, organization: $all },
+              'siblings.bestFriend': { $all: 1, organization: $label },
             })
           )
           .then(users => {

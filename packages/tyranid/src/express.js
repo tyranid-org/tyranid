@@ -361,6 +361,7 @@ export function generateClientLibrary() {
 
   Object.assign(Tyr, {
     $all: '$all',
+    $label: '$label',
     collections: [],
     byId: {},
     options: {}

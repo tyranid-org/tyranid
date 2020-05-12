@@ -139,6 +139,7 @@ const Tyr = {
   components: [],
 
   $all: '$all',
+  $label: '$label',
 
   adaptIllegalKeyCharAndEliminateRecursion(q) {
     return adaptIllegalKeyCharAndEliminateRecursion(q);

@@ -5,7 +5,7 @@ import Path from './path';
 import { ObjectId } from 'mongodb';
 import { resolveProjection } from './projection';
 
-const $all = Tyr.$all;
+const { $all, $label } = Tyr;
 
 export class Population {
   constructor(path, projection) {
@@ -62,8 +62,8 @@ export class Population {
 
         for (const key in fields) {
           let value = fields[key];
-          if (key === $all) {
-            projection.push($all);
+          if (key === $all || key === $label) {
+            projection.push(key);
           } else {
             const path = base.parsePath(key);
 
@@ -84,8 +84,8 @@ export class Population {
                 );
               }
 
-              if (value === $all) {
-                projection.push(new Population(path, $all));
+              if (value === $all || value === $label) {
+                projection.push(new Population(path, value));
               } else {
                 const linkCol = Tyr.byId[link.id];
 

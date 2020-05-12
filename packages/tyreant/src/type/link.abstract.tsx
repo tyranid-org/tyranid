@@ -74,8 +74,8 @@ export const sortLabels = (labels: any[], props: TyrPathProps<any>) => {
   return sortedLabels;
 };
 
-export interface TyrLinkState {
-  documents: Tyr.Document[];
+export interface TyrLinkState<D extends Tyr.Document> {
+  documents: D[];
   loading: boolean;
   initialLoading: boolean;
   viewLabel?: string;
@@ -83,8 +83,12 @@ export interface TyrLinkState {
 
 export class TyrLinkAbstract<
   D extends Tyr.Document = Tyr.Document
-> extends React.Component<TyrTypeProps<D>, TyrLinkState> {
-  state: TyrLinkState = { documents: [], loading: false, initialLoading: true };
+> extends React.Component<TyrTypeProps<D>, TyrLinkState<D>> {
+  state: TyrLinkState<D> = {
+    documents: [],
+    loading: false,
+    initialLoading: true,
+  };
 
   protected lastFetchId = 0;
 
@@ -192,7 +196,7 @@ export class TyrLinkAbstract<
   get renderLabel(): TyrLabelRenderer {
     return (
       this._labelRenderer ||
-      (this._labelRenderer = getLabelRenderer(this.props))
+      (this._labelRenderer = getLabelRenderer(this.props) as TyrLabelRenderer)
     );
   }
 

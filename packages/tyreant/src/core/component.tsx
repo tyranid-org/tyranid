@@ -88,7 +88,7 @@ export class TyrComponent<
   constructor(props: Props, state: State) {
     super(props, state);
 
-    const { parent, paths } = props;
+    const { parent, paths: propsPaths } = props;
     let { collection } = props;
 
     if (parent && !collection)
@@ -96,8 +96,11 @@ export class TyrComponent<
 
     this.collection = collection = (collection || props.document?.$model)!;
 
-    if (paths && collection) this.refreshPaths();
+    if (propsPaths && collection) this.refreshPaths();
     else if (collection) this.paths = defaultPathsProp(collection);
+
+    let paths: (TyrPathLaxProps<D> | string)[] | undefined = this.paths;
+    if (!paths && collection) paths = this.props.paths;
 
     if (parent) {
       this.parent = parent;
@@ -105,20 +108,16 @@ export class TyrComponent<
 
       const parentCollection = parent.collection;
 
-      let paths: (TyrPathLaxProps<D> | string)[] | undefined = this.paths;
-      if (!paths && collection) {
-        paths = this.props.paths;
-        if (!paths && collection === parentCollection)
-          paths = parent.props.paths as any;
-
-        if (paths)
-          this.paths = paths.map(laxPathProps =>
-            this.resolveFieldLaxProps(laxPathProps)
-          );
-      }
+      if (!paths && collection === parentCollection)
+        paths = parent.props.paths as any;
 
       this.setupParentLink();
     }
+
+    if (paths)
+      this.paths = paths.map(laxPathProps =>
+        this.resolveFieldLaxProps(laxPathProps)
+      );
   }
 
   /*
@@ -218,7 +217,7 @@ export class TyrComponent<
     const pathProps: TyrPathLaxProps<D> = {};
     if (collection && pathName) {
       const themeProps =
-        theme?.collections?.[collection.name]?.paths?.[pathName];
+        theme?.collections?.[collection.def.name]?.paths?.[pathName];
       if (themeProps) Object.assign(pathProps, themeProps);
 
       if (typeof laxPathProps === 'string') {

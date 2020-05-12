@@ -92,9 +92,9 @@ export interface TyrPathProps<D extends Tyr.Document>
    * Do not show this field when creating new documents.
    */
   hideOnCreate?: boolean;
-  isEditable?: (document: Tyr.Document) => boolean;
-  mapDocumentValueToForm?: (value: any, document: Tyr.Document) => any;
-  mapFormValueToDocument?: (value: any, document: Tyr.Document) => any;
+  isEditable?: (document: D) => boolean;
+  mapDocumentValueToForm?: (value: any, document: D) => any;
+  mapFormValueToDocument?: (value: any, document: D) => any;
   mode?: 'view' | 'edit' | 'search';
   /**
    * Suppress the default generation of field labels.
@@ -129,7 +129,7 @@ export interface TyrPathProps<D extends Tyr.Document>
    * This indicates that the following render function should be used to render values.  If render is specified
    * then field is not required/needed.
    */
-  renderField?: (doc: D, options?: Tyr.Document[]) => React.ReactElement;
+  renderField?: (doc: D, options?: D[]) => React.ReactElement;
   renderDisplay?: (doc: D) => React.ReactElement | string;
 
   // ARRAY fixed array display format
@@ -150,13 +150,13 @@ export interface TyrPathProps<D extends Tyr.Document>
   // LINK
   dropdownClassName?: string;
   filterOptionLabel?: (
-    doc: Tyr.Document
+    doc: D
   ) =>
     | Tyr.Document
     | { $id: any; $label: string }
     | { $id: any; $label: string }[]
     | undefined;
-  filterOptionRenderer?: (value: Tyr.Document) => React.ReactElement;
+  filterOptionRenderer?: (value: D) => React.ReactElement;
   getSearchIds?: (val: any) => any[];
   labelInValue?: boolean;
   linkLabels?: { $id: any; $label: string }[];
@@ -165,7 +165,7 @@ export interface TyrPathProps<D extends Tyr.Document>
   onDeselect?: (value: SelectValue) => any;
   onSelect?: (value: SelectValue, option: any) => any;
   onStateChange?: (value: FieldState) => void;
-  optionFilter?: (documents: Tyr.Document[]) => Tyr.Document[];
+  optionFilter?: (documents: D[]) => Tyr.Document[];
   searchPath?: Tyr.PathInstance;
   searchSortById?: boolean;
 
@@ -183,12 +183,12 @@ export interface TyrPathProps<D extends Tyr.Document>
 
   // SORT
   defaultSort?: TyrSortDirection;
-  sortComparator?: (a: Tyr.Document, b: Tyr.Document) => number;
+  sortComparator?: (a: D, b: D) => number;
 
   // FILTER
   defaultFilter?: Object;
   noFilter?: boolean;
-  onFilter?: (value: any, doc: Tyr.Document) => boolean;
+  onFilter?: (value: any, doc: D) => boolean;
 
   // TABLE
   align?: 'left' | 'right' | 'center';
@@ -201,7 +201,7 @@ export interface TyrPathProps<D extends Tyr.Document>
   group?: string;
   pinned?: 'left' | 'right';
   width?: number | string;
-  columnClassName?: (doc: Tyr.Document) => string | undefined;
+  columnClassName?: (doc: D) => string | undefined;
 }
 
 export type TyrPathExistsProps<D extends Tyr.Document> = Omit<

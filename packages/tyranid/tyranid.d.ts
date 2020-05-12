@@ -87,6 +87,7 @@ export namespace Tyr {
   export { AppError, SecureError, UserError } from Isomorphic;
 
   export const $all: '$all';
+  export const $label: '$label';
   export const byId: CollectionsById;
   export const byName: CollectionsByName;
   export const collections: CollectionInstance[] & CollectionsByClassName;

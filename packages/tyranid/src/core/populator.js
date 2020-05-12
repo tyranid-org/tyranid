@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import Tyr from '../tyr';
 import * as historical from '../historical/historical';
 
-const { $all } = Tyr;
+const { $all, $label } = Tyr;
 
 class Cache {
   constructor(colId) {
@@ -26,8 +26,8 @@ class Cache {
     const fields = this.fields;
 
     for (const p of projection) {
-      if (p === $all) {
-        fields.$all = 1;
+      if (p === $all || p === $label) {
+        fields[p] = 1;
       } else {
         const pathName = p.path.spath,
           existing = fields[pathName],
@@ -113,7 +113,7 @@ export default class Populator {
         if (fields && !fields.$all && !_.isEmpty(fields)) {
           opts.projection = fields;
         } else {
-          fields = undefined;
+          fields = fields.$label ? collection.labelProjection() : undefined;
         }
 
         const linkDocs = await collection.byIds(ids, opts),

@@ -4,6 +4,7 @@ import Tyr from '../tyr';
 import { AppError } from './appError';
 import Collection from './collection';
 import Instance from './instance';
+import { SSL_OP_MICROSOFT_SESS_ID_BUG } from 'constants';
 
 const EVENT_HANDLER_TIMEOUT_MS = 30000;
 
@@ -204,6 +205,7 @@ export default class Event {
 
   /** @private */
   static async handle(event) {
+    const { opts } = event;
     //con sole.log(Tyr.instanceId + ' *** handle:', event);
     const collection = event.collection || Tyr.byId[event.collectionId];
 
@@ -229,7 +231,6 @@ export default class Event {
                 event = new Event(event);
               }
 
-              const { opts } = event;
               const rslt = await Tyr.promiseWithTimeout(
                 onOpts.handler(event),
                 (opts && opts.timeout) || EVENT_HANDLER_TIMEOUT_MS
