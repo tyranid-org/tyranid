@@ -366,7 +366,7 @@ export function toClient(col, doc, opts) {
 
     const field = fields[name];
     const fieldDef = field.def;
-    if (fieldDef.get || fieldDef.getClient) continue;
+    if ((fieldDef.get || fieldDef.getClient) && !opts.plain) continue;
 
     const getFn = fieldDef.getServer;
     if (!getFn) continue;
