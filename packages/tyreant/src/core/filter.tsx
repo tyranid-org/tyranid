@@ -57,22 +57,22 @@ export interface TyrFilterProps<SearchValueType> {
   ) => React.ReactNode;
 }
 
-export function TyrFilter<SearchValueType>({
+export function TyrFilter<FilterValueType>({
   typeName,
   pathProps,
   component,
   filterDdProps,
   children,
-}: TyrFilterProps<SearchValueType>) {
+}: TyrFilterProps<FilterValueType>) {
   const { path } = pathProps;
   const pathName = path!.name;
 
-  const [searchValue, setSearchValue] = useState<SearchValueType | undefined>(
+  const [filterValue, setFilterValue] = useState<FilterValueType | undefined>(
     component.filterValues[pathName]
   );
 
   React.useEffect(() => {
-    setSearchValue(component.filterValues[pathName]);
+    setFilterValue(component.filterValues[pathName]);
   }, [component.filterValues[pathName]]);
 
   const onSearch = () => {
@@ -81,8 +81,8 @@ export function TyrFilter<SearchValueType>({
     component.updateConfigFilter(pathName, component.filterValues[pathName]);
   };
 
-  const setLiveSetSearchValue = (value: SearchValueType | undefined) => {
-    setSearchValue(value);
+  const setLiveSetFilterValue = (value: FilterValueType | undefined) => {
+    setFilterValue(value);
 
     if (component.local) {
       component.filterValues[pathName] = value;
@@ -92,13 +92,13 @@ export function TyrFilter<SearchValueType>({
 
   const clear = () => {
     delete component.filterValues[pathName];
-    setSearchValue(undefined);
+    setFilterValue(undefined);
     filterDdProps.clearFilters?.();
     onSearch();
   };
 
   const search = (onChange?: boolean) => {
-    component.filterValues[pathName] = searchValue;
+    component.filterValues[pathName] = filterValue;
     onSearch();
     if (!onChange) filterDdProps.confirm?.();
   };
@@ -106,13 +106,13 @@ export function TyrFilter<SearchValueType>({
   component.filterConnections[pathName] = {
     clear,
     search,
-    searchValue,
-    setSearchValue,
+    filterValue,
+    setFilterValue,
   };
 
   return (
     <div className={`tyr-filter tyr-${typeName}-filter`}>
-      {children(searchValue, setLiveSetSearchValue, search)}
+      {children(filterValue, setLiveSetFilterValue, search)}
       {!filterDdProps.filtersContainer && (
         <div className="tyr-filter-footer">
           <Button onClick={() => clear()} size="small" style={{ width: 90 }}>
@@ -139,8 +139,8 @@ export function TyrFilter<SearchValueType>({
 export interface TyrFilterConnection {
   clear: () => void;
   search: () => void;
-  searchValue: any;
-  setSearchValue: (v: any) => void;
+  filterValue: any;
+  setFilterValue: (v: any) => void;
 }
 
 export const TyrFilters = ({
@@ -150,6 +150,9 @@ export const TyrFilters = ({
 }) => {
   const [visible, setVisible] = useState(false);
   const c = component || useComponent();
+  const [filterSearchValue, setFilterSearchValue] = useState(
+    c?.filterSearchValue || ''
+  );
   if (!c) return <div className="no-component" />;
   const paths = c.paths?.filter(f => f.path);
   if (!paths) return <div className="no-paths"></div>;
@@ -231,8 +234,30 @@ export const TyrFilters = ({
   const title = c.collection.label + ' Filters';
 
   const filterTheme = c.props.theme?.filter;
+
   const filterIcon = filterTheme?.icon || (
     <FilterTwoTone twoToneColor="#386695" />
+  );
+  const searchBar = (
+    <div className="tyr-filter-search-bar">
+      <Button
+        className={
+          'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
+        }
+        onClick={() => setVisible(true)}
+      >
+        {filterIcon}
+      </Button>
+      <Input.Search
+        enterButton
+        value={filterSearchValue}
+        onChange={ev => {
+          const v = ev.target.value;
+          c.filterSearchValue = v;
+          setFilterSearchValue(v);
+        }}
+      />
+    </div>
   );
 
   switch (filterTheme?.as) {
@@ -253,14 +278,7 @@ export const TyrFilters = ({
             </>
           }
         >
-          <Button
-            className={
-              'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
-            }
-          >
-            {filterIcon}
-          </Button>
-          <TyrFilterSearchBar />
+          {searchBar}
         </Popover>
       );
     default:
@@ -278,15 +296,7 @@ export const TyrFilters = ({
           >
             {body}
           </Drawer>
-          <Button
-            className={
-              'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
-            }
-            onClick={() => setVisible(true)}
-          >
-            {filterIcon}
-          </Button>
-          <TyrFilterSearchBar />
+          {searchBar}
         </>
       );
   }
@@ -389,29 +399,4 @@ export const TyrFilterSummary = ({
   }
 
   return <div className="tyr-filter-summary">{tags}</div>;
-};
-
-export const TyrFilterSearchBar = ({
-  component,
-}: {
-  component?: TyrComponent<any>;
-}) => {
-  const c = component || useComponent()!;
-  const [searchValue, setSearchValue] = useState(c.filterSearchValue || '');
-
-  if (!c) return <div className="no-component" />;
-
-  return (
-    <div className="tyr-filter-search-bar">
-      <Input.Search
-        enterButton
-        value={searchValue}
-        onChange={ev => {
-          const v = ev.target.value;
-          c.filterSearchValue = v;
-          setSearchValue(v);
-        }}
-      />
-    </div>
-  );
 };

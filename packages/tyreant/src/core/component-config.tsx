@@ -15,23 +15,39 @@ import { Modal, Button, Drawer, Breadcrumb, message } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
-import { getPathName, TyrPathProps, TyrPathLaxProps } from '../path';
-import { TyrTableConfig, ColumnConfigField } from './typedef';
-import TyrTableColumnConfigItem from './table-config-item';
-import { TyrTableBase } from './table';
+import { getPathName, TyrPathProps, TyrPathLaxProps } from './path';
+import {
+  TyrComponentColumnConfigItem,
+  ColumnConfigField,
+} from './component-config-item';
+import { TyrComponent } from './component';
 
-interface TyrTableConfigProps<D extends Tyr.Document> {
-  table: TyrTableBase<D>;
+export interface TyrComponentConfig {
+  key: string;
+  documentUid?: string;
+  required?: string[];
+  lockedLeft?: number;
+  title?: string;
+  header?: string | React.ReactNode;
+  asDrawer?: boolean;
+  compact?: boolean;
+
+  // This should reset the column order, the sort, and the filters
+  hideReset?: boolean;
+}
+
+interface TyrComponentConfigProps<D extends Tyr.Document> {
+  component: TyrComponent<D>;
   config:
-    | TyrTableConfig
+    | TyrComponentConfig
     | string /* the key */
     | true /* if true, key is "default" */;
   export?: boolean;
-  tableConfig?: Tyr.TyrComponentConfig;
+  componentConfig?: Tyr.TyrComponentConfig;
   originalPaths: (TyrPathLaxProps<D> | string)[];
   onCancel: () => void;
   onUpdate: (
-    tableConfig: Tyr.TyrComponentConfig,
+    componentConfig: Tyr.TyrComponentConfig,
     sortHasBeenReset?: boolean,
     filtersHaveBeenReset?: boolean,
     widthsHaveBeenReset?: boolean
@@ -40,17 +56,17 @@ interface TyrTableConfigProps<D extends Tyr.Document> {
   containerEl: React.RefObject<HTMLDivElement>;
 }
 
-const TyrTableConfigComponent = <D extends Tyr.Document>({
-  table,
+export const TyrComponentConfigComponent = <D extends Tyr.Document>({
+  component,
   config: rawConfig,
   export: exportProp,
-  tableConfig: incomingTableConfig,
+  componentConfig: incomingComponentConfig,
   originalPaths,
   onCancel,
   onUpdate,
   columns,
   containerEl,
-}: TyrTableConfigProps<D>) => {
+}: TyrComponentConfigProps<D>) => {
   const [columnFields, setColumnFields] = useState([] as ColumnConfigField[]);
   const [doResetSort, setDoResetSort] = useState(false);
   const [doResetFilters, setDoResetFilters] = useState(false);
@@ -66,20 +82,20 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     typeof rawConfig === 'string'
       ? ({
           key: rawConfig,
-        } as TyrTableConfig)
-      : (rawConfig as TyrTableConfig);
+        } as TyrComponentConfig)
+      : (rawConfig as TyrComponentConfig);
 
   const lockedLeft = config.lockedLeft || 0;
 
-  const { collection } = table;
+  const { collection } = component;
 
   const getColumnFields = (
     fields: TyrPathProps<D>[],
-    tableConfig: Tyr.TyrComponentConfig
+    componentConfig: Tyr.TyrComponentConfig
   ) => {
     return compact(
       fields.map((column: TyrPathProps<D>, index: number) => {
-        const savedField = tableConfig.fields.find(
+        const savedField = componentConfig.fields.find(
           c => c.name === column.path?.name
         );
         const pathName = column.path?.name;
@@ -105,11 +121,11 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
   };
   // Only runs once
   useEffect(() => {
-    let tableConfig: Tyr.TyrComponentConfig;
+    let componentConfig: Tyr.TyrComponentConfig;
     const userId = Tyr.local.user.$id;
 
-    if (incomingTableConfig) {
-      tableConfig = incomingTableConfig;
+    if (incomingComponentConfig) {
+      componentConfig = incomingComponentConfig;
     } else {
       const { documentUid } = config;
       const columnFields = compact(
@@ -117,7 +133,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       ) as string[];
 
       const { TyrComponentConfig } = Tyr.collections;
-      tableConfig = new TyrComponentConfig({
+      componentConfig = new TyrComponentConfig({
         documentUid,
         collection: collection.id,
         userId,
@@ -129,8 +145,8 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       });
     }
 
-    const orderedFields = orderedArray(tableConfig.fields, columns, true);
-    const columnFields = getColumnFields(orderedFields, tableConfig);
+    const orderedFields = orderedArray(componentConfig.fields, columns, true);
+    const columnFields = getColumnFields(orderedFields, componentConfig);
 
     if (config.asDrawer) {
       const container = ReactDOM.findDOMNode(containerEl!.current);
@@ -144,13 +160,13 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
   const onSave = async () => {
     const { TyrComponentConfig } = Tyr.collections;
-    const newTableConfig = new TyrComponentConfig({
-      ...incomingTableConfig,
+    const newComponentConfig = new TyrComponentConfig({
+      ...incomingComponentConfig,
       fields: columnFields,
     });
 
     onUpdate(
-      await newTableConfig.$save(),
+      await newComponentConfig.$save(),
       doResetSort,
       doResetFilters,
       doResetWidths
@@ -276,14 +292,14 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
 
     return (
       <div>
-        {!incomingTableConfig && <span>No config!</span>}
+        {!incomingComponentConfig && <span>No config!</span>}
 
         {exportProp ? 'Include data from ...' : config.header}
 
-        {incomingTableConfig && (
+        {incomingComponentConfig && (
           <div className="tyr-config-columns-list tyr-config-columns-list-locked">
             {lockedFields.map(f => (
-              <TyrTableColumnConfigItem
+              <TyrComponentColumnConfigItem
                 key={f.name}
                 field={f}
                 compact={config.compact}
@@ -292,7 +308,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
           </div>
         )}
 
-        {incomingTableConfig && (
+        {incomingComponentConfig && (
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="droppable">
               {(provided, snapshot) => (
@@ -314,7 +330,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
                         isDragDisabled={!!f.locked}
                       >
                         {(provided, snapshot) => (
-                          <TyrTableColumnConfigItem
+                          <TyrComponentColumnConfigItem
                             key={f.name}
                             field={f}
                             provided={provided}
@@ -342,7 +358,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
       className="ant-btn ant-btn-primary tyr-link-btn"
       href={`/api/${collection.def.name}/export?opts=${encodeURIComponent(
         JSON.stringify({
-          query: table.findOpts?.query,
+          query: component.findOpts?.query,
           fields: columnFields.filter(f => !f.hidden).map(f => f.name),
         })
       )}`}
@@ -368,7 +384,7 @@ const TyrTableConfigComponent = <D extends Tyr.Document>({
     return (
       <div className="tyr-footer-container">
         <div className="left-side">
-          {!(rawConfig as TyrTableConfig).hideReset && (
+          {!(rawConfig as TyrComponentConfig).hideReset && (
             <ResetArea
               resetSort={resetSort}
               resetFilters={resetFilters}
@@ -464,13 +480,13 @@ const ResetArea = (props: {
   );
 };
 
-export const ensureTableConfig = async <D extends Tyr.Document>(
-  table: TyrTableBase<D>,
+export const ensureComponentConfig = async <D extends Tyr.Document>(
+  component: TyrComponent<D>,
   columns: TyrPathProps<D>[],
-  config: TyrTableConfig | string | boolean,
-  existingTableConfig?: Tyr.TyrComponentConfig
+  config: TyrComponentConfig | string | boolean,
+  existingComponentConfig?: Tyr.TyrComponentConfig
 ) => {
-  let tableConfig: Tyr.TyrComponentConfig;
+  let componentConfig: Tyr.TyrComponentConfig;
   const { TyrComponentConfig } = Tyr.collections;
 
   if (typeof config === 'boolean') {
@@ -481,27 +497,27 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
     config = { key: config };
   }
 
-  if (existingTableConfig) {
-    tableConfig = existingTableConfig;
+  if (existingComponentConfig) {
+    componentConfig = existingComponentConfig;
   } else {
     const { documentUid, key } = config;
     const userId = Tyr.local.user.$id;
 
-    tableConfig = (await TyrComponentConfig.findOne({
+    componentConfig = (await TyrComponentConfig.findOne({
       query: {
-        name: 'table',
+        name: component.componentName,
         userId,
         key,
         documentUid: documentUid || { $exists: false },
-        collectionId: table.collection.id,
+        collectionId: component.collection.id,
       },
     }))!;
 
-    if (!tableConfig) {
-      tableConfig = new TyrComponentConfig({
-        name: 'table',
+    if (!componentConfig) {
+      componentConfig = new TyrComponentConfig({
+        name: component.componentName,
         documentUid,
-        collectionId: table.collection.id,
+        collectionId: component.collection.id,
         userId,
         key,
         fields: columns.map(c => {
@@ -515,21 +531,23 @@ export const ensureTableConfig = async <D extends Tyr.Document>(
         }),
       })!;
 
-      tableConfig = await TyrComponentConfig.save(tableConfig);
+      componentConfig = await TyrComponentConfig.save(componentConfig);
     }
   }
 
   const orderedColumns = orderedArray(
-    tableConfig.fields,
+    componentConfig.fields,
     columns.filter(column => {
       const fieldName = getPathName(column.path);
-      const configField = tableConfig.fields.find(f => f.name === fieldName);
+      const configField = componentConfig.fields.find(
+        f => f.name === fieldName
+      );
 
       return fieldName ? !configField || !configField.hidden : undefined;
     })
   );
 
-  return { tableConfig, newColumns: orderedColumns };
+  return { componentConfig, newColumns: orderedColumns };
 };
 
 const orderedArray = (
@@ -562,5 +580,3 @@ const orderedArray = (
 
   return compact([...orderedArray, ...extra]);
 };
-
-export default TyrTableConfigComponent;

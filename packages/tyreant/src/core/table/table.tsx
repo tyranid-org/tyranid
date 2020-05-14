@@ -49,9 +49,8 @@ import {
   pathTitle,
   pathWidth,
 } from '../path';
-import { TyrTableConfig } from './typedef';
 import { TyrSortDirection } from '../typedef';
-import TyrTableConfigComponent, { ensureTableConfig } from './table-config';
+import { TyrComponentConfigComponent } from '../component-config';
 import { EditableFormRow, EditableContext } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
@@ -109,16 +108,8 @@ export interface TyrTableProps<D extends Tyr.Document>
   onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
   onCancelAddNew?: () => void;
   onActionLabelClick?: () => void;
-  onChangeTableConfiguration?: (
-    fields: Tyr.TyrComponentConfig['fields']
-  ) => void;
   scroll?: { x?: number | true | string; y?: number | string };
   footer?: (currentPageData: D[]) => React.ReactNode;
-  /**
-   * If a string is specified, it is the name of the key to use.
-   * If true is specified, a key of 'default' will be used.
-   */
-  config?: TyrTableConfig | string | boolean;
   onLoad?: (table: TyrTableBase<any>) => void;
   rowSelection?: boolean;
   loading?: boolean;
@@ -140,13 +131,10 @@ export interface TyrTableProps<D extends Tyr.Document>
 export class TyrTableBase<
   D extends Tyr.Document = Tyr.Document
 > extends TyrManyComponent<D, TyrTableProps<D>> {
-  // TODO:  is this redundant with super().fields ?
-  @observable
-  otherPaths: TyrPathProps<D>[] = [];
-
-  get activePaths(): TyrPathProps<D>[] {
-    return this.otherPaths;
-  }
+  componentName = 'table';
+  hasConfig = true;
+  hasFilters = true;
+  hasSortDirection = true;
 
   newDocument?: D;
   editingDocument?: D;
@@ -160,32 +148,14 @@ export class TyrTableBase<
 
   currentRowForm?: FormInstance;
 
-  componentName = 'table';
-  hasFilters = true;
-  hasSortDirection = true;
-
   constructor(props: TyrTableProps<D>, state: TyrComponentState<D>) {
     super(props, state);
   }
 
   async componentDidMount() {
-    const { config, onLoad } = this.props;
+    await super.componentDidMount();
 
-    if (config) {
-      this.loading = true;
-      const tableConfig = await ensureTableConfig(this, this.paths, config);
-
-      this.componentConfig = tableConfig.tableConfig;
-      this.otherPaths = tableConfig.newColumns;
-
-      super.componentDidMount();
-      this.loading = false;
-    } else {
-      super.componentDidMount();
-      this.otherPaths = this.paths;
-    }
-
-    onLoad && onLoad(this);
+    this.props.onLoad?.(this);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps: TyrTableProps<D>) {
@@ -195,7 +165,7 @@ export class TyrTableBase<
 
     // Replace all existing fields, and remove any not in new fields
     const newOtherPaths = compact(
-      this.otherPaths.map(otherPath => {
+      this._activePaths.map(otherPath => {
         const otherPathName = getPathName(otherPath.path);
 
         const p = nextOtherPaths!.find(
@@ -229,7 +199,7 @@ export class TyrTableBase<
       }
     }
 
-    this.otherPaths = newOtherPaths;
+    this._activePaths = newOtherPaths;
     this.refreshPaths();
   }
 
@@ -289,55 +259,6 @@ export class TyrTableBase<
 
     this.props.setEditing && this.props.setEditing(true);
     return true;
-  };
-
-  private onUpdateTableConfig = async (
-    savedTableConfig: Tyr.TyrComponentConfig,
-    sortHasBeenReset?: boolean,
-    filtersHaveBeenReset?: boolean,
-    widthsHaveBeenReset?: boolean
-  ) => {
-    const { config, onChangeTableConfiguration } = this.props;
-
-    if (config) {
-      const componentConfig = await ensureTableConfig(
-        this,
-        this.paths,
-        config,
-        savedTableConfig
-      );
-
-      this.componentConfig = componentConfig.tableConfig;
-      this.otherPaths = componentConfig.newColumns;
-
-      onChangeTableConfiguration &&
-        onChangeTableConfiguration(
-          componentConfig.tableConfig.fields.map(f => {
-            return {
-              name: f.name,
-              hidden: !!f.hidden,
-              sortDirection: f.sortDirection,
-              filter: f.filter,
-            };
-          })
-        );
-
-      if (sortHasBeenReset) {
-        this.resetSort();
-      }
-
-      if (filtersHaveBeenReset) {
-        this.resetFilters();
-      }
-
-      if (sortHasBeenReset || filtersHaveBeenReset) {
-        this.query();
-      }
-
-      if (widthsHaveBeenReset) {
-        this.resetWidths();
-      }
-    }
   };
 
   private isEditing = (document: Tyr.Document) => {
@@ -715,7 +636,6 @@ export class TyrTableBase<
                     const { width } = opts.size;
                     column.width = width;
                     this.updateConfigWidths(pathName, width);
-                    // TODO:  save
                     this.refresh();
                   },
                 } as any),
@@ -1006,7 +926,7 @@ export class TyrTableBase<
       size,
       scroll,
       footer,
-      config: tableConfig,
+      config: componentConfig,
       decorator,
       onSelectRows,
       orderable,
@@ -1193,28 +1113,28 @@ export class TyrTableBase<
                   )}
                 </div>
               )}
-              {showConfig && tableConfig && (
-                <TyrTableConfigComponent
-                  table={this}
+              {showConfig && componentConfig && (
+                <TyrComponentConfigComponent
+                  component={this}
                   columns={this.paths}
-                  config={tableConfig}
-                  tableConfig={this.componentConfig}
+                  config={componentConfig}
+                  componentConfig={this.componentConfig}
                   originalPaths={this.props.paths!}
                   onCancel={() => (this.showConfig = false)}
-                  onUpdate={this.onUpdateTableConfig}
+                  onUpdate={this.onUpdateComponentConfig}
                   containerEl={this.tableWrapper!}
                 />
               )}
               {showExport && this.mounted && (
-                <TyrTableConfigComponent
-                  table={this}
+                <TyrComponentConfigComponent
+                  component={this}
                   columns={this.paths}
-                  config={tableConfig || true}
+                  config={componentConfig || true}
                   originalPaths={this.props.paths!}
                   export={true}
-                  tableConfig={this.componentConfig}
+                  componentConfig={this.componentConfig}
                   onCancel={() => (this.showExport = false)}
-                  onUpdate={this.onUpdateTableConfig}
+                  onUpdate={this.onUpdateComponentConfig}
                   containerEl={this.tableWrapper!}
                 />
               )}

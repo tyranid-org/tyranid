@@ -532,17 +532,20 @@ form textarea.tyr-markup-editor {
 }
 
 .tyr-filter-search-bar {
-  float: right;
-  width: calc(100% - 40px);
+  margin-bottom: 8px;
 
-  input {
-    padding: 0 8px 1px;
+  .ant-input-search {
+    float: right;
+    width: calc(100% - 40px);
+
+    input {
+      padding: 0 8px 1px;
+    }
   }
 }
 
 .tyr-filter-summary {
   display: inline-block;
-  margin: 4px 0 0;
 
   .tyr-tag + .tyr-tag {
     margin-left: 8px;

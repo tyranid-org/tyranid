@@ -84,6 +84,7 @@ export interface TyrPathProps<D extends Tyr.Document>
     | 'datetime'
     | 'email'
     | undefined;
+  translateForWhiteLabel?: (label: string) => string;
 
   // FORM ITEMS
   autoFocus?: boolean;

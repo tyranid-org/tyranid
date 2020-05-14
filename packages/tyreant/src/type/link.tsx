@@ -22,7 +22,6 @@ import {
 import { TyrLinkAutoComplete } from './link.autocomplete';
 import { TyrLinkRadio } from './link.radio';
 import { TyrLinkSelect } from './link.select';
-import { propagateMaybeChanged } from 'mobx/lib/internal';
 
 export const TyrLinkBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -35,6 +34,20 @@ export const TyrLinkBase = <D extends Tyr.Document = Tyr.Document>(
 export const TyrLink = withThemedTypeContext('link', TyrLinkBase);
 
 registerComponent('TyrLink', TyrLink);
+
+const fixFilterValue = (
+  link: Tyr.CollectionInstance,
+  filterValue: (string | number)[] | string | number | undefined
+) => {
+  const linkIdType = link.fields._id.type;
+
+  // ant's filter control loves to convert numbers to strings, so we need to coerce them back
+  return Array.isArray(filterValue)
+    ? filterValue.map(v => linkIdType.fromString(v))
+    : filterValue
+    ? [linkIdType.fromString(filterValue)]
+    : undefined;
+};
 
 byName.link = {
   component: TyrLinkBase,
@@ -91,6 +104,7 @@ byName.link = {
    */
   filter(component, props) {
     const path = props.searchPath || props.path!;
+    const link = linkFor(path)!;
 
     return {
       filterDropdown: filterDdProps => (
@@ -100,38 +114,29 @@ byName.link = {
           pathProps={props}
         />
       ),
-      onFilter: (value, doc) => {
-        if (value === undefined) return true;
+      onFilter: (filterValue, doc) => {
+        if (filterValue === undefined) return true;
 
-        if (props.onFilter) return props.onFilter(value, doc);
+        filterValue = fixFilterValue(link, filterValue);
 
-        const rawVal = path.get(doc);
+        if (props.onFilter) return props.onFilter(filterValue, doc);
 
-        if (Array.isArray(rawVal) && Array.isArray(value)) {
-          for (const v of value) {
-            for (const rv of rawVal) {
-              if (v === rv) return true;
-            }
-          }
-        }
+        const docValue = path.get(doc);
 
-        const val = String(rawVal);
-
-        if (Array.isArray(value)) {
-          if (!value.length) return true;
-
-          if (Array.isArray(val)) {
-            for (const v of val) if (value.indexOf(v) > -1) return true;
+        if (Array.isArray(docValue)) {
+          if (Array.isArray(filterValue)) {
+            for (const fv of filterValue)
+              if (docValue.indexOf(fv) > -1) return true;
 
             return false;
+          } else {
+            return docValue.indexOf(filterValue) > -1;
           }
-
-          return value.indexOf(val) > -1;
+        } else {
+          return Array.isArray(filterValue)
+            ? filterValue.indexOf(docValue) > -1
+            : filterValue === docValue;
         }
-
-        if (Array.isArray(val)) return val.indexOf(value) > -1;
-
-        return val === value;
       },
       /*
     onFilterDropdownVisibleChange: (visible: boolean) => {
@@ -223,7 +228,8 @@ const LinkFilterDropdown = ({
   const pathName = path.name;
   const linkField = linkFieldFor(path)!;
   const link = linkField.link!;
-  const { local, documents } = component;
+  const { type: linkIdType } = link.fields._id;
+  const { local, allDocuments } = component;
 
   const [labels, setLabels] = useState<Tyr.Document[] | undefined>(undefined);
   const [filterSearchValue, setFilterSearchValue] = React.useState('');
@@ -247,14 +253,16 @@ const LinkFilterDropdown = ({
       filterDdProps={filterDdProps}
       pathProps={pathProps}
     >
-      {(searchValue, setSearchValue) => {
+      {(filterValue, setFilterValue) => {
+        filterValue = fixFilterValue(link, filterValue);
+
         if (!labels) {
           if (local) {
-            if (documents) {
+            if (allDocuments) {
               const allLabels: Tyr.Document[] = [];
 
               if (pathProps.filterOptionLabel) {
-                for (const d of documents) {
+                for (const d of allDocuments) {
                   const values = pathProps.filterOptionLabel!(
                     d
                   ) as Tyr.Document[];
@@ -272,7 +280,7 @@ const LinkFilterDropdown = ({
                   //else TODO:  queue up a label find ?
                 };
 
-                for (const d of documents) {
+                for (const d of allDocuments) {
                   const values = path.get(d);
                   if (Array.isArray(values)) {
                     for (const v of values) {
@@ -294,7 +302,7 @@ const LinkFilterDropdown = ({
                   delaySetLabels(
                     results.map(d => ({
                       ...d,
-                      $id: String(d.$id),
+                      $id: d.$id,
                       $label: d.$label,
                     }))
                   );
@@ -303,7 +311,7 @@ const LinkFilterDropdown = ({
               delaySetLabels(
                 link.values.map(d => ({
                   ...d,
-                  $id: String(d.$id),
+                  $id: d.$id,
                   $label: d.$label,
                 }))
               );
@@ -330,7 +338,7 @@ const LinkFilterDropdown = ({
                   setLabels(
                     results.map(d => ({
                       ...d,
-                      $id: String(d.$id),
+                      $id: d.$id,
                       $label: d.$label,
                     }))
                   );
@@ -348,32 +356,30 @@ const LinkFilterDropdown = ({
               onClick={
                 // this debounce is here because if you clicked on the Menu (and not the contained Checkbox) it would fire this event twice
                 _.debounce(({ key }: { key: string }) => {
-                  const strKey = String(key);
-
-                  if (searchValue) {
-                    if (!Array.isArray(searchValue))
-                      searchValue = [searchValue];
-
-                    const keyIdx = searchValue.indexOf(strKey);
+                  const fv = linkIdType.fromString(key);
+                  if (filterValue) {
+                    const keyIdx = filterValue.indexOf(fv);
 
                     if (keyIdx > -1) {
-                      searchValue.splice(keyIdx, 1);
-                      if (!searchValue.length) searchValue = undefined;
+                      filterValue.splice(keyIdx, 1);
+                      if (!filterValue.length) filterValue = undefined;
                     } else {
-                      searchValue.push(strKey);
+                      filterValue.push(fv);
                     }
                   } else {
-                    searchValue = [strKey];
+                    filterValue = [fv];
                   }
 
-                  filterDdProps.setSelectedKeys?.(searchValue || []);
-                  setSearchValue(searchValue);
+                  filterDdProps.setSelectedKeys?.(filterValue || []);
+
+                  setFilterValue(filterValue);
                 })
               }
             >
               {sortLabels(labels || link.values, pathProps).map(v => {
-                const isChecked =
-                  searchValue && searchValue.indexOf(v.$id) > -1;
+                const isChecked = Array.isArray(filterValue)
+                  ? filterValue.indexOf(v.$id) > -1
+                  : filterValue === v.$id;
 
                 return (
                   <Menu.Item

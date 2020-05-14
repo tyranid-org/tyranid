@@ -65,6 +65,16 @@ export class TyrKanbanBase<
     super(props, state);
   }
 
+  async buildFindOpts() {
+    await super.buildFindOpts();
+
+    const { ordering } = this.props;
+    if (ordering) {
+      const { fields } = this.findOpts;
+      if (fields) fields[ordering] = 1;
+    }
+  }
+
   async postQuery() {
     const documents = this.documents;
     const { ordering } = this.props;
@@ -109,7 +119,7 @@ export class TyrKanbanBase<
         for (const d of documents) {
           orderingPath.set(d, (v += multiple));
           // TODO:  implement bulk api in tyranid and use that
-          await d.$update({ [ordering]: 1 });
+          await d.$update({ fields: { [ordering]: 1 } });
         }
       } else {
         documents.sort((a, b) => orderingPath.get(a) - orderingPath.get(b));

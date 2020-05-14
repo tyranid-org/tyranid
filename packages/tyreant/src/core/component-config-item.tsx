@@ -3,27 +3,36 @@ import {
   MenuOutlined,
   CaretUpFilled,
   CaretDownFilled,
-  FilterFilled
+  FilterFilled,
 } from '@ant-design/icons';
 import { Switch } from 'antd';
 
 import { DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd';
+import { TyrSortDirection } from './typedef';
 
-import { ColumnConfigField } from './typedef';
+export interface ColumnConfigField {
+  name: string;
+  label: string;
+  locked: boolean;
+  hidden: boolean;
+  sortDirection?: TyrSortDirection;
+  hasFilter?: boolean;
+  width?: number;
+}
 
 const fieldStyle = {
   display: 'flex',
   justifyContent: 'space-between',
-  width: '100%'
+  width: '100%',
 };
 
 const itemStyle = {
   userSelect: 'none',
   display: 'flex',
-  alignItems: 'center'
+  alignItems: 'center',
 };
 
-interface TyrTableColumnConfigItemProps {
+interface TyrComponentColumnConfigItemProps {
   field: ColumnConfigField;
   provided?: DraggableProvided;
   snapshot?: DraggableStateSnapshot;
@@ -43,20 +52,20 @@ const ColumnLabel = (props: { field: ColumnConfigField }) => {
   );
 };
 
-const TyrTableColumnConfigItem = ({
+export const TyrComponentColumnConfigItem = ({
   field,
   provided,
   snapshot,
   onChangeVisibility,
-  compact: small
-}: TyrTableColumnConfigItemProps) => {
+  compact: small,
+}: TyrComponentColumnConfigItemProps) => {
   const { locked, name, label, hidden } = field;
   const isDragging = snapshot ? snapshot.isDragging : false;
   const innerRef = provided ? provided.innerRef : undefined;
 
   const getItemStyle = (draggableStyle: any) => ({
     ...itemStyle,
-    ...draggableStyle
+    ...draggableStyle,
   });
 
   return (
@@ -100,5 +109,3 @@ const TyrTableColumnConfigItem = ({
     </div>
   );
 };
-
-export default TyrTableColumnConfigItem;

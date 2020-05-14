@@ -20,6 +20,7 @@ import { TyrModal } from './modal';
 import { TyrSortDirection } from './typedef';
 import { TyrPanel } from './panel';
 import { TyrThemeProps } from './theme';
+import { ensureComponentConfig, TyrComponentConfig } from './component-config';
 
 export const ComponentContext = React.createContext<TyrComponent | undefined>(
   undefined
@@ -33,12 +34,25 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   theme?: TyrThemeProps;
   mode?: 'edit' | 'view';
 
+  // CONFIG
+  /**
+   * If a string is specified, it is the name of the key to use.
+   * If true is specified, a key of 'default' will be used.
+   */
+  config?: TyrComponentConfig | string | boolean;
+  onChangeComponentConfiguration?: (
+    fields: Tyr.TyrComponentConfig['fields']
+  ) => void;
+
   // QUERYING
   collection?: Tyr.CollectionInstance<D>;
   document?: D;
   query?:
     | Tyr.MongoQuery
     | ((this: TyrComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
+
+  // FILTERS
+  notifyFilterExists?: (exists: boolean) => void;
 
   // PATHS
   paths?: (TyrPathLaxProps<D> | string)[];
@@ -114,33 +128,20 @@ export class TyrComponent<
       this.setupParentLink();
     }
 
-    if (paths)
+    if (paths) {
       this.paths = paths.map(laxPathProps =>
         this.resolveFieldLaxProps(laxPathProps)
       );
-  }
 
-  /*
-  // this is very useful to track down when there is an infinite re-render cycle
-  componentDidUpdate(prevProps: any, prevState: any) {
-    Object.entries(this.props).forEach(
-      ([key, val]) =>
-        prevProps[key] !== val && console.log(`Prop '${key}' changed from`, prevProps[key], ' to ', val)
-    );
-    if (this.state && prevState) {
-      Object.entries(this.state).forEach(
-        ([key, val]) =>
-          prevState[key] !== val && console.log(`State '${key}' changed`)
-      );
+      this.applyDefaultFilters();
     }
   }
-  */
 
-  componentDidMount() {
+  async componentDidMount() {
     this.mounted = true;
 
     const props = this.props as Props;
-    const { aux } = props;
+    const { aux, config } = props;
 
     let collection = this.collection;
 
@@ -161,6 +162,22 @@ export class TyrComponent<
       );
 
     this.setupActions();
+
+    if (config) {
+      this.loading = true;
+      const componentConfig = await ensureComponentConfig(
+        this,
+        this.paths,
+        config!
+      );
+
+      this.componentConfig = componentConfig.componentConfig;
+      this._activePaths = componentConfig.newColumns;
+
+      this.loading = false;
+    } else {
+      this._activePaths = this.paths;
+    }
   }
 
   componentWillUnmount() {
@@ -178,10 +195,29 @@ export class TyrComponent<
   }
 
   /*
+  // this is very useful to track down when there is an infinite re-render cycle
+  componentDidUpdate(prevProps: any, prevState: any) {
+    Object.entries(this.props).forEach(
+      ([key, val]) =>
+        prevProps[key] !== val && console.log(`Prop '${key}' changed from`, prevProps[key], ' to ', val)
+    );
+    if (this.state && prevState) {
+      Object.entries(this.state).forEach(
+        ([key, val]) =>
+          prevState[key] !== val && console.log(`State '${key}' changed`)
+      );
+    }
+  }
+  */
+
+  /*
    * * * PATHS
    */
 
   paths!: TyrPathProps<D>[];
+
+  @observable
+  _activePaths: TyrPathProps<D>[] = [];
 
   /**
    * "paths" contains all of the paths available to the component,
@@ -189,7 +225,7 @@ export class TyrComponent<
    *   (e.g. what paths are enabled in table configuration)
    */
   get activePaths(): TyrPathProps<D>[] {
-    return this.paths;
+    return this._activePaths || this.paths;
   }
 
   activePath(pathName: string): TyrPathExistsProps<D> | undefined {
@@ -263,12 +299,17 @@ export class TyrComponent<
   document!: D;
 
   /**
-   * if local then this has *all* the data, otherwise it just has the current page
+   * This has the current page / currently filtered set.
    */
   @observable
   documents: D[] & { count?: number } = [] as D[] & {
     count?: number;
   };
+
+  /**
+   * This has all the documents when local is active.
+   */
+  allDocuments!: D[];
 
   count?: number;
 
@@ -841,7 +882,7 @@ export class TyrComponent<
 
   setFilterValue(pathName: string, value: any) {
     this.filterValues[pathName] = value;
-    this.filterConnections[pathName]?.setSearchValue(value);
+    this.filterConnections[pathName]?.setFilterValue(value);
   }
 
   /**
@@ -857,6 +898,20 @@ export class TyrComponent<
   getFilter(props: TyrPathProps<D>): ReturnType<Filter> {
     return undefined;
   }
+
+  resetFilters = () => {
+    const { filterConnections, filterValues } = this;
+
+    Tyr.clear(filterValues);
+    this.applyDefaultFilters();
+
+    for (const path in filterConnections) filterConnections[path]?.clear();
+
+    this.updateConfigFilter();
+    this.setState({});
+
+    this.props.notifyFilterExists?.(false);
+  };
 
   updateConfigFilter = async (columnName?: string, filter?: Object) => {
     if (this.componentConfig) {
@@ -914,10 +969,72 @@ export class TyrComponent<
    * * * COMPONENT CONFIG
    */
 
+  hasConfig = false;
+
   @observable
   componentConfig?: Tyr.TyrComponentConfig;
 
-  resetFilters() {}
+  private applyDefaultFilters() {
+    for (const pathProps of this.activePaths || this.paths) {
+      const { path, defaultFilter } = pathProps;
+
+      if (path) {
+        const pathName = path.name;
+
+        if (defaultFilter !== undefined && !this.filterValue(pathName))
+          this.setFilterValue(pathName, defaultFilter);
+      }
+    }
+  }
+
+  onUpdateComponentConfig = async (
+    savedComponentConfig: Tyr.TyrComponentConfig,
+    sortHasBeenReset?: boolean,
+    filtersHaveBeenReset?: boolean,
+    widthsHaveBeenReset?: boolean
+  ) => {
+    const { config, onChangeComponentConfiguration } = this.props;
+
+    if (config) {
+      const componentConfig = await ensureComponentConfig(
+        this,
+        this.paths,
+        config!
+      );
+
+      this.componentConfig = componentConfig.componentConfig;
+      this._activePaths = componentConfig.newColumns;
+
+      onChangeComponentConfiguration &&
+        onChangeComponentConfiguration(
+          componentConfig.componentConfig.fields.map(f => {
+            return {
+              name: f.name,
+              hidden: !!f.hidden,
+              sortDirection: f.sortDirection,
+              filter: f.filter,
+            };
+          })
+        );
+
+      if (sortHasBeenReset) {
+        this.resetSort();
+      }
+
+      if (filtersHaveBeenReset) {
+        this.resetFilters();
+      }
+
+      if (sortHasBeenReset || filtersHaveBeenReset) {
+        this.query();
+      }
+
+      if (widthsHaveBeenReset) {
+        this.resetWidths();
+      }
+    }
+  };
+
   resetSort() {}
 
   reset(...args: ('filters' | 'sort' | 'widths' | 'document')[]) {

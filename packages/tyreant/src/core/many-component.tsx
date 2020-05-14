@@ -49,9 +49,6 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
 
   showQuickTotal?: boolean;
 
-  // FILTERS
-  notifyFilterExists?: (exists: boolean) => void;
-
   // SORTING
   notifySortSet?: (columnName?: string, order?: TyrSortDirection) => void;
 
@@ -79,8 +76,8 @@ export class TyrManyComponent<
     super(props, state);
   }
 
-  componentDidMount() {
-    super.componentDidMount();
+  async componentDidMount() {
+    await super.componentDidMount();
 
     const { documents, query } = this.props;
 
@@ -112,11 +109,6 @@ export class TyrManyComponent<
     const { props } = this;
     return !!(props.local || props.documents);
   }
-
-  /**
-   * This has all the documents when local is active.
-   */
-  allDocuments!: D[];
 
   currentlyLoaded: any /* Tyr.FindAllOpts */;
 
@@ -225,7 +217,7 @@ export class TyrManyComponent<
       const fields = Tyr.projectify(this.activePaths.map(p => p.path));
 
       if (Array.isArray(projection)) {
-        for (const name in projection) {
+        for (const name of projection) {
           fields[name] = 1;
         }
       }
@@ -404,19 +396,6 @@ export class TyrManyComponent<
 
     return (this.filters[pathName] = path && getFilter(this, props));
   }
-
-  resetFilters = () => {
-    const { filterConnections, filterValues } = this;
-
-    Tyr.clear(filterValues);
-
-    for (const path in filterConnections) filterConnections[path]?.clear();
-
-    this.updateConfigFilter();
-    this.setState({});
-
-    this.props.notifyFilterExists?.(false);
-  };
 
   filterLocal() {
     const { filterValues } = this;
