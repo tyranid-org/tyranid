@@ -96,7 +96,7 @@ export class TyrLinkSelect<
       };
     }
 
-    if (!documents?.length) return <></>;
+    if (this.state.initialLoading || !documents) return <></>;
 
     return decorateField('link', props, () => (
       <Select {...selectProps}>
