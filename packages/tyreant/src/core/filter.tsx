@@ -150,11 +150,10 @@ export const TyrFilters = ({
 }) => {
   const [visible, setVisible] = useState(false);
   const c = component || useComponent();
-  const [filterSearchValue, setFilterSearchValue] = useState(
-    c?.filterSearchValue || ''
-  );
   if (!c) return <div className="no-component" />;
-  const paths = c.paths?.filter(f => f.path);
+  const paths = (c.paths as TyrPathProps<any>[]).filter(
+    pathProps => pathProps.path
+  );
   if (!paths) return <div className="no-paths"></div>;
 
   const body = (
@@ -250,11 +249,11 @@ export const TyrFilters = ({
       </Button>
       <Input.Search
         enterButton
-        value={filterSearchValue}
+        value={c.filterSearchValue}
         onChange={ev => {
           const v = ev.target.value;
           c.filterSearchValue = v;
-          setFilterSearchValue(v);
+          if (c.local) c.query();
         }}
       />
     </div>

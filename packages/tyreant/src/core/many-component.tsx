@@ -19,6 +19,7 @@ import Pagination from 'antd/es/pagination';
 
 import { getPathName } from './path';
 import { TyrSortDirection } from './typedef';
+import { CheckSquareFilled } from '@ant-design/icons';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -115,6 +116,7 @@ export class TyrManyComponent<
   getQuery() {
     return {
       filterValues: this.filterValues,
+      filterSearchValue: this.filterSearchValue,
       sortDirection: this.sortDirections,
       skip: this.skip,
       limit: this.limit,
@@ -181,7 +183,7 @@ export class TyrManyComponent<
 
   async buildFindOpts() {
     const { query: baseQuery, projection, populate } = this.props;
-    const { filterValues, sortDirections } = this;
+    const { collection, filterValues, sortDirections } = this;
 
     const query: Tyr.MongoQuery = {};
     const { linkToParent, linkFromParent, parentDocument } = this;
@@ -225,11 +227,11 @@ export class TyrManyComponent<
       // now we mix in all links so that when we link to child components we have the links available
       // TODO:  it would be ideal if we could analyze the child components and only mix in links that our child components
       //        actually need
-      const { paths } = this.collection;
+      const { paths } = collection;
       for (const pathName in paths) {
         const field = paths[pathName];
 
-        if (field.link) {
+        if (field.link && !fields[field.path.fields[0].path.spath]) {
           fields[field.path.spath] = 1;
         }
       }
@@ -257,6 +259,20 @@ export class TyrManyComponent<
 
       const sortDirection = sortDirections[pathName];
       if (sortDirection) sort[pathName] = sortDirection === 'ascend' ? 1 : -1;
+    }
+
+    if (!this.local) {
+      const { filterSearchValue } = this;
+      if (filterSearchValue) {
+        const { labelField } = collection;
+
+        if (labelField) {
+          Tyr.query.and(opts.query, labelField.path.spath, {
+            $regex: filterSearchValue,
+            $options: 'i',
+          });
+        }
+      }
     }
 
     this.findOpts = opts;
@@ -398,7 +414,7 @@ export class TyrManyComponent<
   }
 
   filterLocal() {
-    const { filterValues } = this;
+    const { filterValues, filterSearchValue } = this;
 
     const checks: ((doc: Tyr.Document) => boolean)[] = [];
 
@@ -415,6 +431,18 @@ export class TyrManyComponent<
 
       const onFilter = filter?.onFilter;
       if (onFilter) checks.push(document => onFilter(searchValue, document));
+    }
+
+    if (filterSearchValue) {
+      const { labelField } = this.collection;
+
+      if (labelField) {
+        const { path } = labelField;
+        const regexp = new RegExp(filterSearchValue, 'i');
+        checks.push(document => {
+          return regexp.test(path.get(document));
+        });
+      }
     }
 
     this.count = (this.documents = this.allDocuments.filter(doc =>
@@ -574,6 +602,9 @@ export class TyrManyComponent<
         case 'limit':
           this[name] = parseInt(value, 10);
           break;
+        case 'search':
+          this.filterSearchValue = value;
+          break;
         default: {
           const dot = value.indexOf('.');
           let sortDirection: TyrSortDirection, searchValue: string | undefined;
@@ -609,7 +640,13 @@ export class TyrManyComponent<
   getUrlQuery() {
     const query: { [name: string]: string } = {};
 
-    const { filterValues, sortDirections, skip, limit } = this;
+    const {
+      filterValues,
+      filterSearchValue,
+      sortDirections,
+      skip,
+      limit,
+    } = this;
 
     if (skip) query.skip = String(skip);
     if (limit !== undefined && limit !== DEFAULT_PAGE_SIZE)
@@ -631,6 +668,8 @@ export class TyrManyComponent<
             : '');
       }
     }
+
+    if (filterSearchValue) query.search = filterSearchValue;
 
     return query;
   }
@@ -667,7 +706,7 @@ export class TyrManyComponent<
             }
           });
         }
-      } else if (!this.props.documents) {
+      } else if (!this.allDocuments) {
         const { decorator } = this;
         if (
           this.activePaths.length &&

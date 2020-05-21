@@ -591,6 +591,28 @@ function queryMatches(query, doc) {
 }
 
 //
+// Query Anding
+//
+
+/** @isomorphic */
+function queryAnd(
+  query /*: Tyr.MongoQuery */,
+  spath /*: string */,
+  value /*: any */
+) {
+  const existing = query[spath];
+
+  if (existing) {
+    const $and = (query.$and = query.$and || []);
+    $and.push(existing);
+    $and.push(value);
+    delete query[spath];
+  } else {
+    query[spath] = value;
+  }
+}
+
+//
 // Query Restriction
 //
 
@@ -730,6 +752,7 @@ const query = {
   intersection: queryIntersection,
   matches: queryMatches,
   restrict: queryRestrict,
+  and: queryAnd,
 };
 
 Tyr.query = query;

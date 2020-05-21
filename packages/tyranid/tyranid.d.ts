@@ -43,6 +43,13 @@ export const labelField = true;
 export const labelImageField = true;
 
 /**
+ * Minor shorthand for declaring a order field property in a field definition.
+ *
+ * i.e. "..., orderField ..." instead of "..., orderField: true, ..."
+ */
+export const orderField = true;
+
+/**
  * Minor shorthand for declaring a readonly property in a field definition.
  *
  * i.e. "..., readonly, ..." instead of "..., readonly: true, ..."
@@ -987,6 +994,7 @@ export namespace Tyr {
     label: string;
     labelField: FieldInstance<D>;
     labelImageField: FieldInstance<D>;
+    orderField: FieldInstance<D>;
     labelFor(doc: MaybeRawDocument): string;
     labels(text: string): Promise<D[]>;
     labels(ids: string[]): Promise<D[]>;
@@ -1091,7 +1099,6 @@ export namespace Tyr {
     computed: boolean;
     db: boolean;
     def: FieldDefinition<D>;
-    dynamicSchema?: any;
     generated: boolean;
     name: string;
     path: PathInstance;
@@ -1111,6 +1118,9 @@ export namespace Tyr {
     fields?: { [key: string]: FieldInstance<D> };
     method: string;
     populateName?: string;
+
+    schema?: any;
+    dynamicMatch?: any;
 
     format(value: any): string;
     isId(): boolean;
@@ -1250,6 +1260,7 @@ export namespace Tyr {
   }
 
   export interface QueryStatic {
+    and(query: MongoQuery, spath: string, value: any): void;
     intersection(
       a: MongoQuery | null | undefined,
       b: MongoQuery | null | undefined

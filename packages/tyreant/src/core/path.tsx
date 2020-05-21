@@ -130,8 +130,16 @@ export interface TyrPathProps<D extends Tyr.Document>
    * This indicates that the following render function should be used to render values.  If render is specified
    * then field is not required/needed.
    */
-  renderField?: (doc: D, options?: D[]) => React.ReactElement;
-  renderDisplay?: (doc: D) => React.ReactElement | string;
+  renderField?: (
+    doc: D,
+    path: Tyr.PathInstance | undefined,
+    props: TyrPathProps<D>
+  ) => React.ReactElement;
+  renderDisplay?: (
+    doc: D,
+    path: Tyr.PathInstance | undefined,
+    props: TyrPathProps<D>
+  ) => React.ReactElement | string;
 
   // ARRAY fixed array display format
   fixedField?: string;
@@ -312,7 +320,7 @@ export const decorateField = (
       {...(typeName === 'boolean' && { valuePropName: 'checked' })}
     >
       {props.renderField && document ? (
-        props.renderField(document)
+        props.renderField(document, path, props)
       ) : mode === 'view' ? (
         <span>{getCellValue(path!, document!, props, typeName)}</span>
       ) : (

@@ -460,7 +460,7 @@ export class TyrTableBase<
     this.tableWidth =
       (rowsSelectable ? 60 : 0) +
       (isEditingAnything ? 128 : 0) +
-      768 /* action bar */;
+      256 /* action bar */;
     columns.forEach((column, columnIdx) => {
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
@@ -479,7 +479,7 @@ export class TyrTableBase<
           this.componentConfig?.fields.find(f => f.name === name)?.width) ||
         pathWidth(column, wrapColumnHeaders);
 
-      this.tableWidth += width ? Number.parseInt(width as string) + 8 : 275;
+      this.tableWidth += width ? Number.parseInt(width as string) + 16 : 275;
 
       switch (typeof column.searchPath) {
         case 'string':
@@ -544,37 +544,17 @@ export class TyrTableBase<
             (!column.isEditable || column.isEditable(document))
           ) {
             const fieldProps = {
-              placeholder: column.placeholder,
+              ...column,
               autoFocus: !!newDocumentTable && !!column.autoFocus,
-              required: column.required,
               width,
-              multiple: column.multiple,
-              mode: column.mode,
               searchOptionRenderer: getLabelRenderer(column),
-              searchSortById: column.searchSortById,
-              renderField: column.renderField,
-              renderDisplay: column.renderDisplay,
               noLabel: true,
               tabIndex: columnIdx,
-              dropdownClassName: column.dropdownClassName,
               className: classNames(
                 path && 'tyr-edit-' + path.detail.type.name,
                 column.editClassName
               ),
-              searchRange: column.searchRange,
               onChange: () => this.setState({}),
-              typeUi: column.typeUi,
-              mapDocumentValueToForm: column.mapDocumentValueToForm,
-              mapFormValueToDocument: column.mapFormValueToDocument,
-              getSearchIds: column.getSearchIds,
-              labelInValue: column.labelInValue,
-              onFilter: column.onFilter,
-              dateFormat: column.dateFormat,
-              linkLabels: column.linkLabels,
-              max: column.max,
-              //ellipsis: true,
-              label: column.label,
-              optionFilter: column.optionFilter,
             };
 
             return (
@@ -606,7 +586,7 @@ export class TyrTableBase<
               )}
             >
               {render
-                ? render(document)
+                ? render(document, path, column)
                 : path
                 ? getCellValue(path, document, column as TyrTypeProps<any>)
                 : ''}
@@ -814,7 +794,7 @@ export class TyrTableBase<
         },
         sorter: undefined,
         sortOrder: undefined,
-        width: isEditingAnything ? 144 : 40,
+        width: isEditingAnything ? 96 : 32,
         ...(pinActionsRight !== false ? { fixed: 'right' } : {}),
       });
     }
@@ -1005,6 +985,7 @@ export class TyrTableBase<
               ? {
                   selectedRowKeys,
                   onChange: this.onSelectedRowKeysChange,
+                  columnWidth: 32,
                 }
               : undefined
           }

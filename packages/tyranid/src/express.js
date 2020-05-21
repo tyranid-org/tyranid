@@ -103,7 +103,7 @@ class Serializer {
       'max',
       'maxlength',
       'numbering',
-      'order',
+      'orderField',
       'pathLabel',
       'pattern',
       'placeholder',
@@ -873,6 +873,7 @@ export function generateClientLibrary() {
   };
 
   Tyr.query = {
+    and: ${es5Fn(Tyr.query.and)},
     restrict: ${es5Fn(Tyr.query.restrict)}
   };
 
@@ -952,6 +953,7 @@ export function generateClientLibrary() {
 
     if (def.labelField) collection.labelField = field;
     if (def.labelImageField) collection.labelImageField = field;
+    if (def.orderField) collection.orderField = field;
   }
 
   function compileFields(path, parent, fieldDefs, dynamic, aux, method) {
@@ -1374,13 +1376,11 @@ export function generateClientLibrary() {
 
     if (Array.isArray(search)) {
       const byIdIndex = this.byIdIndex;
-      if (!this.isDb()) {
+      if (!this.isDb())
         return search.map(id => byIdIndex[id]);
-      }
 
-      if (search.every(id => byIdIndex[id])) {
+      if (search.every(id => byIdIndex[id]))
         return Promise.resolve(search.map(id => byIdIndex[id]));
-      }
 
       let lqs = this._labelQueries;
       if (!lqs) {
@@ -1667,6 +1667,10 @@ export function generateClientLibrary() {
         file += `
     labelImageField: ${JSON.stringify(col.labelImageField.pathName)},`;
 
+      if (col.orderField)
+        file += `
+    orderField: ${JSON.stringify(col.orderField.pathName)},`;
+
       for (const key of [
         'enum',
         'tag',
@@ -1676,6 +1680,7 @@ export function generateClientLibrary() {
         'internal',
         'generated',
         'labelImageField',
+        'orderField',
       ]) {
         if (col.def[key])
           file += `

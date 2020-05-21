@@ -285,6 +285,7 @@ declare module 'tyranid/client' {
 
       labelField?: boolean | { uses: string[] };
       labelImageField?: boolean | { uses: string[] };
+      orderField?: boolean | { uses: string[] };
       pattern?: RegExp;
       minlength?: number;
       maxlength?: number;
@@ -317,7 +318,6 @@ declare module 'tyranid/client' {
       generated: boolean;
       db: boolean;
       def: FieldDefinition<D>;
-      dynamicSchema?: any;
       name: string;
       path: PathInstance;
       numbering?: Numbering;
@@ -337,6 +337,9 @@ declare module 'tyranid/client' {
       method: string;
       populateName?: string;
       width?: number;
+
+      schema?: any;
+      dynamicMatch?: any;
 
       format(value: any): string;
       isId(): boolean;
@@ -377,6 +380,12 @@ declare module 'tyranid/client' {
       count(opts: any): Promise<number>;
       exists(opts: any): Promise<boolean>;
       fields: { [fieldName: string]: FieldInstance<D> };
+      fieldsFor(opts: {
+        match?: MongoDocument;
+        query?: MongoQuery;
+        custom?: boolean;
+        static?: boolean;
+      }): Promise<{ [key: string]: Tyr.FieldInstance<D> }>;
       findAll(args: any): Promise<D[] & { count?: number }>;
       findOne(args: any): Promise<D | null>;
       id: string;
@@ -393,6 +402,7 @@ declare module 'tyranid/client' {
       label: string;
       labelField: any;
       labelImageField: any;
+      orderField: any;
       labelFor(doc: D | object): string;
       labelProjection(): any; // Mongo Projection
       labels(text: string): Promise<D[]>;
@@ -454,6 +464,7 @@ declare module 'tyranid/client' {
 
     export const query: QueryStatic;
     export interface QueryStatic {
+      and(query: MongoQuery, spath: string, value: any): void;
       restrict(query: MongoQuery, doc: Tyr.Document): void;
     }
   }

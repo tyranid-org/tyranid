@@ -1,5 +1,6 @@
 export * from './action';
 export * from './component';
+export * from './dynamic';
 export * from './one-component';
 export * from './many-component';
 export * from './decorator';

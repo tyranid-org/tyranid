@@ -200,6 +200,7 @@ export namespace Tyr {
 
     labelField?: boolean | { uses: string[] };
     labelImageField?: boolean;
+    orderField?: boolean;
     pattern?: RegExp;
     minlength?: number;
     maxlength?: number;
@@ -353,6 +354,7 @@ export namespace Tyr {
     label: string;
     labelField: any;
     labelImageField: any;
+    orderField: any;
     labelFor(doc: D | object): string;
     labelProjection(): any; // Mongo Projection
     labels(text: string): Promise<D[]>;

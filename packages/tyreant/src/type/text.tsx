@@ -89,6 +89,9 @@ byName.text = {
   cellValue(path, document, props) {
     return <>{getValue(props, document)}</>;
   },
+  //static: {
+  //<div>whatever</div>
+  //}
 };
 
 registerComponent('TyrText', TyrText);

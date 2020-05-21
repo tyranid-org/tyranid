@@ -6,6 +6,7 @@ export * from './array.list';
 export * from './bitmask';
 export * from './boolean';
 export * from './date';
+export * from './daterange';
 export * from './datetime';
 export * from './duration';
 export * from './email';

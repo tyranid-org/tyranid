@@ -53,23 +53,28 @@ export const findById = (
 ) => (props?.linkLabels || collection.values).find(lv => lv.$id === id);
 
 export const sortLabels = (labels: any[], props: TyrPathProps<any>) => {
-  if (!!props.manuallySortedLabels) {
+  const link = linkFor(props.path!)!;
+
+  if (props.manuallySortedLabels) {
     return labels.slice();
   }
 
-  const searchSortById = !!props.searchSortById;
   const sortedLabels = labels.slice();
-
-  sortedLabels.sort((a, b) => {
-    if (searchSortById) return a.$id - b.$id;
-    if (a.$label === b.$label) return 0;
-    if (a.$label === undefined && b.$label !== undefined) return -1;
-    if (b.$label === undefined && a.$label !== undefined) return 1;
-
-    const aLabel = a.$label.toLowerCase?.() ?? '';
-    const bLabel = b.$label.toLowerCase?.() ?? '';
-    return aLabel.localeCompare(bLabel);
-  });
+  const { orderField } = link;
+  if (orderField) {
+    const orderPath = orderField.path;
+    sortedLabels.sort(
+      (a, b) => (orderPath.get(a) ?? 0) - (orderPath.get(b) ?? 0)
+    );
+  } else if (props.searchSortById) {
+    sortedLabels.sort((a, b) => a.$id - b.$id);
+  } else {
+    sortedLabels.sort((a, b) =>
+      (a.$label?.toLowerCase?.() ?? '').localeCompare(
+        b.$label?.toLowerCase?.() ?? ''
+      )
+    );
+  }
 
   return sortedLabels;
 };
@@ -227,11 +232,7 @@ export class TyrLinkAbstract<
 
         // switch to simple Array.isArray() once we move to mobx 5
         const ids =
-          typeof val === 'string'
-            ? [val]
-            : getSearchIds
-            ? getSearchIds(val)
-            : val;
+          typeof val === 'string' ? [val] : getSearchIds?.(val) || val;
 
         promises.push(link.byIds(ids, { fields }));
       }

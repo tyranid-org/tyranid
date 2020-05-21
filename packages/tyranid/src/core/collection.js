@@ -663,6 +663,9 @@ export default class Collection {
     const lif = this.labelImageField;
     if (lif) fields[lif.pathName] = 1;
 
+    const of = this.orderField;
+    if (of) fields[of.pathName] = 1;
+
     const getFn = lf.def.get || lf.def.getServer;
     if (getFn) {
       const paths = Tyr.functions.paths(getFn);
@@ -1849,6 +1852,7 @@ export default class Collection {
 
         if (fieldDef.labelField) collection.labelField = field;
         if (fieldDef.labelImageField) collection.labelImageField = field;
+        if (fieldDef.orderField) collection.orderField = field;
 
         // Store the field path and name on the field itself to support methods on Field
         field.collection = collection;

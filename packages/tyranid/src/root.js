@@ -7,6 +7,7 @@ import './type/array';
 import './type/bitmask';
 import './type/boolean';
 import './type/date';
+import './type/daterange';
 import './type/datetime';
 import './type/double';
 import './type/duration';
@@ -352,6 +353,7 @@ export const readonly = true;
 export const required = true;
 export const labelField = true;
 export const labelImageField = true;
+export const orderField = true;
 
 global.__TyranidGlobal = exports.Tyr = Tyr;
 
