@@ -286,7 +286,7 @@ const LinkFilterDropdown = ({
                     for (const v of values) {
                       add(v);
                     }
-                  } else if (values) {
+                  } else if (values !== undefined) {
                     add(values);
                   }
                 }
