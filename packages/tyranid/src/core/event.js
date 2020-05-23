@@ -4,7 +4,6 @@ import Tyr from '../tyr';
 import { AppError } from './appError';
 import Collection from './collection';
 import Instance from './instance';
-import { SSL_OP_MICROSOFT_SESS_ID_BUG } from 'constants';
 
 const EVENT_HANDLER_TIMEOUT_MS = 30000;
 

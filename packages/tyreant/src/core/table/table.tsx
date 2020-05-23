@@ -257,7 +257,7 @@ export class TyrTableBase<
 
     if (this.mounted) this.refresh();
 
-    this.props.setEditing && this.props.setEditing(true);
+    this.props.setEditing?.(true);
     return true;
   };
 
@@ -277,7 +277,7 @@ export class TyrTableBase<
       setEditing,
     } = this.props;
 
-    const { documents, editingDocument, newDocument } = this;
+    const { editingDocument, newDocument } = this;
 
     let document = newDocument || editingDocument;
 
@@ -290,7 +290,6 @@ export class TyrTableBase<
     if (!document.$changed) return;
 
     this.isSavingDocument = true;
-    const docIdx = findIndex(documents, d => d.$id === document!.$id);
     const collection = document.$model;
 
     const orig = document.$orig;
@@ -338,39 +337,43 @@ export class TyrTableBase<
           }
         }
 
-        const canSave =
-          !onBeforeSaveDocument || onBeforeSaveDocument(document!);
-
-        if (!canSave) {
+        if (onBeforeSaveDocument && !onBeforeSaveDocument(document!)) {
           this.isSavingDocument = false;
           // No error to show, hopefully validation error is shown
           // or merror message by onBeforeSaveDocument
           return resolve();
         }
 
-        if (saveDocument) {
-          document = await saveDocument(document!);
-        } else {
-          document = await document!.$save();
-        }
+        document = await (saveDocument
+          ? saveDocument(document!)
+          : document!.$save());
 
         if (document) {
           document.$cache();
 
-          if (docIdx > -1) {
-            this.documents = [
-              ...documents.slice(0, docIdx),
-              document,
-              ...documents.slice(docIdx + 1),
-            ];
+          if (this.local) {
+            const { allDocuments } = this;
+            const docIdx = findIndex(
+              allDocuments,
+              d => d.$id === document!.$id
+            );
+            if (docIdx > -1) {
+              this.allDocuments = [
+                ...allDocuments.slice(0, docIdx),
+                document,
+                ...allDocuments.slice(docIdx + 1),
+              ];
+            } else {
+              this.allDocuments.push(document);
+            }
           }
 
           this.requery();
         }
 
-        onAfterSaveDocument && onAfterSaveDocument(document, changedFields);
+        onAfterSaveDocument?.(document, changedFields);
         this.isSavingDocument = false;
-        setEditing && setEditing(false);
+        setEditing?.(false);
         delete this.editingDocument;
         delete this.newDocument;
         resolve();
@@ -388,7 +391,7 @@ export class TyrTableBase<
     const { documents, editingDocument, newDocument } = this;
 
     if (!newDocument && !editingDocument) {
-      setEditing && setEditing(false);
+      setEditing?.(false);
       return;
     }
 
@@ -838,10 +841,8 @@ export class TyrTableBase<
 
   private onEditRow = (document: D, rowIndex: number) => {
     this.editingDocument = document;
-    this.props.setEditing && this.props.setEditing(true);
+    this.props.setEditing?.(true);
     document.$snapshot();
-
-    setTimeout(() => this.refresh(), 250);
   };
 
   //rerenderTable?: RerenderableApi;
@@ -859,7 +860,7 @@ export class TyrTableBase<
     }
 
     this.selectedIds = selectedRowKeys;
-    onSelectRows && onSelectRows(selectedRowKeys);
+    onSelectRows?.(selectedRowKeys);
   };
 
   onSelectedRowKeysChange = (selectedRowKeys: Tyr.AnyIdType[]) => {
@@ -1010,7 +1011,7 @@ export class TyrTableBase<
             moveRow: this.moveRow,
             dndEnabled,
             className:
-              editingDocument && editingDocument.$id === record.$id
+              editingDocument?.$id === record.$id
                 ? 'tyr-editable-row'
                 : undefined,
 

@@ -19,7 +19,6 @@ import Pagination from 'antd/es/pagination';
 
 import { getPathName } from './path';
 import { TyrSortDirection } from './typedef';
-import { CheckSquareFilled } from '@ant-design/icons';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -531,7 +530,9 @@ export class TyrManyComponent<
 
         if (result === 0) {
           if (a.$model.labelField) {
-            result = (a.$label || '').localeCompare(b.$label);
+            result = (a.$label || '').localeCompare(b.$label, undefined, {
+              sensitivity: 'base',
+            });
           }
 
           if (result === 0) {
