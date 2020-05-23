@@ -128,6 +128,22 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
+     * "tyrJob" <TyrJobCollection> are derived
+     */
+    export interface BaseTyrJob<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      collection?: string;
+      endAt?: any;
+      exception?: string;
+      /**
+       * This has a stringified version of the parameters       */
+      parameters?: string;
+      queuedAt?: any;
+      service?: string;
+      startAt?: any;
+    }
+    
+    /**
+     * Base interface from which documents in collection
      * "tyrLog" <TyrLogCollection> are derived
      */
     export interface BaseTyrLog<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -349,6 +365,12 @@ declare module 'tyranid/isomorphic' {
       extends Inserted<string>,
               BaseTyrInstance<ObjIdType, ObjContainer, NumContainer> {}
     /**
+     * Document returned by collection "tyrJob" <TyrJobCollection>
+     */
+    export interface TyrJob<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<ObjIdType>,
+              BaseTyrJob<ObjIdType, ObjContainer, NumContainer> {}
+    /**
      * Document returned by collection "tyrLog" <TyrLogCollection>
      */
     export interface TyrLog<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
@@ -494,6 +516,12 @@ declare module 'tyranid/isomorphic' {
      */
     export interface TyrInstanceCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<TyrInstance<ObjIdType, ObjContainer, NumContainer>> {}
+    
+    /**
+     * Type definition for "tyrJob" collection
+     */
+    export interface TyrJobCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<TyrJob<ObjIdType, ObjContainer, NumContainer>> {}
     
     /**
      * Type definition for "tyrLog" collection
@@ -6431,6 +6459,7 @@ declare module 'tyranid/isomorphic' {
       tyrExchangeRate: TyrExchangeRateCollection<IdType>;
       tyrImport: TyrImportCollection<IdType>;
       tyrInstance: TyrInstanceCollection<IdType>;
+      tyrJob: TyrJobCollection<IdType>;
       tyrLog: TyrLogCollection<IdType>;
       tyrLogEvent: TyrLogEventCollection<IdType>;
       tyrLogLevel: TyrLogLevelCollection<IdType>;
@@ -6459,6 +6488,7 @@ declare module 'tyranid/isomorphic' {
       TyrExchangeRate: TyrExchangeRateCollection<IdType>;
       TyrImport: TyrImportCollection<IdType>;
       TyrInstance: TyrInstanceCollection<IdType>;
+      TyrJob: TyrJobCollection<IdType>;
       TyrLog: TyrLogCollection<IdType>;
       TyrLogEvent: TyrLogEventCollection<IdType>;
       TyrLogLevel: TyrLogLevelCollection<IdType>;
@@ -6487,6 +6517,7 @@ declare module 'tyranid/isomorphic' {
       _u5: TyrExchangeRateCollection<IdType>;
       _im: TyrImportCollection<IdType>;
       _t2: TyrInstanceCollection<IdType>;
+      _j0: TyrJobCollection<IdType>;
       _l0: TyrLogCollection<IdType>;
       _l2: TyrLogEventCollection<IdType>;
       _l1: TyrLogLevelCollection<IdType>;
@@ -6516,6 +6547,7 @@ declare module 'tyranid/isomorphic' {
      |'tyrExchangeRate'
      |'tyrImport'
      |'tyrInstance'
+     |'tyrJob'
      |'tyrLog'
      |'tyrLogEvent'
      |'tyrLogLevel'
@@ -6539,6 +6571,7 @@ declare module 'tyranid/isomorphic' {
      |'_g1'
      |'_g2'
      |'_im'
+     |'_j0'
      |'_l0'
      |'_l1'
      |'_l2'

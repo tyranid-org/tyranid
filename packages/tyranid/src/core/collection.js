@@ -2127,7 +2127,7 @@ export default class Collection {
             '"service.${methodName}" should be an object, got: ' + defMethod
           );
 
-        const { params, return: returns } = defMethod;
+        const { job, params, return: returns } = defMethod;
 
         if (params) {
           for (const paramName in params) {
@@ -2148,6 +2148,12 @@ export default class Collection {
         } else {
           defMethod.params = {};
         }
+
+        if (job && returns)
+          throw compiler.err(
+            path,
+            'Background job services cannot return a value.'
+          );
 
         let field = returns;
 

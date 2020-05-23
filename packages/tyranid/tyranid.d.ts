@@ -643,6 +643,11 @@ export namespace Tyr {
     client?: boolean;
 
     /**
+     * Indicates that this service method should run in the background as a job.
+     */
+    job?: boolean;
+
+    /**
      * This is the full URL path for this service.  This will be automatically generated
      * if you do not specify one.  Recommended to leave this blank and go with auto-generated
      * URL.

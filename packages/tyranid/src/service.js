@@ -1,4 +1,5 @@
 import { handleException } from './express';
+import { submitJob } from './job';
 
 export function instrumentServerServices(col) {
   // col.def.service = service metadata
@@ -14,17 +15,25 @@ export function instrumentServerServices(col) {
         method.route = `/api/${col.def.name}/${methodName}`;
       }
 
-      col[methodName] = function () {
-        return col.service[methodName].apply(
-          {
-            source: 'server',
-            user: undefined, // TODO:  figure out some way to pass in the user ?
-            req: undefined,
-            collection: col,
-          },
-          arguments
-        );
-      };
+      col[methodName] = method.job
+        ? (...args) => {
+            submitJob(
+              col,
+              methodName,
+              JSON.stringify(args),
+              undefined // TODO:  user
+            );
+          }
+        : (...args) =>
+            col.service[methodName].apply(
+              {
+                source: 'server',
+                user: undefined, // TODO:  figure out some way to pass in the user ?
+                req: undefined,
+                collection: col,
+              },
+              args
+            );
     }
   }
 }

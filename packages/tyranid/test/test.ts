@@ -2291,6 +2291,8 @@ describe('tyranid', function () {
 
           await loc!.$save();
 
+          await Tyr.sleep(50);
+
           const logs = await Log.findAll({ query: { c: { $ne: Log.id } } });
           expect(logs.length).to.be.eql(1);
           expect((logs[0] as any).e).to.be.eql('db');
@@ -2346,12 +2348,12 @@ describe('tyranid', function () {
     describe('collection.links()', () => {
       it('should work with no options', () => {
         const links = User.links();
-        expect(links.length).to.be.eql(17);
+        expect(links.length).to.be.eql(18);
       });
 
       it('should work with incoming', () => {
         const links = User.links({ direction: 'incoming' });
-        expect(links.length).to.be.eql(9);
+        expect(links.length).to.be.eql(10);
       });
 
       it('should work with outgoing', () => {
@@ -2364,7 +2366,7 @@ describe('tyranid', function () {
         expect(links.length).to.be.eql(1);
 
         links = User.links({ relate: 'associate' });
-        expect(links.length).to.be.eql(16);
+        expect(links.length).to.be.eql(17);
       });
     });
 

@@ -139,6 +139,21 @@ declare module 'tyranid' {
     
 
     /**
+     * Server base document definition for TyrJobCollection.
+     */
+    interface BaseTyrJob
+      extends Isomorphic.BaseTyrJob<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Server document definition for TyrJobCollection,
+     * extends isomorphic base interface BaseTyrJob.
+     */
+    interface TyrJob
+      extends Inserted<ObjIdType>,
+              BaseTyrJob {}
+    
+
+    /**
      * Server base document definition for TyrLogCollection.
      */
     interface BaseTyrLog
@@ -420,6 +435,13 @@ declare module 'tyranid' {
     /**
      * Server collection definition.
      */
+    interface TyrJobCollection
+      extends Tyr.CollectionInstance<TyrJob> {
+    }
+
+    /**
+     * Server collection definition.
+     */
     interface TyrLogCollection
       extends Tyr.CollectionInstance<TyrLog> {
     }
@@ -546,6 +568,7 @@ declare module 'tyranid' {
       tyrExchangeRate: TyrExchangeRateCollection;
       tyrImport: TyrImportCollection;
       tyrInstance: TyrInstanceCollection;
+      tyrJob: TyrJobCollection;
       tyrLog: TyrLogCollection;
       tyrLogEvent: TyrLogEventCollection;
       tyrLogLevel: TyrLogLevelCollection;
@@ -574,6 +597,7 @@ declare module 'tyranid' {
       TyrExchangeRate: TyrExchangeRateCollection;
       TyrImport: TyrImportCollection;
       TyrInstance: TyrInstanceCollection;
+      TyrJob: TyrJobCollection;
       TyrLog: TyrLogCollection;
       TyrLogEvent: TyrLogEventCollection;
       TyrLogLevel: TyrLogLevelCollection;
@@ -602,6 +626,7 @@ declare module 'tyranid' {
       _u5: TyrExchangeRateCollection;
       _im: TyrImportCollection;
       _t2: TyrInstanceCollection;
+      _j0: TyrJobCollection;
       _l0: TyrLogCollection;
       _l2: TyrLogEventCollection;
       _l1: TyrLogLevelCollection;

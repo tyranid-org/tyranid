@@ -1,5 +1,6 @@
 import Tyr from './root';
 
+import './job';
 import './sanitize';
 
 import './geo/continent.model';
