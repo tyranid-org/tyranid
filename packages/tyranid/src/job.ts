@@ -39,14 +39,15 @@ export const Job = new ((Collection as unknown) as Tyr.CollectionStatic)({
 export const submitJob = async <D extends Tyr.Document>(
   collection: Tyr.CollectionInstance<D>,
   methodName: string,
+  parameters: any[],
   user: Tyr.Document
 ) => {
-  const method = collection.def.service![methodName];
+  //const method = collection.def.service![methodName];
 
   await Job.db.insertOne({
     collection: collection.id,
     service: methodName,
-    parameters: 'TODO',
+    parameters: JSON.stringify(parameters),
     user: user?.$id,
     queuedAt: new Date(),
   });

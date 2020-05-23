@@ -20,7 +20,7 @@ export function instrumentServerServices(col) {
             submitJob(
               col,
               methodName,
-              JSON.stringify(args),
+              args,
               undefined // TODO:  user
             );
           }
