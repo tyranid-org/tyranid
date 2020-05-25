@@ -1,3 +1,5 @@
+import * as cp from 'child_process';
+
 import { Tyr } from 'tyranid';
 
 import 'tyranid/builtin/server';
@@ -107,4 +109,23 @@ export const processJobs = async () => {
       waitMs = 1000;
     }
   }
+};
+
+export const isJobWorker = () => process.env.TYR_SERVER_ROLE === 'job';
+
+export const handleJobWorker = async () => {
+  if (isJobWorker()) {
+    await processJobs();
+    return true;
+  }
+
+  return false;
+};
+
+export const spawnJobWorker = () => {
+  /*const worker = */ cp.fork('server', undefined, {
+    env: { ...process.env, TYR_SERVER_ROLE: 'job' },
+  });
+
+  // TODO:  what, if anything, do we need to do with this worker?
 };
