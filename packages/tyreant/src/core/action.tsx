@@ -102,7 +102,7 @@ export interface TyrActionOpts<D extends Tyr.Document> {
    * decorated action should be performed.
    */
   on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
-  hide?: boolean | ((doc: D) => boolean);
+  hide?: boolean | undefined | ((doc: D) => boolean | undefined);
 }
 
 let nextKey = 0;
@@ -172,7 +172,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   title: string | React.ReactNode;
   input: Cardinality;
   on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
-  hide?: boolean | ((doc: D) => boolean);
+  hide?: boolean | undefined | ((doc: D) => boolean | undefined);
   utility?: boolean;
   align?: 'left' | 'center' | 'right';
   order?: number;

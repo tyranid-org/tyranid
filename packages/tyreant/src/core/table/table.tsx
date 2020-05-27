@@ -354,17 +354,17 @@ export class TyrTableBase<
           if (this.local) {
             const { allDocuments } = this;
             const docIdx = findIndex(
-              allDocuments,
+              allDocuments!,
               d => d.$id === document!.$id
             );
             if (docIdx > -1) {
               this.allDocuments = [
-                ...allDocuments.slice(0, docIdx),
+                ...allDocuments!.slice(0, docIdx),
                 document,
-                ...allDocuments.slice(docIdx + 1),
+                ...allDocuments!.slice(docIdx + 1),
               ];
             } else {
-              this.allDocuments.push(document);
+              this.allDocuments!.push(document);
             }
           }
 

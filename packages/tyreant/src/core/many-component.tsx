@@ -175,6 +175,7 @@ export class TyrManyComponent<
 
   async requery() {
     this.currentlyLoaded = undefined;
+    this.allDocuments = undefined;
     this.query();
   }
 
@@ -444,7 +445,7 @@ export class TyrManyComponent<
       }
     }
 
-    this.count = (this.documents = this.allDocuments.filter(doc =>
+    this.count = (this.documents = this.allDocuments!.filter(doc =>
       checks.every(check => check(doc))
     )).length;
   }
@@ -678,7 +679,7 @@ export class TyrManyComponent<
   cancelAutorun?: () => void;
   active = false;
   activate() {
-    if (!this.visible || this.active) return;
+    if (!this.mounted || !this.visible || this.active) return;
 
     // this happens inside the render (after wrap()) and we don't want to kick this off during the render
     // TOOD:  move this logic into wrap()

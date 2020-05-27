@@ -225,7 +225,8 @@ export class TyrComponent<
    *   (e.g. what paths are enabled in table configuration)
    */
   get activePaths(): TyrPathProps<D>[] {
-    return this._activePaths || this.paths;
+    const { _activePaths } = this;
+    return _activePaths?.length ? _activePaths : this.paths;
   }
 
   activePath(pathName: string): TyrPathExistsProps<D> | undefined {
@@ -309,7 +310,7 @@ export class TyrComponent<
   /**
    * This has all the documents when local is active.
    */
-  allDocuments!: D[];
+  allDocuments?: D[];
 
   count?: number;
 
