@@ -68,17 +68,17 @@ export function TyrFilter<FilterValueType>({
   const pathName = path!.name;
 
   const [filterValue, setFilterValue] = useState<FilterValueType | undefined>(
-    component.filterValues[pathName]
+    component.filterValue(pathName)
   );
 
   React.useEffect(() => {
-    setFilterValue(component.filterValues[pathName]);
-  }, [component.filterValues[pathName]]);
+    setFilterValue(component.filterValue(pathName));
+  }, [component.filterValue(pathName)]);
 
   const onSearch = () => {
     (component as TyrManyComponent).skip = 0;
     (component as TyrManyComponent).query();
-    component.updateConfigFilter(pathName, component.filterValues[pathName]);
+    component.updateConfigFilter(pathName, component.filterValue(pathName));
   };
 
   const setLiveSetFilterValue = (value: FilterValueType | undefined) => {

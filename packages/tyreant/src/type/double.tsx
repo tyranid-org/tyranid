@@ -61,7 +61,7 @@ byName.double = {
     };
 
     const defaultValue: SliderValue =
-      component.filterValues[pathName] ||
+      component.filterValue(pathName) ||
       ((props.searchRange
         ? (props.searchRange as SliderValue)
         : [0, 100]) as SliderValue);

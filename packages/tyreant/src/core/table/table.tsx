@@ -515,7 +515,7 @@ export class TyrTableBase<
         }
       }
 
-      const filterValue = pathName ? this.filterValues[pathName] : undefined;
+      const filterValue = pathName ? this.filterValue(pathName) : undefined;
 
       hasAnyFilter = hasAnyFilter || filterValue !== undefined;
 

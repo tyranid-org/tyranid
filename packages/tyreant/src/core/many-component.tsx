@@ -239,7 +239,7 @@ export class TyrManyComponent<
       opts.fields = fields;
     }
 
-    if (this.hasPaging) {
+    if (this.hasPaging && !this.local) {
       const { skip, limit } = this;
 
       opts.skip = skip;
@@ -594,6 +594,7 @@ export class TyrManyComponent<
     this.skip = 0;
     this.limit = this.defaultPageSize;
     Tyr.clear(this.filterValues);
+    this.applyDefaultFilters();
     let sortFound = false;
 
     for (const name in query) {

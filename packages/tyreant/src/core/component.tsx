@@ -975,7 +975,7 @@ export class TyrComponent<
   @observable
   componentConfig?: Tyr.TyrComponentConfig;
 
-  private applyDefaultFilters() {
+  applyDefaultFilters() {
     for (const pathProps of this.activePaths || this.paths) {
       const { path, defaultFilter } = pathProps;
 
