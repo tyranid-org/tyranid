@@ -1,12 +1,15 @@
 import * as cp from 'child_process';
 
-import { Tyr } from 'tyranid';
+import type { Tyr as TyrType } from 'tyranid';
 
 import 'tyranid/builtin/server';
 
+import * as _Tyr from './tyr';
 import Collection from './core/collection';
 
-export const Job = new ((Collection as unknown) as Tyr.CollectionStatic)({
+const Tyr: any = _Tyr;
+
+export const Job = new ((Collection as unknown) as TyrType.CollectionStatic)({
   id: '_j0',
   name: 'tyrJob',
   internal: true,
@@ -36,13 +39,13 @@ export const Job = new ((Collection as unknown) as Tyr.CollectionStatic)({
       },
     },
   ],
-}) as Tyr.TyrJobCollection;
+}) as TyrType.TyrJobCollection;
 
-export const submitJob = async <D extends Tyr.Document>(
-  collection: Tyr.CollectionInstance<D>,
+export const submitJob = async <D extends TyrType.Document>(
+  collection: TyrType.CollectionInstance<D>,
   methodName: string,
   parameters: any[],
-  user: Tyr.Document
+  user: TyrType.Document
 ) => {
   //const method = collection.def.service![methodName];
 
@@ -113,23 +116,19 @@ export const processJobs = async () => {
 
 export const isJobWorker = () => process.env.TYR_SERVER_ROLE === 'job';
 
-export const handleJobWorker = async () => {
+export const handleJobWorker = (Tyr.handleJobWorker = async () => {
   if (isJobWorker()) {
     await processJobs();
     return true;
   }
 
   return false;
-};
+});
 
-Tyr.handleJobWorker = handleJobWorker;
-
-export const spawnJobWorker = () => {
+export const spawnJobWorker = (Tyr.spawnJobWorker = () => {
   /*const worker = */ cp.fork('server', undefined, {
     env: { ...process.env, TYR_SERVER_ROLE: 'job' },
   });
 
   // TODO:  what, if anything, do we need to do with this worker?
-};
-
-Tyr.spawnJobWorker = spawnJobWorker;
+});
