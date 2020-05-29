@@ -1494,4 +1494,7 @@ export namespace Tyr {
   export function warn(...args: LogOption[]): Promise<void>;
   export function error(...args: LogOption[]): Promise<void>;
   export function fatal(...args: LogOption[]): Promise<void>;
+
+  export function handleJobWorker(): Promise<boolean>;
+  export function spawnJobWorker(): void;
 }
