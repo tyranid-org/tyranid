@@ -4,7 +4,7 @@ import type { Tyr as TyrType } from 'tyranid';
 
 import 'tyranid/builtin/server';
 
-import * as _Tyr from './tyr';
+import _Tyr from './tyr';
 import Collection from './core/collection';
 
 const Tyr: any = _Tyr;
