@@ -122,6 +122,8 @@ export const handleJobWorker = async () => {
   return false;
 };
 
+Tyr.handleJobWorker = handleJobWorker;
+
 export const spawnJobWorker = () => {
   /*const worker = */ cp.fork('server', undefined, {
     env: { ...process.env, TYR_SERVER_ROLE: 'job' },
@@ -129,3 +131,5 @@ export const spawnJobWorker = () => {
 
   // TODO:  what, if anything, do we need to do with this worker?
 };
+
+Tyr.spawnJobWorker = spawnJobWorker;
