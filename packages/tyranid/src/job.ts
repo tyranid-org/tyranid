@@ -5,7 +5,10 @@ import type { Tyr as TyrType } from 'tyranid';
 import 'tyranid/builtin/server';
 
 import _Tyr from './tyr';
+
 import Collection from './core/collection';
+
+import * as _ from 'lodash';
 
 const Tyr: any = _Tyr;
 
@@ -70,10 +73,14 @@ export const processJob = async () => {
   const { value } = rslt;
   if (value) {
     try {
-      const { collection: collectionId, methodName, parameters, user } = value;
+      const {
+        collection: collectionId,
+        service: methodName,
+        parameters,
+        user,
+      } = value;
 
       const collection = Tyr.byId[collectionId];
-
       const args = JSON.parse(parameters);
 
       jobdb.updateOne({ _id: value._id }, { $set: { startAt: new Date() } });
@@ -88,6 +95,7 @@ export const processJob = async () => {
       );
       jobdb.updateOne({ _id: value._id }, { $set: { endAt: new Date() } });
     } catch (err) {
+      console.log(err);
       jobdb.updateOne(
         { _id: value._id },
         { $set: { endAt: new Date(), exception: JSON.stringify(err) } }
@@ -126,7 +134,8 @@ export const handleJobWorker = (Tyr.handleJobWorker = async () => {
 });
 
 export const spawnJobWorker = (Tyr.spawnJobWorker = () => {
-  /*const worker = */ cp.fork('server', undefined, {
+  process.execArgv = _.without(process.execArgv, '--inspect');
+  /*const worker = */ cp.fork(process.argv[1], undefined, {
     env: { ...process.env, TYR_SERVER_ROLE: 'job' },
   });
 
