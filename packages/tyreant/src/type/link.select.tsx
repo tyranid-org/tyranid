@@ -15,7 +15,7 @@ export class TyrLinkSelect<
   private renderOption = (val: Tyr.Document) => {
     const { $label, $id } = val;
 
-    const key = this.mode === 'tags' ? $label + ($id || '') : $id;
+    const key = $id || $label;
 
     return (
       <Option key={key} value={key}>
