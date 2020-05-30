@@ -131,6 +131,7 @@ export async function migrate(migrationArray) {
 
   try {
     const setOnInsert = { uuid };
+    Tyr.migrating = true;
 
     //console.log('Adding lock', setOnInsert);
 
@@ -213,6 +214,7 @@ export async function migrate(migrationArray) {
     console.log(err.stack);
   } finally {
     doRemoveLock(removeLock);
+    Tyr.migrating = false;
   }
 }
 

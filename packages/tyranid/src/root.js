@@ -319,7 +319,7 @@ _.assign(Tyr, {
     }
 
     const migration = options.migration;
-    if (migration && migration.migrate) {
+    if (migration && migration.migrate && !Tyr.isJobWorker()) {
       await Tyr.migrate();
     }
   },

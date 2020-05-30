@@ -122,7 +122,8 @@ export const processJobs = async () => {
   }
 };
 
-export const isJobWorker = () => process.env.TYR_SERVER_ROLE === 'job';
+export const isJobWorker = (Tyr.isJobWorker = () =>
+  process.env.TYR_SERVER_ROLE === 'job');
 
 export const handleJobWorker = (Tyr.handleJobWorker = async () => {
   if (isJobWorker()) {

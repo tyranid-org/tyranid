@@ -161,7 +161,10 @@ export namespace Tyr {
     predicate: (field: FieldInstance) => boolean
   ): Promise<any[]>;
   export function generateClientLibrary(): string;
+
   export function migrate(): Promise<void>;
+  export let migrating: boolean;
+
   export function init(): void;
 
   export function validate(opts?: { glob?: string }): void;
@@ -1495,6 +1498,7 @@ export namespace Tyr {
   export function error(...args: LogOption[]): Promise<void>;
   export function fatal(...args: LogOption[]): Promise<void>;
 
+  export function isJobWorker(): boolean;
   export function handleJobWorker(): Promise<boolean>;
   export function spawnJobWorker(): void;
 }
