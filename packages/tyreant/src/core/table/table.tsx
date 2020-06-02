@@ -368,10 +368,10 @@ export class TyrTableBase<
             }
           }
 
+          await onAfterSaveDocument?.(document, changedFields);
           this.requery();
         }
 
-        onAfterSaveDocument?.(document, changedFields);
         this.isSavingDocument = false;
         setEditing?.(false);
         delete this.editingDocument;
@@ -797,7 +797,7 @@ export class TyrTableBase<
         },
         sorter: undefined,
         sortOrder: undefined,
-        width: isEditingAnything ? 96 : 32,
+        width: isEditingAnything ? 112 : 32,
         ...(pinActionsRight !== false ? { fixed: 'right' } : {}),
       });
     }
