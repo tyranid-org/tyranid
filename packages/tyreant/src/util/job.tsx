@@ -32,7 +32,6 @@ export const TyrJobAdmin = () => (
         async on({ document }) {
           document.canceled = true;
           await document.$update({ fields: { canceled: 1 } });
-          await document.$setup({ canceled: true });
         },
       },
     }}
