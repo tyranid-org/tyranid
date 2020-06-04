@@ -63,6 +63,8 @@ export const submitJob = async <D extends TyrType.Document>(
   });
 };
 
+let currentJob: TyrType.TyrJob | undefined;
+
 export const processJob = async () => {
   const jobdb = Job.db;
 
@@ -83,6 +85,8 @@ export const processJob = async () => {
         //user,
       } = value;
 
+      currentJob = value;
+      Tyr.isCurrentJobCanceled = !!currentJob?.canceled;
       const collection = Tyr.byId[collectionId];
       const args = JSON.parse(parameters);
 
@@ -94,14 +98,6 @@ export const processJob = async () => {
           req: undefined,
           collection,
           job: jobId,
-          async isCanceled() {
-            const v = await jobdb.findOne(
-              { _id: jobId },
-              { fields: { canceled: 1 } }
-            );
-
-            return !!v?.canceled;
-          },
         },
         args
       );
@@ -154,3 +150,19 @@ export const spawnJobWorker = (Tyr.spawnJobWorker = () => {
 
   // TODO:  what, if anything, do we need to do with this worker?
 });
+
+Job.boot = async (stage, pass) => {
+  if (stage === 'link') {
+    Job.on({
+      type: 'change',
+      when: 'post',
+      handler: async event => {
+        const job = await event.document;
+
+        if (job && job.$id === currentJob?._id) {
+          Tyr.currrentJobIsCanceled = true;
+        }
+      },
+    });
+  }
+};

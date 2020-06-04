@@ -1501,4 +1501,5 @@ export namespace Tyr {
   export function isJobWorker(): boolean;
   export function handleJobWorker(): Promise<boolean>;
   export function spawnJobWorker(): void;
+  export let isCurrentJobCanceled: boolean;
 }
