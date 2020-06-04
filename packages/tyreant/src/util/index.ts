@@ -1,6 +1,7 @@
 export * from './font';
 export * from './hoc';
 export * from './import';
+export * from './job';
 export * from './remove';
 //export * from './rerender';
 export * from './visible';

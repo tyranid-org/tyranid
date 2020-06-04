@@ -177,6 +177,7 @@ export interface TyrPathProps<D extends Tyr.Document>
   optionFilter?: (documents: D[]) => Tyr.Document[];
   searchPath?: Tyr.PathInstance;
   searchSortById?: boolean;
+  static?: boolean;
 
   // STRING (incl EMAIL, PASSWORD, etc.)
   onPressEnter?: () => void;

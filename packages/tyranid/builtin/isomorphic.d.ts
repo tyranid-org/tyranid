@@ -131,6 +131,7 @@ declare module 'tyranid/isomorphic' {
      * "tyrJob" <TyrJobCollection> are derived
      */
     export interface BaseTyrJob<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      canceled?: boolean;
       collection?: string;
       endAt?: any;
       exception?: string;

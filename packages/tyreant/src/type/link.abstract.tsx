@@ -14,7 +14,6 @@ import {
   getValue,
   getLabelRenderer,
 } from '../core';
-import { SearchOutlined } from '@ant-design/icons';
 
 type ModeOption = SelectProps<any>['mode'];
 

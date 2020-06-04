@@ -32,7 +32,9 @@ export const Job = new ((Collection as unknown) as TyrType.CollectionStatic)({
     startAt: { is: 'datetime' },
     endAt: { is: 'datetime' },
 
-    exception: { is: 'string' },
+    canceled: { is: 'boolean' },
+
+    exception: { is: 'text' },
   },
   indexes: [
     {
@@ -74,10 +76,11 @@ export const processJob = async () => {
   if (value) {
     try {
       const {
+        _id: jobId,
         collection: collectionId,
         service: methodName,
         parameters,
-        user,
+        //user,
       } = value;
 
       const collection = Tyr.byId[collectionId];
@@ -90,6 +93,15 @@ export const processJob = async () => {
           user: undefined, // TODO:  figure out some way to pass in the user ?
           req: undefined,
           collection,
+          job: jobId,
+          async isCanceled() {
+            const v = await jobdb.findOne(
+              { _id: jobId },
+              { fields: { canceled: 1 } }
+            );
+
+            return !!v?.canceled;
+          },
         },
         args
       );
