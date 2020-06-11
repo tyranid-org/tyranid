@@ -453,6 +453,7 @@ export function createGraphQLFieldConfig(
 
   switch (is) {
     case 'string':
+    case 'text':
     case 'url':
     case 'email':
     case 'image':
