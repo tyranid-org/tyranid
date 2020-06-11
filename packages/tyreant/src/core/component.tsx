@@ -92,7 +92,7 @@ export class TyrComponent<
   }
 
   @observable
-  loading = false;
+  loading = 0;
 
   @observable
   visible = false;
@@ -164,17 +164,20 @@ export class TyrComponent<
     this.setupActions();
 
     if (config) {
-      this.loading = true;
-      const componentConfig = await ensureComponentConfig(
-        this,
-        this.paths,
-        config!
-      );
+      this.loading++;
 
-      this.componentConfig = componentConfig.componentConfig;
-      this._activePaths = componentConfig.newColumns;
+      try {
+        const componentConfig = await ensureComponentConfig(
+          this,
+          this.paths,
+          config!
+        );
 
-      this.loading = false;
+        this.componentConfig = componentConfig.componentConfig;
+        this._activePaths = componentConfig.newColumns;
+      } finally {
+        this.loading--;
+      }
     } else {
       this._activePaths = this.paths;
     }

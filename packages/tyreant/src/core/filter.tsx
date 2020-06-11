@@ -51,8 +51,8 @@ export interface TyrFilterProps<SearchValueType> {
   pathProps: TyrPathProps<any>;
   filterDdProps: FilterDdProps;
   children: (
-    searchValue: SearchValueType | undefined,
-    setSearchValue: (v: SearchValueType | undefined) => void,
+    filterValue: SearchValueType | undefined,
+    setFilterValue: (v: SearchValueType | undefined) => void,
     search: (onChange?: boolean) => void
   ) => React.ReactNode;
 }

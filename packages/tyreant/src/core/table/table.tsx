@@ -965,10 +965,11 @@ export class TyrTableBase<
         </>
       );
 
-      const emptyText =
-        typeof emptyTablePlaceholder === 'function'
-          ? emptyTablePlaceholder(this)
-          : emptyTablePlaceholder;
+      const emptyText = loading
+        ? ''
+        : typeof emptyTablePlaceholder === 'function'
+        ? emptyTablePlaceholder(this)
+        : emptyTablePlaceholder;
 
       const tableScroll =
         fieldCount > 1
@@ -990,7 +991,7 @@ export class TyrTableBase<
                 }
               : undefined
           }
-          loading={loading || this.props.loading}
+          loading={!!loading || this.props.loading}
           components={components}
           rowKey={(doc: any) => doc.$id || doc.$id}
           size={size || 'small'}
@@ -998,7 +999,7 @@ export class TyrTableBase<
           onChange={this.handleTableChange as any}
           footer={netFooter as (rows: Object[]) => React.ReactNode}
           showHeader={!newDocument && this.props.showHeader !== false}
-          dataSource={this.currentPageDocuments()}
+          dataSource={loading ? [] : this.currentPageDocuments()}
           columns={this.getColumns()}
           scroll={tableScroll}
           {...(expandable ? { expandable } : {})}
@@ -1067,7 +1068,7 @@ export class TyrTableBase<
                 <ObsTable
                   bordered={bordered}
                   className="tyr-table-new-document"
-                  loading={loading}
+                  loading={!!loading}
                   components={components}
                   rowKey={() => 'new'}
                   size={size || 'small'}

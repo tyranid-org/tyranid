@@ -17,7 +17,6 @@ import { TyrArrayList } from './array.list';
 import { TyrArrayFixed } from './array.fixed';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
-import { propagateMaybeChanged } from 'mobx/lib/internal';
 
 export const TyrArrayBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -101,9 +100,11 @@ byName.array = {
           mapFormValueToDocument(path.walk(i), v, document, props);
         }
 
-        if (i === 0) {
-          // TODO: do we need to remove the array from the document ?
-        }
+        const docArray = path.get(document);
+        if (docArray.length !== i) docArray.length = i;
+        //if (i === 0) {
+        // TODO: do we need to remove the array from the document ?
+        //}
       }
     } else {
       // TODO: do we need to remove the array from the document ?

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { observer } from 'mobx-react';
-import { autorun } from 'mobx';
+import { toJS, autorun } from 'mobx';
 
 import { Tyr } from 'tyranid/client';
 
@@ -129,7 +129,8 @@ export class TyrManyComponent<
     this.currentlyLoaded = Tyr.cloneDeep(aboutToLoad);
 
     try {
-      this.loading = true;
+      // passing in loading: true to the table will cause the live dropdown filter to disappear
+      if (!this.local) this.loading++;
       const { props } = this;
 
       if (this.mounted) {
@@ -139,8 +140,7 @@ export class TyrManyComponent<
             else await this.findAll();
           }
 
-          this.filterLocal();
-          this.sort();
+          this.sort(this.filter(this.allDocuments!));
         } else {
           this.findAll();
         }
@@ -149,7 +149,7 @@ export class TyrManyComponent<
         //this.refresh();
       }
     } finally {
-      this.loading = false;
+      if (!this.local) this.loading--;
     }
   }
 
@@ -175,7 +175,7 @@ export class TyrManyComponent<
 
   async requery() {
     this.currentlyLoaded = undefined;
-    this.allDocuments = undefined;
+    if (!this.props.documents) this.allDocuments = undefined;
     this.query();
   }
 
@@ -413,7 +413,7 @@ export class TyrManyComponent<
     return (this.filters[pathName] = path && getFilter(this, props));
   }
 
-  filterLocal() {
+  filter(documents: D[]) {
     const { filterValues, filterSearchValue } = this;
 
     const checks: ((doc: Tyr.Document) => boolean)[] = [];
@@ -439,15 +439,11 @@ export class TyrManyComponent<
       if (labelField) {
         const { path } = labelField;
         const regexp = new RegExp(filterSearchValue, 'i');
-        checks.push(document => {
-          return regexp.test(path.get(document));
-        });
+        checks.push(document => regexp.test(path.get(document)));
       }
     }
 
-    this.count = (this.documents = this.allDocuments!.filter(doc =>
-      checks.every(check => check(doc))
-    )).length;
+    return documents.filter(doc => checks.every(check => check(doc)));
   }
 
   /*
@@ -496,8 +492,9 @@ export class TyrManyComponent<
   // We need to do this so that when we enter editing mode
   // and disable sorting, the natural sort of the rows is
   // not any different than what the sort currently is.
-  sort() {
-    const documents = this.documents;
+  sort(documents?: D[]) {
+    // TODO:  ??=
+    documents = documents ?? this.documents.slice();
     let sortColumn: TyrPathProps<D> | undefined;
 
     let sortColumnName: string | null = null;
@@ -521,8 +518,7 @@ export class TyrManyComponent<
 
       const sortComparator = sortColumn.sortComparator;
 
-      const tDocs = documents.slice();
-      tDocs.sort((a: D, b: D) => {
+      documents.sort((a, b) => {
         let result = sortComparator
           ? sortComparator(a, b)
           : path
@@ -545,9 +541,9 @@ export class TyrManyComponent<
       });
 
       if (pathName && this.sortDirections[pathName] === 'descend')
-        tDocs.reverse();
+        documents.reverse();
 
-      this.documents = tDocs;
+      this.documents = documents;
     }
 
     this.count = documents.length;

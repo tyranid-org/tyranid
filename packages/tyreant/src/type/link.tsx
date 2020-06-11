@@ -52,7 +52,6 @@ const fixFilterValue = (
 byName.link = {
   component: TyrLinkBase,
 
-  // Given ids, return the labels
   mapDocumentValueToFormValue(path, value, props) {
     if (
       props?.path?.tail.type.name !== 'array' ||
@@ -61,35 +60,32 @@ byName.link = {
       return value;
     }
 
-    if (Array.isArray(value)) {
-      value = value.map(v => {
-        const nv = findById(props!, linkFor(path)!, v);
-        if (nv) {
-          const column = (path.tail as any).column;
-          if (column && column.translateForWhiteLabel) {
-            return column.translateForWhiteLabel(nv.$label);
-          }
-
-          return nv.$label;
-        }
-
-        return v;
-      });
-    } else {
-      const nv = findById(props!, linkFor(path)!, value as string);
-
-      if (nv) {
-        const column = (path.tail as any).column;
-        if (column && column.translateForWhiteLabel) {
-          value = column.translateForWhiteLabel(nv.$label);
-        } else {
-          value = nv.$label;
-        }
-      }
-    }
+    //if (Array.isArray(value)) {
+    //value = value.map(v => {
+    //const nv = findById(props!, linkFor(path)!, v);
+    // if (nv) {
+    //   const column = (path.tail as any).column;
+    //   if (column && column.translateForWhiteLabel) {
+    //     return column.translateForWhiteLabel(nv.$label);
+    //   }
+    //   return nv.$label;
+    // }
+    //return v;
+    //});
+    //} else {
+    //const nv = findById(props!, linkFor(path)!, value as string);
+    //if (nv) {
+    //const column = (path.tail as any).column;
+    //if (column && column.translateForWhiteLabel) {
+    //value = column.translateForWhiteLabel(nv.$label);
+    //} else {
+    //value = nv.$label;
+    //}
+    //}
+    //}
 
     // if collection has label renderer, then return value with labelProjection
-    return value?.label || value;
+    return value; //value?.label || value;
   },
 
   // Given labels, return the ids
