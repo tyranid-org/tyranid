@@ -832,7 +832,15 @@ export class TyrTableBase<
       }
     }
 
-    sortDirections[sortFieldName] = sorter.order!;
+    if (!sortDirections[sortFieldName] && !sorter.order)
+      sorter.order = 'ascend';
+
+    if (sorter.order) {
+      sortDirections[sortFieldName] = sorter.order!;
+    } else {
+      delete sortDirections[sortFieldName];
+      this.resetSort();
+    }
 
     this.updateConfigSort(sortFieldName, sorter.order);
     this.query();

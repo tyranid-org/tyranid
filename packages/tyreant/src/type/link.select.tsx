@@ -81,6 +81,7 @@ export class TyrLinkSelect<
       }
 
       this.onTypeChangeFunc(value);
+      this.search('');
     };
 
     if (onSelect) {

@@ -520,15 +520,13 @@ export const ensureComponentConfig = async <D extends Tyr.Document>(
         collectionId: component.collection.id,
         userId,
         key,
-        fields: columns.map(c => {
-          return {
-            name: getPathName(c.path),
-            hidden: !!c.defaultHidden,
-            sortDirection: c.defaultSort ? c.defaultSort : undefined,
-            filter: c.defaultFilter ? c.defaultFilter : undefined,
-            width: c.width ? c.width : undefined,
-          };
-        }),
+        fields: columns.map(c => ({
+          name: getPathName(c.path),
+          hidden: !!c.defaultHidden,
+          sortDirection: c.defaultSort ? c.defaultSort : undefined,
+          filter: c.defaultFilter ? c.defaultFilter : undefined,
+          width: c.width ? c.width : undefined,
+        })),
       })!;
 
       componentConfig = await TyrComponentConfig.save(componentConfig);

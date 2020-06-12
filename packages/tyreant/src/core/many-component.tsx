@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { observer } from 'mobx-react';
-import { toJS, autorun } from 'mobx';
+import { autorun } from 'mobx';
 
 import { Tyr } from 'tyranid/client';
 
@@ -357,12 +357,13 @@ export class TyrManyComponent<
   };
 
   handlePaginationChange = (page: number, pageSize?: number) => {
-    const { limit } = this;
+    let { limit } = this;
+    if (pageSize !== undefined && pageSize !== limit) {
+      this.limit = limit = pageSize || this.defaultPageSize;
+      page = 1;
+    }
 
     this.skip = (page - 1) * limit;
-
-    if (pageSize !== undefined && pageSize !== limit)
-      this.limit = pageSize || this.defaultPageSize;
 
     this.query();
   };
@@ -591,6 +592,11 @@ export class TyrManyComponent<
     this.limit = this.defaultPageSize;
     Tyr.clear(this.filterValues);
     this.applyDefaultFilters();
+    this.componentConfig?.fields.forEach(f => {
+      if (f.filter) {
+        this.filterValues[f.name] = f.filter;
+      }
+    });
     let sortFound = false;
 
     for (const name in query) {
@@ -606,23 +612,23 @@ export class TyrManyComponent<
           break;
         default: {
           const dot = value.indexOf('.');
-          let sortDirection: TyrSortDirection, searchValue: string | undefined;
+          let sortDirection: TyrSortDirection, filterValue: string | undefined;
 
           if (dot !== -1) {
             sortDirection = value.substring(0, dot) as TyrSortDirection;
-            searchValue = value.substring(dot + 1);
+            filterValue = value.substring(dot + 1);
           } else {
             sortDirection = value as TyrSortDirection;
           }
 
           this.sortDirections[name] = sortDirection || undefined;
 
-          if (searchValue) {
+          if (filterValue) {
             // TODO:  we need to know the Field here because of it is a link or array of links we need to split the search value on '.'
-            const canBeArray = searchValue.indexOf(',') >= 0; // this is not right -- need the Field
+            const canBeArray = filterValue.indexOf(',') >= 0; // this is not right -- need the Field
             this.filterValues[name] = canBeArray
-              ? searchValue.split(',')
-              : searchValue;
+              ? filterValue.split(',')
+              : filterValue;
           }
 
           if (sortDirection) sortFound = true;
@@ -648,7 +654,7 @@ export class TyrManyComponent<
     } = this;
 
     if (skip) query.skip = String(skip);
-    if (limit !== undefined && limit !== DEFAULT_PAGE_SIZE)
+    if (limit !== undefined && limit !== this.defaultPageSize)
       query.limit = String(limit);
 
     for (const fieldName of _.uniq([
@@ -685,13 +691,6 @@ export class TyrManyComponent<
       if (route) {
         if (!this.cancelAutorun) {
           this.cancelAutorun = autorun(() => {
-            this.componentConfig?.fields.forEach(f => {
-              if (f.filter) {
-                this.filterValues[f.name] = f.filter;
-              }
-            });
-
-            // TODO:  route only works with non-local so far
             const location = Tyreant.router.location!;
             if (location.route === route) {
               this.fromUrlQuery(

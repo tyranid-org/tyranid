@@ -903,6 +903,19 @@ export class TyrComponent<
     return undefined;
   }
 
+  applyDefaultFilters() {
+    for (const pathProps of this.activePaths || this.paths) {
+      const { path, defaultFilter } = pathProps;
+
+      if (defaultFilter !== undefined && path) {
+        const pathName = path.name;
+
+        if (!this.filterValue(pathName))
+          this.setFilterValue(pathName, defaultFilter);
+      }
+    }
+  }
+
   resetFilters = () => {
     const { filterConnections, filterValues } = this;
 
@@ -977,19 +990,6 @@ export class TyrComponent<
 
   @observable
   componentConfig?: Tyr.TyrComponentConfig;
-
-  applyDefaultFilters() {
-    for (const pathProps of this.activePaths || this.paths) {
-      const { path, defaultFilter } = pathProps;
-
-      if (path) {
-        const pathName = path.name;
-
-        if (defaultFilter !== undefined && !this.filterValue(pathName))
-          this.setFilterValue(pathName, defaultFilter);
-      }
-    }
-  }
 
   onUpdateComponentConfig = async (
     savedComponentConfig: Tyr.TyrComponentConfig,
