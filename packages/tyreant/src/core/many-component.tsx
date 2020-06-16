@@ -231,7 +231,11 @@ export class TyrManyComponent<
       for (const pathName in paths) {
         const field = paths[pathName];
 
-        if (field.link && !fields[field.path.fields[0].path.spath]) {
+        if (
+          field.link &&
+          !field.dynamicMatch &&
+          !fields[field.path.fields[0].path.spath]
+        ) {
           fields[field.path.spath] = 1;
         }
       }
