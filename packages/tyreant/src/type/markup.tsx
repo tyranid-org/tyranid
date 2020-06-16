@@ -12,7 +12,7 @@ import { registerComponent } from '../common';
 
 const { TextArea } = Input;
 
-const { TyrMarkupType } = Tyr.collections;
+const { MediaType } = Tyr.collections;
 
 export const TyrMarkupBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -48,7 +48,7 @@ byName.markup = {
     return value?.content || '';
   },
   mapFormValueToDocumentValue(path, value, props) {
-    return { type: TyrMarkupType.HTML._id, content: value };
+    return { type: MediaType.TEXT_HTML._id, content: value };
   },
 };
 

@@ -197,14 +197,6 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
-     * "tyrMarkupType" <TyrMarkupTypeCollection> are derived
-     */
-    export interface BaseTyrMarkupType<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
-      name?: string;
-    }
-    
-    /**
-     * Base interface from which documents in collection
      * "tyrMigrationStatus" <TyrMigrationStatusCollection> are derived
      */
     export interface BaseTyrMigrationStatus<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -217,7 +209,7 @@ declare module 'tyranid/isomorphic' {
      * "tyrPage" <TyrPageCollection> are derived
      */
     export interface BaseTyrPage<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
-      content?: { type: Tyr.TyrMarkupTypeId, content: string };
+      content?: { type: Tyr.MediaTypeId, content: string };
       fragment?: boolean;
       path?: string;
     }
@@ -390,12 +382,6 @@ declare module 'tyranid/isomorphic' {
       extends Inserted<TyrLogLevelId>,
               BaseTyrLogLevel<ObjIdType, ObjContainer, NumContainer> {}
     /**
-     * Document returned by collection "tyrMarkupType" <TyrMarkupTypeCollection>
-     */
-    export interface TyrMarkupType<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
-      extends Inserted<TyrMarkupTypeId>,
-              BaseTyrMarkupType<ObjIdType, ObjContainer, NumContainer> {}
-    /**
      * Document returned by collection "tyrMigrationStatus" <TyrMigrationStatusCollection>
      */
     export interface TyrMigrationStatus<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
@@ -543,13 +529,6 @@ declare module 'tyranid/isomorphic' {
     export interface TyrLogLevelCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<TyrLogLevel<ObjIdType, ObjContainer, NumContainer>>,
               TyrLogLevelCollectionEnumStatic {}
-    
-    /**
-     * Type definition for "tyrMarkupType" collection
-     */
-    export interface TyrMarkupTypeCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
-      extends CollectionInstance<TyrMarkupType<ObjIdType, ObjContainer, NumContainer>>,
-              TyrMarkupTypeCollectionEnumStatic {}
     
     /**
      * Type definition for "tyrMigrationStatus" collection
@@ -3159,6 +3138,12 @@ declare module 'tyranid/isomorphic' {
         name: 'MS Embedded OpenType fonts';
       } & MediaType<ObjIdType, ObjContainer, NumContainer>;
 
+      TEXT_MARKDOWN: {
+        _id: 'text/markdown';
+        extensions: any;
+        name: 'Markdown text';
+      } & MediaType<ObjIdType, ObjContainer, NumContainer>;
+
       APPLICATION_VND_MS_ACCESS: {
         _id: 'application/vnd.ms-access';
         extensions: any;
@@ -3658,28 +3643,6 @@ declare module 'tyranid/isomorphic' {
         code: 'W';
         method: 'warn';
       } & TyrLogLevel<ObjIdType, ObjContainer, NumContainer>;
-
-  }
-  
-  /**
-   * Static properties for enum collection "TyrMarkupTypeCollection"
-   */
-  export interface TyrMarkupTypeCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
-    
-      HTML: {
-        _id: 1;
-        name: 'HTML';
-      } & TyrMarkupType<ObjIdType, ObjContainer, NumContainer>;
-
-      MARKDOWN: {
-        _id: 2;
-        name: 'Markdown';
-      } & TyrMarkupType<ObjIdType, ObjContainer, NumContainer>;
-
-      SASS: {
-        _id: 3;
-        name: 'SASS';
-      } & TyrMarkupType<ObjIdType, ObjContainer, NumContainer>;
 
   }
   
@@ -6166,6 +6129,7 @@ declare module 'tyranid/isomorphic' {
      |'text/ecmascript'
      |'text/html'
      |'text/javascript'
+     |'text/markdown'
      |'text/plain'
      |'text/richtext'
      |'text/xml'
@@ -6201,14 +6165,6 @@ declare module 'tyranid/isomorphic' {
      |5
      |6
      |7;
-    
-    /**
-     * Type alias for enum id values in "tyrMarkupType" collection
-     */
-    export type TyrMarkupTypeId =
-      1
-     |2
-     |3;
     
     /**
      * Type alias for enum id values in "tyrSchemaType" collection
@@ -6464,7 +6420,6 @@ declare module 'tyranid/isomorphic' {
       tyrLog: TyrLogCollection<IdType>;
       tyrLogEvent: TyrLogEventCollection<IdType>;
       tyrLogLevel: TyrLogLevelCollection<IdType>;
-      tyrMarkupType: TyrMarkupTypeCollection<IdType>;
       tyrMigrationStatus: TyrMigrationStatusCollection<IdType>;
       tyrPage: TyrPageCollection<IdType>;
       tyrSchema: TyrSchemaCollection<IdType>;
@@ -6493,7 +6448,6 @@ declare module 'tyranid/isomorphic' {
       TyrLog: TyrLogCollection<IdType>;
       TyrLogEvent: TyrLogEventCollection<IdType>;
       TyrLogLevel: TyrLogLevelCollection<IdType>;
-      TyrMarkupType: TyrMarkupTypeCollection<IdType>;
       TyrMigrationStatus: TyrMigrationStatusCollection<IdType>;
       TyrPage: TyrPageCollection<IdType>;
       TyrSchema: TyrSchemaCollection<IdType>;
@@ -6522,7 +6476,6 @@ declare module 'tyranid/isomorphic' {
       _l0: TyrLogCollection<IdType>;
       _l2: TyrLogEventCollection<IdType>;
       _l1: TyrLogLevelCollection<IdType>;
-      _p1: TyrMarkupTypeCollection<IdType>;
       _m1: TyrMigrationStatusCollection<IdType>;
       _p0: TyrPageCollection<IdType>;
       _t1: TyrSchemaCollection<IdType>;
@@ -6552,7 +6505,6 @@ declare module 'tyranid/isomorphic' {
      |'tyrLog'
      |'tyrLogEvent'
      |'tyrLogLevel'
-     |'tyrMarkupType'
      |'tyrMigrationStatus'
      |'tyrPage'
      |'tyrSchema'
@@ -6579,7 +6531,6 @@ declare module 'tyranid/isomorphic' {
      |'_m1'
      |'_mt'
      |'_p0'
-     |'_p1'
      |'_t0'
      |'_t1'
      |'_t2'

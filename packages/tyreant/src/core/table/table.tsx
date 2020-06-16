@@ -269,6 +269,13 @@ export class TyrTableBase<
     );
   };
 
+  private stopEditing() {
+    this.isSavingDocument = false;
+    this.props.setEditing?.(false);
+    delete this.editingDocument;
+    delete this.newDocument;
+  }
+
   private saveDocument = async (form: FormInstance) => {
     const {
       saveDocument,
@@ -282,12 +289,15 @@ export class TyrTableBase<
     let document = newDocument || editingDocument;
 
     if (!document) {
-      setEditing && setEditing(false);
+      setEditing?.(false);
       message.error(`No document to save!`);
       return;
     }
 
-    if (!document.$changed) return;
+    if (!document.$changed) {
+      this.stopEditing();
+      return;
+    }
 
     this.isSavingDocument = true;
     const collection = document.$model;
@@ -372,10 +382,7 @@ export class TyrTableBase<
           this.requery();
         }
 
-        this.isSavingDocument = false;
-        setEditing?.(false);
-        delete this.editingDocument;
-        delete this.newDocument;
+        this.stopEditing();
         resolve();
       } catch (saveError) {
         if (saveError.message) message.error(saveError.message);

@@ -247,6 +247,7 @@ export namespace Tyr {
     keys?: FieldInstance<D>;
     label: string | (() => string);
     link?: CollectionInstance;
+    mediaType?: Tyr.MediaTypeId;
     numbering?: Numbering;
     relate?: 'owns' | 'ownedBy' | 'associate';
     type: TypeInstance;

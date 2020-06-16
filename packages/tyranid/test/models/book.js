@@ -18,6 +18,7 @@ var Book = new tyr.Collection({
       },
     },
     domain: { is: 'string' },
+    coverPage: { is: 'text', in: 'text/html' },
   },
   primaryKey: { field: 'isbn', defaultMatchIdOnInsert: true },
   fromClient(opts) {

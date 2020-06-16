@@ -7,7 +7,7 @@ import { Input } from 'antd';
 
 import { byName, mapPropsToForm, TyrTypeProps, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import { TyrFilter, FilterDdProps } from '../core/filter';
+import { TyrFilter } from '../core/filter';
 import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 

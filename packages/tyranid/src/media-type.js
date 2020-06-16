@@ -126,6 +126,7 @@ const MediaType = new Tyr.Collection({
     ['text/ecmascript', ['es'], 'EcmaScript', { obsolete: 'application/ecmascript', unsafe: true }],
     ['text/html', ['htm', 'html'], 'HyperText Markup Language (HTML)', { unsafe: true }],
     ['text/javascript', ['js'], 'JavaScript', { obsolete: 'application/javascript', unsafe: true }],
+    ['text/markdown', ['md', 'markdown'], 'Markdown text'],
     ['text/plain', ['txt', 'msg'], 'Text, (generally ASCII or ISO 8859-n)'],
     ['text/richtext', ['rtf'], 'Rich Text Format'],
     ['text/xml', ['xml'], 'XML; if readable from casual users (RFC 3023, section 3)' ],

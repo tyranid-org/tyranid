@@ -26,6 +26,7 @@ import * as testMath from './math.test';
 import * as testPath from './path.test';
 import * as testPopulation from './population.test';
 import * as testQuery from './query.test';
+import * as testString from './string.test';
 import * as testUnit from './unit.test';
 import * as testUpdate from './update.test';
 
@@ -957,44 +958,6 @@ describe('tyranid', function () {
       it('should support collection.exists()', async () => {
         expect(await User.exists({ query: { _id: 1 } })).to.equal(true);
         expect(await User.exists({ query: { _id: 'cat' } })).to.equal(false);
-      });
-    });
-
-    describe('strings', () => {
-      it('should support support capitalize', async () => {
-        for (const test of [
-          ['cat', 'Cat'],
-          ['latestProjection', 'LatestProjection'],
-        ]) {
-          expect(Tyr.capitalize(test[0])).to.eql(test[1]);
-        }
-      });
-
-      it('should support support labelize', async () => {
-        for (const test of [
-          ['cat', 'Cat'],
-          ['latestProjection', 'Latest Projection'],
-        ]) {
-          expect(Tyr.labelize(test[0])).to.eql(test[1]);
-        }
-      });
-
-      it('should support support singularize', async () => {
-        for (const test of [
-          ['cats', 'cat'],
-          ['quizzes', 'quiz'],
-          ['industries', 'industry'],
-        ]) {
-          expect(Tyr.singularize(test[0])).to.eql(test[1]);
-        }
-      });
-      it('should support support pluralize', async () => {
-        for (const test of [
-          ['cat', 'cats'],
-          ['quiz', 'quizzes'],
-        ]) {
-          expect(Tyr.pluralize(test[0])).to.eql(test[1]);
-        }
       });
     });
 
@@ -2735,6 +2698,7 @@ describe('tyranid', function () {
       });
     });
 
+    testString.add();
     testPath.add();
     testCsv.add();
     testExcel.add();

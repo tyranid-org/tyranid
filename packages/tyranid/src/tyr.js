@@ -183,6 +183,13 @@ const Tyr = {
     return _.kebabCase(name);
   },
 
+  _UNHTMLIZE_REGEX: /<[^>]*>?/gm,
+
+  /** @isomorphic */
+  unhtmlize(str) {
+    return str ? str.replace(this._UNHTMLIZE_REGEX, '') : str;
+  },
+
   /** @isomorphic */
   labelize(name) {
     // TODO:  more cases to be added here later on

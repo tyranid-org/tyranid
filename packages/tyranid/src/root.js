@@ -64,7 +64,6 @@ import './secure/secureError';
 import './ui/component-config';
 
 import './page/markup';
-import './page/markupType';
 import './page/page';
 
 import './unit/unitSystem';

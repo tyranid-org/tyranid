@@ -13,7 +13,7 @@ import { registerComponent, componentsByName } from '../common';
 import { TyrModal } from './modal';
 import { TyrField } from './path';
 
-const { TyrPage: TyrPageCol, TyrMarkupType } = Tyr.collections;
+const { TyrPage: TyrPageCol, MediaType } = Tyr.collections;
 
 interface PageCacheEntry {
   page: Tyr.TyrPage;
@@ -137,7 +137,7 @@ export class TyrPage extends React.Component<TyrPageProps, TyrPageState> {
         const { content } = page;
         if (content) {
           switch (content.type) {
-            case TyrMarkupType.HTML._id:
+            case MediaType.TEXT_HTML._id:
               html = translateHtml(content.content);
               break;
           }
@@ -166,11 +166,11 @@ export class TyrPage extends React.Component<TyrPageProps, TyrPageState> {
     }
 
     switch (content.type) {
-      case TyrMarkupType.MARKDOWN._id:
+      case MediaType.TEXT_MARKDOWN._id:
         return <div />;
-      case TyrMarkupType.HTML._id:
+      case MediaType.TEXT_HTML._id:
         return html;
-      case TyrMarkupType.SASS._id:
+      case MediaType.TEXT_CSS._id:
         // TODO:  what does this even mean?
         return <div />;
     }

@@ -180,6 +180,7 @@ declare module 'tyranid/client' {
     export function pluralize(str: string): string;
     export function singularize(str: string): string;
     export function snakize(str: string): string;
+    export function unhtmlize(str: string): string;
     export function unitize(count: number, unit: string): string;
 
     export function parseUid(
@@ -330,6 +331,7 @@ declare module 'tyranid/client' {
       in: any;
       label: string | (() => string);
       link?: CollectionInstance;
+      mediaType?: Tyr.MediaTypeId;
       relate?: 'owns' | 'ownedBy' | 'associate';
       type: TypeInstance;
       keys?: this;

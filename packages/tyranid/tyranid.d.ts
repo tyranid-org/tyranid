@@ -130,6 +130,7 @@ export namespace Tyr {
   export function pluralize(str: string): string;
   export function singularize(str: string): string;
   export function snakize(str: string): string;
+  export function unhtmlize(str: string): string;
   export function unitize(count: number, unit: string): string;
 
   export function projectify(obj: object | Path[]): MongoProjection;
@@ -1124,6 +1125,7 @@ export namespace Tyr {
     relate?: 'owns' | 'ownedBy' | 'associate';
     type: TypeInstance;
     fields?: { [key: string]: FieldInstance<D> };
+    mediaType?: Tyr.MediaTypeId;
     method: string;
     populateName?: string;
 

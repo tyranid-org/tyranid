@@ -74,6 +74,13 @@ class Serializer {
       this.file += '",';
     }
 
+    if (field.mediaType) {
+      this.newline();
+      this.file += this.k('mediaType') + ': "';
+      this.file += field.mediaType;
+      this.file += '",';
+    }
+
     for (const field of ['multiline', 'validate']) {
       if (def[field]) {
         this.newline();
@@ -472,6 +479,8 @@ export function generateClientLibrary() {
   Tyr.singularize = ${es5Fn(Tyr.singularize)};
   Tyr.snakize = ${es5Fn(Tyr.snakize)};
   Tyr.stringify = ${es5Fn(Tyr.stringify)};
+  Tyr._UNHTMLIZE_REGEX = ${Tyr._UNHTMLIZE_REGEX.toString()};
+  Tyr.unhtmlize = ${es5Fn(Tyr.unhtmlize)};
   Tyr.unitize = ${es5Fn(Tyr.unitize)};
   Tyr.isEqual = _.isEqual;
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
@@ -765,6 +774,12 @@ export function generateClientLibrary() {
           np = this._np = new Path(this.collection, this.pathName);
         }
         return np;
+      }
+    },
+
+    mediaType: {
+      get() {
+        return this.def.mediaType;
       }
     },
 

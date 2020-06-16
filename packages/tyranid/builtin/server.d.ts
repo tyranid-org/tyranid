@@ -199,21 +199,6 @@ declare module 'tyranid' {
     
 
     /**
-     * Server base document definition for TyrMarkupTypeCollection.
-     */
-    interface BaseTyrMarkupType
-      extends Isomorphic.BaseTyrMarkupType<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
-
-    /**
-     * Server document definition for TyrMarkupTypeCollection,
-     * extends isomorphic base interface BaseTyrMarkupType.
-     */
-    interface TyrMarkupType
-      extends Inserted<TyrMarkupTypeId>,
-              BaseTyrMarkupType {}
-    
-
-    /**
      * Server base document definition for TyrMigrationStatusCollection.
      */
     interface BaseTyrMigrationStatus
@@ -465,14 +450,6 @@ declare module 'tyranid' {
     /**
      * Server collection definition.
      */
-    interface TyrMarkupTypeCollection
-      extends Tyr.CollectionInstance<TyrMarkupType>,
-                Isomorphic.TyrMarkupTypeCollectionEnumStatic<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {
-    }
-
-    /**
-     * Server collection definition.
-     */
     interface TyrMigrationStatusCollection
       extends Tyr.CollectionInstance<TyrMigrationStatus> {
     }
@@ -549,7 +526,6 @@ declare module 'tyranid' {
     export type MediaTypeId = Isomorphic.MediaTypeId;
     export type TyrLogEventId = Isomorphic.TyrLogEventId;
     export type TyrLogLevelId = Isomorphic.TyrLogLevelId;
-    export type TyrMarkupTypeId = Isomorphic.TyrMarkupTypeId;
     export type TyrSchemaTypeId = Isomorphic.TyrSchemaTypeId;
     export type UnitId = Isomorphic.UnitId;
     export type UnitFactorId = Isomorphic.UnitFactorId;
@@ -572,7 +548,6 @@ declare module 'tyranid' {
       tyrLog: TyrLogCollection;
       tyrLogEvent: TyrLogEventCollection;
       tyrLogLevel: TyrLogLevelCollection;
-      tyrMarkupType: TyrMarkupTypeCollection;
       tyrMigrationStatus: TyrMigrationStatusCollection;
       tyrPage: TyrPageCollection;
       tyrSchema: TyrSchemaCollection;
@@ -601,7 +576,6 @@ declare module 'tyranid' {
       TyrLog: TyrLogCollection;
       TyrLogEvent: TyrLogEventCollection;
       TyrLogLevel: TyrLogLevelCollection;
-      TyrMarkupType: TyrMarkupTypeCollection;
       TyrMigrationStatus: TyrMigrationStatusCollection;
       TyrPage: TyrPageCollection;
       TyrSchema: TyrSchemaCollection;
@@ -630,7 +604,6 @@ declare module 'tyranid' {
       _l0: TyrLogCollection;
       _l2: TyrLogEventCollection;
       _l1: TyrLogLevelCollection;
-      _p1: TyrMarkupTypeCollection;
       _m1: TyrMigrationStatusCollection;
       _p0: TyrPageCollection;
       _t1: TyrSchemaCollection;
