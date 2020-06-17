@@ -887,6 +887,7 @@ export class TyrComponent<
   setFilterValue(pathName: string, value: any) {
     this.filterValues[pathName] = value;
     this.filterConnections[pathName]?.setFilterValue(value);
+    this.updateConfigFilter(pathName, this.filterValue(pathName));
   }
 
   /**

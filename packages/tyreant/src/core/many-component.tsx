@@ -596,11 +596,16 @@ export class TyrManyComponent<
     this.limit = this.defaultPageSize;
     Tyr.clear(this.filterValues);
     this.applyDefaultFilters();
-    this.componentConfig?.fields.forEach(f => {
-      if (f.filter) {
-        this.filterValues[f.name] = f.filter;
-      }
-    });
+
+    // config has precedence over URL if "url" is not set
+    if (!(query.url ?? '').trim()) {
+      this.componentConfig?.fields.forEach(f => {
+        if (f.filter) {
+          this.filterValues[f.name] = f.filter;
+        }
+      });
+    }
+
     let sortFound = false;
 
     for (const name in query) {
@@ -613,6 +618,8 @@ export class TyrManyComponent<
           break;
         case 'search':
           this.filterSearchValue = value;
+          break;
+        case 'url':
           break;
         default: {
           const dot = value.indexOf('.');
@@ -661,25 +668,25 @@ export class TyrManyComponent<
     if (limit !== undefined && limit !== this.defaultPageSize)
       query.limit = String(limit);
 
-    for (const fieldName of _.uniq([
-      ...Object.keys(filterValues),
-      ...Object.keys(sortDirections),
-    ])) {
-      const searchValue = filterValues[fieldName];
-      const sortDirection = sortDirections[fieldName];
+    for (const pathProps of this.activePaths || this.paths) {
+      const { path, defaultFilter } = pathProps;
+      const pathName = path!.name;
 
-      if (sortDirection || searchValue) {
-        query[fieldName] =
-          (sortDirection || '') +
-          (searchValue
-            ? '.' +
-              (Array.isArray(searchValue) ? searchValue.join(',') : searchValue)
-            : '');
+      const filterValue = filterValues[pathName];
+      if (filterValue && !Tyr.isEqual(filterValue, defaultFilter)) {
+        query[pathName] =
+          '.' +
+          (Array.isArray(filterValue) ? filterValue.join(',') : filterValue);
       }
+
+      const sortDirection = sortDirections[pathName];
+      if (sortDirection && sortDirection !== pathProps.defaultSort)
+        query[pathName] = sortDirection;
     }
 
     if (filterSearchValue) query.search = filterSearchValue;
 
+    query.url = '1';
     return query;
   }
 
