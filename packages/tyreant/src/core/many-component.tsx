@@ -448,7 +448,7 @@ export class TyrManyComponent<
       }
     }
 
-    return documents.filter(doc => checks.every(check => check(doc)));
+    return documents?.filter(doc => checks.every(check => check(doc)));
   }
 
   /*

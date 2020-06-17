@@ -964,6 +964,8 @@ export function generateClientLibrary() {
     if (def.link) {
       field.link = Tyr.byName[def.link];
       field.populateName = Path.populateNameFor(field.name || parent.name);
+    } else if (def.is === 'array' && def.of.link) {
+      field.populateName = Path.populateNameFor(field.name || parent.name);
     }
 
     if (def.labelField) collection.labelField = field;

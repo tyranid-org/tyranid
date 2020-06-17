@@ -271,7 +271,7 @@ export function visitPopulations(metadata, obj, visitor) {
               const pv = obj[field.populateName];
               if (pv) {
                 for (const apv of pv) {
-                  if (apv) visitor(field, apv);
+                  if (apv) visitor(of, apv);
                 }
               }
               break;
