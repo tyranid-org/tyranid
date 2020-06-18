@@ -476,8 +476,7 @@ export class TyrManyComponent<
 
   setDefaultSort() {
     // Sort is only valid if column has a sort direction and is in active paths
-    for (const key of Object.keys(this.sortDirections))
-      delete this.sortDirections[key];
+    Tyr.clear(this.sortDirections);
 
     const sortColumn = this.componentConfig?.fields.find(
       column =>
@@ -487,9 +486,17 @@ export class TyrManyComponent<
 
     const sortName = sortColumn?.name;
 
-    if (sortName)
+    if (sortName) {
       this.sortDirections[sortName] = sortColumn!
         .sortDirection! as TyrSortDirection;
+    } else {
+      const sortColumn = (this.activePaths || this.paths).find(
+        column => !!column.defaultSort
+      );
+      if (sortColumn && sortColumn.defaultSort)
+        this.sortDirections[getPathName(sortColumn.path)!] =
+          sortColumn.defaultSort;
+    }
   }
 
   // Sort the documents according to the current sort
@@ -669,19 +676,26 @@ export class TyrManyComponent<
       query.limit = String(limit);
 
     for (const pathProps of this.activePaths || this.paths) {
-      const { path, defaultFilter } = pathProps;
+      const { path } = pathProps;
       const pathName = path!.name;
 
-      const filterValue = filterValues[pathName];
-      if (filterValue && !Tyr.isEqual(filterValue, defaultFilter)) {
-        query[pathName] =
-          '.' +
-          (Array.isArray(filterValue) ? filterValue.join(',') : filterValue);
-      }
+      let filterValue = filterValues[pathName];
+      if (filterValue && Tyr.isEqual(filterValue, pathProps.defaultFilter))
+        filterValue = undefined;
 
-      const sortDirection = sortDirections[pathName];
-      if (sortDirection && sortDirection !== pathProps.defaultSort)
-        query[pathName] = sortDirection;
+      let sortDirection: TyrSortDirection | undefined =
+        sortDirections[pathName];
+      if (sortDirection && sortDirection === pathProps.defaultSort)
+        sortDirection = undefined;
+
+      if (sortDirection || filterValue) {
+        query[pathName] =
+          (sortDirection || '') +
+          (filterValue
+            ? '.' +
+              (Array.isArray(filterValue) ? filterValue.join(',') : filterValue)
+            : '');
+      }
     }
 
     if (filterSearchValue) query.search = filterSearchValue;

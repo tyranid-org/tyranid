@@ -848,9 +848,7 @@ export class TyrComponent<
   ) => {
     if (this.componentConfig) {
       const fields = this.componentConfig.fields.forEach(f => {
-        if (!columnName) {
-          delete f.sortDirection;
-        } else if (f.name === columnName) {
+        if (f.name === columnName) {
           f.sortDirection = sortDirection;
         } else {
           delete f.sortDirection;
@@ -885,9 +883,10 @@ export class TyrComponent<
   }
 
   setFilterValue(pathName: string, value: any) {
-    this.filterValues[pathName] = value;
+    this.updateConfigFilter(pathName, value);
+    if (value) this.filterValues[pathName] = value;
+    else delete this.filterValues[pathName];
     this.filterConnections[pathName]?.setFilterValue(value);
-    this.updateConfigFilter(pathName, this.filterValue(pathName));
   }
 
   /**
@@ -905,7 +904,7 @@ export class TyrComponent<
   }
 
   applyDefaultFilters() {
-    for (const pathProps of this.activePaths || this.paths) {
+    for (const pathProps of this.paths) {
       const { path, defaultFilter } = pathProps;
 
       if (defaultFilter !== undefined && path) {
@@ -937,7 +936,8 @@ export class TyrComponent<
         if (!columnName) {
           delete f.filter;
         } else if (f.name === columnName) {
-          f.filter = filter;
+          if (filter) f.filter = filter;
+          else delete f.filter;
         }
       });
 

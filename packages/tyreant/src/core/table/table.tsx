@@ -844,12 +844,11 @@ export class TyrTableBase<
 
     if (sorter.order) {
       sortDirections[sortFieldName] = sorter.order!;
+      this.updateConfigSort(sortFieldName, sorter.order);
     } else {
-      delete sortDirections[sortFieldName];
       this.resetSort();
     }
 
-    this.updateConfigSort(sortFieldName, sorter.order);
     this.query();
     this.props.notifySortSet?.(sortFieldName, sorter.order);
   };
