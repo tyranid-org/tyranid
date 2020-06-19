@@ -1028,7 +1028,9 @@ export class TyrComponent<
       if (filtersHaveBeenReset) this.resetFilters();
       if (widthsHaveBeenReset) this.resetWidths();
 
-      if (queryNeeded || sortHasBeenReset || filtersHaveBeenReset) this.query();
+      if (queryNeeded || sortHasBeenReset || filtersHaveBeenReset) {
+        this.query();
+      }
     }
   };
 
