@@ -133,8 +133,6 @@ export class TyrComponent<
       this.paths = paths.map(laxPathProps =>
         this.resolveFieldLaxProps(laxPathProps)
       );
-
-      this.applyDefaultFilters();
     }
   }
 
@@ -876,11 +874,26 @@ export class TyrComponent<
     return this.filterValues[pathName];
   }
 
-  setFilterValue(pathName: string, value: any) {
-    this.updateConfigFilter(pathName, value);
-    if (value) this.filterValues[pathName] = value;
+  setFilterValue(pathName: string, value: any, save = true) {
+    const { componentConfig } = this;
+
+    if (componentConfig) {
+      const { fields } = componentConfig;
+      for (const field of fields) {
+        if (field.name === pathName) {
+          if (value !== undefined && value !== null) field.filter = value;
+          else delete field.filter;
+        }
+      }
+    }
+
+    if (value !== undefined && value !== null)
+      this.filterValues[pathName] = value;
     else delete this.filterValues[pathName];
+
     this.filterConnections[pathName]?.setFilterValue(value);
+
+    if (save) this.saveConfig();
   }
 
   /**
@@ -897,28 +910,17 @@ export class TyrComponent<
     return undefined;
   }
 
-  applyDefaultFilters() {
+  setDefaultFilters(save = true) {
     for (const pathProps of this.paths) {
-      const { path, defaultFilter } = pathProps;
-
-      if (defaultFilter !== undefined && path) {
-        const pathName = path.name;
-
-        if (!this.filterValue(pathName))
-          this.setFilterValue(pathName, defaultFilter);
-      }
+      const { path } = pathProps;
+      if (path) this.setFilterValue(path.name, pathProps.defaultFilter, false);
     }
+
+    if (save) this.saveConfig();
   }
 
   resetFilters = () => {
-    const { filterConnections, filterValues } = this;
-
-    Tyr.clear(filterValues);
-    this.applyDefaultFilters();
-
-    for (const path in filterConnections) filterConnections[path]?.clear();
-
-    this.updateConfigFilter();
+    this.setDefaultFilters();
     this.setState({});
 
     this.props.notifyFilterExists?.(false);
@@ -930,7 +932,7 @@ export class TyrComponent<
         if (!columnName) {
           delete f.filter;
         } else if (f.name === columnName) {
-          if (filter) f.filter = filter;
+          if (filter !== undefined && filter !== null) f.filter = filter;
           else delete f.filter;
         }
       });

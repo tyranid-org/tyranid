@@ -19,9 +19,10 @@ import Pagination from 'antd/es/pagination';
 
 import { getPathName } from './path';
 import { TyrSortDirection } from './typedef';
-import { registerComponent } from '../common';
 
 export const DEFAULT_PAGE_SIZE = 20;
+
+const NULL_URL_FILTER_VALUE = '___';
 
 export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   extends TyrComponentProps<D> {
@@ -131,7 +132,7 @@ export class TyrManyComponent<
 
     try {
       // passing in loading: true to the table will cause the live dropdown filter to disappear
-      if (!this.local) this.loading++;
+      this.loading++;
       const { props } = this;
 
       if (this.mounted) {
@@ -150,7 +151,7 @@ export class TyrManyComponent<
         //this.refresh();
       }
     } finally {
-      if (!this.local) this.loading--;
+      this.loading--;
     }
   }
 
@@ -605,18 +606,19 @@ export class TyrManyComponent<
   fromUrlQuery(query: { [name: string]: string }) {
     this.skip = 0;
     this.limit = this.defaultPageSize;
-    Tyr.clear(this.filterValues);
-    this.applyDefaultFilters();
+    this.setDefaultFilters(false);
 
     const urlHasPriority = !!(query.url ?? '').trim();
 
     if (!urlHasPriority) {
       this.componentConfig?.fields.forEach(f => {
         if (f.filter) {
-          this.filterValues[f.name] = f.filter;
+          this.setFilterValue(f.name, f.filter);
         }
       });
     }
+
+    this.saveConfig();
 
     let sortFound = false;
 
@@ -647,11 +649,15 @@ export class TyrManyComponent<
           this.sortDirections[name] = sortDirection || undefined;
 
           if (filterValue) {
-            // TODO:  we need to know the Field here because of it is a link or array of links we need to split the search value on '.'
-            const canBeArray = filterValue.indexOf(',') >= 0; // this is not right -- need the Field
-            this.filterValues[name] = canBeArray
-              ? filterValue.split(',')
-              : filterValue;
+            if (filterValue === NULL_URL_FILTER_VALUE) {
+              delete this.filterValues[name];
+            } else {
+              // TODO:  we need to know the Field here because of it is a link or array of links we need to split the search value on '.'
+              const canBeArray = filterValue.indexOf(',') >= 0; // this is not right -- need the Field
+              this.filterValues[name] = canBeArray
+                ? filterValue.split(',')
+                : filterValue;
+            }
           }
 
           if (sortDirection) sortFound = true;
@@ -685,18 +691,19 @@ export class TyrManyComponent<
       const pathName = path!.name;
 
       let filterValue = filterValues[pathName];
-      if (filterValue && Tyr.isEqual(filterValue, pathProps.defaultFilter))
+      if (Tyr.isEqual(filterValue, pathProps.defaultFilter))
         filterValue = undefined;
+      else if (filterValue === undefined) filterValue = NULL_URL_FILTER_VALUE;
 
       let sortDirection: TyrSortDirection | undefined =
         sortDirections[pathName];
       if (sortDirection && sortDirection === pathProps.defaultSort)
         sortDirection = undefined;
 
-      if (sortDirection || filterValue) {
+      if (sortDirection || filterValue !== undefined) {
         query[pathName] =
           (sortDirection || '') +
-          (filterValue
+          (filterValue !== undefined
             ? '.' +
               (Array.isArray(filterValue) ? filterValue.join(',') : filterValue)
             : '');

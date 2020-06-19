@@ -78,7 +78,11 @@ export function TyrFilter<FilterValueType>({
   const onSearch = () => {
     (component as TyrManyComponent).skip = 0;
     (component as TyrManyComponent).query();
-    component.updateConfigFilter(pathName, component.filterValue(pathName));
+
+    const value = component.filterValue(pathName);
+
+    component.updateConfigFilter(pathName, value);
+    if (value === undefined || value === null) filterDdProps.clearFilters?.();
   };
 
   const setLiveSetFilterValue = (value: FilterValueType | undefined) => {
@@ -93,7 +97,6 @@ export function TyrFilter<FilterValueType>({
   const clear = () => {
     delete component.filterValues[pathName];
     setFilterValue(undefined);
-    filterDdProps.clearFilters?.();
     onSearch();
   };
 
