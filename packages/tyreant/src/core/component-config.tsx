@@ -137,11 +137,9 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
         documentUid,
         collection: collection.id,
         userId,
-        fields: columnFields.map(c => {
-          return {
-            name: c,
-          };
-        }),
+        fields: columnFields.map(c => ({
+          name: c,
+        })),
       });
     }
 

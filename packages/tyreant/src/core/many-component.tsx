@@ -19,6 +19,7 @@ import Pagination from 'antd/es/pagination';
 
 import { getPathName } from './path';
 import { TyrSortDirection } from './typedef';
+import { registerComponent } from '../common';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -31,7 +32,6 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   projection?: 'auto' | 'all' | string[];
   populate?: Tyr.Population;
   local?: boolean;
-  documents?: D[] & { count?: number };
   preFind?: (
     this: TyrManyComponent<D>,
     findOpts: any // Tyr.FindAllOptions
@@ -81,7 +81,8 @@ export class TyrManyComponent<
 
     const { documents, query } = this.props;
 
-    this.setDefaultSort();
+    // if using a route, set the sort when parsing the URL
+    if (!this.props.route) this.setDefaultSort();
 
     if (documents) {
       this.sort();
@@ -474,29 +475,32 @@ export class TyrManyComponent<
     this.setState({});
   };
 
-  setDefaultSort() {
+  setDefaultSort(ignoreConfig?: boolean) {
     // Sort is only valid if column has a sort direction and is in active paths
     Tyr.clear(this.sortDirections);
 
-    const sortColumn = this.componentConfig?.fields.find(
-      column =>
-        !!column.sortDirection &&
-        !!this.activePaths.find(ap => getPathName(ap.path) === column.name)
-    );
-
-    const sortName = sortColumn?.name;
-
-    if (sortName) {
-      this.sortDirections[sortName] = sortColumn!
-        .sortDirection! as TyrSortDirection;
-    } else {
-      const sortColumn = (this.activePaths || this.paths).find(
-        column => !!column.defaultSort
+    if (!ignoreConfig) {
+      const sortColumn = this.componentConfig?.fields.find(
+        column =>
+          !!column.sortDirection &&
+          !!this.activePaths.find(ap => getPathName(ap.path) === column.name)
       );
-      if (sortColumn && sortColumn.defaultSort)
-        this.sortDirections[getPathName(sortColumn.path)!] =
-          sortColumn.defaultSort;
+
+      const sortName = sortColumn?.name;
+
+      if (sortName) {
+        this.sortDirections[sortName] = sortColumn!
+          .sortDirection! as TyrSortDirection;
+        return;
+      }
     }
+
+    const sortColumn = (this.activePaths || this.paths).find(
+      column => !!column.defaultSort
+    );
+    if (sortColumn && sortColumn.defaultSort)
+      this.sortDirections[getPathName(sortColumn.path)!] =
+        sortColumn.defaultSort;
   }
 
   // Sort the documents according to the current sort
@@ -604,8 +608,9 @@ export class TyrManyComponent<
     Tyr.clear(this.filterValues);
     this.applyDefaultFilters();
 
-    // config has precedence over URL if "url" is not set
-    if (!(query.url ?? '').trim()) {
+    const urlHasPriority = !!(query.url ?? '').trim();
+
+    if (!urlHasPriority) {
       this.componentConfig?.fields.forEach(f => {
         if (f.filter) {
           this.filterValues[f.name] = f.filter;
@@ -656,7 +661,7 @@ export class TyrManyComponent<
 
     // apply any default sort if no sort was supplied
     if (!sortFound) {
-      this.setDefaultSort();
+      this.setDefaultSort(urlHasPriority);
     }
   }
 
@@ -706,6 +711,9 @@ export class TyrManyComponent<
 
   cancelAutorun?: () => void;
   active = false;
+
+  processingQuery?: string;
+
   activate() {
     if (!this.mounted || !this.visible || this.active) return;
 
@@ -718,14 +726,18 @@ export class TyrManyComponent<
           this.cancelAutorun = autorun(() => {
             const location = Tyreant.router.location!;
             if (location.route === route) {
-              this.fromUrlQuery(
-                location.query! as {
-                  [name: string]: string;
-                }
-              );
+              const query = location.query! as {
+                [name: string]: string;
+              };
+              const queryStr = JSON.stringify(query);
+              if (queryStr !== this.processingQuery) {
+                this.processingQuery = queryStr;
 
-              this.load();
-              this.active = true;
+                this.fromUrlQuery(query);
+
+                this.load();
+                this.active = true;
+              }
             }
           });
         }

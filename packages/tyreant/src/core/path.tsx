@@ -222,7 +222,12 @@ export type TyrPathExistsProps<D extends Tyr.Document> = Omit<
 };
 
 export const getPathName = (
-  path: string | Tyr.PathInstance | TyrPathProps<any> | undefined
+  path:
+    | string
+    | Tyr.PathInstance
+    | TyrPathProps<any>
+    | TyrPathLaxProps<any>
+    | undefined
 ): string | undefined => {
   if (typeof path === 'string') return path;
   if (path instanceof Tyr.Path) return path.name;

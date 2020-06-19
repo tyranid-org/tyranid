@@ -843,8 +843,8 @@ export class TyrTableBase<
       sorter.order = 'ascend';
 
     if (sorter.order) {
-      sortDirections[sortFieldName] = sorter.order!;
       this.updateConfigSort(sortFieldName, sorter.order);
+      sortDirections[sortFieldName] = sorter.order!;
     } else {
       this.resetSort();
     }

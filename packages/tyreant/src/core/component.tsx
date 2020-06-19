@@ -47,6 +47,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   // QUERYING
   collection?: Tyr.CollectionInstance<D>;
   document?: D;
+  documents?: D[] & { count?: number };
   query?:
     | Tyr.MongoQuery
     | ((this: TyrComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
@@ -855,14 +856,7 @@ export class TyrComponent<
         }
       });
 
-      await this.componentConfig.$update({
-        query: { _id: this.componentConfig._id },
-        update: {
-          $set: {
-            columns: fields,
-          },
-        },
-      });
+      await this.saveConfig();
     }
   };
 
@@ -930,9 +924,9 @@ export class TyrComponent<
     this.props.notifyFilterExists?.(false);
   };
 
-  updateConfigFilter = async (columnName?: string, filter?: Object) => {
+  async updateConfigFilter(columnName?: string, filter?: Object) {
     if (this.componentConfig) {
-      const fields = this.componentConfig.fields.forEach(f => {
+      this.componentConfig.fields.forEach(f => {
         if (!columnName) {
           delete f.filter;
         } else if (f.name === columnName) {
@@ -941,16 +935,9 @@ export class TyrComponent<
         }
       });
 
-      await this.componentConfig.$update({
-        query: { _id: this.componentConfig._id },
-        update: {
-          $set: {
-            columns: fields,
-          },
-        },
-      });
+      await this.saveConfig();
     }
-  };
+  }
 
   /*
    * * * WIDTHS
@@ -961,7 +948,7 @@ export class TyrComponent<
     this.setState({});
   };
 
-  updateConfigWidths = async (columnName?: string, width?: number) => {
+  async updateConfigWidths(columnName?: string, width?: number) {
     if (this.componentConfig) {
       const { fields } = this.componentConfig;
       for (const f of fields) {
@@ -972,16 +959,9 @@ export class TyrComponent<
         }
       }
 
-      await this.componentConfig.$update({
-        query: { _id: this.componentConfig._id },
-        update: {
-          $set: {
-            columns: fields,
-          },
-        },
-      });
+      await this.saveConfig();
     }
-  };
+  }
 
   /*
    * * * COMPONENT CONFIG
@@ -991,6 +971,21 @@ export class TyrComponent<
 
   @observable
   componentConfig?: Tyr.TyrComponentConfig;
+
+  async saveConfig() {
+    const { componentConfig } = this;
+
+    if (componentConfig) {
+      await componentConfig.$update({
+        query: { _id: componentConfig._id },
+        update: {
+          $set: {
+            columns: componentConfig.fields,
+          },
+        },
+      });
+    }
+  }
 
   onUpdateComponentConfig = async (
     savedComponentConfig: Tyr.TyrComponentConfig,
@@ -1008,35 +1003,32 @@ export class TyrComponent<
       );
 
       this.componentConfig = componentConfig.componentConfig;
+
+      const queryNeeded = !Tyr.isEqual(
+        this._activePaths,
+        componentConfig.newColumns
+      );
+
+      if (queryNeeded && this.local && !this.props.documents) {
+        this.allDocuments = undefined;
+      }
+
       this._activePaths = componentConfig.newColumns;
 
-      onChangeComponentConfiguration &&
-        onChangeComponentConfiguration(
-          componentConfig.componentConfig.fields.map(f => {
-            return {
-              name: f.name,
-              hidden: !!f.hidden,
-              sortDirection: f.sortDirection,
-              filter: f.filter,
-            };
-          })
-        );
+      onChangeComponentConfiguration?.(
+        componentConfig.componentConfig.fields.map(f => ({
+          name: f.name,
+          hidden: !!f.hidden,
+          sortDirection: f.sortDirection,
+          filter: f.filter,
+        }))
+      );
 
-      if (sortHasBeenReset) {
-        this.resetSort();
-      }
+      if (sortHasBeenReset) this.resetSort();
+      if (filtersHaveBeenReset) this.resetFilters();
+      if (widthsHaveBeenReset) this.resetWidths();
 
-      if (filtersHaveBeenReset) {
-        this.resetFilters();
-      }
-
-      if (sortHasBeenReset || filtersHaveBeenReset) {
-        this.query();
-      }
-
-      if (widthsHaveBeenReset) {
-        this.resetWidths();
-      }
+      if (queryNeeded || sortHasBeenReset || filtersHaveBeenReset) this.query();
     }
   };
 
