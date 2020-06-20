@@ -38,8 +38,10 @@ export const TyrImport = createForm<Tyr.TyrImport>(
 
     const defaults = importDoc.defaults;
     const { fields } = defaults.$model;
-    // TODO:  this needs to use form.parent.activePaths
-    const allFields = Object.keys(fields).map(fieldName => fields[fieldName]);
+
+    const allFields =
+      form.parent?.activePaths.map(p => p.path?.tail).filter(f => f) ||
+      Object.keys(fields).map(fieldName => fields[fieldName]);
 
     const importFields = allFields.filter(
       field => !field.readonly && field.relate !== 'ownedBy'
