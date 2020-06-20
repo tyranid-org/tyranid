@@ -24,7 +24,8 @@ export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
 
   return decorateField('boolean', props, () => {
     const onTypeChangeFunc = (ev: any) => {
-      const value = typeof ev !== 'boolean' ? ev.target.value : ev;
+      const value =
+        typeof ev !== 'boolean' ? ev.target.checked || ev.target.value : ev;
       onTypeChange(props, value, ev);
       props.onChange && props.onChange(value, ev, props);
     };

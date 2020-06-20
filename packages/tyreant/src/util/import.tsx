@@ -33,11 +33,12 @@ export const TyrImport = createForm<Tyr.TyrImport>(
       },
     ],
   },
-  ({ document: importDoc }) => {
+  ({ form, document: importDoc }) => {
     //$scope.title = Tyr.pluralize(collection.label);
 
     const defaults = importDoc.defaults;
     const { fields } = defaults.$model;
+    // TODO:  this needs to use form.parent.activePaths
     const allFields = Object.keys(fields).map(fieldName => fields[fieldName]);
 
     const importFields = allFields.filter(

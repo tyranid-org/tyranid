@@ -200,17 +200,18 @@ export const fieldDecoratorName = (props: TyrTypeProps<any>) => {
 export const mapPropsToForm = (props: TyrTypeProps<any>) => {
   const { path, document, form, value, default: defaultValue } = props;
 
-  if (value !== undefined) {
+  const newValue = value?.value || defaultValue;
+  if (newValue !== undefined) {
     const pathid = path!.identifier;
     // TODO:  this should be [pathid] instead of .value ?
     const oldValue = form.getFieldsValue([pathid]).value;
-    const newValue = value.value || defaultValue;
 
     if (oldValue !== newValue) {
       form.setFieldsValue({
         // TODO:  should this be "value" instead of "newValue" ?
         [pathid]: newValue,
       });
+      mapFormValueToDocument(path!, newValue, document, props);
     }
   } else {
     mapDocumentToForm(path!, document!, form, props);
