@@ -266,14 +266,14 @@ export namespace Tyr {
     $redact(): void;
     $remove(opts?: { auth?: Document }): Promise<void>;
     $replace(replacements: any): Promise<this>;
-    $save(opts?: { timestamps?: boolean }): Promise<this>;
+    $save(opts?: Options_Save): Promise<this>;
     $slice(prop: string, opts?: Options_Slice): Promise<void>;
     $toClient(opts?: Options_ToClient): RawMongoDocument;
     $toPlain(): RawMongoDocument;
     $toRaw(): RawMongoDocument;
     $tyr: typeof Tyr;
     $uid: string;
-    $update(fields?: any): Promise<this>;
+    $update(opts?: Options_UpdateDoc): Promise<this>;
     $validate(): UserError[];
   }
 
@@ -555,7 +555,10 @@ export namespace Tyr {
     extends OptionsAuth,
       OptionsCommon,
       OptionsHistorical,
-      OptionsTimestamps {}
+      OptionsProjection,
+      OptionsTimestamps {
+    upsert?: boolean;
+  }
 
   export interface Options_All
     extends OptionsAuth,

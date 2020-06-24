@@ -406,9 +406,7 @@ export class TyrComponent<
     } else if (linkFromParent) {
       const id = linkFromParent.path.get(document);
 
-      updatedDocument = (await collection.findOne({
-        _id: id,
-      })) as D;
+      updatedDocument = (await collection.byId(id)) as D;
     } else {
       if (collection.id !== document.$model.id) {
         throw new Tyr.AppError('mismatched collection ids');
@@ -979,11 +977,8 @@ export class TyrComponent<
 
     if (componentConfig) {
       await componentConfig.$update({
-        query: { _id: componentConfig._id },
-        update: {
-          $set: {
-            columns: componentConfig.fields,
-          },
+        projection: {
+          fields: 1,
         },
       });
     }

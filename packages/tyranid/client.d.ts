@@ -374,13 +374,13 @@ declare module 'tyranid/client' {
       new (doc?: RawMongoDocument): D;
 
       aux(fields: { [key: string]: FieldDefinition<D> }): void;
-      byId(id: IdType<D>, opts?: any): Promise<D | null>;
-      byIds(ids: IdType<D>[], opts?: any): Promise<D[]>;
+      byId(id: IdType<D>, opts?: Options_FindById): Promise<D | null>;
+      byIds(ids: IdType<D>[], opts?: Options_FindByIds): Promise<D[]>;
       byIdIndex: { [id: string]: D };
       byLabel(label: string): Promise<D | null>;
       cache(document: D, type?: 'remove' | undefined, silent?: boolean): void;
-      count(opts: any): Promise<number>;
-      exists(opts: any): Promise<boolean>;
+      count(opts: Options_Count): Promise<number>;
+      exists(opts: Options_Exists): Promise<boolean>;
       fields: { [fieldName: string]: FieldInstance<D> };
       fieldsFor(opts: {
         match?: MongoDocument;
@@ -388,12 +388,12 @@ declare module 'tyranid/client' {
         custom?: boolean;
         static?: boolean;
       }): Promise<{ [key: string]: Tyr.FieldInstance<D> }>;
-      findAll(args: any): Promise<D[] & { count?: number }>;
-      findOne(args: any): Promise<D | null>;
+      findAll(args: Options_FindMany): Promise<D[] & { count?: number }>;
+      findOne(args: Options_FindOne): Promise<D | null>;
       id: string;
       idToLabel(id: IdType<D>): Promise<string>;
       idToUid(id: IdType<D> | string): string;
-      insert<I, A extends I[]>(docs: A, opts?: any): Promise<D[]>;
+      insert<I, A extends I[]>(docs: A, opts?: Options_Insert): Promise<D[]>;
       insert<I>(doc: I): Promise<D>;
       insert(doc: any): Promise<any>;
       isAux(): boolean;
@@ -413,7 +413,12 @@ declare module 'tyranid/client' {
       on(opts: any): () => void;
       parsePath(text: string): PathInstance;
       paths: { [fieldPathName: string]: FieldInstance<D> };
-      push(id: IdType<D>, path: string, value: any, opts: any): Promise<void>;
+      push(
+        id: IdType<D>,
+        path: string,
+        value: any,
+        opts: Options_Pushpull
+      ): Promise<void>;
       remove(id: IdType<D>, justOne: boolean): Promise<void>;
       remove(
         query: any /* MongoDB-style query */,
@@ -423,7 +428,7 @@ declare module 'tyranid/client' {
       save(doc: D[] | object[]): Promise<D[]>;
       save(doc: any): Promise<any>;
       subscribe(query: MongoQuery | undefined, cancel?: boolean): Promise<void>;
-      updateDoc(doc: D | MongoDocument, opts: any): Promise<D>;
+      updateDoc(doc: D | MongoDocument, opts: Options_UpdateDoc): Promise<D>;
       values: D[];
     }
 
@@ -438,22 +443,279 @@ declare module 'tyranid/client' {
       $label: string;
       $metaType: 'document';
       $model: CollectionInstance<this>;
+      $options: Options_AllFind;
       $orig?: this;
       $remove(opts?: any): Promise<void>;
       $revert(): void;
-      $save(opts?: any): Promise<this>;
-      $slice(path: string, opts: any): Promise<void>;
+      $save(opts?: Options_Save): Promise<this>;
+      $slice(path: string, opts: Options_Slice): Promise<void>;
       $snapshot(): void;
       $toPlain(): object;
       $tyr: typeof Tyr;
       $uid: string;
-      $update(opts: any): Promise<this>;
+      $update(opts: Options_UpdateDoc): Promise<this>;
     }
 
     export interface Inserted<ID extends AnyIdType = AnyIdType>
       extends Document<ID> {
       _id: ID;
     }
+
+    /*
+     * Options
+     */
+
+    export interface OptionsCount {
+      /**
+       * Indicates that a count of the records should be added to the returned array.
+       */
+      count?: boolean;
+    }
+
+    /**
+     * This provides a place to define options that are universal to all options methods
+     */
+    export interface OptionsCommon {
+      timeout?: number;
+    }
+
+    export interface OptionsHistorical {
+      /**
+       * Return the historical version of the doc
+       */
+      historical?: boolean;
+    }
+
+    export interface OptionsKeepNonAccessible {
+      /**
+       * Indicates that results should not be filtered by security, but $checkAccess() should still be called.
+       */
+      keepNonAccessible?: boolean;
+    }
+
+    export interface OptionsParallel {
+      /**
+       * If specified this indicates that the documents will be returned in a parallel array to given list of
+       * IDs/UIDs.  If the same id is given multiple times, the document instances will be shared.  If a
+       * given identifier could not be found, then matching slots in the array will be undefined.
+       */
+      parallel?: boolean;
+    }
+
+    export interface OptionsPopulate {
+      /**
+       * The population fields to populate.
+       */
+      populate?: PopulationOption;
+    }
+
+    export type ProjectionOption =
+      | { [key: string]: number }
+      | { _history?: boolean }
+      | string
+      | Array<string | { [key: string]: number }>;
+
+    export interface OptionsProjection {
+      /**
+       * The standard MongoDB-style fields object that specifies the projection.
+       * @deprecated use projection
+       */
+      fields?: ProjectionOption;
+
+      /**
+       * The standard MongoDB-style fields object that specifies the projection.
+       */
+      projection?: ProjectionOption;
+    }
+
+    export interface OptionsQuery {
+      /**
+       * raw mongodb query
+       */
+      query?: MongoQuery;
+
+      asOf?: Date;
+
+      historical?: boolean;
+    }
+
+    export interface OptionsPlain {
+      /**
+       * Indicates that returned documents should be simple Plain 'ole JavaScript Objects (POJO)s.
+       */
+      plain?: boolean;
+    }
+
+    export interface OptionsCaching {
+      /**
+       * Indicates that the returned docuemnts should be returned from the cache if available
+       */
+      cached?: boolean;
+    }
+
+    export interface OptionsPost {
+      /**
+       * Provides a hook to do post-processing on the document.
+       */
+      post?: (opts: Options_All) => void;
+    }
+
+    export interface OptionsTimestamps {
+      /**
+       * Indicates if timestamps should be updated.
+       * Defaults to the timestamps setting on the collection.
+       */
+      timestamps?: boolean;
+    }
+
+    export interface OptionsUpdate {
+      /**
+       * The standard MongoDB-style update object. 'insert' for inserts, etc.)
+       * but you can override it with this option.
+       */
+      update: any;
+
+      /**
+       * multiple documents
+       */
+      multi?: boolean;
+    }
+
+    export interface OptionsWhere {
+      /**
+       * Applies a predicate that is applied to the dataset.
+       */
+      where?: (doc: any) => boolean;
+    }
+
+    export interface OptionsWindow {
+      /**
+       * The maximum number of documents to retrieve.
+       */
+      limit?: number;
+
+      /**
+       * The number of documents to skip.
+       */
+      skip?: number;
+
+      /**
+       * The standard MongoDB-style sort object.
+       */
+      sort?: { [key: string]: number };
+    }
+
+    /*
+     * Options by operation
+     */
+
+    export interface Options_Count extends Options_Exists, OptionsQuery {}
+
+    export interface Options_Exists
+      extends OptionsCount,
+        OptionsCommon,
+        OptionsQuery {}
+
+    export interface Options_FindById
+      extends OptionsCaching,
+        OptionsCommon,
+        OptionsHistorical,
+        OptionsKeepNonAccessible,
+        OptionsPopulate,
+        OptionsProjection,
+        OptionsPlain {}
+
+    export interface Options_FindByIds
+      extends OptionsCaching,
+        Options_FindById,
+        OptionsKeepNonAccessible,
+        OptionsParallel {}
+
+    export interface Options_FindOne
+      extends Options_FindById,
+        OptionsQuery,
+        OptionsWindow {}
+
+    export interface Options_FindCursor
+      extends Options_FindOne,
+        OptionsWindow {}
+
+    export interface Options_FindMany
+      extends Options_FindCursor,
+        OptionsCount {}
+
+    export interface Options_AllFind extends Options_FindMany {}
+
+    export interface Options_FindAndModify
+      extends OptionsCommon,
+        OptionsQuery,
+        OptionsUpdate,
+        OptionsProjection {
+      /**
+       * whether or not to return a new document in findAndModify
+       */
+      new?: boolean;
+
+      /**
+       * whether or not to insert the document if it doesn't exist
+       */
+      upsert?: boolean;
+    }
+
+    export interface Options_Insert
+      extends OptionsCommon,
+        OptionsHistorical,
+        OptionsTimestamps {}
+
+    export interface Options_Pushpull
+      extends OptionsCommon,
+        OptionsHistorical,
+        OptionsTimestamps {}
+
+    export interface Options_Remove extends OptionsCommon, OptionsQuery {}
+
+    export interface Options_Save extends Options_Insert, Options_UpdateDoc {}
+
+    export interface Options_Slice
+      extends OptionsCommon,
+        OptionsPopulate,
+        OptionsWhere,
+        OptionsWindow {}
+
+    export interface Options_Update
+      extends OptionsCommon,
+        OptionsQuery,
+        OptionsTimestamps,
+        OptionsUpdate {}
+
+    export interface Options_UpdateDoc
+      extends OptionsCommon,
+        OptionsHistorical,
+        OptionsProjection,
+        OptionsTimestamps {
+      upsert?: boolean;
+    }
+
+    export interface Options_All
+      extends OptionsCommon,
+        OptionsHistorical,
+        OptionsQuery,
+        OptionsParallel,
+        OptionsPlain,
+        OptionsPopulate,
+        OptionsPost,
+        OptionsProjection,
+        OptionsTimestamps,
+        OptionsUpdate,
+        OptionsWindow {}
+
+    /**
+     * Fields to populate in a document
+     */
+    export type PopulationOption =
+      | string
+      | string[]
+      | { [key: string]: PopulationOption | 0 | 1 };
 
     export type LogOption = string | Error | Isomorphic.BaseTyrLog<ObjIdType>;
 

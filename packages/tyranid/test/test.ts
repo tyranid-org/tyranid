@@ -1946,7 +1946,7 @@ describe('tyranid', function () {
 
         let dale = await User.byId(2001);
 
-        await dale!.$update({ query: { organization: 2 }, timestamps: false });
+        await dale!.$update({ timestamps: false });
 
         dale = await User.byId(2001);
         expect((dale as any).updatedAt).to.eql(updatedAt);
