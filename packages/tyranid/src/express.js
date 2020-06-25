@@ -527,8 +527,8 @@ export function generateClientLibrary() {
       }
     },
 
-    $save() {
-      return this.$model.save(this);
+    $save(opts) {
+      return this.$model.save(this, opts);
     },
 
     $slice(path, opts) {
@@ -1302,6 +1302,7 @@ export function generateClientLibrary() {
     }).then(docs => {
       if (docs && docs.length) {
         const d = new col(docs[0]);
+        d.$options = opts;
         this.cache(d, undefined, true);
         return d;
       }
@@ -1330,6 +1331,7 @@ export function generateClientLibrary() {
       }
 
       for (const doc of docs) {
+        doc.$options = opts;
         this.cache(doc, undefined, true);
       }
 
@@ -1433,11 +1435,17 @@ export function generateClientLibrary() {
     }
   };
 
-  Collection.prototype.save = function(doc) {
+  Collection.prototype.save = function(doc, opts) {
 
     return Tyr.fetch('/api/' + this.def.name, {
       method: 'PUT',
-      body: JSON.stringify(doc),
+      body: JSON.stringify({
+        doc,
+        opts: {
+          ...document.$options,
+          ...opts,
+        }
+      }),
       headers: {
         'Content-Type': 'application/json'
       }
@@ -1494,7 +1502,13 @@ export function generateClientLibrary() {
 
     return Tyr.fetch('/api/' + this.def.name + '/updateDoc', {
       method: 'PUT',
-      body: JSON.stringify({ doc, opts }),
+      body: JSON.stringify({
+        doc,
+        opts: {
+          ...doc.$options,
+          ...opts
+        }
+      }),
       headers: {
         'Content-Type': 'application/json'
       }
@@ -2034,7 +2048,9 @@ Collection.prototype.connect = function ({ app, auth, http }) {
       if (express.rest || express.put) {
         r.put(async function (req, res) {
           try {
-            let doc = await col.fromClient(req.body, undefined, { req });
+            const { opts, doc } = req.body;
+
+            doc = await col.fromClient(doc, undefined, { req });
 
             if (doc._id) {
               const existingDoc = await col.findOne({
@@ -2044,10 +2060,20 @@ Collection.prototype.connect = function ({ app, auth, http }) {
                 req,
               });
               Object.assign(existingDoc, doc);
-              await existingDoc.$save({ auth: req.user, user: req.user, req });
+              await existingDoc.$save({
+                ...opts,
+                auth: req.user,
+                user: req.user,
+                req,
+              });
               doc = existingDoc;
             } else {
-              doc = await doc.$save({ auth: req.user, user: req.user, req });
+              doc = await doc.$save({
+                ...opts,
+                auth: req.user,
+                user: req.user,
+                req,
+              });
             }
 
             res.json(col.toClient(doc));
