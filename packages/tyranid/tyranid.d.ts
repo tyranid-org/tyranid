@@ -122,6 +122,14 @@ export namespace Tyr {
     uid: string
   ): { collection: CollectionInstance; id: AnyIdType };
 
+  export function nextId(counterName: string): Promise<number>;
+  export function nextIds(
+    counterName: string,
+    fieldName: string,
+    docs: Tyr.Document[],
+    asString?: boolean
+  ): Promise<number>;
+
   export function capitalize(name: string, all?: boolean): string;
   export function kebabize(str: string): string;
   export function labelize(name: string): string;

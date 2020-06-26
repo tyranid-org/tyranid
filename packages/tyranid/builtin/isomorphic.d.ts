@@ -26,6 +26,15 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
+     * "counter" <CounterCollection> are derived
+     */
+    export interface BaseCounter<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      name?: string;
+      value: number;
+    }
+    
+    /**
+     * Base interface from which documents in collection
      * "country" <CountryCollection> are derived
      */
     export interface BaseCountry<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -316,6 +325,12 @@ declare module 'tyranid/isomorphic' {
       extends Inserted<number>,
               BaseContinent<ObjIdType, ObjContainer, NumContainer> {}
     /**
+     * Document returned by collection "counter" <CounterCollection>
+     */
+    export interface Counter<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<ObjIdType>,
+              BaseCounter<ObjIdType, ObjContainer, NumContainer> {}
+    /**
      * Document returned by collection "country" <CountryCollection>
      */
     export interface Country<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
@@ -447,6 +462,12 @@ declare module 'tyranid/isomorphic' {
      */
     export interface ContinentCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<Continent<ObjIdType, ObjContainer, NumContainer>> {}
+    
+    /**
+     * Type definition for "counter" collection
+     */
+    export interface CounterCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<Counter<ObjIdType, ObjContainer, NumContainer>> {}
     
     /**
      * Service definition for "country" collection
@@ -6409,6 +6430,7 @@ declare module 'tyranid/isomorphic' {
      */
     export interface CollectionsByName<IdType = string> {
       continent: ContinentCollection<IdType>;
+      counter: CounterCollection<IdType>;
       country: CountryCollection<IdType>;
       mediaType: MediaTypeCollection<IdType>;
       province: ProvinceCollection<IdType>;
@@ -6437,6 +6459,7 @@ declare module 'tyranid/isomorphic' {
      */
     export interface CollectionsByClassName<IdType = string> {
       Continent: ContinentCollection<IdType>;
+      Counter: CounterCollection<IdType>;
       Country: CountryCollection<IdType>;
       MediaType: MediaTypeCollection<IdType>;
       Province: ProvinceCollection<IdType>;
@@ -6465,6 +6488,7 @@ declare module 'tyranid/isomorphic' {
      */
     export interface CollectionsById<IdType = string> {
       _g0: ContinentCollection<IdType>;
+      _cn: CounterCollection<IdType>;
       _g1: CountryCollection<IdType>;
       _mt: MediaTypeCollection<IdType>;
       _g2: ProvinceCollection<IdType>;
@@ -6494,6 +6518,7 @@ declare module 'tyranid/isomorphic' {
      */
     export type CollectionName =
       'continent'
+     |'counter'
      |'country'
      |'mediaType'
      |'province'
@@ -6520,7 +6545,8 @@ declare module 'tyranid/isomorphic' {
      * Union type of all current collection ids
      */
     export type CollectionId =
-      '_g0'
+      '_cn'
+     |'_g0'
      |'_g1'
      |'_g2'
      |'_im'

@@ -45,6 +45,7 @@ import './core/query';
 import './core/update';
 
 import { instrumentServerServices } from './service';
+import './counter';
 import './csv';
 import './excel';
 import './fake';

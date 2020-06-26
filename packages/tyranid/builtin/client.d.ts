@@ -32,6 +32,21 @@ declare module 'tyranid/client' {
     
 
     /**
+     * Client base document definition for CounterCollection.
+     */
+    export interface BaseCounter
+      extends Isomorphic.BaseCounter<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Client document definition for CounterCollection,
+     * extends isomorphic base interface BaseCounter.
+     */
+    export interface Counter
+      extends Inserted<ObjIdType>,
+              BaseCounter {}
+    
+
+    /**
      * Client base document definition for CountryCollection.
      */
     export interface BaseCountry
@@ -355,6 +370,13 @@ declare module 'tyranid/client' {
     /**
      * Client collection definition.
      */
+    export interface CounterCollection
+      extends Tyr.CollectionInstance<Counter> {
+    }
+
+    /**
+     * Client collection definition.
+     */
     export interface CountryCollection
       extends Tyr.CollectionInstance<Country>,
                 Isomorphic.CountryCollectionEnumStatic<ObjIdType, Inserted<ObjIdType>, Inserted<number>>,
@@ -534,6 +556,7 @@ declare module 'tyranid/client' {
      */
     export interface CollectionsByName {
       continent: ContinentCollection;
+      counter: CounterCollection;
       country: CountryCollection;
       mediaType: MediaTypeCollection;
       province: ProvinceCollection;
@@ -562,6 +585,7 @@ declare module 'tyranid/client' {
      */
     export interface CollectionsByClassName {
       Continent: ContinentCollection;
+      Counter: CounterCollection;
       Country: CountryCollection;
       MediaType: MediaTypeCollection;
       Province: ProvinceCollection;
@@ -590,6 +614,7 @@ declare module 'tyranid/client' {
      */
     export interface CollectionsById {
       _g0: ContinentCollection;
+      _cn: CounterCollection;
       _g1: CountryCollection;
       _mt: MediaTypeCollection;
       _g2: ProvinceCollection;
