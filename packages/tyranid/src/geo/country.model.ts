@@ -375,11 +375,13 @@ export const Country = new Tyr.Collection({
 Country.service = {
   async byCode(code: string) {
     // TODO:  create a hash for this if this ends up being used a lot ?
+    const countries = Country.values;
+
     if (code.length === 3) {
-      return Country.values.find(country => country.iso3166_1_a3 === code);
+      return countries.find(country => country.iso3166_1_a3 === code);
     }
 
-    return Country.values.find(country => country.code === code)!;
+    return countries.find(country => country.code === code)!;
   },
 
   async byFips(fips: string) {

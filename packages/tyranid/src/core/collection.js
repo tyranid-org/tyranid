@@ -2408,6 +2408,8 @@ export default class Collection {
     def.values.forEach(function (doc) {
       byIdIndex[doc[collection.def.primaryKey.field]] = doc;
     });
+
+    collection.values = def.values;
   }
 
   addValue(doc) {
