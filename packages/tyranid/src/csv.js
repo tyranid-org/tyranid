@@ -4,15 +4,15 @@ import * as csv from 'fast-csv';
 
 import Tyr from './tyr';
 
-async function fieldify(collection, columns) {
+async function pathify(collection, columns) {
   for (const column of columns) {
     const { field } = column;
 
     if (!(field instanceof Tyr.Field)) {
       try {
-        column.field = collection.parsePath(field)?.tail;
+        column.path = collection.parsePath(field);
       } catch {
-        column.field = await collection.findField(field);
+        column.path = (await collection.findField(field))?.path;
       }
     }
   }
@@ -41,18 +41,19 @@ async function toCsv(opts) {
     try {
       csvStream.on('end', resolve);
 
-      if (collection) await fieldify(collection, columns);
+      if (collection) await pathify(collection, columns);
 
       for (const document of documents) {
         const writeObj = {};
 
         for (const column of columns) {
-          let { label, field, get } = column;
-          if (!field) continue;
+          let { label, path, get } = column;
+          if (!path) continue;
 
-          if (!label) label = field.label;
+          if (!label) label = path.pathLabel;
 
-          const { path, type } = field;
+          const field = path.tail;
+          const type = field.type;
           const value = get ? get(document) : path.get(document);
 
           writeObj[label] = type ? await type.format(field, value) : '' + value;
