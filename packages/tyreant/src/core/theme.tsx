@@ -11,8 +11,10 @@ import type { TyrKanbanProps } from './kanban';
 import type { TyrDecoratorProps } from './decorator';
 import type { TyrTableProps } from './table';
 import { TyrAction } from './action';
+import { TyrActionOpts } from '../tyreant';
 
 export interface TyrThemeProps {
+  action?: Partial<TyrActionOpts<any>>;
   boolean?: Partial<TyrTypeProps<any>>;
   date?: Partial<TyrTypeProps<any>>;
   datetime?: Partial<TyrTypeProps<any>>;

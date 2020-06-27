@@ -6,6 +6,7 @@ import { Tyr } from 'tyranid/client';
 
 import type { TyrComponent } from './component';
 import { isEntranceTrait, isExitTrait } from './trait';
+import { TyrThemeProps } from '.';
 
 export type ActionSet<D extends Tyr.Document> =
   | { [actionName: string]: TyrAction<D> | TyrActionOpts<D> }
@@ -109,20 +110,30 @@ let nextKey = 0;
 
 export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   static get<D extends Tyr.Document = Tyr.Document>(
-    action: TyrAction<D> | TyrActionOpts<D>
+    action: TyrAction<D> | TyrActionOpts<D>,
+    theme?: TyrThemeProps
   ) {
-    return action instanceof TyrAction
-      ? action
-      : new TyrAction<D>(action as any);
+    if (action instanceof TyrAction) return action;
+
+    const themeAction = theme?.action;
+    if (themeAction) {
+      action = {
+        ...themeAction,
+        ...action,
+      };
+    }
+
+    return new TyrAction<D>(action as any);
   }
 
   static parse<D extends Tyr.Document = Tyr.Document>(
-    obj: ActionSet<D>
+    obj: ActionSet<D>,
+    theme?: TyrThemeProps
   ): TyrAction<D>[] {
     if (!obj) {
       return [];
     } else if (Array.isArray(obj)) {
-      return obj.map(TyrAction.get);
+      return obj.map(o => TyrAction.get(o, theme));
     } else {
       const actions: TyrAction<D>[] = [];
 
