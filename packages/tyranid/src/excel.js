@@ -167,7 +167,7 @@ async function toExcel(opts) {
   const extraRows = (header && header.extraRows) || [];
 
   sheet.columns = columns.map(column => {
-    const pathName = column.field;
+    const pathName = column.path;
     const path = collection.parsePath(pathName);
 
     return {
@@ -209,7 +209,7 @@ async function toExcel(opts) {
   if (header && header.height) headerRow.height = header.height;
   for (let ci = 1; ci <= columns.length; ci++) {
     const column = columns[ci - 1];
-    const path = collection.parsePath(column.field);
+    const path = collection.parsePath(column.path);
 
     const cell = headerRow.getCell(ci);
 
@@ -225,7 +225,7 @@ async function toExcel(opts) {
 
     let ci = 1;
     for (const column of columns) {
-      const path = collection.parsePath(column.field);
+      const path = collection.parsePath(column.path);
 
       const cell = row.getCell(ci);
       const get = column.get;
@@ -291,7 +291,7 @@ async function fromExcel(opts) {
   const extraRows = (header && header.extraRows) || [];
 
   const columns = opts.columns.map(column => {
-    const pathName = column.field;
+    const pathName = column.path;
     const path = collection.parsePath(pathName);
 
     return {

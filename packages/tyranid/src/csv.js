@@ -4,20 +4,6 @@ import * as csv from 'fast-csv';
 
 import Tyr from './tyr';
 
-async function pathify(collection, columns) {
-  for (const column of columns) {
-    const { field } = column;
-
-    if (!(field instanceof Tyr.Field)) {
-      try {
-        column.path = collection.parsePath(field);
-      } catch {
-        column.path = (await collection.findField(field))?.path;
-      }
-    }
-  }
-}
-
 async function toCsv(opts) {
   let { collection, documents, filename, stream, columns } = opts;
 
@@ -40,8 +26,6 @@ async function toCsv(opts) {
   return new Promise(async (resolve, reject) => {
     try {
       csvStream.on('end', resolve);
-
-      if (collection) await pathify(collection, columns);
 
       for (const document of documents) {
         const writeObj = {};

@@ -2265,25 +2265,45 @@ Collection.prototype.connect = function ({ app, auth, http }) {
           .route('/api/' + name + '/export')
           .all(auth)
           .get(async (req, res) => {
+            const collection = this;
+
             try {
               const opts = JSON.parse(req.query.opts);
 
+              const paths = [];
+              for (const pathName of opts.fields) {
+                try {
+                  paths.push(collection.parsePath(pathName));
+                } catch {
+                  paths.push((await collection.findField(pathName))?.path);
+                }
+              }
+
+              const projection = Tyr.projectify(paths);
+              const population = {};
+              for (const path of paths) {
+                const link = path.detail.link;
+
+                if (link && link.labelField && !link.isStatic())
+                  Tyr.assignDeep(population, {
+                    [path.spath]: link.labelProjection(),
+                  });
+              }
+
               const documents = await this.findAll({
                 query: opts.query && this.fromClientQuery(opts.query),
-                fields: opts.fields.reduce(
-                  (fields, fieldName) => (fields[fieldName] = 1) && fields,
-                  {}
-                ),
+                projection,
+                population,
                 limit: opts.query ? undefined : 1000,
                 auth: req.user,
               });
 
               res.setHeader('content-type', 'text/csv');
               await Tyr.csv.toCsv({
-                collection: this,
+                collection,
                 documents,
-                columns: opts.fields.map(fieldName => ({
-                  field: fieldName,
+                columns: paths.map(path => ({
+                  path,
                 })),
                 stream: res,
               });

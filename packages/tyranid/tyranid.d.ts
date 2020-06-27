@@ -1302,7 +1302,7 @@ export namespace Tyr {
   export interface FileFormatColumn<
     D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>
   > {
-    field: string;
+    path: string | PathInstance;
     get?(this: this, doc: D): any;
     label?: string;
   }
@@ -1326,7 +1326,7 @@ export namespace Tyr {
 
   export interface CsvStatic {
     toCsv<D extends Tyr.Document<AnyIdType> = Tyr.Document<AnyIdType>>(
-      opts: CsvDev<D> & {
+      opts: CsvDef<D> & {
         documents: D[];
       }
     ): Promise<void>;

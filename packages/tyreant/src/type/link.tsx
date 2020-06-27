@@ -13,7 +13,6 @@ import { TyrPathProps, TyrComponent, getLabelRenderer } from '../core';
 import { TyrFilter, FilterDdProps } from '../core/filter';
 import { registerComponent } from '../common';
 import {
-  findById,
   findByLabel,
   linkFor,
   linkFieldFor,
