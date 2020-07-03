@@ -51,6 +51,7 @@ byName.string = {
               //ref={node => {
               //searchInputRef = node;
               //}}
+              autoFocus={true}
               placeholder={`Search ${props.label || path!.pathLabel}`}
               value={searchValue}
               onChange={e => setSearchValue(e.target.value)}

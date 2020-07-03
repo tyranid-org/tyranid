@@ -81,6 +81,7 @@ byName.datetime = {
                   moment('11:59:59', 'HH:mm:ss'),
                 ],
               }}
+              autoFocus={true}
               onChange={v => {
                 setSearchValue(v as RangePickerValue);
               }}

@@ -2048,7 +2048,8 @@ Collection.prototype.connect = function ({ app, auth, http }) {
       if (express.rest || express.put) {
         r.put(async function (req, res) {
           try {
-            const { opts, doc } = req.body;
+            const { opts } = req.body;
+            let { doc } = req.body;
 
             doc = await col.fromClient(doc, undefined, { req });
 
