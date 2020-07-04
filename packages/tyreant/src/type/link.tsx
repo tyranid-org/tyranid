@@ -339,6 +339,7 @@ const LinkFilterDropdown = ({
                   );
                 }}
                 enterButton
+                autoFocus={true}
                 value={filterSearchValue}
               />
             )}

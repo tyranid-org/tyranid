@@ -74,6 +74,7 @@ byName.date = {
           {(searchValue, setSearchValue, search) => (
             <RangePicker
               value={searchValue}
+              autoFocus={true}
               format={props.dateFormat || DATE_FORMAT}
               onChange={v => {
                 setSearchValue(v as RangePickerValue);
