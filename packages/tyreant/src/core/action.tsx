@@ -111,16 +111,26 @@ let nextKey = 0;
 export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   static get<D extends Tyr.Document = Tyr.Document>(
     action: TyrAction<D> | TyrActionOpts<D>,
-    theme?: TyrThemeProps
+    component?: TyrComponent<D>
   ) {
     if (action instanceof TyrAction) return action;
 
-    const themeAction = theme?.action;
-    if (themeAction) {
-      action = {
-        ...themeAction,
-        ...action,
-      };
+    if (component) {
+      const themeAction = component.props.theme?.action;
+
+      if (
+        action.traits?.some(isEntranceTrait) ||
+        (action.trait && isEntranceTrait(action.trait))
+      )
+        component = component.parent as TyrComponent<any>;
+
+      const actionTheme = component.props.actionTheme;
+      if (themeAction || actionTheme)
+        action = {
+          ...themeAction,
+          ...actionTheme,
+          ...action,
+        };
     }
 
     return new TyrAction<D>(action as any);
@@ -128,12 +138,12 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
   static parse<D extends Tyr.Document = Tyr.Document>(
     obj: ActionSet<D>,
-    theme?: TyrThemeProps
+    component?: TyrComponent<D>
   ): TyrAction<D>[] {
     if (!obj) {
       return [];
     } else if (Array.isArray(obj)) {
-      return obj.map(o => TyrAction.get(o, theme));
+      return obj.map(o => TyrAction.get(o, component));
     } else {
       const actions: TyrAction<D>[] = [];
 

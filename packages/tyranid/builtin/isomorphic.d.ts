@@ -118,6 +118,32 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
+     * "tyrExport" <TyrExportCollection> are derived
+     */
+    export interface BaseTyrExport<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      collectionName?: string;
+      /**
+       * This contains the component options that were set when the export was begun,
+       * e.g. filters, etc.       */
+      componentOpts?: {
+        fields?: string[];
+        findOpts?: any;
+      };
+      /**
+       * This is when the export file was completed generating.       */
+      endedAt?: any;
+      file?: any;
+      name?: string;
+      /**
+       * This is when the export was requested.       */
+      on?: any;
+      /**
+       * This is when the export file was started.       */
+      startedAt?: any;
+    }
+    
+    /**
+     * Base interface from which documents in collection
      * "tyrImport" <TyrImportCollection> are derived
      */
     export interface BaseTyrImport<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -361,6 +387,12 @@ declare module 'tyranid/isomorphic' {
       extends Inserted<string>,
               BaseTyrExchangeRate<ObjIdType, ObjContainer, NumContainer> {}
     /**
+     * Document returned by collection "tyrExport" <TyrExportCollection>
+     */
+    export interface TyrExport<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<ObjIdType>,
+              BaseTyrExport<ObjIdType, ObjContainer, NumContainer> {}
+    /**
      * Document returned by collection "tyrImport" <TyrImportCollection>
      */
     export interface TyrImport<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
@@ -512,6 +544,12 @@ declare module 'tyranid/isomorphic' {
      */
     export interface TyrExchangeRateCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<TyrExchangeRate<ObjIdType, ObjContainer, NumContainer>> {}
+    
+    /**
+     * Type definition for "tyrExport" collection
+     */
+    export interface TyrExportCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<TyrExport<ObjIdType, ObjContainer, NumContainer>> {}
     
     /**
      * Type definition for "tyrImport" collection
@@ -6436,6 +6474,7 @@ declare module 'tyranid/isomorphic' {
       province: ProvinceCollection<IdType>;
       tyrComponentConfig: TyrComponentConfigCollection<IdType>;
       tyrExchangeRate: TyrExchangeRateCollection<IdType>;
+      tyrExport: TyrExportCollection<IdType>;
       tyrImport: TyrImportCollection<IdType>;
       tyrInstance: TyrInstanceCollection<IdType>;
       tyrJob: TyrJobCollection<IdType>;
@@ -6465,6 +6504,7 @@ declare module 'tyranid/isomorphic' {
       Province: ProvinceCollection<IdType>;
       TyrComponentConfig: TyrComponentConfigCollection<IdType>;
       TyrExchangeRate: TyrExchangeRateCollection<IdType>;
+      TyrExport: TyrExportCollection<IdType>;
       TyrImport: TyrImportCollection<IdType>;
       TyrInstance: TyrInstanceCollection<IdType>;
       TyrJob: TyrJobCollection<IdType>;
@@ -6494,6 +6534,7 @@ declare module 'tyranid/isomorphic' {
       _g2: ProvinceCollection<IdType>;
       _tc: TyrComponentConfigCollection<IdType>;
       _u5: TyrExchangeRateCollection<IdType>;
+      _ex: TyrExportCollection<IdType>;
       _im: TyrImportCollection<IdType>;
       _t2: TyrInstanceCollection<IdType>;
       _j0: TyrJobCollection<IdType>;
@@ -6524,6 +6565,7 @@ declare module 'tyranid/isomorphic' {
      |'province'
      |'tyrComponentConfig'
      |'tyrExchangeRate'
+     |'tyrExport'
      |'tyrImport'
      |'tyrInstance'
      |'tyrJob'
@@ -6546,6 +6588,7 @@ declare module 'tyranid/isomorphic' {
      */
     export type CollectionId =
       '_cn'
+     |'_ex'
      |'_g0'
      |'_g1'
      |'_g2'

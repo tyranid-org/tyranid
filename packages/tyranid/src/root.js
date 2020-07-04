@@ -57,6 +57,7 @@ import './type/s3';
 
 import './log/log';
 import './import';
+import './export';
 
 import './diff/diff';
 import './secure/secure';

@@ -124,6 +124,21 @@ declare module 'tyranid' {
     
 
     /**
+     * Server base document definition for TyrExportCollection.
+     */
+    interface BaseTyrExport
+      extends Isomorphic.BaseTyrExport<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Server document definition for TyrExportCollection,
+     * extends isomorphic base interface BaseTyrExport.
+     */
+    interface TyrExport
+      extends Inserted<ObjIdType>,
+              BaseTyrExport {}
+    
+
+    /**
      * Server base document definition for TyrImportCollection.
      */
     interface BaseTyrImport
@@ -428,6 +443,13 @@ declare module 'tyranid' {
     /**
      * Server collection definition.
      */
+    interface TyrExportCollection
+      extends Tyr.CollectionInstance<TyrExport> {
+    }
+
+    /**
+     * Server collection definition.
+     */
     interface TyrImportCollection
       extends Tyr.CollectionInstance<TyrImport> {
     }
@@ -565,6 +587,7 @@ declare module 'tyranid' {
       province: ProvinceCollection;
       tyrComponentConfig: TyrComponentConfigCollection;
       tyrExchangeRate: TyrExchangeRateCollection;
+      tyrExport: TyrExportCollection;
       tyrImport: TyrImportCollection;
       tyrInstance: TyrInstanceCollection;
       tyrJob: TyrJobCollection;
@@ -594,6 +617,7 @@ declare module 'tyranid' {
       Province: ProvinceCollection;
       TyrComponentConfig: TyrComponentConfigCollection;
       TyrExchangeRate: TyrExchangeRateCollection;
+      TyrExport: TyrExportCollection;
       TyrImport: TyrImportCollection;
       TyrInstance: TyrInstanceCollection;
       TyrJob: TyrJobCollection;
@@ -623,6 +647,7 @@ declare module 'tyranid' {
       _g2: ProvinceCollection;
       _tc: TyrComponentConfigCollection;
       _u5: TyrExchangeRateCollection;
+      _ex: TyrExportCollection;
       _im: TyrImportCollection;
       _t2: TyrInstanceCollection;
       _j0: TyrJobCollection;

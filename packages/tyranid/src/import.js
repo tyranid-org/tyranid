@@ -32,6 +32,8 @@ TyrImport.on({
     for (const imp of await event.documents) {
       const collection = Tyr.byName[imp.collectionName];
 
+      // TODO:  is this a CSV file then fromCsv else fromExcel
+
       const docs = await Tyr.excel.fromExcel({
         collection,
         columns: Object.values(collection.fields)

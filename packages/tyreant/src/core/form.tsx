@@ -71,6 +71,7 @@ export class TyrFormBase<
   D extends Tyr.Document<Tyr.AnyIdType>
 > extends TyrOneComponent<D, TyrFormProps<D>> {
   canEdit = true;
+  componentName = 'form';
 
   get form() {
     return this.props.form!;

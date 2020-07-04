@@ -64,6 +64,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
 
   // ACTIONS
   traits?: Tyr.ActionTrait[];
+  actionTheme?: Partial<TyrActionOpts<any>>;
   actions?: ActionSet<D>;
 
   // PARENT LINKING
@@ -574,7 +575,7 @@ export class TyrComponent<
   }
 
   enact(action: TyrAction<D> | TyrActionOpts<D>) {
-    let a = TyrAction.get(action, this.props.theme);
+    let a = TyrAction.get(action, this);
 
     if (!a.isLocal()) {
       const { decorator } = this;
@@ -600,10 +601,7 @@ export class TyrComponent<
 
   setupActions() {
     const { collection, props } = this;
-    const actions = TyrAction.parse(
-      props.actions as ActionSet<D>,
-      this.props.theme
-    );
+    const actions = TyrAction.parse(props.actions as ActionSet<D>, this);
 
     const { parent, linkToParent, linkFromParent } = this;
     const parentLink = linkToParent || linkFromParent;
@@ -648,7 +646,7 @@ export class TyrComponent<
 
     const enact = (_action: TyrActionOpts<D> | TyrAction<D>) => {
       // TODO:  clone action if self is already defined?
-      const action = TyrAction.get(_action, this.props.theme) as TyrAction<D>;
+      const action = TyrAction.get(_action, this) as TyrAction<D>;
       action.self = this;
 
       let actFn = action.on;
