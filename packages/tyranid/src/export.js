@@ -38,7 +38,7 @@ const TyrExport = new Tyr.Collection({
 
     //$authContext: { type: 'user'/*, role: 'creator' */ }
     // would insert the following:
-    by: { link: 'user?' },
+    user: { link: 'user?' },
     organization: { link: 'organization?' },
     network: { link: 'network?' },
 

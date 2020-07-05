@@ -12,7 +12,7 @@ const TyrImport = new Tyr.Collection({
     collectionName: { is: 'string' },
     file: { is: 's3' },
     on: { is: 'datetime' },
-    by: { link: 'user?' },
+    user: { link: 'user?' },
     defaults: { is: 'object' },
   },
   async fromClient(opts) {

@@ -11,24 +11,6 @@ const { MediaType } = Tyr.collections;
 const s3 = awsS3();
 const multipartyMiddleware = multiparty();
 
-/*
-
-  fields: {
-    file: { is: 's3', of: [ 'image/*', 'video/*'] }
-  }
-
-  file: 'Terms of Service'
-
-  vs.
-
-  file: {
-    name: 'Terms of Service',
-    ext: 'doc',
-    mediaType: ... ?,
-  }
-
- */
-
 function keyPathFor(collection, docId) {
   return `${collection.def.name}/${docId.substring(0, 3)}/${docId}`;
 }
@@ -50,12 +32,21 @@ function keyForTmp(field, tmpId, filename) {
 }
 
 /**
- * Format of S3 data is:
+ *
+ * FIELDS FORMAT
+ *
+ * fields: {
+ *   file: { is: 's3', of: [ 'image/*', 'video/*'] }
+ * }
+ *
+ * VALUE FORMAT
  *
  * {
  *   filename: string; // the name of the file that was originally uploaded
  *   key: string; // key in s3 bucket
  *   type: string; // media type
+ *   tmpId?: string; // temporary id assigned before the document has been saved
+ *   size: number; // the size of the file
  * }
  */
 /*const S3Type = */ new Tyr.Type({
@@ -102,27 +93,30 @@ function keyForTmp(field, tmpId, filename) {
 
     const s3 = this;
 
-    // TODO:  if there are multiple s3 fields on a collection, we want to make sure this only gets called once
-    collection.on({
-      type: 'change',
-      when: 'post',
-      order: 0,
-      async handler(event) {
-        for (const doc of await event.documents) {
-          await s3.def.updateS3(doc);
-        }
-      },
-    });
+    if (!collection._hasS3) {
+      collection._hasS3 = true;
 
-    collection.on({
-      type: 'remove',
-      when: 'pre',
-      async handler(event) {
-        for (const doc of await event.documents) {
-          s3.def.removeS3(doc);
-        }
-      },
-    });
+      collection.on({
+        type: 'change',
+        when: 'post',
+        order: 0,
+        async handler(event) {
+          for (const doc of await event.documents) {
+            await s3.def.updateS3(doc);
+          }
+        },
+      });
+
+      collection.on({
+        type: 'remove',
+        when: 'pre',
+        async handler(event) {
+          for (const doc of await event.documents) {
+            s3.def.removeS3(doc);
+          }
+        },
+      });
+    }
   },
 
   routes(opts) {
@@ -138,6 +132,7 @@ function keyForTmp(field, tmpId, filename) {
           const file = req.files.file;
 
           const { originalFilename: filename, type: mediaType } = file;
+          console.log('file', file);
 
           //const idx = filename.lastIndexOf('.');
           //const ext = filename.substring(idx + 1);
@@ -163,9 +158,9 @@ function keyForTmp(field, tmpId, filename) {
             key = keyFor(field, docId, filename);
           }
 
-          await s3.putFile(Tyr.options.aws.bucket, key, file.path);
+          const rslt = await s3.putFile(Tyr.options.aws.bucket, key, file.path);
 
-          fs.unlink(file.path);
+          fs.unlink(file.path, err => console.error(err));
           res.status(200).json({ key, tmpId });
         } catch (err) {
           console.error(err.stack);
@@ -227,7 +222,7 @@ function keyForTmp(field, tmpId, filename) {
           // update the field directly so that we do not recursively call this handler
           await col.db.updateOne(
             { _id: doc._id },
-            { $set: { [Tyr.Pathode(pathName)]: val } }
+            { $set: { [field.path.spath]: val } }
           );
 
           try {

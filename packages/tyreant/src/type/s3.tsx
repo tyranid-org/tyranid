@@ -18,6 +18,7 @@ interface S3Value {
   filename?: string;
   type?: string;
   tmpId?: string;
+  size: number;
 }
 
 export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
@@ -56,6 +57,7 @@ export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
         key,
         filename: file.name,
         type: file.type,
+        size: file.size,
       };
       if (tmpId) value.tmpId = tmpId;
       setValue(value);
