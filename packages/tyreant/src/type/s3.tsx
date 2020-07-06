@@ -33,6 +33,11 @@ export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
     setCounter(counter + 1);
   };
 
+  const deleteValue = () => {
+    onTypeChange(props, undefined, undefined);
+    setCounter(counter - 1);
+  };
+
   const onDrop = useCallback(async acceptedFiles => {
     const file = acceptedFiles[0];
     const formData = new FormData();
@@ -86,7 +91,7 @@ export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
             &nbsp;&nbsp;&nbsp;
             <a href={downloadUrl}>download file</a>
             &nbsp;&nbsp;&nbsp;
-            <a onClick={() => setValue({})}>remove file</a>
+            <a onClick={() => deleteValue()}>remove file</a>
           </div>
         )}
         <Spin spinning={uploading}>
