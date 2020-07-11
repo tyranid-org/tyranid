@@ -589,6 +589,21 @@ export class TyrComponent<
     }
   }
 
+  cancel() {
+    this.do('cancel');
+  }
+
+  do(actionOrTraitName: string) {
+    for (const action of this.actions) {
+      if (
+        action.name === actionOrTraitName ||
+        action.is(actionOrTraitName as Tyr.ActionTrait)
+      ) {
+        action.act(this.actionFnOpts());
+      }
+    }
+  }
+
   actionFnOpts(): TyrActionFnOpts<D> {
     return {
       caller: this,

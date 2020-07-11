@@ -78,14 +78,14 @@ export class TyrFormBase<
   }
 
   private renderField(pathProps: TyrPathExistsProps<D>) {
-    const { document } = this;
+    const { props } = this;
 
     return (
       <TyrThemedFieldBase<D>
         {...pathProps}
-        theme={this.props.theme}
-        form={this.props.form!}
-        document={document!}
+        theme={props.theme}
+        form={props.form!}
+        document={this.document!}
       />
     );
   }

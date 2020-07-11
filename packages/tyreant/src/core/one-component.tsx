@@ -5,7 +5,7 @@ import { Tyr } from 'tyranid/client';
 import {
   TyrComponentProps,
   TyrComponentState,
-  TyrComponent
+  TyrComponent,
 } from './component';
 
 export interface TyrOneComponentProps<D extends Tyr.Document = Tyr.Document>
@@ -15,8 +15,7 @@ export interface TyrOneComponentState<D extends Tyr.Document = Tyr.Document>
   extends TyrComponentState<D> {}
 
 /**
- * A TyrComponent represents a react component that contains documents.  Examples
- * are TyrTable and TyrForm.
+ * A TyrOneComponent represents a react component that contain one document, i.e. TyrForm
  */
 @observer
 export class TyrOneComponent<

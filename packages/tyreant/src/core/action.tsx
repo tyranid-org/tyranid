@@ -6,7 +6,6 @@ import { Tyr } from 'tyranid/client';
 
 import type { TyrComponent } from './component';
 import { isEntranceTrait, isExitTrait } from './trait';
-import { TyrThemeProps } from '.';
 
 export type ActionSet<D extends Tyr.Document> =
   | { [actionName: string]: TyrAction<D> | TyrActionOpts<D> }
@@ -133,6 +132,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         };
     }
 
+    if (action.trait === 'cancel' && !action.order) action.order = 0;
+
     return new TyrAction<D>(action as any);
   }
 
@@ -149,10 +150,13 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
       for (const name in obj) {
         actions.push(
-          new TyrAction<D>({
-            ...obj[name],
-            name,
-          })
+          TyrAction.get(
+            {
+              ...obj[name],
+              name,
+            },
+            component
+          )
         );
       }
 
@@ -196,6 +200,11 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   hide?: boolean | undefined | ((doc: D) => boolean | undefined);
   utility?: boolean;
   align?: 'left' | 'center' | 'right';
+  /**
+   * This should be a number between 0 and 100.  0 means "beginning/left" and 100 means "end/right".
+   *
+   * The default value is 50.
+   */
   order?: number;
 
   /**
@@ -252,7 +261,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
   is(...traits: Tyr.ActionTrait[]) {
     for (const trait of traits) {
-      if (this.traits.indexOf(trait) >= 0) return true;
+      if (this.traits?.indexOf(trait) >= 0) return true;
     }
     return false;
   }
@@ -419,7 +428,11 @@ export function TyrActionBar<D extends Tyr.Document>({
   const { mode } = component.props;
   if (mode) actions = actions.filter(a => mode !== 'view' || !a.is('save'));
 
-  actions.sort((a, b) => Math.sign((a.order ?? 100) - (b.order ?? 100)));
+  actions.sort((a, b) => {
+    let v = Math.sign((a.order ?? 50) - (b.order ?? 50));
+    if (v === 0) v = a.name?.localeCompare(b.name ?? '') ?? 0;
+    return v;
+  });
 
   const leftActions = actions.filter(a => !a.align || a.align === 'left');
   const centerActions = actions.filter(a => a.align === 'center');
