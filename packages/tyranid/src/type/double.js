@@ -32,7 +32,7 @@ const DoubleType = new Type({
 
       const v = parseFloat(value);
 
-      if (v.toString() !== value) {
+      if (isNaN(v)) {
         throw new Error(`Invalid double on field ${field.name}: ${value}`);
       }
 
