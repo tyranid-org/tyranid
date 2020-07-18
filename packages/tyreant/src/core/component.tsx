@@ -697,6 +697,27 @@ export class TyrComponent<
         }
 
         action.on = actFn;
+      } else {
+        if (action.is('edit', 'view')) {
+          if (this.canMultiple && parentLink) {
+            action.on = opts => {
+              opts.self._parentDocument = opts.document;
+              return actFn?.(opts);
+            };
+          } else if (action.input === '*' || action.input === '0..*') {
+            action.on = async opts => {
+              const { documents } = opts;
+              if (documents) this.documents = documents;
+
+              return actFn?.(opts);
+            };
+          } else {
+            action.on = async opts => {
+              if (!this.document) this.document = opts.document;
+              return actFn?.(opts);
+            };
+          }
+        }
       }
 
       if (action.is('create', 'search')) {

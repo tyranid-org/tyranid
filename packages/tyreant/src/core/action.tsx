@@ -78,7 +78,10 @@ export interface TyrActionOpts<D extends Tyr.Document> {
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   render?: //| React.ReactNode
   (opts: TyrActionFnOpts<D>) => React.ReactNode;
-  title?: string | React.ReactNode;
+  title?:
+    | string
+    | React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   input?: Cardinality;
 
   /**
