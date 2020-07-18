@@ -795,8 +795,7 @@ export class TyrComponent<
       });
     }
 
-    const addingSave =
-      this.canEdit && (auto('view') || enacted('view') || enacted('edit'));
+    const addingSave = this.canEdit && (auto('edit') || enacted('edit'));
 
     if (auto('cancel')) {
       enact({
