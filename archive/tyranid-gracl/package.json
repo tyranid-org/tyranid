@@ -32,7 +32,7 @@
     "@types/lodash": "4.14.104",
     "@types/mongodb": "3.1.10",
     "gracl": "0.0.16",
-    "lodash": "4.17.2",
+    "lodash": "4.17.19",
     "mongo-explain-match": "^0.0.4"
   },
   "peerDependencies": {
