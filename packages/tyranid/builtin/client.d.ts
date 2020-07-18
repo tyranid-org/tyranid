@@ -125,7 +125,10 @@ declare module 'tyranid/client' {
      * Client base document definition for TyrExportCollection.
      */
     export interface BaseTyrExport
-      extends Isomorphic.BaseTyrExport<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+      extends Isomorphic.BaseTyrExport<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {
+        $start(): void;
+        $end(): void;
+    }
 
     /**
      * Client document definition for TyrExportCollection,

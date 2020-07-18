@@ -41,10 +41,7 @@ const TyrExport = new Tyr.Collection({
     user: { link: 'user?' },
     organization: { link: 'organization?' },
     network: { link: 'network?' },
-
-    // NOTE:  Tyr.config.userSchema properties automatically mixed in here
   },
-  /*
   methods: {
     $start: {
       async fn() {
@@ -67,7 +64,6 @@ const TyrExport = new Tyr.Collection({
       },
     },
   },
-  */
   async fromClient(opts) {
     const user = opts.req.user;
 

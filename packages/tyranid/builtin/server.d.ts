@@ -127,7 +127,10 @@ declare module 'tyranid' {
      * Server base document definition for TyrExportCollection.
      */
     interface BaseTyrExport
-      extends Isomorphic.BaseTyrExport<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+      extends Isomorphic.BaseTyrExport<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {
+        $start(): void;
+        $end(): void;
+    }
 
     /**
      * Server document definition for TyrExportCollection,

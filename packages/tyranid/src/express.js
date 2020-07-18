@@ -202,7 +202,7 @@ class Serializer {
         this.file += method.name + ': {';
         this.depth++;
         this.newline();
-        this.file += 'fn: ' + es5Fn(method.fnClient || method.fn);
+        this.file += es5Method('fn', method.fnClient || method.fn);
         this.depth--;
         this.file += '},';
       }
@@ -271,6 +271,10 @@ class Serializer {
 //let nextFnName = 1;
 function es5Fn(fn) {
   let s = fn.toString();
+  if (s.startsWith('async')) {
+    console.log('s', s);
+    return s;
+  }
 
   //const name = fn.name;
 
@@ -282,6 +286,24 @@ function es5Fn(fn) {
   }
 
   return s;
+}
+
+function es5Method(fieldName, fn) {
+  let s = fn.toString();
+  if (s.startsWith('async')) {
+    return 'async ' + fieldName + s.substring(s.indexOf('('));
+  }
+
+  //const name = fn.name;
+
+  //if (s.startsWith('function (')) {
+  //s = 'function ' + (name || '_fn' + nextFnName++) + ' (' + s.substring(10);
+  /*} else */
+  if (!s.startsWith('function') && !s.startsWith('() =>')) {
+    s = 'function ' + s;
+  }
+
+  return fieldName + ': ' + s;
 }
 
 function translateValue(v) {

@@ -391,7 +391,10 @@ declare module 'tyranid/isomorphic' {
      */
     export interface TyrExport<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends Inserted<ObjIdType>,
-              BaseTyrExport<ObjIdType, ObjContainer, NumContainer> {}
+              BaseTyrExport<ObjIdType, ObjContainer, NumContainer> {
+        $start(): void;
+        $end(): void;
+    }
     /**
      * Document returned by collection "tyrImport" <TyrImportCollection>
      */

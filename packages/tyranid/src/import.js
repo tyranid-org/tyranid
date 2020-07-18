@@ -15,6 +15,7 @@ const TyrImport = new Tyr.Collection({
     user: { link: 'user?' },
     defaults: { is: 'object' },
   },
+
   async fromClient(opts) {
     const user = opts.req.user;
 
