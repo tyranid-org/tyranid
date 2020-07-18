@@ -4,11 +4,27 @@ import * as csv from 'fast-csv';
 
 import Tyr from './tyr';
 
+async function pathify(collection, columns) {
+  for (const column of columns) {
+    const { path } = column;
+
+    if (!(path instanceof Tyr.Path)) {
+      try {
+        column.path = collection.parsePath(path);
+      } catch {
+        column.path = (await collection.findField(path))?.path;
+      }
+    }
+  }
+}
+
 async function toCsv(opts) {
   let { collection, documents, filename, stream, columns } = opts;
 
   if (!documents) documents = [];
   if (!collection) collection = documents.length && documents[0];
+
+  await pathify(collection, columns);
 
   const csvStream = csv.format({ headers: true });
 
@@ -37,7 +53,7 @@ async function toCsv(opts) {
           if (!label) label = path.pathLabel;
 
           const field = path.tail;
-          const type = field.type;
+          const type = field?.type;
           const value = get ? get(document) : path.get(document);
 
           writeObj[label] = type ? await type.format(field, value) : '' + value;
@@ -68,7 +84,7 @@ async function fromCsv(opts) {
     stream = fs.createReadStream(filename);
   }
 
-  await fieldify(collection, columns);
+  await pathify(collection, columns);
 
   return new Promise(async (resolve, reject) => {
     try {
@@ -81,12 +97,14 @@ async function fromCsv(opts) {
           const doc = new collection({});
 
           for (const column of columns) {
-            let { label, field, get } = column;
+            let { label, path, get } = column;
             if (get) continue;
 
-            if (!label) label = field.label;
+            if (!label) label = path.pathLabel;
 
-            const { path, type } = field;
+            const field = path.tail;
+            const type = field?.type;
+
             path.set(doc, type.fromString(row[label]), {
               create: true,
             });

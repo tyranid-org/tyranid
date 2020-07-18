@@ -17,17 +17,17 @@ export function add() {
         collection: User,
         documents: users,
         columns: [
-          { field: 'name.first' },
-          { field: 'name.last' },
+          { path: 'name.first' },
+          { path: 'name.last' },
           {
-            field: 'name',
+            path: 'name',
             get(doc) {
               const { name } = doc;
               return name ? name.first + ' ' + name.last : 'Unnamed';
             },
           },
-          { field: 'job' },
-          { field: 'age' },
+          { path: 'job' },
+          { path: 'age' },
         ],
         filename: 'foo.csv',
       };

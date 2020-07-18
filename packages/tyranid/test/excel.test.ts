@@ -53,19 +53,19 @@ export function add() {
           ],
         },
         columns: [
-          { field: 'name.first', label: 'First Name', width: 15 },
-          { field: 'name.last', label: 'Last Name', width: 15 },
+          { path: 'name.first', label: 'First Name', width: 15 },
+          { path: 'name.last', label: 'Last Name', width: 15 },
           {
-            field: 'name',
+            path: 'name',
             get(doc) {
               const { name } = doc;
               return name ? name.first + ' ' + name.last : 'Unnamed';
             },
             width: 20,
           },
-          { field: 'job', width: 20 },
+          { path: 'job', width: 20 },
           {
-            field: 'age',
+            path: 'age',
             header: {
               font: { color: '#fff' },
               fill: { type: 'pattern', pattern: 'solid', fgColor: '#000' },
@@ -96,10 +96,10 @@ export function add() {
         collection: User,
         documents: users,
         columns: [
-          { field: 'name.first', width: 20 },
-          { field: 'name.last', width: 20 },
+          { path: 'name.first', width: 20 },
+          { path: 'name.last', width: 20 },
           {
-            field: 'age',
+            path: 'age',
             header: {
               font: { color: '#fff' },
               fill: { type: 'pattern', pattern: 'solid', fgColor: '#000' },
