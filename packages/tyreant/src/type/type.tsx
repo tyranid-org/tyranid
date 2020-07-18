@@ -11,10 +11,17 @@ import {
   TyrPathProps,
   TyrComponent,
   TyrThemeProps,
+  isEditTrait,
 } from '../core';
 
-export const className = (className: string, props: TyrTypeProps<any>) => {
-  return className + (props.className ? ' ' + props.className : '');
+export const className = (className: string, props: TyrTypeProps<any>) =>
+  className + (props.className ? ' ' + props.className : '');
+
+export const modeFor = (props: TyrTypeProps<any>) => {
+  const { mode } = props;
+  if (mode) return mode;
+
+  return props.component?.parentAction?.traits?.[0];
 };
 
 export function generateRules(props: TyrTypeProps<any>): Rule[] {
@@ -32,42 +39,32 @@ export function generateRules(props: TyrTypeProps<any>): Rule[] {
     } = props;
 
     const { tail: field } = path;
-    if (max !== undefined) {
+    if (max !== undefined)
       rules.push({
         max,
         message:
           maxMessage ||
           `The ${label || field.label} must be ${max} characters or less.`,
       });
-    }
 
-    if (required || field.def.required) {
+    const mode = modeFor(props);
+    if ((!mode || isEditTrait(mode)) && (required || field.def.required))
       rules.push({
         required: true,
         message: requiredMessage || `${label || field.label} is required.`,
       });
-    }
 
-    if (validator) {
-      const rule: Rule = {
-        validator,
-      };
+    if (validator) rules.push({ validator });
 
-      rules.push(rule);
-    }
-
-    if (field.def.validate) {
-      const rule: Rule = {
+    if (field.def.validate)
+      rules.push({
         validator: async (rule, value, callback) => {
           const msg = field.validate(props.document!, {
             trait: props.component!.parentAction?.traits[0],
           });
           if (typeof msg === 'string') callback(msg);
         },
-      };
-
-      rules.push(rule);
-    }
+      });
   }
 
   return rules;

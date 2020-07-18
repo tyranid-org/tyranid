@@ -16,6 +16,9 @@ export const traits: {
   cancel: { type: 'exit' },
 };
 
+export const isEditTrait = (trait: string) =>
+  trait === 'edit' || trait === 'edit';
+
 export const isEntranceTrait = (trait: string) =>
   traits[trait].type === 'entrance';
 

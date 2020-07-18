@@ -14,6 +14,7 @@ import {
   generateRules,
   className,
   getCellValue,
+  modeFor,
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
@@ -288,12 +289,13 @@ export const decorateField = (
     help,
     htmlFor,
     hasFeedback,
-    mode,
     path,
     noStyle,
     dependencies,
     validateTrigger,
   } = props;
+
+  const mode = modeFor(props);
 
   if (props.hideOnCreate && document?.$isNew)
     return <div className="hide-on-create" />;
