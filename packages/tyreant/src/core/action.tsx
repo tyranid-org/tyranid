@@ -194,7 +194,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   renderVal?: React.ReactNode | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
-  title: string | React.ReactNode;
+  titleValue:
+    | string
+    | React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   input: Cardinality;
   on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
   hide?: boolean | undefined | ((doc: D) => boolean | undefined);
@@ -225,6 +228,14 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       : labelValue;
   }
 
+  title(component: TyrComponent): string | React.ReactNode {
+    const { titleValue } = this;
+
+    return typeof titleValue === 'function'
+      ? titleValue(component.actionFnOpts() as any)
+      : titleValue;
+  }
+
   constructor({
     traits,
     trait,
@@ -246,7 +257,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.self = self;
     this.labelValue = label || (name && Tyr.labelize(name));
     this.renderVal = render;
-    this.title = title || this.labelValue;
+    this.titleValue = title || this.labelValue;
     this.on = on;
     this.input =
       input ??

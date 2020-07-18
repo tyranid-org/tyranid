@@ -84,10 +84,15 @@ export abstract class TyrDecorator<
   }
 
   title() {
+    let t = this.props.title;
+    if (t) return t;
+
     //(edit && callerOpts?.document && edit.title) ||
     //(create && create.title) ||
     //(edit && edit.title);
-    return this.props.title ?? this.decorating.parentAction?.title;
+
+    const { decorating } = this;
+    return decorating.parentAction?.title(decorating as TyrComponent<any>);
   }
 
   footer() {
