@@ -63,7 +63,7 @@ export default class Field {
   }
 
   async labelify(value) {
- >   return this.link ? await this.link.idToLabel(value) : value;
+    return this.link ? await this.link.idToLabel(value) : value;
   }
 
   async labels(doc, text, opts) {

@@ -262,7 +262,10 @@ export function visitPopulations(metadata, obj, visitor) {
       switch (field.type.name) {
         case 'link':
           const pv = obj[field.populateName];
-          if (pv) visitor(field, pv);
+          if (pv) {
+            const r = visitor(field, pv);
+            if (r) obj[field.populateName] = r;
+          }
           break;
         case 'array':
           const { of } = field;
@@ -270,8 +273,12 @@ export function visitPopulations(metadata, obj, visitor) {
             case 'link':
               const pv = obj[field.populateName];
               if (pv) {
-                for (const apv of pv) {
-                  if (apv) visitor(of, apv);
+                for (let i = 0; i < pv.length; i++) {
+                  const apv = pv[i];
+                  if (apv) {
+                    const r = visitor(of, apv);
+                    if (r) pv[i] = r;
+                  }
                 }
               }
               break;
