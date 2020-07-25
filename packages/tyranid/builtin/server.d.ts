@@ -447,8 +447,27 @@ declare module 'tyranid' {
      * Server collection definition.
      */
     interface TyrExportCollection
-      extends Tyr.CollectionInstance<TyrExport> {
+      extends Tyr.CollectionInstance<TyrExport>,
+              TyrExportCollectionService {
+      service: TyrExportCollectionService;
     }
+
+    export interface TyrExportCollectionService {
+      export(
+        this: any,
+        collectionId: string,
+        fields: string[],
+        findOpts: {
+          count?: boolean;
+          limit?: number;
+          query?: any;
+          skip?: number;
+          sort?: {
+            [key: string]: number | void;
+          };
+        }): Promise<void>;
+    }
+
 
     /**
      * Server collection definition.

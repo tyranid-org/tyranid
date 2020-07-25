@@ -132,7 +132,7 @@ function keyForTmp(field, tmpId, filename) {
           const file = req.files.file;
 
           const { originalFilename: filename, type: mediaType } = file;
-          console.log('file', file);
+          //console.log('file', file);
 
           //const idx = filename.lastIndexOf('.');
           //const ext = filename.substring(idx + 1);
@@ -158,9 +158,7 @@ function keyForTmp(field, tmpId, filename) {
             key = keyFor(field, docId, filename);
           }
 
-          const rslt = await s3.putFile(Tyr.options.aws.bucket, key, file.path);
-
-          fs.unlink(file.path, err => console.error(err));
+          /*const rslt = */ await s3.def.uploadS3(key, file.path);
           res.status(200).json({ key, tmpId });
         } catch (err) {
           console.error(err.stack);
@@ -298,5 +296,17 @@ function keyForTmp(field, tmpId, filename) {
     await s3.saveObjectToFile(bucket, keyPath, path);
 
     return path;
+  },
+
+  async uploadS3(key, pathName) {
+    const rslt = await s3.putFile(Tyr.options.aws.bucket, key, pathName);
+
+    fs.unlink(file.path, err => console.error(err));
+
+    return rslt;
+  },
+
+  keyFor(field, docId, filename) {
+    return keyFor(field, docId, filenmame);
   },
 });

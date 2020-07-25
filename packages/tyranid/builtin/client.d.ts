@@ -125,10 +125,7 @@ declare module 'tyranid/client' {
      * Client base document definition for TyrExportCollection.
      */
     export interface BaseTyrExport
-      extends Isomorphic.BaseTyrExport<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {
-        $start(): void;
-        $end(): void;
-    }
+      extends Isomorphic.BaseTyrExport<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
 
     /**
      * Client document definition for TyrExportCollection,
@@ -444,8 +441,26 @@ declare module 'tyranid/client' {
      * Client collection definition.
      */
     export interface TyrExportCollection
-      extends Tyr.CollectionInstance<TyrExport> {
+      extends Tyr.CollectionInstance<TyrExport>,
+              TyrExportCollectionService {
     }
+
+    export interface TyrExportCollectionService {
+      export(
+        this: any,
+        collectionId: string,
+        fields: string[],
+        findOpts: {
+          count?: boolean;
+          limit?: number;
+          query?: any;
+          skip?: number;
+          sort?: {
+            [key: string]: number | void;
+          };
+        }): Promise<void>;
+    }
+
 
     /**
      * Client collection definition.

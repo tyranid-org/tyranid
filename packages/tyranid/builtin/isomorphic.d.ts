@@ -391,10 +391,7 @@ declare module 'tyranid/isomorphic' {
      */
     export interface TyrExport<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends Inserted<ObjIdType>,
-              BaseTyrExport<ObjIdType, ObjContainer, NumContainer> {
-        $start(): void;
-        $end(): void;
-    }
+              BaseTyrExport<ObjIdType, ObjContainer, NumContainer> {}
     /**
      * Document returned by collection "tyrImport" <TyrImportCollection>
      */
@@ -548,6 +545,25 @@ declare module 'tyranid/isomorphic' {
     export interface TyrExchangeRateCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<TyrExchangeRate<ObjIdType, ObjContainer, NumContainer>> {}
     
+    /**
+     * Service definition for "tyrExport" collection
+     */
+    export interface TyrExportCollectionService<ObjIdType = 'string'> {
+      export(
+        this: any,
+        collectionId: string,
+        fields: string[],
+        findOpts: {
+          count?: boolean;
+          limit?: number;
+          query?: any;
+          skip?: number;
+          sort?: {
+            [key: string]: number | void;
+          };
+        }): Promise<void>; 
+    }
+
     /**
      * Type definition for "tyrExport" collection
      */

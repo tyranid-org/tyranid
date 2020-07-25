@@ -1,4 +1,10 @@
+import * as util from 'util';
+import * as os from 'os';
+import * as fs from 'fs';
+
 import Tyr from './tyr';
+
+const stat = util.promisify(fs.stat);
 
 const TyrExport = new Tyr.Collection({
   id: '_ex',
@@ -39,12 +45,12 @@ const TyrExport = new Tyr.Collection({
     //$authContext: { type: 'user'/*, role: 'creator' */ }
     // would insert the following:
     user: { link: 'user?' },
-    organization: { link: 'organization?' },
-    network: { link: 'network?' },
+    //organization: { link: 'organization?' },
+    //network: { link: 'network?' },
   },
   methods: {
     $start: {
-      async fn() {
+      async fnServer() {
         this.startedAt = new Date();
         await this.$update({ fields: { startedAt: 1 } });
       },
@@ -53,11 +59,24 @@ const TyrExport = new Tyr.Collection({
       parameters: {
         localFilePath: { is: 'string' },
       },
-      async fn(localFilePath) {
+      async fnServer(localFilePath) {
         this.endedAt = new Date();
 
-        // TODO:  upload this file to s3 and update this.file
+        const { s3 } = Tyr.byName;
 
+        const filename = 'export';
+
+        const stats = await stat(localFilePath);
+
+        const key = s3.keyFor(TyrExports.fields.file, this._id, filename);
+        await s3.uploadS3(key, localFilePath);
+
+        this.file = {
+          key,
+          filename,
+          type: 'text/csv',
+          size: stats.size,
+        };
         await this.$update({ fields: { endedAt: 1, file: 1 } });
 
         // TODO:  send a notification to the user
@@ -70,6 +89,72 @@ const TyrExport = new Tyr.Collection({
     if (!this.on) this.on = new Date();
     if (!this.by) this.by = user._id;
   },
+  service: {
+    export: {
+      background: true,
+      params: {
+        collectionId: { is: 'string', required: true },
+        fields: { is: 'array', of: 'string', required: true },
+        findOpts: { ...Tyr.catalog.FindOpts, required: true },
+      },
+    },
+  },
 });
+
+TyrExport.service = {
+  async export(collectionId, fields, findOpts) {
+    const { user } = this;
+    const userId = user.$id;
+
+    const e = new TyrExport();
+    e.user = userId;
+
+    const collection = Tyr.byId[collectionId];
+
+    await e.$start();
+
+    const paths = [];
+    for (const pathName of fields) {
+      try {
+        paths.push(collection.parsePath(pathName));
+      } catch {
+        paths.push((await collection.findField(pathName))?.path);
+      }
+    }
+
+    const projection = Tyr.projectify(paths);
+    const population = {};
+    for (const path of paths) {
+      const link = path.detail.link;
+
+      if (link && link.labelField && !link.isStatic())
+        Tyr.assignDeep(population, {
+          [path.spath]: link.labelProjection(),
+        });
+    }
+
+    const documents = await this.findAll({
+      query: findOpts.query,
+      projection,
+      population,
+      limit: findOpts.limit,
+      auth: user,
+    });
+
+    const fileName = collectionId + '-' + userId.toString() + '-export.csv';
+    const filePath = os.tmpdir() + '/' + fileName;
+
+    await Tyr.csv.toCsv({
+      collection,
+      documents,
+      columns: paths.map(path => ({
+        path,
+      })),
+      filename: filePath,
+    });
+
+    await e.$end(filePath);
+  },
+};
 
 export default TyrExport;

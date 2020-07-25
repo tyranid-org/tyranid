@@ -126,7 +126,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       )
         component = component.parent as TyrComponent<any>;
 
-      const actionTheme = component.props.actionTheme;
+      const actionTheme = component?.props.actionTheme;
       if (themeAction || actionTheme)
         action = {
           ...themeAction,
