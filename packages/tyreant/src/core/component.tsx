@@ -616,48 +616,18 @@ export class TyrComponent<
 
   setupActions() {
     const { collection, props } = this;
-    const actions = TyrAction.parse(props.actions as ActionSet<D>, this);
+    const manualActions = TyrAction.parse(props.actions as ActionSet<D>, this);
 
     const { parent, linkToParent, linkFromParent } = this;
     const parentLink = linkToParent || linkFromParent;
 
     const { traits } = this.props;
-    const enacted = (trait: Tyr.ActionTrait) => actions.some(a => a.is(trait));
-    const enactedEntrance = () =>
-      actions.some(a => isEntranceTrait(a.traits[0]));
+    const manuallyEnacted = (trait: Tyr.ActionTrait) =>
+      manualActions.some(a => a.is(trait));
+    const manuallyEnactedEntrance = () =>
+      manualActions.some(a => isEntranceTrait(a.traits[0]));
 
     const entranceActions: TyrAction<D>[] = [];
-
-    const auto = (trait: Tyr.ActionTrait) => {
-      if (enacted(trait)) return false;
-      let def = true;
-
-      switch (trait) {
-        case 'import':
-        case 'export':
-          return false;
-
-        case 'create':
-          if (enacted('search')) return false;
-          break;
-        case 'search':
-          return !enacted('create') && traits?.includes('search');
-        case 'edit':
-          if (enacted('view') || enacted('import') || enacted('export'))
-            return false;
-          def = !!this.parent;
-          break;
-        case 'view':
-          if (enacted('edit') || enacted('import') || enacted('export'))
-            return false;
-          def = !!this.parent;
-          break;
-        default:
-          return !!this.parent;
-      }
-
-      return !traits ? def : traits.includes(trait);
-    };
 
     const enact = (_action: TyrActionOpts<D> | TyrAction<D>) => {
       // TODO:  clone action if self is already defined?
@@ -753,16 +723,49 @@ export class TyrComponent<
       if (action.isEntrance()) entranceActions.push(action);
     };
 
-    // Manual Actions
+    // Manual Actions / Added by the dev
 
-    for (const action of actions) enact(action);
+    for (const action of manualActions) {
+      enact(action);
+    }
 
-    // Default Actions
+    // Default Actions / Automatically added actions
+    // Do we want to automatically add these buttons?
+    const shouldDefault = (trait: Tyr.ActionTrait) => {
+      if (manuallyEnacted(trait)) return false;
+      let def = true;
 
+      switch (trait) {
+        case 'import':
+        case 'export':
+          return false;
+
+        case 'create':
+          // If we have an entrance action, then we don't want to automatically add a create action
+          if (manuallyEnactedEntrance()) return false;
+          break;
+        case 'search':
+          return !manuallyEnacted('create') && traits?.includes('search');
+        case 'edit':
+          if (manuallyEnactedEntrance()) return false;
+          def = !!this.parent;
+          break;
+        case 'view':
+          if (manuallyEnactedEntrance()) return false;
+          def = !!this.parent;
+          break;
+        default:
+          return !!this.parent;
+      }
+
+      return !traits ? def : traits.includes(trait);
+    };
+
+    // Determine which actions to automatically inject
     if (
       this.canEdit &&
-      !enacted('create') &&
-      ((!parentLink && !enactedEntrance() && auto('create')) ||
+      !manuallyEnacted('create') &&
+      ((!parentLink && !manuallyEnactedEntrance() && shouldDefault('create')) ||
         traits?.includes('create'))
     ) {
       enact({
@@ -774,8 +777,8 @@ export class TyrComponent<
 
     if (
       this.canEdit &&
-      !enacted('search') &&
-      ((!parentLink && !enacted('view') && auto('search')) ||
+      !manuallyEnacted('search') &&
+      ((!parentLink && !manuallyEnacted('view') && shouldDefault('search')) ||
         traits?.includes('search'))
     ) {
       enact({
@@ -785,34 +788,35 @@ export class TyrComponent<
       });
     }
 
-    if (auto('view') || auto('edit')) {
+    if (shouldDefault('view') || shouldDefault('edit')) {
       enact({
         name: parentLink ? collection.label : 'edit',
-        trait: auto('edit') ? 'edit' : 'view',
+        trait: shouldDefault('edit') ? 'edit' : 'view',
         title: !this.canMultiple
-          ? (auto('edit') ? 'Edit ' : 'View ') + collection.label
+          ? (shouldDefault('edit') ? 'Edit ' : 'View ') + collection.label
           : Tyr.pluralize(collection.label),
       });
     }
 
-    const addingSave = this.canEdit && (auto('edit') || enacted('edit'));
+    const addingSave =
+      this.canEdit && (shouldDefault('edit') || manuallyEnacted('edit'));
 
-    if (auto('cancel')) {
+    if (shouldDefault('cancel')) {
       enact({
         trait: 'cancel',
         input: 0,
-        name: enacted('save') || addingSave ? 'cancel' : 'close',
+        name: manuallyEnacted('save') || addingSave ? 'cancel' : 'close',
       });
     }
 
-    if (addingSave && !enacted('save')) {
+    if (addingSave && !manuallyEnacted('save')) {
       enact({
         trait: 'save',
         name: 'save',
       });
     }
 
-    // Automatic Actions
+    // Automatically Fired Actions
 
     if (!parent) {
       if (props.document) {

@@ -20,6 +20,6 @@ export const isEditTrait = (trait: string) =>
   trait === 'edit' || trait === 'edit';
 
 export const isEntranceTrait = (trait: string) =>
-  traits[trait].type === 'entrance';
+  traits[trait]?.type === 'entrance';
 
-export const isExitTrait = (trait: string) => traits[trait].type === 'exit';
+export const isExitTrait = (trait: string) => traits[trait]?.type === 'exit';
