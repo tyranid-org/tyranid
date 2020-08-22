@@ -83,6 +83,11 @@ export interface TyrActionOpts<D extends Tyr.Document> {
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   input?: Cardinality;
+  href?:
+    | string
+    | React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
+  target?: string;
 
   /**
    * This indicates that this action should behave like a "built-in" / utility
@@ -202,6 +207,11 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   input: Cardinality;
+  href?:
+    | string
+    | React.ReactNode
+    | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
+  target?: string;
   on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
   hide?: boolean | undefined | ((doc: D) => boolean | undefined);
   utility?: boolean;
@@ -253,6 +263,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     utility,
     align,
     order,
+    href,
+    target,
   }: TyrActionOpts<D>) {
     this.traits = traits = traits || [];
     if (trait) this.traits.push(trait);
@@ -271,6 +283,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.utility = utility;
     this.align = align;
     this.order = order;
+    this.href = href;
+    this.target = target;
   }
 
   is(...traits: Tyr.ActionTrait[]) {
@@ -361,6 +375,23 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         >
           {this.label(component)}
         </Button>
+      );
+    } else if (this.href) {
+      const { href } = this;
+
+      return (
+        <a
+          key={key}
+          className={this.className}
+          onClick={() => this.act(component.actionFnOpts() as any)}
+          href={
+            typeof href === 'function' ? href(component.actionFnOpts()) : href
+          }
+          role="button"
+          target={this.target ?? '_blank'}
+        >
+          {this.label(component)}
+        </a>
       );
     } else {
       return (

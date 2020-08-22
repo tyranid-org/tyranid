@@ -90,7 +90,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   bordered?: boolean;
   filter?: boolean;
   collection: Tyr.CollectionInstance<D>;
-  export?: boolean;
+  export?: boolean | { background?: boolean };
   actionHeaderLabel?: string | React.ReactNode;
   actionIcon?: Tyr.anny;
   actionTrigger?: 'hover' | 'click';
@@ -1128,7 +1128,7 @@ export class TyrTableBase<
                   columns={this.paths}
                   config={componentConfig || true}
                   originalPaths={this.props.paths!}
-                  export={true}
+                  export={this.props.export || true}
                   componentConfig={this.componentConfig}
                   onCancel={() => (this.showExport = false)}
                   onUpdate={this.onUpdateComponentConfig}

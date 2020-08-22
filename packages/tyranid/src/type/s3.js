@@ -301,12 +301,12 @@ function keyForTmp(field, tmpId, filename) {
   async uploadS3(key, pathName) {
     const rslt = await s3.putFile(Tyr.options.aws.bucket, key, pathName);
 
-    fs.unlink(file.path, err => console.error(err));
+    fs.unlink(pathName, err => console.error(err));
 
     return rslt;
   },
 
   keyFor(field, docId, filename) {
-    return keyFor(field, docId, filenmame);
+    return keyFor(field, docId, filename);
   },
 });
