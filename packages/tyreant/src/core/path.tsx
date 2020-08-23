@@ -211,7 +211,11 @@ export interface TyrPathProps<D extends Tyr.Document>
   childPaths?: TyrPathProps<D>[];
   group?: string;
   pinned?: 'left' | 'right';
+
   width?: number | string;
+  // Used to temp save width during a resize
+  tempWidth?: number | string;
+
   columnClassName?: (doc: D) => string | undefined;
 }
 

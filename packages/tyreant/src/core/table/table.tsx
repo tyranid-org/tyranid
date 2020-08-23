@@ -485,8 +485,10 @@ export class TyrTableBase<
       }
 
       const width =
+        column.tempWidth ||
         (pathName &&
-          this.componentConfig?.fields.find(f => f.name === name)?.width) ||
+          this.componentConfig?.fields.find(f => f.name === column.path?.name)
+            ?.width) ||
         pathWidth(column, wrapColumnHeaders);
 
       this.tableWidth += width ? Number.parseInt(width as string) + 16 : 275;
@@ -622,11 +624,35 @@ export class TyrTableBase<
               onHeaderCell: tableColumn =>
                 ({
                   width,
-                  onResize: (e: any, opts: any) => {
+                  // This is the same as onResize, except it saves the width
+                  onResizeStop: (
+                    e: MouseEvent,
+                    opts: { size: { width?: number } }
+                  ) => {
+                    e.stopImmediatePropagation();
                     const { width } = opts.size;
-                    column.width = width;
-                    this.updateConfigWidths(pathName, width);
-                    this.refresh();
+
+                    if (width) {
+                      // Clear out tempWidth (used during resizing)
+                      column.tempWidth = 0;
+
+                      column.width = width;
+                      this.updateConfigWidths(pathName, width);
+                      this.refresh();
+                    }
+                  },
+                  onResize: (
+                    e: MouseEvent,
+                    opts: { size: { width?: number } }
+                  ) => {
+                    e.stopImmediatePropagation();
+                    const { width } = opts.size;
+
+                    if (width) {
+                      // Set the temporary width
+                      column.tempWidth = width;
+                      this.refresh();
+                    }
                   },
                 } as any),
             }
@@ -1215,8 +1241,9 @@ export const TyrTable = <D extends Tyr.Document>(props: TyrTableProps<D>) => (
   />
 );
 
-const ResizableTitle = (props: ResizableProps) => {
-  const { onResize, width, ...restProps } = props;
+const ResizableTitle = (props: ResizableProps & { onClick?: any }) => {
+  const { onResize, onResizeStop, width, ...restProps } = props;
+  const [resizing, setResizing] = React.useState(false);
 
   if (!width) {
     return <th {...restProps} />;
@@ -1229,13 +1256,33 @@ const ResizableTitle = (props: ResizableProps) => {
       handle={
         <span
           className={`react-resizable-handle react-resizable-handle-se`}
-          onClick={e => e.stopPropagation()}
+          onClick={e => {
+            e.stopPropagation();
+            return false;
+          }}
         />
       }
+      onResizeStart={() => {
+        setResizing(true);
+      }}
+      onResizeStop={(...args) => {
+        setTimeout(() => {
+          setResizing(false);
+          onResizeStop && onResizeStop(...args);
+        });
+      }}
       onResize={onResize}
       draggableOpts={{ enableUserSelectHack: false }}
     >
-      <th {...restProps} />
+      <th
+        {...restProps}
+        onClick={(...args) => {
+          // This will prevent a sort occuring after mouse up from a resize
+          if (!resizing && props.onClick) {
+            props.onClick(...args);
+          }
+        }}
+      />
     </Resizable>
   );
 };
