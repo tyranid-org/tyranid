@@ -58,23 +58,28 @@ const TyrExport = new Tyr.Collection({
     $end: {
       parameters: {
         localFilePath: { is: 'string' },
+        mediaType: { is: 'string' },
       },
-      async fnServer(localFilePath) {
+      async fnServer(localFilePath, mediaType) {
         this.endedAt = new Date();
 
-        const { s3 } = Tyr.byName;
+        const { s3 } = Tyr.Type.byName;
 
         const filename = 'export';
 
         const stats = await stat(localFilePath);
 
-        const key = s3.keyFor(TyrExports.fields.file, this._id, filename);
-        await s3.uploadS3(key, localFilePath);
+        const key = s3.def.keyFor(
+          TyrExport.fields.file,
+          this._id.toString(),
+          filename
+        );
+        await s3.def.uploadS3(key, localFilePath);
 
         this.file = {
           key,
           filename,
-          type: 'text/csv',
+          type: mediaType,
           size: stats.size,
         };
         await this.$update({ fields: { endedAt: 1, file: 1 } });
@@ -107,7 +112,12 @@ TyrExport.service = {
     const userId = user.$id;
 
     const e = new TyrExport();
+
+    // TODO:  examine componentOpts and try to create a readable version of the filter
+    e.name = 'Export';
     e.user = userId;
+
+    await e.$save(); // save early to get an _id which we need for S3
 
     const collection = Tyr.byId[collectionId];
 
@@ -133,7 +143,7 @@ TyrExport.service = {
         });
     }
 
-    const documents = await this.findAll({
+    const documents = await collection.findAll({
       query: findOpts.query,
       projection,
       population,
@@ -141,7 +151,7 @@ TyrExport.service = {
       auth: user,
     });
 
-    const fileName = collectionId + '-' + userId.toString() + '-export.csv';
+    const fileName = `${collectionId}-${userId.toString()}-export`;
     const filePath = os.tmpdir() + '/' + fileName;
 
     await Tyr.csv.toCsv({
@@ -153,7 +163,7 @@ TyrExport.service = {
       filename: filePath,
     });
 
-    await e.$end(filePath);
+    await e.$end(filePath, 'text/csv');
   },
 };
 

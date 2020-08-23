@@ -22,6 +22,8 @@ import {
 } from './component-config-item';
 import { TyrComponent } from './component';
 
+const { TyrComponentConfig, TyrExport } = Tyr.collections;
+
 export interface TyrComponentConfig {
   key: string;
   documentUid?: string;
@@ -42,7 +44,7 @@ interface TyrComponentConfigProps<D extends Tyr.Document> {
     | TyrComponentConfig
     | string /* the key */
     | true /* if true, key is "default" */;
-  export?: boolean;
+  export?: boolean | { background?: boolean };
   componentConfig?: Tyr.TyrComponentConfig;
   originalPaths: (TyrPathLaxProps<D> | string)[];
   onCancel: () => void;
@@ -132,7 +134,6 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
         columns.map(c => getPathName(c.path))
       ) as string[];
 
-      const { TyrComponentConfig } = Tyr.collections;
       componentConfig = new TyrComponentConfig({
         documentUid,
         collection: collection.id,
@@ -351,22 +352,36 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
   };
 
   const actionLabel = exportProp ? 'Export' : 'Save';
+  const fields = columnFields.filter(f => !f.hidden).map(f => f.name);
   const actionButton = exportProp ? (
-    <a
-      className="ant-btn ant-btn-primary tyr-link-btn"
-      href={`/api/${collection.def.name}/export?opts=${encodeURIComponent(
-        JSON.stringify({
-          query: component.findOpts?.query,
-          fields: columnFields.filter(f => !f.hidden).map(f => f.name),
-        })
-      )}`}
-      role="button"
-      onClick={onCancel}
-      target="_blank"
-      download={Tyr.pluralize(collection.label.toLowerCase()) + '.csv'}
-    >
-      {actionLabel}
-    </a>
+    typeof exportProp === 'object' && exportProp.background ? (
+      <a
+        className="ant-btn ant-btn-primary tyr-link-btn"
+        role="button"
+        onClick={() => {
+          onCancel();
+          TyrExport.export(component.collection.id, fields, component.findOpts);
+        }}
+      >
+        {actionLabel}
+      </a>
+    ) : (
+      <a
+        className="ant-btn ant-btn-primary tyr-link-btn"
+        href={`/api/${collection.def.name}/export?opts=${encodeURIComponent(
+          JSON.stringify({
+            query: component.findOpts?.query,
+            fields,
+          })
+        )}`}
+        role="button"
+        onClick={onCancel}
+        target="_blank"
+        download={Tyr.pluralize(collection.label.toLowerCase()) + '.csv'}
+      >
+        {actionLabel}
+      </a>
+    )
   ) : (
     <Button
       key="submit"
