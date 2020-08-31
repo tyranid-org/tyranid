@@ -810,11 +810,7 @@ export class TyrTableBase<
             <Menu className="tyr-menu">
               {thisActions.map(action => (
                 <Menu.Item className="tyr-menu-item" key={action.name}>
-                  <button
-                    onClick={() => action.act({ caller: this, document })}
-                  >
-                    {action.label(this as any)}
-                  </button>
+                  {action.renderFrom(this, { document })}
                 </Menu.Item>
               ))}
             </Menu>

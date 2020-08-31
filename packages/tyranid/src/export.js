@@ -63,9 +63,14 @@ const TyrExport = new Tyr.Collection({
       async fnServer(localFilePath, mediaType) {
         this.endedAt = new Date();
 
+        const { MediaType } = Tyr.collections;
         const { s3 } = Tyr.Type.byName;
 
-        const filename = 'export';
+        const mediaTypeObj = MediaType.byId(mediaType);
+        if (!mediaTypeObj)
+          throw new Tyr.AppError(`Unknown media type "${mediaType}"`);
+
+        const filename = 'export.' + mediaTypeObj.extensions[0];
 
         const stats = await stat(localFilePath);
 
@@ -151,7 +156,7 @@ TyrExport.service = {
       auth: user,
     });
 
-    const fileName = `${collectionId}-${userId.toString()}-export`;
+    const fileName = `${collectionId}-${userId.toString()}-export.csv`;
     const filePath = os.tmpdir() + '/' + fileName;
 
     await Tyr.csv.toCsv({
