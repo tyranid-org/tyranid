@@ -1,10 +1,12 @@
 import * as React from 'react';
+import { useRef, useEffect, useState, useContext } from 'react';
 
 import { useDrag, useDrop } from 'react-dnd';
 
 import { FormInstance } from 'antd/lib/form';
 
 import Form, { useForm } from 'antd/lib/form/Form';
+import { Tyr } from 'tyranid/client';
 
 export interface EditableContextProps {
   form?: FormInstance;
@@ -33,7 +35,7 @@ export const EditableFormRow = (props: BodyRowProps) => {
 
   const style = {
     ...restProps.style,
-    cursor: dndEnabled ? 'move' : form ? 'pointer' : 'default'
+    cursor: dndEnabled ? 'move' : form ? 'pointer' : 'default',
   };
 
   let rowClassName = restProps.className;
@@ -49,19 +51,19 @@ export const EditableFormRow = (props: BodyRowProps) => {
         return {
           isOver: monitor.isOver(),
           dropClassName:
-            dragIndex < index ? 'drop-over-downward' : 'drop-over-upward'
+            dragIndex < index ? 'drop-over-downward' : 'drop-over-upward',
         };
       },
       drop: item => {
         moveRow(((item as unknown) as { index: number }).index, index);
-      }
+      },
     });
 
     const [{ isDragging }, drag] = useDrag({
       item: { type: acceptType, index },
       collect: monitor => ({
-        isDragging: monitor.isDragging()
-      })
+        isDragging: monitor.isDragging(),
+      }),
     });
 
     drop(drag(ref));
@@ -101,3 +103,85 @@ export const EditableFormRow = (props: BodyRowProps) => {
     </Form>
   );
 };
+
+export interface RowCellProps {
+  className?: string;
+  style?: any;
+  editable: boolean;
+  dataIndex: number;
+  record: Tyr.Document;
+  children?: React.ReactNode;
+  handleSave: () => void;
+  render: (text: string, doc: Tyr.Document) => React.ReactNode;
+}
+
+export const EditableCell = (props: RowCellProps) => {
+  const {
+    editable,
+    children,
+    dataIndex,
+    record,
+    handleSave,
+    render,
+    ...restProps
+  } = props;
+
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef();
+  const form = useContext(EditableContext);
+
+  useEffect(() => {
+    if (editing) {
+      //inputRef.current.focus();
+    }
+  }, [editing]);
+
+  const toggleEdit = () => {
+    setEditing(!editing);
+    //form.setFieldsValue({ [dataIndex]: record[dataIndex] });
+  };
+
+  const save = async (e: any) => {
+    try {
+      //const values = await form.validateFields();
+
+      toggleEdit();
+      //handleSave({ ...record, ...values });
+    } catch (errInfo) {
+      console.log('Save failed:', errInfo);
+    }
+  };
+
+  let childNode = children;
+
+  if (editable) {
+    childNode = editing ? (
+      <span>Editing</span>
+    ) : (
+      <div
+        className="editable-cell-value-wrap"
+        style={{ paddingRight: 24 }}
+        onClick={toggleEdit}
+      >
+        {children}
+      </div>
+    );
+  }
+
+  return <td {...restProps}>{render('', record)}</td>;
+};
+
+/*
+      <Form.Item
+        style={{ margin: 0 }}
+        name={dataIndex}
+        rules={[
+          {
+            required: true,
+            message: `${title} is required.`,
+          },
+        ]}
+      >
+        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+      </Form.Item>
+      */

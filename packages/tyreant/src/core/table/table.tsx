@@ -51,7 +51,7 @@ import {
 } from '../path';
 import { TyrSortDirection } from '../typedef';
 import { TyrComponentConfigComponent } from '../component-config';
-import { EditableFormRow, EditableContext } from './table-rows';
+import { EditableFormRow, EditableContext, EditableCell } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { classNames } from '../../util';
@@ -471,6 +471,9 @@ export class TyrTableBase<
       (rowsSelectable ? 60 : 0) +
       (isEditingAnything ? 128 : 0) +
       256 /* action bar */;
+
+    const handleCellSave = () => {};
+
     columns.forEach((column, columnIdx) => {
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
@@ -483,6 +486,8 @@ export class TyrTableBase<
         path = column.path;
         pathName = path.name;
       }
+
+      const isCellEditable = !!column.isCellEditable;
 
       const width =
         column.tempWidth ||
@@ -540,77 +545,87 @@ export class TyrTableBase<
 
       const netClassName = column.className;
 
+      const renderFunction = (text: string, doc: D) => {
+        const editable = newDocumentTable || this.isEditing(doc);
+        const document =
+          editingDocument && doc.$id === editingDocument.$id
+            ? editingDocument!
+            : doc;
+
+        if (
+          editable &&
+          column.mode !== 'view' &&
+          (!column.isEditable || column.isEditable(document))
+        ) {
+          const fieldProps = {
+            ...column,
+            autoFocus: !!newDocumentTable && !!column.autoFocus,
+            width,
+            searchOptionRenderer: getLabelRenderer(column),
+            noLabel: true,
+            tabIndex: columnIdx,
+            className: classNames(
+              path && 'tyr-edit-' + path.detail.type.name,
+              column.editClassName
+            ),
+            onChange: () => this.setState({}),
+          };
+
+          return (
+            <EditableContext.Consumer>
+              {({ form }) => {
+                if (!form || !pathName) return <span />;
+
+                return (
+                  <TyrThemedFieldBase
+                    path={path!}
+                    searchPath={searchPath}
+                    form={form}
+                    document={document}
+                    {...fieldProps}
+                  />
+                );
+              }}
+            </EditableContext.Consumer>
+          );
+        }
+
+        const render = column.renderDisplay;
+
+        return (
+          <div
+            className={classNames(
+              'tyr-table-cell',
+              column.columnClassName && column.columnClassName(document)
+            )}
+          >
+            {render
+              ? render(document, path, column)
+              : path
+              ? getCellValue(path, document, column as TyrTypeProps<any>)
+              : ''}
+          </div>
+        );
+      };
+
       const tableColumn: OurColumnProps<D> = {
         dataIndex: pathName,
         //key: pathName,
-        render: (text: string, doc: D) => {
-          const editable = newDocumentTable || this.isEditing(doc);
-          const document =
-            editingDocument && doc.$id === editingDocument.$id
-              ? editingDocument!
-              : doc;
-
-          if (
-            editable &&
-            column.mode !== 'view' &&
-            (!column.isEditable || column.isEditable(document))
-          ) {
-            const fieldProps = {
-              ...column,
-              autoFocus: !!newDocumentTable && !!column.autoFocus,
-              width,
-              searchOptionRenderer: getLabelRenderer(column),
-              noLabel: true,
-              tabIndex: columnIdx,
-              className: classNames(
-                path && 'tyr-edit-' + path.detail.type.name,
-                column.editClassName
-              ),
-              onChange: () => this.setState({}),
-            };
-
-            return (
-              <EditableContext.Consumer>
-                {({ form }) => {
-                  if (!form || !pathName) return <span />;
-
-                  return (
-                    <TyrThemedFieldBase
-                      path={path!}
-                      searchPath={searchPath}
-                      form={form}
-                      document={document}
-                      {...fieldProps}
-                    />
-                  );
-                }}
-              </EditableContext.Consumer>
-            );
-          }
-
-          const render = column.renderDisplay;
-
-          return (
-            <div
-              className={classNames(
-                'tyr-table-cell',
-                column.columnClassName && column.columnClassName(document)
-              )}
-            >
-              {render
-                ? render(document, path, column)
-                : path
-                ? getCellValue(path, document, column as TyrTypeProps<any>)
-                : ''}
-            </div>
-          );
-        },
+        render: renderFunction,
         sorter: sortingEnabled ? sorter : undefined,
         sortOrder: sortingEnabled ? sortDirection : undefined,
         title: pathTitle(column),
         width,
         className: netClassName,
         ellipsis: column.ellipsis,
+        onCell: record =>
+          ({
+            record,
+            editable: !!isCellEditable,
+            dataIndex: columnIdx,
+            handleSave: handleCellSave,
+            render: renderFunction,
+          } as React.HtmlHTMLAttributes<HTMLElement>),
         ...(filteringEnabled && filterValue
           ? { filteredValue: [filterValue] }
           : { filteredValue: undefined }),
@@ -980,6 +995,7 @@ export class TyrTableBase<
       const components: TableProps<any>['components'] = {
         body: {
           row: EditableFormRow as any,
+          //cell: EditableCell,
         },
       };
 

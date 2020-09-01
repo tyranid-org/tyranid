@@ -95,6 +95,8 @@ export interface TyrPathProps<D extends Tyr.Document>
    */
   hideOnCreate?: boolean;
   isEditable?: (document: D) => boolean;
+  isCellEditable?: (document: D) => boolean;
+
   mapDocumentValueToForm?: (value: any, document: D) => any;
   mapFormValueToDocument?: (value: any, document: D) => any;
   mode?: 'view' | 'edit' | 'search';
