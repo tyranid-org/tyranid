@@ -352,29 +352,24 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return s;
   }
 
-  renderFrom(component: TyrComponent<any>) {
+  renderFrom(
+    component: TyrComponent<any>,
+    actionFnOpts?: Partial<TyrActionFnOpts<any>>
+  ) {
     const { renderVal, key } = this;
+
+    const opts = () =>
+      actionFnOpts
+        ? { ...(component.actionFnOpts() as any), ...actionFnOpts }
+        : (component.actionFnOpts() as any);
 
     if (renderVal) {
       return (
         <Fragment key={key}>
           {typeof renderVal === 'function'
-            ? renderVal(
-                this.wrappedFnOpts(component.actionFnOpts() as any) as any
-              )
+            ? renderVal(this.wrappedFnOpts(opts()) as any)
             : renderVal}
         </Fragment>
-      );
-    } else if (this.input === '*') {
-      return (
-        <Button
-          key={key}
-          className={this.className}
-          disabled={!component.selectedIds?.length}
-          onClick={() => this.act(component.actionFnOpts() as any)}
-        >
-          {this.label(component)}
-        </Button>
       );
     } else if (this.href) {
       const { href } = this;
@@ -383,9 +378,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         <a
           key={key}
           className={this.className}
-          onClick={() => this.act(component.actionFnOpts() as any)}
           href={
-            typeof href === 'function' ? href(component.actionFnOpts()) : href
+            typeof href === 'function'
+              ? href(this.wrappedFnOpts(opts()) as any)
+              : href
           }
           role="button"
           target={this.target ?? '_blank'}
@@ -393,12 +389,23 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
           {this.label(component)}
         </a>
       );
+    } else if (this.input === '*') {
+      return (
+        <Button
+          key={key}
+          className={this.className}
+          disabled={!component.selectedIds?.length}
+          onClick={() => this.act(opts())}
+        >
+          {this.label(component)}
+        </Button>
+      );
     } else {
       return (
         <Button
           key={key}
           className={this.className}
-          onClick={() => this.act(component.actionFnOpts() as any)}
+          onClick={() => this.act(opts())}
         >
           {this.label(component)}
         </Button>
