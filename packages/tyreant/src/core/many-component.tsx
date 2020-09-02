@@ -177,6 +177,7 @@ export class TyrManyComponent<
 
   async requery() {
     this.currentlyLoaded = undefined;
+    this.processingQuery = undefined;
     if (!this.props.documents) this.allDocuments = undefined;
     this.query();
   }

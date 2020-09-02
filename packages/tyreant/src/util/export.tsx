@@ -12,7 +12,7 @@ interface Props {
   onClose?: () => void;
 }
 
-const CF_PREFIX = (Tyr.options as any).aws.cloudfrontPrefix;
+const CF_PREFIX = (Tyr.options as any).aws?.cloudfrontPrefix || '';
 
 export const TyrExports = (props: Props) => (
   <TyrTable

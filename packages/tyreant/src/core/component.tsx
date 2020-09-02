@@ -1066,7 +1066,7 @@ export class TyrComponent<
       if (widthsHaveBeenReset) this.resetWidths();
 
       if (queryNeeded || sortHasBeenReset || filtersHaveBeenReset) {
-        this.query();
+        this.requery();
       }
     }
   };

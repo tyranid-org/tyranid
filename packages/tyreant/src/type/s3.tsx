@@ -22,7 +22,7 @@ interface S3Value {
 }
 
 export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
-  const CF_PREFIX = (Tyr.options as any).aws.cloudfrontPrefix;
+  const CF_PREFIX = (Tyr.options as any).aws?.cloudfrontPrefix || '';
 
   const [uploading, setUploading] = useState(false);
   const [counter, setCounter] = useState(0);
