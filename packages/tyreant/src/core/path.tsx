@@ -95,7 +95,8 @@ export interface TyrPathProps<D extends Tyr.Document>
    */
   hideOnCreate?: boolean;
   isEditable?: (document: D) => boolean;
-  isCellEditable?: (document: D) => boolean;
+  // CELL_EDIT
+  // isCellEditable?: (document: D) => boolean;
 
   mapDocumentValueToForm?: (value: any, document: D) => any;
   mapFormValueToDocument?: (value: any, document: D) => any;
@@ -105,6 +106,7 @@ export interface TyrPathProps<D extends Tyr.Document>
    */
   noLabel?: boolean;
   onChange?: (value: any, event: any, props: TyrTypeProps<D>) => void;
+  onBlur?: (event: any) => void;
   tabIndex?: number;
   validateTrigger?: string | string[] | false;
 

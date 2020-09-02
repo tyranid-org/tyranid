@@ -26,6 +26,7 @@ export const TyrStringBase = <D extends Tyr.Document = Tyr.Document>(
       tabIndex={props.tabIndex}
       className={props.className}
       onPressEnter={props.onPressEnter}
+      onBlur={props.onBlur}
     />
   ));
 };

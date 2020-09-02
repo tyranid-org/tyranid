@@ -216,7 +216,6 @@ export class TyrTableBase<
           this.documents = newDocuments.slice();
           this.sort();
         } else {
-          //if (!this.editingDocument)
           this.setStableDocuments(newDocuments.slice());
         }
       }
@@ -464,6 +463,7 @@ export class TyrTableBase<
     const multiActions = this.actions.filter(
       a => a.input === '*' && a.hide !== true
     );
+
     const rowsSelectable =
       (!newDocument && onSelectRows) || multiActions.length;
 
@@ -487,7 +487,7 @@ export class TyrTableBase<
         pathName = path.name;
       }
 
-      const isCellEditable = !!column.isCellEditable;
+      const isCellEditable = false; // CELL-EDIT !!column.isCellEditable;
 
       const width =
         column.tempWidth ||
@@ -545,8 +545,13 @@ export class TyrTableBase<
 
       const netClassName = column.className;
 
-      const renderFunction = (text: string, doc: D) => {
-        const editable = newDocumentTable || this.isEditing(doc);
+      const renderFunction = (
+        text: string,
+        doc: D,
+        isEditingCell?: boolean
+      ) => {
+        const editable =
+          newDocumentTable || this.isEditing(doc) || isEditingCell;
         const document =
           editingDocument && doc.$id === editingDocument.$id
             ? editingDocument!
@@ -582,6 +587,12 @@ export class TyrTableBase<
                     searchPath={searchPath}
                     form={form}
                     document={document}
+                    /*
+                    CELL-EDIT
+                    onBlur={e => {
+                      this.saveDocument(form);
+                    }}
+                    */
                     {...fieldProps}
                   />
                 );
@@ -611,21 +622,27 @@ export class TyrTableBase<
       const tableColumn: OurColumnProps<D> = {
         dataIndex: pathName,
         //key: pathName,
-        render: renderFunction,
+        render: (text: string, doc: D) => renderFunction(text, doc),
         sorter: sortingEnabled ? sorter : undefined,
         sortOrder: sortingEnabled ? sortDirection : undefined,
         title: pathTitle(column),
         width,
         className: netClassName,
         ellipsis: column.ellipsis,
+        /*
+        CELL-EDIT
         onCell: record =>
           ({
             record,
             editable: !!isCellEditable,
             dataIndex: columnIdx,
             handleSave: handleCellSave,
+            toggleEdit: (doc: D) => {
+              this.onEditCell(doc, columnIdx);
+            },
             render: renderFunction,
           } as React.HtmlHTMLAttributes<HTMLElement>),
+          */
         ...(filteringEnabled && filterValue
           ? { filteredValue: [filterValue] }
           : { filteredValue: undefined }),
@@ -698,7 +715,122 @@ export class TyrTableBase<
     //if (this.props.fixedWidthHack) this.applyFixedWidthHack(antColumns);
 
     const singularActions = this.actions.filter(a => a.input === 1);
+
     if (singularActions.length) {
+      const actionRender = (text: string, doc: D) => {
+        const editable = newDocumentTable || this.isEditing(doc);
+        const document =
+          editingDocument && doc.$id === editingDocument.$id
+            ? editingDocument!
+            : doc;
+
+        if (editable) {
+          if (this.isSavingDocument) {
+            return <Spin tip="Saving..." />;
+          }
+
+          return (
+            <div>
+              <Button
+                style={{ marginRight: 8, zIndex: 1 }}
+                size="small"
+                type="default"
+                onClick={() => this.cancelEdit()}
+              >
+                Cancel
+              </Button>
+
+              <EditableContext.Consumer>
+                {({ form }) => {
+                  if (!form) {
+                    return <span>No Form!</span>;
+                  }
+
+                  this.currentRowForm = form;
+
+                  return (
+                    <Button
+                      size="small"
+                      style={{ zIndex: 1 }}
+                      type="primary"
+                      onClick={() => this.saveDocument(form)}
+                    >
+                      Save
+                    </Button>
+                  );
+                }}
+              </EditableContext.Consumer>
+            </div>
+          );
+        }
+
+        if (newDocument) {
+          // Room for the save/cancel buttons, so column is same width
+          // hide the actions when adding a new document
+          return <span />;
+        }
+
+        const thisActions = singularActions.filter(
+          action => !action.hide || !action.isHidden(document)
+        );
+
+        if (!thisActions.length) {
+          return <span />;
+        }
+
+        if (this.actions.length === 1) {
+          const action = this.actions[0];
+          const label = action.label(this as any);
+
+          if (typeof label === 'string') {
+            return (
+              <a
+                style={{ whiteSpace: 'nowrap' }}
+                className="action-item"
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  action.act({ caller: this, document });
+                }}
+              >
+                {label}
+              </a>
+            );
+          }
+
+          return (
+            <span
+              className="action-item"
+              onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                action.act({ caller: this, document });
+              }}
+            >
+              {label as React.ReactNode}
+            </span>
+          );
+        }
+
+        const menu = (
+          <Menu className="tyr-menu">
+            {thisActions.map(action => (
+              <Menu.Item className="tyr-menu-item" key={action.name}>
+                {action.renderFrom(this, { document })}
+              </Menu.Item>
+            ))}
+          </Menu>
+        );
+
+        return (
+          <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
+            <span className="tyr-menu-link">
+              {actionIcon || <EllipsisOutlined />}
+            </span>
+          </Dropdown>
+        );
+      };
+
       antColumns.push({
         key: '$actions',
         dataIndex: '$actions',
@@ -726,119 +858,18 @@ export class TyrTableBase<
               </Tooltip>
             )
           : '',
-        render: (text: string, doc: D) => {
-          const editable = newDocumentTable || this.isEditing(doc);
-          const document =
-            editingDocument && doc.$id === editingDocument.$id
-              ? editingDocument!
-              : doc;
 
-          if (editable) {
-            if (this.isSavingDocument) {
-              return <Spin tip="Saving..." />;
-            }
-
-            return (
-              <div>
-                <Button
-                  style={{ marginRight: 8, zIndex: 1 }}
-                  size="small"
-                  type="default"
-                  onClick={() => this.cancelEdit()}
-                >
-                  Cancel
-                </Button>
-
-                <EditableContext.Consumer>
-                  {({ form }) => {
-                    if (!form) {
-                      return <span>No Form!</span>;
-                    }
-
-                    this.currentRowForm = form;
-
-                    return (
-                      <Button
-                        size="small"
-                        style={{ zIndex: 1 }}
-                        type="primary"
-                        onClick={() => this.saveDocument(form)}
-                      >
-                        Save
-                      </Button>
-                    );
-                  }}
-                </EditableContext.Consumer>
-              </div>
-            );
-          }
-
-          if (newDocument) {
-            // Room for the save/cancel buttons, so column is same width
-            // hide the actions when adding a new document
-            return <span />;
-          }
-
-          const thisActions = singularActions.filter(
-            action => !action.hide || !action.isHidden(document)
-          );
-
-          if (!thisActions.length) {
-            return <span />;
-          }
-
-          if (this.actions.length === 1) {
-            const action = this.actions[0];
-            const label = action.label(this as any);
-
-            if (typeof label === 'string') {
-              return (
-                <a
-                  style={{ whiteSpace: 'nowrap' }}
-                  className="action-item"
-                  onClick={e => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    action.act({ caller: this, document });
-                  }}
-                >
-                  {label}
-                </a>
-              );
-            }
-
-            return (
-              <span
-                className="action-item"
-                onClick={e => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  action.act({ caller: this, document });
-                }}
-              >
-                {label as React.ReactNode}
-              </span>
-            );
-          }
-
-          const menu = (
-            <Menu className="tyr-menu">
-              {thisActions.map(action => (
-                <Menu.Item className="tyr-menu-item" key={action.name}>
-                  {action.renderFrom(this, { document })}
-                </Menu.Item>
-              ))}
-            </Menu>
-          );
-
-          return (
-            <Dropdown overlay={menu} trigger={[actionTrigger || 'click']}>
-              <span className="tyr-menu-link">
-                {actionIcon || <EllipsisOutlined />}
-              </span>
-            </Dropdown>
-          );
-        },
+        /*
+        CELL-EDIT
+        onCell: record =>
+          ({
+            record,
+            editable: false,
+            dataIndex: antColumns.length,
+            render: actionRender,
+          } as React.HtmlHTMLAttributes<HTMLElement>),
+        */
+        render: actionRender,
         sorter: undefined,
         sortOrder: undefined,
         width: isEditingAnything ? 112 : 32,
@@ -891,6 +922,12 @@ export class TyrTableBase<
   };
 
   private onEditRow = (document: D, rowIndex: number) => {
+    this.editingDocument = document;
+    this.props.setEditing?.(true);
+    document.$snapshot();
+  };
+
+  private onEditCell = (document: D, colIndex: number) => {
     this.editingDocument = document;
     this.props.setEditing?.(true);
     document.$snapshot();
@@ -991,7 +1028,10 @@ export class TyrTableBase<
       const components: TableProps<any>['components'] = {
         body: {
           row: EditableFormRow as any,
-          //cell: EditableCell,
+          /*
+          CELL_EDIT
+          cell: EditableCell,
+          */
         },
       };
 

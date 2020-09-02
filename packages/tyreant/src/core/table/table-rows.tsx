@@ -110,19 +110,23 @@ export interface RowCellProps {
   editable: boolean;
   dataIndex: number;
   record: Tyr.Document;
-  children?: React.ReactNode;
   handleSave: () => void;
-  render: (text: string, doc: Tyr.Document) => React.ReactNode;
+  toggleEdit?: (doc: Tyr.Document) => void;
+  render?: (
+    text: string,
+    doc: Tyr.Document,
+    isEditingCell: boolean
+  ) => React.ReactNode;
 }
 
 export const EditableCell = (props: RowCellProps) => {
   const {
     editable,
-    children,
     dataIndex,
     record,
     handleSave,
     render,
+    toggleEdit,
     ...restProps
   } = props;
 
@@ -136,8 +140,13 @@ export const EditableCell = (props: RowCellProps) => {
     }
   }, [editing]);
 
-  const toggleEdit = () => {
+  const toggleEditing = () => {
     setEditing(!editing);
+
+    if (toggleEdit) {
+      toggleEdit(record);
+    }
+
     //form.setFieldsValue({ [dataIndex]: record[dataIndex] });
   };
 
@@ -145,30 +154,26 @@ export const EditableCell = (props: RowCellProps) => {
     try {
       //const values = await form.validateFields();
 
-      toggleEdit();
+      toggleEditing();
       //handleSave({ ...record, ...values });
     } catch (errInfo) {
       console.log('Save failed:', errInfo);
     }
   };
 
-  let childNode = children;
+  if (render) {
+    if (editable) {
+      return (
+        <td {...restProps} onDoubleClick={toggleEditing}>
+          {render('', record, editing)}
+        </td>
+      );
+    }
 
-  if (editable) {
-    childNode = editing ? (
-      <span>Editing</span>
-    ) : (
-      <div
-        className="editable-cell-value-wrap"
-        style={{ paddingRight: 24 }}
-        onClick={toggleEdit}
-      >
-        {children}
-      </div>
-    );
+    return <td {...restProps}>{render('', record, editing)}</td>;
   }
 
-  return <td {...restProps}>{render('', record)}</td>;
+  return <td>...</td>;
 };
 
 /*
