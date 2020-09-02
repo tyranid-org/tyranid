@@ -147,7 +147,14 @@ export class TyrManyComponent<
           this.findAll();
         }
 
-        await this.postQuery();
+        if (this.local) {
+          // This was causing live search filters dialogs to disappear-- we think loading (spin) was taking too long, so
+          // the dialog closed when the table was getting dropped and re-created
+          this.postQuery();
+        } else {
+          await this.postQuery();
+        }
+
         //this.refresh();
       }
     } finally {
