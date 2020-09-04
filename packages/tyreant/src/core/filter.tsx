@@ -326,10 +326,23 @@ export const TyrTag = <C extends Tyr.CollectionInstance>({
   collection: C;
   onClick?: (filterValue: any) => void;
 }) => {
-  const doc = collection.byIdIndex[id];
-  return doc?.$label ? (
+  const [label, setLabel] = React.useState<string | undefined>(
+    collection.byIdIndex[id]?.$label
+  );
+
+  const loadLabel = async () => {
+    setLabel(await collection.idToLabel(id));
+  };
+
+  React.useEffect(() => {
+    if (!label) {
+      loadLabel();
+    }
+  }, []);
+
+  return label ? (
     <div className="tyr-tag" onClick={() => onClick?.(id)}>
-      {doc.$label}
+      {label}
       <CloseOutlined />
     </div>
   ) : (
