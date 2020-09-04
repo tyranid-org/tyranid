@@ -1091,7 +1091,7 @@ export class TyrTableBase<
           onChange={this.handleTableChange as any}
           footer={netFooter as (rows: Object[]) => React.ReactNode}
           showHeader={!newDocument && this.props.showHeader !== false}
-          dataSource={loading ? [] : this.currentPageDocuments()}
+          dataSource={this.currentPageDocuments()}
           columns={this.getColumns()}
           scroll={tableScroll}
           {...(expandable ? { expandable } : {})}
@@ -1319,8 +1319,10 @@ const ResizableTitle = (props: ResizableProps & { onClick?: any }) => {
       }}
       onResizeStop={(...args) => {
         setTimeout(() => {
-          setResizing(false);
-          onResizeStop && onResizeStop(...args);
+          if (resizing) {
+            setResizing(false);
+            onResizeStop && onResizeStop(...args);
+          }
         });
       }}
       onResize={onResize}
