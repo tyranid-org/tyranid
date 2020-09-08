@@ -331,7 +331,12 @@ export const TyrTag = <C extends Tyr.CollectionInstance>({
   );
 
   const loadLabel = async () => {
-    setLabel(await collection.idToLabel(id));
+    // When there is no id (null or undefined, the label gets passed, not the id)
+    if (typeof id === 'string' && !id.match(/^[0-9a-fA-F]{24}$/)) {
+      setLabel(Tyr.labelize(id || '?'));
+    } else {
+      setLabel(await collection.idToLabel(id));
+    }
   };
 
   React.useEffect(() => {
