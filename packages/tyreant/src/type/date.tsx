@@ -95,10 +95,22 @@ byName.date = {
         const val = path.get(doc);
 
         if (val) {
-          const dateVal = moment(val);
-          return (
-            dateVal.isSameOrAfter(value[0]) && dateVal.isSameOrBefore(value[1])
-          );
+          const date = moment(val);
+          const range = value as RangePickerValue;
+
+          const filterStart = range[0].startOf('day');
+
+          if (filterStart) {
+            if (date.isBefore(filterStart)) return false;
+          }
+
+          const filterEnd = range[1].endOf('day');
+
+          if (filterEnd) {
+            if (date.isAfter(filterEnd)) return false;
+          }
+
+          return true;
         }
 
         return false;
