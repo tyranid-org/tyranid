@@ -173,7 +173,7 @@ export const EditableCell = (props: RowCellProps) => {
     return <td {...restProps}>{render('', record, editing)}</td>;
   }
 
-  return <td>...</td>;
+  return <td>....</td>;
 };
 
 /*
