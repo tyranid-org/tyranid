@@ -33,18 +33,55 @@ export function generateRules(props: TyrTypeProps<any>): Rule[] {
       label,
       required,
       requiredMessage,
+      min,
+      minMessage,
       max,
       maxMessage,
+      minlength,
+      minlengthMessage,
+      maxlength,
+      maxlengthMessage,
       validator,
     } = props;
 
     const { tail: field } = path;
+    if (min !== undefined)
+      rules.push({
+        min,
+        type: 'number',
+        message:
+          minMessage || `The ${label || field.label} must be ${min} or more.`,
+      });
+
     if (max !== undefined)
       rules.push({
         max,
+        type: 'number',
         message:
-          maxMessage ||
-          `The ${label || field.label} must be ${max} characters or less.`,
+          maxMessage || `The ${label || field.label} must be ${max} or less.`,
+      });
+
+    if (minlength !== undefined) {
+      rules.push({
+        min: minlength,
+        type: 'string',
+        message:
+          minlengthMessage ||
+          `The ${
+            label || field.label
+          } must be at least ${minlength} characters in length.`,
+      });
+    }
+
+    if (maxlength !== undefined)
+      rules.push({
+        max: maxlength,
+        type: 'string',
+        message:
+          maxlengthMessage ||
+          `The ${
+            label || field.label
+          } must be ${maxlength} characters or less.`,
       });
 
     const mode = modeFor(props);

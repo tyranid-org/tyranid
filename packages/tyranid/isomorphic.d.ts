@@ -169,9 +169,9 @@ export namespace Tyr {
     note?: string;
 
     required?: boolean;
-    // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
 
     validateSearch?: boolean;
+    // this function needs to be bivariant, NOT contravariant -- so defining it like a method rather than a callback
     validate?(
       this: any, // D -- ISO-VARIANCE
       field: any // FieldInstance<any> // D -- ISO-VARIANCE

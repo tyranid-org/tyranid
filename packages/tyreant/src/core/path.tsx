@@ -115,8 +115,13 @@ export interface TyrPathProps<D extends Tyr.Document>
   requiredMessage?: string;
 
   min?: number;
+  minMessage?: string;
   max?: number;
   maxMessage?: string;
+  minlength?: number;
+  minlengthMessage?: string;
+  maxlength?: number;
+  maxlengthMessage?: string;
 
   validator?: (
     rule: any,
