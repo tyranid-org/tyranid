@@ -368,7 +368,7 @@ Path.prototype.get = function (obj) {
         // if they are dereferencing a link, first check to see if an object exists by the current name
         // (the current name could be a denormalized or populated reference already)
         v = obj[name];
-        if (!_.isObject(v) || Array.isArray(v)) {
+        if (!Tyr.isObject(v) || Array.isArray(v)) {
           // ... look for a populated or denormalized value
           let popName = Path.populateNameFor(name, false);
           v = obj[popName];
