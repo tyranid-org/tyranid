@@ -250,15 +250,17 @@ export const TyrFilters = ({
       >
         {filterIcon}
       </Button>
-      <Input.Search
-        enterButton
-        value={c.filterSearchValue}
-        onChange={ev => {
-          const v = ev.target.value;
-          c.filterSearchValue = v;
-          if (c.local) c.query();
-        }}
-      />
+      {!(c as TyrManyComponent).props.hideFilterSearchBar && (
+        <Input.Search
+          enterButton
+          value={c.filterSearchValue}
+          onChange={ev => {
+            const v = ev.target.value;
+            c.filterSearchValue = v;
+            if (c.local) c.query();
+          }}
+        />
+      )}
     </div>
   );
 

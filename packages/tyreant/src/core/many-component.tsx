@@ -50,6 +50,10 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
 
   showQuickTotal?: boolean;
 
+  // FILTERS
+  filter?: boolean;
+  hideFilterSearchBar?: boolean;
+
   // SORTING
   notifySortSet?: (columnName?: string, order?: TyrSortDirection) => void;
 

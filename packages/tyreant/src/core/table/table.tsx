@@ -88,7 +88,6 @@ export interface TyrTableProps<D extends Tyr.Document>
   extends TyrManyComponentProps<D> {
   //fixedWidthHack?: boolean;
   bordered?: boolean;
-  filter?: boolean;
   collection: Tyr.CollectionInstance<D>;
   export?: boolean | { background?: boolean };
   actionHeaderLabel?: string | React.ReactNode;
