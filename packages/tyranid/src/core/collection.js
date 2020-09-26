@@ -867,7 +867,9 @@ export default class Collection {
         m: 'findAll' + (opts.count ? '+count' : ''),
         q: query,
       });
-    const cursor = collection.db.find(query, opts);
+    const cursor = collection.db
+      .find(query, opts)
+      .addCursorFlag('noCursorTimeout', true);
 
     let v;
     if ((v = opts.limit)) cursor.limit(v);
