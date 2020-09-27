@@ -14,6 +14,7 @@ export * from './modal';
 export * from './page';
 export * from './panel';
 export * from './router';
+export * from './search';
 export * from './table';
 export * from './theme';
 export * from './trait';

@@ -49,16 +49,21 @@ export namespace Tyr {
     | 'roman'
     | 'roman-lowercase';
 
-  export type ActionTraitType = 'entrance' | 'exit';
+  export type ActionTraitType = 'entrance' | 'exit' | 'builtin';
   export type ActionTrait =
+    // entrance actions
     | 'create'
     | 'edit'
     | 'view'
     | 'search'
-    | 'import'
-    | 'export'
+    // exit actions
     | 'save'
-    | 'cancel';
+    | 'cancel'
+    // filter control action
+    | 'filter'
+    // not used, but like filter control
+    | 'import'
+    | 'export';
 
   export interface AccessResult {
     allowed: boolean;

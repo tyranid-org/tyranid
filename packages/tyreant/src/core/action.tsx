@@ -6,6 +6,8 @@ import { Tyr } from 'tyranid/client';
 
 import type { TyrComponent } from './component';
 import { isEntranceTrait, isExitTrait } from './trait';
+import { TyrFilters } from '.';
+import { isNonLocalTrait } from '../tyreant';
 
 export type ActionSet<D extends Tyr.Document> =
   | { [actionName: string]: TyrAction<D> | TyrActionOpts<D> }
@@ -303,7 +305,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   isLocal() {
-    return !this.traits?.length;
+    return !this.traits?.some(isNonLocalTrait);
   }
 
   isHidden(document?: D) {
@@ -371,6 +373,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
             : renderVal}
         </Fragment>
       );
+    } else if (this.traits.includes('filter')) {
+      return <TyrFilters component={component} />;
     } else if (this.href) {
       const { href } = this;
 

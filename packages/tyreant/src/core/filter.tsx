@@ -18,6 +18,7 @@ import { Tyr } from 'tyranid/client';
 import { TyrPathProps } from './path';
 import { useComponent, TyrComponent } from './component';
 import { TyrManyComponent } from './many-component';
+import { TyrSearchBar } from '.';
 
 export interface FilterDdProps extends FilterDropdownProps {
   filtersContainer?: boolean;
@@ -240,8 +241,9 @@ export const TyrFilters = ({
   const filterIcon = filterTheme?.icon || (
     <FilterTwoTone twoToneColor="#386695" />
   );
+
   const searchBar = (
-    <div className="tyr-filter-search-bar">
+    <div className="tyr-filter-search-bar tyr-action">
       <Button
         className={
           'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
@@ -250,16 +252,8 @@ export const TyrFilters = ({
       >
         {filterIcon}
       </Button>
-      {!(c as TyrManyComponent).props.hideFilterSearchBar && (
-        <Input.Search
-          enterButton
-          value={c.filterSearchValue}
-          onChange={ev => {
-            const v = ev.target.value;
-            c.filterSearchValue = v;
-            if (c.local) c.query();
-          }}
-        />
+      {(c as TyrManyComponent).props.searchBar && (
+        <TyrSearchBar component={c} />
       )}
     </div>
   );

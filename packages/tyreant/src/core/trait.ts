@@ -12,6 +12,8 @@ export const traits: {
   import: { type: 'entrance' },
   export: { type: 'entrance' },
 
+  filter: { type: 'builtin' },
+
   save: { type: 'exit' },
   cancel: { type: 'exit' },
 };
@@ -23,3 +25,8 @@ export const isEntranceTrait = (trait: string) =>
   traits[trait]?.type === 'entrance';
 
 export const isExitTrait = (trait: string) => traits[trait]?.type === 'exit';
+
+export const isNonLocalTrait = (trait: string) => {
+  const t = traits[trait]?.type;
+  return t === 'entrance' || t == 'exit';
+};

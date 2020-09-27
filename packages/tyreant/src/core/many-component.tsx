@@ -52,7 +52,7 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
 
   // FILTERS
   filter?: boolean;
-  hideFilterSearchBar?: boolean;
+  searchBar?: boolean;
 
   // SORTING
   notifySortSet?: (columnName?: string, order?: TyrSortDirection) => void;
