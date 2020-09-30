@@ -438,6 +438,7 @@ declare module 'tyranid/client' {
       $changed: boolean;
       $clone(): this;
       $cloneDeep(): this;
+      $get(path: string): any;
       $id: IdType<this>;
       $isNew: boolean;
       $label: string;

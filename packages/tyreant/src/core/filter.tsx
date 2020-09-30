@@ -147,6 +147,8 @@ export interface TyrFilterConnection {
   setFilterValue: (v: any) => void;
 }
 
+// TODO:  write this as a regular component ala TyrImport / TyrExport / TyrRemove / etc.
+//        using a TyrDrawer
 export const TyrFilters = ({
   component,
 }: {
