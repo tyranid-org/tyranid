@@ -374,7 +374,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         </Fragment>
       );
     } else if (this.traits.includes('filter')) {
-      return <TyrFilters component={component} />;
+      return <TyrFilters key="action-filters" component={component} />;
     } else if (this.href) {
       const { href } = this;
 

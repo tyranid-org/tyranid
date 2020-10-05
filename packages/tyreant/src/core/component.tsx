@@ -163,22 +163,7 @@ export class TyrComponent<
 
     this.setupActions();
 
-    if (config) {
-      this.loading++;
-
-      try {
-        const componentConfig = await ensureComponentConfig(
-          this,
-          this.paths,
-          config!
-        );
-
-        this.componentConfig = componentConfig.componentConfig;
-        this._activePaths = componentConfig.newColumns;
-      } finally {
-        this.loading--;
-      }
-    } else {
+    if (!config) {
       this._activePaths = this.paths;
     }
   }
@@ -951,7 +936,17 @@ export class TyrComponent<
   setDefaultFilters(save = true) {
     for (const pathProps of this.paths) {
       const { path } = pathProps;
-      if (path) this.setFilterValue(path.name, pathProps.defaultFilter, false);
+
+      if (path) {
+        const field = this.componentConfig?.fields.find(
+          ap => getPathName(ap.name) === path.name
+        );
+        this.setFilterValue(
+          path.name,
+          field?.filter || pathProps.defaultFilter,
+          false
+        );
+      }
     }
 
     if (save) this.saveConfig();

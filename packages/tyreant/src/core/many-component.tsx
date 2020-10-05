@@ -20,6 +20,8 @@ import Pagination from 'antd/es/pagination';
 import { getPathName } from './path';
 import { TyrSortDirection } from './typedef';
 
+import { ensureComponentConfig } from './component-config';
+
 export const DEFAULT_PAGE_SIZE = 20;
 
 const NULL_URL_FILTER_VALUE = '___';
@@ -87,7 +89,10 @@ export class TyrManyComponent<
     const { documents, query } = this.props;
 
     // if using a route, set the sort when parsing the URL
-    if (!this.props.route) this.setDefaultSort();
+    if (!this.props.route) {
+      // this.setDefaultSort();
+      // this.setDefaultFilters();
+    }
 
     if (documents) {
       this.sort();
@@ -739,38 +744,51 @@ export class TyrManyComponent<
     // this happens inside the render (after wrap()) and we don't want to kick this off during the render
     // TOOD:  move this logic into wrap()
     setTimeout(() => {
-      const { route } = this.props;
-      if (route) {
-        if (!this.cancelAutorun) {
-          this.cancelAutorun = autorun(() => {
-            const location = Tyreant.router.location!;
-            if (location.route === route) {
-              const query = location.query! as {
-                [name: string]: string;
-              };
-              const queryStr = JSON.stringify(query);
-              if (queryStr !== this.processingQuery) {
-                this.processingQuery = queryStr;
+      (async () => {
+        const componentConfig = await ensureComponentConfig(
+          this,
+          this.paths,
+          this.props.config!
+        );
 
-                this.fromUrlQuery(query);
+        this.componentConfig = componentConfig.componentConfig;
+        this._activePaths = componentConfig.newColumns;
 
-                this.load();
-                this.active = true;
+        const { route } = this.props;
+        if (route) {
+          if (!this.cancelAutorun) {
+            this.cancelAutorun = autorun(() => {
+              const location = Tyreant.router.location!;
+              if (location.route === route) {
+                const query = location.query! as {
+                  [name: string]: string;
+                };
+                const queryStr = JSON.stringify(query);
+                if (queryStr !== this.processingQuery) {
+                  this.processingQuery = queryStr;
+
+                  this.fromUrlQuery(query);
+
+                  this.load();
+                  this.active = true;
+                }
               }
-            }
-          });
+            });
+          }
+        } else if (!this.allDocuments) {
+          const { decorator } = this;
+          if (
+            this.activePaths.length &&
+            (!decorator || decorator.visible) &&
+            (!this.parent || this.mounted)
+          ) {
+            this.active = true;
+            this.setDefaultSort();
+            this.setDefaultFilters();
+            this.load();
+          }
         }
-      } else if (!this.allDocuments) {
-        const { decorator } = this;
-        if (
-          this.activePaths.length &&
-          (!decorator || decorator.visible) &&
-          (!this.parent || this.mounted)
-        ) {
-          this.active = true;
-          this.load();
-        }
-      }
+      })();
     }, 0);
   }
 

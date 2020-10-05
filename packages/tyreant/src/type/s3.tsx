@@ -21,9 +21,9 @@ interface S3Value {
   size: number;
 }
 
-export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
-  const CF_PREFIX = (Tyr.options as any).aws?.cloudfrontPrefix || '';
+const CF_PREFIX = (Tyr.options as any).aws?.cloudfrontPrefix || '';
 
+export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
   const [uploading, setUploading] = useState(false);
   const [counter, setCounter] = useState(0);
   const { document, path } = props;
@@ -110,6 +110,24 @@ export const TyrS3Base = <D extends Tyr.Document>(props: TyrTypeProps<D>) => {
 };
 
 export const TyrS3 = withThemedTypeContext('s3', TyrS3Base);
+
+export function TyrS3Image<D extends Tyr.Document>({
+  document,
+  path,
+}: {
+  document: D;
+  path: string;
+}) {
+  const value = document.$get(path);
+
+  if (value) {
+    const downloadUrl = value && CF_PREFIX + value.key;
+
+    return <img className="tyr-s3-image" src={downloadUrl} />;
+  }
+
+  return <></>;
+}
 
 byName.s3 = {
   component: TyrS3Base,

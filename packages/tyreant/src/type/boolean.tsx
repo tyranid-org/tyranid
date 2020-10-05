@@ -76,6 +76,7 @@ byName.boolean = {
             return (
               <>
                 <Checkbox
+                  key="no-choice"
                   style={{ display: 'block', marginLeft: '8px' }}
                   checked={searchValue && !!searchValue.no}
                   onChange={(e: CheckboxChangeEvent) => {
@@ -89,6 +90,7 @@ byName.boolean = {
                   {valueLabels ? valueLabels[0].$label : 'No'}
                 </Checkbox>
                 <Checkbox
+                  key="yes-choice"
                   style={{ display: 'block' }}
                   checked={searchValue && !!searchValue.yes}
                   onChange={(e: CheckboxChangeEvent) => {
@@ -125,11 +127,11 @@ byName.boolean = {
 
           const isTrue = !!path.get(doc);
 
-          if (!!value.yes) {
+          if (selectYes) {
             return isTrue;
           }
 
-          if (!!value.no) {
+          if (selectNo) {
             return !isTrue;
           }
         }
@@ -141,8 +143,16 @@ byName.boolean = {
 
   finder(path, opts, searchValue) {
     if (searchValue) {
+      const selectYes = !!searchValue.yes;
+      const selectNo = !!searchValue.no;
+
+      if (selectYes === selectNo) {
+        return;
+      }
+
       if (!opts.query) opts.query = {};
-      opts.query[path.spath] = !!searchValue;
+
+      opts.query[path.spath] = selectYes;
     }
   },
 };

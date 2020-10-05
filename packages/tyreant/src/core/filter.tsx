@@ -163,7 +163,7 @@ export const TyrFilters = ({
   if (!paths) return <div className="no-paths"></div>;
 
   const body = (
-    <>
+    <React.Fragment key="filter-fields-body">
       {paths.map(f => {
         const path = f.path!;
 
@@ -199,14 +199,15 @@ export const TyrFilters = ({
           </div>
         );
       })}
-    </>
+    </React.Fragment>
   );
 
   const { filterConnections } = c;
 
   const footer = (
-    <>
+    <React.Fragment key="filter-action-btns">
       <Button
+        key="reset-filter-btn"
         onClick={() => {
           for (const name in filterConnections)
             filterConnections[name]?.clear();
@@ -220,6 +221,7 @@ export const TyrFilters = ({
 
       {!c.local && (
         <Button
+          key="search-filter-btn"
           type="primary"
           onClick={() => {
             for (const name in filterConnections)
@@ -233,7 +235,7 @@ export const TyrFilters = ({
           Search
         </Button>
       )}
-    </>
+    </React.Fragment>
   );
 
   const title = c.collection.label + ' Filters';
@@ -245,7 +247,7 @@ export const TyrFilters = ({
   );
 
   const searchBar = (
-    <div className="tyr-filter-search-bar tyr-action">
+    <div className="tyr-filter-search-bar tyr-action" key="search-bar">
       <Button
         className={
           'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
