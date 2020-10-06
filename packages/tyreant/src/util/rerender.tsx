@@ -25,12 +25,10 @@ const Rerenderable = (
 Rerenderable.whyDidYouRender = true;
 */
 
-const useRerender = () => {
+export const useRerender = () => {
   const [changes, setChanges] = useState(0);
 
   return () => {
     setChanges(changes + 1);
   };
 };
-
-export default useRerender;
