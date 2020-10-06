@@ -4,7 +4,7 @@ export * from './hoc';
 export * from './import';
 export * from './job';
 export * from './remove';
-//export * from './rerender';
+export * from './rerender';
 export * from './visible';
 export * from './full-table-height.hook';
 export * from './window-size.hook';

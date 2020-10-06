@@ -1,3 +1,6 @@
+import * as React from 'react';
+import { useState } from 'react';
+
 /*
 type RerenderableApi = {
   refresh(): void;
@@ -21,3 +24,13 @@ const Rerenderable = (
 };
 Rerenderable.whyDidYouRender = true;
 */
+
+const useRerender = () => {
+  const [changes, setChanges] = useState(0);
+
+  return () => {
+    setChanges(changes + 1);
+  };
+};
+
+export default useRerender;

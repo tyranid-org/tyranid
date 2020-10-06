@@ -534,6 +534,10 @@ form textarea.tyr-markup-editor {
 .tyr-filter-search-bar {
   margin-bottom: 8px;
 
+  &.tyr-filter-search-bar-no-input {
+    margin-bottom: 0;
+  }
+
   .ant-input-search {
     float: right;
     width: calc(100% - 40px);

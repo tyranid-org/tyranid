@@ -247,7 +247,14 @@ export const TyrFilters = ({
   );
 
   const searchBar = (
-    <div className="tyr-filter-search-bar tyr-action" key="search-bar">
+    <div
+      className={`${
+        (c as TyrManyComponent).props.searchBar
+          ? ''
+          : 'tyr-filter-search-bar-no-input '
+      }tyr-filter-search-bar tyr-action`}
+      key="search-bar"
+    >
       <Button
         className={
           'tyr-filters-btn' + (c.filtering ? ' tyr-filters-active' : '')
