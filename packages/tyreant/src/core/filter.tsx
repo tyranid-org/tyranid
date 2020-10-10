@@ -43,7 +43,8 @@ export type Filter = (
 export type Finder = (
   path: Tyr.PathInstance,
   opts: any /* TODO: add Tyr.Options_Find to client */,
-  searchValue: any
+  searchValue: any,
+  pathProps?: TyrPathProps<any>
 ) => void;
 
 export interface TyrFilterProps<SearchValueType> {

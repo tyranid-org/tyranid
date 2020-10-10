@@ -6,16 +6,14 @@ const { Option } = Select;
 
 import { Tyr } from 'tyranid/client';
 
-import { decorateField } from '../core';
+import { decorateField, labelFor } from '../core';
 import { findByLabel, TyrLinkAbstract } from './link.abstract';
 
 export class TyrLinkSelect<
   D extends Tyr.Document = Tyr.Document
 > extends TyrLinkAbstract<D> {
   private renderOption = (val: Tyr.Document) => {
-    const { $label, $id } = val;
-
-    const key = $id || $label;
+    const key = val.$id || labelFor(this.props, val);
 
     return (
       <Option key={key} value={key}>
@@ -68,8 +66,9 @@ export class TyrLinkSelect<
               if (!label) {
                 onStateChange?.({ ready: false });
 
+                // NOTE:  if they use props.labelField then we are saving off a new record without a proper label
                 label = await link.save({
-                  [link.labelField.pathName]: value,
+                  [props.labelField || link.labelField.pathName]: value,
                 });
 
                 label.$cache();
@@ -90,7 +89,11 @@ export class TyrLinkSelect<
 
         onSelect(
           v
-            ? ({ value: v.$id, label: v.$label, document: v } as SelectValue)
+            ? ({
+                value: v.$id,
+                label: labelFor(props, v as any),
+                document: v,
+              } as SelectValue)
             : value,
           option
         );

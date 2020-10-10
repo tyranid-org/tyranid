@@ -30,7 +30,7 @@ export class TyrLinkRadio<
       >
         {(props.optionFilter?.(documents) || documents).map(d => (
           <Radio key={d.$id} value={d.$id}>
-            {d.$label}
+            {this.renderLabel(d)}
           </Radio>
         ))}
       </Radio.Group>

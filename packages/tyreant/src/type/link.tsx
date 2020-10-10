@@ -9,7 +9,13 @@ import { Tyr } from 'tyranid/client';
 
 import { byName, TyrTypeProps } from './type';
 import { withThemedTypeContext } from '../core/theme';
-import { TyrPathProps, TyrComponent, getLabelRenderer } from '../core';
+import {
+  TyrPathProps,
+  TyrComponent,
+  getLabelRenderer,
+  labelFieldFor,
+  labelFor,
+} from '../core';
 import { TyrFilter, FilterDdProps } from '../core/filter';
 import { registerComponent } from '../common';
 import {
@@ -65,9 +71,9 @@ byName.link = {
     // if (nv) {
     //   const column = (path.tail as any).column;
     //   if (column && column.translateForWhiteLabel) {
-    //     return column.translateForWhiteLabel(nv.$label);
+    //     return column.translateForWhiteLabel(labelFor(props, nv));
     //   }
-    //   return nv.$label;
+    //   return labelFor(props, nv);
     // }
     //return v;
     //});
@@ -76,9 +82,9 @@ byName.link = {
     //if (nv) {
     //const column = (path.tail as any).column;
     //if (column && column.translateForWhiteLabel) {
-    //value = column.translateForWhiteLabel(nv.$label);
+    //value = column.translateForWhiteLabel(labelFor(props, nv));
     //} else {
-    //value = nv.$label;
+    //value = labelFor(props, nv);
     //}
     //}
     //}
@@ -143,7 +149,7 @@ byName.link = {
     };
   },
 
-  finder(path, opts, searchValue) {
+  finder(path, opts, searchValue, pathProps) {
     const link = linkFor(path)!;
 
     if (searchValue) {
@@ -158,7 +164,9 @@ byName.link = {
 
     if (link.labelField && !link.isStatic()) {
       if (!opts.populate) opts.populate = {};
-      Tyr.assignDeep(opts.populate, { [path.spath]: link.labelProjection() });
+      Tyr.assignDeep(opts.populate, {
+        [path.spath]: link.labelProjection(pathProps?.labelField),
+      });
     }
   },
 
@@ -181,9 +189,9 @@ byName.link = {
       }
     }
 
-    if (field.isId()) return document.$label;
+    if (field.isId()) return labelFor(props, document);
 
-    const lf = link?.labelField;
+    const lf = link && labelFieldFor(props, link);
     if (lf && !link!.isStatic()) {
       const v = path.get(document);
       if (!v) return undefined;
@@ -196,7 +204,7 @@ byName.link = {
       }
 
       const linkedDoc = link!.byIdIndex[v];
-      if (linkedDoc) return linkedDoc.$label;
+      if (linkedDoc) return labelFor(props, linkedDoc);
 
       // TODO:  queue up a label query and a rerender?
       return 'N/A';
@@ -298,7 +306,7 @@ const LinkFilterDropdown = ({
                     results.map(d => ({
                       ...d,
                       $id: d.$id,
-                      $label: d.$label,
+                      $label: labelFor(pathProps, d),
                     }))
                   );
                 });
@@ -307,7 +315,7 @@ const LinkFilterDropdown = ({
                 link.values.map(d => ({
                   ...d,
                   $id: d.$id,
-                  $label: d.$label,
+                  $label: labelFor(pathProps, d),
                 }))
               );
             }
@@ -334,7 +342,7 @@ const LinkFilterDropdown = ({
                     results.map(d => ({
                       ...d,
                       $id: d.$id,
-                      $label: d.$label,
+                      $label: labelFor(pathProps, d),
                     }))
                   );
                 }}

@@ -995,7 +995,6 @@ export class TyrTableBase<
       scroll,
       footer,
       config: componentConfig,
-      decorator,
       onSelectRows,
       orderable,
       rowSelection,
@@ -1017,8 +1016,7 @@ export class TyrTableBase<
       (!newDocument && onSelectRows) || multiActions.length;
 
     return this.wrap(() => {
-      if (decorator && (!this.decorator || !this.decorator.visible))
-        return <div />;
+      if (!this.decorator?.visible) return <div />;
 
       this.activate(); // want to delay finding until the control is actually shown
 

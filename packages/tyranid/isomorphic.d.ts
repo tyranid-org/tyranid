@@ -362,7 +362,7 @@ export namespace Tyr {
     labelImageField: any;
     orderField: any;
     labelFor(doc: D | object): string;
-    labelProjection(): any; // Mongo Projection
+    labelProjection(labelField?: string): any; // Mongo Projection
     labels(text: string): Promise<D[]>;
     labels(ids: string[]): Promise<D[]>;
     labels(_: any): Promise<D[]>;

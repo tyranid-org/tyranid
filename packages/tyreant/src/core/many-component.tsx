@@ -278,7 +278,8 @@ export class TyrManyComponent<
 
       const pathName = path.name;
 
-      if (!this.local) getFinder(path)?.(path, opts, filterValues[pathName]);
+      if (!this.local)
+        getFinder(path)?.(path, opts, filterValues[pathName], pathProps);
 
       const sortDirection = sortDirections[pathName];
       if (sortDirection) sort[pathName] = sortDirection === 'ascend' ? 1 : -1;

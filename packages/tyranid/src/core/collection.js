@@ -653,32 +653,42 @@ export default class Collection {
   }
 
   /**  @isomorphic */
-  labelProjection() {
-    const lf = this.labelField;
+  labelProjection(labelFieldName) {
+    let fields, lf;
 
-    const fields = {
-      [lf.pathName]: 1,
-    };
+    if (labelFieldName) {
+      fields = {
+        [labelFieldName]: 1,
+      };
 
-    const lif = this.labelImageField;
-    if (lif) fields[lif.pathName] = 1;
+      lf = this.paths[labelFieldName];
+    } else {
+      lf = this.labelField;
 
-    const of = this.orderField;
-    if (of) fields[of.pathName] = 1;
+      fields = {
+        [lf.pathName]: 1,
+      };
+
+      const lif = this.labelImageField;
+      if (lif) fields[lif.pathName] = 1;
+
+      const of = this.orderField;
+      if (of) fields[of.pathName] = 1;
+
+      const lfDef = lf.def.labelField;
+
+      if (typeof lfDef === 'object' && !!lfDef.uses) {
+        for (const path of lfDef.uses) {
+          fields[path] = 1;
+        }
+      }
+    }
 
     const getFn = lf.def.get || lf.def.getServer;
     if (getFn) {
       const paths = Tyr.functions.paths(getFn);
 
       for (const path of paths) {
-        fields[path] = 1;
-      }
-    }
-
-    const lfDef = lf.def.labelField;
-
-    if (typeof lfDef === 'object' && !!lfDef.uses) {
-      for (const path of lfDef.uses) {
         fields[path] = 1;
       }
     }

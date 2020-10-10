@@ -827,9 +827,11 @@ export class TyrComponent<
    * * * DECORATORS
    */
 
+  @observable
   decorator?: TyrDecorator<D>;
 
   setDecoratorRef = (decorator: TyrDecorator<D>) => {
+    if (this.decorator !== decorator) this.refresh();
     this.decorator = decorator;
   };
 
@@ -843,7 +845,7 @@ export class TyrComponent<
       <ComponentContext.Provider value={this as any}>
         {decorator ? (
           React.cloneElement(decorator!, {}, children())
-        ) : parent ? (
+        ) : parent && parent.componentName !== 'form' ? (
           <Modal className="tyr-wide-modal">{children()}</Modal>
         ) : (
           <Panel>{children()}</Panel>

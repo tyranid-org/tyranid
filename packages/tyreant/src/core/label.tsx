@@ -8,12 +8,32 @@ import { Tyr } from 'tyranid/client';
 import { TyrPathProps } from './path';
 import { TyrTypeProps } from '../type/type';
 
-export type TyrLabelRenderer = (doc: Tyr.Document<any>) => JSX.Element;
+export const labelFieldFor = (
+  props: TyrPathProps<any>,
+  collection: Tyr.CollectionInstance<any>
+) => {
+  const { labelField } = props;
+  return labelField ? collection.paths[labelField] : collection.labelField;
+};
+
+// usually want to use getLabelRenderer over this
+export const labelFor = (
+  props: TyrPathProps<any>,
+  document: Tyr.Document<any>
+) => {
+  const { labelField } = props;
+
+  return labelField
+    ? ((document as any)[labelField] as string)
+    : document.$label;
+};
 
 export const labelForProps = (props: TyrTypeProps<any>) => {
   const label = props.label;
   return label || props.path!.pathLabel;
 };
+
+export type TyrLabelRenderer = (doc: Tyr.Document<any>) => JSX.Element;
 
 export const renderFieldLabel = (props: TyrTypeProps<any>) => {
   const { path } = props;
@@ -39,8 +59,12 @@ export const getLabelRenderer = <D extends Tyr.Document>(
   let lr = pathProps.filterOptionRenderer;
   if (lr) return lr;
 
-  const link = pathProps.path?.detail.link;
+  const { labelField } = pathProps;
+  if (labelField) {
+    return (doc: D) => <>{(doc as any)[labelField]}</>;
+  }
 
+  const link = pathProps.path?.detail.link;
   if (link) {
     lr = pathProps.theme?.collections?.[link.def.name]
       ?.labelRenderer as TyrLabelRenderer;

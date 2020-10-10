@@ -71,7 +71,6 @@ export interface TyrPathProps<D extends Tyr.Document>
     | 'switch' // booleans
     | 'textarea'; // text
   default?: any;
-  label?: string | React.ReactNode;
   className?: string;
   placeholder?: string;
   typeUi?:
@@ -85,6 +84,23 @@ export interface TyrPathProps<D extends Tyr.Document>
     | 'datetime'
     | 'email'
     | undefined;
+
+  // LABELS
+  label?: string | React.ReactNode;
+
+  /**
+   * Specifies to use the given field as the label field.  For example, if you wanted to show
+   * country codes instead of country names in a dropdown you could use:
+   *
+   * <.... labelField="code" ... />
+   *
+   * Analogous to the Field model definition labelField option.
+   */
+  labelField?: string;
+  /**
+   * Suppress the default generation of field labels.
+   */
+  noLabel?: boolean;
   translateForWhiteLabel?: (label: string) => string;
 
   // FORM ITEMS
@@ -101,10 +117,6 @@ export interface TyrPathProps<D extends Tyr.Document>
   mapDocumentValueToForm?: (value: any, document: D) => any;
   mapFormValueToDocument?: (value: any, document: D) => any;
   mode?: 'view' | 'edit' | 'search';
-  /**
-   * Suppress the default generation of field labels.
-   */
-  noLabel?: boolean;
   onChange?: (value: any, event: any, props: TyrTypeProps<D>) => void;
   onBlur?: (event: any) => void;
   tabIndex?: number;

@@ -4,11 +4,23 @@ import { observer } from 'mobx-react';
 
 import { Tyr } from 'tyranid/client';
 
-import { TyrDecorator, withThemeAndParent } from './decorator';
+import {
+  TyrDecorator,
+  TyrDecoratorProps,
+  withThemeAndParent,
+} from './decorator';
 
 @observer
-class TyrPanelBase<D extends Tyr.Document> extends TyrDecorator<D> {
+class TyrPanelBase<
+  D extends Tyr.Document,
+  Props extends TyrDecoratorProps<D> = TyrDecoratorProps<D>
+> extends TyrDecorator<D> {
   componentName = 'panel';
+
+  constructor(props: Props) {
+    super(props);
+    this.visible = this.props.defaultOpen ?? true;
+  }
 
   render() {
     const { children, className } = this.props;

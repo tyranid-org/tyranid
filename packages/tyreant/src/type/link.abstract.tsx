@@ -13,6 +13,7 @@ import {
   decorateField,
   getValue,
   getLabelRenderer,
+  labelFor,
 } from '../core';
 
 type ModeOption = SelectProps<any>['mode'];
@@ -41,7 +42,7 @@ export const findByLabel = (
 ) => {
   label = label.toLowerCase?.() || label;
   return (props?.linkLabels || collection.values).find(
-    lv => lv.$label?.toLowerCase() === label
+    lv => labelFor(props, lv as any)?.toLowerCase() === label
   );
 };
 
@@ -69,8 +70,8 @@ export const sortLabels = (labels: any[], props: TyrPathProps<any>) => {
     sortedLabels.sort((a, b) => a.$id - b.$id);
   } else {
     sortedLabels.sort((a, b) =>
-      (a.$label?.toLowerCase?.() ?? '').localeCompare(
-        b.$label?.toLowerCase?.() ?? ''
+      (labelFor(props, a)?.toLowerCase?.() ?? '').localeCompare(
+        labelFor(props, b)?.toLowerCase?.() ?? ''
       )
     );
   }
@@ -168,7 +169,7 @@ export class TyrLinkAbstract<
   loadedMode?: 'view' | 'edit' | 'search';
   async initialSearch() {
     const { props } = this;
-    const { path, mode: controlMode } = props;
+    const { path, mode: controlMode, labelField } = props;
     let searched = false;
     let v = path!.get(props.document);
     if (v === null) {
@@ -177,9 +178,13 @@ export class TyrLinkAbstract<
     }
 
     if (controlMode === 'view') {
-      Tyr.mapAwait(path!.detail.link!.idToLabel(v), label =>
-        this.setState({ viewLabel: label })
-      );
+      const link = path!.detail.link!;
+      const label = labelField
+        ? ((await link.byId(v, {
+            fields: link.labelProjection(labelField),
+          })) as any)?.[labelField]
+        : await link.idToLabel(v);
+      this.setState({ viewLabel: label });
     } else {
       if (this.link!.isStatic()) {
         this.setState({
@@ -207,7 +212,7 @@ export class TyrLinkAbstract<
   search = debounce(
     async (text?: string) => {
       const { props } = this;
-      const { component, path, document, getSearchIds } = props;
+      const { component, path, document, getSearchIds, labelField } = props;
       const link = this.link!;
 
       if (this.mounted) this.setState({ loading: true });
@@ -220,14 +225,24 @@ export class TyrLinkAbstract<
         opts = { query };
 
       const promises: Promise<Tyr.Document[]>[] = [
-        this.linkField!.labels(document!, text, opts),
+        labelField
+          ? link.findAll({
+              ...(text && {
+                query: {
+                  [labelField]: new RegExp(text, 'i'),
+                },
+              }),
+              projection: link.labelProjection(labelField),
+              sort: { [labelField]: 1 },
+            })
+          : this.linkField!.labels(document!, text, opts),
       ];
 
       // include the current value
       const val = getValue(props);
 
       if (val) {
-        const fields = link.labelProjection();
+        const fields = link.labelProjection(labelField);
 
         // switch to simple Array.isArray() once we move to mobx 5
         const ids =
