@@ -848,16 +848,13 @@ export function generateClientLibrary() {
 
       if (search) {
         var re = new RegExp(search, 'i');
-        values = values.filter(function(val) {
-          return re.test(val.$label);
-        });
+        const { collection } = field;
+        values = values.filter(val => re.test(collection.labelFor(val, opts)));
       }
 
       const where = this.def.where;
       if (where) {
-        values = values.filter(function(val) {
-          return _.isMatch(val, where);
-        });
+        values = values.filter(val => _.isMatch(val, where));
       }
 
       return values.map(doc => new to(doc));
@@ -2437,7 +2434,7 @@ Collection.prototype.connect = function ({ app, auth, http }) {
               req,
             };
             const results = await col.labels(req.params.search || '', opts);
-            flattenProjection(opts);
+            flattenProjection(opts); // is this needed?
             res.json(results.map(r => r.$toClient(opts)));
           } catch (err) {
             handleException(res, err);
@@ -2460,6 +2457,7 @@ Collection.prototype.connect = function ({ app, auth, http }) {
               throw new AppError('labels not applicable to ' + pathName);
 
             const opts = {
+              ...rawOpts,
               auth: req.user,
               user: req.user,
               req,

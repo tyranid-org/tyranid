@@ -219,7 +219,7 @@ export class TyrLinkAbstract<
 
       const fetchId = ++this.lastFetchId;
 
-      let opts;
+      let opts: any;
       let query;
       if (path?.detail.isId() && (query = component?.props.query))
         opts = { query };

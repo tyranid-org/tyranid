@@ -346,7 +346,11 @@ declare module 'tyranid/client' {
       format(value: any): string;
       isId(): boolean;
       labelify(value: any): Promise<any>;
-      labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
+      labels(
+        doc: Document,
+        text?: string,
+        opts?: { labelField?: string }
+      ): Promise<Document[]>;
       validate(
         document: D,
         opts: { trait?: ActionTrait }
@@ -405,10 +409,10 @@ declare module 'tyranid/client' {
       labelField: any;
       labelImageField: any;
       orderField: any;
-      labelFor(doc: D | object): string;
+      labelFor(doc: D | object, opts?: { labelField: string }): string;
       labelProjection(labelField?: string): any; // Mongo Projection
-      labels(text: string): Promise<D[]>;
-      labels(ids: string[]): Promise<D[]>;
+      labels(text: string, opts?: { labelField?: string }): Promise<D[]>;
+      labels(ids: string[], opts?: { labelField?: string }): Promise<D[]>;
       labels(_: any): Promise<D[]>;
       on(opts: any): () => void;
       parsePath(text: string): PathInstance;

@@ -1015,9 +1015,9 @@ export namespace Tyr {
     labelField: FieldInstance<D>;
     labelImageField: FieldInstance<D>;
     orderField: FieldInstance<D>;
-    labelFor(doc: MaybeRawDocument): string;
-    labels(text: string): Promise<D[]>;
-    labels(ids: string[]): Promise<D[]>;
+    labelFor(doc: D | object, opts?: { labelField: string }): string;
+    labels(text: string, opts?: { labelField?: string }): Promise<D[]>;
+    labels(ids: string[], opts?: { labelField?: string }): Promise<D[]>;
     labels(_: any): Promise<D[]>;
 
     methodName?: string;
@@ -1146,7 +1146,11 @@ export namespace Tyr {
     format(value: any): string;
     isId(): boolean;
     labelify(value: any): Promise<any>;
-    labels(doc: Document, text?: string, opts?: any): Promise<Document[]>;
+    labels(
+      doc: Document,
+      text?: string,
+      opts?: { labelField?: string }
+    ): Promise<Document[]>;
     validate(
       document: D,
       opts?: { trait?: ActionTrait }

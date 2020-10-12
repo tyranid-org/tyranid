@@ -637,11 +637,12 @@ export default class Collection {
   }
 
   /** @isomorphic */
-  labelFor(doc) {
-    const collection = this,
-      labelField = collection.labelField;
+  labelFor(doc, opts) {
+    const collection = this;
 
-    if (!labelField) {
+    const labelFieldPath = opts?.labelField ?? collection.labelField?.pathName;
+
+    if (!labelFieldPath) {
       throw new Error(
         'No labelField defined for collection ' + collection.def.name
       );
@@ -649,7 +650,7 @@ export default class Collection {
 
     // TODO:  have this use parsePath() to walk the object in case the label is stored in an embedded object
     // TODO:  support computed properties
-    return doc[labelField.pathName];
+    return doc[labelFieldPath];
   }
 
   /**  @isomorphic */
@@ -697,25 +698,39 @@ export default class Collection {
   }
 
   async labels(text, opts) {
-    const lf = this.labelField;
-    if (!lf) {
-      throw new Error(
-        `Collection "${this.name}" does not have a label field defined`
-      );
+    const labelField = opts?.labelField;
+    let lfPathName, lf;
+
+    if (labelField) {
+      lfPathName = labelField;
+      lf = this.paths[labelField];
+    } else {
+      lf = this.labelField;
+      if (!lf) {
+        throw new Error(
+          `Collection "${this.name}" does not have a label field defined`
+        );
+      }
+
+      lfPathName = lf.pathName;
     }
 
     const query = _.isObject(text)
       ? text
       : {
-          [lf.pathName]: new RegExp(text, 'i'),
+          [lfPathName]: new RegExp(text, 'i'),
         };
 
-    const fields = this.labelProjection();
+    const fields = this.labelProjection(labelField);
     let sort;
     if (this.fields.order) {
       sort = { order: 1 };
-    } else if (!lf.def.get || lf.db) {
-      sort = { [lf.spath]: 1 };
+    } else if (lf) {
+      if (!lf.def.get || lf.db) {
+        sort = { [lf.spath]: 1 };
+      }
+    } else {
+      sort = { [lfPathName]: 1 };
     }
 
     const labels = await this.findAll({
@@ -725,7 +740,7 @@ export default class Collection {
       ...opts,
     });
 
-    return labels.filter(l => !!l.$label);
+    return labels.filter(l => !!this.labelFor(l, opts));
   }
 
   find(...args) {

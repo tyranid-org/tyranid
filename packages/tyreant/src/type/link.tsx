@@ -299,8 +299,13 @@ const LinkFilterDropdown = ({
             }
           } else {
             if (!link.isStatic()) {
+              const { labelField } = pathProps;
               linkField
-                .labels(new path.tail.collection({}), filterSearchValue)
+                .labels(
+                  new path.tail.collection({}),
+                  filterSearchValue,
+                  labelField ? { labelField } : undefined
+                )
                 .then(results => {
                   delaySetLabels(
                     results.map(d => ({
