@@ -830,6 +830,12 @@ export function generateClientLibrary() {
       },
     },
 
+    spath: {
+      get() {
+        return this.path.spath;
+      },
+    },
+
     width: {
       get() {
         return this.def.width || this.type.width;

@@ -11,7 +11,7 @@ import { TyrTypeProps } from '../type/type';
 export const labelFieldFor = (
   props: TyrPathProps<any>,
   collection: Tyr.CollectionInstance<any>
-) => {
+): Tyr.FieldInstance<any> | undefined => {
   const { labelField } = props;
   return labelField ? collection.paths[labelField] : collection.labelField;
 };
@@ -26,6 +26,49 @@ export const labelFor = (
   return labelField
     ? ((document as any)[labelField] as string)
     : document.$label;
+};
+
+/**
+ * A path is sortable in the database if it is a simple value (integer, string, etc.)
+ * or if it is a link and the link's label is denormalized so is available to be sorted.
+ */
+export const isDbSortable = (props: TyrPathProps<any>) => {
+  const path = props.path!;
+  const field = path.detail;
+
+  const { link } = field;
+  if (link) {
+    const { denormal } = path;
+    if (denormal) {
+      const lf = labelFieldFor(props, link);
+      if (lf && denormal[lf.spath]) return true;
+    }
+  } else if (!field.of?.link) {
+    return true;
+  }
+
+  return false;
+};
+
+export const getDbSortPath = (props: TyrPathProps<any>) => {
+  const path = props.path!,
+    field = path.detail;
+
+  const { link } = field;
+  if (link) {
+    const { denormal } = path;
+    if (denormal) {
+      const lf = labelFieldFor(props, link);
+      if (lf) {
+        const { name } = lf;
+        if (denormal[name]) return lf && name + '_.' + lf.spath;
+      }
+    }
+  } else if (!field.of?.link) {
+    return path.spath;
+  }
+
+  return undefined;
 };
 
 export const labelForProps = (props: TyrTypeProps<any>) => {

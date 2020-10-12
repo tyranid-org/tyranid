@@ -191,7 +191,7 @@ export namespace Tyr {
 
     numbering?: Numbering;
 
-    denormal?: MongoDocument;
+    denormal?: MongoDocument; // NestedMongoProjection
     link?: string;
     relate?: 'owns' | 'ownedBy' | 'associate';
     where?: MongoQuery | ((this: D, opts: any) => MongoQuery);
@@ -302,6 +302,8 @@ export namespace Tyr {
     label: string;
     pathLabel: string;
     tail: Tyr.FieldInstance;
+
+    denormal: MongoDocument | undefined;
 
     groupCount: number;
     groupRange(groupNumber: number): [number, number];

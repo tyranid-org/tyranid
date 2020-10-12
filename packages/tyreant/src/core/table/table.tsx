@@ -55,7 +55,7 @@ import { EditableFormRow, EditableContext, EditableCell } from './table-rows';
 import { registerComponent } from '../../common';
 import { TyrManyComponent, TyrManyComponentProps } from '../many-component';
 import { classNames } from '../../util';
-import { getLabelRenderer } from '../label';
+import { getLabelRenderer, isDbSortable } from '../label';
 import { ExpandableConfig } from 'antd/lib/table/interface';
 import { TyrFilters } from '../filter';
 
@@ -478,6 +478,7 @@ export class TyrTableBase<
       let pathName: string | undefined;
       let searchPath: Tyr.PathInstance | undefined;
 
+      // TODO:  don't think this can be a strong, remove this block?
       if (typeof column.path === 'string') {
         pathName = column.path;
         path = collection.parsePath(pathName);
@@ -522,7 +523,8 @@ export class TyrTableBase<
           const pathField = path.detail;
           // TODO:  can remove this restriction if a denormalized value is available or if
           //        we convert findAll() to be an aggregation that links to the foreign keys
-          if (isLocal || (!pathField.link && !pathField.of?.link))
+          // TODO-SORT-DENORMAL
+          if (isLocal || isDbSortable(column))
             sorter = (a: Tyr.Document, b: Tyr.Document) =>
               pathField.type.compare(pathField, path!.get(a), path!.get(b));
         }

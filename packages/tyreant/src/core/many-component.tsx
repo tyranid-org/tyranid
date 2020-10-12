@@ -5,7 +5,7 @@ import { autorun } from 'mobx';
 
 import { Tyr } from 'tyranid/client';
 
-import { getFinder, Filter } from '../tyreant';
+import { getFinder, Filter, getDbSortPath } from '../tyreant';
 import {
   TyrComponentProps,
   TyrComponentState,
@@ -235,7 +235,22 @@ export class TyrManyComponent<
     };
 
     if (projection !== 'all') {
-      const fields = Tyr.projectify(this.activePaths.map(p => p.path));
+      const fields: Tyr.MongoProjection = {};
+
+      for (const pathProps of this.activePaths) {
+        const { path } = pathProps;
+
+        if (path) {
+          path.projectify(fields);
+
+          const { link } = path.detail;
+          if (link && !link.isStatic()) {
+            // bring in the denormalized label field if we have it and it's not static
+            const labelPath = getDbSortPath(pathProps);
+            if (labelPath) fields[labelPath] = 1;
+          }
+        }
+      }
 
       if (Array.isArray(projection)) {
         for (const name of projection) {
@@ -282,7 +297,10 @@ export class TyrManyComponent<
         getFinder(path)?.(path, opts, filterValues[pathName], pathProps);
 
       const sortDirection = sortDirections[pathName];
-      if (sortDirection) sort[pathName] = sortDirection === 'ascend' ? 1 : -1;
+      if (sortDirection) {
+        const sortPath = getDbSortPath(pathProps);
+        if (sortPath) sort[sortPath] = sortDirection === 'ascend' ? 1 : -1;
+      }
     }
 
     if (!this.local) {

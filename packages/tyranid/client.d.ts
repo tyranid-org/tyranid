@@ -406,7 +406,7 @@ declare module 'tyranid/client' {
       isStatic(): boolean;
       isUid(uid: string): boolean;
       label: string;
-      labelField: any;
+      labelField: Tyr.FieldInstance;
       labelImageField: any;
       orderField: any;
       labelFor(doc: D | object, opts?: { labelField: string }): string;

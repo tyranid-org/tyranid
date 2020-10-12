@@ -191,23 +191,25 @@ byName.link = {
 
     if (field.isId()) return labelFor(props, document);
 
-    const lf = link && labelFieldFor(props, link);
-    if (lf && !link!.isStatic()) {
-      const v = path.get(document);
-      if (!v) return undefined;
+    if (link) {
+      const lf = labelFieldFor(props, link);
+      if (lf && !link.isStatic()) {
+        const v = path.get(document);
+        if (!v) return undefined;
 
-      path = path.walk(lf.name);
-      const populatedLabelValue = path.get(document);
-      if (populatedLabelValue) {
-        const { detail } = path;
-        return detail.type.format(detail, populatedLabelValue);
+        path = path.walk(lf.name);
+        const populatedLabelValue = path.get(document);
+        if (populatedLabelValue) {
+          const { detail } = path;
+          return detail.type.format(detail, populatedLabelValue);
+        }
+
+        const linkedDoc = link!.byIdIndex[v];
+        if (linkedDoc) return labelFor(props, linkedDoc);
+
+        // TODO:  queue up a label query and a rerender?
+        return 'N/A';
       }
-
-      const linkedDoc = link!.byIdIndex[v];
-      if (linkedDoc) return labelFor(props, linkedDoc);
-
-      // TODO:  queue up a label query and a rerender?
-      return 'N/A';
     }
 
     return field.type

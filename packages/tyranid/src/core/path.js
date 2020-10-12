@@ -661,6 +661,29 @@ Object.defineProperties(Path.prototype, {
       return id;
     },
   },
+
+  denormal: {
+    get() {
+      const { fields } = this;
+      const plen = fields.length;
+
+      let pi = 0,
+        denormal;
+      for (; pi < plen; pi) {
+        const field = fields[pi++];
+        denormal = field.def.denormal;
+        if (denormal) break;
+      }
+
+      for (; pi < plen; pi++) {
+        const field = fields[pi++];
+        denormal = denormal[field.name];
+        if (!denormal) break;
+      }
+
+      return denormal;
+    },
+  },
 });
 
 Path.prototype.projectify = function (projection) {
