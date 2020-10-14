@@ -765,6 +765,8 @@ export class TyrManyComponent<
   activate() {
     if (!this.mounted || !this.visible || this.active) return;
 
+    this.active = true;
+
     // this happens inside the render (after wrap()) and we don't want to kick this off during the render
     // TOOD:  move this logic into wrap()
     setTimeout(() => {
@@ -806,7 +808,6 @@ export class TyrManyComponent<
             (!decorator || decorator.visible) &&
             (!this.parent || this.mounted)
           ) {
-            this.active = true;
             this.setDefaultSort();
             this.setDefaultFilters();
             this.load();
