@@ -68,7 +68,8 @@ export function instrumentExpressServices(col, app, auth) {
               source: 'client',
               auth: req.user,
               user: req.user,
-              req: req,
+              req,
+              res,
               collection: col,
             },
             args

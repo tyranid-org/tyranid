@@ -681,6 +681,7 @@ Collection.prototype.fromClientQuery = function (query) {
           }
           break;
         case '$in':
+        case '$nin':
         case '$eq':
         case '$ne':
         case '$gt':
