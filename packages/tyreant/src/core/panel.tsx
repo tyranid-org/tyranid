@@ -17,6 +17,8 @@ class TyrPanelBase<
 > extends TyrDecorator<D> {
   componentName = 'panel';
 
+  closeable = false;
+
   constructor(props: Props) {
     super(props);
     this.visible = this.props.defaultOpen ?? true;

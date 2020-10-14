@@ -28,6 +28,8 @@ export abstract class TyrDecorator<
 > extends React.Component<Props> {
   componentName = 'decorator';
 
+  closeable = true;
+
   @observable
   visible = !!this.props.defaultOpen;
 

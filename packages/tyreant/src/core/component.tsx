@@ -739,6 +739,9 @@ export class TyrComponent<
           if (manuallyEnactedEntrance()) return false;
           def = !!this.parent;
           break;
+        case 'cancel':
+          def = this.decorator?.closeable ?? false;
+          break;
         default:
           return !!this.parent;
       }
@@ -803,7 +806,7 @@ export class TyrComponent<
 
     // Automatically Fired Actions
 
-    if (!parent) {
+    if (!parent || this.decorator?.visible) {
       if (props.document) {
         this.document = props.document as D;
         const a = entranceActions.find(a => a.is('edit', 'view', 'search'));
