@@ -699,7 +699,7 @@ export class TyrComponent<
 
         action.on = opts => {
           this.parentAction = action;
-          actFn!(opts);
+          return actFn!(opts);
         };
       }
 
