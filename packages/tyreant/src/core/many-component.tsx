@@ -209,7 +209,12 @@ export class TyrManyComponent<
 
     if (parentDocument) {
       if (linkToParent) {
-        query[linkToParent.name] = parentDocument.$id;
+        if (linkToParent.name === '_' && linkToParent.parent) {
+          // This handles the case where the parent is the form and the child is a table
+          query[linkToParent.parent.pathName] = parentDocument.$id;
+        } else {
+          query[linkToParent.name] = parentDocument.$id;
+        }
       } else if (linkFromParent) {
         const ids = linkFromParent.path.get(parentDocument);
 

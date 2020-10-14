@@ -19,7 +19,7 @@ export const traits: {
 };
 
 export const isEditTrait = (trait: string) =>
-  trait === 'edit' || trait === 'edit';
+  trait === 'edit' || trait === 'create';
 
 export const isEntranceTrait = (trait: string) =>
   traits[trait]?.type === 'entrance';
