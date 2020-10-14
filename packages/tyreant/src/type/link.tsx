@@ -165,7 +165,7 @@ byName.link = {
     if (link.labelField && !link.isStatic()) {
       if (!opts.populate) opts.populate = {};
       Tyr.assignDeep(opts.populate, {
-        [path.spath]: link.labelProjection(pathProps?.labelField),
+        [path.name]: link.labelProjection(pathProps?.labelField),
       });
     }
   },

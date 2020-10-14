@@ -197,8 +197,14 @@ export class Population {
           const name = pathNames[pi];
 
           if (Array.isArray(obj)) {
-            for (let ai = 0, alen = obj.length; ai < alen; ai++) {
-              walkToEndOfPath(pi, obj[ai]);
+            if (Tyr.isIntegerStr(name)) {
+              walkToEndOfPath(pi + 1, obj[name]);
+            } else {
+              if (name === '_') pi++;
+
+              for (let ai = 0, alen = obj.length; ai < alen; ai++) {
+                walkToEndOfPath(pi, obj[ai]);
+              }
             }
           } else if (obj === undefined || obj === null) {
             return;
@@ -213,7 +219,15 @@ export class Population {
                 obj
             );
           } else {
-            walkToEndOfPath(pi + 1, obj[pathNames[pi]]);
+            let v = obj[name];
+
+            if (!v) {
+              v = obj[Path.populateNameFor(name, false)];
+
+              if (!v) v = obj[Path.populateNameFor(name, true)];
+            }
+
+            walkToEndOfPath(pi + 1, v);
           }
         }
 

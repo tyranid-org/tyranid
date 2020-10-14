@@ -2,6 +2,8 @@ import * as _ from 'lodash';
 import { ObjectId } from 'mongodb';
 import { Roman } from './math/roman';
 
+const integerRegex = /^[0-9]+$/;
+
 function equalCustomizer(a, b) {
   // cannot use instanceof because multiple versions of MongoDB driver are probably being used
   if (
@@ -302,6 +304,10 @@ const Tyr = {
         ? v.toString()
         : v;
     });
+  },
+
+  isIntegerStr(value) {
+    return value && !!value.match(integerRegex);
   },
 
   //
