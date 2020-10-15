@@ -308,8 +308,12 @@ export function toClient(col, doc, opts) {
   function projected(key) {
     if (key.endsWith('$')) {
       if (!populate) return false;
-      const baseKey = key.substring(0, key.length - 1);
-      return populate[baseKey] || populate.includes?.(baseKey);
+      let baseKey = key.substring(0, key.length - 1);
+      if (populate[baseKey] || populate.includes?.(baseKey)) return true;
+      // TODO:  this logic is hackish
+      baseKey += '._';
+      if (populate[baseKey] || populate.includes?.(baseKey)) return true;
+      return false;
     } else {
       if (!proj) return key !== '_history' && key !== '$options';
       if (key === '_id') return proj[key] || proj[key] === undefined;

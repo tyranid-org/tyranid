@@ -163,6 +163,7 @@ byName.link = {
     }
 
     if (link.labelField && !link.isStatic()) {
+      // TODO:  see if the label is available denormalized, and if so, just project it rather than populating it
       if (!opts.populate) opts.populate = {};
       Tyr.assignDeep(opts.populate, {
         [path.name]: link.labelProjection(pathProps?.labelField),
