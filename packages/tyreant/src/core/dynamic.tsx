@@ -1,4 +1,4 @@
-import { Tyr } from 'tyranid/client';
+//import { Tyr } from 'tyranid/client';
 
 /*
 export async function loadDynamicFields(

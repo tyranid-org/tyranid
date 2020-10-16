@@ -859,6 +859,7 @@ export function generateClientLibrary() {
       }
 
       const where = this.def.where;
+      
       if (where) {
         values = values.filter(val => _.isMatch(val, where));
       }
