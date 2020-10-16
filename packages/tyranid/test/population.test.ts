@@ -95,20 +95,16 @@ export function add() {
       });
 
       it('should deep populate array links', async () => {
-        return (await User.db.find())
-          .sort({ _id: 1 })
-          .toArray()
-          .then(User.populate(['organization', 'siblings.friends.user']))
-          .then(users => {
-            expect(users[1].siblings[0].friends[0].user$._id).to.be.eql(3);
-            expect(users[1].siblings[0].friends[1].user$._id).to.be.eql(1);
-            expect(users[1].siblings[1].friends[0].user$._id).to.be.eql(1);
-            expect(users[1].siblings[1].friends[1].user$._id).to.be.eql(3);
-            expect(users[2].siblings[0].friends[0].user$._id).to.be.eql(1);
-            expect(users[2].siblings[0].friends[1].user$._id).to.be.eql(2);
-            expect(users[2].siblings[1].friends[0].user$._id).to.be.eql(2);
-            expect(users[2].siblings[1].friends[1].user$._id).to.be.eql(3);
-          });
+        const users = await User.db.find().sort({ _id: 1 }).toArray();
+        await User.populate(['organization', 'siblings.friends.user'], users);
+        expect(users[1].siblings[0].friends[0].user$._id).to.be.eql(3);
+        expect(users[1].siblings[0].friends[1].user$._id).to.be.eql(1);
+        expect(users[1].siblings[1].friends[0].user$._id).to.be.eql(1);
+        expect(users[1].siblings[1].friends[1].user$._id).to.be.eql(3);
+        expect(users[2].siblings[0].friends[0].user$._id).to.be.eql(1);
+        expect(users[2].siblings[0].friends[1].user$._id).to.be.eql(2);
+        expect(users[2].siblings[1].friends[0].user$._id).to.be.eql(2);
+        expect(users[2].siblings[1].friends[1].user$._id).to.be.eql(3);
       });
 
       it('should deep populate array link links', () => {

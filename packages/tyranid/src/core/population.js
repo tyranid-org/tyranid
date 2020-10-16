@@ -197,9 +197,16 @@ export class Population {
           const name = pathNames[pi];
 
           let v;
-          if (pi == plen - 2 && Array.isArray(( v = obj[name] )) && pathNames[pi + 1] === '_') {
+          if (
+            pi == plen - 2 &&
+            obj &&
+            Array.isArray((v = obj[name])) &&
+            pathNames[pi + 1] === '_'
+          ) {
             // array of links
-            obj[Path.populateNameFor(name, populator.denormal)] = mapIdsToObjects(v);
+            obj[
+              Path.populateNameFor(name, populator.denormal)
+            ] = mapIdsToObjects(v);
             return;
           } else if (Array.isArray(obj)) {
             if (Tyr.isIntegerStr(name)) {
@@ -214,7 +221,9 @@ export class Population {
           } else if (obj === undefined || obj === null) {
             return;
           } else if (pi === plen - 1) {
-            obj[Path.populateNameFor(name, populator.denormal)] = mapIdsToObjects(obj[name]);
+            obj[
+              Path.populateNameFor(name, populator.denormal)
+            ] = mapIdsToObjects(obj[name]);
           } else if (!_.isObject(obj)) {
             throw new Error(
               'Expected an object or array at ' +
