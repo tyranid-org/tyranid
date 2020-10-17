@@ -146,6 +146,7 @@ export interface TyrPathProps<D extends Tyr.Document>
 
   // NUMBERS / DATES
   searchRange?: [number, number] | [Moment, Moment];
+  searchNumber?: boolean;
   formatter?: (value: number) => string;
 
   /**

@@ -1,17 +1,28 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
-import { Slider, InputNumber } from 'antd';
+import { Slider, InputNumber, Select } from 'antd';
 import { SliderValue } from 'antd/lib/slider';
 
 import { Tyr } from 'tyranid/client';
 
 import { mapPropsToForm, onTypeChange } from './type';
-import { TyrFilter } from '../core/filter';
+import { TyrFilter, FilterDdProps } from '../core/filter';
 import { byName, TyrTypeProps } from './type';
 import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
+
+const { Option } = Select;
+
+const filterOptions = [
+  'Equals',
+  'Not equal',
+  'Less Than',
+  'Less Than or equals',
+  'Greater than',
+  'Greater than or equals',
+];
 
 export const TyrDoubleBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -51,46 +62,110 @@ byName.double = {
     const path = props.path!;
     const pathName = path.name;
 
-    const sliderProps = {
-      ...(props.searchRange
-        ? { min: props.searchRange[0] as number }
-        : { min: 0 }),
-      ...(props.searchRange
-        ? { max: props.searchRange[1] as number }
-        : { max: 100 }),
-    };
+    const { searchRange, searchNumber } = props;
 
-    const defaultValue: SliderValue =
-      component.filterValue(pathName) ||
-      ((props.searchRange
-        ? (props.searchRange as SliderValue)
-        : [0, 100]) as SliderValue);
+    const sliderFilter = (filterDdProps: FilterDdProps) => {
+      const defaultValue = (component.filterValue(pathName) || searchRange
+        ? (searchRange as [number, number])
+        : [0, 100]) as [number, number];
 
-    return {
-      // maybe use a different UI than integer?
-      filterDropdown: filterDdProps => (
+      const compProps = {
+        ...(searchRange ? { min: searchRange[0] as number } : { min: 0 }),
+        ...(searchRange ? { max: searchRange[1] as number } : { max: 100 }),
+      };
+
+      return (
         <TyrFilter<SliderValue>
           typeName="double"
           component={component}
           filterDdProps={filterDdProps}
           pathProps={props}
         >
-          {(searchValue, setSearchValue, search) => (
+          {(searchValue, setSearchValue) => (
             <Slider
               range
-              {...sliderProps}
-              value={(searchValue || defaultValue) as SliderValue}
-              onChange={(e: SliderValue) => {
-                setSearchValue(e);
-              }}
+              {...compProps}
+              value={searchValue || (defaultValue.slice() as [number, number])}
+              onChange={setSearchValue}
               style={{ width: 188 }}
             />
           )}
         </TyrFilter>
-      ),
-      onFilter: (value: number[] | undefined, doc: Tyr.Document) => {
+      );
+    };
+
+    const numberFilter = (filterDdProps: FilterDdProps) => (
+      <TyrFilter<[string, number?]>
+        typeName="integer"
+        component={component}
+        filterDdProps={filterDdProps}
+        pathProps={props}
+      >
+        {(searchValue, setSearchValue, search) => {
+          const setSearchValueChoice = (choice: string) => {
+            setSearchValue([choice, searchValue ? searchValue[1] : undefined]);
+          };
+
+          const setSearchValueNumber = (value?: number) => {
+            setSearchValue([
+              searchValue ? searchValue[0] : filterOptions[0],
+              value,
+            ]);
+          };
+
+          return (
+            <React.Fragment>
+              <Select
+                defaultValue={searchValue ? searchValue[0] : filterOptions[0]}
+                onChange={setSearchValueChoice}
+                style={{ width: 188, marginBottom: 8, display: 'block' }}
+              >
+                {filterOptions.map(op => (
+                  <Option value={op}>{op}</Option>
+                ))}
+              </Select>
+
+              <InputNumber
+                autoFocus={true}
+                value={searchValue ? searchValue[1] : undefined}
+                onChange={setSearchValueNumber}
+                onPressEnter={() => search()}
+                style={{ width: 188, marginBottom: 8, display: 'block' }}
+              />
+            </React.Fragment>
+          );
+        }}
+      </TyrFilter>
+    );
+
+    return {
+      filterDropdown: searchNumber ? numberFilter : sliderFilter,
+      onFilter: (
+        value: number[] | [string, number] | undefined,
+        doc: Tyr.Document
+      ) => {
         if (value === undefined) return true;
         const intVal = (path.get(doc) as number) || 0;
+
+        if (searchNumber) {
+          switch (value[0]) {
+            case 'equals':
+              return intVal === value[1];
+            case 'Not equal':
+              return intVal !== value[1];
+            case 'Less Than':
+              return intVal < value[1];
+            case 'Less Than or equals':
+              return intVal <= value[1];
+            case 'Greater than':
+              return intVal > value[1];
+            case 'Greater than or equals':
+              return intVal >= value[1];
+            default:
+              throw new Error(`How did you pick this: ${value[0]} ?`);
+          }
+        }
+
         return intVal >= value[0] && intVal <= value[1];
       },
       /*
@@ -102,19 +177,49 @@ byName.double = {
     */
     };
   },
-  finder(path, opts, searchValue) {
+  finder(path, opts, searchValue, pathProps) {
     if (searchValue) {
-      if (!opts.query) opts.query = {};
+      if (pathProps?.searchNumber) {
+        let searchParams: object | undefined = undefined;
 
-      const searchParams = [
-        { [path.spath]: { $gte: searchValue[0] } },
-        { [path.spath]: { $lte: searchValue[1] } },
-      ];
+        switch (searchValue[0]) {
+          case 'equals':
+            searchParams = searchValue[1];
+            break;
+          case 'Not equal':
+            searchParams = { $ne: searchValue[1] };
+            break;
+          case 'Less Than':
+            searchParams = { $lt: searchValue[1] };
+            break;
+          case 'Less Than or equals':
+            searchParams = { $lte: searchValue[1] };
+            break;
+          case 'Greater than':
+            searchParams = { $gt: searchValue[1] };
+            break;
+          case 'Greater than or equals':
+            searchParams = { $gte: searchValue[1] };
+            break;
+        }
 
-      if (opts.query.$and) {
-        opts.query.$and = [...opts.query.$and, ...searchParams];
+        if (searchParams) {
+          if (!opts.query) opts.query = {};
+          opts.query[path.spath] = searchParams;
+        }
       } else {
-        opts.query.$and = searchParams;
+        if (!opts.query) opts.query = {};
+
+        const searchParams = [
+          { [path.spath]: { $gte: searchValue[0] } },
+          { [path.spath]: { $lte: searchValue[1] } },
+        ];
+
+        if (opts.query.$and) {
+          opts.query.$and = [...opts.query.$and, ...searchParams];
+        } else {
+          opts.query.$and = searchParams;
+        }
       }
     }
   },
