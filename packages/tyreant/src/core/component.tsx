@@ -376,6 +376,10 @@ export class TyrComponent<
     }
   }
 
+  async validate(): Promise<any> {
+    return undefined!;
+  }
+
   async find(document: D) {
     // TODO:  move this logic to OneComponent?
     const { collection, linkToParent, linkFromParent } = this;

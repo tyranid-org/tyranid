@@ -499,6 +499,8 @@ export function TyrActionBar<D extends Tyr.Document>({
     !!centerActions.length +
     !!rightActions.length;
 
+  const { document } = component;
+
   switch (sectionCount) {
     case 0:
       return <></>;
@@ -517,7 +519,11 @@ export function TyrActionBar<D extends Tyr.Document>({
                 : '')
             }
           >
-            {actions.map(a => a.renderFrom(component))}
+            {actions
+              .map(a =>
+                a.isHidden(document) ? undefined : a.renderFrom(component)
+              )
+              .filter(a => !!a)}
           </Col>
         </Row>
       );
@@ -533,17 +539,29 @@ export function TyrActionBar<D extends Tyr.Document>({
           >
             {leftActions.length > 0 && (
               <div className="tyr-action-bar-section tyr-left">
-                {leftActions.map(a => a.renderFrom(component))}
+                {leftActions
+                  .map(a =>
+                    a.isHidden(document) ? undefined : a.renderFrom(component)
+                  )
+                  .filter(a => !!a)}
               </div>
             )}
             {centerActions.length > 0 && (
               <div className="tyr-action-bar-section tyr-center">
-                {centerActions.map(a => a.renderFrom(component))}
+                {centerActions
+                  .map(a =>
+                    a.isHidden(document) ? undefined : a.renderFrom(component)
+                  )
+                  .filter(a => !!a)}
               </div>
             )}
             {rightActions.length > 0 && (
               <div className="tyr-action-bar-section tyr-right">
-                {rightActions.map(a => a.renderFrom(component))}
+                {rightActions
+                  .map(a =>
+                    a.isHidden(document) ? undefined : a.renderFrom(component)
+                  )
+                  .filter(a => !!a)}
               </div>
             )}
           </Col>

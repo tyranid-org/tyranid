@@ -90,6 +90,14 @@ export class TyrFormBase<
     );
   }
 
+  async validate() {
+    const activePaths = this.activePaths
+      .map(path => path.path?.name)
+      .filter(s => s) as string[];
+
+    return await this.form.validateFields(activePaths);
+  }
+
   render() {
     const { document } = this;
     const {
@@ -200,11 +208,7 @@ export async function submitForm<D extends Tyr.Document>(
   const { form } = tyrForm;
 
   try {
-    const activePaths = tyrForm.activePaths
-      .map(path => path.path?.name)
-      .filter(s => s) as string[];
-
-    /*const store = */ await form!.validateFields(activePaths);
+    tyrForm.validate();
 
     if (!tyrForm.isSearching) {
       await document.$save();

@@ -246,7 +246,9 @@ export class TyrLinkAbstract<
 
         // switch to simple Array.isArray() once we move to mobx 5
         const ids =
-          typeof val === 'string' ? [val] : getSearchIds?.(val) || val;
+          typeof val === 'string' || typeof val === 'number'
+            ? [val]
+            : getSearchIds?.(val) || val;
 
         promises.push(link.byIds(ids, { fields }));
       }
