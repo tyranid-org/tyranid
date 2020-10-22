@@ -46,6 +46,11 @@ export interface TyrActionFnOpts<D extends Tyr.Document> {
    * Equivalent to !!document?.$id
    */
   isNew: boolean;
+
+  /**
+   * if action.input === 1
+   */
+  store: { [name: string]: any };
 }
 
 export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
@@ -64,6 +69,10 @@ export class TyrActionFnOptsWrapper<D extends Tyr.Document> {
 
   get isNew() {
     return !!this.document?.$id;
+  }
+
+  get store() {
+    return this.self.store;
   }
 }
 
@@ -112,7 +121,10 @@ export interface TyrActionOpts<D extends Tyr.Document> {
    * decorated action should be performed.
    */
   on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
-  hide?: boolean | undefined | ((doc: D) => boolean | undefined);
+  hide?:
+    | boolean
+    | undefined
+    | ((opts: TyrActionFnOpts<D>) => boolean | undefined);
 }
 
 let nextKey = 0;
@@ -215,7 +227,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   target?: string;
   on?: (opts: TyrActionFnOpts<D>) => void | boolean | Promise<void | boolean>;
-  hide?: boolean | undefined | ((doc: D) => boolean | undefined);
+  hide?:
+    | boolean
+    | undefined
+    | ((opts: TyrActionFnOpts<D>) => boolean | undefined);
   utility?: boolean;
   align?: 'left' | 'center' | 'right';
   /**
@@ -312,17 +327,23 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     const { hide } = this;
 
     if (typeof hide === 'function') {
-      return hide(document!);
+      return hide(this.wrappedFnOpts());
     } else {
       return !!hide;
     }
   }
 
-  wrappedFnOpts(opts: Partial<TyrActionFnOpts<D>>) {
+  wrappedFnOpts(opts?: Partial<TyrActionFnOpts<D>>) {
     const wrapper = new TyrActionFnOptsWrapper<D>();
-    Object.assign(wrapper, opts);
-    wrapper.self = this.self as TyrComponent<D>;
-    return wrapper;
+    const { self } = this;
+
+    if (opts) {
+      Object.assign(wrapper, opts);
+      wrapper.self = self as TyrComponent<D>;
+    } else {
+      Object.assign(wrapper, self!.actionFnOpts());
+    }
+    return wrapper as TyrActionFnOpts<D>;
   }
 
   act(opts: Partial<TyrActionFnOpts<D>>) {

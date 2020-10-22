@@ -97,9 +97,6 @@ export class TyrComponent<
   }
 
   @observable
-  loading = 0;
-
-  @observable
   visible = false;
 
   mounted = false;
@@ -200,6 +197,13 @@ export class TyrComponent<
     }
   }
   */
+
+  /*
+   * * * STORE
+   */
+
+  @observable
+  store: { [name: string]: any } = {};
 
   /*
    * * * PATHS
@@ -344,6 +348,25 @@ export class TyrComponent<
     return false;
   }
 
+  @observable
+  loading = 0;
+
+  /**
+   * This loads the data and takes into account local vs remote data, filters, sorts, and so on.
+   * If the data needs to be queried then a call to find() will be performed.
+   */
+  async load() {}
+
+  /**
+   * This will reload data if the query has changed.
+   */
+  async query() {}
+
+  /**
+   * This will force a reload even if it is the same query.
+   */
+  async requery() {}
+
   async refresh() {
     this.setState({});
 
@@ -358,15 +381,7 @@ export class TyrComponent<
     }
   }
 
-  /**
-   * This will reload data if the query has changed.
-   */
-  async query() {}
-
-  /**
-   * This will force a reload even if it is the same query.
-   */
-  async requery() {}
+  async find() {}
 
   /**
    * These are the options that were passed to the most recent query().
@@ -376,7 +391,7 @@ export class TyrComponent<
    *
    * For example, the query is "table.findOpts.query".
    */
-  findOpts?: any; // Tyr.FindAllOptions
+  findOpts?: any; // Tyr.FindOneOptions | Tyr.FindAllOptions
 
   async findById(id: Tyr.IdType<D>) {
     const { collection } = this;
@@ -391,40 +406,6 @@ export class TyrComponent<
 
   async validate(): Promise<any> {
     return undefined!;
-  }
-
-  async find(document: D) {
-    // TODO:  move this logic to OneComponent?
-    const { collection, linkToParent, linkFromParent } = this;
-    let updatedDocument: D | null | undefined;
-
-    if (!collection) throw new Tyr.AppError('no collection');
-
-    if (linkToParent) {
-      updatedDocument = (await collection.findOne({
-        query: {
-          [linkToParent.path.spath]: document.$id,
-        },
-      })) as D;
-    } else if (linkFromParent) {
-      const id = linkFromParent.path.get(document);
-
-      updatedDocument = (await collection.byId(id)) as D;
-    } else {
-      if (collection.id !== document.$model.id) {
-        throw new Tyr.AppError('mismatched collection ids');
-      }
-
-      updatedDocument = (await collection.byId(document.$id)) as D;
-      if (!updatedDocument) {
-        throw new Tyr.AppError('could not find document');
-      }
-    }
-
-    if (updatedDocument) {
-      this.document = updatedDocument;
-      this.refresh();
-    }
   }
 
   /*
@@ -613,6 +594,7 @@ export class TyrComponent<
       documents: this.selectedIds.map(
         id => this.collection!.byIdIndex[id]
       ) as D[],
+      self: this,
     } as any;
   }
 
@@ -650,7 +632,10 @@ export class TyrComponent<
               const { documents } = opts;
               if (documents) this.documents = documents;
 
-              if (opts.document) await this.find(opts.document);
+              if (opts.document) {
+                this.document = opts.document;
+                await this.find();
+              }
 
               if (this.canEdit && !this.document) {
                 this.document = new collection({});
@@ -658,7 +643,8 @@ export class TyrComponent<
             };
           } else {
             actFn = async opts => {
-              await this.find(opts.document!);
+              this.document = opts.document;
+              await this.find();
               if (!this.document) {
                 this.document = this.createDocument(opts);
                 this.refresh();

@@ -187,7 +187,11 @@ export const TyrForm = <D extends Tyr.Document, ExtraFormProps = {}>(
   />
 );
 
-export function createForm<D extends Tyr.Document, ExtraFormProps = {}>(
+export function createForm<
+  D extends Tyr.Document,
+  ExtraFormProps = {},
+  STORE = any
+>(
   formProps: TyrFormProps<D> & ExtraFormProps,
   WrappedComponent: React.ComponentType<FormRenderComponentProps<D>>
 ) {
@@ -205,7 +209,7 @@ export async function submitForm<D extends Tyr.Document>(
   tyrForm: TyrFormBase<D>,
   document: D
 ): Promise<boolean> {
-  const { form } = tyrForm;
+  //const { form } = tyrForm;
 
   try {
     tyrForm.validate();

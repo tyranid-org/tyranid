@@ -128,7 +128,8 @@ export interface TyrTableProps<D extends Tyr.Document>
 
 @observer
 export class TyrTableBase<
-  D extends Tyr.Document = Tyr.Document
+  D extends Tyr.Document = Tyr.Document,
+  STORE = any
 > extends TyrManyComponent<D, TyrTableProps<D>> {
   componentName = 'table';
   hasConfig = true;

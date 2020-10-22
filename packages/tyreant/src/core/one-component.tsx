@@ -22,4 +22,59 @@ export class TyrOneComponent<
   D extends Tyr.Document = Tyr.Document,
   Props extends TyrOneComponentProps<D> = TyrOneComponentProps<D>,
   State extends TyrOneComponentState<D> = TyrOneComponentState<D>
-> extends TyrComponent<D, Props, State> {}
+> extends TyrComponent<D, Props, State> {
+  async query() {
+    if (!this.visible || this.loading) return;
+
+    await this.load();
+  }
+
+  async requery() {
+    await this.query();
+  }
+
+  async load() {
+    try {
+      this.loading++;
+
+      if (this.mounted) {
+        await this.find();
+      }
+    } finally {
+      this.loading--;
+    }
+  }
+
+  async find() {
+    const { collection, document, linkToParent, linkFromParent } = this;
+    let updatedDocument: D | null | undefined;
+
+    if (!collection) throw new Tyr.AppError('no collection');
+
+    if (linkToParent) {
+      updatedDocument = (await collection.findOne({
+        query: {
+          [linkToParent.path.spath]: document.$id,
+        },
+      })) as D;
+    } else if (linkFromParent) {
+      const id = linkFromParent.path.get(document);
+
+      updatedDocument = (await collection.byId(id)) as D;
+    } else {
+      if (collection.id !== document.$model.id) {
+        throw new Tyr.AppError('mismatched collection ids');
+      }
+
+      updatedDocument = (await collection.byId(document.$id)) as D;
+      if (!updatedDocument) {
+        throw new Tyr.AppError('could not find document');
+      }
+    }
+
+    if (updatedDocument) {
+      this.document = updatedDocument;
+      this.refresh();
+    }
+  }
+}

@@ -148,12 +148,12 @@ export class TyrManyComponent<
         if (this.local) {
           if (!this.allDocuments) {
             if (props.documents) this.allDocuments = props.documents!;
-            else await this.findAll();
+            else await this.find();
           }
 
           this.sort(this.filter(this.allDocuments!));
         } else {
-          this.findAll();
+          this.find();
         }
 
         if (this.local) {
@@ -327,7 +327,7 @@ export class TyrManyComponent<
     await this.props.preFind?.call(this, opts);
   }
 
-  async findAll() {
+  async find() {
     const { collection } = this.props;
 
     try {
