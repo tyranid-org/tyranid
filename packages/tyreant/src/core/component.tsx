@@ -71,6 +71,9 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
   parent?: TyrComponent;
   linkFromParent?: string;
   linkToParent?: string;
+
+  onRefreshDocument?: (document?: D) => void;
+  onRefreshDocuments?: (documents?: D[] & { count?: number }) => void;
 }
 
 export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {}
@@ -343,6 +346,16 @@ export class TyrComponent<
 
   async refresh() {
     this.setState({});
+
+    const { onRefreshDocument, onRefreshDocuments } = this.props;
+
+    if (onRefreshDocument) {
+      onRefreshDocument(this.document);
+    }
+
+    if (onRefreshDocuments) {
+      onRefreshDocuments(this.documents);
+    }
   }
 
   /**
@@ -646,7 +659,10 @@ export class TyrComponent<
           } else {
             actFn = async opts => {
               await this.find(opts.document!);
-              if (!this.document) this.document = this.createDocument(opts);
+              if (!this.document) {
+                this.document = this.createDocument(opts);
+                this.refresh();
+              }
             };
           }
         } else if (action.is('cancel')) {
@@ -685,6 +701,7 @@ export class TyrComponent<
           const rslt = actFn?.(opts);
           // delay setting the document until after the create actFn is done to avoid multiple renders
           this.document = d;
+          this.refresh();
           return rslt;
         };
       }
@@ -1082,6 +1099,7 @@ export class TyrComponent<
       switch (arg) {
         case 'document':
           this.document = this.createDocument();
+          this.refresh();
           break;
         case 'filters':
           this.resetFilters();
