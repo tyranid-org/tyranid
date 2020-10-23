@@ -14,6 +14,8 @@ export const traits: {
 
   filter: { type: 'builtin' },
 
+  config: { type: 'builtin' },
+
   save: { type: 'exit' },
   cancel: { type: 'exit' },
 };

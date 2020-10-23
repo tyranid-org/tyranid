@@ -59,8 +59,9 @@ export namespace Tyr {
     // exit actions
     | 'save'
     | 'cancel'
-    // filter control action
+    // built in actions
     | 'filter'
+    | 'config'
     // not used, but like filter control
     | 'import'
     | 'export';

@@ -74,10 +74,13 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
 
   onRefreshDocument?: (document?: D) => void;
   onRefreshDocuments?: (documents?: D[] & { count?: number }) => void;
+
+  onActionLabelClick?: () => void;
 }
 
 export interface TyrComponentState<D extends Tyr.Document = Tyr.Document> {}
 
+let nextComponentId = 1;
 /**
  * A TyrComponent represents a react component that contains documents.  Examples
  * are TyrTable, TyrForm, TyrKanBan, and so on.
@@ -90,10 +93,11 @@ export class TyrComponent<
 > extends React.Component<Props, State> {
   collection!: Tyr.CollectionInstance<D>;
 
+  componentId = nextComponentId++;
   componentName = '';
 
   get displayName() {
-    return this.constructor.name + ':' + this.collection.name;
+    return `${this.constructor.name}:${this.collection.name}:${this.componentId}`;
   }
 
   @observable
@@ -526,6 +530,7 @@ export class TyrComponent<
 
   @observable
   selectedIds: string[] = [];
+  setSelectedIds = (ids: string[]) => (this.selectedIds = ids);
 
   /*
    * * * ACTIONS
@@ -630,7 +635,7 @@ export class TyrComponent<
           } else if (action.input === '*' || action.input === '0..*') {
             actFn = async opts => {
               const { documents } = opts;
-              if (documents) this.documents = documents;
+              this.documents = documents;
 
               if (opts.document) {
                 this.document = opts.document;
@@ -668,13 +673,13 @@ export class TyrComponent<
           } else if (action.input === '*' || action.input === '0..*') {
             action.on = async opts => {
               const { documents } = opts;
-              if (documents) this.documents = documents;
+              this.documents = documents;
 
               return actFn?.(opts);
             };
           } else {
             action.on = async opts => {
-              if (!this.document) this.document = opts.document;
+              this.document = opts.document;
               return actFn?.(opts);
             };
           }
@@ -1030,6 +1035,14 @@ export class TyrComponent<
       });
     }
   }
+
+  @observable
+  showConfig = false;
+
+  onClickConfig = () => {
+    this.props.onActionLabelClick?.();
+    this.showConfig = true;
+  };
 
   onUpdateComponentConfig = async (
     savedComponentConfig: Tyr.TyrComponentConfig,

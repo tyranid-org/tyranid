@@ -91,7 +91,6 @@ export interface TyrTableProps<D extends Tyr.Document>
   collection: Tyr.CollectionInstance<D>;
   export?: boolean | { background?: boolean };
   actionHeaderLabel?: string | React.ReactNode;
-  actionIcon?: Tyr.anny;
   actionTrigger?: 'hover' | 'click';
   actionColumnClassName?: string;
   pinActionsRight?: boolean;
@@ -106,7 +105,9 @@ export interface TyrTableProps<D extends Tyr.Document>
   onAfterSaveDocument?: (document: D, changedFields?: string[]) => void;
   onBeforeSaveDocument?: (document: D) => boolean | undefined | void;
   onCancelAddNew?: () => void;
-  onActionLabelClick?: () => void;
+
+  actionIcon?: Tyr.anny;
+
   scroll?: { x?: number | true | string; y?: number | string };
   footer?: (currentPageData: D[]) => React.ReactNode;
   onLoad?: (table: TyrTableBase<any>) => void;
@@ -139,9 +140,6 @@ export class TyrTableBase<
   newDocument?: D;
   editingDocument?: D;
   isSavingDocument = false;
-
-  @observable
-  showConfig = false;
 
   @observable
   showExport = false;
@@ -840,10 +838,7 @@ export class TyrTableBase<
         onHeaderCell: props => {
           if (props.key === '$actions' && !!config) {
             return {
-              onClick: () => {
-                onActionLabelClick?.();
-                this.showConfig = true;
-              },
+              onClick: this.onClickConfig,
             };
           }
 
@@ -960,8 +955,6 @@ export class TyrTableBase<
   };
 
   closeConfigModal = () => (this.showConfig = false);
-
-  setSelectedRows = (ids: string[]) => (this.selectedIds = ids);
 
   moveRow = (dragIndex: number, hoverIndex: number) => {
     if (dragIndex === hoverIndex) return;

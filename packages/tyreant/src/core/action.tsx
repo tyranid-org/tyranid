@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Fragment } from 'react';
-import { Button, Col, Row, notification } from 'antd';
+import { Button, Col, Row, notification, Tooltip } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -8,6 +8,7 @@ import type { TyrComponent } from './component';
 import { isEntranceTrait, isExitTrait } from './trait';
 import { TyrFilters } from '.';
 import { isNonLocalTrait } from '../tyreant';
+import { MenuOutlined } from '@ant-design/icons';
 
 export type ActionSet<D extends Tyr.Document> =
   | { [actionName: string]: TyrAction<D> | TyrActionOpts<D> }
@@ -396,6 +397,15 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       );
     } else if (this.traits.includes('filter')) {
       return <TyrFilters key="action-filters" component={component} />;
+    } else if (this.traits.includes('config')) {
+      return (
+        <Tooltip title="Edit Configuration" key="action-config">
+          <MenuOutlined
+            className="tyr-table-config-icon"
+            onClick={() => component.onClickConfig()}
+          />
+        </Tooltip>
+      );
     } else if (this.href) {
       const { href } = this;
 
