@@ -172,6 +172,21 @@ export class TyrComponent<
     }
   }
 
+  trace(methodName: string, ...args: any[]) {
+    // TODO:  Tyr.log
+    if (Tyr.options.env === 'development') {
+      console.log(
+        '%c%s%c%s%c',
+        'color:white;background:orange;padding:0 2px 0 2px;border-radius:3px 0 0 3px;',
+        `${this.componentName}-${this.componentId}/${this.collection.name}`,
+        'color:white;background:black;padding:0 2px 0 0;border-radius:0 3px 3px 0;',
+        '.' + methodName + '()',
+        '',
+        ...args
+      );
+    }
+  }
+
   componentWillUnmount() {
     this.mounted = false;
     this.descendantWillUnmount(this);

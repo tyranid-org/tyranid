@@ -20,6 +20,7 @@ import SecureError from './secure/secureError';
 import BooleanType from './type/boolean';
 import { flattenProjection } from './core/projection';
 import { instrumentExpressServices, serviceClientCode } from './service';
+import { env } from 'yargs';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -271,19 +272,16 @@ class Serializer {
 //let nextFnName = 1;
 function es5Fn(fn) {
   let s = fn.toString();
-  if (s.startsWith('async')) {
-    console.log('s', s);
+  if (s.startsWith('async')) 
     return s;
-  }
 
   //const name = fn.name;
 
   //if (s.startsWith('function (')) {
   //s = 'function ' + (name || '_fn' + nextFnName++) + ' (' + s.substring(10);
   /*} else */
-  if (!s.startsWith('function') && !s.startsWith('() =>')) {
+  if (!s.startsWith('function') && !s.startsWith('() =>'))
     s = 'function ' + s;
-  }
 
   return s;
 }
@@ -358,6 +356,23 @@ function translateClass(cls) {
   return s;
 }
 
+// TODO:  handle this better, and move it earlier in the chain (like when tyr is booting)
+const netEnv = () => {
+  switch (process.env.NODE_ENV) {
+    case 'dev':
+    case 'development':
+      return 'development';
+      
+    case 'prod':
+    case 'production':
+      return 'production';
+
+    default:
+      console.log('unknown NODE_ENV of "${process.env.NODE_ENV}", defaulting to production');
+      return 'production';
+  }
+}
+
 // TODO:  exposing this as a dynamic API call right now, but this could also be exposed as a
 //        gulp/build task which creates this file at build time.  This would allow this API
 //        call to be eliminated and for the file to be bundled using the client applications
@@ -393,7 +408,9 @@ export function generateClientLibrary() {
     $label: '$label',
     collections: [],
     byId: {},
-    options: {}
+    options: {
+      env: ${JSON.stringify(netEnv())}
+    }
   });
 
   ${
@@ -490,6 +507,7 @@ export function generateClientLibrary() {
   Tyr.compactMap = ${es5Fn(Tyr.compactMap)};
   Tyr.parseUid = ${es5Fn(Tyr.parseUid)};
   Tyr.byUid = ${es5Fn(Tyr.byUid)};
+  Tyr.camelize = ${es5Fn(Tyr.camelize)};
   Tyr.capitalize = ${es5Fn(Tyr.capitalize)};
   Tyr.kebabize = ${es5Fn(Tyr.kebabize)};
   Tyr.labelize = ${es5Fn(Tyr.labelize)};

@@ -172,6 +172,11 @@ const Tyr = {
   //
 
   /** @isomorphic */
+  camelize(name) {
+    return _.camelCase(name);
+  },
+
+  /** @isomorphic */
   capitalize(name, all) {
     return all
       ? _.startCase(name)

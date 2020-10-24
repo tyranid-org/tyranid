@@ -215,6 +215,7 @@ export async function submitForm<D extends Tyr.Document>(
     tyrForm.validate();
 
     if (!tyrForm.isSearching) {
+      tyrForm.trace('submitForm', 'save', document);
       await document.$save();
       document.$cache();
 

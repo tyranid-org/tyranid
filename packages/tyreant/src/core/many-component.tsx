@@ -333,6 +333,7 @@ export class TyrManyComponent<
     try {
       await this.buildFindOpts();
 
+      this.trace('find', 'findAll', this.findOpts);
       const docs = await collection!.findAll(this.findOpts);
 
       this.count = docs.count!;

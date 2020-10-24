@@ -52,20 +52,25 @@ export class TyrOneComponent<
     if (!collection) throw new Tyr.AppError('no collection');
 
     if (linkToParent) {
-      updatedDocument = (await collection.findOne({
+      this.findOpts = {
         query: {
           [linkToParent.path.spath]: document.$id,
         },
-      })) as D;
+      };
+
+      this.trace('find', 'findOne', this.findOpts);
+      updatedDocument = (await collection.findOne(this.findOpts)) as D;
     } else if (linkFromParent) {
       const id = linkFromParent.path.get(document);
 
+      this.trace('find', 'by parent Id', id);
       updatedDocument = (await collection.byId(id)) as D;
     } else {
       if (collection.id !== document.$model.id) {
         throw new Tyr.AppError('mismatched collection ids');
       }
 
+      this.trace('find', 'byId', document.$id);
       updatedDocument = (await collection.byId(document.$id)) as D;
       if (!updatedDocument) {
         throw new Tyr.AppError('could not find document');

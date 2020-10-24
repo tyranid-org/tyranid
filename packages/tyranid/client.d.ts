@@ -161,6 +161,7 @@ declare module 'tyranid/client' {
     export const collections: CollectionInstance[] & CollectionsByClassName;
 
     export const options: {
+      env: 'development' | 'production';
       whiteLabel?: (metadata: Metadata) => string | undefined;
     };
 
