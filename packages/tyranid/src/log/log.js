@@ -398,13 +398,16 @@ Log.clientCode = function (file) {
   file += `
 
 var LL = Tyr.byName.tyrLogLevel;
+Tyr.options.clientLogLevel = ${clientLogLevel._id};
+Tyr.options.serverLogLevel = ${serverLogLevel._id};
+Tyr.options.dbLogLevel = ${dbLogLevel._id};
 function log() {
 
-  var obj = {};
+  const obj = {};
 
-  var level = LL.INFO;
+  let level = LL.INFO;
 
-  function arg(opt) {
+  const arg = opt => {
     if (opt instanceof Error) {
       obj.st = opt.stack;
       if (!obj.m) {
@@ -415,7 +418,7 @@ function log() {
     } else if (_.isString(opt)) {
       obj.m = opt;
     } else if (opt.length) {
-      for (var ai=0; ai<opt.length; ai++) {
+      for (let ai=0; ai<opt.length; ai++) {
         arg(opt[ai]);
       }
     } else if (_.isObject(opt)) {
@@ -429,8 +432,8 @@ function log() {
 
   obj.l = level._id;
 
-  if (level._id >= ${clientLogLevel._id}) {
-    var str = '';
+  if (level._id >= Tyr.options.clientLogLevel) {
+    let str = '';
     if (obj.e) {
       str += obj.e;
     }
@@ -445,17 +448,17 @@ function log() {
     }
   }
 
-  if (level._id >= ${serverLogLevel._id}) {
+  if (level._id >= Tyr.options.serverLogLevel) {
     return Tyr.fetch('/api/log/_log?o=' + JSON.stringify(obj));
   }
 }
 
-Tyr.trace = function() { log(LL.byLabel('trace'), arguments); };
-Tyr.log   = function() { log(LL.byLabel('log'), arguments); };
-Tyr.info  = function() { log(LL.byLabel('info'), arguments); };
-Tyr.warn  = function() { log(LL.byLabel('warn'), arguments); };
-Tyr.error = function() { log(LL.byLabel('error'), arguments); };
-Tyr.fatal = function() { log(LL.byLabel('fatal'), arguments); };
+Tyr.trace = function() { log(LL.TRACE, arguments); };
+Tyr.log   = function() { log(LL.LOG, arguments); };
+Tyr.info  = function() { log(LL.INFO, arguments); };
+Tyr.warn  = function() { log(LL.WARN, arguments); };
+Tyr.error = function() { log(LL.ERROR, arguments); };
+Tyr.fatal = function() { log(LL.FATAL, arguments); };
 
 `;
 
