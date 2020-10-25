@@ -556,6 +556,10 @@ form textarea.tyr-markup-editor {
   }
 }
 
+.tyr-component-config-icon {
+  cursor: pointer;
+}
+
 //
 // Many Component -- Table
 //
@@ -563,10 +567,6 @@ form textarea.tyr-markup-editor {
 .tyr-table {
   width: 100%;
   padding: var(--table-padding);
-
-  .tyr-table-config-icon {
-    cursor: pointer;
-  }
 
   .tyr-quick-total {
     align-self: center;

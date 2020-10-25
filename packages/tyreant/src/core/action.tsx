@@ -401,7 +401,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
       return (
         <Tooltip title="Edit Configuration" key="action-config">
           <MenuOutlined
-            className="tyr-table-config-icon"
+            className="tyr-component-config-icon"
             onClick={() => component.onClickConfig()}
           />
         </Tooltip>

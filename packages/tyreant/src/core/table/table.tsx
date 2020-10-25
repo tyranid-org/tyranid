@@ -851,7 +851,7 @@ export class TyrTableBase<
         title: !newDocumentTable
           ? actionHeaderLabel || (
               <Tooltip title="Edit Columns">
-                <MenuOutlined className="tyr-table-config-icon" />
+                <MenuOutlined className="tyr-component-config-icon" />
               </Tooltip>
             )
           : '',
