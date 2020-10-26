@@ -33,6 +33,10 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
     this.documents = documents;
   }
 
+  get self() {
+    return this.form;
+  }
+
   get component() {
     return this.form;
   }
@@ -47,6 +51,10 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
 
   get isNew() {
     return !!this.document?.$id;
+  }
+
+  get store() {
+    return this.form.store;
   }
 }
 
