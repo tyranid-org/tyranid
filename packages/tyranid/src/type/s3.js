@@ -49,7 +49,7 @@ function keyForTmp(field, tmpId, filename) {
  *   size: number; // the size of the file
  * }
  */
-/*const S3Type = */ new Tyr.Type({
+const S3Type = new Tyr.Type({
   name: 's3',
 
   compile(compiler, field) {
@@ -102,7 +102,7 @@ function keyForTmp(field, tmpId, filename) {
         order: 0,
         async handler(event) {
           for (const doc of await event.documents) {
-            await s3.def.updateS3(doc);
+            await S3Type.def.updateS3(doc);
           }
         },
       });
@@ -112,7 +112,7 @@ function keyForTmp(field, tmpId, filename) {
         when: 'pre',
         async handler(event) {
           for (const doc of await event.documents) {
-            s3.def.removeS3(doc);
+            S3Type.def.removeS3(doc);
           }
         },
       });
@@ -158,7 +158,7 @@ function keyForTmp(field, tmpId, filename) {
             key = keyFor(field, docId, filename);
           }
 
-          /*const rslt = */ await s3.def.uploadS3(key, file.path);
+          /*const rslt = */ await S3Type.def.uploadS3(key, file.path);
           res.status(200).json({ key, tmpId });
         } catch (err) {
           console.error(err.stack);
