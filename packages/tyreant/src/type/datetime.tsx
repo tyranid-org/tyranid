@@ -30,13 +30,16 @@ export const TyrDateTimeBase = <D extends Tyr.Document>(
     };
 
     return (
-      <DatePicker
-        allowClear={false}
-        placeholder={props.placeholder}
-        autoFocus={props.autoFocus}
-        onChange={onTypeChangeFunc}
-        {...{ tabIndex: props.tabIndex }}
-      />
+      <>
+        <DatePicker
+          allowClear={false}
+          placeholder={props.placeholder}
+          autoFocus={props.autoFocus}
+          onChange={onTypeChangeFunc}
+          showTime={true}
+          {...{ tabIndex: props.tabIndex }}
+        />
+      </>
     );
   });
 };
