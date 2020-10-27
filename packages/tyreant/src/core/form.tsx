@@ -8,6 +8,7 @@ import { Form, Row, Col, message } from 'antd';
 import { FormInstance } from 'antd/lib/form';
 import { FormLayout, useForm, FormProps } from 'antd/lib/form/Form';
 
+import { TyrActionFnOpts } from '../core';
 import { TypeContext, useThemeProps } from '../core/theme';
 import { TyrThemedFieldBase, TyrPathExistsProps } from './path';
 import { registerComponent } from '../common';
@@ -22,7 +23,8 @@ export interface FormRenderComponentProps<D extends Tyr.Document> {
   ids: Tyr.IdType<D>[];
   isNew: boolean;
 }
-export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
+export class FormRenderComponentPropsWrapper<D extends Tyr.Document>
+  implements TyrActionFnOpts<D> {
   form!: TyrFormBase<D>;
   document!: D;
   documents!: D[];
@@ -33,6 +35,11 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
     this.documents = documents;
   }
 
+  get caller() {
+    // TODO:  is this right?
+    return this.form.parent as any;
+  }
+
   get self() {
     return this.form;
   }
@@ -41,8 +48,8 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document> {
     return this.form;
   }
 
-  get id() {
-    return this.document?.$id;
+  get id(): Tyr.IdType<D> {
+    return this.document?.$id as Tyr.IdType<D>;
   }
 
   get ids() {
@@ -118,64 +125,60 @@ export class TyrFormBase<
     } = this.props;
     const paths = this.activePaths;
 
-    return this.wrap(() => {
-      return (
-        <Form
-          form={this.props.form!}
-          layout={this.props.layout || 'vertical'}
-          className={'tyr-form' + (className ? ' ' + className : '')}
-          {...(labelCol && { labelCol })}
-          {...(wrapperCol && { wrapperCol })}
-          {...(labelAlign && { labelAlign })}
+    return this.wrap(() => (
+      <Form
+        form={this.props.form!}
+        layout={this.props.layout || 'vertical'}
+        className={'tyr-form' + (className ? ' ' + className : '')}
+        {...(labelCol && { labelCol })}
+        {...(wrapperCol && { wrapperCol })}
+        {...(labelAlign && { labelAlign })}
+      >
+        <TypeContext.Provider
+          value={{
+            component: (this as unknown) as TyrComponent,
+            form: this.props.form!,
+            document,
+          }}
         >
-          <TypeContext.Provider
-            value={{
-              component: (this as unknown) as TyrComponent,
-              form: this.props.form!,
-              document,
-            }}
-          >
-            {render &&
-              document &&
-              render(
+          {render &&
+            document &&
+            render(
+              new FormRenderComponentPropsWrapper(
+                this,
+                document,
+                this.documents
+              ) as any
+            )}
+          {paths &&
+            !children &&
+            !render &&
+            (paths as TyrPathExistsProps<D>[]).map(pathProps => {
+              const { path } = pathProps; // path might be a string
+              return (
+                <Row key={path.name || ((path as any) as string)} gutter={10}>
+                  <Col span={24}>{this.renderField(pathProps)} </Col>
+                </Row>
+              );
+            })}
+          {typeof children === 'function' ? (
+            document ? (
+              (children as (props: FormRenderComponentProps<D>) => JSX.Element)(
                 new FormRenderComponentPropsWrapper(
                   this,
                   document,
                   this.documents
                 ) as any
-              )}
-            {paths &&
-              !children &&
-              !render &&
-              (paths as TyrPathExistsProps<D>[]).map(pathProps => {
-                const { path } = pathProps; // path might be a string
-                return (
-                  <Row key={path.name || ((path as any) as string)} gutter={10}>
-                    <Col span={24}>{this.renderField(pathProps)} </Col>
-                  </Row>
-                );
-              })}
-            {typeof children === 'function' ? (
-              document ? (
-                (children as (
-                  props: FormRenderComponentProps<D>
-                ) => JSX.Element)(
-                  new FormRenderComponentPropsWrapper(
-                    this,
-                    document,
-                    this.documents
-                  ) as any
-                )
-              ) : (
-                <></>
               )
             ) : (
-              children
-            )}
-          </TypeContext.Provider>
-        </Form>
-      );
-    });
+              <></>
+            )
+          ) : (
+            children
+          )}
+        </TypeContext.Provider>
+      </Form>
+    ));
   }
 
   async submit(): Promise<boolean> {
@@ -195,11 +198,7 @@ export const TyrForm = <D extends Tyr.Document, ExtraFormProps = {}>(
   />
 );
 
-export function createForm<
-  D extends Tyr.Document,
-  ExtraFormProps = {},
-  STORE = any
->(
+export function createForm<D extends Tyr.Document, ExtraFormProps = {}>(
   formProps: TyrFormProps<D> & ExtraFormProps,
   WrappedComponent: React.ComponentType<FormRenderComponentProps<D>>
 ) {

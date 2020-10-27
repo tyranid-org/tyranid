@@ -96,6 +96,8 @@ export class TyrComponent<
   componentId = nextComponentId++;
   componentName = '';
 
+  renderCount = 0;
+
   get displayName() {
     return `${this.constructor.name}:${this.collection.name}:${this.componentId}`;
   }
@@ -178,7 +180,7 @@ export class TyrComponent<
       console.log(
         '%c%s%c%s%c',
         'color:white;background:orange;padding:0 2px 0 2px;border-radius:3px 0 0 3px;',
-        `${this.componentName}-${this.componentId}/${this.collection.name}`,
+        `${this.componentName}-${this.componentId}/${this.collection.name}+${this.renderCount}`,
         'color:white;background:black;padding:0 2px 0 0;border-radius:0 3px 3px 0;',
         '.' + methodName + '()',
         '',
@@ -870,6 +872,8 @@ export class TyrComponent<
 
     const Modal = TyrModal as any;
     const Panel = TyrPanel as any;
+
+    this.renderCount++;
 
     return (
       <ComponentContext.Provider value={this as any}>
