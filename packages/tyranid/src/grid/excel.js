@@ -310,31 +310,43 @@ async function fromExcel(opts) {
 
   let headerRowNumber = 1 + extraRows.length;
 
-  const actualColumns = sheet.getRow(headerRowNumber).values.map((value, idx) => {
-    const label = simplifyLabel(value || '');
+  const actualColumns = sheet
+    .getRow(headerRowNumber)
+    .values.map((value, idx) => {
+      const label = simplifyLabel(value || '');
 
-    const column = expectedColumns.find(
-      column => simplifyLabel(column.label) === label
-    );
-    if (!column) {
-      console.log(`ignoring column "${label}"`);
-      return undefined;
-    } else {
-      return column;
-    }
+      const column = expectedColumns.find(
+        column => simplifyLabel(column.label) === label
+      );
+      if (!column) {
+        console.log(`ignoring column "${label}"`);
+        return undefined;
+      } else {
+        return column;
+      }
+    });
+
+  const importer = new Importer({
+    collection,
+    columns: actualColumns,
+    defaults,
+    opts: opts.opts,
+    save,
   });
-
-  const importer = new Importer({ collection, columns: actualColumns, defaults, opts: opts.opts, save });
   const documents = [];
 
   sheet.eachRow(async (row, rowNumber) => {
     if (rowNumber <= headerRowNumber) return;
 
-    documents.push(await importer.importRow(row.values.map(v => {
-      if (v.value) v = v.value;
-      if (v && v.text) v = v.text;
-      return v;
-    })));
+    documents.push(
+      await importer.importRow(
+        row.values.map(v => {
+          if (v.value) v = v.value;
+          if (v && v.text) v = v.text;
+          return v;
+        })
+      )
+    );
   });
 
   return documents;

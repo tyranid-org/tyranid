@@ -272,16 +272,14 @@ class Serializer {
 //let nextFnName = 1;
 function es5Fn(fn) {
   let s = fn.toString();
-  if (s.startsWith('async')) 
-    return s;
+  if (s.startsWith('async')) return s;
 
   //const name = fn.name;
 
   //if (s.startsWith('function (')) {
   //s = 'function ' + (name || '_fn' + nextFnName++) + ' (' + s.substring(10);
   /*} else */
-  if (!s.startsWith('function') && !s.startsWith('() =>'))
-    s = 'function ' + s;
+  if (!s.startsWith('function') && !s.startsWith('() =>')) s = 'function ' + s;
 
   return s;
 }
@@ -362,16 +360,18 @@ const netEnv = () => {
     case 'dev':
     case 'development':
       return 'development';
-      
+
     case 'prod':
     case 'production':
       return 'production';
 
     default:
-      console.log('unknown NODE_ENV of "${process.env.NODE_ENV}", defaulting to production');
+      console.log(
+        'unknown NODE_ENV of "${process.env.NODE_ENV}", defaulting to production'
+      );
       return 'production';
   }
-}
+};
 
 // TODO:  exposing this as a dynamic API call right now, but this could also be exposed as a
 //        gulp/build task which creates this file at build time.  This would allow this API
@@ -1329,6 +1329,8 @@ export function generateClientLibrary() {
           return v;
       }
     }
+
+    // TODO:  this needs to be optionally async and query the server and support options
   };
 
   Collection.prototype.findOne = function(opts) {

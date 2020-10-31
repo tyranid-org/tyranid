@@ -34,7 +34,9 @@ TyrImport.on({
       console.log('imp.collectionName', imp.collectionName);
       const collection = Tyr.byName[imp.collectionName];
       if (!collection) {
-        console.error(`Could not find collection "${imp.collectionName}" -- aborting import`);
+        console.error(
+          `Could not find collection "${imp.collectionName}" -- aborting import`
+        );
         return;
       }
 
@@ -42,7 +44,7 @@ TyrImport.on({
       let mediaType = file.type;
       const dotIdx = file.filename.lastIndexOf('.');
       if (dotIdx != -1) {
-        const fileExtension = file.filename.substring(dotIdx+1).toLowerCase();
+        const fileExtension = file.filename.substring(dotIdx + 1).toLowerCase();
 
         switch (fileExtension) {
           case 'csv':
@@ -58,12 +60,12 @@ TyrImport.on({
         columns: Object.values(collection.fields)
           .filter(field => !field.readonly && field.relate !== 'ownedBy')
           .map(field => ({
-            path: field.path
+            path: field.path,
           })),
         filename: await fileField.type.def.downloadS3(fileField, imp),
         defaults: imp.defaults,
         opts: event.opts,
-        save: true
+        save: true,
       };
 
       switch (mediaType) {
@@ -76,7 +78,9 @@ TyrImport.on({
           break;
 
         default:
-          console.error(`Cannot import file ${file.filename} of media type "${mediaType}" -- aborting import`);
+          console.error(
+            `Cannot import file ${file.filename} of media type "${mediaType}" -- aborting import`
+          );
       }
     }
   },
@@ -97,17 +101,46 @@ export class Importer {
 
    */
 
-  constructor(opts/*: {
+  async fromClient(path, v) {
+    const field = path.tail;
+
+    if (typeof v === 'string') {
+      try {
+        return field.fromClient(v);
+      } catch (err) {
+        // fromClient is not async so it won't look up database lookups, do that here
+        const { link } = field;
+
+        if (link) {
+          const d = await link.byLabel(v, { projection: { _id: 1 } });
+          if (d) return d._id;
+
+          console.error(`Could not find a ${link.label} with a label of "${v}"`);
+          return;
+        }
+
+        throw err;
+      }
+    }
+
+    return v;
+  }
+
+  constructor(
+    opts /*: {
     collection,
     columns: { path: Tyr.PathInstance }[],
     defaults: { [name: string]: any },
     opts: standard tyr options object,
     save?: boolean
-  }*/) {
+  }*/
+  ) {
     Object.assign(this, opts);
   }
 
-  async importRow(row/*: any[]*/) {
+  async resolve() {}
+
+  async importRow(row /*: any[]*/) {
     let { collection, columns, defaults, save } = this;
 
     if (defaults && !this.defaultsProcessed) {
@@ -121,7 +154,7 @@ export class Importer {
 
     const doc = new collection({});
 
-    for (let ci = 0, clen = columns.length; ci<clen; ci++) {
+    for (let ci = 0, clen = columns.length; ci < clen; ci++) {
       const c = columns[ci];
       if (!c || c.get) continue;
 
@@ -130,9 +163,9 @@ export class Importer {
 
       let v = row[ci];
 
-      if (typeof v === 'string') v = field.fromClient(v);
+      v = await this.fromClient(path, v);
 
-      console.log('path.name', path.name, 'v', JSON.stringify(v));
+      //console.log('path.name', path.name, 'v', JSON.stringify(v));
       path.set(doc, v, { create: true });
     }
 

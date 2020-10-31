@@ -37,17 +37,18 @@ export const TyrImport = createForm<Tyr.TyrImport>(
     //$scope.title = Tyr.pluralize(collection.label);
 
     const defaults = importDoc.defaults;
-    const { fields } = defaults.$model;
+    const { paths } = defaults.$model;
 
-    const allFields =
-      form.parent?.activePaths.map(p => p.path?.tail).filter(f => f) ||
-      Object.keys(fields).map(fieldName => fields[fieldName]);
+    const allPaths = (
+      form.parent?.activePaths.map(p => p.path) ||
+      Object.keys(paths).map(pathName => paths[pathName])
+    ).filter(p => p?.tail);
 
-    const importFields = allFields.filter(
-      field => !field.readonly && field.relate !== 'ownedBy'
+    const importPaths = allPaths.filter(
+      path => !path.tail.readonly && path.tail.relate !== 'ownedBy'
     );
-    const defaultableFields = allFields.filter(
-      field => !field.readonly && field.relate === 'ownedBy'
+    const defaultablePaths = allPaths.filter(
+      path => !path.tail.readonly && path.tail.relate === 'ownedBy'
     );
 
     return (
@@ -60,7 +61,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
             ignored):
           </p>
           <p>
-            <b>{importFields.map(field => field.label).join(', ')}</b>
+            <b>{importPaths.map(path => path.label).join(', ')}</b>
           </p>
         </div>
         {importDoc.$id && (
@@ -71,10 +72,10 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         )}
         <TyrField path="file" />
 
-        {!!defaultableFields.length && <h1>Default Values</h1>}
+        {!!defaultablePaths.length && <h1>Default Values</h1>}
 
-        {defaultableFields.map(field => (
-          <TyrField key={field.name} path={field.name} document={defaults} />
+        {defaultablePaths.map(path => (
+          <TyrField key={path.name} path={path.name} document={defaults} />
         ))}
       </>
     );

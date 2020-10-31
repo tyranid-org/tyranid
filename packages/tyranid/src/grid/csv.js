@@ -5,7 +5,6 @@ import Tyr from '../tyr';
 import { Importer } from './import';
 import { pathify } from './grid';
 
-
 async function toCsv(opts) {
   let { collection, documents, filename, stream, columns } = opts;
 
@@ -74,7 +73,13 @@ async function fromCsv(opts) {
 
   await pathify(collection, columns);
 
-  const importer = new Importer({ collection, columns, defaults, opts: opts.opts, save });
+  const importer = new Importer({
+    collection,
+    columns,
+    defaults,
+    opts: opts.opts,
+    save,
+  });
 
   return new Promise(async (resolve, reject) => {
     try {
@@ -86,7 +91,7 @@ async function fromCsv(opts) {
         .on('error', reject)
         .on('data', async rowByLabel => {
           const row = [];
-          for (let ci=0; ci<clen; ci++) {
+          for (let ci = 0; ci < clen; ci++) {
             const c = columns[ci];
             let { label, path, get } = c;
             if (get) continue;

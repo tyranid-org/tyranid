@@ -617,22 +617,23 @@ export default class Collection {
     }
   }
 
-  byLabel(n, forcePromise) {
+  byLabel(n, opts) {
     const collection = this,
       findName = collection.labelField.pathName,
       matchLower = n.toLowerCase();
 
     if (!collection.isDb()) {
-      const value = _.find(collection.def.values, function (v) {
+      const value = _.find(collection.def.values, v => {
         const name = v[findName];
         return name && name.toLowerCase() === matchLower;
       });
 
-      return forcePromise ? Promise.resolve(value) : value;
+      // TODO:  handle projection/population options
+      return value;
     } else {
       const query = {};
       query[findName] = { $regex: escapeRegex(matchLower), $options: 'i' };
-      return collection.findOne(query);
+      return collection.findOne({ ...opts, query });
     }
   }
 
