@@ -1,22 +1,10 @@
 import * as fs from 'fs';
-
 import * as csv from 'fast-csv';
 
-import Tyr from './tyr';
+import Tyr from '../tyr';
+import { Importer } from './import';
+import { pathify } from './grid';
 
-async function pathify(collection, columns) {
-  for (const column of columns) {
-    const { path } = column;
-
-    if (!(path instanceof Tyr.Path)) {
-      try {
-        column.path = collection.parsePath(path);
-      } catch {
-        column.path = (await collection.findField(path))?.path;
-      }
-    }
-  }
-}
 
 async function toCsv(opts) {
   let { collection, documents, filename, stream, columns } = opts;
@@ -70,7 +58,7 @@ async function toCsv(opts) {
 }
 
 async function fromCsv(opts) {
-  let { collection, filename, stream, columns } = opts;
+  let { collection, filename, stream, columns, defaults, save } = opts;
 
   if (!collection)
     throw new Tyr.AppError('"collection" must be specified in fromCsv()');
@@ -86,31 +74,29 @@ async function fromCsv(opts) {
 
   await pathify(collection, columns);
 
+  const importer = new Importer({ collection, columns, defaults, opts: opts.opts, save });
+
   return new Promise(async (resolve, reject) => {
     try {
       const documents = [];
+      const clen = columns.length;
 
       stream
         .pipe(csv.parse({ headers: true }))
         .on('error', reject)
-        .on('data', row => {
-          const doc = new collection({});
-
-          for (const column of columns) {
-            let { label, path, get } = column;
+        .on('data', async rowByLabel => {
+          const row = [];
+          for (let ci=0; ci<clen; ci++) {
+            const c = columns[ci];
+            let { label, path, get } = c;
             if (get) continue;
 
             if (!label) label = path.pathLabel;
 
-            const field = path.tail;
-            const type = field?.type;
-
-            path.set(doc, type.fromString(row[label]), {
-              create: true,
-            });
+            row[ci] = rowByLabel[label];
           }
 
-          documents.push(doc);
+          documents.push(await importer.importRow(row));
         })
         .on('end', (/*rowCount*/) => {
           resolve(documents);

@@ -2,7 +2,7 @@ import * as util from 'util';
 import * as os from 'os';
 import * as fs from 'fs';
 
-import Tyr from './tyr';
+import Tyr from '../tyr';
 
 const stat = util.promisify(fs.stat);
 

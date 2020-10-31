@@ -1316,8 +1316,10 @@ export namespace Tyr {
   > {
     collection: CollectionInstance<D>;
     columns: FileFormatColumn<D>[];
+    defaults?: { [name: string]: any };
     filename?: string;
     stream?: stream.Writable;
+    opts?: any /* standard tyr options object */;
   }
 
   //

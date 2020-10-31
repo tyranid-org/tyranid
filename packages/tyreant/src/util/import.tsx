@@ -22,7 +22,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
           const { collection } = caller;
 
           self.document = new Tyr.collections.TyrImport({
-            collectionName: collection.name,
+            collectionName: collection.def.name,
             defaults: new collection(),
           });
         },
