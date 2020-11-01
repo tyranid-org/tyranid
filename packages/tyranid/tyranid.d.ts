@@ -1320,6 +1320,7 @@ export namespace Tyr {
     filename?: string;
     stream?: stream.Writable;
     opts?: any /* standard tyr options object */;
+    save?: boolean;
   }
 
   //

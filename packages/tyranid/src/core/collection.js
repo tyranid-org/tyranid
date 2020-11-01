@@ -1621,7 +1621,7 @@ export default class Collection {
         justOne = args[1];
       // fall through
       case 1:
-        query = args[0];
+        if (!query) query = args[0];
     }
 
     const auth = extractAuthorization(opts);
@@ -1648,6 +1648,7 @@ export default class Collection {
         opts,
       });
     }
+
     const rslt = justOne
       ? await collection.db.deleteOne(query)
       : await collection.db.deleteMany(query);

@@ -31,7 +31,6 @@ TyrImport.on({
     const fileField = TyrImport.fields.file;
 
     for (const imp of await event.documents) {
-      console.log('imp.collectionName', imp.collectionName);
       const collection = Tyr.byName[imp.collectionName];
       if (!collection) {
         console.error(
@@ -91,15 +90,23 @@ export class Importer {
 
   /*
 
-     /. fix import "Name, Account #, Name" ... i.e. two names on import columns
-
-     /. lookup ids by label asynchronously if it isn't static
-
      /. recursively create nested objects
 
      /. make sure tests pass
 
    */
+
+  constructor(
+    opts /*: {
+    collection,
+    columns: { path: Tyr.PathInstance }[],
+    defaults: { [name: string]: any },
+    opts: standard tyr options object,
+    save?: boolean
+  }*/
+  ) {
+    Object.assign(this, opts);
+  }
 
   async fromClient(path, v) {
     const field = path.tail;
@@ -115,7 +122,9 @@ export class Importer {
           const d = await link.byLabel(v, { projection: { _id: 1 } });
           if (d) return d._id;
 
-          console.error(`Could not find a ${link.label} with a label of "${v}"`);
+          console.error(
+            `Could not find a ${link.label} with a label of "${v}"`
+          );
           return;
         }
 
@@ -126,19 +135,69 @@ export class Importer {
     return v;
   }
 
-  constructor(
-    opts /*: {
-    collection,
-    columns: { path: Tyr.PathInstance }[],
-    defaults: { [name: string]: any },
-    opts: standard tyr options object,
-    save?: boolean
-  }*/
-  ) {
-    Object.assign(this, opts);
-  }
+  /**
+   * This converts something like:
+   * 
+   * Trip: { name: 'Lake Superior', origin: { name: 'Duluth' }, destination: { name: 'Thunder Bay' } }
+   * 
+   * into
+   * 
+   * Location: { _id: A, name: 'Duluth' }
+   * Location: { _id: B, name: 'Thunder Bay' }
+   * Trip: { _id: C, name: 'Lake Superior', origin: A, destination: B }
+   *
+   */
+  async saveDocument(collection, doc) {
+    const visit = async (parentPath, obj) => {
+      for (const fieldName in obj) {
+        if (!obj.hasOwnProperty(fieldName)) continue;
 
-  async resolve() {}
+        const p = parentPath ? parentPath.walk(fieldName) : collection.parsePath(fieldName);
+
+        const { tail } = p;
+        switch (tail.type.name) {
+          case 'link':
+            const { link } = tail;
+            const nestedDoc = await this.saveDocument(link, new link(obj[fieldName]));
+            obj[fieldName] = nestedDoc.$id;
+            break;
+          case 'array':
+            const { detail } = p;
+            const arr = obj[fieldName];
+
+            switch (detail.type.name) {
+              case 'link':
+                // array of links
+                const { link } = detail;
+                obj[fieldName] = await Promise.all(arr.map(async v => {
+                  const nestedDoc = await this.saveDocument(link, new link(v));
+                  return nestedDoc.$id;
+                }));
+                break;
+
+              case 'object':
+                // array of objects
+                for (let ai=0, alen=arr.length; ai<alen; ai++) {
+                  await visit(path.walk(ai), arr[ai]);
+                }
+                break;
+
+              case 'array':
+                // array of arrays ... TODO
+            }
+
+            break;
+          case 'object':
+            await visit(p, obj[fieldName]);
+            break;
+        }
+      }
+    }
+
+    await visit(undefined, doc);
+    await doc.$save();
+    return doc;
+  }
 
   async importRow(row /*: any[]*/) {
     let { collection, columns, defaults, save } = this;
@@ -159,20 +218,17 @@ export class Importer {
       if (!c || c.get) continue;
 
       const { path } = c;
-      const field = path.tail;
 
       let v = row[ci];
 
       v = await this.fromClient(path, v);
 
-      //console.log('path.name', path.name, 'v', JSON.stringify(v));
       path.set(doc, v, { create: true });
     }
 
     if (defaults) Object.assign(doc, defaults);
 
-    if (save) await doc.$save();
-
+    if (save) await this.saveDocument(collection, doc);
     return doc;
   }
 }

@@ -335,21 +335,19 @@ async function fromExcel(opts) {
   });
   const documents = [];
 
-  sheet.eachRow(async (row, rowNumber) => {
+  sheet.eachRow((row, rowNumber) => {
     if (rowNumber <= headerRowNumber) return;
 
     documents.push(
-      await importer.importRow(
-        row.values.map(v => {
-          if (v.value) v = v.value;
-          if (v && v.text) v = v.text;
-          return v;
-        })
-      )
+      row.values.map(v => {
+        if (v.value) v = v.value;
+        if (v && v.text) v = v.text;
+        return v;
+      })
     );
   });
 
-  return documents;
+  return Promise.all(documents.map(doc => importer.importRow(doc)));
 }
 
 Tyr.excel = {

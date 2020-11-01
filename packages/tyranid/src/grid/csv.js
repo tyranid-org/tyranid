@@ -101,10 +101,14 @@ async function fromCsv(opts) {
             row[ci] = rowByLabel[label];
           }
 
-          documents.push(await importer.importRow(row));
+          documents.push(row);
         })
-        .on('end', (/*rowCount*/) => {
-          resolve(documents);
+        .on('end', async (/*rowCount*/) => {
+          resolve(
+            await Promise.all(
+              documents.map(d => importer.importRow(d))
+            )
+          );
         });
     } catch (err) {
       reject(err);

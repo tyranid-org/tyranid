@@ -8,8 +8,10 @@ import './models/application';
 import './models/book';
 import './models/department';
 import './models/global';
+import './models/location';
 import './models/organization';
 import './models/tasks/task';
+import './models/trip';
 import './models/user';
 import './models/widget';
 
