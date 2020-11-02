@@ -4,6 +4,7 @@ import { UploadOutlined } from '@ant-design/icons';
 
 import { Tyr } from 'tyranid/client';
 import { TyrField, createForm } from '../core';
+import { message } from 'antd';
 
 export const TyrImport = createForm<Tyr.TyrImport>(
   {
@@ -21,10 +22,15 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         on({ caller, self }) {
           const { collection } = caller;
 
-          self.document = new Tyr.collections.TyrImport({
-            collectionName: collection.name,
-            defaults: new collection(),
-          });
+          try {
+            self.document = new Tyr.collections.TyrImport({
+              collectionName: collection.def.name,
+              defaults: new collection(),
+            });
+          } catch (err) {
+            console.error(err);
+            message.error(err.message);
+          }
         },
       },
       {
@@ -55,9 +61,9 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         <h1>Import File</h1>
         <div className="tyr-import-help">
           <p>
-            The import file should be an excel file that contains the following
-            column names (it can contain other columns, but they will be
-            ignored):
+            The import file should be an <b>Excel</b> file that contains the
+            following column names (it can contain other columns, but they will
+            be ignored):
           </p>
           <p>
             <b>{importFields.map(field => field.label).join(', ')}</b>

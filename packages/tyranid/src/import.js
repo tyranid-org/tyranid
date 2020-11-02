@@ -40,7 +40,7 @@ TyrImport.on({
         columns: Object.values(collection.fields)
           .filter(field => !field.readonly && field.relate !== 'ownedBy')
           .map(field => ({
-            field: field.name,
+            path: field.name,
           })),
         filename: await fileField.type.def.downloadS3(fileField, imp),
       });
