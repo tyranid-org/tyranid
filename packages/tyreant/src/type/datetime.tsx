@@ -133,13 +133,13 @@ byName.datetime = {
     const v = getValue(props, document);
     return !v
       ? ''
-      : moment(v).format(
-          (
+      : moment(v)
+          .format(
             (props.dateFormat as string) ||
-            Tyr.local.dateTimeFormat ||
-            DATETIME_FORMAT
-          ).toUpperCase()
-        );
+              Tyr.local.dateTimeFormat ||
+              DATETIME_FORMAT
+          )
+          .toUpperCase();
   },
 };
 

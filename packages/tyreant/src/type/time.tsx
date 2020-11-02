@@ -45,13 +45,11 @@ byName.time = {
     const v = getValue(props, document);
     return !v
       ? ''
-      : moment(v).format(
-          (
-            (props.dateFormat as string) ||
-            Tyr.local.timeFormat ||
-            TIME_FORMAT
-          ).toUpperCase()
-        );
+      : moment(v)
+          .format(
+            (props.dateFormat as string) || Tyr.local.timeFormat || TIME_FORMAT
+          )
+          .toUpperCase();
   },
 };
 
