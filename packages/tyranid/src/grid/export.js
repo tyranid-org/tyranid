@@ -139,6 +139,7 @@ TyrExport.service = {
 
     const projection = Tyr.projectify(paths);
     const population = {};
+
     for (const path of paths) {
       const link = path.detail.link;
 
