@@ -458,7 +458,8 @@ declare module 'tyranid/client' {
           sort?: {
             [key: string]: number | void;
           };
-        }): Promise<void>;
+        },
+        name?: string): Promise<void>;
     }
 
 

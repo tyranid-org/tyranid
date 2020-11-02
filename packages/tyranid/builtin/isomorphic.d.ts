@@ -561,7 +561,8 @@ declare module 'tyranid/isomorphic' {
           sort?: {
             [key: string]: number | void;
           };
-        }): Promise<void>; 
+        },
+        name?: string): Promise<void>; 
     }
 
     /**

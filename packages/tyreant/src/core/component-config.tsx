@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import * as ReactDOM from 'react-dom';
 import {
   DragDropContext,
@@ -11,7 +11,7 @@ import {
 
 import { compact, findIndex } from 'lodash';
 
-import { Modal, Button, Drawer, Breadcrumb, message } from 'antd';
+import { Modal, Button, Drawer, Breadcrumb, message, Input } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -21,6 +21,8 @@ import {
   ColumnConfigField,
 } from './component-config-item';
 import { TyrComponent } from './component';
+
+const { confirm } = Modal;
 
 const { TyrComponentConfig, TyrExport } = Tyr.collections;
 
@@ -73,6 +75,7 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
   const [doResetSort, setDoResetSort] = useState(false);
   const [doResetFilters, setDoResetFilters] = useState(false);
   const [doResetWidths, setDoResetWidths] = useState(false);
+  const exportNameRef = useRef<Input>(null);
 
   let tableBody: HTMLElement | null = null;
 
@@ -359,8 +362,28 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
         className="ant-btn ant-btn-primary tyr-link-btn"
         role="button"
         onClick={() => {
-          onCancel();
-          TyrExport.export(component.collection.id, fields, component.findOpts);
+          confirm({
+            title: 'Name your export',
+            content: (
+              <Input
+                ref={exportNameRef}
+                defaultValue="Export"
+                placeholder="Export name"
+                autoFocus
+                required={true}
+              />
+            ),
+            okText: 'Export',
+            onOk() {
+              onCancel();
+              TyrExport.export(
+                component.collection.id,
+                fields,
+                component.findOpts,
+                exportNameRef!.current!.input.value
+              );
+            },
+          });
         }}
       >
         {actionLabel}

@@ -465,7 +465,8 @@ declare module 'tyranid' {
           sort?: {
             [key: string]: number | void;
           };
-        }): Promise<void>;
+        },
+        name?: string): Promise<void>;
     }
 
 

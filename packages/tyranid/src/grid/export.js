@@ -106,20 +106,21 @@ const TyrExport = new Tyr.Collection({
         collectionId: { is: 'string', required: true },
         fields: { is: 'array', of: 'string', required: true },
         findOpts: { ...Tyr.catalog.FindOpts, required: true },
+        name: { is: 'string' },
       },
     },
   },
 });
 
 TyrExport.service = {
-  async export(collectionId, fields, findOpts) {
+  async export(collectionId, fields, findOpts, name) {
     const { user } = this;
     const userId = user.$id;
 
     const e = new TyrExport();
 
     // TODO:  examine componentOpts and try to create a readable version of the filter
-    e.name = 'Export';
+    e.name = name || 'Export';
     e.user = userId;
 
     await e.$save(); // save early to get an _id which we need for S3
