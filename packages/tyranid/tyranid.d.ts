@@ -546,6 +546,10 @@ export namespace Tyr {
       OptionsPopulate,
       OptionsHttpRequest {}
 
+  export interface Options_FromClientField extends OptionsFromClient {
+    collection: Tyr.CollectionInstance;
+  }
+
   export interface Options_ToClient
     extends OptionsAuth,
       OptionsCommon,
@@ -1197,8 +1201,16 @@ export namespace Tyr {
     compare(field: FieldInstance, a: any, b: any): number;
     compile(compiler: any, path: string, field: FieldInstance): void;
     fromString(str: string): any;
-    fromClient(field: FieldInstance, value: any): any;
-    fromClientQuery(path: PathInstance, value: any): any;
+    fromClient(
+      field: FieldInstance,
+      value: any,
+      opts?: Options_FromClientField
+    ): any;
+    fromClientQuery(
+      path: PathInstance,
+      value: any,
+      Options_FromClientField
+    ): any;
     format(field: FieldInstance, value: any): string;
     matches(path: PathInstance, where: any, doc: MaybeRawDocument): boolean;
     query(path: PathInstance, where: any, query: MongoQuery): Promise<void>;

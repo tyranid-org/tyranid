@@ -1884,6 +1884,9 @@ export default class Collection {
         if (fieldDef.orderField) collection.orderField = field;
 
         // Store the field path and name on the field itself to support methods on Field
+        if (fieldDef.collectionId) {
+          Tyr.byId(fieldDef.collectionId);
+        }
         field.collection = collection;
         field.pathName = path;
         if (fieldDef.group) {

@@ -19,20 +19,20 @@ const ArrayType = new Type({
     compiler.type(field, 'of', true);
   },
 
-  fromClient(field, value) {
+  fromClient(field, value, opts) {
     const ofField = field.of,
       ofFieldType = ofField.type;
 
     if (typeof value === 'string') value = value.split(',');
 
     if (Array.isArray(value)) {
-      return value.map(v => ofFieldType.fromClient(ofField, v));
+      return value.map(v => ofFieldType.fromClient(ofField, v, opts));
     } else {
-      return ofFieldType.fromClient(ofField, value);
+      return ofFieldType.fromClient(ofField, value, opts);
     }
   },
 
-  fromClientQuery(field, value) {
+  fromClientQuery(field, value, opts) {
     const ofField = field.of,
       ofFieldType = ofField.type;
 
@@ -41,9 +41,9 @@ const ArrayType = new Type({
       value = value.split(',');
 
     if (Array.isArray(value)) {
-      return value.map(v => ofFieldType.fromClient(ofField, v));
+      return value.map(v => ofFieldType.fromClient(ofField, v, opts));
     } else {
-      return ofFieldType.fromClient(ofField, value);
+      return ofFieldType.fromClient(ofField, value, opts);
     }
   },
 

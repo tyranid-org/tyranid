@@ -1,5 +1,6 @@
 import { handleException } from './express';
 import { submitJob } from './job';
+import Tyr from './tyr';
 
 export function instrumentServerServices(col) {
   // col.def.service = service metadata
@@ -53,13 +54,30 @@ export function instrumentExpressServices(col, app, auth) {
       .post(async (req, res) => {
         try {
           const { body } = req;
+          const opts = { req };
 
           const args = [];
 
           if (params) {
             let i = 0;
             for (const paramName in params) {
-              args.push(params[paramName].fromClient(body[i++]));
+              const v = body[i++];
+
+              if (paramName === 'collectionId' && v) {
+                // TODO:  this is sort of a hack ... a parameter named "collectionId" has special meaning.
+                //        The need for this originated with TyrExport needing to take a FindOpts object that
+                //        had a query relative to the collection that was being *exported* NOT *TyrExport*.
+                //        There probably is a cleaner way to solve this...
+                const collection = Tyr.byId[v];
+                if (!collection)
+                  throw new Tyr.AppError(
+                    `Export: Could not find a collection with ID "${v}`
+                  );
+
+                opts.collection = collection;
+              }
+
+              args.push(params[paramName].fromClient(v, opts));
             }
           }
 

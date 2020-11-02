@@ -88,14 +88,6 @@ TyrImport.on({
 export class Importer {
   static BLOCK_SIZE = 2000;
 
-  /*
-
-     /. recursively create nested objects
-
-     /. make sure tests pass
-
-   */
-
   constructor(
     opts /*: {
     collection,

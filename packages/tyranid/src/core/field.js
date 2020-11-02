@@ -45,8 +45,8 @@ export default class Field {
     return this.def.readonly || this.generated;
   }
 
-  fromClient(value) {
-    return this.type.fromClient(this, value);
+  fromClient(value, opts) {
+    return this.type.fromClient(this, value, opts);
   }
 
   toClient(value, doc, opts, proj) {

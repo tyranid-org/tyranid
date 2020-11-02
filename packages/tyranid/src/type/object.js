@@ -29,7 +29,7 @@ const ObjectType = new Type({
     compiler.type(field, 'of');
   },
 
-  fromClient(field, value) {
+  fromClient(field, value, opts) {
     if (!value) {
       return value;
     }
@@ -54,7 +54,7 @@ const ObjectType = new Type({
             );
           }
 
-          obj[k] = field.type.fromClient(field, v);
+          obj[k] = field.type.fromClient(field, v, opts);
         }
       });
 

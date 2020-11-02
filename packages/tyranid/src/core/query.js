@@ -737,8 +737,12 @@ new Type({
     }
   },
 
-  fromClient(field, value) {
-    return (field.def.collection || field.collection).fromClientQuery(value);
+  fromClient(field, value, opts) {
+    return (
+      opts?.collection ||
+      field.def.collection ||
+      field.collection
+    ).fromClientQuery(value, opts);
   },
 
   //toClient(field, value) {

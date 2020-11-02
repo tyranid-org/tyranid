@@ -82,18 +82,18 @@ export default class Type {
     return f ? f(s) : s && s.toString ? s.toString() : s;
   }
 
-  fromClient(field, value) {
+  fromClient(field, value, opts) {
     // TODO:  should we be looking at field.def.client here ? ... see common.js:evaluateClient()
 
     const f = this.def.fromClient;
-    return f ? f(field, value) : value;
+    return f ? f(field, value, opts) : value;
   }
 
-  fromClientQuery(field, value) {
+  fromClientQuery(field, value, opts) {
     // TODO:  should we be looking at field.def.client here ? ... see common.js:evaluateClient()
 
     const f = this.def.fromClientQuery;
-    return f ? f(field, value) : this.fromClient(field, value);
+    return f ? f(field, value, opts) : this.fromClient(field, value, opts);
   }
 
   /** @isomorphic */
