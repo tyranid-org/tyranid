@@ -1,13 +1,11 @@
 import * as chai from 'chai';
 
 import { Tyr } from 'tyranid';
-import { extractProjection } from '../src/core/projection';
-import { TypeQueryNode } from 'typescript';
 
 const { expect } = chai;
 
 export function add() {
-  const { User } = Tyr.collections;
+  const { Location, User, Trip } = Tyr.collections;
 
   describe('csv.js', () => {
     it('should create and parse a csv file', async () => {
@@ -44,6 +42,60 @@ export function add() {
 
         expect(user.name?.first).to.eql(readUser.name?.first);
         expect(user.age).to.eql(readUser.age);
+      }
+    });
+
+    it('should parse a nested csv file', async () => {
+      try {
+        const trips = [
+          new Trip({
+            name: 'Lake Superior',
+            origin: {
+              name: 'Duluth',
+            },
+            destination: {
+              name: 'Thunder Bay',
+            },
+          }),
+        ];
+
+        const csvDef: Tyr.CsvDef<Tyr.Trip> & { documents: Tyr.Trip[] } = {
+          collection: Trip,
+          documents: trips,
+          columns: [
+            { path: 'name' },
+            { path: 'origin.name' },
+            { path: 'destination.name' },
+          ],
+          filename: 'trip.csv',
+          save: true,
+        };
+
+        await Tyr.csv.toCsv(csvDef);
+
+        const readTrips = await Tyr.csv.fromCsv(csvDef);
+        console.log('got out');
+
+        expect(readTrips.length).to.eql(trips.length);
+
+        //await Trip.remove({ query: { name: 'Lake Superior' } });
+        //await Location.remove({ query: { name: 'Duluth' } });
+        //await Location.remove({ query: { name: 'Thunder Bay' } });
+
+        for (let i = 0; i < trips.length; i++) {
+          const trip = trips[i],
+            readTrip = readTrips[i];
+
+          const origin = await Location.byId(readTrip.origin!);
+          const destination = await Location.byId(readTrip.destination!);
+
+          expect(trip.$`origin.name`).to.eql(origin?.name);
+          expect(trip.$`destination.name`).to.eql(destination?.name);
+        }
+      } finally {
+        await Trip.remove({ query: { name: 'Lake Superior' } });
+        await Location.remove({ query: { name: 'Duluth' } });
+        await Location.remove({ query: { name: 'Thunder Bay' } });
       }
     });
   });

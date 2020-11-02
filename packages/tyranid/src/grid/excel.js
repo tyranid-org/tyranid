@@ -1,5 +1,7 @@
 import * as Excel from 'exceljs';
-import Tyr from './tyr';
+
+import Tyr from '../tyr';
+import { Importer } from './import';
 
 // TODO:  optionally pass in a cursor rather than a list of documents
 
@@ -274,7 +276,7 @@ async function toExcel(opts) {
 const simplifyLabel = label => label.toLowerCase().replace(/\s/g, '');
 
 async function fromExcel(opts) {
-  const { collection, stream, filename, header } = opts;
+  const { collection, stream, filename, header, defaults, save } = opts;
 
   const workbook = new Excel.Workbook();
 
@@ -290,7 +292,7 @@ async function fromExcel(opts) {
 
   const extraRows = (header && header.extraRows) || [];
 
-  const columns = opts.columns.map(column => {
+  const expectedColumns = opts.columns.map(column => {
     const pathName = column.path;
     const path = collection.parsePath(pathName);
 
@@ -308,48 +310,44 @@ async function fromExcel(opts) {
 
   let headerRowNumber = 1 + extraRows.length;
 
-  const columnsByColNumber = {};
-  sheet.getRow(headerRowNumber).eachCell((cell, colNumber) => {
-    const label = simplifyLabel(cell.value || '');
+  const actualColumns = sheet
+    .getRow(headerRowNumber)
+    .values.map((value, idx) => {
+      const label = simplifyLabel(value || '');
 
-    const column = columns.find(
-      column => simplifyLabel(column.label) === label
-    );
-    if (!column) {
-      console.log(`ignoring column "${label}"`);
-    } else {
-      columnsByColNumber[colNumber] = column;
-    }
+      const column = expectedColumns.find(
+        column => simplifyLabel(column.label) === label
+      );
+      if (!column) {
+        console.log(`ignoring column "${label}"`);
+        return undefined;
+      } else {
+        return column;
+      }
+    });
+
+  const importer = new Importer({
+    collection,
+    columns: actualColumns,
+    defaults,
+    opts: opts.opts,
+    save,
   });
-
   const documents = [];
 
   sheet.eachRow((row, rowNumber) => {
     if (rowNumber <= headerRowNumber) return;
 
-    const doc = new collection({});
-    documents.push(doc);
-
-    row.eachCell((cell, colNumber) => {
-      const column = columnsByColNumber[colNumber];
-      if (!column) return;
-
-      let v = cell.value;
-
-      if (v && v.text) {
-        v = v.text;
-      }
-
-      const np = column.path;
-      const field = np.tail;
-
-      if (typeof v === 'string') v = field.fromClient(v);
-
-      np.set(doc, v, { create: true });
-    });
+    documents.push(
+      row.values.map(v => {
+        if (v.value) v = v.value;
+        if (v && v.text) v = v.text;
+        return v;
+      })
+    );
   });
 
-  return documents;
+  return Promise.all(documents.map(doc => importer.importRow(doc)));
 }
 
 Tyr.excel = {
