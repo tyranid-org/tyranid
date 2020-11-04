@@ -73,6 +73,7 @@ TyrImport.on({
           await Tyr.csv.fromCsv(importOpts);
           break;
 
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
         case 'vnd/ms-excel':
           await Tyr.excel.fromExcel(importOpts);
           break;
