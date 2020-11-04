@@ -63,6 +63,13 @@ export const readonly = true;
  */
 export const required = true;
 
+/**
+ * Minor shorthand for declaring a unique property in a field definition.
+ *
+ * i.e. "..., unique, ..." instead of "..., unique: true, ..."
+ */
+export const unique = true;
+
 // declare properties of Tyr object
 export namespace Tyr {
   export import AccessResult = Isomorphic.AccessResult;
@@ -953,7 +960,7 @@ export namespace Tyr {
     ): Promise<D[]>;
     byLabel(label: string, forcePromise?: boolean): Promise<D | null>;
 
-    count(opts: Options_Count): Promise<number>;
+    count(opts?: Options_Count): Promise<number>;
 
     db: mongodb.Collection;
     def: CollectionDefinitionHydrated<D>;
@@ -974,7 +981,7 @@ export namespace Tyr {
 
     find(opts: Options_FindCursor): Promise<Cursor<D>>;
     findAll(opts?: Options_FindMany): Promise<D[] & { count?: number }>;
-    findOne(opts: Options_FindOne): Promise<D | null>;
+    findOne(opts?: Options_FindOne): Promise<D | null>;
     findReferences(opts: {
       id?: any;
       ids?: any;

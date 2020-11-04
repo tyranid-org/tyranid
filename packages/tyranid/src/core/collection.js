@@ -1083,7 +1083,7 @@ export default class Collection {
 
   count(opts) {
     const collection = this,
-      query = opts.query,
+      query = opts?.query,
       auth = extractAuthorization(opts);
 
     if (auth) {

@@ -28,7 +28,9 @@ async function toCsv(opts) {
 
   return new Promise(async (resolve, reject) => {
     try {
-      csvStream.on('end', resolve);
+      csvStream.on('end', () => {
+        resolve();
+      });
 
       for (const document of documents) {
         const writeObj = {};
@@ -46,6 +48,7 @@ async function toCsv(opts) {
           writeObj[label] = type ? await type.format(field, value) : '' + value;
         }
 
+        //console.log('csv wrote', JSON.stringify(writeObj));
         csvStream.write(writeObj);
       }
 
@@ -88,8 +91,12 @@ async function fromCsv(opts) {
 
       stream
         .pipe(csv.parse({ headers: true }))
-        .on('error', reject)
+        .on('error', err => {
+          //console.log('on err', err);
+          reject(err);
+        })
         .on('data', async rowByLabel => {
+          //console.log('on data');
           const row = [];
           for (let ci = 0; ci < clen; ci++) {
             const c = columns[ci];
@@ -104,13 +111,11 @@ async function fromCsv(opts) {
           documents.push(row);
         })
         .on('end', async (/*rowCount*/) => {
-          resolve(
-            await Promise.all(
-              documents.map(d => importer.importRow(d))
-            )
-          );
+          //console.log('csv on end');
+          resolve(await Promise.all(documents.map(d => importer.importRow(d))));
         });
     } catch (err) {
+      //console.log('err', err);
       reject(err);
     }
   });

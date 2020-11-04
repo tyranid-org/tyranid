@@ -384,7 +384,7 @@ declare module 'tyranid/client' {
       byIdIndex: { [id: string]: D };
       byLabel(label: string): Promise<D | null>;
       cache(document: D, type?: 'remove' | undefined, silent?: boolean): void;
-      count(opts: Options_Count): Promise<number>;
+      count(opts?: Options_Count): Promise<number>;
       exists(opts: Options_Exists): Promise<boolean>;
       fields: { [fieldName: string]: FieldInstance<D> };
       fieldsFor(opts: {

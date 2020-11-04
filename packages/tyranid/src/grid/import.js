@@ -1,3 +1,4 @@
+import { ConfigurationServicePlaceholders } from 'aws-sdk/lib/config_service_placeholders';
 import Tyr from '../tyr';
 
 const TyrImport = new Tyr.Collection({
@@ -129,11 +130,11 @@ export class Importer {
 
   /**
    * This converts something like:
-   * 
+   *
    * Trip: { name: 'Lake Superior', origin: { name: 'Duluth' }, destination: { name: 'Thunder Bay' } }
-   * 
+   *
    * into
-   * 
+   *
    * Location: { _id: A, name: 'Duluth' }
    * Location: { _id: B, name: 'Thunder Bay' }
    * Trip: { _id: C, name: 'Lake Superior', origin: A, destination: B }
@@ -144,13 +145,18 @@ export class Importer {
       for (const fieldName in obj) {
         if (!obj.hasOwnProperty(fieldName)) continue;
 
-        const p = parentPath ? parentPath.walk(fieldName) : collection.parsePath(fieldName);
+        const p = parentPath
+          ? parentPath.walk(fieldName)
+          : collection.parsePath(fieldName);
 
         const { tail } = p;
         switch (tail.type.name) {
           case 'link':
             const { link } = tail;
-            const nestedDoc = await this.saveDocument(link, new link(obj[fieldName]));
+            const nestedDoc = await this.saveDocument(
+              link,
+              new link(obj[fieldName])
+            );
             obj[fieldName] = nestedDoc.$id;
             break;
           case 'array':
@@ -161,21 +167,26 @@ export class Importer {
               case 'link':
                 // array of links
                 const { link } = detail;
-                obj[fieldName] = await Promise.all(arr.map(async v => {
-                  const nestedDoc = await this.saveDocument(link, new link(v));
-                  return nestedDoc.$id;
-                }));
+                obj[fieldName] = await Promise.all(
+                  arr.map(async v => {
+                    const nestedDoc = await this.saveDocument(
+                      link,
+                      new link(v)
+                    );
+                    return nestedDoc.$id;
+                  })
+                );
                 break;
 
               case 'object':
                 // array of objects
-                for (let ai=0, alen=arr.length; ai<alen; ai++) {
+                for (let ai = 0, alen = arr.length; ai < alen; ai++) {
                   await visit(path.walk(ai), arr[ai]);
                 }
                 break;
 
               case 'array':
-                // array of arrays ... TODO
+              // array of arrays ... TODO
             }
 
             break;
@@ -184,11 +195,66 @@ export class Importer {
             break;
         }
       }
-    }
+    };
 
     await visit(undefined, doc);
-    await doc.$save();
-    return doc;
+
+    // find an existing document
+    let query = {};
+
+    const { paths } = collection;
+    let foundAnyData = false;
+    for (const pathName in paths) {
+      const field = paths[pathName];
+      const { path } = field;
+      const v = path.get(doc);
+      if (!v) continue;
+
+      foundAnyData = true;
+      if (field.def.unique) {
+        query = { [path.spath]: v };
+        break;
+      } else {
+        query[path.spath] = v;
+      }
+    }
+
+    // console.log('IMPORT - query', JSON.stringify(query, null, 2));
+    if (foundAnyData) {
+      const existingDoc = await collection.findOne({
+        query,
+      });
+
+      if (existingDoc) {
+        let changesFound = false;
+
+        for (const pathName in paths) {
+          const field = paths[pathName];
+          const { path } = field;
+          const v = path.get(doc);
+          const vExisting = path.get(existingDoc);
+          if (v && v !== vExisting) {
+            // console.log(
+            //   `change found for path ${path.name}, new:${v} vs. existing:${vExisting}`
+            // );
+            path.set(existingDoc, v, { create: true });
+            changesFound = true;
+          }
+        }
+
+        if (changesFound) await existingDoc.$save();
+        // console.log(
+        //   `        - ${
+        //     changesFound ? 'updating' : 'using'
+        //   } existing ${JSON.stringify(existingDoc)}`
+        // );
+        return existingDoc;
+      }
+
+      // console.log('        - creating new');
+      await doc.$save();
+      return doc;
+    }
   }
 
   async importRow(row /*: any[]*/) {

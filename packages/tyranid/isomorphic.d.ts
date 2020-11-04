@@ -158,6 +158,7 @@ export namespace Tyr {
   > {
     [key: string]: any;
     is?: string;
+    unique?: boolean;
     client?: boolean | (() => boolean);
     custom?: boolean;
     db?: boolean;

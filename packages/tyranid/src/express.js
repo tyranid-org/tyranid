@@ -119,6 +119,7 @@ class Serializer {
       'relate',
       'required',
       'step',
+      'unique',
       'validateSearch',
       'width',
     ]) {
