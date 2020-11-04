@@ -1,20 +1,14 @@
 import * as React from 'react';
 
-//import { DownloadOutlined } from '@ant-design/icons';
-
 import { Tyr } from 'tyranid/client';
 import { TyrTable, TyrModal } from '../core';
 import { registerComponent } from '../common';
 
 const { TyrExport } = Tyr.collections;
 
-interface Props {
-  onClose?: () => void;
-}
-
 const CF_PREFIX = (Tyr.options as any).aws?.cloudfrontPrefix || '';
 
-export const TyrExports = (props: Props) => (
+export const TyrExports = () => (
   <TyrTable
     collection={TyrExport}
     decorator={
@@ -38,13 +32,6 @@ export const TyrExports = (props: Props) => (
 
             window.open(downloadUrl, '_blank');
           }
-        },
-      },
-      close: {
-        trait: 'cancel',
-        align: 'right',
-        on() {
-          props.onClose?.();
         },
       },
     }}

@@ -2,6 +2,7 @@ export * from './export';
 export * from './font';
 export * from './hoc';
 export * from './import';
+export * from './imports';
 export * from './job';
 export * from './remove';
 export * from './rerender';

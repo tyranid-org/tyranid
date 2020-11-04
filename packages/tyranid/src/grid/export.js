@@ -46,7 +46,7 @@ const TyrExport = new Tyr.Collection({
     // would insert the following:
     user: { link: 'user?' },
     //organization: { link: 'organization?' },
-    //network: { link: 'network?' },
+    //network: { link: 'network?' }
   },
   methods: {
     $start: {

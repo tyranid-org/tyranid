@@ -13,8 +13,10 @@ const TyrImport = new Tyr.Collection({
     collectionName: { is: 'string' },
     file: { is: 's3' },
     on: { is: 'datetime' },
+    endedAt: { is: 'datetime' },
     user: { link: 'user?' },
     defaults: { is: 'object' },
+    issues: { is: 'string' },
   },
 
   async fromClient(opts) {
@@ -32,57 +34,67 @@ TyrImport.on({
     const fileField = TyrImport.fields.file;
 
     for (const imp of await event.documents) {
-      const collection = Tyr.byName[imp.collectionName];
-      if (!collection) {
-        console.error(
-          `Could not find collection "${imp.collectionName}" -- aborting import`
-        );
-        return;
-      }
-
-      const file = fileField.path.get(imp);
-      let mediaType = file.type;
-      const dotIdx = file.filename.lastIndexOf('.');
-      if (dotIdx != -1) {
-        const fileExtension = file.filename.substring(dotIdx + 1).toLowerCase();
-
-        switch (fileExtension) {
-          case 'csv':
-            // web browsers import csv files as vnd.ms-excel so that it opens up a spreadsheet like excel instead
-            // of a text editor, but here we need to know if it is CSV or Excel
-            mediaType = 'text/csv';
-            break;
-        }
-      }
-
-      const importOpts = {
-        collection,
-        columns: Object.values(collection.fields)
-          .filter(field => !field.readonly && field.relate !== 'ownedBy')
-          .map(field => ({
-            path: field.path,
-          })),
-        filename: await fileField.type.def.downloadS3(fileField, imp),
-        defaults: imp.defaults,
-        opts: event.opts,
-        save: true,
-      };
-
-      switch (mediaType) {
-        case 'text/csv':
-          await Tyr.csv.fromCsv(importOpts);
-          break;
-
-        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-        case 'vnd/ms-excel':
-          await Tyr.excel.fromExcel(importOpts);
-          break;
-
-        default:
+      try {
+        const collection = Tyr.byName[imp.collectionName];
+        if (!collection) {
           console.error(
-            `Cannot import file ${file.filename} of media type "${mediaType}" -- aborting import`
+            `Could not find collection "${imp.collectionName}" -- aborting import`
           );
+          return;
+        }
+
+        const file = fileField.path.get(imp);
+        let mediaType = file.type;
+        const dotIdx = file.filename.lastIndexOf('.');
+        if (dotIdx != -1) {
+          const fileExtension = file.filename
+            .substring(dotIdx + 1)
+            .toLowerCase();
+
+          switch (fileExtension) {
+            case 'csv':
+              // web browsers import csv files as vnd.ms-excel so that it opens up a spreadsheet like excel instead
+              // of a text editor, but here we need to know if it is CSV or Excel
+              mediaType = 'text/csv';
+              break;
+          }
+        }
+
+        const importOpts = {
+          collection,
+          columns: Object.values(collection.fields)
+            .filter(field => !field.readonly && field.relate !== 'ownedBy')
+            .map(field => ({
+              path: field.path,
+            })),
+          filename: await fileField.type.def.downloadS3(fileField, imp),
+          defaults: imp.defaults,
+          opts: event.opts,
+          save: true,
+        };
+
+        switch (mediaType) {
+          case 'text/csv':
+            await Tyr.csv.fromCsv(importOpts);
+            break;
+
+          case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+          case 'vnd/ms-excel':
+            await Tyr.excel.fromExcel(importOpts);
+            break;
+
+          default:
+            console.error(
+              `Cannot import file ${file.filename} of media type "${mediaType}" -- aborting import`
+            );
+        }
+      } catch (err) {
+        imp.issues = err.message || 'Unknown error occured.';
       }
+
+      imp.endedAt = new Date();
+
+      await imp.$update({ fields: { endedAt: 1 } });
     }
   },
 });

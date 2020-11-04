@@ -149,7 +149,9 @@ declare module 'tyranid/isomorphic' {
     export interface BaseTyrImport<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
       collectionName?: string;
       defaults?: any;
+      endedAt?: any;
       file?: any;
+      issues?: string;
       on?: any;
     }
     
