@@ -123,9 +123,10 @@ TyrExport.service = {
     e.name = name || 'Export';
     e.user = userId;
 
-    await e.$save(); // save early to get an _id which we need for S3
-
     const collection = Tyr.byId[collectionId];
+    e.collectionName = collection.name;
+
+    await e.$save(); // save early to get an _id which we need for S3
 
     await e.$start();
 

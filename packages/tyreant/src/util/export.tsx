@@ -8,13 +8,23 @@ const { TyrExport } = Tyr.collections;
 
 const CF_PREFIX = (Tyr.options as any).aws?.cloudfrontPrefix || '';
 
-export const TyrExports = () => (
+interface Props {
+  onClose?: () => void;
+}
+
+export const TyrExports = (props: Props) => (
   <TyrTable
     collection={TyrExport}
+    scroll={{ y: '400px' }}
     decorator={
       <TyrModal defaultOpen={true} className="tyr-wide-modal" title="Exports" />
     }
-    paths={['name', 'startedAt', 'endedAt']}
+    paths={[
+      'name',
+      { path: 'collectionName', label: 'Type' },
+      { path: 'startedAt', defaultSort: 'descend' },
+      'endedAt',
+    ]}
     export={false}
     actions={{
       download: {
@@ -32,6 +42,13 @@ export const TyrExports = () => (
 
             window.open(downloadUrl, '_blank');
           }
+        },
+      },
+      close: {
+        trait: 'cancel',
+        align: 'right',
+        on() {
+          props.onClose?.();
         },
       },
     }}

@@ -6,19 +6,33 @@ import { registerComponent } from '../common';
 
 const { TyrImport } = Tyr.collections;
 
-export const TyrImports = () => (
+interface Props {
+  onClose?: () => void;
+}
+
+export const TyrImports = (props: Props) => (
   <TyrTable
     collection={TyrImport}
+    scroll={{ y: '400px' }}
     decorator={
       <TyrModal defaultOpen={true} className="tyr-wide-modal" title="Imports" />
     }
     paths={[
-      { path: 'collectionName', label: 'Name' },
-      'on',
+      { path: 'collectionName', label: 'Type' },
+      { path: 'on', defaultSort: 'descend' },
       'endedAt',
       'issues',
     ]}
     export={false}
+    actions={{
+      close: {
+        trait: 'cancel',
+        align: 'right',
+        on() {
+          props.onClose?.();
+        },
+      },
+    }}
   />
 );
 
