@@ -301,6 +301,8 @@ async function fromExcel(opts) {
   const sheet =
     workbook.getWorksheet('sheet 1') ||
     workbook.getWorksheet('Sheet1') ||
+    workbook.getWorksheet('Data format') ||
+    workbook.getWorksheet('Data') ||
     workbook.getWorksheet(1);
 
   let headerRowNumber = 1 + extraRows.length;

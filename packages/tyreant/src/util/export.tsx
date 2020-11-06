@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Tyr } from 'tyranid/client';
 import { TyrTable, TyrModal } from '../core';
 import { registerComponent } from '../common';
+import { TyrRemove } from './remove';
 
 const { TyrExport } = Tyr.collections;
 
@@ -52,7 +53,9 @@ export const TyrExports = (props: Props) => (
         },
       },
     }}
-  />
+  >
+    <TyrRemove />
+  </TyrTable>
 );
 
 registerComponent('TyrExports', TyrExports);

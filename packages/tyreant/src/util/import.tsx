@@ -13,11 +13,6 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         trait: 'import',
         input: 0,
         name: 'import',
-        label: (
-          <>
-            <UploadOutlined /> Import
-          </>
-        ),
         utility: true,
         on({ caller, self }) {
           const { collection } = caller;
@@ -36,6 +31,14 @@ export const TyrImport = createForm<Tyr.TyrImport>(
       {
         trait: 'save',
         name: 'import',
+        label: (
+          <>
+            <UploadOutlined /> Import
+          </>
+        ),
+        hide: ({ document }) => {
+          return !document.file;
+        },
       },
     ],
   },
@@ -51,10 +54,14 @@ export const TyrImport = createForm<Tyr.TyrImport>(
     ).filter(p => p?.tail);
 
     const importPaths = allPaths.filter(
-      path => !path.tail.readonly && path.tail.relate !== 'ownedBy'
+      path =>
+        (!path.tail.readonly || path.tail.def.unique) &&
+        path.tail.relate !== 'ownedBy'
     );
     const defaultablePaths = allPaths.filter(
-      path => !path.tail.readonly && path.tail.relate === 'ownedBy'
+      path =>
+        (!path.tail.readonly || path.tail.def.unique) &&
+        path.tail.relate === 'ownedBy'
     );
 
     return (
@@ -76,7 +83,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
             <TyrField path="by" mode="view" />
           </>
         )}
-        <TyrField path="file" />
+        <TyrField path="file" onChange={() => form.refresh()} />
 
         {!!defaultablePaths.length && <h1>Default Values</h1>}
 
