@@ -119,10 +119,10 @@ export class Importer {
 
     if (typeof v === 'string') {
       try {
-        return field.fromClient(v);
+        return field ? field.fromClient(v) : v;
       } catch (err) {
         // fromClient is not async so it won't look up database lookups, do that here
-        const { link } = field;
+        const link = field?.link;
 
         if (link) {
           const d = await link.byLabel(v, { projection: { _id: 1 } });

@@ -86,7 +86,7 @@ export function add() {
 
       await Tyr.excel.toExcel(excelDef);
 
-      const readDocs = await Tyr.excel.fromExcel(excelDef);
+      await Tyr.excel.fromExcel(excelDef);
     });
 
     it('should stream an excel file', async () => {

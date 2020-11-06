@@ -169,7 +169,7 @@ async function toExcel(opts) {
 
   const extraRows = (header && header.extraRows) || [];
 
-  await pathify(columns);
+  await pathify(collection, columns);
 
   sheet.columns = columns.map(column => ({
     key: column.path.name,
@@ -225,7 +225,7 @@ async function toExcel(opts) {
 
     let ci = 1;
     for (const column of columns) {
-      const path = collection.parsePath(column.path);
+      const { path } = column;
 
       const cell = row.getCell(ci);
       const get = column.get;
@@ -271,7 +271,7 @@ async function toExcel(opts) {
   }
 }
 
-const simplifyLabel = label => label.toLowerCase().replace(/\s/g, '');
+const simplifyLabel = label => label?.toLowerCase().replace(/\s/g, '');
 
 async function fromExcel(opts) {
   const { collection, stream, filename, header, defaults, save } = opts;
@@ -288,14 +288,14 @@ async function fromExcel(opts) {
   //workbook.created
   //workbook.modified
 
-  const extraRows = (header && header.extraRows) || [];
+  const extraRows = header?.extraRows || [];
 
-  await pathify(opts.columns);
+  await pathify(opts.collection, opts.columns);
 
   const expectedColumns = opts.columns.map(column => ({
     def: column,
-    path,
-    label: column.label || path.pathLabel,
+    path: column.path,
+    label: column.label || column.path.pathLabel,
   }));
 
   const sheet =
@@ -314,7 +314,7 @@ async function fromExcel(opts) {
         column => simplifyLabel(column.label) === label
       );
       if (!column) {
-        console.log(`ignoring column "${label}"`);
+        console.warn(`ignoring column "${label}"`);
         return undefined;
       } else {
         return column;
