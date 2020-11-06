@@ -7,6 +7,7 @@ import { DndProvider } from 'react-dnd';
 import { Resizable, ResizableProps } from 'react-resizable';
 
 import { observable } from 'mobx';
+
 import { observer } from 'mobx-react';
 
 import {
