@@ -38,7 +38,7 @@ TyrImport.on({
         const collection = Tyr.byName[imp.collectionName];
         if (!collection) {
           console.error(
-            `Could not find collection "${imp.collectionName}" -- aborting import`
+            `Could not find collection "${imp.collectionName}" - aborting import.`
           );
           return;
         }
