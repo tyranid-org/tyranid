@@ -136,7 +136,7 @@ export const EditableCell = (props: RowCellProps) => {
 
   useEffect(() => {
     if (editing) {
-      //inputRef.current.focus();
+      ///inputRef.current.focus();
     }
   }, [editing]);
 
