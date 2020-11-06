@@ -1,6 +1,7 @@
 import * as Excel from 'exceljs';
 
 import Tyr from '../tyr';
+import { pathify } from './grid';
 import { Importer } from './import';
 
 // TODO:  optionally pass in a cursor rather than a list of documents
@@ -168,15 +169,12 @@ async function toExcel(opts) {
 
   const extraRows = (header && header.extraRows) || [];
 
-  sheet.columns = columns.map(column => {
-    const pathName = column.path;
-    const path = collection.parsePath(pathName);
+  await pathify(columns);
 
-    return {
-      key: pathName,
-      width: column.width || 10,
-    };
-  });
+  sheet.columns = columns.map(column => ({
+    key: column.path.name,
+    width: column.width || 10,
+  }));
 
   sheet.autoFilter = {
     from: { row: 1 + extraRows.length, column: 1 },
@@ -292,16 +290,13 @@ async function fromExcel(opts) {
 
   const extraRows = (header && header.extraRows) || [];
 
-  const expectedColumns = opts.columns.map(column => {
-    const pathName = column.path;
-    const path = collection.parsePath(pathName);
+  await pathify(opts.columns);
 
-    return {
-      def: column,
-      path,
-      label: column.label || path.pathLabel,
-    };
-  });
+  const expectedColumns = opts.columns.map(column => ({
+    def: column,
+    path,
+    label: column.label || path.pathLabel,
+  }));
 
   const sheet =
     workbook.getWorksheet('sheet 1') ||

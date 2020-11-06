@@ -341,9 +341,11 @@ const LinkFilterDropdown = ({
                 className="tyr-filter-search-input"
                 onChange={e => setFilterSearchValue(e.currentTarget.value)}
                 onSearch={async value => {
+                  const { labelField } = pathProps;
                   const results = await linkField.labels(
                     new path.tail.collection({}),
-                    value
+                    value,
+                    labelField ? { labelField } : undefined
                   );
                   setFilterSearchValue(value);
                   setLabels(

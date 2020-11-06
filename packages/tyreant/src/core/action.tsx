@@ -294,7 +294,10 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.on = on;
     this.input =
       input ??
-      (traits.includes('create') || traits.includes('search') || render
+      (traits.includes('create') ||
+      traits.includes('search') ||
+      traits.includes('cancel') ||
+      render
         ? 0
         : 1);
     this.hide = hide;
