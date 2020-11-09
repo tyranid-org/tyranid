@@ -33,7 +33,7 @@ TyrImport.on({
   async handler(event) {
     const fileField = TyrImport.fields.file;
 
-    for (const imp of await event.documents) {
+    const importDoc = async imp => {
       try {
         const collection = Tyr.byName[imp.collectionName];
         if (!collection)
@@ -91,10 +91,14 @@ TyrImport.on({
         imp.issues += m + '\n';
         console.error(err);
       }
-
       imp.endedAt = new Date();
 
+      console.log('Import complete.');
       await imp.$update({ fields: { endedAt: 1, issues: 1 } });
+    };
+
+    for (const imp of await event.documents) {
+      importDoc(imp); // TODO: Move this into a backround service
     }
   },
 });
@@ -165,11 +169,16 @@ export class Importer {
         switch (tail.type.name) {
           case 'link':
             const { link } = tail;
-            const nestedDoc = await this.saveDocument(
-              link,
-              new link(obj[fieldName])
-            );
-            obj[fieldName] = nestedDoc?.$id;
+            const v = obj[fieldName];
+
+            if (!Tyr.isObjectId(v)) {
+              const nestedDoc = await this.saveDocument(
+                link,
+                new link(obj[fieldName])
+              );
+              obj[fieldName] = nestedDoc?.$id;
+            }
+
             break;
           case 'array':
             const { detail } = p;
@@ -231,7 +240,7 @@ export class Importer {
       }
     }
 
-    // console.log('IMPORT - query', JSON.stringify(query, null, 2));
+    console.log('IMPORT - query', JSON.stringify(query, null, 2));
     if (foundAnyData) {
       const existingDoc = await collection.findOne({
         query,
@@ -246,29 +255,29 @@ export class Importer {
           const v = path.get(doc);
           const vExisting = path.get(existingDoc);
           if (v && v !== vExisting) {
-            // console.log(
-            //   `change found for path ${path.name}, new:${v} vs. existing:${vExisting}`
-            // );
+            console.log(
+              `change found for path ${path.name}, new:${v} vs. existing:${vExisting}`
+            );
             path.set(existingDoc, v, { create: true });
             changesFound = true;
           }
         }
 
         if (changesFound) await existingDoc.$save();
-        // console.log(
-        //   `        - ${
-        //     changesFound ? 'updating' : 'using'
-        //   } existing ${JSON.stringify(existingDoc)}`
-        // );
+        console.log(
+          `        - ${
+            changesFound ? 'updating' : 'using'
+          } existing ${JSON.stringify(existingDoc)}`
+        );
         return existingDoc;
       }
 
-      // console.log('        - creating new');
+      console.log('        - creating new');
       await doc.$save();
       return doc;
     }
 
-    // didn't find any data
+    console.log(`        - didn't find any data`);
     //return undefined;
   }
 
