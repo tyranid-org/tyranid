@@ -15,7 +15,7 @@ const TyrImport = new Tyr.Collection({
     endedAt: { is: 'datetime' },
     user: { link: 'user?' },
     defaults: { is: 'object' },
-    issues: { is: 'string' },
+    issues: { is: 'text' },
     columns: { is: 'array', of: 'string', note: 'path names' },
   },
 
