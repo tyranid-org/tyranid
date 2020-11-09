@@ -49,8 +49,8 @@ TyrImport.on({
 
           switch (fileExtension) {
             case 'csv':
-              // web browsers import csv files as vnd.ms-excel so that it opens up a spreadsheet like excel instead
-              // of a text editor, but here we need to know if it is CSV or Excel
+              // web browsers import csv files as vnd.ms-excel so that it opens up a spreadsheet like excel
+              // instead of a text editor, but here we need to know if it is CSV or Excel
               mediaType = 'text/csv';
               break;
           }

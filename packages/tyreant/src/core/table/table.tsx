@@ -72,8 +72,6 @@ const findColumnByDataIndex = <D extends Tyr.Document>(
       if (cc) return cc;
     }
   }
-
-  //return undefined;
 };
 
 // ant's ColumnGroupType has children has required which seems incorrect
