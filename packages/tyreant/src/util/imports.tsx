@@ -30,7 +30,7 @@ export const TyrImports = (props: Props) => (
     actions={{
       download: {
         async on({ document }) {
-          //await document.$project/populate({ file: 1 });
+          // await document.$project/populate({ file: 1 });
           const doc = (await TyrImport.byId(document.$id))!;
           const { file } = doc;
           if (file) {

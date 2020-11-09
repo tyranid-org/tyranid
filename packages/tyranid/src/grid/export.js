@@ -42,7 +42,7 @@ const TyrExport = new Tyr.Collection({
       help: 'This is when the export file was completed generating.',
     },
 
-    //$authContext: { type: 'user'/*, role: 'creator' */ }
+    // $authContext: { type: 'user'/*, role: 'creator' */ }
     // would insert the following:
     user: { link: 'user?' },
     //organization: { link: 'organization?' },
