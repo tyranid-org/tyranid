@@ -15,3 +15,14 @@ export async function pathify(collection, columns) {
     }
   }
 }
+
+export const createLogger = log =>
+  log
+    ? message => {
+        log.issues = log.issues || '';
+        if (!log.issues.includes(message)) {
+          log.issues += message + '\n';
+          console.warn(message);
+        }
+      }
+    : message => console.warn(message);

@@ -194,6 +194,10 @@ declare module 'tyranid/client' {
     export function projectify(obj: object | PathInstance[]): MongoProjection;
     export const reconnectSocket: () => void;
     export const setSocketLibrary: (library: typeof io) => void;
+    export function serially<T, U>(
+      values: T[],
+      visitor: (value: T) => Promise<U>
+    ): Promise<U[]>;
 
     export interface RawMongoDocument {
       [key: string]: any;

@@ -319,6 +319,18 @@ const Tyr = {
   // async/await/promise utilities
   //
 
+  /** @isomorphic */
+  async serially(array, fn) {
+    const len = array.length;
+    const newArray = new Array(len);
+
+    for (let i = 0; i < len; i++) {
+      newArray[i] = await fn(array[i]);
+    }
+
+    return newArray;
+  },
+
   async eachAsync(array, fn) {
     for (const el of array) {
       await fn(el);

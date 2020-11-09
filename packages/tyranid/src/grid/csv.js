@@ -3,7 +3,7 @@ import * as csv from 'fast-csv';
 
 import Tyr from '../tyr';
 import { Importer } from './import';
-import { pathify } from './grid';
+import { createLogger, pathify } from './grid';
 
 async function toCsv(opts) {
   let { collection, documents, filename, stream, columns } = opts;
@@ -39,7 +39,7 @@ async function toCsv(opts) {
           let { label, path, get } = column;
           if (!path) continue;
 
-          if (!label) label = path.pathLabel;
+          if (!label) label = path.label;
 
           const field = path.tail;
           const type = field?.type;
@@ -60,7 +60,9 @@ async function toCsv(opts) {
 }
 
 async function fromCsv(opts) {
-  let { collection, filename, stream, columns, defaults, save } = opts;
+  let { collection, filename, stream, columns, defaults, save, log } = opts;
+
+  log = createLogger(log);
 
   if (!collection)
     throw new Tyr.AppError('"collection" must be specified in fromCsv()');
@@ -82,6 +84,7 @@ async function fromCsv(opts) {
     defaults,
     opts: opts.opts,
     save,
+    log,
   });
 
   return new Promise(async (resolve, reject) => {
@@ -103,7 +106,7 @@ async function fromCsv(opts) {
             let { label, path, get } = c;
             if (get) continue;
 
-            if (!label) label = path.pathLabel;
+            if (!label) label = path.label;
 
             row[ci] = rowByLabel[label];
           }
@@ -112,7 +115,7 @@ async function fromCsv(opts) {
         })
         .on('end', async (/*rowCount*/) => {
           //console.log('csv on end');
-          resolve(await Promise.all(documents.map(d => importer.importRow(d))));
+          resolve(await Tyr.serially(documents, d => importer.importRow(d)));
         });
     } catch (err) {
       //console.log('err', err);

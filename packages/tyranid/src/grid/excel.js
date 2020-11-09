@@ -1,7 +1,7 @@
 import * as Excel from 'exceljs';
 
 import Tyr from '../tyr';
-import { pathify } from './grid';
+import { createLogger, pathify } from './grid';
 import { Importer } from './import';
 
 // TODO:  optionally pass in a cursor rather than a list of documents
@@ -213,7 +213,7 @@ async function toExcel(opts) {
 
     const cell = headerRow.getCell(ci);
 
-    cell.value = column.label || path.pathLabel;
+    cell.value = column.label || path.label;
 
     const cellStyle = column.header;
     if (cellStyle) assignCellStyle(cell, cellStyle);
@@ -276,6 +276,8 @@ const simplifyLabel = label => label?.toLowerCase().replace(/\s/g, '');
 async function fromExcel(opts) {
   const { collection, stream, filename, header, defaults, save } = opts;
 
+  const log = createLogger(opts.log);
+
   const workbook = new Excel.Workbook();
 
   if (stream) {
@@ -295,7 +297,7 @@ async function fromExcel(opts) {
   const expectedColumns = opts.columns.map(column => ({
     def: column,
     path: column.path,
-    label: column.label || column.path.pathLabel,
+    label: column.label || column.path.label,
   }));
 
   const sheet =
@@ -316,7 +318,7 @@ async function fromExcel(opts) {
         column => simplifyLabel(column.label) === label
       );
       if (!column) {
-        console.warn(`ignoring column "${label}"`);
+        log(`Ignoring column "${label}".`);
         return undefined;
       } else {
         return column;
@@ -329,6 +331,7 @@ async function fromExcel(opts) {
     defaults,
     opts: opts.opts,
     save,
+    log,
   });
   const documents = [];
 
@@ -344,7 +347,7 @@ async function fromExcel(opts) {
     );
   });
 
-  return Promise.all(documents.map(doc => importer.importRow(doc)));
+  return Tyr.serially(documents, doc => importer.importRow(doc));
 }
 
 Tyr.excel = {

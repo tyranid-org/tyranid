@@ -1,4 +1,3 @@
-import { ConfigurationServicePlaceholders } from 'aws-sdk/lib/config_service_placeholders';
 import Tyr from '../tyr';
 
 const TyrImport = new Tyr.Collection({
@@ -17,6 +16,7 @@ const TyrImport = new Tyr.Collection({
     user: { link: 'user?' },
     defaults: { is: 'object' },
     issues: { is: 'string' },
+    columns: { is: 'array', of: 'string', note: 'path names' },
   },
 
   async fromClient(opts) {
@@ -36,12 +36,8 @@ TyrImport.on({
     for (const imp of await event.documents) {
       try {
         const collection = Tyr.byName[imp.collectionName];
-        if (!collection) {
-          console.error(
-            `Could not find collection "${imp.collectionName}" -- aborting import.`
-          );
-          return;
-        }
+        if (!collection)
+          throw `Could not find collection "${imp.collectionName}" -- aborting import.`;
 
         const file = fileField.path.get(imp);
         let mediaType = file.type;
@@ -60,17 +56,20 @@ TyrImport.on({
           }
         }
 
+        const paths =
+          imp.columns.map(pathName => collection.parsePath(pathName)) ||
+          Object.values(collection.fields)
+            .filter(field => !field.readonly && field.relate !== 'ownedBy')
+            .map(f => f.path);
+
         const importOpts = {
           collection,
-          columns: Object.values(collection.fields)
-            .filter(field => !field.readonly && field.relate !== 'ownedBy')
-            .map(field => ({
-              path: field.path,
-            })),
+          columns: paths.map(path => ({ path })),
           filename: await fileField.type.def.downloadS3(fileField, imp),
           defaults: imp.defaults,
           opts: event.opts,
           save: true,
+          log: imp,
         };
 
         switch (mediaType) {
@@ -84,17 +83,18 @@ TyrImport.on({
             break;
 
           default:
-            console.error(
-              `Cannot import file ${file.filename} of media type "${mediaType}" -- aborting import`
-            );
+            throw `Cannot import file ${file.filename} of media type "${mediaType}" -- aborting import`;
         }
       } catch (err) {
-        imp.issues = err.message || 'Unknown error occured.';
+        const m = err.message || 'Unknown error occured.';
+        imp.issues = imp.issues || '';
+        imp.issues += m + '\n';
+        console.error(err);
       }
 
       imp.endedAt = new Date();
 
-      await imp.$update({ fields: { endedAt: 1 } });
+      await imp.$update({ fields: { endedAt: 1, issues: 1 } });
     }
   },
 });
@@ -108,7 +108,8 @@ export class Importer {
     columns: { path: Tyr.PathInstance }[],
     defaults: { [name: string]: any },
     opts: standard tyr options object,
-    save?: boolean
+    save?: boolean,
+    log: (message: string) => void
   }*/
   ) {
     Object.assign(this, opts);
@@ -128,9 +129,7 @@ export class Importer {
           const d = await link.byLabel(v, { projection: { _id: 1 } });
           if (d) return d._id;
 
-          console.error(
-            `Could not find a ${link.label} with a label of "${v}"`
-          );
+          this.log(`Could not find a ${link.label} with a label of "${v}".`);
           return;
         }
 
@@ -170,7 +169,7 @@ export class Importer {
               link,
               new link(obj[fieldName])
             );
-            obj[fieldName] = nestedDoc.$id;
+            obj[fieldName] = nestedDoc?.$id;
             break;
           case 'array':
             const { detail } = p;
@@ -186,7 +185,7 @@ export class Importer {
                       link,
                       new link(v)
                     );
-                    return nestedDoc.$id;
+                    return nestedDoc?.$id;
                   })
                 );
                 break;
@@ -268,6 +267,9 @@ export class Importer {
       await doc.$save();
       return doc;
     }
+
+    // didn't find any data
+    //return undefined;
   }
 
   async importRow(row /*: any[]*/) {

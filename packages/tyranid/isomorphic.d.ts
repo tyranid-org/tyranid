@@ -205,7 +205,7 @@ export namespace Tyr {
     max?: number;
     step?: number;
 
-    labelField?: boolean | { uses: string[] };
+    labelField?: boolean | 'alternate' | { uses: string[] };
     labelImageField?: boolean;
     orderField?: boolean;
     pattern?: RegExp;

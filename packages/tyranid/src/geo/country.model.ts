@@ -14,6 +14,7 @@ export const Country = new Tyr.Collection({
 
     code: {
       is: 'string',
+      labelField: 'alternate',
       description:
         'AKA iso166_1_a2 ...  Top-level internet domain names also use this code.',
     },

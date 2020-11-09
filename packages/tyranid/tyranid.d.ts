@@ -191,6 +191,11 @@ export namespace Tyr {
 
   export function parseBson(bson: any): object;
 
+  export function serially<T, U>(
+    values: T[],
+    visitor: (value: T) => Promise<U>
+  ): Promise<U[]>;
+
   export function adaptIllegalKeyCharAndEliminateRecursion(
     obj: RawMongoDocument
   ): RawMongoDocument;
@@ -1340,6 +1345,7 @@ export namespace Tyr {
     stream?: stream.Writable;
     opts?: any /* standard tyr options object */;
     save?: boolean;
+    log?: { issues: string };
   }
 
   //

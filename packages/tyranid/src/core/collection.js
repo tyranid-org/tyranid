@@ -623,9 +623,22 @@ export default class Collection {
       matchLower = n.toLowerCase();
 
     if (!collection.isDb()) {
+      const findNames = [findName];
+
+      const { alternateLabelFields } = collection;
+      if (alternateLabelFields) {
+        for (const lf of alternateLabelFields) {
+          findNames.push(lf.pathName);
+        }
+      }
+
       const value = _.find(collection.def.values, v => {
-        const name = v[findName];
-        return name && name.toLowerCase() === matchLower;
+        for (const findName of findNames) {
+          const name = v[findName];
+          if (name && name.toLowerCase() === matchLower) return true;
+        }
+
+        return false;
       });
 
       // TODO:  handle projection/population options
@@ -1879,7 +1892,17 @@ export default class Collection {
           fieldDef.db = db = false;
         }
 
-        if (fieldDef.labelField) collection.labelField = field;
+        if (fieldDef.labelField) {
+          if (fieldDef.labelField === 'alternate') {
+            let alternateLabelFields = collection.alternateLabelFields;
+            if (!alternateLabelFields)
+              alternateLabelFields = collection.alternateLabelFields = [];
+
+            alternateLabelFields.push(field);
+          } else {
+            collection.labelField = field;
+          }
+        }
         if (fieldDef.labelImageField) collection.labelImageField = field;
         if (fieldDef.orderField) collection.orderField = field;
 
@@ -1893,7 +1916,7 @@ export default class Collection {
           field.group = fieldDef.group;
         }
 
-        if (!dynamicSchema && !field.method) {
+        if (!dynamicSchema && !field.isMethod()) {
           collection.paths[path] = field;
         }
         const lastDot = path.lastIndexOf('.');

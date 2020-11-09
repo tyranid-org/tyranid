@@ -14,6 +14,11 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         input: 0,
         name: 'import',
         utility: true,
+        label: (
+          <>
+            <UploadOutlined /> Import
+          </>
+        ),
         on({ caller, self }) {
           const { collection } = caller;
 
@@ -63,6 +68,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         (!path.tail.readonly || path.tail.def.unique) &&
         path.tail.relate === 'ownedBy'
     );
+    importDoc.columns = allPaths.map(p => p.name);
 
     return (
       <>

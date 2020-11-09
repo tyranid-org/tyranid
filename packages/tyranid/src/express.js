@@ -525,6 +525,9 @@ export function generateClientLibrary() {
   Tyr.unitize = ${es5Fn(Tyr.unitize)};
   Tyr.isEqual = _.isEqual;
   Tyr.isSameId = ${es5Fn(Tyr.isSameId)};
+  ${
+    '' /* TODO:  get es5Fn to work with async/await ... Tyr.serially = ${es5Fn(Tyr.serially)};*/
+  }
 
   Tyr.isCompliant = (spec, object) => {
     // TODO:  implement array matching like server version

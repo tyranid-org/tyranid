@@ -136,20 +136,22 @@ export default class Field {
     return this.path.spath;
   }
 
-  /** @isopmorphic */
+  /** @isomorphic */
   isId() {
     return this.name === '_id';
   }
 
   isMethod() {
-    return !!this.method || this.parent?.isMethod();
+    // parent could be a collection
+    return !!this.method || this.parent?.isMethod?.();
   }
 
   methodName() {
-    return this.method || this.parent?.methodName();
+    // parent could be a collection
+    return this.method || this.parent?.methodName?.();
   }
 
-  /** @private @isopmorphic */
+  /** @private @isomorphic */
   _calcPathLabel() {
     const p = this.parent,
       l = this.def.pathLabel ?? this.label;
