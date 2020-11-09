@@ -864,6 +864,21 @@ form textarea.tyr-markup-editor {
 
     .tyr-table-cell {
       line-height: 1.2;
+
+      .tyr-rich-text-cell {
+        min-width: 300px;
+        word-wrap: normal;
+        white-space: nowrap;
+        max-width: 280px;
+        width: 280px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: 1.5em;
+
+        .__cl-raw-html {
+          max-height: 1.5em;
+        }
+      }
     }
 
     .ant-table-footer {

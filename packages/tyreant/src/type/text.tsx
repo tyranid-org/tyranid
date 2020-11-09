@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 
-import { Input } from 'antd';
+import { Input, Popover } from 'antd';
 
 import { Tyr } from 'tyranid/client';
 
@@ -83,11 +83,52 @@ export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
 
 export const TyrText = withThemedTypeContext('text', TyrTextBase);
 
+type TextPopoverProps = {
+  value: string;
+  title?: React.ReactNode | string;
+};
+
+const TextPopover = ({ value, title }: TextPopoverProps) => (
+  <Popover
+    placement="left"
+    content={
+      <div
+        style={{
+          maxHeight: '300px',
+          maxWidth: '300px',
+          overflow: 'auto',
+        }}
+      >
+        <div dangerouslySetInnerHTML={{ __html: value }} />
+      </div>
+    }
+    title={title}
+  >
+    <div
+      className="__cl-raw-html"
+      dangerouslySetInnerHTML={{ __html: value }}
+    />
+  </Popover>
+);
+
 byName.text = {
   extends: 'string',
   component: TyrTextBase,
   cellValue(path, document, props) {
-    return <>{getValue(props, document)}</>;
+    const value = getValue(props, document);
+
+    if (props.as === 'textarea') {
+      return <>{value}</>;
+    }
+
+    return (
+      <div className="tyr-rich-text-cell">
+        <TextPopover value={(value as string) || ''} />
+      </div>
+    );
+
+    // ellipsis: true,
+    // defaultHidden: true,
   },
   //static: {
   //<div>whatever</div>
@@ -95,7 +136,3 @@ byName.text = {
 };
 
 registerComponent('TyrText', TyrText);
-
-/*
-
-*/
