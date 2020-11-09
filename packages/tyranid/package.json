@@ -1,6 +1,6 @@
 {
   "name": "tyranid",
-  "version": "0.6.203",
+  "version": "0.6.204",
   "description": "Metadata Library to faciliate working generically with data (MongoDB, ODM)",
   "homepage": "http://tyranid.org",
   "main": "dist/src/tyranid.js",
