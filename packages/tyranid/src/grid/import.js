@@ -104,8 +104,6 @@ TyrImport.on({
 });
 
 export class Importer {
-  static BLOCK_SIZE = 2000;
-
   constructor(
     opts /*: {
     collection,
@@ -171,7 +169,7 @@ export class Importer {
             const { link } = tail;
             const v = obj[fieldName];
 
-            if (!Tyr.isObjectId(v)) {
+            if (Tyr.isObject(v)) {
               const nestedDoc = await this.saveDocument(
                 link,
                 new link(obj[fieldName])
@@ -302,6 +300,11 @@ export class Importer {
       const { path } = c;
 
       let v = row[ci];
+
+      if (typeof v === 'number') {
+        // excel will convert strings to numbers if they are just numeric characters
+        v = String(v);
+      }
 
       v = await this.fromClient(path, v);
 

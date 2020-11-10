@@ -21,7 +21,7 @@ export const createLogger = log =>
     ? message => {
         log.issues = log.issues || '';
         if (!log.issues.includes(message)) {
-          log.issues += message + '\n';
+          log.issues += message + '<br>';
           console.warn(message);
         }
       }
