@@ -1,4 +1,5 @@
 import Tyr from '../tyr';
+import LinkType from '../type/link';
 
 const TyrImport = new Tyr.Collection({
   id: '_im',
@@ -127,7 +128,7 @@ export class Importer {
     Object.assign(this, opts);
   }
 
-  async fromClient(column, v) {
+  async fromClient(column, v, doc) {
     const field = column.path.tail;
 
     if (typeof v === 'string') {
@@ -143,7 +144,8 @@ export class Importer {
 
           if (column.createOnImport) {
             const linkDoc = new link({ [link.labelField.pathName]: v });
-
+            const where = await LinkType.extractWhere(field, doc, this.opts);
+            if (where) Tyr.query.restrict(where, linkDoc);
             await linkDoc.$save(this.opts);
 
             return linkDoc._id;
@@ -324,7 +326,7 @@ export class Importer {
         v = String(v);
       }
 
-      v = await this.fromClient(c, v);
+      v = await this.fromClient(c, v, doc);
 
       path.set(doc, v, { create: true });
     }
