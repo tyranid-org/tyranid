@@ -17,11 +17,15 @@ import { TyrComponent, useComponent } from './component';
 
 export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;
+  self: TyrFormBase<D>;
   document: D;
   documents: D[];
   id: Tyr.IdType<D>;
   ids: Tyr.IdType<D>[];
   isNew: boolean;
+  caller: TyrComponent<any>;
+  component: TyrFormBase<D>;
+  store: any;
 }
 
 // TODO: This needs to be a proxy that redirects any unknown prop name to form.props
@@ -47,6 +51,7 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document>
     return this.form;
   }
 
+  // TODO: Why is this here?
   get component() {
     return this.form;
   }
