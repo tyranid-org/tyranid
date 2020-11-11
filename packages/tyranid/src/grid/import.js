@@ -66,6 +66,9 @@ TyrImport.on({
           }
         }
 
+        const eventOpts = Tyr.cloneDeep(event.opts);
+        eventOpts.preSaveAlreadyDone = undefined;
+
         const importOpts = {
           collection,
           columns:
@@ -78,7 +81,7 @@ TyrImport.on({
               .map(f => ({ path: f.path })),
           filename: await fileField.type.def.downloadS3(fileField, imp),
           defaults: imp.defaults,
-          opts: event.opts,
+          opts: eventOpts,
           save: true,
           log: imp,
         };
@@ -128,6 +131,10 @@ export class Importer {
     Object.assign(this, opts);
   }
 
+  get copyOpts() {
+    return Tyr.cloneDeep(this.opts);
+  }
+
   async fromClient(column, v, doc) {
     const field = column.path.tail;
 
@@ -144,9 +151,13 @@ export class Importer {
 
           if (column.createOnImport) {
             const linkDoc = new link({ [link.labelField.pathName]: v });
-            const where = await LinkType.extractWhere(field, doc, this.opts);
+            const where = await LinkType.extractWhere(
+              field,
+              doc,
+              this.copyOpts
+            );
             if (where) Tyr.query.restrict(where, linkDoc);
-            await linkDoc.$save(this.opts);
+            await linkDoc.$save(this.copyOpts);
 
             return linkDoc._id;
           } else {
@@ -281,7 +292,7 @@ export class Importer {
           }
         }
 
-        if (changesFound) await existingDoc.$save(this.opts);
+        if (changesFound) await existingDoc.$save(this.copyOpts);
         console.log(
           `        - ${
             changesFound ? 'updating' : 'using'
@@ -291,7 +302,7 @@ export class Importer {
       }
 
       console.log('        - creating new');
-      await doc.$save(this.opts);
+      await doc.$save(this.copyOpts);
       return doc;
     }
 
