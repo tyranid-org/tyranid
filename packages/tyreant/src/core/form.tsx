@@ -17,12 +17,19 @@ import { TyrComponent, useComponent } from './component';
 
 export interface FormRenderComponentProps<D extends Tyr.Document> {
   form: TyrFormBase<D>;
+  self: TyrFormBase<D>;
   document: D;
   documents: D[];
   id: Tyr.IdType<D>;
   ids: Tyr.IdType<D>[];
   isNew: boolean;
+  caller: TyrComponent<any>;
+  component: TyrFormBase<D>;
+  store: any;
 }
+
+// TODO: This needs to be a proxy that redirects any unknown prop name to form.props
+// so that ExtraFormProps are passed through
 export class FormRenderComponentPropsWrapper<D extends Tyr.Document>
   implements TyrActionFnOpts<D> {
   form!: TyrFormBase<D>;
@@ -44,6 +51,7 @@ export class FormRenderComponentPropsWrapper<D extends Tyr.Document>
     return this.form;
   }
 
+  // TODO: Why is this here?
   get component() {
     return this.form;
   }
@@ -199,11 +207,19 @@ export const TyrForm = <D extends Tyr.Document, ExtraFormProps = {}>(
 );
 
 export function createForm<D extends Tyr.Document, ExtraFormProps = {}>(
-  formProps: TyrFormProps<D> & ExtraFormProps,
-  WrappedComponent: React.ComponentType<FormRenderComponentProps<D>>
+  formProps: TyrFormProps<D>,
+  WrappedComponent: React.ComponentType<
+    FormRenderComponentProps<D> & ExtraFormProps
+  >
 ) {
-  return () => (
-    <TyrForm {...formProps}>{props => <WrappedComponent {...props} />}</TyrForm>
+  return (extraProps?: ExtraFormProps) => (
+    <TyrForm {...(extraProps ? { ...formProps, ...extraProps } : formProps)}>
+      {props => (
+        <WrappedComponent
+          {...(props as FormRenderComponentProps<D> & ExtraFormProps)}
+        />
+      )}
+    </TyrForm>
   );
 }
 
