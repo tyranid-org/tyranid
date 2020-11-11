@@ -66,16 +66,17 @@ const LinkType = new Type({
   },
 });
 
-LinkType.applyWhere = async function (field, doc, query, opts) {
-  const where = field.def.where;
-  if (where) {
-    if (typeof where === 'function') {
-      const rslt = await where.call(doc, opts);
+LinkType.extractWhere = async function (field, doc, opts) {
+  let { where } = field.def;
 
-      if (_.isObject(rslt)) {
-        Object.assign(query, rslt);
-      }
-    } else {
+  if (typeof where === 'function') where = await where.call(doc, opts);
+  return where;
+};
+
+LinkType.applyWhere = async function (field, doc, query, opts) {
+  const where = await LinkType.extractWhere(field, doc, opts);
+  if (where) {
+    if (_.isObject(where)) {
       Object.assign(query, where);
     }
   }
