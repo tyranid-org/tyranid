@@ -54,6 +54,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
 
   // FILTERS
   notifyFilterExists?: (exists: boolean) => void;
+  filter?: boolean;
 
   // PATHS
   paths?: (TyrPathLaxProps<D> | string)[];

@@ -399,16 +399,20 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         </Fragment>
       );
     } else if (this.traits.includes('filter')) {
-      return <TyrFilters key="action-filters" component={component} />;
+      if (component.props.filter !== false) {
+        return <TyrFilters key="action-filters" component={component} />;
+      }
     } else if (this.traits.includes('config')) {
-      return (
-        <Tooltip title="Edit Configuration" key="action-config">
-          <MenuOutlined
-            className="tyr-component-config-icon"
-            onClick={() => component.onClickConfig()}
-          />
-        </Tooltip>
-      );
+      if (component.props.config !== false) {
+        return (
+          <Tooltip title="Edit Configuration" key="action-config">
+            <MenuOutlined
+              className="tyr-component-config-icon"
+              onClick={() => component.onClickConfig()}
+            />
+          </Tooltip>
+        );
+      }
     } else if (this.href) {
       const { href } = this;
 

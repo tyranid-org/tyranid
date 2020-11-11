@@ -433,7 +433,6 @@ export class TyrTableBase<
       actionTrigger,
       actionColumnClassName,
       notifyFilterExists,
-      onActionLabelClick,
       config,
       wrapColumnHeaders,
       resizableColumns,
@@ -1163,13 +1162,7 @@ export class TyrTableBase<
                 />
               )}
               {paths && (!newDocument || !!this.documents.length) && (
-                <div
-                  style={{
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}
-                  ref={this.tableWrapper}
-                >
+                <div className="tyr-main-table-wrapper" ref={this.tableWrapper}>
                   {dndEnabled ? (
                     <DndProvider backend={HTML5Backend}>
                       {mainTable}

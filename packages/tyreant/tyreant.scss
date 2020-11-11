@@ -582,6 +582,36 @@ form textarea.tyr-markup-editor {
     }
   }
 
+  .tyr-main-table-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ant-table-expanded-row {
+    .tyr-panel {
+      padding: 10px 0 5px 0;
+
+      .tyr-main-table-wrapper {
+        overflow: visible;
+      }
+
+      .tyr-table {
+        & > .ant-row:first-of-type {
+          display: none;
+        }
+
+        .ant-table {
+          margin-left: 0;
+          margin-right: 0;
+
+          .ant-table-body {
+            min-height: 200px !important;
+          }
+        }
+      }
+    }
+  }
+
   --table-fixed-column-background-color: #fcfcfc;
 
   tr.drop-over-downward td {

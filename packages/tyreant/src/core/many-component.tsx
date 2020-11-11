@@ -53,7 +53,6 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   showQuickTotal?: boolean;
 
   // FILTERS
-  filter?: boolean;
   searchBar?: boolean;
 
   // SORTING
