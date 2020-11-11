@@ -295,8 +295,7 @@ async function fromExcel(opts) {
   await pathify(opts.collection, opts.columns);
 
   const expectedColumns = opts.columns.map(column => ({
-    def: column,
-    path: column.path,
+    ...column,
     label: column.label || column.path.label,
   }));
 

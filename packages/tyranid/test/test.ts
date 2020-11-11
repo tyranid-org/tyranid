@@ -2311,12 +2311,12 @@ describe('tyranid', function () {
     describe('collection.links()', () => {
       it('should work with no options', () => {
         const links = User.links();
-        expect(links.length).to.be.eql(19);
+        expect(links.length).to.be.eql(20);
       });
 
       it('should work with incoming', () => {
         const links = User.links({ direction: 'incoming' });
-        expect(links.length).to.be.eql(11);
+        expect(links.length).to.be.eql(12);
       });
 
       it('should work with outgoing', () => {
@@ -2329,7 +2329,7 @@ describe('tyranid', function () {
         expect(links.length).to.be.eql(1);
 
         links = User.links({ relate: 'associate' });
-        expect(links.length).to.be.eql(18);
+        expect(links.length).to.be.eql(19);
       });
     });
 

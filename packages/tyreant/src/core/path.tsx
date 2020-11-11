@@ -202,6 +202,12 @@ export interface TyrPathProps<D extends Tyr.Document>
   searchSortById?: boolean;
   static?: boolean;
 
+  /**
+   * When importing, if a record with the given label does not exist, create a new record
+   * with the link and link to it.
+   */
+  createOnImport?: boolean;
+
   // STRING (incl EMAIL, PASSWORD, etc.)
   onPressEnter?: () => void;
 

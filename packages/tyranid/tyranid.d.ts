@@ -1333,6 +1333,7 @@ export namespace Tyr {
     path: string | PathInstance;
     get?(this: this, doc: D): any;
     label?: string;
+    createOnImport?: boolean;
   }
 
   export interface FileFormatDef<

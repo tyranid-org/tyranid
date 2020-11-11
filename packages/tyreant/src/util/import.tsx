@@ -3,8 +3,13 @@ import * as React from 'react';
 import { UploadOutlined } from '@ant-design/icons';
 
 import { Tyr } from 'tyranid/client';
-import { TyrField, createForm } from '../core';
+import { TyrField, createForm, TyrPathProps } from '../core';
 import { message } from 'antd';
+
+interface ImportColumn {
+  path: Tyr.PathInstance;
+  createOnImport?: boolean;
+}
 
 export const TyrImport = createForm<Tyr.TyrImport>(
   {
@@ -53,22 +58,24 @@ export const TyrImport = createForm<Tyr.TyrImport>(
     const defaults = importDoc.defaults;
     const { paths } = defaults.$model;
 
-    const allPaths = (
-      form.parent?.activePaths.map(p => p.path) ||
-      Object.keys(paths).map(pathName => paths[pathName])
-    ).filter(p => p?.tail);
+    const allColumns: ImportColumn[] = ((form.parent?.activePaths ||
+      Object.keys(paths).map(pathName => ({
+        path: paths[pathName],
+      }))) as ImportColumn[]).filter(c => c.path?.tail);
 
-    const importPaths = allPaths.filter(
-      path =>
-        (!path.tail.readonly || path.tail.def.unique) &&
-        path.tail.relate !== 'ownedBy'
-    );
-    const defaultablePaths = allPaths.filter(
-      path =>
-        (!path.tail.readonly || path.tail.def.unique) &&
-        path.tail.relate === 'ownedBy'
-    );
-    importDoc.columns = allPaths.map(p => p.name);
+    importDoc.columns = allColumns.map(c => ({
+      path: c.path.name,
+      ...(c.createOnImport && { createOnImport: true }),
+    }));
+
+    const importColumns = allColumns.filter(c => {
+      const tail = c.path.tail;
+      return (!tail.readonly || tail.def.unique) && tail.relate !== 'ownedBy';
+    });
+    const defaultableColumns = allColumns.filter(c => {
+      const tail = c.path.tail;
+      return (!tail.readonly || tail.def.unique) && tail.relate === 'ownedBy';
+    });
 
     return (
       <>
@@ -80,7 +87,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
             be ignored):
           </p>
           <p>
-            <b>{importPaths.map(path => path.label).join(', ')}</b>
+            <b>{importColumns.map(c => c.path.label).join(', ')}</b>
           </p>
         </div>
         {importDoc.$id && (
@@ -91,10 +98,10 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         )}
         <TyrField path="file" onChange={() => form.refresh()} />
 
-        {!!defaultablePaths.length && <h1>Default Values</h1>}
+        {!!defaultableColumns.length && <h1>Default Values</h1>}
 
-        {defaultablePaths.map(path => (
-          <TyrField key={path.name} path={path.name} document={defaults} />
+        {defaultableColumns.map(c => (
+          <TyrField key={c.path.name} path={c.path.name} document={defaults} />
         ))}
       </>
     );

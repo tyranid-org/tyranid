@@ -16,7 +16,16 @@ const TyrImport = new Tyr.Collection({
     user: { link: 'user?' },
     defaults: { is: 'object' },
     issues: { is: 'text' },
-    columns: { is: 'array', of: 'string', note: 'path names' },
+    columns: {
+      is: 'array',
+      of: {
+        is: 'object',
+        fields: {
+          path: { is: 'string' },
+          createOnImport: { is: 'boolean' },
+        },
+      },
+    },
   },
 
   async fromClient(opts) {
@@ -56,15 +65,16 @@ TyrImport.on({
           }
         }
 
-        const paths =
-          imp.columns.map(pathName => collection.parsePath(pathName)) ||
-          Object.values(collection.fields)
-            .filter(field => !field.readonly && field.relate !== 'ownedBy')
-            .map(f => f.path);
-
         const importOpts = {
           collection,
-          columns: paths.map(path => ({ path })),
+          columns:
+            imp.columns.map(c => ({
+              ...c,
+              path: collection.parsePath(c.path),
+            })) ||
+            Object.values(collection.fields)
+              .filter(field => !field.readonly && field.relate !== 'ownedBy')
+              .map(f => ({ path: f.path })),
           filename: await fileField.type.def.downloadS3(fileField, imp),
           defaults: imp.defaults,
           opts: event.opts,
@@ -107,7 +117,7 @@ export class Importer {
   constructor(
     opts /*: {
     collection,
-    columns: { path: Tyr.PathInstance }[],
+    columns: { path: Tyr.PathInstance, createOnImport?: boolean }[],
     defaults: { [name: string]: any },
     opts: standard tyr options object,
     save?: boolean,
@@ -117,8 +127,8 @@ export class Importer {
     Object.assign(this, opts);
   }
 
-  async fromClient(path, v) {
-    const field = path.tail;
+  async fromClient(column, v) {
+    const field = column.path.tail;
 
     if (typeof v === 'string') {
       try {
@@ -131,8 +141,16 @@ export class Importer {
           const d = await link.byLabel(v, { projection: { _id: 1 } });
           if (d) return d._id;
 
-          this.log(`Could not find a ${link.label} with a label of "${v}".`);
-          return;
+          if (column.createOnImport) {
+            const linkDoc = new link({ [link.labelField.pathName]: v });
+
+            await linkDoc.$save();
+
+            return linkDoc._id;
+          } else {
+            this.log(`Could not find a ${link.label} with a label of "${v}".`);
+            return;
+          }
         }
 
         throw err;
@@ -306,7 +324,7 @@ export class Importer {
         v = String(v);
       }
 
-      v = await this.fromClient(path, v);
+      v = await this.fromClient(c, v);
 
       path.set(doc, v, { create: true });
     }
