@@ -144,7 +144,7 @@ export class Importer {
           if (column.createOnImport) {
             const linkDoc = new link({ [link.labelField.pathName]: v });
 
-            await linkDoc.$save();
+            await linkDoc.$save(this.opts);
 
             return linkDoc._id;
           } else {
@@ -279,7 +279,7 @@ export class Importer {
           }
         }
 
-        if (changesFound) await existingDoc.$save();
+        if (changesFound) await existingDoc.$save(this.opts);
         console.log(
           `        - ${
             changesFound ? 'updating' : 'using'
@@ -289,7 +289,7 @@ export class Importer {
       }
 
       console.log('        - creating new');
-      await doc.$save();
+      await doc.$save(this.opts);
       return doc;
     }
 

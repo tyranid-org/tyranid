@@ -645,7 +645,10 @@ export default class Collection {
       return value;
     } else {
       const query = {};
-      query[findName] = { $regex: escapeRegex(matchLower), $options: 'i' };
+      query[findName] = {
+        $regex: `^${escapeRegex(matchLower)}$`,
+        $options: 'i',
+      };
       return collection.findOne({ ...opts, query });
     }
   }
