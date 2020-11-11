@@ -32,7 +32,7 @@ export interface TyrManyComponentProps<D extends Tyr.Document = Tyr.Document>
   query?:
     | Tyr.MongoQuery
     | ((this: TyrManyComponent<D>, query: Tyr.MongoQuery) => Promise<void>);
-  projection?: 'auto' | 'all' | string[];
+  projection?: 'auto' | 'all' | string[] | Tyr.MongoProjection;
   populate?: Tyr.Population;
   local?: boolean;
   preFind?: (
@@ -261,6 +261,8 @@ export class TyrManyComponent<
         for (const name of projection) {
           fields[name] = 1;
         }
+      } else if (Tyr.isObject(projection)) {
+        Object.assign(fields, projection);
       }
 
       // now we mix in all links so that when we link to child components we have the links available
