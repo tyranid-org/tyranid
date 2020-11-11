@@ -336,7 +336,7 @@ async function fromExcel(opts) {
   const documents = [];
 
   sheet.eachRow((row, rowNumber) => {
-    if (rowNumber <= headerRowNumber) return;
+    if (row.hidden || rowNumber <= headerRowNumber) return;
 
     documents.push(
       row.values.map(v => {

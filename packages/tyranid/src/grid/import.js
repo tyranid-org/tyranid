@@ -252,7 +252,7 @@ export class Importer {
           const { path } = field;
           const v = path.get(doc);
           const vExisting = path.get(existingDoc);
-          if (v && v !== vExisting) {
+          if (v && !Tyr.isEqual(v, vExisting)) {
             console.log(
               `change found for path ${path.name}, new:${v} vs. existing:${vExisting}`
             );
