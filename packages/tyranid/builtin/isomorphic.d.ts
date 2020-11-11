@@ -246,6 +246,24 @@ declare module 'tyranid/isomorphic' {
     
     /**
      * Base interface from which documents in collection
+     * "tyrNotification" <TyrNotificationCollection> are derived
+     */
+    export interface BaseTyrNotification<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      text?: string;
+      type?: TyrNotificationTypeId;
+      type$?: ObjContainer & BaseTyrNotificationType<ObjIdType, ObjContainer, NumContainer>;
+    }
+    
+    /**
+     * Base interface from which documents in collection
+     * "tyrNotificationType" <TyrNotificationTypeCollection> are derived
+     */
+    export interface BaseTyrNotificationType<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+      name?: string;
+    }
+    
+    /**
+     * Base interface from which documents in collection
      * "tyrPage" <TyrPageCollection> are derived
      */
     export interface BaseTyrPage<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -440,6 +458,18 @@ declare module 'tyranid/isomorphic' {
       extends Inserted<string>,
               BaseTyrMigrationStatus<ObjIdType, ObjContainer, NumContainer> {}
     /**
+     * Document returned by collection "tyrNotification" <TyrNotificationCollection>
+     */
+    export interface TyrNotification<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<ObjIdType>,
+              BaseTyrNotification<ObjIdType, ObjContainer, NumContainer> {}
+    /**
+     * Document returned by collection "tyrNotificationType" <TyrNotificationTypeCollection>
+     */
+    export interface TyrNotificationType<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends Inserted<TyrNotificationTypeId>,
+              BaseTyrNotificationType<ObjIdType, ObjContainer, NumContainer> {}
+    /**
      * Document returned by collection "tyrPage" <TyrPageCollection>
      */
     export interface TyrPage<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
@@ -619,6 +649,49 @@ declare module 'tyranid/isomorphic' {
      */
     export interface TyrMigrationStatusCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
       extends CollectionInstance<TyrMigrationStatus<ObjIdType, ObjContainer, NumContainer>> {}
+    
+    /**
+     * Service definition for "tyrNotification" collection
+     */
+    export interface TyrNotificationCollectionService<ObjIdType = 'string'> {
+      send(
+        this: any,
+        to: ObjIdType,
+        type: TyrNotificationTypeId,
+        message?: string): Promise<void>;
+      sendInvalidate(
+        this: any,
+        to: ObjIdType): Promise<void>;
+      sendInfo(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>;
+      sendWarning(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>;
+      sendSuccess(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>;
+      sendError(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>; 
+    }
+
+    /**
+     * Type definition for "tyrNotification" collection
+     */
+    export interface TyrNotificationCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<TyrNotification<ObjIdType, ObjContainer, NumContainer>> {}
+    
+    /**
+     * Type definition for "tyrNotificationType" collection
+     */
+    export interface TyrNotificationTypeCollection<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>>
+      extends CollectionInstance<TyrNotificationType<ObjIdType, ObjContainer, NumContainer>>,
+              TyrNotificationTypeCollectionEnumStatic {}
     
     /**
      * Type definition for "tyrPage" collection
@@ -3731,6 +3804,38 @@ declare module 'tyranid/isomorphic' {
   }
   
   /**
+   * Static properties for enum collection "TyrNotificationTypeCollection"
+   */
+  export interface TyrNotificationTypeCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
+    
+      ERROR: {
+        _id: 4;
+        name: 'Error';
+      } & TyrNotificationType<ObjIdType, ObjContainer, NumContainer>;
+
+      INFO: {
+        _id: 1;
+        name: 'Info';
+      } & TyrNotificationType<ObjIdType, ObjContainer, NumContainer>;
+
+      INVALIDATE: {
+        _id: 5;
+        name: 'Invalidate';
+      } & TyrNotificationType<ObjIdType, ObjContainer, NumContainer>;
+
+      SUCCESS: {
+        _id: 3;
+        name: 'Success';
+      } & TyrNotificationType<ObjIdType, ObjContainer, NumContainer>;
+
+      WARNING: {
+        _id: 2;
+        name: 'Warning';
+      } & TyrNotificationType<ObjIdType, ObjContainer, NumContainer>;
+
+  }
+  
+  /**
    * Static properties for enum collection "TyrSchemaTypeCollection"
    */
   export interface TyrSchemaTypeCollectionEnumStatic<ObjIdType = string, ObjContainer = Inserted<string>, NumContainer = Inserted<number>> {
@@ -6251,6 +6356,16 @@ declare module 'tyranid/isomorphic' {
      |7;
     
     /**
+     * Type alias for enum id values in "tyrNotificationType" collection
+     */
+    export type TyrNotificationTypeId =
+      1
+     |2
+     |3
+     |4
+     |5;
+    
+    /**
      * Type alias for enum id values in "tyrSchemaType" collection
      */
     export type TyrSchemaTypeId =
@@ -6507,6 +6622,8 @@ declare module 'tyranid/isomorphic' {
       tyrLogEvent: TyrLogEventCollection<IdType>;
       tyrLogLevel: TyrLogLevelCollection<IdType>;
       tyrMigrationStatus: TyrMigrationStatusCollection<IdType>;
+      tyrNotification: TyrNotificationCollection<IdType>;
+      tyrNotificationType: TyrNotificationTypeCollection<IdType>;
       tyrPage: TyrPageCollection<IdType>;
       tyrSchema: TyrSchemaCollection<IdType>;
       tyrSchemaType: TyrSchemaTypeCollection<IdType>;
@@ -6537,6 +6654,8 @@ declare module 'tyranid/isomorphic' {
       TyrLogEvent: TyrLogEventCollection<IdType>;
       TyrLogLevel: TyrLogLevelCollection<IdType>;
       TyrMigrationStatus: TyrMigrationStatusCollection<IdType>;
+      TyrNotification: TyrNotificationCollection<IdType>;
+      TyrNotificationType: TyrNotificationTypeCollection<IdType>;
       TyrPage: TyrPageCollection<IdType>;
       TyrSchema: TyrSchemaCollection<IdType>;
       TyrSchemaType: TyrSchemaTypeCollection<IdType>;
@@ -6567,6 +6686,8 @@ declare module 'tyranid/isomorphic' {
       _l2: TyrLogEventCollection<IdType>;
       _l1: TyrLogLevelCollection<IdType>;
       _m1: TyrMigrationStatusCollection<IdType>;
+      _n0: TyrNotificationCollection<IdType>;
+      _n1: TyrNotificationTypeCollection<IdType>;
       _p0: TyrPageCollection<IdType>;
       _t1: TyrSchemaCollection<IdType>;
       _t0: TyrSchemaTypeCollection<IdType>;
@@ -6598,6 +6719,8 @@ declare module 'tyranid/isomorphic' {
      |'tyrLogEvent'
      |'tyrLogLevel'
      |'tyrMigrationStatus'
+     |'tyrNotification'
+     |'tyrNotificationType'
      |'tyrPage'
      |'tyrSchema'
      |'tyrSchemaType'
@@ -6624,6 +6747,8 @@ declare module 'tyranid/isomorphic' {
      |'_l2'
      |'_m1'
      |'_mt'
+     |'_n0'
+     |'_n1'
      |'_p0'
      |'_t0'
      |'_t1'

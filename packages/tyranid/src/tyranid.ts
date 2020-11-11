@@ -8,6 +8,9 @@ import './geo/country.model';
 import './geo/province.model';
 import './geo/county.model';
 
+import './notification/notification-type.model';
+import './notification/notification.model';
+
 export { Tyr };
 
 export default Tyr;

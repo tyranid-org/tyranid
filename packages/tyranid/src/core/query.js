@@ -622,6 +622,7 @@ function queryRestrict(query, doc) {
   const { fields } = col;
 
   for (const name in query) {
+    // shipper: { $in : [] }
     if (name.startsWith('$')) {
       // TODO ... probably some TODO here, but some of this is dynamic and needs to be enforced in validations
     } else {
@@ -631,6 +632,56 @@ function queryRestrict(query, doc) {
       //        if so, probably another thing that needs to be enforced in validation
 
       if (Array.isArray(qv) && field?.type.name !== 'array') continue;
+
+      if (Tyr.isObject(qv)) {
+        let operatorFound = false;
+        let valueFound = false;
+
+        for (const qname in qv) {
+          if (!qv.hasOwnProperty(qname)) continue;
+
+          switch (qname) {
+            case '$in': {
+              operatorFound = true;
+              const qvalue = qv[qname];
+              const docValue = doc[name];
+
+              const exists = qvalue.find(qqv => Tyr.isSameId(qqv, docValue));
+
+              if (!exists) {
+                throw Tyr.SecureError(
+                  `Security error- ${qname} value (${docValue}) is not valid!`
+                );
+              }
+
+              break;
+            }
+            case '$eq': {
+              operatorFound = true;
+              doc[name] = Tyr.cloneDeep(qv[qname]);
+              break;
+            }
+            default: {
+              if (name.startsWith('$')) {
+                throw Tyr.SecureError(`Security error: TODO: handle ${name}`);
+              }
+
+              valueFound = true;
+            }
+          }
+        }
+
+        if (operatorFound) {
+          if (valueFound) {
+            throw Tyr.AppError(
+              'Query has both values and mongo operators.',
+              query
+            );
+          }
+
+          continue;
+        }
+      }
 
       doc[name] = Tyr.cloneDeep(qv);
     }

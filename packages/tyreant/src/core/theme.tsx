@@ -12,6 +12,7 @@ import type { TyrDecoratorProps } from './decorator';
 import type { TyrTableProps } from './table';
 import { TyrAction } from './action';
 import { TyrActionOpts } from '../tyreant';
+import { useNotifications } from '../util/notifications-hook';
 
 export interface TyrThemeProps {
   action?: Partial<TyrActionOpts<any>>;
@@ -93,9 +94,15 @@ export const withTheme = <
   return <ThemedControl {...useThemeProps(type, props as Required<P>)} />;
 };
 
-export const TyrTheme: React.FunctionComponent<TyrThemeProps> = props => (
-  <ThemeContext.Provider value={props}>{props.children}</ThemeContext.Provider>
-);
+export const TyrTheme: React.FunctionComponent<TyrThemeProps> = props => {
+  useNotifications();
+
+  return (
+    <ThemeContext.Provider value={props}>
+      {props.children}
+    </ThemeContext.Provider>
+  );
+};
 
 export const TypeContext = React.createContext<TyrTypeProps<any> | undefined>(
   undefined

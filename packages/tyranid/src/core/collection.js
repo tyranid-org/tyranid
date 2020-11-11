@@ -1208,7 +1208,7 @@ export default class Collection {
           auth
         );
 
-      Object.assign(obj, Tyr.cloneDeep(updOpts.query));
+      Tyr.query.restrict(updOpts.query, obj);
 
       const update = await parseSaveObj(collection, obj, updOpts);
 

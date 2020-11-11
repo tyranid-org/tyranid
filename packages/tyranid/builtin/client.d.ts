@@ -242,6 +242,36 @@ declare module 'tyranid/client' {
     
 
     /**
+     * Client base document definition for TyrNotificationCollection.
+     */
+    export interface BaseTyrNotification
+      extends Isomorphic.BaseTyrNotification<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Client document definition for TyrNotificationCollection,
+     * extends isomorphic base interface BaseTyrNotification.
+     */
+    export interface TyrNotification
+      extends Inserted<ObjIdType>,
+              BaseTyrNotification {}
+    
+
+    /**
+     * Client base document definition for TyrNotificationTypeCollection.
+     */
+    export interface BaseTyrNotificationType
+      extends Isomorphic.BaseTyrNotificationType<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {}
+
+    /**
+     * Client document definition for TyrNotificationTypeCollection,
+     * extends isomorphic base interface BaseTyrNotificationType.
+     */
+    export interface TyrNotificationType
+      extends Inserted<TyrNotificationTypeId>,
+              BaseTyrNotificationType {}
+    
+
+    /**
      * Client base document definition for TyrPageCollection.
      */
     export interface BaseTyrPage
@@ -517,6 +547,50 @@ declare module 'tyranid/client' {
     /**
      * Client collection definition.
      */
+    export interface TyrNotificationCollection
+      extends Tyr.CollectionInstance<TyrNotification>,
+              TyrNotificationCollectionService {
+    }
+
+    export interface TyrNotificationCollectionService {
+      send(
+        this: any,
+        to: ObjIdType,
+        type: TyrNotificationTypeId,
+        message?: string): Promise<void>;
+      sendInvalidate(
+        this: any,
+        to: ObjIdType): Promise<void>;
+      sendInfo(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>;
+      sendWarning(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>;
+      sendSuccess(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>;
+      sendError(
+        this: any,
+        to: ObjIdType,
+        message: string): Promise<void>;
+    }
+
+
+    /**
+     * Client collection definition.
+     */
+    export interface TyrNotificationTypeCollection
+      extends Tyr.CollectionInstance<TyrNotificationType>,
+                Isomorphic.TyrNotificationTypeCollectionEnumStatic<ObjIdType, Inserted<ObjIdType>, Inserted<number>> {
+    }
+
+    /**
+     * Client collection definition.
+     */
     export interface TyrPageCollection
       extends Tyr.CollectionInstance<TyrPage> {
     }
@@ -586,6 +660,7 @@ declare module 'tyranid/client' {
     export type MediaTypeId = Isomorphic.MediaTypeId;
     export type TyrLogEventId = Isomorphic.TyrLogEventId;
     export type TyrLogLevelId = Isomorphic.TyrLogLevelId;
+    export type TyrNotificationTypeId = Isomorphic.TyrNotificationTypeId;
     export type TyrSchemaTypeId = Isomorphic.TyrSchemaTypeId;
     export type UnitId = Isomorphic.UnitId;
     export type UnitFactorId = Isomorphic.UnitFactorId;
@@ -611,6 +686,8 @@ declare module 'tyranid/client' {
       tyrLogEvent: TyrLogEventCollection;
       tyrLogLevel: TyrLogLevelCollection;
       tyrMigrationStatus: TyrMigrationStatusCollection;
+      tyrNotification: TyrNotificationCollection;
+      tyrNotificationType: TyrNotificationTypeCollection;
       tyrPage: TyrPageCollection;
       tyrSchema: TyrSchemaCollection;
       tyrSchemaType: TyrSchemaTypeCollection;
@@ -641,6 +718,8 @@ declare module 'tyranid/client' {
       TyrLogEvent: TyrLogEventCollection;
       TyrLogLevel: TyrLogLevelCollection;
       TyrMigrationStatus: TyrMigrationStatusCollection;
+      TyrNotification: TyrNotificationCollection;
+      TyrNotificationType: TyrNotificationTypeCollection;
       TyrPage: TyrPageCollection;
       TyrSchema: TyrSchemaCollection;
       TyrSchemaType: TyrSchemaTypeCollection;
@@ -671,6 +750,8 @@ declare module 'tyranid/client' {
       _l2: TyrLogEventCollection;
       _l1: TyrLogLevelCollection;
       _m1: TyrMigrationStatusCollection;
+      _n0: TyrNotificationCollection;
+      _n1: TyrNotificationTypeCollection;
       _p0: TyrPageCollection;
       _t1: TyrSchemaCollection;
       _t0: TyrSchemaTypeCollection;
