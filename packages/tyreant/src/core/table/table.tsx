@@ -116,6 +116,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   orderable?: boolean;
   moveRow?: (dragIndex: number, hoverIndex: number) => void;
   showHeader?: boolean;
+  rowClassName?: (record: D, rowIndex: number) => string;
 
   wrapColumnHeaders?: boolean;
 
@@ -1082,6 +1083,7 @@ export class TyrTableBase<
           footer={netFooter as (rows: Object[]) => React.ReactNode}
           showHeader={!newDocument && this.props.showHeader !== false}
           dataSource={this.currentPageDocuments()}
+          rowClassName={this.props.rowClassName}
           columns={this.getColumns()}
           scroll={tableScroll}
           {...(expandable ? { expandable } : {})}

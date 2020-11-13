@@ -149,7 +149,7 @@ byName.double = {
 
         if (searchNumber) {
           switch (value[0]) {
-            case 'equals':
+            case 'Equals':
               return intVal === value[1];
             case 'Not equal':
               return intVal !== value[1];

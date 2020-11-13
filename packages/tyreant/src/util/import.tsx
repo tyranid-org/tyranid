@@ -82,9 +82,9 @@ export const TyrImport = createForm<Tyr.TyrImport>(
         <h1>Import File</h1>
         <div className="tyr-import-help">
           <p>
-            The import file should be an <b>Excel</b> file that contains the
-            following column names (it can contain other columns, but they will
-            be ignored):
+            The import file should be an <b>Excel</b> or <b>CSV</b> file that
+            contains the following column names (it can contain other columns,
+            but they will be ignored):
           </p>
           <p>
             <b>{importColumns.map(c => c.path.label).join(', ')}</b>
