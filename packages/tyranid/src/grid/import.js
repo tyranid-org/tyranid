@@ -44,6 +44,10 @@ TyrImport.on({
     const fileField = TyrImport.fields.file;
 
     const importDoc = async imp => {
+      if (imp.user) {
+        Tyr.byName.tyrNotification.sendInfo(imp.user, 'Import started.');
+      }
+
       try {
         const collection = Tyr.byName[imp.collectionName];
         if (!collection)
@@ -108,7 +112,12 @@ TyrImport.on({
       imp.endedAt = new Date();
 
       console.log('Import complete.');
+
       await imp.$update({ fields: { endedAt: 1, issues: 1 } });
+
+      if (imp.user) {
+        Tyr.byName.tyrNotification.sendInfo(imp.user, 'Import complete.');
+      }
     };
 
     for (const imp of await event.documents) {
