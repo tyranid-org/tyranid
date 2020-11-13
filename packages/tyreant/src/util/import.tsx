@@ -3,7 +3,7 @@ import * as React from 'react';
 import { UploadOutlined } from '@ant-design/icons';
 
 import { Tyr } from 'tyranid/client';
-import { TyrField, createForm, TyrPathProps } from '../core';
+import { TyrField, createForm } from '../core';
 import { message } from 'antd';
 
 interface ImportColumn {
@@ -31,6 +31,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
             self.document = new Tyr.collections.TyrImport({
               collectionName: collection.def.name,
               defaults: new collection(),
+              user: Tyr.local.user ? Tyr.local.user._id : undefined,
             });
           } catch (err) {
             console.error(err);
