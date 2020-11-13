@@ -644,11 +644,28 @@ export default class Collection {
       // TODO:  handle projection/population options
       return value;
     } else {
-      const query = {};
+      let query = {};
       query[findName] = {
         $regex: `^${escapeRegex(matchLower)}$`,
         $options: 'i',
       };
+
+      const { alternateLabelFields } = collection;
+      if (alternateLabelFields?.length) {
+        const $or = [query];
+
+        query = { $or };
+
+        for (const lf of alternateLabelFields) {
+          $or.push({
+            [lf.spath]: {
+              $regex: `^${escapeRegex(matchLower)}$`,
+              $options: 'i',
+            },
+          });
+        }
+      }
+
       return collection.findOne({ ...opts, query });
     }
   }
