@@ -710,6 +710,13 @@ export default class Collection {
       const of = this.orderField;
       if (of) fields[of.pathName] = 1;
 
+      const { alternateLabelFields } = this;
+      if (alternateLabelFields) {
+        for (const alf of alternateLabelFields) {
+          fields[alf.pathName] = 1;
+        }
+      }
+
       const lfDef = lf.def.labelField;
 
       if (typeof lfDef === 'object' && !!lfDef.uses) {

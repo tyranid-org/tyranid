@@ -413,6 +413,7 @@ declare module 'tyranid/client' {
       isUid(uid: string): boolean;
       label: string;
       labelField: Tyr.FieldInstance;
+      alternateLabelFields?: Tyr.FieldInstance[];
       labelImageField: any;
       orderField: any;
       labelFor(doc: D | object, opts?: { labelField: string }): string;

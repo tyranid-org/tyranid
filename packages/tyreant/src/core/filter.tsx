@@ -176,7 +176,7 @@ export const TyrFilters = ({
         if (filterDropdown) {
           return (
             <div className="tyr-filter-container" key={path.name}>
-              <h1>{path.pathLabel}</h1>
+              <h1>{path.label}</h1>
               {typeof filterDropdown === 'function'
                 ? filterDropdown({
                     prefixCls: '',

@@ -20,7 +20,6 @@ import SecureError from './secure/secureError';
 import BooleanType from './type/boolean';
 import { flattenProjection } from './core/projection';
 import { instrumentExpressServices, serviceClientCode } from './service';
-import { env } from 'yargs';
 
 const skipFnProps = ['arguments', 'caller', 'length', 'name', 'prototype'];
 const skipNonFnProps = ['constructor'];
@@ -939,18 +938,6 @@ export function generateClientLibrary() {
     and: ${es5Fn(Tyr.query.and)},
     restrict: ${es5Fn(Tyr.query.restrict)}
   };
-
-  Object.defineProperties(Collection.prototype, {
-    collection: {
-      get() { return this; }
-      enumerable:   false,
-      configurable: false,
-    }
-  });
-
-  Collection.prototype.parsePath = function(path) {
-    return new Path(this, path);
-  };
 `;
 
   // TODO:  add in a dev flag so that the timer class only gets generated if in dev mode
@@ -1016,7 +1003,18 @@ export function generateClientLibrary() {
       field.populateName = Path.populateNameFor(field.name || parent.name);
     }
 
-    if (def.labelField) collection.labelField = field;
+    const { labelField } = def;
+    if (labelField) {
+      if (labelField === 'alternate') {
+        let alternateLabelFields = collection.alternateLabelFields;
+        if (!alternateLabelFields)
+          alternateLabelFields = collection.alternateLabelFields = [];
+
+        alternateLabelFields.push(field);
+      } else {
+        collection.labelField = field;
+      }
+    }
     if (def.labelImageField) collection.labelImageField = field;
     if (def.orderField) collection.orderField = field;
   }
@@ -1196,6 +1194,18 @@ export function generateClientLibrary() {
 
     return CollectionInstance;
   }
+
+  Object.defineProperties(Collection.prototype, {
+    collection: {
+      get() { return this; }
+      enumerable:   false,
+      configurable: false,
+    }
+  });
+
+  Collection.prototype.parsePath = function(path) {
+    return new Path(this, path);
+  };
 
   Collection.prototype.$metaType = 'collection';
 

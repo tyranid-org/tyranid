@@ -108,6 +108,21 @@ export const getLabelRenderer = <D extends Tyr.Document>(
   }
 
   const link = pathProps.path?.detail.link;
+
+  const labelFn = (doc: D) => {
+    let l = doc.$label;
+
+    const alternateLabelFields = doc.$model?.alternateLabelFields;
+    if (alternateLabelFields) {
+      for (const alf of alternateLabelFields) {
+        const v = alf.path.get(doc);
+        if (v) l += `- ${v}`;
+      }
+    }
+
+    return l;
+  };
+
   if (link) {
     lr = pathProps.theme?.collections?.[link.def.name]
       ?.labelRenderer as TyrLabelRenderer;
@@ -116,16 +131,16 @@ export const getLabelRenderer = <D extends Tyr.Document>(
     const { labelImageField } = link;
     if (labelImageField) {
       const { path } = labelImageField;
-      return (doc: Tyr.Document<any>) => (
+      return (doc: D) => (
         <>
           <Avatar src={path.get(doc)} className="tyr-image-label" />
-          <span>{doc.$label}</span>
+          <span>{labelFn(doc)}</span>
         </>
       );
     }
   }
 
-  return (doc: D) => <>{doc.$label}</>;
+  return (doc: D) => <>{labelFn(doc)}</>;
 };
 
 export interface TyrLabelProps {

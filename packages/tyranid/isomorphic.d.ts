@@ -367,6 +367,7 @@ export namespace Tyr {
     isUid(uid: string): boolean;
     label: string;
     labelField: any;
+    alternateLabelFields?: any;
     labelImageField: any;
     orderField: any;
     labelFor(doc: D | object, opts?: { labelField: string }): string;
