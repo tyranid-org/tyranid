@@ -183,7 +183,7 @@ byName.double = {
         let searchParams: object | undefined = undefined;
 
         switch (searchValue[0]) {
-          case 'equals':
+          case 'Equals':
             searchParams = searchValue[1];
             break;
           case 'Not equal':

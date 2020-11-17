@@ -743,6 +743,7 @@ Collection.prototype.fromClientQuery = function (query) {
           break;
         case '$exists':
         case '$regex':
+        case '$size':
         case '$options':
           server[n] = v;
           break;
