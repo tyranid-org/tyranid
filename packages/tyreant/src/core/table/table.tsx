@@ -1021,7 +1021,7 @@ export class TyrTableBase<
           row: EditableFormRow as any,
           /*
           CELL_EDIT
-          cell: EditableCell,
+          cell: EditableCell
           */
         },
       };
