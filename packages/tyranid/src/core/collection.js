@@ -893,15 +893,17 @@ export default class Collection {
 
     let query, projection;
     switch (args.length) {
-      case 2:
-        projection = args[1];
-        if (projection) opts.projection = args[1];
+      case 2: {
+        const p = args[1];
+        if (p) opts.projection = p;
+      }
       // fall through
 
-      case 1:
-        query = args[0];
-        if (query) opts.query = query;
+      case 1: {
+        const q = args[0];
+        if (q) opts.query = q;
         break;
+      }
       case 0:
     }
 

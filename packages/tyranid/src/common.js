@@ -240,6 +240,20 @@ export function parseProjection(col, obj) {
   const def = col.def,
     projection = Object.assign({}, obj);
 
+  // if given a projection like:   { foo: 1, 'foo.bar': 1 }
+  // mongodb will only include foo.bar whereas we want to include all of foo.
+  // So remove any projected paths here that subpaths of something else
+  for (const name in projection) {
+    if (projection.hasOwnProperty(name) && projection[name]) {
+      for (let i = 0, ilen = name.length; i < ilen; i++) {
+        if (name[i] === '.' && projection[name.substring(0, i)]) {
+          delete projection[name];
+          break;
+        }
+      }
+    }
+  }
+
   if (
     projection[def.primaryKey.field] === undefined &&
     // if an exclusion is present, don't add an inclusion

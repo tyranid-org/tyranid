@@ -116,7 +116,13 @@ function Path(base, pathName, opts) {
     if (!at.fields) {
       const aAt = Path._skipArray(at);
 
-      if (aAt && aAt.fields && aAt.fields[name]) {
+      const aAtFields = aAt?.fields;
+      if (
+        aAtFields &&
+        (aAtFields[name] ||
+          (/.+[$_]$/.test(name) &&
+            aAtFields[name.substring(0, name.length - 1)]))
+      ) {
         at = aAt;
         def = at.def;
       } else if (at.link) {
