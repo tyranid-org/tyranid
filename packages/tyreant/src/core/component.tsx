@@ -7,7 +7,13 @@ import { Tyr } from 'tyranid/client';
 
 import { Filter, TyrFilterConnection } from './filter';
 import { isEntranceTrait } from './trait';
-import { TyrAction, TyrActionFnOpts, TyrActionOpts, ActionSet } from './action';
+import {
+  TyrAction,
+  TyrActionFnOpts,
+  TyrActionOpts,
+  ActionSet,
+  getActionOn,
+} from './action';
 import { TyrDecorator } from './decorator';
 import {
   defaultPathsProp,
@@ -682,6 +688,16 @@ export class TyrComponent<
 
         action.on = actFn;
       } else {
+        const { name } = action;
+        if (name) {
+          // When a class component is created setupActions() is only called once.  However, the props
+          // can update when the component gets re-rendered and if the props contain callbacks, the callback
+          // functions might be new since they might capture new closures.  This bit of code here ensures
+          // that everytime we call an action function we are reading the latest version of it on the current props.
+          actFn = opts =>
+            (getActionOn(this.props.actions, name) ?? actFn!)(opts);
+        }
+
         if (action.is('edit', 'view')) {
           if (this.canMultiple && parentLink) {
             action.on = opts => {

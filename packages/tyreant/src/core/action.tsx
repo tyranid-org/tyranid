@@ -14,6 +14,14 @@ export type ActionSet<D extends Tyr.Document> =
   | { [actionName: string]: TyrAction<D> | TyrActionOpts<D> }
   | (TyrAction<D> | TyrActionOpts<D>)[];
 
+export const getActionOn = (set: ActionSet<any> | undefined, name: string) => {
+  if (Array.isArray(set)) {
+    return set?.find(action => action.name === name)?.on;
+  } else {
+    return set?.[name]?.on;
+  }
+};
+
 export interface TyrActionFnOpts<D extends Tyr.Document> {
   self: TyrComponent<D>;
 
