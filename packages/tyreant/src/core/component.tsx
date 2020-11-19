@@ -12,7 +12,7 @@ import {
   TyrActionFnOpts,
   TyrActionOpts,
   ActionSet,
-  getActionOn,
+  getActionSetValue,
 } from './action';
 import { TyrDecorator } from './decorator';
 import {
@@ -692,10 +692,10 @@ export class TyrComponent<
         if (name) {
           // When a class component is created setupActions() is only called once.  However, the props
           // can update when the component gets re-rendered and if the props contain callbacks, the callback
-          // functions might be new since they might capture new closures.  This bit of code here ensures
+          // functions might be new since they might capture new closure values.  This bit of code here ensures
           // that everytime we call an action function we are reading the latest version of it on the current props.
           actFn = opts =>
-            (getActionOn(this.props.actions, name) ?? actFn!)(opts);
+            (getActionSetValue(this.props.actions, name, 'on') ?? actFn!)(opts);
         }
 
         if (action.is('edit', 'view')) {

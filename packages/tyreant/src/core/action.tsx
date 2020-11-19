@@ -14,11 +14,23 @@ export type ActionSet<D extends Tyr.Document> =
   | { [actionName: string]: TyrAction<D> | TyrActionOpts<D> }
   | (TyrAction<D> | TyrActionOpts<D>)[];
 
-export const getActionOn = (set: ActionSet<any> | undefined, name: string) => {
+export type actionPropsThatCanBeCallbacks =
+  | 'hide'
+  | 'href'
+  | 'label'
+  | 'on'
+  | 'render'
+  | 'title';
+
+export const getActionSetValue = (
+  set: ActionSet<any> | undefined,
+  actionName: string,
+  propName: actionPropsThatCanBeCallbacks
+): any => {
   if (Array.isArray(set)) {
-    return set?.find(action => action.name === name)?.on;
+    return set?.find(action => action.name === actionName)?.[propName];
   } else {
-    return set?.[name]?.on;
+    return set?.[actionName]?.[propName];
   }
 };
 
@@ -96,8 +108,7 @@ export interface TyrActionOpts<D extends Tyr.Document> {
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
-  render?: //| React.ReactNode
-  (opts: TyrActionFnOpts<D>) => React.ReactNode;
+  render?: React.ReactNode | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
   title?:
     | string
     | React.ReactNode
@@ -218,13 +229,31 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return mergedActions;
   }
 
+  getCurrentValue<T>(propName: actionPropsThatCanBeCallbacks, value: T) {
+    const { name, self } = this;
+
+    if (name && self) {
+      return getActionSetValue(self.props.actions, name, propName) as T;
+    }
+
+    return value;
+  }
+
+  evaluate<T>(propName: actionPropsThatCanBeCallbacks, value: T) {
+    if (typeof value === 'function') {
+      return this.getCurrentValue(propName, value)(this.wrappedFnOpts());
+    } else {
+      return value;
+    }
+  }
+
   traits: Tyr.ActionTrait[];
   name?: string;
   labelValue:
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
-  renderVal?: React.ReactNode | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
+  render?: React.ReactNode | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
   titleValue:
     | string
     | React.ReactNode
@@ -260,19 +289,11 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   label(component: TyrComponent): string | React.ReactNode {
-    const { labelValue } = this;
-
-    return typeof labelValue === 'function'
-      ? labelValue(component.actionFnOpts() as any)
-      : labelValue;
+    return this.evaluate('label', this.labelValue);
   }
 
   title(component: TyrComponent): string | React.ReactNode {
-    const { titleValue } = this;
-
-    return typeof titleValue === 'function'
-      ? titleValue(component.actionFnOpts() as any)
-      : titleValue;
+    return this.evaluate('title', this.labelValue);
   }
 
   constructor({
@@ -297,7 +318,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     this.name = name;
     this.self = self;
     this.labelValue = label || (name && Tyr.labelize(name));
-    this.renderVal = render;
+    this.render = render;
     this.titleValue = title || this.labelValue;
     this.on = on;
     this.input =
@@ -336,13 +357,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   isHidden(document?: D) {
-    const { hide } = this;
-
-    if (typeof hide === 'function') {
-      return hide(this.wrappedFnOpts());
-    } else {
-      return !!hide;
-    }
+    return !!this.evaluate('hide', this.labelValue);
   }
 
   wrappedFnOpts(opts?: Partial<TyrActionFnOpts<D>>) {
@@ -391,7 +406,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     component: TyrComponent<any>,
     actionFnOpts?: Partial<TyrActionFnOpts<any>>
   ) {
-    const { renderVal, key } = this;
+    const { render: renderVal, key } = this;
 
     const opts = () =>
       actionFnOpts
@@ -400,11 +415,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
     if (renderVal) {
       return (
-        <Fragment key={key}>
-          {typeof renderVal === 'function'
-            ? renderVal(this.wrappedFnOpts(opts()) as any)
-            : renderVal}
-        </Fragment>
+        <Fragment key={key}>{this.evaluate('render', renderVal)}</Fragment>
       );
     } else if (this.traits.includes('filter')) {
       if (component.props.filter !== false) {
@@ -428,11 +439,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         <a
           key={key}
           className={this.className}
-          href={
-            typeof href === 'function'
-              ? href(this.wrappedFnOpts(opts()) as any)
-              : href
-          }
+          href={this.evaluate('href', href)}
           role="button"
           target={this.target ?? '_blank'}
         >
