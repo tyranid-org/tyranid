@@ -690,8 +690,8 @@ export class TyrComponent<
       } else {
         const { name } = action;
         if (name) {
-          // When a class component is created setupActions() is only called once.  However, the props
-          // can update when the component gets re-rendered and if the props contain callbacks, the callback
+          // When a class component is created setupActions() is only called once.  However, the props can
+          // update when the component gets re-rendered and if the props contain callbacks, the callback
           // functions might be new since they might capture new closures.  This bit of code here ensures
           // that everytime we call an action function we are reading the latest version of it on the current props.
           action.on = actFn = opts =>
