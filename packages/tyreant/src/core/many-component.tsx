@@ -173,7 +173,7 @@ export class TyrManyComponent<
   /**
    * query -- handles URL, and calls
    *  load -- handles arranging data, and calls
-   *    findAll -- handles querying data from the database
+   *   findAll -- handles querying data from the database
    */
   async query() {
     if (!this.visible || this.loading) return;
