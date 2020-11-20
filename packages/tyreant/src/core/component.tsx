@@ -694,8 +694,15 @@ export class TyrComponent<
           // can update when the component gets re-rendered and if the props contain callbacks, the callback
           // functions might be new since they might capture new closure values.  This bit of code here ensures
           // that everytime we call an action function we are reading the latest version of it on the current props.
-          actFn = opts =>
-            (getActionSetValue(this.props.actions, name, 'on') ?? actFn!)(opts);
+          const origActFn = actFn;
+
+          const wrappedActFn = (actFn = opts => {
+            let netActFn = getActionSetValue(this.props.actions, name, 'on');
+
+            (!netActFn || netActFn === wrappedActFn ? origActFn : netActFn)(
+              opts
+            );
+          });
         }
 
         if (action.is('edit', 'view')) {
