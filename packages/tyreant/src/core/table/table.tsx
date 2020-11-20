@@ -778,7 +778,7 @@ export class TyrTableBase<
 
         if (this.actions.length === 1) {
           const action = this.actions[0];
-          const label = action.label(this as any);
+          const label = action.labelFor(this as any);
 
           if (typeof label === 'string') {
             return (
@@ -814,7 +814,7 @@ export class TyrTableBase<
           <Menu className="tyr-menu">
             {thisActions.map(action => (
               <Menu.Item className="tyr-menu-item" key={action.name}>
-                {action.renderFrom(this, { document })}
+                {action.renderFor(this, { document })}
               </Menu.Item>
             ))}
           </Menu>

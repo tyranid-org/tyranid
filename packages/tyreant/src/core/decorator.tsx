@@ -94,7 +94,7 @@ export abstract class TyrDecorator<
     //(edit && edit.title);
 
     const { decorating } = this;
-    return decorating.parentAction?.title(decorating as TyrComponent<any>);
+    return decorating.parentAction?.titleFor(decorating as TyrComponent<any>);
   }
 
   footer() {

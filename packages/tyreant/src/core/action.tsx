@@ -229,32 +229,51 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return mergedActions;
   }
 
-  getCurrentValue<T>(propName: actionPropsThatCanBeCallbacks, value: T) {
+  /**
+   * POSSIBLE TODO:  update actions in a getDerivedStateFromProps()
+   *
+   *                 would need to make sure actions passed out to (usually child)
+   *                 components are valid as well though
+   */
+  getCurrentValue<T>(
+    component: TyrComponent,
+    propName: actionPropsThatCanBeCallbacks,
+    value: T
+  ) {
     const { name, self } = this;
 
     if (name && self) {
-      return getActionSetValue(self.props.actions, name, propName) as T;
+      const newValue = getActionSetValue(
+        component.props.actions,
+        name,
+        propName
+      ) as T;
+      // value could be from a theme in which case we won't find it in the local props
+      if (newValue !== undefined) return newValue;
     }
 
     return value;
   }
 
-  evaluate<T>(propName: actionPropsThatCanBeCallbacks, value: T) {
-    if (typeof value === 'function') {
-      return this.getCurrentValue(propName, value)(this.wrappedFnOpts());
-    } else {
-      return value;
-    }
+  evaluate<T>(
+    component: TyrComponent,
+    propName: actionPropsThatCanBeCallbacks,
+    value: T
+  ) {
+    value = this.getCurrentValue(component, propName, value);
+    return typeof value === 'function'
+      ? value.bind(this)(this.wrappedFnOpts())
+      : value;
   }
 
   traits: Tyr.ActionTrait[];
   name?: string;
-  labelValue:
+  label:
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
   render?: React.ReactNode | ((opts: TyrActionFnOpts<D>) => React.ReactNode);
-  titleValue:
+  title:
     | string
     | React.ReactNode
     | ((opts: TyrActionFnOpts<D>) => string | React.ReactNode);
@@ -288,12 +307,12 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return this.name + ':' + (self?.displayName || 'no-self');
   }
 
-  label(component: TyrComponent): string | React.ReactNode {
-    return this.evaluate('label', this.labelValue);
+  labelFor(component: TyrComponent): string | React.ReactNode {
+    return this.evaluate(component, 'label', this.label);
   }
 
-  title(component: TyrComponent): string | React.ReactNode {
-    return this.evaluate('title', this.labelValue);
+  titleFor(component: TyrComponent): string | React.ReactNode {
+    return this.evaluate(component, 'title', this.title);
   }
 
   constructor({
@@ -317,9 +336,9 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     if (trait) this.traits.push(trait);
     this.name = name;
     this.self = self;
-    this.labelValue = label || (name && Tyr.labelize(name));
+    this.label = label || (name && Tyr.labelize(name));
     this.render = render;
-    this.titleValue = title || this.labelValue;
+    this.title = title || this.label;
     this.on = on;
     this.input =
       input ??
@@ -357,7 +376,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   isHidden(document?: D) {
-    return !!this.evaluate('hide', this.labelValue);
+    const v = this.evaluate(this.self as any, 'hide', this.hide);
+    return v === undefined ? false : !!v;
   }
 
   wrappedFnOpts(opts?: Partial<TyrActionFnOpts<D>>) {
@@ -402,20 +422,22 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     return s;
   }
 
-  renderFrom(
+  renderFor(
     component: TyrComponent<any>,
     actionFnOpts?: Partial<TyrActionFnOpts<any>>
   ) {
-    const { render: renderVal, key } = this;
+    const { render, key } = this;
 
     const opts = () =>
       actionFnOpts
         ? { ...(component.actionFnOpts() as any), ...actionFnOpts }
         : (component.actionFnOpts() as any);
 
-    if (renderVal) {
+    if (render) {
       return (
-        <Fragment key={key}>{this.evaluate('render', renderVal)}</Fragment>
+        <Fragment key={key}>
+          {this.evaluate(component, 'render', render)}
+        </Fragment>
       );
     } else if (this.traits.includes('filter')) {
       if (component.props.filter !== false) {
@@ -439,11 +461,11 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
         <a
           key={key}
           className={this.className}
-          href={this.evaluate('href', href)}
+          href={this.evaluate(component, 'href', href)}
           role="button"
           target={this.target ?? '_blank'}
         >
-          {this.label(component)}
+          {this.labelFor(component)}
         </a>
       );
     } else if (this.input === '*') {
@@ -454,7 +476,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
           disabled={!component.selectedIds?.length}
           onClick={() => this.act(opts())}
         >
-          {this.label(component)}
+          {this.labelFor(component)}
         </Button>
       );
     } else {
@@ -464,7 +486,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
           className={this.className}
           onClick={() => this.act(opts())}
         >
-          {this.label(component)}
+          {this.labelFor(component)}
         </Button>
       );
     }
@@ -474,8 +496,8 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
     const newOpts: TyrActionOpts<D> = {
       traits: this.traits,
       name: this.name,
-      label: this.labelValue,
-      title: this.title,
+      label: this.label,
+      title: this.titleFor,
       self: this.self,
       on: this.on,
       hide: this.hide,
@@ -574,7 +596,7 @@ export function TyrActionBar<D extends Tyr.Document>({
           >
             {actions
               .map(a =>
-                a.isHidden(document) ? undefined : a.renderFrom(component)
+                a.isHidden(document) ? undefined : a.renderFor(component)
               )
               .filter(a => !!a)}
           </Col>
@@ -594,7 +616,7 @@ export function TyrActionBar<D extends Tyr.Document>({
               <div className="tyr-action-bar-section tyr-left">
                 {leftActions
                   .map(a =>
-                    a.isHidden(document) ? undefined : a.renderFrom(component)
+                    a.isHidden(document) ? undefined : a.renderFor(component)
                   )
                   .filter(a => !!a)}
               </div>
@@ -603,7 +625,7 @@ export function TyrActionBar<D extends Tyr.Document>({
               <div className="tyr-action-bar-section tyr-center">
                 {centerActions
                   .map(a =>
-                    a.isHidden(document) ? undefined : a.renderFrom(component)
+                    a.isHidden(document) ? undefined : a.renderFor(component)
                   )
                   .filter(a => !!a)}
               </div>
@@ -612,7 +634,7 @@ export function TyrActionBar<D extends Tyr.Document>({
               <div className="tyr-action-bar-section tyr-right">
                 {rightActions
                   .map(a =>
-                    a.isHidden(document) ? undefined : a.renderFrom(component)
+                    a.isHidden(document) ? undefined : a.renderFor(component)
                   )
                   .filter(a => !!a)}
               </div>
