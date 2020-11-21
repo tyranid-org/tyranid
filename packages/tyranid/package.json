@@ -32,6 +32,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@googlemaps/google-maps-services-js": "3.1.13",
     "@types/moment-timezone": "0.5.12",
     "aws-s3-promisified": "2.0.0",
     "aws-sdk": "2.125.0",
@@ -42,6 +43,7 @@
     "faker": "^4.1.0",
     "glob": "7.0.5",
     "json-stable-stringify": "1.0.1",
+    "limiter": "1.1.5",
     "lodash": "^3.10.1",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23",

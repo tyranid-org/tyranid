@@ -432,6 +432,11 @@ export function generateClientLibrary() {
     Tyr.options.formats
       ? `Tyr.options.formats = ${JSON.stringify(Tyr.options.formats)};`
       : ''
+  }
+  ${
+    Tyr.options.google
+      ? `Tyr.options.google = ${JSON.stringify(Tyr.options.google)};`
+      : ''
   }`;
 
   const whiteLabelFn = Tyr.options.whiteLabelClient || Tyr.options.whiteLabel;

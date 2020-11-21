@@ -9,6 +9,8 @@ import './geo/country.model';
 import './geo/province.model';
 import './geo/county.model';
 
+import './geo/google/service';
+
 import './notification/notification-type.model';
 import './notification/notification.model';
 

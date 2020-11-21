@@ -115,6 +115,7 @@ export namespace Tyr {
   export const options: ConfigOptions;
   export const query: QueryStatic;
   export const secure: Secure;
+  export const google: Google;
 
   export type Numbering = Isomorphic.Numbering;
   export type ActionTraitType = Isomorphic.ActionTraitType;
@@ -802,6 +803,16 @@ export namespace Tyr {
     ): Promise<MongoQuery | boolean>;
   }
 
+  export interface Google {
+    geocode: (
+      address: string,
+      address2?: string
+    ) => Promise<{
+      lat: number;
+      lng: number;
+    } | null>;
+  }
+
   export interface Local {
     user?: Document;
     req?: Express.Request;
@@ -884,6 +895,12 @@ export namespace Tyr {
       [typeName: string]: string;
     };
     indexes?: boolean;
+    google?: {
+      map?: {
+        clientId?: string;
+        clientSecret?: string;
+      };
+    };
     meta?: {
       collection?: {
         [customFieldName: string]: {
