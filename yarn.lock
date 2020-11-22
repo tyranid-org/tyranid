@@ -65,7 +65,7 @@
   dependencies:
     prop-types "^15.6.1"
 
-"@googlemaps/google-maps-services-js@3.1.1.3":
+"@googlemaps/google-maps-services-js@3.1.13":
   version "3.1.13"
   resolved "https://registry.yarnpkg.com/@googlemaps/google-maps-services-js/-/google-maps-services-js-3.1.13.tgz#e4263e15c0d5e5f1c7a5d3c65e376d9e613e234a"
   integrity sha512-ONG8YFlqeofi2+CcEhtvlIkFD8Ia2p64RHnk2fZOigwOCKZ5BLs/Z/nOMnwM6JGFf2FX0x/hWzoOtQ7tUG4YAg==

@@ -12,6 +12,9 @@ export { ObjectID };
 import { Tyr as Isomorphic } from './isomorphic';
 import { Options } from 'graphql/utilities/buildClientSchema';
 import { stream } from 'exceljs';
+import { AppError } from './src/core/appError';
+
+import { LatLng } from '@googlemaps/google-maps-services-js';
 
 /**
  *
@@ -811,6 +814,23 @@ export namespace Tyr {
       lat: number;
       lng: number;
     } | null>;
+    reverseGeocode: (
+      latitude: number,
+      longitude: number
+    ) => Promise<string | null>;
+    batchGeocode: (
+      addresses: string[]
+    ) => Promise<
+      (
+        | {
+            lat: number;
+            lng: number;
+          }
+        | null
+        | Error
+      )[]
+    >;
+    distance: (origin: LatLng, destinaton: LatLng) => Promise<number | null>;
   }
 
   export interface Local {
@@ -897,8 +917,7 @@ export namespace Tyr {
     indexes?: boolean;
     google?: {
       map?: {
-        clientId?: string;
-        clientSecret?: string;
+        apiKey?: string;
       };
     };
     meta?: {
