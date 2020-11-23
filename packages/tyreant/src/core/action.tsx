@@ -515,17 +515,16 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
         switch (typeof result) {
           case 'undefined':
-            opts.on!(fnOpts);
-            break;
+            return opts.on!(fnOpts);
           case 'boolean':
             if (result) {
-              opts.on!(fnOpts);
+              return opts.on!(fnOpts);
             }
             break;
           default:
-            result.then(promisedResult => {
+            return result.then(promisedResult => {
               if (promisedResult === undefined || promisedResult) {
-                opts.on!(fnOpts);
+                return opts.on!(fnOpts);
               }
             });
         }

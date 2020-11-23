@@ -65,7 +65,9 @@ export abstract class TyrDecorator<
       this.setState({});
     } else if (action.isExit()) {
       a = action.decorate({
-        on: () => this.close(),
+        on: () => {
+          return this.close();
+        },
       });
       this.exitActions.push(a);
       if (action.is('cancel')) this.cancel = a;

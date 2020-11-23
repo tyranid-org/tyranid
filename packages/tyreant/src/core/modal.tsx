@@ -23,7 +23,9 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
       <Modal
         className={'tyr-modal' + (className ? ' ' + className : '')}
         visible={visible}
-        onCancel={() => cancel!.act({ caller: this.decorating })}
+        onCancel={() => {
+          cancel!.act({ caller: this.decorating });
+        }}
         title={
           <div className="tyr-header tyr-modal-header">
             {title && <div className="ant-modal-title">{title}</div>}

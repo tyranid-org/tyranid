@@ -700,10 +700,10 @@ export class TyrComponent<
           const wrappedActFn = (actFn = opts => {
             let netActFn = getActionSetValue(this.props.actions, name, 'on');
 
-            (!netActFn || netActFn === wrappedActFn ? origActFn : netActFn)(
-              opts
-            );
-          });
+            return (!netActFn || netActFn === wrappedActFn
+              ? origActFn
+              : netActFn)(opts);
+          }) as any;
         }
 
         if (action.is('edit', 'view')) {
