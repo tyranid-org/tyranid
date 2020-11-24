@@ -79,7 +79,7 @@ byName.string = {
   finder(path, opts, searchValue) {
     if (searchValue) {
       if (!opts.query) opts.query = {};
-      opts.query[path.spath] = {
+      opts.query[path.spathArr] = {
         $regex: searchValue,
         $options: 'i',
       };
