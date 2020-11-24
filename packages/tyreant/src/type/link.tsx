@@ -2,8 +2,9 @@ import { compact, uniq } from 'lodash';
 import * as React from 'react';
 import { useState } from 'react';
 
-import { Menu, Input, Checkbox } from 'antd';
+import { Menu, Input, Checkbox, Divider } from 'antd';
 const { Search } = Input;
+const CheckboxGroup = Checkbox.Group;
 
 import { Tyr } from 'tyranid/client';
 
@@ -27,6 +28,7 @@ import {
 import { TyrLinkAutoComplete } from './link.autocomplete';
 import { TyrLinkRadio } from './link.radio';
 import { TyrLinkSelect } from './link.select';
+import { CheckboxValueType } from 'antd/lib/checkbox/Group';
 
 export const TyrLinkBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -237,14 +239,29 @@ const LinkFilterDropdown = ({
   const { type: linkIdType } = link.fields._id;
   const { local, allDocuments } = component;
 
+  const [allSelected, setAllSelected] = useState<boolean>(false);
+  const [indeterminate, setIndeterminate] = useState<boolean>(false);
   const [labels, setLabels] = useState<Tyr.Document[] | undefined>(undefined);
   const [filterSearchValue, setFilterSearchValue] = React.useState('');
 
   let initialValues = component.filterValue(pathName);
-  if (!Array.isArray(initialValues))
+
+  if (!Array.isArray(initialValues)) {
     initialValues = initialValues ? [initialValues] : [];
+  }
+
   // we clone the searchValues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
   initialValues = Tyr.cloneDeep(initialValues);
+
+  React.useEffect(() => {
+    if (Array.isArray(initialValues)) {
+      if (!initialValues.length) {
+        setAllSelected(true);
+      } else {
+        setIndeterminate(true);
+      }
+    }
+  }, []);
 
   const delaySetLabels = (
     value: React.SetStateAction<Tyr.Document[] | undefined>
@@ -261,6 +278,22 @@ const LinkFilterDropdown = ({
     >
       {(filterValue, setFilterValue) => {
         filterValue = fixFilterValue(link, filterValue);
+
+        const labelRenderer = getLabelRenderer(pathProps);
+        const allValues = sortLabels(labels || link.values, pathProps);
+        const allValueIds = allValues.map(v => v.$id);
+
+        const onChange = (checkedValue: CheckboxValueType[]) => {
+          const values = checkedValue.map(cv => cv.toString());
+          filterDdProps.setSelectedKeys?.(values);
+          setFilterValue(values);
+
+          setIndeterminate(
+            !!checkedValue.length && checkedValue.length < allValues.length
+          );
+
+          setAllSelected(checkedValue.length === allValues.length);
+        };
 
         if (!labels) {
           if (local) {
@@ -330,8 +363,6 @@ const LinkFilterDropdown = ({
           }
         }
 
-        const labelRenderer = getLabelRenderer(pathProps);
-
         return (
           <>
             {!component.local && !link.isStatic() && (
@@ -362,55 +393,33 @@ const LinkFilterDropdown = ({
               />
             )}
 
-            <Menu
-              className="ant-table-filter-dropdown ant-dropdown-menu"
-              selectedKeys={initialValues}
-              mode="vertical"
-              multiple={true}
-              onClick={
-                // this debounce is here because if you clicked on the Menu (and not the contained Checkbox) it would fire this event twice
-                _.debounce(({ key }: { key: string }) => {
-                  const fv = linkIdType.fromString(key);
-                  if (filterValue) {
-                    const keyIdx = filterValue.indexOf(fv);
+            {Array.isArray(initialValues) && (
+              <div className="tyr-table-filter-select-all">
+                <Checkbox
+                  checked={allSelected}
+                  indeterminate={indeterminate}
+                  onClick={() => {
+                    setIndeterminate(false);
+                    setAllSelected(!allSelected);
+                    filterDdProps.setSelectedKeys?.(allValueIds);
+                    setFilterValue(undefined);
+                  }}
+                >
+                  Select all
+                </Checkbox>
+              </div>
+            )}
 
-                    if (keyIdx > -1) {
-                      filterValue.splice(keyIdx, 1);
-                      if (!filterValue.length) filterValue = undefined;
-                    } else {
-                      filterValue.push(fv);
-                    }
-                  } else {
-                    filterValue = [fv];
-                  }
-
-                  filterDdProps.setSelectedKeys?.(filterValue || []);
-
-                  setFilterValue(filterValue);
-                })
-              }
-            >
-              {sortLabels(labels || link.values, pathProps).map(v => {
-                const isChecked = Array.isArray(filterValue)
-                  ? filterValue.indexOf(v.$id) > -1
-                  : filterValue === v.$id;
-
-                return (
-                  <Menu.Item
-                    key={v.$id}
-                    className="ant-dropdown-menu-item"
-                    style={{
-                      marginBottom: 0,
-                      marginTop: 0,
-                      lineHeight: '30px',
-                      height: '30px',
-                    }}
-                  >
-                    <Checkbox checked={isChecked}>{labelRenderer(v)}</Checkbox>
-                  </Menu.Item>
-                );
-              })}
-            </Menu>
+            <div className="ant-table-filter-dropdown ant-dropdown-menu">
+              <CheckboxGroup
+                options={allValues.map(v => ({
+                  label: labelRenderer(v),
+                  value: v.$id,
+                }))}
+                value={allSelected ? allValueIds : filterValue}
+                onChange={onChange}
+              />
+            </div>
           </>
         );
       }}

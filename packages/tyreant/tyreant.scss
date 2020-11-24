@@ -43,6 +43,7 @@
 
   --popup-border-color: #aaa;
   --popup-background-color: #fff;
+  --popup-background-color-hover: #f5f5f5;
 
   --popup-diasbled-background-color: #f1f3f5;
 
@@ -982,6 +983,28 @@ form textarea.tyr-markup-editor {
 .ant-table-filter-dropdown {
   position: relative;
   top: -2px;
+
+  .tyr-table-filter-select-all {
+    background: var(--popup-background-color);
+    margin: 2px 0px 5px 0px;
+    padding: 0px 8px;
+  }
+
+  .ant-checkbox-group {
+    max-height: 300px;
+    overflow: auto;
+    width: 100%;
+    margin: 0 4px;
+    padding: 0 5px;
+
+    .ant-checkbox-group-item {
+      display: block;
+
+      &:hover {
+        background-color: var(--popup-background-color-hover);
+      }
+    }
+  }
 }
 
 .tyr-menu-item {
