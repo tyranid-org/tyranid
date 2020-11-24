@@ -123,7 +123,7 @@ byName.datetime = {
     const sv = parseSearchValue(searchValue);
     if (sv) {
       if (!opts.query) opts.query = {};
-      opts.query[path.spath] = {
+      opts.query[path.spathArr] = {
         $gte: sv[0],
         $lte: sv[1],
       };

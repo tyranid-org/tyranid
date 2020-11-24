@@ -267,8 +267,8 @@ byName.duration = {
       if (!opts.query) opts.query = {};
 
       const searchParams = [
-        { [path.spath]: { $gte: searchValue[0] } },
-        { [path.spath]: { $lte: searchValue[1] } },
+        { [path.spathArr]: { $gte: searchValue[0] } },
+        { [path.spathArr]: { $lte: searchValue[1] } },
       ];
 
       if (opts.query.$and) {

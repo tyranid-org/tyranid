@@ -152,7 +152,7 @@ byName.boolean = {
 
       if (!opts.query) opts.query = {};
 
-      opts.query[path.spath] = selectYes;
+      opts.query[path.spathArr] = selectYes;
     }
   },
 };

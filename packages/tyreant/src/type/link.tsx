@@ -156,7 +156,7 @@ byName.link = {
 
     if (searchValue) {
       if (!opts.query) opts.query = {};
-      opts.query[path.spath] =
+      opts.query[path.spathArr] =
         Array.isArray(searchValue) && (searchValue as any[]).length
           ? {
               $in: searchValue,
