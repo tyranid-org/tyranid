@@ -1069,9 +1069,9 @@ export class TyrComponent<
   componentConfig?: Tyr.TyrComponentConfig;
 
   async saveConfig() {
-    const { componentConfig } = this;
+    const { componentConfig, props } = this;
 
-    if (componentConfig) {
+    if (props.config && componentConfig) {
       await componentConfig.$update({
         projection: {
           fields: 1,

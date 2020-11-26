@@ -525,7 +525,27 @@ export const ensureComponentConfig = async <D extends Tyr.Document>(
   let componentConfig: Tyr.TyrComponentConfig;
   const { TyrComponentConfig } = Tyr.collections;
 
-  if (typeof config === 'boolean') {
+  const newComponentConfig = (
+    documentUid?: string,
+    key?: string,
+    userId?: string
+  ) =>
+    new TyrComponentConfig({
+      name: component.componentName,
+      documentUid,
+      collectionId: component.collection.id,
+      userId,
+      key,
+      fields: columns.map(c => ({
+        name: getPathName(c.path),
+        hidden: !!c.defaultHidden,
+        sortDirection: c.defaultSort ? c.defaultSort : undefined,
+        filter: c.defaultFilter ? c.defaultFilter : undefined,
+        width: c.width ? c.width : undefined,
+      })),
+    })!;
+
+  if (typeof config === 'boolean' && config) {
     config = 'default';
   }
 
@@ -535,6 +555,8 @@ export const ensureComponentConfig = async <D extends Tyr.Document>(
 
   if (existingComponentConfig) {
     componentConfig = existingComponentConfig;
+  } else if (!config) {
+    componentConfig = newComponentConfig();
   } else {
     const { documentUid, key } = config;
     const userId = Tyr.local.user.$id;
@@ -550,20 +572,7 @@ export const ensureComponentConfig = async <D extends Tyr.Document>(
     }))!;
 
     if (!componentConfig) {
-      componentConfig = new TyrComponentConfig({
-        name: component.componentName,
-        documentUid,
-        collectionId: component.collection.id,
-        userId,
-        key,
-        fields: columns.map(c => ({
-          name: getPathName(c.path),
-          hidden: !!c.defaultHidden,
-          sortDirection: c.defaultSort ? c.defaultSort : undefined,
-          filter: c.defaultFilter ? c.defaultFilter : undefined,
-          width: c.width ? c.width : undefined,
-        })),
-      })!;
+      componentConfig = newComponentConfig(documentUid, key, userId);
 
       componentConfig = await TyrComponentConfig.save(componentConfig);
     }
