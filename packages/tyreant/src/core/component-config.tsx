@@ -16,6 +16,7 @@ import { Modal, Button, Drawer, Breadcrumb, message, Input } from 'antd';
 import { Tyr } from 'tyranid/client';
 
 import { getPathName, TyrPathProps, TyrPathLaxProps } from './path';
+
 import {
   TyrComponentColumnConfigItem,
   ColumnConfigField,
