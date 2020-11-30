@@ -77,7 +77,7 @@ export function instrumentExpressServices(col, app, auth) {
                 opts.collection = collection;
               }
 
-              args.push(params[paramName].fromClient(v, opts));
+              args.push(await params[paramName].fromClient(v, opts));
             }
           }
 

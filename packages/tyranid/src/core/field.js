@@ -45,7 +45,13 @@ export default class Field {
     return this.def.readonly || this.generated;
   }
 
-  fromClient(value, opts) {
+  async fromClient(value, opts) {
+    const { type } = this;
+
+    if (type instanceof Tyr.Collection) {
+      return await type.fromClient(value, undefined /* path */, opts);
+    }
+
     return this.type.fromClient(this, value, opts);
   }
 

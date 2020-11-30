@@ -814,7 +814,7 @@ export class TyrComponent<
       enact({
         trait: 'create',
         name: 'create',
-        label: 'Create ' + collection.label,
+        label: this.props.title || 'Create ' + collection.label,
       });
     }
 
@@ -827,7 +827,7 @@ export class TyrComponent<
       enact({
         trait: 'search',
         name: 'search',
-        label: 'Search ' + collection.label,
+        label: this.props.title || 'Search ' + collection.label,
       });
     }
 
