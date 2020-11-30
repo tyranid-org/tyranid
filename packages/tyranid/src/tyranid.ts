@@ -14,6 +14,23 @@ import './geo/google/service';
 import './notification/notification-type.model';
 import './notification/notification.model';
 
-export { Tyr };
+const generated = true;
+const labelField = true;
+const labelImageField = true;
+const orderField = true;
+const readonly = true;
+const required = true;
+const unique = true;
+
+export {
+  Tyr,
+  generated,
+  labelField,
+  labelImageField,
+  orderField,
+  readonly,
+  required,
+  unique,
+};
 
 export default Tyr;

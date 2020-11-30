@@ -39,6 +39,7 @@ export interface TyrComponentProps<D extends Tyr.Document = Tyr.Document> {
 
   theme?: TyrThemeProps;
   mode?: 'edit' | 'view';
+  title?: string;
 
   // CONFIG
   /**

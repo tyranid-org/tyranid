@@ -88,7 +88,7 @@ export abstract class TyrDecorator<
   }
 
   title() {
-    let t = this.props.title;
+    let t: string | React.ReactNode | undefined = this.props.title;
     if (t) return t;
 
     //(edit && callerOpts?.document && edit.title) ||
@@ -96,7 +96,10 @@ export abstract class TyrDecorator<
     //(edit && edit.title);
 
     const { decorating } = this;
-    return decorating.parentAction?.titleFor(decorating as TyrComponent<any>);
+    t = decorating.parentAction?.titleFor(decorating as TyrComponent<any>);
+    if (t) return t;
+
+    return decorating.props.title;
   }
 
   footer() {
