@@ -52,6 +52,9 @@ const BooleanType = new Type({
       case 'boolean':
         return value;
 
+      case 'undefined':
+        return undefined;
+
       case 'number':
         if (value === 1) {
           return true;
