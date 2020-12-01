@@ -212,7 +212,7 @@
     justify-content: flex-start;
   }
   &.tyr-center {
-    justify-content: flex-center;
+    justify-content: center;
   }
   &.tyr-right {
     justify-content: flex-end;
@@ -229,7 +229,7 @@
       align-self: flex-start;
     }
     .tyr-center {
-      align-self: flex-center;
+      align-self: center;
     }
     .tyr-right {
       align-self: flex-end;
