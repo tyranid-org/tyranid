@@ -359,8 +359,8 @@ export class TyrComponent<
         if (parentDocument && linkToParent)
           linkToParent.path.set(doc, parentDocument.$id);
       } else if (linkToParent) {
-        // TODO:  if actionOpts isn't present, maybe use parentDocument ?
-        if (actionOpts) linkToParent.path.set(doc, actionOpts.document!.$id);
+        const pd = actionOpts?.document || parent.document;
+        if (pd) linkToParent.path.set(doc, pd.$id);
       }
     }
 
