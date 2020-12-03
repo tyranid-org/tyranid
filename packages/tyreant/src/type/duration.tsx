@@ -52,7 +52,7 @@ const timeMeta: { [timeUnit in TimeUnit]: TimeMeta } = {
   },
 };
 
-// TODO:  this components hard-coded for minutes, ideally should look at the units defined for this duration and modify UI accordingly
+// TODO: This components hard-coded for minutes, ideally should look at the units defined for this duration and modify UI accordingly
 const columns: TimeMeta[] = [
   timeMeta.hours,
   timeMeta.minutes,
