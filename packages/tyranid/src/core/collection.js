@@ -1842,7 +1842,7 @@ export default class Collection {
 
   parsePath(path) {
     // TODO NAMEPATH-1 ... return immutable shared value here
-    return new Path(this, path);
+    return path instanceof Path ? path : new Path(this, path);
   }
 
   createCompiler(def, stage, dynamicSchema) {
