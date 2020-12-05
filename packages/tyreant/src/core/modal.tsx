@@ -15,12 +15,14 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
 
   render() {
     const { cancel } = this;
-    const { children, className } = this.props;
+    const { children, className, width, minWidth, titleSuffix } = this.props;
     const { visible, loading } = this;
     const title = this.title();
 
     return (
       <Modal
+        width={width}
+        {...(minWidth ? { style: { minWidth } } : {})}
         className={'tyr-modal' + (className ? ' ' + className : '')}
         visible={visible}
         onCancel={() => {
@@ -28,7 +30,11 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
         }}
         title={
           <div className="tyr-header tyr-modal-header">
-            {title && <div className="ant-modal-title">{title}</div>}
+            {title && (
+              <div className="ant-modal-title">{`${title}${
+                titleSuffix ? titleSuffix : ''
+              }`}</div>
+            )}
             {!loading && cancel && (
               <CloseOutlined
                 className="tyr-modal-close-icon"

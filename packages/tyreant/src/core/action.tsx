@@ -258,11 +258,12 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   evaluate<T>(
     component: TyrComponent,
     propName: actionPropsThatCanBeCallbacks,
-    value: T
+    value: T,
+    opts?: Partial<TyrActionFnOpts<D>>
   ) {
     value = this.getCurrentValue(component, propName, value);
     return typeof value === 'function'
-      ? value.bind(this)(this.wrappedFnOpts())
+      ? value.bind(this)(this.wrappedFnOpts(opts))
       : value;
   }
 
@@ -376,7 +377,12 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
   }
 
   isHidden(document?: D) {
-    const v = this.evaluate(this.self as any, 'hide', this.hide);
+    const v = this.evaluate(
+      this.self as any,
+      'hide',
+      this.hide,
+      document && { document }
+    );
     return v === undefined ? false : !!v;
   }
 

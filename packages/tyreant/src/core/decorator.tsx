@@ -13,6 +13,9 @@ export interface TyrDecoratorProps<D extends Tyr.Document> {
   className?: string;
   defaultOpen?: boolean;
   title?: string;
+  width?: string;
+  minWidth?: string;
+  titleSuffix?: string;
 }
 
 /**

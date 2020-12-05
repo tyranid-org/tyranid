@@ -169,7 +169,7 @@ export const TyrFilters = ({
         const path = f.path!;
 
         const filter = c.getFilter(f);
-        if (!filter) return <div className="no-filter" />;
+        if (!filter) return <div className="no-filter" key={path.name} />;
 
         const { filterDropdown } = filter;
 
@@ -195,8 +195,8 @@ export const TyrFilters = ({
         }
 
         return (
-          <div className="tyr-filter-container" key={f.path!.name}>
-            {f.path!.name} Filter TODO
+          <div className="tyr-filter-container" key={path.name}>
+            {path.name} Filter TODO
           </div>
         );
       })}

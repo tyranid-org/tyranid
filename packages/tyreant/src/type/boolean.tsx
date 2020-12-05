@@ -68,6 +68,7 @@ byName.boolean = {
           component={component}
           filterDdProps={filterDdProps}
           pathProps={props}
+          key={props?.path?.name}
         >
           {(searchValue, setSearchValue, search) => {
             const valueLabels = props.filterValues;
