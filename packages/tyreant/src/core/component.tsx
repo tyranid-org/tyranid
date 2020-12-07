@@ -842,7 +842,11 @@ export class TyrComponent<
     }
 
     const addingSave =
-      this.canEdit && (shouldDefault('edit') || manuallyEnacted('edit'));
+      this.canEdit &&
+      (shouldDefault('create') ||
+        manuallyEnacted('create') ||
+        shouldDefault('edit') ||
+        manuallyEnacted('edit'));
 
     if (shouldDefault('cancel')) {
       enact({
