@@ -21,7 +21,9 @@ const DATETIME_FORMAT = 'MM/DD/YYYY HH:mm:ss';
 export const TyrDateTimeBase = <D extends Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => {
+    mapPropsToForm(props);
+  }, [props.path && props.path.name]);
 
   return decorateField('datetime', props, () => {
     const onTypeChangeFunc = (ev: any) => {
@@ -57,7 +59,7 @@ function parseSearchValue(value: any) {
 byName.datetime = {
   component: TyrDateTimeBase,
   mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
-    return moment(value);
+    return value && moment(value);
   },
   filter(component, props) {
     const path = props.path!;

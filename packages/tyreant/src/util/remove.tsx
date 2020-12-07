@@ -1,13 +1,20 @@
 import * as React from 'react';
+import { Tyr } from 'tyranid/client';
 
-import { createForm } from '../core';
+import { createForm, TyrActionFnOpts } from '../core';
 
-export const TyrRemove = createForm(
+export const TyrRemove = createForm<
+  Tyr.Document,
+  { onHide: (opts: TyrActionFnOpts<Tyr.Document>) => boolean }
+>(
   {
     actions: [
       {
         trait: 'view',
         name: 'remove',
+        // hide: (opts) => {
+        //   return false
+        // }
       },
       {
         trait: 'save',
@@ -19,9 +26,9 @@ export const TyrRemove = createForm(
       },
     ],
   },
-  ({}) => (
+  ({ document }) => (
     <div className="tyr-import-help">
-      Are you sure you want to remove this item?
+      Are you sure you want to remove this {document.$model.label || 'item'} ?
     </div>
   )
 );

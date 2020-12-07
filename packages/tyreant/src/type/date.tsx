@@ -58,7 +58,7 @@ function parseSearchValue(value: any) {
 byName.date = {
   component: TyrDateBase,
   mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
-    return value ? moment(value) : null;
+    return value && moment(value);
   },
   filter(component, props) {
     const path = props.path!;
