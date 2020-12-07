@@ -117,7 +117,7 @@ export const TyrGoogleMap = (props: MapProps) => {
   const onLoad = React.useCallback(function callback(map) {
     const bounds = new (window as any).google.maps.LatLngBounds();
     map.fitBounds(bounds);
-    //setMap(map);
+    //setMap(map); // Do I need this anymore?
   }, []);
 
   const onUnmount = React.useCallback(function callback(map) {
