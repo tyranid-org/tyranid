@@ -29,7 +29,7 @@ export const labelFor = (
 };
 
 /**
- * A path is sortable in the database if it is a simple value (integer, string, etc.)
+ * A path is sortable in the database if it is a simple value (integer, string, etc)
  * or if it is a link and the link's label is denormalized so is available to be sorted.
  */
 export const isDbSortable = (props: TyrPathProps<any>) => {

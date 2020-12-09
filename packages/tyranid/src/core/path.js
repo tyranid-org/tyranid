@@ -160,7 +160,7 @@ function Path(base, pathName, opts) {
         const denormalization = name.endsWith('_');
 
         // TODO:  this denormalization code does not deal with denormal entries like "a.b"
-        //        so commenting it out for now, does more harm than good
+        //        so commenting it out for now, does more harm than good 
         if (denormalization) {
           if (!denormal) {
             denormal = _at.def.denormal;
