@@ -61,7 +61,7 @@ export const getDbSortPath = (props: TyrPathProps<any>) => {
       const lf = labelFieldFor(props, link);
       if (lf) {
         const { name } = lf;
-        if (denormal[name]) return lf && name + '_.' + lf.spath;
+        if (denormal[name]) return lf && path.spath + '_.' + lf.spath;
       }
     }
   } else if (!field.of?.link) {
