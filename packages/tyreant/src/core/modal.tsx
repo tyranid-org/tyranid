@@ -15,7 +15,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
 
   render() {
     const { cancel } = this;
-    const { children, className, width, minWidth, titleSuffix } = this.props;
+    const { children, className, width, minWidth } = this.props;
     const { visible, loading } = this;
     const title = this.title();
 
@@ -30,11 +30,7 @@ class TyrModalBase<D extends Tyr.Document> extends TyrDecorator<D> {
         }}
         title={
           <div className="tyr-header tyr-modal-header">
-            {title && (
-              <div className="ant-modal-title">{`${title}${
-                titleSuffix ? titleSuffix : ''
-              }`}</div>
-            )}
+            {title && <div className="ant-modal-title">{title}</div>}
             {!loading && cancel && (
               <CloseOutlined
                 className="tyr-modal-close-icon"

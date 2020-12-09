@@ -15,7 +15,6 @@ export interface TyrDecoratorProps<D extends Tyr.Document> {
   title?: string;
   width?: string;
   minWidth?: string;
-  titleSuffix?: string;
 }
 
 /**

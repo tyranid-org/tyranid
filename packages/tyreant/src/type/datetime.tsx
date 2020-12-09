@@ -59,7 +59,7 @@ function parseSearchValue(value: any) {
 byName.datetime = {
   component: TyrDateTimeBase,
   mapDocumentValueToFormValue(path: Tyr.PathInstance, value: Tyr.anny) {
-    return value && moment(value);
+    return value ? moment(value) : null; // must be null--- undefined will not clear the field
   },
   filter(component, props) {
     const path = props.path!;
