@@ -675,16 +675,31 @@ Object.defineProperties(Path.prototype, {
 
       let pi = 0,
         denormal;
-      for (; pi < plen; pi) {
+      while (pi < plen) {
         const field = fields[pi++];
         denormal = field.def.denormal;
         if (denormal) break;
       }
 
-      for (; pi < plen; pi++) {
+      while (pi < plen) {
         const field = fields[pi++];
-        denormal = denormal[field.name];
-        if (!denormal) break;
+        let denormalPath = field.name;
+        let newDenormal = denormal[denormalPath];
+        if (!newDenormal) {
+          // look for a compound denormal
+          for (; pi < plen; ) {
+            const field = fields[pi++];
+            const fname = field.name;
+            if (fname === '_') continue;
+            denormalPath += '.' + fname;
+            newDenormal = denormal[denormalPath];
+            if (newDenormal) break;
+          }
+
+          if (!newDenormal) return undefined;
+        }
+
+        denormal = newDenormal;
       }
 
       return denormal;
