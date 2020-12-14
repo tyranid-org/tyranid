@@ -341,7 +341,7 @@ export const decorateField = (
 
   return (
     <FormItem
-      key={path!.name}
+      key={path!.identifier}
       {...(labelCol && { labelCol })}
       {...(wrapperCol && { wrapperCol })}
       {...(labelAlign && { labelAlign })}

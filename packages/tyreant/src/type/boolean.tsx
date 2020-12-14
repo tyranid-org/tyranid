@@ -16,9 +16,11 @@ import { withThemedTypeContext } from '../core/theme';
 export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => {
+    mapPropsToForm(props);
+  }, [props.path && props.path.name]);
 
-  const inlineLabel = props.noLabel === undefined;
+  const inlineLabel = props.as !== 'switch' && props.noLabel === undefined;
 
   if (inlineLabel) props = { noLabel: true, ...props };
 
@@ -31,16 +33,11 @@ export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
     };
 
     return props.as === 'switch' ? (
-      <>
-        <Switch
-          //autoComplete="off"
-          autoFocus={props.autoFocus}
-          onChange={onTypeChangeFunc}
-        ></Switch>
-        {inlineLabel && (
-          <span style={{ marginLeft: '5px' }}>{renderFieldLabel(props)}</span>
-        )}
-      </>
+      <Switch
+        //autoComplete="off"
+        autoFocus={props.autoFocus}
+        onChange={onTypeChangeFunc}
+      ></Switch>
     ) : (
       <Checkbox
         // autoComplete="off"
