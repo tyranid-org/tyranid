@@ -218,6 +218,12 @@ export namespace Tyr {
     generated?: boolean;
     width?: number;
 
+    mentionFeed?: {
+      marker: string;
+      feed: string[];
+      minimumCharacters: number;
+    };
+
     get?(this: D): any;
     getClient?(this: D): any;
     getServer?(this: D): any;
