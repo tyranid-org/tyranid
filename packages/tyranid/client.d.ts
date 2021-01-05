@@ -442,6 +442,8 @@ declare module 'tyranid/client' {
       save(doc: D[] | object[]): Promise<D[]>;
       save(doc: any): Promise<any>;
       subscribe(query: MongoQuery | undefined, cancel?: boolean): Promise<void>;
+
+      update(opts: Options_Update & { query: MongoQuery }): any; // command result
       updateDoc(doc: D | MongoDocument, opts: Options_UpdateDoc): Promise<D>;
       values: D[];
     }
