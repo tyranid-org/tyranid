@@ -10,8 +10,9 @@ import { withThemedTypeContext } from '../core/theme';
 import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 
-import CKEditor from '@ckeditor/ckeditor5-react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+//import ClassicEditor from 'ckeditor5-custom-build';
 
 const { TextArea } = Input;
 
@@ -35,11 +36,14 @@ const CKEditorWrapper = <D extends Tyr.Document = Tyr.Document>({
   return (
     <CKEditor
       editor={ClassicEditor}
-      onInit={(editor: any) => {
+      onReady={(editor: any) => {
         setEditor(editor);
       }}
       config={{
         placeholder: props.placeholder,
+        allowedContent: 'true',
+        removeFormatTags: '',
+        //...(props.mentionFeeds ? { plugins: [Mention] } : {}),
       }}
       onChange={(event: any, editor: any) => {
         const data = editor.getData();
@@ -52,6 +56,15 @@ const CKEditorWrapper = <D extends Tyr.Document = Tyr.Document>({
       onFocus={(event: any, editor: any) => {
         //console.log('Focus.', editor);
       }}
+      mention={
+        props.mentionFeeds
+          ? {
+              mention: {
+                feeds: [props.mentionFeeds],
+              },
+            }
+          : undefined
+      }
     />
   );
 };

@@ -213,6 +213,11 @@ export interface TyrPathProps<D extends Tyr.Document>
 
   // TEXT
   textAreaRows?: number;
+  mentionFeeds?: {
+    marker: string;
+    feed: string[];
+    minimumCharacters: number;
+  };
 
   // DATE, DATETIME, LINK
   /**
@@ -341,7 +346,7 @@ export const decorateField = (
 
   return (
     <FormItem
-      key={path!.name}
+      key={path!.identifier}
       {...(labelCol && { labelCol })}
       {...(wrapperCol && { wrapperCol })}
       {...(labelAlign && { labelAlign })}
