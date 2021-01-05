@@ -137,6 +137,7 @@ byName.datetime = {
           .format(
             (props.dateFormat as string) ||
               Tyr.local.dateTimeFormat ||
+              (Tyr.options.formats && Tyr.options.formats.datetime) ||
               DATETIME_FORMAT
           )
           .toUpperCase();

@@ -138,7 +138,10 @@ byName.date = {
       ? ''
       : moment(v)
           .format(
-            (props.dateFormat as string) || Tyr.local.dateFormat || DATE_FORMAT
+            (props.dateFormat as string) ||
+              Tyr.local.dateFormat ||
+              (Tyr.options.formats && Tyr.options.formats.date) ||
+              DATE_FORMAT
           )
           .toUpperCase();
   },

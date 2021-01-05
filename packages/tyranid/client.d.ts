@@ -163,6 +163,9 @@ declare module 'tyranid/client' {
     export const options: {
       env: 'development' | 'production';
       whiteLabel?: (metadata: Metadata) => string | undefined;
+      formats?: {
+        [typeName: string]: string;
+      };
     };
 
     export const init: () => void;
