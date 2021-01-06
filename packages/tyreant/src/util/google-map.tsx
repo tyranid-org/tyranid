@@ -86,10 +86,11 @@ export interface MapProps {
   height: string;
   width: string;
   zoom?: number;
+  mapOptions?: google.maps.MapOptions;
 }
 
 export const TyrGoogleMap = (props: MapProps) => {
-  const { height, width, mapRoutes, mapPoints, iconMap } = props;
+  const { height, width, mapRoutes, mapPoints, iconMap, mapOptions } = props;
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: (Tyr.options as any).google.map.apiKey,
@@ -179,6 +180,7 @@ export const TyrGoogleMap = (props: MapProps) => {
       zoom={mapZoom}
       onLoad={onLoad}
       onUnmount={onUnmount}
+      options={mapOptions}
     >
       {activeMarker && (
         <InfoWindow
