@@ -117,6 +117,7 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
             locked: index < lockedLeft,
             sortDirection: savedField?.sortDirection,
             hasFilter: !!savedField?.filter,
+            width: savedField?.width,
             hidden,
           };
         }
