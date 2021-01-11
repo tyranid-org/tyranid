@@ -87,8 +87,9 @@ fi
 if [[ -n $TYREANT ]]; then
   npm run build-tyreant &&
     rm -rf $TARGET/node_modules/tyreant/* &&
-    cp -r ./packages/tyreant/* $TARGET/node_modules/tyreant/
-    cp -r ./node_modules/react-dropzone $TARGET/node_modules/tyreant/node_modules
+    cp -r ./packages/tyreant/* $TARGET/node_modules/tyreant/ &&
+    cp -r ./node_modules/react-dropzone $TARGET/node_modules/tyreant/node_modules &&
+    cp -r ./node_modules/\@ckeditor $TARGET/node_modules/tyreant/node_modules
 
     # eliminate duplicate copies of tyranid which cause compilation errors
     rm -rf $TARGET/node_modules/tyreant/node_modules/tyranid

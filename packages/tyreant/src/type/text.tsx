@@ -13,6 +13,7 @@ import { registerComponent } from '../common';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 //import ClassicEditor from 'ckeditor5-custom-build';
+import Mention from '@ckeditor/ckeditor5-mention/src/mention';
 
 const { TextArea } = Input;
 
@@ -43,7 +44,7 @@ const CKEditorWrapper = <D extends Tyr.Document = Tyr.Document>({
         placeholder: props.placeholder,
         allowedContent: 'true',
         removeFormatTags: '',
-        //...(props.mentionFeeds ? { plugins: [Mention] } : {}),
+        ...(props.mentionFeeds ? { plugins: [Mention] } : {}),
       }}
       onChange={(event: any, editor: any) => {
         const data = editor.getData();

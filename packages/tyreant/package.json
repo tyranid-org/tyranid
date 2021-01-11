@@ -31,11 +31,12 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-dropzone": "10.2.1",
-    "react-resizable": "^1.10.1"
-  },
-  "peerDependencies": {
+    "react-resizable": "^1.10.1",
     "@ckeditor/ckeditor5-build-classic": "24.0.0",
     "@ckeditor/ckeditor5-react": "3.0.0",
+    "@ckeditor/ckeditor5-mention": "^24.0.0"
+  },
+  "peerDependencies": {
     "react-beautiful-dnd": "^11.0.3",
     "react-dnd": "10.0.2",
     "react-dnd-html5-backend": "10.0.2",
@@ -44,8 +45,6 @@
     "tyranid": "^0.6.144"
   },
   "devDependencies": {
-    "@ckeditor/ckeditor5-build-classic": "24.0.0",
-    "@ckeditor/ckeditor5-react": "3.0.0",
     "@types/react": "16.9.23",
     "@types/react-beautiful-dnd": "11.0.3",
     "@types/react-dom": "16.9.5",
