@@ -25,6 +25,7 @@ const Continent = new Tyr.Collection({
 export default Continent;
 
 /*
+
 ENTITY level SYSTEM STORAGE sqlStatic DDL-DATA
    HAS depth IS int,
        label IS string LABEL,
