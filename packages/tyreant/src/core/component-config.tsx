@@ -126,6 +126,7 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
       })
     );
   };
+
   // Only runs once
   useEffect(() => {
     let componentConfig: Tyr.TyrComponentConfig;
