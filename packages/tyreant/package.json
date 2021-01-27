@@ -1,6 +1,6 @@
 {
   "name": "tyreant",
-  "version": "0.0.273",
+  "version": "0.0.274",
   "description": "Tyranid metadata-driven UI library based on TYRanid, REAct, and ANT",
   "homepage": "http://tyranid.org/tyreant",
   "main": "dist/tyreant.js",
@@ -22,6 +22,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@ant-design/icons": "4.0.2",
+    "@ckeditor/ckeditor5-build-classic": "24.0.0",
+    "@ckeditor/ckeditor5-mention": "^24.0.0",
+    "@ckeditor/ckeditor5-react": "3.0.0",
     "@react-google-maps/api": "1.13.0",
     "@types/googlemaps": "3.40.3",
     "antd": "4.0.3",
@@ -31,10 +34,7 @@
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-dropzone": "10.2.1",
-    "react-resizable": "^1.10.1",
-    "@ckeditor/ckeditor5-build-classic": "24.0.0",
-    "@ckeditor/ckeditor5-react": "3.0.0",
-    "@ckeditor/ckeditor5-mention": "^24.0.0"
+    "react-resizable": "^1.10.1"
   },
   "peerDependencies": {
     "react-beautiful-dnd": "^11.0.3",
