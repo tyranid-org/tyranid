@@ -191,26 +191,6 @@
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-3.5.0.tgz#45e2dc2af9a5727be846af6e61d08ffc45d5b2ca"
 
-"@types/ckeditor__ckeditor5-core@11.0.3":
-  version "11.0.3"
-  resolved "https://registry.yarnpkg.com/@types/ckeditor__ckeditor5-core/-/ckeditor__ckeditor5-core-11.0.3.tgz#85e81eadef4948e1b27c178c3c2a6bcbfb2c4c34"
-  integrity sha512-8Vc5bSc7oOu3G491y4fREpF7Tda2KV7sLqPYeSjh4zww4s7FWYKo8twfWaFLbzTLe0SsjXHUUKqnfD6sTIR6Yg==
-  dependencies:
-    "@types/ckeditor__ckeditor5-engine" "*"
-    "@types/ckeditor__ckeditor5-utils" "*"
-
-"@types/ckeditor__ckeditor5-engine@*":
-  version "11.0.3"
-  resolved "https://registry.yarnpkg.com/@types/ckeditor__ckeditor5-engine/-/ckeditor__ckeditor5-engine-11.0.3.tgz#cc8024ad9e4c0e05e770eadce2301a19784d2071"
-  integrity sha512-lMnK/sgDEt5NDf9qf8/DvmAx4JXmKFjJficiBadrVHTVr1wNQkaRq5hp0RHkYrt2dYQZ+NCsXv7sC4ptP/6lCQ==
-  dependencies:
-    "@types/ckeditor__ckeditor5-utils" "*"
-
-"@types/ckeditor__ckeditor5-utils@*":
-  version "10.2.4"
-  resolved "https://registry.yarnpkg.com/@types/ckeditor__ckeditor5-utils/-/ckeditor__ckeditor5-utils-10.2.4.tgz#61898ff299877486a546ec155ee5d0f0c09ac18c"
-  integrity sha512-v+RzHObHwT4gwQbBOBCtUrhp5mmtBrGqK12WuXQo1akQAfgmp7fGhY571Sm6aK9Qzpsg2cvcC9hxv2zJSYjTgQ==
-
 "@types/color-name@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
