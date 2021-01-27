@@ -9,7 +9,8 @@
     "build": "npm run build-js && npm run build-css",
     "build-js": "npm run tsc",
     "build-css": "$(npm bin)/node-sass tyreant.scss tyreant.css",
-    "tsc": "rm -rf ./dist/ && tsc"
+    "tsc": "rm -rf ./dist/ && tsc",
+    "MENTION": "@ckeditor/ckeditor5-mention: ^24.0.0"
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,6 @@
   "dependencies": {
     "@ant-design/icons": "4.0.2",
     "@ckeditor/ckeditor5-build-classic": "24.0.0",
-    "@ckeditor/ckeditor5-mention": "^24.0.0",
     "@ckeditor/ckeditor5-react": "3.0.0",
     "@react-google-maps/api": "1.13.0",
     "@types/googlemaps": "3.40.3",
