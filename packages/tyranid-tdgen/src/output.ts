@@ -11,7 +11,6 @@ export type CodeType = 'client' | 'server' | 'isomorphic';
 export interface DefinitionGenerationOptions
   extends InterfaceGenerationOptions {
   /**
-   *
    * generate client side definitions instead of server
    *
    */
