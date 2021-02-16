@@ -166,7 +166,7 @@ byName.integer = {
             case 'Greater than or equals':
               return intVal >= value[1];
             default:
-              throw new Error(`How did you pick this: ${value[0]} ?`);
+              throw new Error(`How did you pick this: ${value[0]}?`);
           }
         }
 
