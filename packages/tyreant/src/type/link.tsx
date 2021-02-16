@@ -316,7 +316,7 @@ const LinkFilterDropdown = ({
                 const add = (v: Tyr.AnyIdType) => {
                   const lv = link.byIdIndex[v];
                   if (lv) allLabels.push(lv);
-                  //else TODO:  queue up a label find ?
+                  //else TODO:  queue up a label find?
                 };
 
                 for (const d of allDocuments) {
