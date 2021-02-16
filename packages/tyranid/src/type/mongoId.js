@@ -21,7 +21,7 @@ export const MongoIdType = new Type({
 
     if (value) {
       const str = value.toString();
-      // we don't want to accept 12-byte strings from the client
+      // we don't want to accept 12-byte  strings from the client
       if (!Tyr.isValidObjectIdStr(str)) {
         throw new Error(`Invalid ObjectId for field ${field.name}: "${str}"`);
       }
