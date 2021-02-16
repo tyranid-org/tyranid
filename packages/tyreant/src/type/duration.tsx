@@ -8,7 +8,6 @@ import {
 } from 'react';
 
 import { Slider, Input } from 'antd';
-import { SliderValue } from 'antd/lib/slider';
 
 import { Tyr } from 'tyranid/client';
 
@@ -20,6 +19,7 @@ import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
+type SliderValue = [number, number] | undefined;
 type TimeUnit = 'hours' | 'minutes' | 'seconds';
 
 interface TimeMeta {
@@ -80,7 +80,7 @@ export const TyrDurationBase = <D extends Tyr.Document = Tyr.Document>(
     const v = props.path!.get(props.document);
     if (v) setValue(v);
     setUnitRefs(unitRefs => columns.map((_, i) => unitRefs[i] || createRef()));
-  }, [props.path?.name]);
+  }, [props.path?.name, props.document]);
   const [value, setValue] = useState(0);
   const [expanded, setExpanded] = useState(false);
 

@@ -18,7 +18,7 @@ export const TyrBooleanBase = <D extends Tyr.Document = Tyr.Document>(
 ) => {
   useEffect(() => {
     mapPropsToForm(props);
-  }, [props.path && props.path.name]);
+  }, [props.path && props.path.name, props.document]);
 
   const inlineLabel = props.as !== 'switch' && props.noLabel === undefined;
 

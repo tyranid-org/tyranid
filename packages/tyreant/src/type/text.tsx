@@ -71,7 +71,7 @@ const CKEditorWrapper = <D extends Tyr.Document = Tyr.Document>({
 export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path?.name]);
+  useEffect(() => mapPropsToForm(props), [props.path?.name, props.document]);
 
   return decorateField('text', props, () => {
     switch (props.as) {

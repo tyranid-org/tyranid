@@ -13,7 +13,7 @@ import { withThemedTypeContext } from '../core/theme';
 export const TyrUrlBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path?.name]);
+  useEffect(() => mapPropsToForm(props), [props.path?.name, props.document]);
 
   return decorateField('url', props, () => {
     const onTypeChangeFunc = (ev: any) => {

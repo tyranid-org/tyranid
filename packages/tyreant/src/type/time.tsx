@@ -16,7 +16,10 @@ const TIME_FORMAT = 'HH:mm:ss';
 export const TyrTimeBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   return decorateField('time', props, () => {
     const onTypeChangeFunc = (ev: any) => {

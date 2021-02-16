@@ -64,7 +64,7 @@ const findColumnByDataIndex = <D extends Tyr.Document>(
   dataIndex: string
 ): ColumnType<D> | undefined => {
   for (const c of columns) {
-    if (c.dataIndex === dataIndex) return c;
+    if ((c as ColumnType<D>).dataIndex === dataIndex) return c;
 
     const { children } = c as ColumnGroupType<D>;
     if (children) {
@@ -107,7 +107,7 @@ export interface TyrTableProps<D extends Tyr.Document>
   actionIcon?: Tyr.anny;
 
   scroll?: { x?: number | true | string; y?: number | string };
-  footer?: (currentPageData: D[]) => React.ReactNode;
+  footer?: (currentPageData: readonly D[]) => React.ReactNode;
   onLoad?: (table: TyrTableBase<any>) => void;
   rowSelection?: boolean;
   loading?: boolean;
@@ -1032,7 +1032,7 @@ export class TyrTableBase<
         };
       }
 
-      const netFooter = (docs: D[]) => (
+      const netFooter = (docs: readonly D[]) => (
         <>
           {this.quickTotalComponent()}
           {this.paginationComponent()}
@@ -1080,7 +1080,7 @@ export class TyrTableBase<
           size={size || 'small'}
           pagination={false}
           onChange={this.handleTableChange as any}
-          footer={netFooter as (rows: Object[]) => React.ReactNode}
+          footer={netFooter}
           showHeader={!newDocument && this.props.showHeader !== false}
           dataSource={this.currentPageDocuments()}
           rowClassName={this.props.rowClassName}

@@ -394,7 +394,7 @@ export class TyrManyComponent<
       total: totalCount,
       defaultPageSize: limit,
       pageSize: limit,
-      size: 'default',
+      size: 'default' as 'default',
       itemRender: this.paginationItemRenderer,
       showSizeChanger: showSizeChanger === false ? false : true,
       pageSizeOptions,

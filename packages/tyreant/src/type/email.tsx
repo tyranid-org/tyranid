@@ -13,7 +13,7 @@ import { withThemedTypeContext } from '../core/theme';
 export const TyrEmailBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path?.name]);
+  useEffect(() => mapPropsToForm(props), [props.path?.name, props.document]);
 
   return decorateField('email', props, () => {
     const onTypeChangeFunc = (ev: any) => {

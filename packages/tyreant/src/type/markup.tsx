@@ -17,7 +17,10 @@ const { MediaType } = Tyr.collections;
 export const TyrMarkupBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   return decorateField('string', props, () => {
     const onTypeChangeFunc = (ev: any) => {

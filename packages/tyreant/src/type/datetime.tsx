@@ -23,7 +23,7 @@ export const TyrDateTimeBase = <D extends Tyr.Document>(
 ) => {
   useEffect(() => {
     mapPropsToForm(props);
-  }, [props.path && props.path.name]);
+  }, [props.path && props.path.name, props.document]);
 
   return decorateField('datetime', props, () => {
     const onTypeChangeFunc = (ev: any) => {

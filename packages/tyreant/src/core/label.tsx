@@ -116,7 +116,7 @@ export const getLabelRenderer = <D extends Tyr.Document>(
     if (alternateLabelFields) {
       for (const alf of alternateLabelFields) {
         const v = alf.path.get(doc);
-        if (v) l += `- ${v}`;
+        if (v && l !== v) l += ` - ${v}`;
       }
     }
 

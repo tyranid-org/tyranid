@@ -14,14 +14,20 @@ import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
-type RangePickerValue = [moment.Moment, moment.Moment];
+type RangePickerValue =
+  | [moment.Moment | null, moment.Moment | null]
+  | null
+  | undefined;
 
 const DATE_FORMAT = 'MM/DD/YYYY';
 
 export const TyrDateBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   return decorateField('date', props, () => {
     const onTypeChangeFunc = (ev: any) => {
@@ -71,9 +77,9 @@ byName.date = {
           filterDdProps={filterDdProps}
           pathProps={props}
         >
-          {(searchValue, setSearchValue, search) => (
+          {(searchValue, setSearchValue) => (
             <RangePicker
-              value={searchValue}
+              value={searchValue as any} // How to type this?
               autoFocus={true}
               format={props.dateFormat || DATE_FORMAT}
               onChange={v => {
@@ -85,7 +91,7 @@ byName.date = {
         </TyrFilter>
       ),
       onFilter: (value: any, doc: Tyr.Document) => {
-        if (value === undefined) return true;
+        if (value === undefined || value === null) return true;
         value = parseSearchValue(value);
 
         if (props.onFilter) {
@@ -96,15 +102,15 @@ byName.date = {
 
         if (val) {
           const date = moment(val);
-          const range = value as RangePickerValue;
+          const range = (value as RangePickerValue)!;
 
-          const filterStart = range[0].startOf('day');
+          const filterStart = range[0]!.startOf('day');
 
           if (filterStart) {
             if (date.isBefore(filterStart)) return false;
           }
 
-          const filterEnd = range[1].endOf('day');
+          const filterEnd = range[1]!.endOf('day');
 
           if (filterEnd) {
             if (date.isAfter(filterEnd)) return false;

@@ -14,7 +14,10 @@ import { withThemedTypeContext } from '../core/theme';
 export const TyrMongoIdBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   // TODO:  possibly return TyrLink out of this in some instances?
   return decorateField('mongoid', props, () => {

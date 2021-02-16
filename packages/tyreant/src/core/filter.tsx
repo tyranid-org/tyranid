@@ -180,7 +180,8 @@ export const TyrFilters = ({
               {typeof filterDropdown === 'function'
                 ? filterDropdown({
                     prefixCls: '',
-                    setSelectedKeys: (selectedKeys: string[]) => c.refresh(),
+                    setSelectedKeys: (selectedKeys: Tyr.AnyIdType[]) =>
+                      c.refresh(),
                     selectedKeys: [],
                     confirm: () => c.query(),
                     clearFilters: () => {},

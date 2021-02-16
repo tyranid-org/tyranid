@@ -13,7 +13,7 @@ import { registerComponent } from '../common';
 export const TyrPasswordBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path?.name]);
+  useEffect(() => mapPropsToForm(props), [props.path?.name, props.document]);
 
   return decorateField('password', props, () => (
     <Input.Password

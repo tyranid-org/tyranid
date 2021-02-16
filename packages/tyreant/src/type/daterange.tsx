@@ -21,7 +21,10 @@ const DATE_FORMAT = 'MM/DD/YYYY';
 export const TyrDateRangeBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   return decorateField('daterange', props, () => {
     const onTypeChangeFunc = (ev: any) => {

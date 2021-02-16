@@ -162,6 +162,13 @@ export class TyrLinkAbstract<
     }
   }
 
+  UNSAFE_componentWillReceiveProps(nextProps: Readonly<TyrTypeProps<D>>) {
+    if (nextProps.document !== this.props.document) {
+      mapPropsToForm(nextProps);
+      this.setState({ initialLoading: false });
+    }
+  }
+
   componentWillUnmount() {
     this.mounted = false;
   }

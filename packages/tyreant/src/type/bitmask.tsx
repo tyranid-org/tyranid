@@ -13,7 +13,10 @@ import { withThemedTypeContext } from '../core/theme';
 export const TyrBitmaskBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   return decorateField('bitmask', props, () => (
     <Checkbox.Group

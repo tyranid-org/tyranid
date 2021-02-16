@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useEffect } from 'react';
 
 import { Slider, InputNumber, Select } from 'antd';
-import { SliderValue } from 'antd/lib/slider';
 
 import { Tyr } from 'tyranid/client';
 
@@ -13,6 +12,7 @@ import { decorateField } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
+type SliderValue = [number, number] | undefined;
 const { Option } = Select;
 
 const filterOptions = [
@@ -27,7 +27,10 @@ const filterOptions = [
 export const TyrIntegerBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   return decorateField('integer', props, () => {
     return (
@@ -108,11 +111,15 @@ byName.integer = {
             setSearchValue([choice, searchValue ? searchValue[1] : undefined]);
           };
 
-          const setSearchValueNumber = (value?: number) => {
-            setSearchValue([
-              searchValue ? searchValue[0] : filterOptions[0],
-              value,
-            ]);
+          const setSearchValueNumber = (
+            value: string | number | null | undefined
+          ) => {
+            if (!isNaN(value as any)) {
+              setSearchValue([
+                searchValue ? searchValue[0] : filterOptions[0],
+                value as number,
+              ]);
+            }
           };
 
           return (

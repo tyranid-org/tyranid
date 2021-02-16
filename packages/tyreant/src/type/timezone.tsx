@@ -28,9 +28,7 @@ const createOption = (tzName: string) => {
     sign = '';
   }
 
-  const zoneTime = moment()
-    .tz(tzName)
-    .format('hh:mm A');
+  const zoneTime = moment().tz(tzName).format('hh:mm A');
 
   return (
     <Select.Option key={tzName} value={tzName}>
@@ -42,7 +40,10 @@ const createOption = (tzName: string) => {
 export const TyrTimeZoneBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
 ) => {
-  useEffect(() => mapPropsToForm(props), [props.path && props.path.name]);
+  useEffect(() => mapPropsToForm(props), [
+    props.path && props.path.name,
+    props.document,
+  ]);
 
   return decorateField('timezone', props, () => (
     <Select
