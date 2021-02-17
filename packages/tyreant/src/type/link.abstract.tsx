@@ -166,6 +166,7 @@ export class TyrLinkAbstract<
     if (nextProps.document !== this.props.document) {
       mapPropsToForm(nextProps);
       this.setState({ initialLoading: false });
+      this.loadedMode = undefined;
     }
   }
 
