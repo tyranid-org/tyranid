@@ -340,7 +340,7 @@ const LinkFilterDropdown = ({
                 .labels(
                   new path.tail.collection({}),
                   filterSearchValue,
-                  labelField ? { labelField } : undefined
+                  labelField ? { labelField, limit: 300 } : undefined // TODO: this
                 )
                 .then(results => {
                   delaySetLabels(

@@ -358,7 +358,7 @@ declare module 'tyranid/client' {
       labels(
         doc: Document,
         text?: string,
-        opts?: { labelField?: string }
+        opts?: { labelField?: string; limit?: number }
       ): Promise<Document[]>;
       validate(
         document: D,

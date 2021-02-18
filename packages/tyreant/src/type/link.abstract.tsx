@@ -230,7 +230,7 @@ export class TyrLinkAbstract<
       let opts: any;
       let query;
       if (path?.detail.isId() && (query = component?.props.query))
-        opts = { query };
+        opts = { query, limit: 0 };
 
       const promises: Promise<Tyr.Document[]>[] = [
         labelField
