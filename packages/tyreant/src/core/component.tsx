@@ -507,6 +507,10 @@ export class TyrComponent<
     let paths: { [pathName: string]: Tyr.FieldInstance<any> } =
       collection.paths;
     for (const pathName in paths) {
+      if (pathName.includes('._.')) {
+        continue;
+      }
+
       const field = paths[pathName];
 
       if (field.link === parentCollection) {
@@ -519,6 +523,10 @@ export class TyrComponent<
 
     paths = parentCollection.paths;
     for (const pathName in paths) {
+      if (pathName.includes('._.')) {
+        continue;
+      }
+
       const field = paths[pathName];
 
       if (field.link === collection) {
