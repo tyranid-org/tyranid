@@ -7,6 +7,8 @@ Collection.prototype.fromClientUpdate = function (update) {
   const col = this;
 
   function convertValue(field, value) {
+    if (!field) return value;
+
     if (_.isArray(value)) {
       return value.map(v => field.type.fromClient(field, v));
     } else {
