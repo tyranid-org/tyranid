@@ -370,7 +370,7 @@ export class TyrComponent<
   }
 
   /*
-   * * * QUERYING
+   * * *  QUERYING
    */
 
   get local() {

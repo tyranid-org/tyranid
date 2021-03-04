@@ -1,8 +1,8 @@
 import Collection from '../core/collection';
 
-// TODO:  rename to componentConfig
+// TODO: rename to componentConfig
 
-// TODO:  some way for components to indicate what features they support
+// TODO: some way for components to indicate what features they support
 
 const configField = {
   is: 'object',
