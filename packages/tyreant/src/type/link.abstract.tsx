@@ -177,7 +177,7 @@ export class TyrLinkAbstract<
   loadedMode?: 'view' | 'edit' | 'search';
   async initialSearch() {
     const { props } = this;
-    const { path, mode: controlMode, labelField } = props;
+    const { path, mode: controlMode = 'edit', labelField } = props;
     let searched = false;
     let v = path!.get(props.document);
     if (v === null) {
@@ -294,10 +294,10 @@ export class TyrLinkAbstract<
     if (!this.mounted) return <></>;
 
     const { props } = this;
-    const { mode: controlMode } = props;
+    const { mode: controlMode = 'edit' } = props;
     const { viewLabel, initialLoading } = this.state;
 
-    if (this.loadedMode !== this.props.mode) {
+    if (this.loadedMode !== controlMode) {
       this.initialSearch();
       return <></>;
     }
