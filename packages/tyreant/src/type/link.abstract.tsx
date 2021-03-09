@@ -252,7 +252,7 @@ export class TyrLinkAbstract<
       if (val) {
         const fields = link.labelProjection(labelField);
 
-        // switch to simple Array.isArray() once we move to mobx 5
+        // switch to simple Array.isArray() once we move to mobx5
         const ids =
           typeof val === 'string' || typeof val === 'number'
             ? [val]

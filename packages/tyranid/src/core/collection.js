@@ -739,6 +739,7 @@ export default class Collection {
   }
 
   async labels(text, opts) {
+    const collection = this;
     const labelField = opts?.labelField;
     let lfPathName, lf;
 
@@ -756,7 +757,7 @@ export default class Collection {
       lfPathName = lf.pathName;
     }
 
-    const query = _.isObject(text)
+    let query = _.isObject(text)
       ? text
       : {
           [lfPathName]: new RegExp(text, 'i'),
@@ -772,6 +773,34 @@ export default class Collection {
       }
     } else {
       sort = { [lfPathName]: 1 };
+    }
+
+    const { alternateLabelFields } = collection;
+
+    // TODO: This logic won't work when this is called by
+    // Field.labels when there is where clause.. move this
+    // logic into Field.labels and make a seperate internal
+    // collection labels method that doesn't do this.  Have
+    // Collection.labels and Field.labels call this internal
+    // one.
+    if (text && alternateLabelFields?.length) {
+      const $or = [query];
+
+      query = { $or };
+
+      for (const lf of alternateLabelFields) {
+        if (_.isObject(text)) {
+          const regex = $or[0][lfPathName];
+
+          $or.push({
+            [lf.spath]: regex,
+          });
+        } else {
+          $or.push({
+            [lf.spath]: new RegExp(text, 'i'),
+          });
+        }
+      }
     }
 
     const labels = await this.findAll({
