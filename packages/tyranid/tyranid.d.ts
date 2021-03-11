@@ -763,8 +763,8 @@ export namespace Tyr {
     fields?: FieldsObject<D>;
     methods?: MethodsDefinition<D>;
     values?: any[][];
-    fromClient?: (opts: Options_FromClient) => void;
-    toClient?: (opts: Options_ToClient) => void;
+    fromClient?: (this: D, opts: Options_FromClient) => void;
+    toClient?: (this: D, opts: Options_ToClient) => void;
     routes?: (app: Express.Application, auth: Express.RequestHandler) => void;
     service?: ServiceDefinition<D>;
   }
