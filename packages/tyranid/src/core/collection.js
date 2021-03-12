@@ -656,9 +656,9 @@ export default class Collection {
 
         query = { $or };
 
-        for (const lf of alternateLabelFields) {
+        for (const alf of alternateLabelFields) {
           $or.push({
-            [lf.spath]: {
+            [alf.spath]: {
               $regex: `^${escapeRegex(matchLower)}$`,
               $options: 'i',
             },
@@ -738,7 +738,7 @@ export default class Collection {
     return fields;
   }
 
-  async labels(text, opts) {
+  async labels(textOrQuery, opts) {
     const collection = this;
     const labelField = opts?.labelField;
     let lfPathName, lf;
@@ -757,13 +757,14 @@ export default class Collection {
       lfPathName = lf.pathName;
     }
 
-    let query = _.isObject(text)
-      ? text
+    // TODO:  not sure if textOrQuery will ever be a query now that Field.labels() does not
+    //        call this anymore.
+    let query = _.isObject(textOrQuery)
+      ? textOrQuery
       : {
-          [lfPathName]: new RegExp(text, 'i'),
+          [lfPathName]: new RegExp(textOrQuery, 'i'),
         };
 
-    const fields = this.labelProjection(labelField);
     let sort;
     if (this.fields.order) {
       sort = { order: 1 };
@@ -777,27 +778,21 @@ export default class Collection {
 
     const { alternateLabelFields } = collection;
 
-    // TODO: This logic won't work when this is called by
-    // Field.labels when there is where clause.. move this
-    // logic into Field.labels and make a seperate internal
-    // collection labels method that doesn't do this.  Have
-    // Collection.labels and Field.labels call this internal
-    // one.
-    if (text && alternateLabelFields?.length) {
+    if (textOrQuery && alternateLabelFields?.length) {
       const $or = [query];
 
       query = { $or };
 
-      for (const lf of alternateLabelFields) {
-        if (_.isObject(text)) {
+      for (const alf of alternateLabelFields) {
+        if (_.isObject(textOrQuery)) {
           const regex = $or[0][lfPathName];
 
           $or.push({
-            [lf.spath]: regex,
+            [alf.spath]: regex,
           });
         } else {
           $or.push({
-            [lf.spath]: new RegExp(text, 'i'),
+            [alf.spath]: new RegExp(textOrQuery, 'i'),
           });
         }
       }
@@ -805,7 +800,7 @@ export default class Collection {
 
     const labels = await this.findAll({
       query,
-      projection: fields,
+      projection: this.labelProjection(labelField),
       sort,
       ...opts,
     });

@@ -74,13 +74,41 @@ export default class Field {
 
   async labels(doc, text, opts) {
     const field = this,
-      query = {};
-
-    const to = field.link;
+      to = field.link;
 
     if (to) {
+      const labelField = opts?.labelField;
+      let lfPathName, lf;
+
+      if (labelField) {
+        lfPathName = labelField;
+        lf = to.paths[labelField];
+      } else {
+        lf = to.labelField;
+        if (!lf) {
+          throw new Error(
+            `Collection "${to.name}" does not have a label field defined`
+          );
+        }
+
+        lfPathName = lf.pathName;
+      }
+
+      const query = {};
       if (text) {
-        query[to.labelField.pathName] = new RegExp(text, 'i');
+        query[lfPathName] = new RegExp(text, 'i');
+
+        const { alternateLabelFields } = to;
+        if (alternateLabelFields?.length) {
+          const $or = [query];
+          query = { $or };
+
+          for (const alf of alternateLabelFields) {
+            $or.push({
+              [alf.spath]: new RegExp(textOrQuery, 'i'),
+            });
+          }
+        }
       }
 
       await LinkType.applyWhere(field, doc, query, opts);
@@ -88,7 +116,25 @@ export default class Field {
       const oq = opts.query;
       if (oq) Object.assign(query, oq);
 
-      return await to.labels(query, opts);
+      let sort;
+      if (to.fields.order) {
+        sort = { order: 1 };
+      } else if (lf) {
+        if (!lf.def.get || lf.db) {
+          sort = { [lf.spath]: 1 };
+        }
+      } else {
+        sort = { [lfPathName]: 1 };
+      }
+
+      const labels = await to.findAll({
+        query,
+        projection: to.labelProjection(labelField),
+        sort,
+        ...opts,
+      });
+
+      return labels.filter(l => !!to.labelFor(l, opts));
     } else if (field.type.name === 'uid') {
       const cols = field.of;
 
