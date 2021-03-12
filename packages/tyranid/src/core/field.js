@@ -94,7 +94,7 @@ export default class Field {
         lfPathName = lf.pathName;
       }
 
-      const query = {};
+      let query = {};
       if (text) {
         query[lfPathName] = new RegExp(text, 'i');
 
@@ -105,7 +105,7 @@ export default class Field {
 
           for (const alf of alternateLabelFields) {
             $or.push({
-              [alf.spath]: new RegExp(textOrQuery, 'i'),
+              [alf.spath]: new RegExp(text, 'i'),
             });
           }
         }
