@@ -108,9 +108,6 @@ export const TyrGoogleMap = (props: MapProps) => {
   const [mapZoom, setMapZoom] = React.useState<number>(10);
   const [activeMarker, setActiveMarker] = React.useState<MapPoint>();
   const [routeInfoPoint, setRouteInfoPoint] = React.useState<MapPoint>();
-  const [straightRoutes] = React.useState<MapRoute[]>(
-    props.mapRoutes ? props.mapRoutes.filter(mr => !!mr.straight) : []
-  );
   const [roadRoutes] = React.useState<MapRoute[]>(
     props.mapRoutes ? props.mapRoutes.filter(mr => !mr.straight) : []
   );
@@ -172,6 +169,10 @@ export const TyrGoogleMap = (props: MapProps) => {
   if (loadError) {
     return <div>Map cannot be loaded right now, sorry.</div>;
   }
+
+  const straightRoutes = props.mapRoutes
+    ? props.mapRoutes.filter(mr => !!mr.straight)
+    : [];
 
   return (
     <GoogleMap
