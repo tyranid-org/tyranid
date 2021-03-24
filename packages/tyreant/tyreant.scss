@@ -376,6 +376,22 @@ form textarea.tyr-markup-editor {
 }
 
 //
+// Editor
+//
+
+.tyr-slate-editor {
+  border: 1px solid #ddd;
+
+  .tyr-slate-toolbar {
+    border-bottom: 1px solid #ddd;
+
+    .tyr-active {
+      background-color: var(--cell-highlight-color);
+    }
+  }
+}
+
+//
 // Filters
 //
 

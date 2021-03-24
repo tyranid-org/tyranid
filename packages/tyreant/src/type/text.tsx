@@ -9,64 +9,9 @@ import { byName, TyrTypeProps, mapPropsToForm, onTypeChange } from './type';
 import { withThemedTypeContext } from '../core/theme';
 import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
-
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-//import ClassicEditor from 'ckeditor5-custom-build';
-//import Mention from '@ckeditor/ckeditor5-mention/src/mention';
+import { TextEditor } from '../editor/editor';
 
 const { TextArea } = Input;
-
-const CKEditorWrapper = <D extends Tyr.Document = Tyr.Document>({
-  value = {},
-  onChange,
-  props,
-}: {
-  value?: any;
-  onChange?: any;
-  props: TyrTypeProps<D>;
-}) => {
-  const [editor, setEditor] = React.useState<any>();
-
-  React.useEffect(() => {
-    if (editor) editor.setData(value);
-  }, [editor]);
-
-  return (
-    <CKEditor
-      editor={ClassicEditor}
-      onReady={(editor: any) => {
-        setEditor(editor);
-      }}
-      config={{
-        placeholder: props.placeholder,
-        allowedContent: 'true',
-        removeFormatTags: '',
-        //        ...(props.mentionFeeds ? { plugins: [Mention] } : {}),
-      }}
-      onChange={(event: any, editor: any) => {
-        const data = editor.getData();
-        onTypeChange(props, data, event);
-        onChange({ ...value, ...data });
-      }}
-      onBlur={(event: any, editor: any) => {
-        //console.log('Blur.', editor);
-      }}
-      onFocus={(event: any, editor: any) => {
-        //console.log('Focus.', editor);
-      }}
-      // mention={
-      //   props.mentionFeeds
-      //     ? {
-      //         mention: {
-      //           feeds: [props.mentionFeeds],
-      //         },
-      //       }
-      //     : undefined
-      // }
-    />
-  );
-};
 
 export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
   props: TyrTypeProps<D>
@@ -88,7 +33,7 @@ export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
         );
 
       default:
-        return <CKEditorWrapper props={props} />;
+        return <TextEditor />;
     }
   });
 };
