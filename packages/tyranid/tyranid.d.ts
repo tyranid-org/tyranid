@@ -802,7 +802,8 @@ export namespace Tyr {
     query(
       collection: CollectionInstance,
       method: 'view' | 'update' | 'insert' | 'delete',
-      auth?: Tyr.Document
+      auth?: Tyr.Document,
+      opts?: Options_AllFind
     ): Promise<MongoQuery | boolean>;
   }
 

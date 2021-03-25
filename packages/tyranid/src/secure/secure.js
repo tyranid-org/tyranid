@@ -33,13 +33,18 @@ Collection.prototype.canInsert = function (document, permissionType, authObj) {
     : true;
 };
 
-Collection.prototype.secureQuery = function (query, permissionType, authObj) {
+Collection.prototype.secureQuery = function (
+  query,
+  permissionType,
+  authObj,
+  opts
+) {
   const secure = Tyr.secure;
 
   query = query || {};
 
   if (secure) {
-    return Tyr.mapAwait(secure.query(this, permissionType, authObj), q =>
+    return Tyr.mapAwait(secure.query(this, permissionType, authObj, opts), q =>
       q ? Query.merge(query, q) : false
     );
   }
@@ -50,10 +55,11 @@ Collection.prototype.secureQuery = function (query, permissionType, authObj) {
 Collection.prototype.secureFindQuery = function (
   query,
   permissionType,
-  authObj
+  authObj,
+  opts
 ) {
   return Tyr.mapAwait(
-    this.secureQuery(query, permissionType, authObj),
+    this.secureQuery(query, permissionType, authObj, opts),
     // TODO: compare how fast this is compared to { _id: { $exists: false } }
     q => (q ? q : { _id: null })
   );

@@ -887,7 +887,8 @@ export default class Collection {
         collection.secureFindQuery(
           query,
           opts.perm || OPTIONS.permissions.find,
-          auth
+          auth,
+          opts
         ),
         securedQuery => {
           opts.query = query = securedQuery;
@@ -944,7 +945,8 @@ export default class Collection {
       query = await collection.secureFindQuery(
         query,
         opts.perm || OPTIONS.permissions.find,
-        auth
+        auth,
+        opts
       );
 
       opts = _.clone(opts);
@@ -1069,7 +1071,8 @@ export default class Collection {
       opts.query = await this.secureFindQuery(
         opts.query,
         opts.perm || OPTIONS.permissions.update,
-        auth
+        auth,
+        opts
       );
     }
 
@@ -1157,7 +1160,8 @@ export default class Collection {
         collection.secureFindQuery(
           query,
           opts.perm || OPTIONS.permissions.find,
-          auth
+          auth,
+          opts
         ),
         securedQuery => {
           return _count(collection, securedQuery);
@@ -1178,7 +1182,8 @@ export default class Collection {
         collection.secureFindQuery(
           query,
           opts.perm || OPTIONS.permissions.find,
-          auth
+          auth,
+          opts
         ),
         async securedQuery => await _exists(collection, securedQuery)
       );
@@ -1258,7 +1263,8 @@ export default class Collection {
         updOpts.query = await this.secureFindQuery(
           updOpts.query,
           updOpts.perm || OPTIONS.permissions.update,
-          auth
+          auth,
+          updOpts
         );
 
       Tyr.query.restrict(updOpts.query, obj);
