@@ -43,6 +43,14 @@ const deserialize = (
       return '\n';
     case 'P':
       return jsx('element', { type: 'paragraph' }, children);
+    case 'STRONG':
+      return jsx('text', { bold: true }, children);
+    case 'EM':
+      return jsx('text', { italic: true }, children);
+    case 'U':
+      return jsx('text', { underline: true }, children);
+    case 'CODE':
+      return jsx('text', { code: true }, children);
     default:
       return el.textContent;
   }
@@ -50,7 +58,13 @@ const deserialize = (
 
 const serialize = (node: Node): string => {
   if (Text.isText(node)) {
-    return escapeHtml(node.text!);
+    let text = escapeHtml(node.text!);
+
+    if (node.code) text = `<code>${text}</code>`;
+    if (node.bold) text = `<strong>${text}</strong>`;
+    if (node.italic) text = `<em>${text}</em>`;
+    if (node.underline) text = `<u>${text}</u>`;
+    return text;
   }
 
   const children = node.children.map(n => serialize(n)).join('');

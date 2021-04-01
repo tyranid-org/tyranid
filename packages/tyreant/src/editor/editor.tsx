@@ -40,6 +40,7 @@ export const TextEditor = ({
   value?: string;
   onChange?: (value: string) => void;
 }) => {
+  console.log('TextEditor render, value', value);
   const editValue = useMemo(() => htmlToSlate(value ?? '') as Node[], [value]);
 
   const renderElement = useCallback(props => <Element {...props} />, []);
@@ -53,8 +54,9 @@ export const TextEditor = ({
         value={editValue}
         onChange={value => {
           //setEditValue(value);
-          //const s = slateToHtml(value);
-          onChange?.(slateToHtml(value));
+          const s = slateToHtml(value);
+          console.log('TextEditor onChange, newHtml', s);
+          onChange?.(s);
         }}
       >
         <div className="tyr-slate-toolbar">
@@ -174,21 +176,10 @@ const Leaf = ({
   leaf: any;
   children: any;
 }) => {
-  if (leaf.bold) {
-    children = <strong>{children}</strong>;
-  }
-
-  if (leaf.code) {
-    children = <code>{children}</code>;
-  }
-
-  if (leaf.italic) {
-    children = <em>{children}</em>;
-  }
-
-  if (leaf.underline) {
-    children = <u>{children}</u>;
-  }
+  if (leaf.bold) children = <strong>{children}</strong>;
+  if (leaf.code) children = <code>{children}</code>;
+  if (leaf.italic) children = <em>{children}</em>;
+  if (leaf.underline) children = <u>{children}</u>;
 
   return <span {...attributes}>{children}</span>;
 };

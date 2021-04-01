@@ -33,7 +33,7 @@ export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
         );
 
       default:
-        return <TextEditor />;
+        return <TextEditor onChange={s => onTypeChange(props, s, s)} />;
     }
   });
 };
