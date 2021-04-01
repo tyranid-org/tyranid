@@ -41,6 +41,10 @@ const deserialize = (
       return jsx('fragment', {}, children);
     case 'BR':
       return '\n';
+    case 'H1':
+      return jsx('element', { type: 'heading-one' }, children);
+    case 'H2':
+      return jsx('element', { type: 'heading-two' }, children);
     case 'P':
       return jsx('element', { type: 'paragraph' }, children);
     case 'STRONG':
@@ -72,6 +76,10 @@ const serialize = (node: Node): string => {
   switch (node.type) {
     case 'quote':
       return `<blockquote><p>${children}</p></blockquote>`;
+    case 'heading-one':
+      return `<h1>${children}</h1>`;
+    case 'heading-two':
+      return `<h2>${children}</h2>`;
     case 'paragraph':
       return `<p>${children}</p>`;
     case 'link':
