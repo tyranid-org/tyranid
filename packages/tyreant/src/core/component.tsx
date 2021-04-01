@@ -344,7 +344,7 @@ export class TyrComponent<
 
   /**
    * This creates a new document for this control that is related to the parent documents
-   * according to how the component hierarchy  is laid out.
+   * according to how the component hierarchy is laid out.
    */
   createDocument(actionOpts?: TyrActionFnOpts<D>) {
     const { linkToParent, parent, props } = this;
