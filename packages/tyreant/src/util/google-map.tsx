@@ -108,7 +108,7 @@ export const TyrGoogleMap = (props: MapProps) => {
   const [mapZoom, setMapZoom] = React.useState<number>(10);
   const [activeMarker, setActiveMarker] = React.useState<MapPoint>();
   const [routeInfoPoint, setRouteInfoPoint] = React.useState<MapPoint>();
-  const [roadRoutes] = React.useState<MapRoute[]>(
+  const [roadRoutes, setRoadRoutes] = React.useState<MapRoute[]>(
     props.mapRoutes ? props.mapRoutes.filter(mr => !mr.straight) : []
   );
 
@@ -123,26 +123,30 @@ export const TyrGoogleMap = (props: MapProps) => {
   }, []);
 
   React.useEffect(() => {
-    if (isLoaded) {
-      if (roadRoutes) {
-        roadRoutes.forEach(roadRoute => {
-          const originLatLong = roadRoute.origin.point;
-          const destLatLong = roadRoute.destination.point;
+    setRoadRoutes(
+      props.mapRoutes ? props.mapRoutes.filter(mr => !mr.straight) : []
+    );
+  }, [mapRoutes]);
 
-          setDirectionsRequest({
-            origin: originLatLong,
-            destination: destLatLong,
-            waypoints: roadRoute.waypoints
-              ? roadRoute.waypoints.map(r => ({
-                  location: getLatLongStr(r.point),
-                }))
-              : [],
-            travelMode: google.maps.TravelMode.DRIVING,
-          });
+  React.useEffect(() => {
+    if (isLoaded && roadRoutes) {
+      roadRoutes.forEach(roadRoute => {
+        const originLatLong = roadRoute.origin.point;
+        const destLatLong = roadRoute.destination.point;
+
+        setDirectionsRequest({
+          origin: originLatLong,
+          destination: destLatLong,
+          waypoints: roadRoute.waypoints
+            ? roadRoute.waypoints.map(r => ({
+                location: getLatLongStr(r.point),
+              }))
+            : [],
+          travelMode: google.maps.TravelMode.DRIVING,
         });
-      }
+      });
     }
-  }, [isLoaded]);
+  }, [isLoaded, roadRoutes]);
 
   React.useEffect(() => {
     if (isLoaded) {
