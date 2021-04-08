@@ -166,6 +166,10 @@ declare module 'tyranid/client' {
       formats?: {
         [typeName: string]: string;
       };
+      jwt?: {
+        accessToken?: string;
+        refreshToken?: string;
+      };
     };
 
     export const init: () => void;

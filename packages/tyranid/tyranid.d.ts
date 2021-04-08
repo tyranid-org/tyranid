@@ -921,6 +921,11 @@ export namespace Tyr {
         apiKey?: string;
       };
     };
+    jwt?: {
+      accessTokenSecret?: string;
+      refreshTokenSecret?: string;
+      accessTokenExpire: '72h';
+    };
     meta?: {
       collection?: {
         [customFieldName: string]: {

@@ -470,6 +470,13 @@ export function generateClientLibrary() {
       headers[csrf.header] = cookie(csrf.cookie);
     }
 
+    const jwt = Tyr.options.jwt;
+
+    if (jwt && jwt.accessToken) {
+      var headers = opts.headers = opts.headers || {};
+      headers['authorization'] = "Bearer " + Tyr.options.jwt.accessToken;
+    }
+
     try {
       const response = await fetch(url, opts);
       const json = /application\\/json/.test(response.headers.get('Content-Type')) ? await response.json() : undefined;
