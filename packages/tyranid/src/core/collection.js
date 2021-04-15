@@ -2062,6 +2062,8 @@ export default class Collection {
 
           if (type) {
             if (!(type instanceof Collection)) type.compile(compiler, field);
+          } else if (stage !== 'link' && typeof fieldDef.is === 'string') {
+            // Collection has not been compiled yet
           } else if (!_.isObject(fieldDef.is) || !fieldDef.is.def) {
             throw compiler.err(
               path,
