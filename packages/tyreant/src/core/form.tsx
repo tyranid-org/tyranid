@@ -235,7 +235,9 @@ export async function submitForm<D extends Tyr.Document>(
   //const { form } = tyrForm;
 
   try {
-    tyrForm.validate();
+    const v = await tyrForm.validate();
+
+    if (v.errorFields?.length) return false;
 
     if (!tyrForm.isSearching) {
       tyrForm.trace('submitForm', 'save', document);
