@@ -85,7 +85,13 @@ export function generateRules(props: TyrTypeProps<any>): Rule[] {
       });
 
     const mode = modeFor(props);
-    if ((!mode || isEditTrait(mode)) && (required || field.def.required))
+    if (
+      (!mode ||
+        isEditTrait(mode) ||
+        // we don't normally require fields on search fields but if the field has required on it directly, honor it
+        (mode === 'search' && required)) &&
+      (required || field.def.required)
+    )
       rules.push({
         required: true,
         message: requiredMessage || `${label || field.label} is required.`,
