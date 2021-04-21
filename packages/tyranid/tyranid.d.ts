@@ -926,6 +926,16 @@ export namespace Tyr {
       refreshTokenSecret?: string;
       accessTokenExpire: '72h';
     };
+    stripe?: {
+      test: {
+        publishKey: string;
+        secretKey: string;
+      };
+      prod: {
+        publishKey: string;
+        secretKey: string;
+      };
+    };
     meta?: {
       collection?: {
         [customFieldName: string]: {
