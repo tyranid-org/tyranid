@@ -91,9 +91,6 @@
 //
 
 .ant-checkbox + span {
-  position: relative;
-  top: 3px;
-
   .tyr-image-label.ant-avatar {
     position: relative;
     top: -1px;
@@ -1012,7 +1009,7 @@ form textarea.tyr-markup-editor {
     padding: 0 5px;
 
     .ant-checkbox-group-item {
-      display: block;
+      display: flex;
 
       &:hover {
         background-color: var(--popup-background-color-hover);
