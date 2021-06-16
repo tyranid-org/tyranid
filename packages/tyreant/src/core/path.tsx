@@ -96,7 +96,7 @@ export interface TyrPathProps<D extends Tyr.Document>
    *
    * Analogous to the Field model definition labelField option.
    */
-  labelField?: string;
+  labelField?: string | ((props: TyrPathProps<D>) => string);
   /**
    * Suppress the default generation of field labels.
    */

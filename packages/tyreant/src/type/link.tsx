@@ -16,6 +16,7 @@ import {
   getLabelRenderer,
   labelFieldFor,
   labelFor,
+  labelFieldFromProps,
 } from '../core';
 import { TyrFilter, FilterDdProps } from '../core/filter';
 import { registerComponent } from '../common';
@@ -168,7 +169,9 @@ byName.link = {
       // TODO:  see if the label is available denormalized, and if so, just project it rather than populating it
       if (!opts.populate) opts.populate = {};
       Tyr.assignDeep(opts.populate, {
-        [path.name]: link.labelProjection(pathProps?.labelField),
+        [path.name]: link.labelProjection(
+          pathProps ? labelFieldFromProps(pathProps) : undefined
+        ),
       });
     }
   },
@@ -335,7 +338,7 @@ const LinkFilterDropdown = ({
             }
           } else {
             if (!link.isStatic()) {
-              const { labelField } = pathProps;
+              const labelField = labelFieldFromProps(pathProps);
               linkField
                 .labels(
                   new path.tail.collection({}),
@@ -372,7 +375,7 @@ const LinkFilterDropdown = ({
                 className="tyr-filter-search-input"
                 onChange={e => setFilterSearchValue(e.currentTarget.value)}
                 onSearch={async value => {
-                  const { labelField } = pathProps;
+                  const labelField = labelFieldFromProps(pathProps);
                   const results = await linkField.labels(
                     new path.tail.collection({}),
                     value,

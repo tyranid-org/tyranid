@@ -14,6 +14,7 @@ import {
   getValue,
   getLabelRenderer,
   labelFor,
+  labelFieldFromProps,
 } from '../core';
 
 type ModeOption = SelectProps<any>['mode'];
@@ -177,7 +178,8 @@ export class TyrLinkAbstract<
   loadedMode?: 'view' | 'edit' | 'search';
   async initialSearch() {
     const { props } = this;
-    const { path, mode: controlMode = 'edit', labelField } = props;
+    const { path, mode: controlMode = 'edit' } = props;
+    const labelField = labelFieldFromProps(props);
     let searched = false;
     let v = path!.get(props.document);
     if (v === null) {
@@ -220,7 +222,8 @@ export class TyrLinkAbstract<
   search = debounce(
     async (text?: string) => {
       const { props } = this;
-      const { component, path, document, getSearchIds, labelField } = props;
+      const { component, path, document, getSearchIds } = props;
+      const labelField = labelFieldFromProps(props);
       const link = this.link!;
 
       if (this.mounted) this.setState({ loading: true });

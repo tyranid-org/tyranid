@@ -12,8 +12,13 @@ export const labelFieldFor = (
   props: TyrPathProps<any>,
   collection: Tyr.CollectionInstance<any>
 ): Tyr.FieldInstance<any> | undefined => {
-  const { labelField } = props;
+  const labelField = labelFieldFromProps(props);
   return labelField ? collection.paths[labelField] : collection.labelField;
+};
+
+export const labelFieldFromProps = (props: TyrPathProps<any>) => {
+  const { labelField } = props;
+  return typeof labelField === 'function' ? labelField(props) : labelField;
 };
 
 // usually want to use getLabelRenderer over this
@@ -21,7 +26,7 @@ export const labelFor = (
   props: TyrPathProps<any>,
   document: Tyr.Document<any>
 ) => {
-  const { labelField } = props;
+  const labelField = labelFieldFromProps(props);
 
   return labelField
     ? ((document as any)[labelField] as string)
@@ -102,7 +107,7 @@ export const getLabelRenderer = <D extends Tyr.Document>(
   let lr = pathProps.filterOptionRenderer;
   if (lr) return lr;
 
-  const { labelField } = pathProps;
+  const labelField = labelFieldFromProps(pathProps);
   if (labelField) {
     return (doc: D) => <>{(doc as any)[labelField]}</>;
   }
