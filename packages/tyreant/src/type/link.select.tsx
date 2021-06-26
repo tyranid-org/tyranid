@@ -6,7 +6,7 @@ const { Option } = Select;
 
 import { Tyr } from 'tyranid/client';
 
-import { decorateField, labelFor } from '../core';
+import { decorateField, labelFieldFromProps, labelFor } from '../core';
 import { findByLabel, TyrLinkAbstract } from './link.abstract';
 
 export class TyrLinkSelect<
@@ -68,7 +68,8 @@ export class TyrLinkSelect<
 
                 // NOTE:  if they use props.labelField then we are saving off a new record without a proper label
                 label = await link.save({
-                  [props.labelField || link.labelField.pathName]: value,
+                  [labelFieldFromProps(props) ||
+                  link.labelField.pathName]: value,
                 });
 
                 label.$cache();
