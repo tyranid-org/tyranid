@@ -170,6 +170,14 @@ declare module 'tyranid/client' {
         accessToken?: string;
         refreshToken?: string;
       };
+      stripe?: {
+        test: {
+          publishKey: string;
+        };
+        prod: {
+          publishKey: string;
+        };
+      };
     };
 
     export const init: () => void;
