@@ -173,6 +173,13 @@ export class Importer {
             this.log(`Could not find a ${link.label} with a label of "${v}".`);
             return;
           }
+        } else if (
+          field?.type.name === 'integer' &&
+          err.message?.includes('Invalid integer')
+        ) {
+          const intVal = v ^ 0;
+          console.warn(`Import auto-convert int val from ${v} to ${intVal}`);
+          return intVal;
         }
 
         throw err;
@@ -278,7 +285,7 @@ export class Importer {
       }
     }
 
-    console.log('IMPORT - query', JSON.stringify(query, null, 2));
+    // console.log('IMPORT - query', JSON.stringify(query, null, 2));
     if (foundAnyData) {
       const existingDoc = await collection.findOne({
         query,
