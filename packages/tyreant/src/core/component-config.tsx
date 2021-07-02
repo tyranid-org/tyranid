@@ -363,7 +363,8 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
       <a
         className="ant-btn ant-btn-primary tyr-link-btn"
         role="button"
-        onClick={() => {
+        onClick={e => {
+          e.preventDefault();
           confirm({
             title: 'Name your export',
             content: (
@@ -393,7 +394,9 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
     ) : (
       <a
         className="ant-btn ant-btn-primary tyr-link-btn"
-        href={`/api/${collection.def.name}/export?opts=${encodeURIComponent(
+        href={`/api/${collection.def.name}/export?__jwt=${
+          Tyr.options.jwt?.accessToken
+        }&opts=${encodeURIComponent(
           JSON.stringify({
             query: component.findOpts?.query,
             fields,

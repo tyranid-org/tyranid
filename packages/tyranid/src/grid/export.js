@@ -155,7 +155,7 @@ TyrExport.service = {
       query: findOpts.query,
       projection,
       population,
-      limit: findOpts.limit,
+      //limit: findOpts.limit, // No limit on export
       auth: user,
     });
 
