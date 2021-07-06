@@ -420,22 +420,34 @@ export function generateClientLibrary() {
   }
   ${
     Tyr.options.csrf
-      ? `Tyr.options.csrf = ${JSON.stringify(Tyr.options.csrf)};`
+      ? `Tyr.options.csrf = ${JSON.stringify(Tyr.options.csrf)};\n`
       : ''
   }
   ${
     Tyr.options.exceptions
-      ? `Tyr.options.exceptions = ${JSON.stringify(Tyr.options.exceptions)};`
+      ? `Tyr.options.exceptions = ${JSON.stringify(Tyr.options.exceptions)};\n`
       : ''
   }
   ${
     Tyr.options.formats
-      ? `Tyr.options.formats = ${JSON.stringify(Tyr.options.formats)};`
+      ? `Tyr.options.formats = ${JSON.stringify(Tyr.options.formats)};\n`
+      : ''
+  }
+  ${
+    Tyr.options.stripe
+      ? `Tyr.options.stripe = {
+          test: {
+            publishKey: '${Tyr.options.stripe.test?.publishKey || ''}'
+          },
+          prod: {
+            publishKey: '${Tyr.options.stripe.prod?.publishKey || ''}'
+          }
+        };\n`
       : ''
   }
   ${
     Tyr.options.google
-      ? `Tyr.options.google = ${JSON.stringify(Tyr.options.google)};`
+      ? `Tyr.options.google = ${JSON.stringify(Tyr.options.google)};\n`
       : ''
   }`;
 
