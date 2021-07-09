@@ -149,7 +149,14 @@ export class Importer {
 
     if (typeof v === 'string') {
       try {
-        return field ? await field.fromClient(v) : v;
+        let value = field ? await field.fromClient(v) : v;
+
+        // Fixes cost issues that were showing up with 10 decimals
+        if (field?.type.name === 'double' && field?.def?.granularity === '2') {
+          value = Number(value).toFixed(2);
+        }
+
+        return value;
       } catch (err) {
         // fromClient is not async so it won't look up database lookups, do that here
         const link = field?.link;
