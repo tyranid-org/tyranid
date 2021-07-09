@@ -20,6 +20,9 @@ export const TyrExports = (props: Props) => (
     decorator={
       <TyrModal defaultOpen={true} className="tyr-wide-modal" title="Exports" />
     }
+    query={{
+      user: Tyr.local.user._id,
+    }}
     paths={[
       'name',
       { path: 'collectionName', label: 'Type' },

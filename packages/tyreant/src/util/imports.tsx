@@ -26,6 +26,9 @@ export const TyrImports = (props: Props) => (
       'endedAt',
       'issues',
     ]}
+    query={{
+      user: Tyr.local.user._id,
+    }}
     export={false}
     actions={{
       download: {
