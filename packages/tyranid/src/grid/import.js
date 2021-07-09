@@ -330,7 +330,6 @@ export class Importer {
     }
 
     console.log(`        - didn't find any data`);
-    //return undefined;
   }
 
   async importRow(row /*: any[]*/) {
