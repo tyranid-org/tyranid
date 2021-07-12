@@ -5,9 +5,10 @@ const Continent = new Tyr.Collection({
   name: 'continent',
   dbName: 'continents',
   internal: true,
+  static: true,
   fields: {
     _id: { is: 'integer' },
-    name: { is: 'string' },
+    name: { is: 'string', labelField: true },
     code: { is: 'string' },
   },
   values: [

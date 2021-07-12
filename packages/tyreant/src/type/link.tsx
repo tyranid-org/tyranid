@@ -9,7 +9,7 @@ const CheckboxGroup = Checkbox.Group;
 import { Tyr } from 'tyranid/client';
 
 import { byName, TyrTypeProps } from './type';
-import { withThemedTypeContext } from '../core/theme';
+import { useTheme, withThemedTypeContext } from '../core/theme';
 import {
   TyrPathProps,
   TyrComponent,
@@ -239,19 +239,27 @@ const LinkFilterDropdown = ({
   const pathName = path.name;
   const linkField = linkFieldFor(path)!;
   const link = linkField.link!;
-  const { type: linkIdType } = link.fields._id;
+  //const { type: linkIdType } = link.fields._id;
   const { local, allDocuments } = component;
 
   const [allSelected, setAllSelected] = useState<boolean>(false);
   const [indeterminate, setIndeterminate] = useState<boolean>(false);
   const [labels, setLabels] = useState<Tyr.Document[] | undefined>(undefined);
   const [filterSearchValue, setFilterSearchValue] = React.useState('');
+  const themeProps = useTheme();
 
   let initialValues = component.filterValue(pathName);
 
   if (!Array.isArray(initialValues)) {
     initialValues = initialValues ? [initialValues] : [];
   }
+
+  const query = themeProps?.collections?.[link.def.name]?.query;
+  const linkValues = query
+    ? // TODO:  link.findAll() returns the actual documents, not a promise of documents, if it is a static collection
+      //        need to figure out a way to capture this optimization somehow in typescript
+      ((link.findAll({ query }) as any) as Tyr.Document[])
+    : link.values;
 
   // we clone the searchValues here so that modifying them does not trigger a findAll() in the table/etc. control from mobx
   initialValues = Tyr.cloneDeep(initialValues);
@@ -283,7 +291,7 @@ const LinkFilterDropdown = ({
         filterValue = fixFilterValue(link, filterValue);
 
         const labelRenderer = getLabelRenderer(pathProps);
-        const allValues = sortLabels(labels || link.values, pathProps);
+        const allValues = sortLabels(labels || linkValues, pathProps);
         const allValueIds = allValues.map(v => v.$id);
 
         const onChange = (checkedValue: CheckboxValueType[]) => {
@@ -356,7 +364,7 @@ const LinkFilterDropdown = ({
                 });
             } else {
               delaySetLabels(
-                link.values.map(d => ({
+                linkValues.map(d => ({
                   ...d,
                   $id: d.$id,
                   $label: labelFor(pathProps, d),

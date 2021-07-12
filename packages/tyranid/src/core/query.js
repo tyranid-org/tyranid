@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import { ObjectId } from 'mongodb';
 
 const Tyr = require('../tyr').default;
 import Type from './type';
@@ -8,38 +7,6 @@ import Collection from './collection';
 //
 // Detection and Validation
 //
-
-function isValue(v) {
-  return !_.isObject(v) || v instanceof ObjectId;
-}
-
-function isOpObject(obj) {
-  if (isValue(obj)) {
-    return false;
-  }
-
-  for (const n in obj) {
-    if (!n.startsWith('$')) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-//const queryPattern = /^\$/;
-
-const isQuery = value => false;
-//if (true) return false;
-
-/*
-  if (Tyr.isObject(value))
-    for (const name in value)
-      if (queryPattern.test(name) || isQuery(value[name])) return true;
-
-  return false;
-  */
-//};
 
 function validateInArray(arr) {
   if (!_.isArray(arr))
@@ -54,18 +21,10 @@ function validateInArray(arr) {
 // TODO:  move this stuff into Tyr ?
 //
 
-// _.include() doesn't work with ObjectIds
-function arrayIncludes(arr, v) {
-  for (const av of arr) if (Tyr.isEqual(av, v)) return true;
-  return false;
-}
-
-// _.intersection doesn't work with ObjectIds, TODO: replace with _.intersectionWith(..., Tyr.isEqual) when lodash upgraded
-const arrayIntersection = (arr1, arr2) =>
-  Tyr.isEqual(arr1, arr2) ? arr1 : arr1.filter(v => arrayIncludes(arr2, v));
-
 // _.union doesn't work with ObjectIds, TODO: replace with _.unionWith(..., Tyr.isEqual) when lodash upgraded
 function union(arr1, arr2) {
+  const { arrayIncludes } = Tyr.query;
+
   if (_.isEqual(arr1, arr2)) {
     return arr1;
   }
@@ -85,6 +44,8 @@ function union(arr1, arr2) {
 //
 
 function mergeOpObject(v1, v2) {
+  const { arrayIntersection, isOpObject } = Tyr.query;
+
   const o = {};
 
   const o1 = isOpObject(v1) ? v1 : { $eq: v1 },
@@ -215,6 +176,8 @@ function mergeOpObject(v1, v2) {
 }
 
 function simplifyOpObject(o) {
+  const { arrayIncludes } = Tyr.query;
+
   //
   // Simplify and check for contradictions
   //
@@ -257,10 +220,13 @@ function simplifyOpObject(o) {
 }
 
 function simplify(v) {
+  const { isOpObject } = Tyr.query;
   return isOpObject(v) ? simplifyOpObject(v) : v;
 }
 
 function merge(query1, query2) {
+  const { isOpObject } = Tyr.query;
+
   if (!query1) {
     return query2;
   } else if (!query2) {
@@ -330,6 +296,8 @@ function merge(query1, query2) {
 const NO_MATCH = '_no-match';
 
 function _queryIntersection(a, b) {
+  const { arrayIncludes, arrayIntersection, isOpObject } = Tyr.query;
+
   if (!a || !b) {
     throw NO_MATCH;
   }
@@ -338,13 +306,18 @@ function _queryIntersection(a, b) {
     return a;
   }
 
-  if (isOpObject(a) && isValue(b)) {
+  if (isOpObject(a) && Tyr.isValue(b)) {
     b = { $eq: b };
-  } else if (isOpObject(b) && isValue(a)) {
+  } else if (isOpObject(b) && Tyr.isValue(a)) {
     a = { $eq: a };
   }
 
-  if (isValue(a) || isValue(b) || Array.isArray(a) || Array.isArray(b)) {
+  if (
+    Tyr.isValue(a) ||
+    Tyr.isValue(b) ||
+    Array.isArray(a) ||
+    Array.isArray(b)
+  ) {
     throw NO_MATCH;
   }
 
@@ -460,134 +433,6 @@ function queryIntersection(a, b) {
 
     throw err;
   }
-}
-
-//
-// Query Matching
-//
-
-function arrayMatchesAny(arr, value) {
-  return Array.isArray(value)
-    ? !!arrayIntersection(arr, value).length
-    : arrayIncludes(arr, value);
-}
-function arrayMatchesFull(arr, value) {
-  return Array.isArray(value)
-    ? arrayIntersection(arr, value).length === arr.length
-    : arr.length === 1
-    ? arrayIncludes(arr, value)
-    : false;
-}
-
-function valueMatches(match, value) {
-  if (isValue(match)) {
-    return Tyr.isEqual(match, value);
-  }
-
-  if (Array.isArray(match)) {
-    return arrayMatchesFull(match, value);
-  }
-
-  for (const op in match) {
-    if (!op.startsWith('$')) {
-      if (!value || !valueMatches(match[op], value[op])) {
-        return false;
-      }
-    } else {
-      switch (op) {
-        case '$exists':
-          const matchValue = match.$exists;
-
-          if (matchValue) {
-            return value !== undefined && value !== null;
-          } else {
-            return value === undefined || value === null;
-          }
-
-        //break;
-
-        case '$eq':
-          if (!Tyr.isEqual(match.$eq, value)) {
-            return false;
-          }
-          break;
-
-        case '$in':
-          if (!value || !match.$in.length || !arrayMatchesAny(match.$in, value))
-            return false;
-
-          break;
-
-        case '$bitsAllClear':
-          if ((value & match.$bitsAllClear) !== 0x0) {
-            return false;
-          }
-
-          break;
-
-        case '$bitsAllSet': {
-          const v = match.$bitsAllSet;
-          if ((value & v) !== v) {
-            return false;
-          }
-
-          break;
-        }
-
-        case '$bitsAnyClear': {
-          const v = match.$bitsAnyClear;
-          if ((value & v) === v) {
-            return false;
-          }
-
-          break;
-        }
-
-        case '$bitsAnySet': {
-          const v = match.$bitsAnySet;
-          if ((value & v) === 0x0) {
-            return false;
-          }
-
-          break;
-        }
-
-        default:
-          throw new Error('op ' + op + ' not supported (yet)');
-      }
-    }
-  }
-
-  return true;
-}
-
-function queryMatches(query, doc) {
-  for (const name in query) {
-    if (name.startsWith('$')) {
-      switch (name) {
-        case '$and':
-          if (!query.$and.every(q => queryMatches(q, doc))) {
-            return false;
-          }
-          break;
-
-        case '$or':
-          if (!query.$or.some(q => queryMatches(q, doc))) {
-            return false;
-          }
-          break;
-
-        default:
-          throw new Error('op ' + name + ' not supported (yet)');
-      }
-    } else {
-      if (!valueMatches(_.get(query, name), _.get(doc, name))) {
-        return false;
-      }
-    }
-  }
-
-  return true;
 }
 
 //
@@ -804,10 +649,196 @@ new Type({
 });
 
 const query = {
-  isQuery,
+  /**
+   * @isomorphic
+   * _.include() doesn't work with ObjectIds
+   */
+  arrayIncludes(arr, v) {
+    for (const av of arr) if (Tyr.isEqual(av, v)) return true;
+    return false;
+  },
+
+  /**
+   * @isomophic
+   * _.intersection doesn't work with ObjectIds, TODO: replace with _.intersectionWith(..., Tyr.isEqual) when lodash upgraded
+   */
+  arrayIntersection(arr1, arr2) {
+    const { arrayIncludes } = Tyr.query;
+    return Tyr.isEqual(arr1, arr2) ? arr1 : arr1.filter(v => arrayIncludes(arr2, v));
+  },
+
+  /** @isomorphic */
+  arrayMatchesAny(arr, value) {
+    const { query } = Tyr;
+    return Array.isArray(value)
+      ? !!query.arrayIntersection(arr, value).length
+      : query.arrayIncludes(arr, value);
+  },
+
+  /** @isomorphic */
+  arrayMatchesFull(arr, value) {
+    const { query } = Tyr;
+    return Array.isArray(value)
+      ? query.arrayIntersection(arr, value).length === arr.length
+      : arr.length === 1
+      ? query.arrayIncludes(arr, value)
+      : false;
+  },
+
+  valueMatches(match, value) {
+    if (Tyr.isValue(match)) {
+      return Tyr.isEqual(match, value);
+    }
+
+    if (Array.isArray(match)) {
+      return Tyr.query.arrayMatchesFull(match, value);
+    }
+
+    for (const op in match) {
+      if (!op.startsWith('$')) {
+        if (!value || !Tyr.query.valueMatches(match[op], value[op])) {
+          return false;
+        }
+      } else {
+        switch (op) {
+          case '$exists':
+            const matchValue = match.$exists;
+
+            if (matchValue) {
+              return value !== undefined && value !== null;
+            } else {
+              return value === undefined || value === null;
+            }
+
+          //break;
+
+          case '$eq':
+            if (!Tyr.isEqual(match.$eq, value)) {
+              return false;
+            }
+            break;
+
+          case '$in':
+            if (
+              !value ||
+              !match.$in.length ||
+              !Tyr.query.arrayMatchesAny(match.$in, value)
+            )
+              return false;
+
+            break;
+
+          case '$bitsAllClear':
+            if ((value & match.$bitsAllClear) !== 0x0) {
+              return false;
+            }
+
+            break;
+
+          case '$bitsAllSet': {
+            const v = match.$bitsAllSet;
+            if ((value & v) !== v) {
+              return false;
+            }
+
+            break;
+          }
+
+          case '$bitsAnyClear': {
+            const v = match.$bitsAnyClear;
+            if ((value & v) === v) {
+              return false;
+            }
+
+            break;
+          }
+
+          case '$bitsAnySet': {
+            const v = match.$bitsAnySet;
+            if ((value & v) === 0x0) {
+              return false;
+            }
+
+            break;
+          }
+
+          default:
+            throw new Error('op ' + op + ' not supported (yet)');
+        }
+      }
+    }
+
+    return true;
+  },
+
+  //
+  // Query Matching
+  //
+
+  /** @isomorphic */
+  matches(query, doc) {
+    const { matches, valueMatches } = Tyr.query;
+
+    for (const name in query) {
+      if (name.startsWith('$')) {
+        switch (name) {
+          case '$and':
+            if (!query.$and.every(q => matches(q, doc))) {
+              return false;
+            }
+            break;
+
+          case '$or':
+            if (!query.$or.some(q => matches(q, doc))) {
+              return false;
+            }
+            break;
+
+          default:
+            throw new Error('op ' + name + ' not supported (yet)');
+        }
+      } else {
+        if (!valueMatches(_.get(query, name), _.get(doc, name))) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  },
+
+  /**
+   * const queryPattern = /^\$/;
+   *
+   * function isQuery(value) {
+   *   if (true) return false;
+   *
+   *   if (Tyr.isObject(value))
+   *     for (const name in value)
+   *       if (queryPattern.test(name) || isQuery(value[name])) return true;
+   *
+   *   return false;
+   * };
+   */
+  isQuery: value => false,
+
+  /** @isomorphic */
+  isOpObject(obj) {
+    if (Tyr.isValue(obj)) {
+      return false;
+    }
+
+    for (const n in obj) {
+      if (!n.startsWith('$')) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
   merge,
   intersection: queryIntersection,
-  matches: queryMatches,
   restrict: queryRestrict,
   and: queryAnd,
 };
