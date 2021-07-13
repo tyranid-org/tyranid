@@ -1,21 +1,64 @@
-import { Node, Text } from 'slate';
+import { Node, Element, Text } from 'slate';
 import { jsx } from 'slate-hyperscript';
+import { ReactEditor } from 'slate-react';
+
+//
+// Slate Custom types
+//
+
+export type CustomText = {
+  bold?: boolean;
+  italic?: boolean;
+  code?: boolean;
+  underline?: boolean;
+  text: string;
+};
+
+declare module 'slate' {
+  interface CustomTypes {
+    Editor: /*BaseEditor & */ ReactEditor /* & HistoryEditor*/;
+    Element: { type?: string; url?: string; children: any[] }; //Element;
+    Text: CustomText;
+  }
+}
+
+export type MentionElement = {
+  type: 'mention';
+  character: string;
+  children: CustomText[];
+};
+
+//
+// Slate serialization
+//
 
 export const htmlToSlate = (html: string) => {
-  if (!html) return [];
+  console.log('htmlToSlate', html);
 
-  const document = new DOMParser().parseFromString(html, 'text/html');
+  let s;
 
-  let s = deserialize(document.body);
+  if (!html) {
+    s = [{ type: 'paragraph', children: [{ text: '' }] }];
+  } else {
+    const document = new DOMParser().parseFromString(html, 'text/html');
 
-  // slate doesn't seem to like it when the top-level node is just a text node and not wrapped in some HTML node
-  if (Array.isArray(s) && s.length === 1 && s[0].text)
-    s = [{ type: 'paragraph', children: s }] as Node[];
+    s = deserialize(document.body);
 
+    // slate doesn't seem to like it when the top-level node is just a text node and not wrapped in some HTML node
+    if (Array.isArray(s) && s.length === 1 && (s[0] as Text).text)
+      s = [{ type: 'paragraph', children: s } as Element] as Node[];
+  }
+
+  console.log('returning', s);
   return s;
 };
 
-export const slateToHtml = (value: Node[]) => value.map(serialize).join('');
+export const slateToHtml = (value: Node[]) => {
+  console.log('slateToHtml', value);
+  const s = value.map(serialize).join('');
+  console.log('returning', s);
+  return s;
+};
 
 const deserialize = (
   el: HTMLElement | ChildNode
@@ -27,6 +70,9 @@ const deserialize = (
   }
 
   const children = Array.from(el.childNodes).map(deserialize);
+  if (!children.length) {
+    children.push({ text: '' });
+  }
 
   switch (el.nodeName) {
     case 'A':
@@ -64,16 +110,17 @@ const serialize = (node: Node): string => {
   if (Text.isText(node)) {
     let text = escapeHtml(node.text!);
 
-    if (node.code) text = `<code>${text}</code>`;
-    if (node.bold) text = `<strong>${text}</strong>`;
-    if (node.italic) text = `<em>${text}</em>`;
-    if (node.underline) text = `<u>${text}</u>`;
+    // need to upgrade typescript to remove these any's
+    if ((node as any).code) text = `<code>${text}</code>`;
+    if ((node as any).bold) text = `<strong>${text}</strong>`;
+    if ((node as any).italic) text = `<em>${text}</em>`;
+    if ((node as any).underline) text = `<u>${text}</u>`;
     return text;
   }
 
-  const children = node.children.map(n => serialize(n)).join('');
+  const children = node.children.map((n: any) => serialize(n)).join('');
 
-  switch (node.type) {
+  switch ((node as any).type) {
     case 'quote':
       return `<blockquote><p>${children}</p></blockquote>`;
     case 'heading-one':
@@ -83,7 +130,9 @@ const serialize = (node: Node): string => {
     case 'paragraph':
       return `<p>${children}</p>`;
     case 'link':
-      return `<a href="${escapeHtml(node.url as string)}">${children}</a>`;
+      return `<a href="${escapeHtml(
+        ((node as Element) as any).url as string
+      )}">${children}</a>`;
     default:
       return children;
   }

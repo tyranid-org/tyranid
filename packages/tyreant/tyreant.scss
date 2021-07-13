@@ -381,6 +381,7 @@ form textarea.tyr-markup-editor {
 
   .tyr-slate-toolbar {
     border-bottom: 1px solid #ddd;
+    user-select: none;
 
     .tyr-active {
       background-color: var(--cell-highlight-color);

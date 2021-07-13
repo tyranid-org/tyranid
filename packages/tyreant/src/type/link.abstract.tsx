@@ -198,7 +198,6 @@ export class TyrLinkAbstract<
     } else {
       if (this.link!.isStatic()) {
         const values = this.link!.values;
-        console.log('props', props);
 
         this.setState({
           documents: sortLabels(values, props),
