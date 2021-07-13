@@ -32,7 +32,11 @@ import {
 import { withHistory } from 'slate-history';
 import isHotkey from 'is-hotkey';
 
-import { htmlToSlate, slateToHtml } from './slate-serialization';
+import {
+  MentionElement,
+  htmlToSlate,
+  slateToHtml,
+} from './slate-serialization';
 
 const HOTKEYS: { [hotkey: string]: string } = {
   'mod+b': 'bold',
@@ -42,19 +46,6 @@ const HOTKEYS: { [hotkey: string]: string } = {
 };
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];
-
-export type CustomText = {
-  bold?: boolean;
-  italic?: boolean;
-  code?: boolean;
-  text: string;
-};
-
-export type MentionElement = {
-  type: 'mention';
-  character: string;
-  children: CustomText[];
-};
 
 const CHARACTERS = [
   'Aayla Secura',
@@ -83,7 +74,10 @@ export const TextEditor = ({
 
   const renderElement = useCallback(props => <Element {...props} />, []);
   const renderLeaf = useCallback(props => <Leaf {...props} />, []);
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(
+    () => withHistory(withReact(createEditor() as any)),
+    []
+  );
 
   const ref = useRef<HTMLDivElement>(null);
   const [target, setTarget] = useState<Range | undefined>();
@@ -181,7 +175,7 @@ export const TextEditor = ({
           setTarget(undefined);
         }}
       >
-        <div className="tyr-slate-toolbar">
+        <div className="tyr-slate-toolbar" contentEditable={false}>
           <MarkButton format="bold" icon={<BoldOutlined />} />
           <MarkButton format="italic" icon={<ItalicOutlined />} />
           <MarkButton format="underline" icon={<UnderlineOutlined />} />
@@ -204,7 +198,7 @@ export const TextEditor = ({
           onKeyDown={onKeyDown}
         />
       </Slate>
-      {target && chars.length > 0 && (
+      {target && false && chars.length > 0 && (
         <Portal>
           <div
             ref={ref}
@@ -245,13 +239,15 @@ const toggleBlock = (editor: ReactEditor, format: string) => {
   Transforms.unwrapNodes(editor, {
     match: n =>
       LIST_TYPES.includes(
-        (!Editor.isEditor(n) && SlateElement.isElement(n) && n.type) as string
+        (!Editor.isEditor(n) &&
+          SlateElement.isElement(n) &&
+          (n as any).type) as string
       ),
     split: true,
   });
   const newProperties: Partial<SlateElement> = {
     type: isActive ? 'paragraph' : isList ? 'list-item' : format,
-  };
+  } as any;
   Transforms.setNodes(editor, newProperties);
 
   if (!isActive && isList) {
@@ -273,7 +269,9 @@ const toggleMark = (editor: ReactEditor, format: string) => {
 const isBlockActive = (editor: ReactEditor, format: string) => {
   const [match] = Editor.nodes(editor, {
     match: n =>
-      !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === format,
+      !Editor.isEditor(n) &&
+      SlateElement.isElement(n) &&
+      (n as any).type === format,
   });
 
   return !!match;
@@ -281,7 +279,7 @@ const isBlockActive = (editor: ReactEditor, format: string) => {
 
 const isMarkActive = (editor: ReactEditor, format: string) => {
   const marks = Editor.marks(editor);
-  return marks ? marks[format] === true : false;
+  return marks ? (marks as any)[format] === true : false;
 };
 
 const Element = ({
@@ -370,7 +368,7 @@ const BlockButton = ({
   icon: JSX.Element;
 }) => {
   const editor = useMemo(
-    () => withMentions(withReact(withHistory(createEditor()))),
+    () => withMentions(withReact(withHistory(createEditor() as any))),
     []
   );
   return (
@@ -396,10 +394,10 @@ const MarkButton = ({
   const editor = useSlate();
   return (
     <Button
-      className={isMarkActive(editor, format) ? 'tyr-active' : ''}
+      className={isMarkActive(editor as any, format) ? 'tyr-active' : ''}
       onMouseDown={event => {
         event.preventDefault();
-        toggleMark(editor, format);
+        toggleMark(editor as any, format);
       }}
     >
       {icon}
@@ -411,11 +409,11 @@ const withMentions = (editor: ReactEditor) => {
   const { isInline, isVoid } = editor;
 
   editor.isInline = element => {
-    return element.type === 'mention' ? true : isInline(element);
+    return (element as any).type === 'mention' ? true : isInline(element);
   };
 
   editor.isVoid = element => {
-    return element.type === 'mention' ? true : isVoid(element);
+    return (element as any).type === 'mention' ? true : isVoid(element);
   };
 
   return editor;

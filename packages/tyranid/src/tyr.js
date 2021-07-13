@@ -483,6 +483,16 @@ const Tyr = {
   },
 
   /** @isopmorphic */
+  isValue(value) {
+    // want to treat ObjectIds as primitive values in most places
+    return (
+      !_.isObject(value) ||
+      value instanceof RegExp ||
+      (value.constructor && value.constructor.name === 'ObjectID')
+    );
+  },
+
+  /** @isopmorphic */
   cloneDeep(obj) {
     // TODO:  testing for lodash 4 here, remove once we stop using lodash 3
     return _.cloneDeepWith

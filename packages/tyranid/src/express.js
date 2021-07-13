@@ -524,6 +524,7 @@ export function generateClientLibrary() {
   }
 
   Tyr.isObject = ${es5Fn(Tyr.isObject)};
+  Tyr.isValue = ${es5Fn(Tyr.isValue)};
   Tyr.clear = ${es5Fn(Tyr.clear)};
   Tyr.clone = obj => _.clone(obj);
   Tyr.cloneDeep = obj => _.cloneDeep(obj);
@@ -960,6 +961,13 @@ export function generateClientLibrary() {
 
   Tyr.query = {
     and: ${es5Fn(Tyr.query.and)},
+    arrayIncludes: ${es5Fn(Tyr.query.arrayIncludes)},
+    arrayIntersection: ${es5Fn(Tyr.query.arrayIntersection)},
+    arrayMatchesAny: ${es5Fn(Tyr.query.arrayMatchesAny)},
+    arrayMatchesFull: ${es5Fn(Tyr.query.arrayMatchesFull)},
+    valueMatches: ${es5Fn(Tyr.query.valueMatches)},
+    matches: ${es5Fn(Tyr.query.matches)},
+    isOpObject: ${es5Fn(Tyr.query.isOpObject)}
     restrict: ${es5Fn(Tyr.query.restrict)}
   };
 `;
@@ -1398,29 +1406,43 @@ export function generateClientLibrary() {
   Collection.prototype.findAll = function(opts) {
     const col = this;
 
-    return Tyr.fetch('/api/' + col.def.name, {
-      method: 'POST',
-      body: Tyr.stringify(opts),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(rslt => {
-      let docs;
+    if (!col.isDb()) {
+      const { values } = col;
 
-      if (!Array.isArray(rslt) && _.isObject(rslt)) {
-        docs = rslt.docs.map(doc => new col(doc));
-        docs.count = rslt.count;
-      } else {
-        docs = rslt.map(doc => new col(doc));
+      if (opts) {
+        const { query } = opts;
+        if (query) {
+          const { matches } = Tyr.query;
+          return values.filter(doc => matches(query, doc));
+        }
       }
 
-      for (const doc of docs) {
-        doc.$options = opts;
-        this.cache(doc, undefined, true);
-      }
+      return values;
+    } else {
+      return Tyr.fetch('/api/' + col.def.name, {
+        method: 'POST',
+        body: Tyr.stringify(opts),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(rslt => {
+        let docs;
 
-      return docs;
-    });
+        if (!Array.isArray(rslt) && _.isObject(rslt)) {
+          docs = rslt.docs.map(doc => new col(doc));
+          docs.count = rslt.count;
+        } else {
+          docs = rslt.map(doc => new col(doc));
+        }
+
+        for (const doc of docs) {
+          doc.$options = opts;
+          this.cache(doc, undefined, true);
+        }
+
+        return docs;
+      });
+    }
   };
 
   Collection.prototype.count = function(opts) {

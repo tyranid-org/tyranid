@@ -198,6 +198,7 @@ export interface TyrPathProps<D extends Tyr.Document>
   onSelect?: (value: SelectValue, option: any) => any;
   onStateChange?: (value: FieldState) => void;
   optionFilter?: (documents: D[]) => Tyr.Document[];
+  query?: Tyr.MongoQuery | ((props: TyrTypeProps<D>) => Promise<void>);
   searchPath?: Tyr.PathInstance;
   searchSortById?: boolean;
   static?: boolean;

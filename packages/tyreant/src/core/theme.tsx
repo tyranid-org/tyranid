@@ -10,6 +10,7 @@ import type { TyrFormProps } from './form';
 import type { TyrKanbanProps } from './kanban';
 import type { TyrDecoratorProps } from './decorator';
 import type { TyrTableProps } from './table';
+import type { TyrComponent } from './component';
 import { TyrAction } from './action';
 import { TyrActionOpts } from '../tyreant';
 import { useNotifications } from '../util/notifications-hook';
@@ -37,6 +38,14 @@ export interface TyrThemeProps {
       labelRenderer?: (
         document: Tyr.DocumentType<Tyr.CollectionsByName[CollectionName]>
       ) => JSX.Element;
+      query?:
+        | Tyr.MongoQuery
+        | ((
+            this: TyrComponent<
+              Tyr.DocumentType<Tyr.CollectionsByName[CollectionName]>
+            >,
+            query: Tyr.MongoQuery
+          ) => Promise<void>);
       paths?: {
         [pathName: string]: Partial<
           TyrPathLaxProps<
@@ -52,6 +61,8 @@ export const ThemeContext = React.createContext<TyrThemeProps | undefined>(
   undefined
 );
 
+export const useTheme = () => useContext(ThemeContext);
+
 export const useThemeProps = <
   K extends keyof TyrThemeProps,
   P extends TyrThemeProps[K]
@@ -60,7 +71,7 @@ export const useThemeProps = <
   props: P,
   path?: Tyr.PathInstance
 ) => {
-  const themeProps = useContext(ThemeContext);
+  const themeProps = useTheme();
 
   const tprops = themeProps?.[type];
   const pProps =
