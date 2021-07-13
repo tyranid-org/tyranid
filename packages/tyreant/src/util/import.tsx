@@ -54,7 +54,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
     ],
   },
   ({ form, document: importDoc }) => {
-    //$scope.title = Tyr.pluralize(collection.label);
+    // $scope.title = Tyr.pluralize(collection.label);
 
     const defaults = importDoc.defaults;
     const { paths } = defaults.$model;
