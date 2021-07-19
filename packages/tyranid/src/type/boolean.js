@@ -1,8 +1,10 @@
 import Type from '../core/type';
 
 function fromString(s) {
+  s = s.trim();
+
   if (s && s.length) {
-    if (/^(f|n|false|no|off|null|0)$/i.test(s)) {
+    if (/^(f|n|false|no|off|null|-|n\/a|0)$/i.test(s)) {
       return false;
     }
 
@@ -24,11 +26,7 @@ function fromString(s) {
     throw new Error(`Invalid boolean: ${s}`);
   }
 
-  if (s === true || s === false) {
-    return s;
-  }
-
-  return undefined;
+  return s === true || s === false ? s : undefined;
 }
 
 const BooleanType = new Type({
@@ -73,7 +71,9 @@ const BooleanType = new Type({
         break;
     }
 
-    throw new Error(`Invalid boolean on field ${field.name}: ${value}`);
+    console.log('typeof value', typeof value);
+    console.log('value', value);
+    throw new Error(`Invalid boolean on field ${field.name}: "${value}"`);
   },
 
   query(path, where, query) {

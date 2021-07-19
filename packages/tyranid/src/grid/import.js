@@ -162,6 +162,7 @@ export class Importer {
         const link = field?.link;
 
         if (link) {
+          if (typeof v === 'string') v = v.trim();
           const d = await link.byLabel(v, { projection: { _id: 1 } });
           if (d) return d._id;
 
