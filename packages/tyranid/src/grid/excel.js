@@ -308,9 +308,33 @@ async function fromExcel(opts) {
 
   let headerRowNumber = 1 + extraRows.length;
 
-  const actualColumns = sheet
-    .getRow(headerRowNumber)
-    .values.map((value, idx) => {
+  let actualColumns;
+
+  for (;;) {
+    const rowValues = sheet.getRow(headerRowNumber).values;
+
+    const anyMatches = rowValues.some(value => {
+      const label = simplifyLabel(value || '');
+
+      return expectedColumns.some(
+        column => simplifyLabel(column.label) === label
+      );
+    });
+
+    if (!header && !anyMatches) {
+      // if they didn't pass in a header, look for the header row ... there could be generic help text
+      // or other things above the header row that we need to skip
+      headerRowNumber++;
+
+      if (headerRowNumber >= 20) {
+        log('No header row found.');
+        return undefined;
+      }
+
+      continue;
+    }
+
+    actualColumns = rowValues.map(value => {
       const label = simplifyLabel(value || '');
 
       const column = expectedColumns.find(
@@ -323,6 +347,9 @@ async function fromExcel(opts) {
         return column;
       }
     });
+
+    break;
+  }
 
   const importer = new Importer({
     collection,
