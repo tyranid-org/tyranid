@@ -156,6 +156,8 @@ export const TyrFilters = ({
   component?: TyrComponent<any>;
 }) => {
   const [visible, setVisible] = useState(false);
+  const drawerBodyRef = React.useRef<HTMLDivElement | null>(null);
+
   const c = component || useComponent();
   if (!c) return <div className="no-component" />;
   const paths = (c.paths as TyrPathProps<any>[]).filter(
@@ -164,7 +166,7 @@ export const TyrFilters = ({
   if (!paths) return <div className="no-paths"></div>;
 
   const body = (
-    <React.Fragment key="filter-fields-body">
+    <div key="filter-fields-body" ref={drawerBodyRef}>
       {paths.map(f => {
         const path = f.path!;
 
@@ -201,7 +203,7 @@ export const TyrFilters = ({
           </div>
         );
       })}
-    </React.Fragment>
+    </div>
   );
 
   const { filterConnections } = c;
@@ -294,7 +296,7 @@ export const TyrFilters = ({
       );
     default:
       return (
-        <>
+        <div>
           <Drawer
             visible={visible}
             closable={true}
@@ -304,11 +306,28 @@ export const TyrFilters = ({
             title={title}
             width={280}
             footer={footer}
+            afterVisibleChange={isVisible => {
+              // When drawer opens, scroll to the top
+              if (isVisible && drawerBodyRef?.current) {
+                let parent = drawerBodyRef?.current?.parentElement;
+
+                while (
+                  parent &&
+                  !parent.className.includes('ant-drawer-body')
+                ) {
+                  parent = parent?.parentElement;
+                }
+
+                if (parent) {
+                  parent.scrollTo(0, 0);
+                }
+              }
+            }}
           >
             {body}
           </Drawer>
           {searchBar}
-        </>
+        </div>
       );
   }
 };

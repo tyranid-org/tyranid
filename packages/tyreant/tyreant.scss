@@ -500,6 +500,11 @@ form textarea.tyr-markup-editor {
           max-height: 200px;
         }
       }
+
+      .ant-table-filter-dropdown {
+        max-height: 150px;
+        overflow: auto;
+      }
     }
   }
 
