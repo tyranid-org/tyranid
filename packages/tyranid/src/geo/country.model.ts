@@ -149,7 +149,7 @@ export const Country = new Tyr.Collection({
     [4263, 'Reunion', 'RE', 'REU', 'RE', 4328],
     [4264, 'Romania', 'RO', 'ROU', 'RO', 4331],
     [4265, 'Serbia', 'RS', 'SRB', 'RI', 4331],
-    [4266, 'Russian Federation', 'RU', 'RUS', 'RS', 4330],
+    [4266, 'Russian Federation', 'RU', 'RUS', 'RS', 4331],
     [4267, 'Rwanda', 'RW', 'RWA', 'RW', 4328],
     [4268, 'Saudi Arabia', 'SA', 'SAU', 'SA', 4330],
     [4269, 'Solomon Islands', 'SB', 'SLB', 'BP', 4333],
