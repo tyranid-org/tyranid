@@ -1027,6 +1027,10 @@ form textarea.tyr-markup-editor {
 .tyr-menu-item {
   padding: 0;
 
+  .ant-dropdown-menu-title-content {
+    width: 100%;
+  }
+
   button {
     padding: 4px 8px;
     background: transparent;

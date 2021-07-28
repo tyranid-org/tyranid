@@ -2401,7 +2401,7 @@ declare module 'tyranid/isomorphic' {
         code: 'RU';
         iso3166_1_a3: 'RUS';
         fips10_4: 'RS';
-        continent: 4330;
+        continent: 4331;
       } & Country<ObjIdType, ObjContainer, NumContainer>;
 
       RWANDA: {
