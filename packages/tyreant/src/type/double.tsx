@@ -129,7 +129,9 @@ byName.double = {
                 style={{ width: 188, marginBottom: 8, display: 'block' }}
               >
                 {filterOptions.map(op => (
-                  <Option value={op}>{op}</Option>
+                  <Option key={op} value={op}>
+                    {op}
+                  </Option>
                 ))}
               </Select>
 

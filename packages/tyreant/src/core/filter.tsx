@@ -77,9 +77,11 @@ export function TyrFilter<FilterValueType>({
     setFilterValue(component.filterValue(pathName));
   }, [component.filterValue(pathName)]);
 
-  const onSearch = () => {
-    (component as TyrManyComponent).skip = 0;
-    (component as TyrManyComponent).query();
+  const onSearch = (outerSearch?: boolean) => {
+    if (!outerSearch) {
+      (component as TyrManyComponent).skip = 0;
+      (component as TyrManyComponent).query();
+    }
 
     const value = component.filterValue(pathName);
 
@@ -102,9 +104,9 @@ export function TyrFilter<FilterValueType>({
     onSearch();
   };
 
-  const search = (onChange?: boolean) => {
+  const search = (onChange?: boolean, outerSearch?: boolean) => {
     component.filterValues[pathName] = filterValue;
-    onSearch();
+    onSearch(outerSearch);
     if (!onChange) filterDdProps.confirm?.();
   };
 
@@ -143,7 +145,7 @@ export function TyrFilter<FilterValueType>({
 
 export interface TyrFilterConnection {
   clear: () => void;
-  search: () => void;
+  search: (onChange?: boolean, outerSearch?: boolean) => void;
   filterValue: any;
   setFilterValue: (v: any) => void;
 }
@@ -229,8 +231,9 @@ export const TyrFilters = ({
           type="primary"
           onClick={() => {
             for (const name in filterConnections)
-              filterConnections[name]?.search();
+              filterConnections[name]?.search(false, true);
             setVisible(false);
+            setTimeout(() => c.requery(), 1);
           }}
           icon={<SearchOutlined />}
           size="small"
