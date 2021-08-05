@@ -233,7 +233,7 @@ export const TyrFilters = ({
             for (const name in filterConnections)
               filterConnections[name]?.search(false, true);
             setVisible(false);
-            setTimeout(() => c.requery(), 1);
+            setTimeout(() => c.requery(), 250);
           }}
           icon={<SearchOutlined />}
           size="small"
