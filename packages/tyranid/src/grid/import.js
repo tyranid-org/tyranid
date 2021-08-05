@@ -111,7 +111,7 @@ TyrImport.on({
       }
       imp.endedAt = new Date();
 
-      console.log('Import complete.');
+      console.info('Import complete.');
 
       await imp.$update({ fields: { endedAt: 1, issues: 1 } });
 
@@ -293,7 +293,7 @@ export class Importer {
       }
     }
 
-    // console.log('IMPORT - query', JSON.stringify(query, null, 2));
+    // console.info('IMPORT - query', JSON.stringify(query, null, 2));
     if (foundAnyData) {
       const existingDoc = await collection.findOne({
         query,
@@ -308,7 +308,7 @@ export class Importer {
           const v = path.get(doc);
           const vExisting = path.get(existingDoc);
           if (v && !Tyr.isEqual(v, vExisting)) {
-            console.log(
+            console.info(
               `change found for path ${path.name}, new:${v} vs. existing:${vExisting}`
             );
             path.set(existingDoc, v, { create: true });
@@ -317,7 +317,7 @@ export class Importer {
         }
 
         if (changesFound) await existingDoc.$save(this.copyOpts);
-        console.log(
+        console.info(
           `        - ${
             changesFound ? 'updating' : 'using'
           } existing ${JSON.stringify(existingDoc)}`
@@ -325,12 +325,12 @@ export class Importer {
         return existingDoc;
       }
 
-      console.log('        - creating new');
+      console.info('        - creating new');
       await doc.$save(this.copyOpts);
       return doc;
     }
 
-    console.log(`        - didn't find any data`);
+    console.info(`        - didn't find any data`);
   }
 
   async importRow(row /*: any[]*/) {
