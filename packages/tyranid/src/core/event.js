@@ -205,8 +205,12 @@ export default class Event {
   /** @private */
   static async handle(event) {
     const { opts } = event;
-    //con sole.log(Tyr.instanceId + ' *** handle:', event);
     const collection = event.collection || Tyr.byId[event.collectionId];
+    //if (collection.id === 'l01' && event.type !== 'find')
+    //console.log(Tyr.instanceId + ' *** handle:', {
+    //...event,
+    //collection: event.collection.name,
+    //});
 
     if (!collection) {
       console.warn('*** no collection for event', event);
