@@ -47,16 +47,6 @@ const HOTKEYS: { [hotkey: string]: string } = {
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];
 
-const CHARACTERS = [
-  'Aayla Secura',
-  'Adi Gallia',
-  'Admiral Dodd Rancit',
-  'Admiral Firmus Piett',
-  'Admiral Gial Ackbar',
-  'Admiral Ozzel',
-  'Admiral Raddus',
-];
-
 const Portal = ({ children }: { children: JSX.Element }) =>
   typeof document === 'object'
     ? ReactDOM.createPortal(children, document.body)
@@ -65,9 +55,15 @@ const Portal = ({ children }: { children: JSX.Element }) =>
 export const TextEditor = ({
   value,
   onChange,
+  mentionFeeds,
 }: {
   value?: string;
   onChange?: (value: string) => void;
+  mentionFeeds?: {
+    marker: string;
+    feed: string[];
+    minimumCharacters: number;
+  };
 }) => {
   console.log('TextEditor render, value', value);
   const editValue = useMemo(() => htmlToSlate(value ?? '') as Node[], [value]);
@@ -84,9 +80,9 @@ export const TextEditor = ({
   const [index, setIndex] = useState(0);
   const [search, setSearch] = useState('');
 
-  const chars = CHARACTERS.filter(c =>
-    c.toLowerCase().startsWith(search.toLowerCase())
-  ).slice(0, 10);
+  const chars = (mentionFeeds?.feed ?? [])
+    .filter(c => c.toLowerCase().startsWith(search))
+    .slice(0, 10);
 
   const onKeyDown = useCallback(
     event => {
@@ -98,6 +94,7 @@ export const TextEditor = ({
         }
       }
 
+      //console.log('onKeyDown', { target });
       if (target) {
         switch (event.key) {
           case 'ArrowDown':
@@ -145,7 +142,7 @@ export const TextEditor = ({
         onChange={value => {
           //setEditValue(value);
           const s = slateToHtml(value);
-          console.log('TextEditor onChange, newHtml', s);
+          //console.log('TextEditor onChange, newHtml', s);
           onChange?.(s);
 
           //setValue(value);
@@ -158,15 +155,26 @@ export const TextEditor = ({
             const beforeRange = before && Editor.range(editor, before, start);
             const beforeText =
               beforeRange && Editor.string(editor, beforeRange);
-            const beforeMatch = beforeText && beforeText.match(/^@(\w+)$/);
+            const beforeMatchRegex = new RegExp(
+              '^(' + (mentionFeeds?.marker ?? '@') + '.*)$'
+            );
+            const beforeMatch = beforeText?.trim().match(beforeMatchRegex);
             const after = Editor.after(editor, start);
             const afterRange = Editor.range(editor, start, after);
             const afterText = Editor.string(editor, afterRange);
             const afterMatch = afterText.match(/^(\s|$)/);
+            /*console.log({
+              wordBefore,
+              before,
+              beforeRange,
+              beforeText,
+              beforeMatch,
+              beforeMatchRegex,
+            });*/
 
             if (beforeMatch && afterMatch) {
               setTarget(beforeRange);
-              setSearch(beforeMatch[1]);
+              setSearch(beforeMatch[1].toLowerCase());
               setIndex(0);
               return;
             }
@@ -198,15 +206,15 @@ export const TextEditor = ({
           onKeyDown={onKeyDown}
         />
       </Slate>
-      {target && false && chars.length > 0 && (
+      {target && chars.length > 0 && (
         <Portal>
           <div
             ref={ref}
             style={{
-              top: '-9999px',
-              left: '-9999px',
+              top: '0px',
+              left: '8px',
               position: 'absolute',
-              zIndex: 1,
+              zIndex: 1000,
               padding: '3px',
               background: 'white',
               borderRadius: '4px',
@@ -420,12 +428,13 @@ const withMentions = (editor: ReactEditor) => {
 };
 
 const insertMention = (editor: ReactEditor, character: string) => {
-  const mention: MentionElement = {
-    type: 'mention',
-    character,
-    children: [{ text: '' }],
-  };
-  Transforms.insertNodes(editor, mention);
+  //const mention: MentionElement = {
+  //type: 'mention',
+  //character,
+  //children: [{ text: '' }],
+  //};
+  Transforms.insertText(editor, character);
+  //Transforms.insertNodes(editor, mention);
   Transforms.move(editor);
 };
 

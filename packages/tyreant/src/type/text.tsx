@@ -33,7 +33,14 @@ export const TyrTextBase = <D extends Tyr.Document = Tyr.Document>(
         );
 
       default:
-        return <TextEditor onChange={s => onTypeChange(props, s, s)} />;
+        return (
+          <TextEditor
+            onChange={s => onTypeChange(props, s, s)}
+            mentionFeeds={
+              props.mentionFeeds ?? props.path?.detail.def.mentionFeed
+            }
+          />
+        );
     }
   });
 };
