@@ -109,6 +109,7 @@ class Serializer {
       'minlength',
       'max',
       'maxlength',
+      'mentionFeed',
       'numbering',
       'orderField',
       'pathLabel',
