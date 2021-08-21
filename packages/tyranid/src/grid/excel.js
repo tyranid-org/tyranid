@@ -271,7 +271,8 @@ async function toExcel(opts) {
   }
 }
 
-const simplifyLabel = label => label?.toLowerCase().replace(/\s/g, '');
+const simplifyLabel = label =>
+  typeof label === 'string' ? label?.toLowerCase().replace(/\s/g, '') : '';
 
 async function fromExcel(opts) {
   const { collection, stream, filename, header, defaults, save } = opts;
