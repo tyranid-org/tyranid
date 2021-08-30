@@ -121,7 +121,7 @@ TyrImport.on({
     };
 
     for (const imp of await event.documents) {
-      importDoc(imp); // TODO: Move this into a backround service
+      importDoc(imp); // TODO: Move this into a background service
     }
   },
 });

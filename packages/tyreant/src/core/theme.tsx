@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { Tyr } from 'tyranid/client';
 
 import type { TyrPathLaxProps } from './path';
-import type { TyrTypeProps, TyrTypeLaxProps } from '../type/type';
+import { TyrTypeProps, TyrTypeLaxProps, documentFor } from '../type/type';
 import type { TyrDrawerProps } from './drawer';
 import type { TyrFormProps } from './form';
 import type { TyrKanbanProps } from './kanban';
@@ -125,7 +125,7 @@ export const withThemedTypeContext = (
 ) => (rawProps: TyrTypeLaxProps<any>) => {
   const parentProps = useContext(TypeContext);
 
-  let document = rawProps.document || parentProps?.document;
+  let document = documentFor(rawProps) || documentFor(parentProps);
   if (!document && parentProps) {
     const { component } = parentProps;
     if (component) document = component.document;

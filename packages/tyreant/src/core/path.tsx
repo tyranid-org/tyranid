@@ -15,6 +15,7 @@ import {
   className,
   getCellValue,
   modeFor,
+  documentFor,
 } from '../type/type';
 import { useThemeProps, TyrThemeProps, withThemedTypeContext } from './theme';
 import { registerComponent } from '../common';
@@ -309,8 +310,10 @@ export function pathWidth(pathProps: TyrPathProps<any>, wrapTitle?: boolean) {
 }
 
 export const getValue = (props: TyrTypeProps<any>, doc?: Tyr.Document<any>) => {
-  const { path, document, value } = props;
-  return (value ? value.value : path!.get(document || doc)) || undefined; // convert null to undefined
+  const { path, value } = props;
+  return (
+    (value ? value.value : path!.get(documentFor(props) || doc)) || undefined
+  ); // convert null to undefined
 };
 
 export const decorateField = (
