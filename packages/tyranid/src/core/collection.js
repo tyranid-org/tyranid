@@ -1225,7 +1225,6 @@ export default class Collection {
       (!opts || opts.historical !== false) && collection.def.historical;
 
     let historicalPromise;
-    if (collection.id === 'l01') console.log('!!! keyValue', keyValue);
     if (keyValue) {
       // update
 

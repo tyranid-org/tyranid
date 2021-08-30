@@ -405,7 +405,7 @@ export class TyrAction<D extends Tyr.Document = Tyr.Document> {
 
       on?.(this.wrappedFnOpts(opts) as any);
     } catch (err) {
-      console.log(err);
+      console.error(err);
       notification.error(err.message || 'Unknown error');
     }
   }

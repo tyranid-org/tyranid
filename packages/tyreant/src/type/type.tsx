@@ -24,6 +24,17 @@ export const modeFor = (props: TyrTypeProps<any>) => {
   return props.component?.parentAction?.traits?.[0];
 };
 
+/**
+ * Use this to get the document from props.  This does things like
+ * prefer to get the document off of the component first, since the props
+ * can be outdated when a component is re-used or updates its document internally.
+ */
+export function documentFor<D extends Tyr.Document>(
+  props?: TyrTypeProps<D> | TyrTypeLaxProps<D>
+): D | undefined {
+  return (props?.component?.document as D) || props?.document;
+}
+
 export function generateRules(props: TyrTypeProps<any>): Rule[] {
   const rules: Rule[] = [];
   const { path } = props;
@@ -119,7 +130,7 @@ export interface FieldState {
 
 export type TyrTypeLaxProps<D extends Tyr.Document> = {
   form?: FormInstance;
-  document?: Tyr.Document;
+  document?: Tyr.Document; // TODO:  shouldn't this be D ?
   component?: TyrComponent;
   value?: { value?: any };
   aux?: string;
@@ -333,7 +344,7 @@ export const onTypeChange = (
   value: any,
   event?: any
 ) => {
-  const { document } = props;
+  const document = documentFor(props);
 
   // if (event) {
   //   event.stopPropagation();

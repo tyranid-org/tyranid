@@ -31,7 +31,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
             self.document = new Tyr.collections.TyrImport({
               collectionName: collection.def.name,
               defaults: new collection(),
-              user: Tyr.local.user ? Tyr.local.user._id : undefined,
+              user: Tyr.local.user?._id,
             });
           } catch (err) {
             console.error(err);
@@ -47,9 +47,7 @@ export const TyrImport = createForm<Tyr.TyrImport>(
             <UploadOutlined /> Import
           </>
         ),
-        hide: ({ document }) => {
-          return !document.file;
-        },
+        hide: ({ self, document }) => !document.file,
       },
     ],
   },
