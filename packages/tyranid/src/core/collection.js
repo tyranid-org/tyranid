@@ -540,20 +540,23 @@ export default class Collection {
       if (nId) id = nId;
     }
 
-    const lf = this.labelField;
-    if (lf.def.get || lf.def.getServer) {
-      // if the label field is computed, we need to query the whole thing since we don't know what the computation requires
-      // (TODO:  analyze functions to determine their dependencies)
-
-      return this.byId(id).then(doc => {
-        return doc ? doc.$label : 'Unknown';
-      });
-    } else {
-      return this.findOne(
-        { [this.def.primaryKey.field]: id },
-        { [lf.spath]: 1 }
-      ).then(doc => (doc ? doc.$label : 'Unknown'));
+    let cache = this.labelCache,
+      created = this.labelCacheCreated,
+      now = Date.now();
+    // TODO:  this cache invalidation strategy could be improved ...
+    if (!cache || now - created > 10 * 60 * 1000) {
+      cache = this.labelCache = {};
+      this.labelCacheCreated = now;
     }
+
+    let label = cache[id];
+    if (label !== undefined) return Promise.resolve(label);
+
+    return this.byId(id, { projection: this.labelProjection() }).then(doc => {
+      label = doc ? doc.$label : 'Unknown';
+      cache[id] = label;
+      return label;
+    });
   }
 
   /** @isomorphic */
