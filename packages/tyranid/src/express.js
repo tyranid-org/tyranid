@@ -901,7 +901,7 @@ export function generateClientLibrary() {
 
       if (search) {
         var re = new RegExp(search, 'i');
-        const { collection } = field;
+        const { collection } = this.link;
         values = values.filter(val => re.test(collection.labelFor(val, opts)));
       }
 

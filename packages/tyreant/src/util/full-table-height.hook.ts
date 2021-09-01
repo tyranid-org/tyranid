@@ -15,4 +15,4 @@ export const useFullTableHeight = (initialOffset: number = 220) => {
 };
 
 // TODO: If using this and passing in scroll: { y: XXX } to TyrTable, TyrTable should set a min-height on the first .ant-table-body
-// equivalent to this value to make sure the table fills the screen, even with very little data-- can we do this with CSS vars?
+// equivalent to this value to make sure the table fills the screen, even with very little data -- can we do this with CSS vars?
