@@ -48,7 +48,7 @@ async function toCsv(opts) {
           writeObj[label] = type ? await type.format(field, value) : '' + value;
         }
 
-        //console.log('csv wrote', JSON.stringify(writeObj));
+        // console.log('csv wrote', JSON.stringify(writeObj));
         csvStream.write(writeObj);
       }
 
