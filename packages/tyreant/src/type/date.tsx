@@ -140,6 +140,7 @@ byName.date = {
   },
   cellValue(path, document, props) {
     const v = getValue(props, document);
+
     return !v
       ? ''
       : moment(v)

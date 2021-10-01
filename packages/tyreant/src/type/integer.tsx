@@ -64,7 +64,12 @@ byName.integer = {
     props: TyrTypeProps<any>
   ) => {
     const v = path.get(document);
-    return props.formatter ? props.formatter(v as number) : v;
+
+    if (!v || typeof v === 'number') {
+      return props.formatter ? props.formatter(v as number) : v;
+    }
+
+    return '[Error]';
   },
   filter(component, props) {
     const path = props.path!;

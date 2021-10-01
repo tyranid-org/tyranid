@@ -8,7 +8,7 @@ import { Tyr } from 'tyranid/client';
 import { mapPropsToForm, onTypeChange } from './type';
 import { TyrFilter, FilterDdProps } from '../core/filter';
 import { byName, TyrTypeProps } from './type';
-import { decorateField } from '../core';
+import { decorateField, getValue } from '../core';
 import { registerComponent } from '../common';
 import { withThemedTypeContext } from '../core/theme';
 
@@ -186,6 +186,19 @@ byName.double = {
     }
     */
     };
+  },
+  cellValue(path, document, props) {
+    const value = getValue(props, document);
+
+    if (!value) {
+      return '';
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    return '[Error]';
   },
   finder(path, opts, searchValue, pathProps) {
     if (searchValue) {

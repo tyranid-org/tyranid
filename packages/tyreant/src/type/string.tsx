@@ -86,7 +86,17 @@ byName.string = {
     }
   },
   cellValue(path, document, props) {
-    return <>{getValue(props, document)}</>;
+    const value = getValue(props, document);
+
+    if (!value) {
+      return '';
+    }
+
+    if (typeof value === 'string') {
+      return <>{value}</>;
+    }
+
+    return '[Error]';
   },
 };
 
