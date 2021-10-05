@@ -129,7 +129,6 @@ byName.array = {
     if (finder) finder(childPath, opts, searchValue);
   },
   cellValue: (path, document, props) => {
-    if (1 + 2 === 3) return 'array';
     const arr = path.get(document);
 
     if (Array.isArray(arr)) {
