@@ -397,6 +397,10 @@ const LinkFilterDropdown = ({
                       $label: labelFor(pathProps, d),
                     }))
                   );
+
+                  if (allSelected) {
+                    setFilterValue(results.map(d => String(d.$id)));
+                  }
                 }}
                 enterButton
                 autoFocus={true}
