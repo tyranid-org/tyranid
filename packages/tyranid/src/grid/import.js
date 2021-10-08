@@ -345,30 +345,35 @@ export class Importer {
       this.defaultsProcessed = true;
     }
 
-    const doc = new collection({});
+    try {
+      const doc = new collection({});
 
-    for (let ci = 0, clen = columns.length; ci < clen; ci++) {
-      const c = columns[ci];
-      if (!c || c.get) continue;
+      for (let ci = 0, clen = columns.length; ci < clen; ci++) {
+        const c = columns[ci];
+        if (!c || c.get) continue;
 
-      const { path } = c;
+        const { path } = c;
 
-      let v = row[ci];
+        let v = row[ci];
 
-      if (typeof v === 'number') {
-        // excel will convert strings to numbers if they are just numeric characters
-        v = String(v);
+        if (typeof v === 'number') {
+          // excel will convert strings to numbers if they are just numeric characters
+          v = String(v);
+        }
+
+        v = await this.fromClient(c, v, doc);
+
+        path.set(doc, v, { create: true });
       }
 
-      v = await this.fromClient(c, v, doc);
+      if (defaults) Object.assign(doc, defaults);
 
-      path.set(doc, v, { create: true });
+      if (save) await this.saveDocument(collection, doc);
+      return doc;
+    } catch (err) {
+      this.log(`Skipped row: ${err.message}`);
+      console.error('Could not import row, skipping ...', err);
     }
-
-    if (defaults) Object.assign(doc, defaults);
-
-    if (save) await this.saveDocument(collection, doc);
-    return doc;
   }
 }
 
