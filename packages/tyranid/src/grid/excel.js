@@ -311,11 +311,16 @@ async function fromExcel(opts) {
 
   let actualColumns;
 
+  for (const column of expectedColumns) {
+    console.log(`expecting "${simplifyLabel(column.label)}"`);
+  }
   for (;;) {
     const rowValues = sheet.getRow(headerRowNumber).values;
+    console.log('rowValues.length', rowValues.length);
 
     const anyMatches = rowValues.some(value => {
       const label = simplifyLabel(value || '');
+      console.log(`looking for "${label}"`);
 
       return expectedColumns.some(
         column => simplifyLabel(column.label) === label
