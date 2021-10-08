@@ -309,7 +309,7 @@ export class Importer {
           const vExisting = path.get(existingDoc);
           if (v && !Tyr.isEqual(v, vExisting)) {
             console.info(
-              `change found for path ${path.name}, new:${v} vs. existing:${vExisting}`
+              `change found for path ${path.name}, new: ${v} vs. existing: ${vExisting}`
             );
             path.set(existingDoc, v, { create: true });
             changesFound = true;
