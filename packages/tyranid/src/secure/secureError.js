@@ -2,7 +2,7 @@ import Tyr from '../tyr';
 
 /** @isomorphic */
 export default class SecureError extends Error {
-  constructor(msg) {
+  constructor(value) {
     let message;
 
     if (typeof value === 'string') {

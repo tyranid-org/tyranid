@@ -494,8 +494,8 @@ function queryRestrict(query, doc) {
               const exists = qvalue.find(qqv => Tyr.isSameId(qqv, docValue));
 
               if (!exists) {
-                throw Tyr.SecureError(
-                  `Security error- ${qname} value (${docValue}) is not valid!`
+                throw new Tyr.SecureError(
+                  `Security error- $in value (${docValue}) is not valid!`
                 );
               }
 
@@ -508,7 +508,9 @@ function queryRestrict(query, doc) {
             }
             default: {
               if (name.startsWith('$')) {
-                throw Tyr.SecureError(`Security error: TODO: handle ${name}`);
+                throw new Tyr.SecureError(
+                  `Security error: TODO: handle ${name}`
+                );
               }
 
               valueFound = true;
@@ -664,7 +666,9 @@ const query = {
    */
   arrayIntersection(arr1, arr2) {
     const { arrayIncludes } = Tyr.query;
-    return Tyr.isEqual(arr1, arr2) ? arr1 : arr1.filter(v => arrayIncludes(arr2, v));
+    return Tyr.isEqual(arr1, arr2)
+      ? arr1
+      : arr1.filter(v => arrayIncludes(arr2, v));
   },
 
   /** @isomorphic */
