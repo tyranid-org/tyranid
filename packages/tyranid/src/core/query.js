@@ -495,7 +495,7 @@ function queryRestrict(query, doc) {
 
               if (!exists) {
                 throw new Tyr.SecureError(
-                  `Security error- ${qname} value (${docValue}) is not valid!`
+                  `Security error- $in value (${docValue}) is not valid!`
                 );
               }
 
