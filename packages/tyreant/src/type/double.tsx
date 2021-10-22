@@ -195,7 +195,8 @@ byName.double = {
     }
 
     if (typeof value === 'number') {
-      return value;
+      const displayPrecision = 2; //  TODO: add this prop and get it from there
+      return value.toFixed(displayPrecision);
     }
 
     return '[Error]';
