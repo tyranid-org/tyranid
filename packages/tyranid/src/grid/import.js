@@ -316,12 +316,12 @@ export class Importer {
           }
         }
 
-        if (changesFound) await existingDoc.$save(this.copyOpts);
         console.info(
           `        - ${
             changesFound ? 'updating' : 'using'
           } existing ${JSON.stringify(existingDoc)}`
         );
+        if (changesFound) await existingDoc.$save(this.copyOpts);
         return existingDoc;
       }
 

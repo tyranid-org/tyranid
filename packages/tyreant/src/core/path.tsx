@@ -269,7 +269,7 @@ export const getPathName = (
     | TyrPathLaxProps<any>
     | undefined
 ): string | undefined => {
-  if (typeof path === 'string') return path;
+  if (typeof path === 'string') return path.replace(/\|/g, '.');
   if (path instanceof Tyr.Path) return path.name;
   if (path) {
     const p = path.path;
