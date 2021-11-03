@@ -181,7 +181,7 @@ byName.double = {
       /*
     onFilterDropdownVisibleChange: (visible: boolean) => {
       if (visible) {
-        setTimeout( () => searchInputRef!.focus() );
+        setTimeout(() => searchInputRef!.focus());
       }
     }
     */
