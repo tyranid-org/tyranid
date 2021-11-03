@@ -468,14 +468,14 @@ export class TyrTableBase<
       (isEditingAnything ? 128 : 0) +
       256 /* action bar */;
 
-    const handleCellSave = () => {};
+    //const handleCellSave = () => {};
 
     columns.forEach((column, columnIdx) => {
       let path: Tyr.PathInstance | undefined;
       let pathName: string | undefined;
       let searchPath: Tyr.PathInstance | undefined;
 
-      // TODO:  don't think this can be a strong, remove this block?
+      // TODO:  don't think this can be a string, remove this block?
       if (typeof column.path === 'string') {
         pathName = column.path;
         path = collection.parsePath(pathName);
@@ -484,7 +484,7 @@ export class TyrTableBase<
         pathName = path.name;
       }
 
-      const isCellEditable = false; // CELL-EDIT !!column.isCellEditable;
+      //const isCellEditable = false; // CELL-EDIT !!column.isCellEditable;
 
       const width =
         column.tempWidth ||
