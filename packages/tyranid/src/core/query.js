@@ -18,7 +18,7 @@ function validateInArray(arr) {
 //
 // ObjectId-safe Operations
 //
-// TODO:  move this stuff into Tyr?
+// TODO:  move this stuff into Tyr ?
 //
 
 // _.union doesn't work with ObjectIds, TODO: replace with _.unionWith(..., Tyr.isEqual) when lodash upgraded
