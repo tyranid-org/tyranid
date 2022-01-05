@@ -348,6 +348,8 @@ export class Importer {
     try {
       const doc = new collection({});
 
+      if (defaults) Object.assign(doc, defaults);
+
       for (let ci = 0, clen = columns.length; ci < clen; ci++) {
         const c = columns[ci];
         if (!c || c.get) continue;
@@ -365,8 +367,6 @@ export class Importer {
 
         path.set(doc, v, { create: true });
       }
-
-      if (defaults) Object.assign(doc, defaults);
 
       if (save) await this.saveDocument(collection, doc);
       return doc;
