@@ -1798,6 +1798,15 @@ declare module 'tyranid/isomorphic' {
         continent: 4333;
       } & Country<ObjIdType, ObjContainer, NumContainer>;
 
+      KOSOVO: {
+        _id: 4184;
+        name: 'Kosovo';
+        code: 'XK';
+        iso3166_1_a3: 'XKX';
+        fips10_4: 'KV';
+        continent: 4331;
+      } & Country<ObjIdType, ObjContainer, NumContainer>;
+
       KUWAIT: {
         _id: 4199;
         name: 'Kuwait';
@@ -6071,6 +6080,7 @@ declare module 'tyranid/isomorphic' {
      |4181
      |4182
      |4183
+     |4184
      |4184
      |4185
      |4186

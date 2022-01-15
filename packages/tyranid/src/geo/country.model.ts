@@ -373,7 +373,7 @@ export const Country = new Tyr.Collection({
   },
 }) as Tyr.CountryCollection;
 
-// TODO:  these should be an isomorphic service
+// TODO: these should be an isomorphic service
 Country.service = {
   async byCode(code: string) {
     // TODO:  create a hash for this if this ends up being used a lot ?
