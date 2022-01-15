@@ -355,7 +355,7 @@ export const Country = new Tyr.Collection({
     [4181, 'India', 'IN', 'IND', 'IN', 4330],
     [4182, 'British Indian Ocean Territory', 'IO', 'IOT', 'IO', 4330],
     [4183, 'Iraq', 'IQ', 'IRQ', 'IZ', 4330],
-    [4184, 'Kosovo', 'XK', 'XKX', 'KV', 4331],
+    [4328, 'Kosovo', 'XK', 'XKX', 'KV', 4331],
   ],
   service: {
     byCode: {
