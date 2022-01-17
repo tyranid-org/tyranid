@@ -158,7 +158,7 @@ export const distance = async (
     if (errMsg) {
       console.log(response.data.status + ':' + errMsg);
     } else {
-      console.log('Error: no response status!');
+      console.log('Error: No response status!');
     }
   } catch (err) {
     throw new AppError(err);
