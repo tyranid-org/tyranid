@@ -145,7 +145,7 @@ export const distance = async (
     });
 
     if (response.data.status === 'OK') {
-      return response.data.rows[0].elements[0].distance.value;
+      return response.data.rows[0].elements[0].distance?.value;
     }
 
     console.log(

@@ -1799,7 +1799,7 @@ declare module 'tyranid/isomorphic' {
       } & Country<ObjIdType, ObjContainer, NumContainer>;
 
       KOSOVO: {
-        _id: 4184;
+        _id: 4328;
         name: 'Kosovo';
         code: 'XK';
         iso3166_1_a3: 'XKX';
@@ -6081,7 +6081,6 @@ declare module 'tyranid/isomorphic' {
      |4182
      |4183
      |4184
-     |4184
      |4185
      |4186
      |4187
@@ -6224,7 +6223,8 @@ declare module 'tyranid/isomorphic' {
      |4324
      |4325
      |4326
-     |4327;
+     |4327
+     |4328;
     
     /**
      * Type alias for enum id values in "mediaType" collection
