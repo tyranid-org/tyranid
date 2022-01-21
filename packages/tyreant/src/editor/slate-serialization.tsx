@@ -33,7 +33,7 @@ export type MentionElement = {
 //
 
 export const htmlToSlate = (html: string) => {
-  console.log('htmlToSlate', html);
+  //cons ole.log('htmlToSlate', html);
 
   let s;
 
@@ -49,14 +49,14 @@ export const htmlToSlate = (html: string) => {
       s = [{ type: 'paragraph', children: s } as Element] as Node[];
   }
 
-  console.log('returning', s);
+  //cons ole.log('returning', s);
   return s;
 };
 
 export const slateToHtml = (value: Node[]) => {
-  console.log('slateToHtml', value);
+  //cons ole.log('slateToHtml', value);
   const s = value.map(serialize).join('');
-  console.log('returning', s);
+  //cons ole.log('returning', s);
   return s;
 };
 

@@ -65,7 +65,7 @@ export const TextEditor = ({
     minimumCharacters: number;
   };
 }) => {
-  console.log('TextEditor render, value', value);
+  //cons ole.log('TextEditor render, value', value);
   const editValue = useMemo(() => htmlToSlate(value ?? '') as Node[], [value]);
 
   const renderElement = useCallback(props => <Element {...props} />, []);
@@ -94,7 +94,7 @@ export const TextEditor = ({
         }
       }
 
-      //console.log('onKeyDown', { target });
+      //cons ole.log('onKeyDown', { target });
       if (target) {
         switch (event.key) {
           case 'ArrowDown':
@@ -142,7 +142,7 @@ export const TextEditor = ({
         onChange={value => {
           //setEditValue(value);
           const s = slateToHtml(value);
-          //console.log('TextEditor onChange, newHtml', s);
+          //cons ole.log('TextEditor onChange, newHtml', s);
           onChange?.(s);
 
           //setValue(value);
@@ -163,7 +163,7 @@ export const TextEditor = ({
             const afterRange = Editor.range(editor, start, after);
             const afterText = Editor.string(editor, afterRange);
             const afterMatch = afterText.match(/^(\s|$)/);
-            /*console.log({
+            /*cons ole.log({
               wordBefore,
               before,
               beforeRange,
