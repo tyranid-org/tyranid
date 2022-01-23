@@ -3,7 +3,7 @@ import { Link, Route } from 'react-router-dom';
 
 import { Tyr } from 'tyranid/client';
 
-// TODO:  is it possible to import this via tsconfig ?
+// TODO:  is it possible to import this via tsconfig?
 import 'tyranid/builtin/isomorphic';
 import 'tyranid/builtin/client';
 
