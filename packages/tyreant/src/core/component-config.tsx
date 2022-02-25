@@ -22,6 +22,7 @@ import {
   ColumnConfigField,
 } from './component-config-item';
 import { TyrComponent } from './component';
+import { labelFieldFromProps } from './label';
 
 const { confirm } = Modal;
 
@@ -357,7 +358,23 @@ export const TyrComponentConfigComponent = <D extends Tyr.Document>({
   };
 
   const actionLabel = exportProp ? 'Export' : 'Save';
-  const fields = columnFields.filter(f => !f.hidden).map(f => f.name);
+  const { activePaths } = component;
+
+  const fields = columnFields
+    .filter(f => !f.hidden)
+    .map(f => {
+      const props = activePaths.find(p => p.path?.name === f.name);
+
+      if (props) {
+        const lf = labelFieldFromProps(props);
+
+        if (lf) {
+          return props.path?.path.join('.') + '.' + lf;
+        }
+      }
+
+      return f.name;
+    });
   const actionButton = exportProp ? (
     typeof exportProp === 'object' && exportProp.background ? (
       <a
