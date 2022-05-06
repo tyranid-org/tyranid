@@ -49,7 +49,7 @@
     "moment-timezone": "0.5.33",
     "node-fetch": "1.7.1",
     "on-finished": "2.3.0",
-    "socket.io": "2.2.0",
+    "socket.io": "2.4.0",
     "tmp-promise": "2.0.2",
     "ts-node": "^3.2.0",
     "uglify-js": "2.8.16",
