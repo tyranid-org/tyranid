@@ -242,7 +242,7 @@ export class Importer {
                 // array of links
                 const { link } = detail;
                 obj[fieldName] = await Promise.all(
-                  arr.map(async v => {
+                  (arr || []).map(async v => {
                     const nestedDoc = await this.saveDocument(
                       link,
                       new link(v)
