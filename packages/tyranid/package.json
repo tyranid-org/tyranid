@@ -45,7 +45,7 @@
     "json-stable-stringify": "1.0.1",
     "limiter": "1.1.5",
     "lodash": "^3.10.1",
-    "moment": "2.29.1",
+    "moment": "2.29.4",
     "moment-timezone": "0.5.33",
     "node-fetch": "1.7.1",
     "on-finished": "2.3.0",
