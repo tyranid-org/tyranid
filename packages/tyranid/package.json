@@ -46,7 +46,7 @@
     "limiter": "1.1.5",
     "lodash": "^3.10.1",
     "moment": "2.29.1",
-    "moment-timezone": "0.5.33",
+    "moment-timezone": "0.5.35",
     "node-fetch": "1.7.1",
     "on-finished": "2.3.0",
     "socket.io": "2.2.0",
