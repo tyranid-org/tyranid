@@ -30,7 +30,7 @@
     "mobx": "5.15.4",
     "mobx-react": "6.2.2",
     "moment": "2.29.1",
-    "moment-timezone": "0.5.33",
+    "moment-timezone": "0.5.35",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-dropzone": "10.2.1",
